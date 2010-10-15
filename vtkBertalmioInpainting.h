@@ -1,4 +1,4 @@
-// Based on "Image Inpainting" by Bertalmio, Sapiro, Caselles, and Ballester#ifndef __vtkInpainting_h
+// Based on "Image Inpainting" by Bertalmio, Sapiro, Caselles, and Ballester
 #ifndef __vtkBertalmioInpainting_h
 #define __vtkBertalmioInpainting_h
 
