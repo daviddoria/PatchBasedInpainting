@@ -26,9 +26,9 @@ void vtkBertalmioInpainting::Iterate(int iteration)
   normalizedGradient->ShallowCopy(gradientFilter->GetOutput());
   int extents[6];
   normalizedGradient->GetExtent(extents);
-  for(vtkIdType i = extents[0]; i < extents[1]; i++)
+  for(vtkIdType i = extents[0]; i <= extents[1]; i++)
     {
-    for(vtkIdType j = extents[2]; j < extents[3]; j++)
+    for(vtkIdType j = extents[2]; j <= extents[3]; j++)
       {
       double* pixel = static_cast<double*>(normalizedGradient->GetScalarPointer(i,j,0));
       vtkMath::Normalize2D(pixel);
@@ -36,9 +36,9 @@ void vtkBertalmioInpainting::Iterate(int iteration)
     }
 
   // Rotate gradient 90 degrees
-  for(vtkIdType i = extents[0]; i < extents[1]; i++)
+  for(vtkIdType i = extents[0]; i <= extents[1]; i++)
     {
-    for(vtkIdType j = extents[2]; j < extents[3]; j++)
+    for(vtkIdType j = extents[2]; j <= extents[3]; j++)
       {
       double* pixel = static_cast<double*>(normalizedGradient->GetScalarPointer(i,j,0));
       double temp[2] = {pixel[0], pixel[1]};

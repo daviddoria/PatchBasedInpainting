@@ -9,3 +9,6 @@ TARGET_LINK_LIBRARIES(Inpainting vtkHybrid)
 
 ADD_EXECUTABLE(vtkImageVectorRotateExample vtkImageVectorRotateExample.cxx vtkImageVectorRotate.cxx)
 TARGET_LINK_LIBRARIES(vtkImageVectorRotateExample vtkHybrid)
+
+ADD_EXECUTABLE(vtkImageIsophotesExample vtkImageIsophotesExample.cxx vtkImageIsophotes.cxx vtkImageVectorRotate.cxx)
+TARGET_LINK_LIBRARIES(vtkImageIsophotesExample vtkHybrid)
