@@ -1,14 +1,13 @@
 cmake_minimum_required(VERSION 2.6)
-PROJECT(Inpainting)
- 
+PROJECT(CriminisiInpainting)
+
+include_directories(/home/doriad/src/ITK/Wrapping/WrapITK/ExternalProjects/ItkVtkGlue/src/)
+
 FIND_PACKAGE(VTK REQUIRED)
 INCLUDE(${VTK_USE_FILE})
- 
-ADD_EXECUTABLE(Inpainting vtkFastDigitalInpaintingExample.cxx vtkInpainting.cxx vtkBertalmioInpainting.cxx vtkFastDigitalInpainting.cxx)
-TARGET_LINK_LIBRARIES(Inpainting vtkHybrid)
 
-ADD_EXECUTABLE(vtkImageVectorRotateExample vtkImageVectorRotateExample.cxx vtkImageVectorRotate.cxx)
-TARGET_LINK_LIBRARIES(vtkImageVectorRotateExample vtkHybrid)
+FIND_PACKAGE(ITK REQUIRED)
+INCLUDE(${ITK_USE_FILE})
 
-ADD_EXECUTABLE(vtkImageIsophotesExample vtkImageIsophotesExample.cxx vtkImageIsophotes.cxx vtkImageVectorRotate.cxx)
-TARGET_LINK_LIBRARIES(vtkImageIsophotesExample vtkHybrid)
+ADD_EXECUTABLE(CriminisiInpainting CriminisiInpainting.cpp)
+TARGET_LINK_LIBRARIES(CriminisiInpainting vtkHybrid ITKBasicFilters ITKCommon ITKIO)
