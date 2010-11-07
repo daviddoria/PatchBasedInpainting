@@ -9,14 +9,17 @@
 #include <vtkObjectFactory.h>
 #include <vtkCommand.h>
 
-
+#include "itkAddImageFilter.h"
 #include "itkBinaryContourImageFilter.h"
+#include "itkBinaryDilateImageFilter.h"
+#include "itkBinaryErodeImageFilter.h"
 #include "itkBinaryThresholdImageFilter.h"
 #include "itkCastImageFilter.h"
 #include "itkConstNeighborhoodIterator.h"
 #include "itkConstantBoundaryCondition.h"
 #include "itkCovariantVector.h"
 #include "itkDiscreteGaussianImageFilter.h"
+#include "itkFlatStructuringElement.h"
 #include "itkGradientImageFilter.h"
 #include "itkImage.h"
 #include "itkImageDuplicator.h"
@@ -31,6 +34,7 @@
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
 #include "itkRigid2DTransform.h"
+#include "itkSubtractImageFilter.h"
 #include "itkUnaryFunctorImageFilter.h"
 #include "itkVariableLengthVector.h"
 
@@ -50,11 +54,6 @@ typedef itk::ConstantBoundaryCondition<ColorImageType>  ColorBoundaryConditionTy
 typedef itk::ConstNeighborhoodIterator<UnsignedCharImageType, ScalarBoundaryConditionType>::NeighborhoodType UnsignedCharNeighborhoodType;
 typedef itk::ConstNeighborhoodIterator<FloatImageType, ScalarBoundaryConditionType>::NeighborhoodType FloatNeighborhoodType;
 typedef itk::ConstNeighborhoodIterator<ColorImageType, ColorBoundaryConditionType>::NeighborhoodType ColorNeighborhoodType;
-
-typedef  itk::ImageFileWriter< UnsignedCharImageType  > UnsignedCharImageWriterType;
-typedef  itk::ImageFileWriter< FloatImageType  > FloatImageWriterType;
-typedef  itk::ImageFileWriter< VectorImageType  > VectorImageWriterType;
-typedef  itk::ImageFileWriter< ColorImageType  > ColorImageWriterType;
 
 typedef  itk::ImageFileReader< UnsignedCharImageType  > UnsignedCharImageReaderType;
 typedef  itk::ImageFileReader< ColorImageType  > ColorImageReaderType;
@@ -78,30 +77,13 @@ class CriminisiInpainting
 
     void Inpaint();
     void SetImage(ColorImageType::Pointer image){this->Image = image;}
-    void SetMask(UnsignedCharImageType::Pointer mask){this->Mask = mask;}
+    void SetInputMask(UnsignedCharImageType::Pointer mask){this->InputMask = mask;}
 
   private:
-    void DebugTests();
-    void WriteDebugImages(FloatImageType::IndexType pixelToFill, unsigned int iteration);
-    void WriteValidIsophoteImage();
-    itk::CovariantVector<float, 2> GetAverageIsophote(UnsignedCharImageType::IndexType queryPixel);
-    bool IsValidPatch(UnsignedCharImageType::IndexType queryPixel, unsigned int radius);
-    
-    void ReplaceValue(FloatImageType::Pointer iamge, float oldValue, float newValue);
-    void CreateBorderMask(FloatImageType::Pointer mask);
-    void ColorToGrayscale(ColorImageType::Pointer colorImage, UnsignedCharImageType::Pointer grayscaleImage);
-
-    unsigned int GetNumberOfPixelsInPatch();
-
-    void UpdateConfidenceImage(FloatImageType::IndexType sourcePixel, FloatImageType::IndexType targetPixel);
-    void UpdateIsophoteImage(FloatImageType::IndexType sourcePixel, FloatImageType::IndexType targetPixel);
-
-    UnsignedCharImageType::SizeType GetUnsignedCharPatchSize();
-
-    ColorImageType::SizeType GetColorPatchSize();
-
+    // Data members
     ColorImageType::Pointer Image;
     ColorImageType::Pointer Patch;
+    UnsignedCharImageType::Pointer InputMask;
     UnsignedCharImageType::Pointer Mask;
     FloatImageType::Pointer ConfidenceImage;
     UnsignedCharImageType::SizeType PatchRadius;
@@ -113,37 +95,66 @@ class CriminisiInpainting
 
     FloatImageType::Pointer PriorityImage;
 
+    // Functions
+    template <class T>
+    void CopyPatchIntoTargetRegion(typename T::Pointer patch, typename T::Pointer image, itk::Index<2> position);
+
+    // Debugging
+    void DebugTests();
+    void WriteDebugImages(itk::Index<2> pixelToFill, unsigned int iteration);
+
+    itk::CovariantVector<float, 2> GetAverageIsophote(itk::Index<2> queryPixel);
+    bool IsValidPatch(itk::Index<2> queryPixel, unsigned int radius);
+
+    void ReplaceValue(FloatImageType::Pointer iamge, float oldValue, float newValue);
+    void CreateBorderMask(FloatImageType::Pointer mask);
+    void ColorToGrayscale(ColorImageType::Pointer colorImage, UnsignedCharImageType::Pointer grayscaleImage);
+
+    unsigned int GetNumberOfPixelsInPatch();
+
+    void UpdateConfidenceImage(itk::Index<2> sourcePixel, itk::Index<2> targetPixel);
+    void UpdateIsophoteImage(itk::Index<2> sourcePixel, itk::Index<2> targetPixel);
+
+    itk::Size<2> GetPatchSize();
+
+    void FindBoundary(); // This must be done before ComputeIsophotes
     void ComputeIsophotes();
     bool HasMoreToInpaint(UnsignedCharImageType::Pointer mask);
-    void FindBoundary();
+
     void ComputeBoundaryNormals();
 
-    void CreateBlankUnsignedCharPatch(UnsignedCharImageType::Pointer patch);
-    void CreateBlankFloatPatch(FloatImageType::Pointer patch);
-    void CreateConstantUnsignedCharPatch(UnsignedCharImageType::Pointer patch, unsigned char value);
-    void CreateConstantFloatPatch(FloatImageType::Pointer patch, float value);
+    // Criminisi specific functions
+    void ComputeAllPriorities();
+    float ComputePriority(itk::Index<2> queryPixel);
+    float ComputeConfidenceTerm(itk::Index<2> queryPixel);
+    float ComputeDataTerm(itk::Index<2> queryPixel);
+
+    template <class T>
+    void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer &image, itk::Index<2> position);
+
+    itk::Index<2> FindHighestPriority(FloatImageType::Pointer priorityImage);
+
+    itk::Index<2> FindBestPatchMatch(itk::Index<2> pixel);
+
+    void UpdateMask(itk::Index<2> pixel);
+
+    // General operations
+    itk::ImageRegion<2> GetRegionAroundPixel(itk::Index<2> pixel);
+    itk::ImageRegion<2> GetRegionAroundPixel(itk::Index<2> pixel, unsigned int radius);
+
+    template <class T>
+    void CreateBlankPatch(typename T::Pointer patch);
+
+    template <class T>
+    void CreateConstantPatch(typename T::Pointer patch, unsigned char value);
+
     void CreateConstantFloatBlockingPatch(FloatImageType::Pointer patch, float value);
 
-    void ComputeAllPriorities();
-    float ComputePriority(UnsignedCharImageType::IndexType queryPixel);
-    float ComputeConfidenceTerm(UnsignedCharImageType::IndexType queryPixel);
-    float ComputeDataTerm(UnsignedCharImageType::IndexType queryPixel);
+    template <class T>
+    void WriteScaledImage(typename T::Pointer image, std::string filename);
 
-    void CopyPatchIntoImage(UnsignedCharImageType::Pointer patch, UnsignedCharImageType::Pointer &image, UnsignedCharImageType::IndexType position);
-    void CopyPatchIntoImage(FloatImageType::Pointer patch, FloatImageType::Pointer &image, FloatImageType::IndexType position);
-    void CopyPatchIntoImage(VectorImageType::Pointer patch, VectorImageType::Pointer &image, VectorImageType::IndexType position);
-    void CopyPatchIntoImage(ColorImageType::Pointer patch, ColorImageType::Pointer &image, ColorImageType::IndexType position);
-
-    FloatImageType::IndexType FindHighestPriority(FloatImageType::Pointer priorityImage);
-
-    ColorImageType::IndexType FindBestPatchMatch(ColorImageType::IndexType pixel);
-
-    void UpdateMask(UnsignedCharImageType::IndexType pixel);
-
-    UnsignedCharImageType::RegionType GetRegionAroundPixel(UnsignedCharImageType::IndexType pixel);
-    UnsignedCharImageType::RegionType GetRegionAroundPixel(UnsignedCharImageType::IndexType pixel, unsigned int radius);
-    ColorImageType::RegionType GetColorRegionAroundPixel(ColorImageType::IndexType pixel);
-
+    template <class T>
+    void WriteImage(typename T::Pointer image, std::string filename);
 };
 
 
@@ -240,7 +251,7 @@ int main(int argc, char *argv[])
 
   CriminisiInpainting Inpainting;
   Inpainting.SetImage(imageReader->GetOutput());
-  Inpainting.SetMask(thresholdFilter->GetOutput());
+  Inpainting.SetInputMask(thresholdFilter->GetOutput());
   Inpainting.Inpaint();
 
   /*
@@ -349,24 +360,24 @@ void CriminisiInpainting::Inpaint()
 
   this->Image = maskFilter->GetOutput();
 
+  FindBoundary();
   ComputeIsophotes();
-  //WriteValidIsophoteImage();
 
   int iteration = 0;
   while(HasMoreToInpaint(this->Mask))
     {
     std::cout << "Iteration: " << iteration << std::endl;
-    
+
     FindBoundary();
 
     ComputeBoundaryNormals();
 
     ComputeAllPriorities();
 
-    FloatImageType::IndexType pixelToFill = FindHighestPriority(this->PriorityImage);
+    itk::Index<2> pixelToFill = FindHighestPriority(this->PriorityImage);
     std::cout << "Filling: " << pixelToFill << std::endl;
 
-    ColorImageType::IndexType bestMatchPixel = FindBestPatchMatch(pixelToFill);
+    itk::Index<2> bestMatchPixel = FindBestPatchMatch(pixelToFill);
     std::cout << "Best match found at: " << bestMatchPixel << std::endl;
 
     // Extract the best patch
@@ -374,12 +385,15 @@ void CriminisiInpainting::Inpaint()
                                                 ColorImageType > ExtractFilterType;
 
     ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
-    extractFilter->SetRegionOfInterest(GetColorRegionAroundPixel(bestMatchPixel));
+    extractFilter->SetRegionOfInterest(GetRegionAroundPixel(bestMatchPixel));
     extractFilter->SetInput(this->Image);
     extractFilter->Update();
     this->Patch = extractFilter->GetOutput();
 
-    CopyPatchIntoImage(this->Patch, this->Image, pixelToFill);
+    //CopyPatchIntoImage(this->Patch, this->Image, pixelToFill);
+    CopyPatchIntoTargetRegion<ColorImageType>(this->Patch, this->Image, pixelToFill);
+
+    WriteDebugImages(pixelToFill, iteration);
 
     UpdateConfidenceImage(bestMatchPixel, pixelToFill);
     UpdateIsophoteImage(bestMatchPixel, pixelToFill);
@@ -389,17 +403,13 @@ void CriminisiInpainting::Inpaint()
 
     // Sanity check everything
     //DebugTests();
-    //WriteDebugImages(pixelToFill, iteration);
-    
+
+
     iteration++;
     } // end main while loop
 
-  {
-  ColorImageWriterType::Pointer writer = ColorImageWriterType::New();
-  writer->SetFileName("result.jpg");
-  writer->SetInput(this->Image);
-  writer->Update();
-  }
+  WriteImage<ColorImageType>(this->Image, "result.jpg");
+
 }
 
 void CriminisiInpainting::WriteDebugImages(FloatImageType::IndexType pixelToFill, unsigned int iteration)
@@ -424,12 +434,12 @@ void CriminisiInpainting::WriteDebugImages(FloatImageType::IndexType pixelToFill
       }
     ++iterator;
     }
-  UnsignedCharImageWriterType::Pointer writer = UnsignedCharImageWriterType::New();
+
+
   std::stringstream padded;
   padded << "PixelToFill_" << std::setfill('0') << std::setw(4) << iteration << ".jpg";
-  writer->SetFileName(padded.str());
-  writer->SetInput(pixelImage);
-  writer->Update();
+
+  WriteImage<UnsignedCharImageType>(pixelImage, padded.str());
   }
 
   // Create a blank image with the patch that has been filled colored white
@@ -447,14 +457,14 @@ void CriminisiInpainting::WriteDebugImages(FloatImageType::IndexType pixelToFill
     }
 
   UnsignedCharImageType::Pointer patch = UnsignedCharImageType::New();
-  CreateConstantUnsignedCharPatch(patch, 255);
+  CreateConstantPatch<UnsignedCharImageType>(patch, 255);
 
   UnsignedCharImageType::IndexType lowerLeft;
   lowerLeft[0] = pixelToFill[0] - this->Patch->GetLargestPossibleRegion().GetSize()[0]/2;
   lowerLeft[1] = pixelToFill[1] - this->Patch->GetLargestPossibleRegion().GetSize()[1]/2;
   typedef itk::PasteImageFilter <UnsignedCharImageType, UnsignedCharImageType >
           PasteImageFilterType;
-  
+
   PasteImageFilterType::Pointer pasteFilter
           = PasteImageFilterType::New ();
   pasteFilter->SetInput(0, patchImage);
@@ -463,100 +473,82 @@ void CriminisiInpainting::WriteDebugImages(FloatImageType::IndexType pixelToFill
   pasteFilter->SetDestinationIndex(lowerLeft);
   pasteFilter->InPlaceOn();
   pasteFilter->Update();
-  UnsignedCharImageWriterType::Pointer writer = UnsignedCharImageWriterType::New();
+
   std::stringstream padded;
   padded << "PatchToFill_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  writer->SetFileName(padded.str());
-  writer->SetInput(pasteFilter->GetOutput());
-  writer->Update();
+  WriteImage<UnsignedCharImageType>(pasteFilter->GetOutput(), padded.str());
   }
 
-  
   {
-  ColorImageWriterType::Pointer writer = ColorImageWriterType::New();
   std::stringstream padded;
   padded << "Patch_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  writer->SetFileName(padded.str());
-  writer->SetInput(this->Patch);
-  writer->Update();
+  WriteImage<ColorImageType>(this->Patch, padded.str());
   }
 
   {
-  VectorImageWriterType::Pointer writer = VectorImageWriterType::New();
   std::stringstream padded;
   padded << "Isophotes" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  writer->SetFileName(padded.str());
-  writer->SetInput(this->IsophoteImage);
-  writer->Update();
+  WriteImage<VectorImageType>(this->IsophoteImage, padded.str());
   }
 
   {
-  FloatImageWriterType::Pointer writer = FloatImageWriterType::New();
   std::stringstream padded;
   padded << "Confidence_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  writer->SetFileName(padded.str());
-  writer->SetInput(this->ConfidenceImage);
-  writer->Update();
+  WriteImage<FloatImageType>(this->ConfidenceImage, padded.str());
   }
 
   {
-  UnsignedCharImageWriterType::Pointer writer = UnsignedCharImageWriterType::New();
   std::stringstream padded;
   //padded << "Boundary_" << std::setfill('0') << std::setw(4) << iteration << ".jpg";
   padded << "Boundary_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  writer->SetFileName(padded.str());
-  writer->SetInput(this->BoundaryImage);
-  writer->Update();
+  WriteImage<UnsignedCharImageType>(this->BoundaryImage, padded.str());
   }
+
   {
-  VectorImageWriterType::Pointer writer = VectorImageWriterType::New();
   std::stringstream padded;
   padded << "BoundaryNormals_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  writer->SetFileName(padded.str());
-  writer->SetInput(this->BoundaryNormals);
-  writer->Update();
+  WriteImage<VectorImageType>(this->BoundaryNormals, padded.str());
   }
+
   {
-  FloatImageWriterType::Pointer writer = FloatImageWriterType::New();
   std::stringstream padded;
   padded << "Priorities_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  writer->SetFileName(padded.str());
-  writer->SetInput(this->PriorityImage);
-  writer->Update();
+  WriteImage<FloatImageType>(this->PriorityImage, padded.str());
   }
 
   {
-  FloatImageWriterType::Pointer writer = FloatImageWriterType::New();
   std::stringstream padded;
   padded << "Difference_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  writer->SetFileName(padded.str());
-  writer->SetInput(this->MeanDifferenceImage);
-  writer->Update();
+  WriteImage<FloatImageType>(this->MeanDifferenceImage, padded.str());
   }
 
   {
-  UnsignedCharImageWriterType::Pointer writer = UnsignedCharImageWriterType::New();
   std::stringstream padded;
   padded << "Mask_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  writer->SetFileName(padded.str());
-  writer->SetInput(this->Mask);
-  writer->Update();
+  WriteImage<UnsignedCharImageType>(this->Mask, padded.str());
   }
 
   {
-  ColorImageWriterType::Pointer writer = ColorImageWriterType::New();
   std::stringstream padded;
   padded << "FilledImage_" << std::setfill('0') << std::setw(4) << iteration << ".jpg";
-  writer->SetFileName(padded.str());
-  writer->SetInput(this->Image);
-  writer->Update();
+  WriteImage<ColorImageType>(this->Image, padded.str());
   }
 }
 
+#if 0
 void CriminisiInpainting::ComputeIsophotes()
 {
+  // - Convert the color input image to a grayscale image
+  // - Compute the gradient of the whole image
+  // - Expand the mask
+  // - For the newly expanded part of the mask, set the gradient to zero then compute the average of each valid neigbhorhood
+
+  WriteScaledImage<UnsignedCharImageType>(this->Mask, "originalMask.mhd");
+  // Convert the color input image to a grayscale image
   UnsignedCharImageType::Pointer grayscaleImage = UnsignedCharImageType::New();
   ColorToGrayscale(this->Image, grayscaleImage);
+  WriteImage<UnsignedCharImageType>(grayscaleImage, "greyscale.mhd");
+
 
   typedef itk::DiscreteGaussianImageFilter<
           UnsignedCharImageType, FloatImageType >  filterType;
@@ -567,13 +559,18 @@ void CriminisiInpainting::ComputeIsophotes()
   gaussianFilter->SetVariance(2);
   gaussianFilter->Update();
 
+  WriteImage<FloatImageType>(gaussianFilter->GetOutput(), "gaussianBlur.mhd");
+
+  // TInputImage, TOperatorValueType, TOutputValueType
   typedef itk::GradientImageFilter<
       FloatImageType, float, float>  GradientFilterType;
   GradientFilterType::Pointer gradientFilter = GradientFilterType::New();
   gradientFilter->SetInput(gaussianFilter->GetOutput());
   gradientFilter->Update();
 
-  // Rotate the gradient 90 degrees to obtain isophotes
+  WriteImage<VectorImageType>(gradientFilter->GetOutput(), "gradient.mhd");
+
+  // Rotate the gradient 90 degrees to obtain isophotes from gradient
   typedef itk::UnaryFunctorImageFilter<VectorImageType, VectorImageType,
                                   RotateVectors<
     VectorImageType::PixelType,
@@ -583,8 +580,284 @@ void CriminisiInpainting::ComputeIsophotes()
   rotateFilter->SetInput(gradientFilter->GetOutput());
   rotateFilter->Update();
 
-  this->IsophoteImage = rotateFilter->GetOutput();
+  WriteImage<VectorImageType>(rotateFilter->GetOutput(), "originalIsophotes.mhd");
 
+  // Expand the mask
+  typedef itk::FlatStructuringElement<2> StructuringElementType;
+  StructuringElementType::RadiusType radius;
+  radius.Fill(this->PatchRadius[0]);
+
+  StructuringElementType structuringElement = StructuringElementType::Box(radius);
+
+  /*
+  typedef itk::BinaryErodeImageFilter<UnsignedCharImageType, UnsignedCharImageType, StructuringElementType>
+          BinaryErodeImageFilterType;
+
+  BinaryErodeImageFilterType::Pointer erodeFilter
+          = BinaryErodeImageFilterType::New();
+  erodeFilter->SetInput(this->Mask);
+  erodeFilter->SetKernel(structuringElement);
+  erodeFilter->Update();
+  */
+
+  typedef itk::BinaryDilateImageFilter<UnsignedCharImageType, UnsignedCharImageType, StructuringElementType>
+          BinaryDilateImageFilterType;
+
+  BinaryDilateImageFilterType::Pointer expandMaskFilter
+          = BinaryDilateImageFilterType::New();
+  expandMaskFilter->SetInput(this->Mask);
+  expandMaskFilter->SetKernel(structuringElement);
+  expandMaskFilter->Update();
+
+  WriteScaledImage<UnsignedCharImageType>(expandMaskFilter->GetOutput(), "expandedMask.mhd");
+
+  // Mask the isophote image with the expanded version of the inpainting mask.
+  // That is, keep only the values outside of the expanded mask. To do this, we have to first invert the mask.
+
+  // Invert the mask
+  typedef itk::InvertIntensityImageFilter <UnsignedCharImageType>
+          InvertIntensityImageFilterType;
+
+  InvertIntensityImageFilterType::Pointer invertMaskFilter
+          = InvertIntensityImageFilterType::New();
+  invertMaskFilter->SetInput(expandMaskFilter->GetOutput());
+  invertMaskFilter->Update();
+
+  WriteScaledImage<UnsignedCharImageType>(invertMaskFilter->GetOutput(), "invertedExpandedMask.mhd");
+
+  // Keep only values outside the masked region
+  typedef itk::MaskImageFilter< VectorImageType, UnsignedCharImageType, VectorImageType > MaskFilterType;
+  MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+  maskFilter->SetInput1(rotateFilter->GetOutput());
+  maskFilter->SetInput2(invertMaskFilter->GetOutput());
+  maskFilter->Update();
+
+  this->IsophoteImage->Graft(maskFilter->GetOutput());
+  WriteImage<VectorImageType>(this->IsophoteImage, "validIsophotes.mhd");
+
+  // Subtract the original mask from the enlarged mask.
+  // Find the region which is masked with the dilated mask only (the difference image of the dilated mask and the original mask)
+  typedef itk::SubtractImageFilter <UnsignedCharImageType, UnsignedCharImageType>
+          SubtractImageFilterType;
+  //output = input1 - input2
+  SubtractImageFilterType::Pointer subtractFilter
+          = SubtractImageFilterType::New ();
+  subtractFilter->SetInput1(expandMaskFilter->GetOutput());
+  subtractFilter->SetInput2(this->Mask);
+  subtractFilter->Update();
+  WriteScaledImage<UnsignedCharImageType>(subtractFilter->GetOutput(), "subtractedMask.mhd");
+
+  // Add the boundary back to the mask (it was deleted during the subtraction)
+  typedef itk::AddImageFilter <UnsignedCharImageType, UnsignedCharImageType >
+          AddImageFilterType;
+  std::cout << "subtracted image size: " << subtractFilter->GetOutput()->GetLargestPossibleRegion().GetSize() << std::endl;
+  std::cout << "boundary image size: " << this->BoundaryImage->GetLargestPossibleRegion().GetSize() << std::endl;
+  AddImageFilterType::Pointer addFilter
+          = AddImageFilterType::New ();
+  addFilter->SetInput1(subtractFilter->GetOutput());
+  addFilter->SetInput2(this->BoundaryImage);
+  addFilter->Update();
+
+  WriteScaledImage<UnsignedCharImageType>(addFilter->GetOutput(), "finalMask.mhd");
+
+  // For this dilated-only mask region, compute the average of isophotes in the valid region in a neighborhood.
+  // (For pixels which have invalid neighbors, compute the average isophote of valid neighbors.)
+  itk::NeighborhoodIterator<VectorImageType> neighborhoodIterator(this->PatchRadius, this->IsophoteImage, this->IsophoteImage->GetLargestPossibleRegion() );
+  itk::ImageRegionConstIterator<UnsignedCharImageType> maskIterator(addFilter->GetOutput(), addFilter->GetOutput()->GetLargestPossibleRegion() );
+  neighborhoodIterator.GoToBegin();
+  maskIterator.GoToBegin();
+
+  // Create an empty vector to fill invalid (border) pixels
+  itk::CovariantVector<float, 2> emptyVector;
+  emptyVector[0] = 0;
+  emptyVector[1] = 0;
+
+  while(!neighborhoodIterator.IsAtEnd())
+    {
+    // Skip pixels which are not in the expanded mask region
+    if(!maskIterator.Get())
+      {
+      ++neighborhoodIterator;
+      ++maskIterator;
+      continue;
+      }
+
+    // Compute the average isophote for pixels in the expanded mask region and entirely inside the image.
+    if(neighborhoodIterator.InBounds())
+      {
+      neighborhoodIterator.SetCenterPixel(GetAverageIsophote(neighborhoodIterator.GetIndex()));
+      }
+    else
+      {
+      neighborhoodIterator.SetCenterPixel(emptyVector);
+      }
+    ++neighborhoodIterator;
+    ++maskIterator;
+    }
+
+  WriteImage<VectorImageType>(this->IsophoteImage, "finalIsophotes.mhd");
+}
+#endif
+
+void CriminisiInpainting::ComputeIsophotes()
+{
+  // - Convert the color input image to a grayscale image
+  // - Compute the gradient of the whole image
+  // - Expand the mask
+
+  WriteScaledImage<UnsignedCharImageType>(this->Mask, "originalMask.mhd");
+  // Convert the color input image to a grayscale image
+  UnsignedCharImageType::Pointer grayscaleImage = UnsignedCharImageType::New();
+  ColorToGrayscale(this->Image, grayscaleImage);
+  WriteImage<UnsignedCharImageType>(grayscaleImage, "greyscale.mhd");
+
+
+  typedef itk::DiscreteGaussianImageFilter<
+          UnsignedCharImageType, FloatImageType >  filterType;
+
+  // Create and setup a Gaussian filter
+  filterType::Pointer gaussianFilter = filterType::New();
+  gaussianFilter->SetInput(grayscaleImage);
+  gaussianFilter->SetVariance(2);
+  gaussianFilter->Update();
+
+  WriteImage<FloatImageType>(gaussianFilter->GetOutput(), "gaussianBlur.mhd");
+
+  // TInputImage, TOperatorValueType, TOutputValueType
+  typedef itk::GradientImageFilter<
+      FloatImageType, float, float>  GradientFilterType;
+  GradientFilterType::Pointer gradientFilter = GradientFilterType::New();
+  gradientFilter->SetInput(gaussianFilter->GetOutput());
+  gradientFilter->Update();
+
+  WriteImage<VectorImageType>(gradientFilter->GetOutput(), "gradient.mhd");
+
+  // Rotate the gradient 90 degrees to obtain isophotes from gradient
+  typedef itk::UnaryFunctorImageFilter<VectorImageType, VectorImageType,
+                                  RotateVectors<
+    VectorImageType::PixelType,
+    VectorImageType::PixelType> > FilterType;
+
+  FilterType::Pointer rotateFilter = FilterType::New();
+  rotateFilter->SetInput(gradientFilter->GetOutput());
+  rotateFilter->Update();
+
+  WriteImage<VectorImageType>(rotateFilter->GetOutput(), "originalIsophotes.mhd");
+
+  // Expand the mask
+  typedef itk::FlatStructuringElement<2> StructuringElementType;
+  StructuringElementType::RadiusType radius;
+  radius.Fill(this->PatchRadius[0]);
+
+  StructuringElementType structuringElement = StructuringElementType::Box(radius);
+
+  /*
+  typedef itk::BinaryErodeImageFilter<UnsignedCharImageType, UnsignedCharImageType, StructuringElementType>
+          BinaryErodeImageFilterType;
+
+  BinaryErodeImageFilterType::Pointer erodeFilter
+          = BinaryErodeImageFilterType::New();
+  erodeFilter->SetInput(this->Mask);
+  erodeFilter->SetKernel(structuringElement);
+  erodeFilter->Update();
+  */
+
+  typedef itk::BinaryDilateImageFilter<UnsignedCharImageType, UnsignedCharImageType, StructuringElementType>
+          BinaryDilateImageFilterType;
+
+  BinaryDilateImageFilterType::Pointer expandMaskFilter
+          = BinaryDilateImageFilterType::New();
+  expandMaskFilter->SetInput(this->Mask);
+  expandMaskFilter->SetKernel(structuringElement);
+  expandMaskFilter->Update();
+
+  WriteScaledImage<UnsignedCharImageType>(expandMaskFilter->GetOutput(), "expandedMask.mhd");
+
+  // Mask the isophote image with the expanded version of the inpainting mask.
+  // That is, keep only the values outside of the expanded mask. To do this, we have to first invert the mask.
+
+  // Invert the mask
+  typedef itk::InvertIntensityImageFilter <UnsignedCharImageType>
+          InvertIntensityImageFilterType;
+
+  InvertIntensityImageFilterType::Pointer invertMaskFilter
+          = InvertIntensityImageFilterType::New();
+  invertMaskFilter->SetInput(expandMaskFilter->GetOutput());
+  invertMaskFilter->Update();
+
+  WriteScaledImage<UnsignedCharImageType>(invertMaskFilter->GetOutput(), "invertedExpandedMask.mhd");
+
+  // Keep only values outside the masked region
+  typedef itk::MaskImageFilter< VectorImageType, UnsignedCharImageType, VectorImageType > MaskFilterType;
+  MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+  maskFilter->SetInput1(rotateFilter->GetOutput());
+  maskFilter->SetInput2(invertMaskFilter->GetOutput());
+  maskFilter->Update();
+
+  this->IsophoteImage->Graft(maskFilter->GetOutput());
+  WriteImage<VectorImageType>(this->IsophoteImage, "validIsophotes.mhd");
+
+  // Subtract the original mask from the enlarged mask.
+  // Find the region which is masked with the dilated mask only (the difference image of the dilated mask and the original mask)
+  typedef itk::SubtractImageFilter <UnsignedCharImageType, UnsignedCharImageType>
+          SubtractImageFilterType;
+  //output = input1 - input2
+  SubtractImageFilterType::Pointer subtractFilter
+          = SubtractImageFilterType::New ();
+  subtractFilter->SetInput1(expandMaskFilter->GetOutput());
+  subtractFilter->SetInput2(this->Mask);
+  subtractFilter->Update();
+  WriteScaledImage<UnsignedCharImageType>(subtractFilter->GetOutput(), "subtractedMask.mhd");
+
+  // Add the boundary back to the mask (it was deleted during the subtraction)
+  typedef itk::AddImageFilter <UnsignedCharImageType, UnsignedCharImageType >
+          AddImageFilterType;
+  std::cout << "subtracted image size: " << subtractFilter->GetOutput()->GetLargestPossibleRegion().GetSize() << std::endl;
+  std::cout << "boundary image size: " << this->BoundaryImage->GetLargestPossibleRegion().GetSize() << std::endl;
+  AddImageFilterType::Pointer addFilter
+          = AddImageFilterType::New ();
+  addFilter->SetInput1(subtractFilter->GetOutput());
+  addFilter->SetInput2(this->BoundaryImage);
+  addFilter->Update();
+
+  WriteScaledImage<UnsignedCharImageType>(addFilter->GetOutput(), "finalMask.mhd");
+
+  // For this dilated-only mask region, compute the average of isophotes in the valid region in a neighborhood.
+  // (For pixels which have invalid neighbors, compute the average isophote of valid neighbors.)
+  itk::NeighborhoodIterator<VectorImageType> neighborhoodIterator(this->PatchRadius, this->IsophoteImage, this->IsophoteImage->GetLargestPossibleRegion() );
+  itk::ImageRegionConstIterator<UnsignedCharImageType> maskIterator(addFilter->GetOutput(), addFilter->GetOutput()->GetLargestPossibleRegion() );
+  neighborhoodIterator.GoToBegin();
+  maskIterator.GoToBegin();
+
+  // Create an empty vector to fill invalid (border) pixels
+  itk::CovariantVector<float, 2> emptyVector;
+  emptyVector[0] = 0;
+  emptyVector[1] = 0;
+
+  while(!neighborhoodIterator.IsAtEnd())
+    {
+    // Skip pixels which are not in the expanded mask region
+    if(!maskIterator.Get())
+      {
+      ++neighborhoodIterator;
+      ++maskIterator;
+      continue;
+      }
+
+    // Compute the average isophote for pixels in the expanded mask region and entirely inside the image.
+    if(neighborhoodIterator.InBounds())
+      {
+      neighborhoodIterator.SetCenterPixel(GetAverageIsophote(neighborhoodIterator.GetIndex()));
+      }
+    else
+      {
+      neighborhoodIterator.SetCenterPixel(emptyVector);
+      }
+    ++neighborhoodIterator;
+    ++maskIterator;
+    }
+
+  WriteImage<VectorImageType>(this->IsophoteImage, "finalIsophotes.mhd");
 }
 
 bool CriminisiInpainting::HasMoreToInpaint(UnsignedCharImageType::Pointer mask)
@@ -606,6 +879,9 @@ bool CriminisiInpainting::HasMoreToInpaint(UnsignedCharImageType::Pointer mask)
 
 void CriminisiInpainting::FindBoundary()
 {
+  /*
+  // If we simply find the boundary of the mask, the isophotes will not be copied into these pixels because they are 1 pixel
+  // away from the filled region
   typedef itk::BinaryContourImageFilter <UnsignedCharImageType, UnsignedCharImageType >
           binaryContourImageFilterType;
 
@@ -615,20 +891,44 @@ void CriminisiInpainting::FindBoundary()
   binaryContourFilter->Update();
 
   this->BoundaryImage = binaryContourFilter->GetOutput();
+  */
+
+  // Instead, we have to invert the mask before finding the boundary
+
+  // Invert the mask
+  typedef itk::InvertIntensityImageFilter <UnsignedCharImageType>
+          InvertIntensityImageFilterType;
+
+  InvertIntensityImageFilterType::Pointer invertIntensityFilter
+          = InvertIntensityImageFilterType::New();
+  invertIntensityFilter->SetInput(this->Mask);
+  invertIntensityFilter->Update();
+
+  // Find the boundary
+  typedef itk::BinaryContourImageFilter <UnsignedCharImageType, UnsignedCharImageType >
+          binaryContourImageFilterType;
+
+  binaryContourImageFilterType::Pointer binaryContourFilter
+          = binaryContourImageFilterType::New ();
+  binaryContourFilter->SetInput(invertIntensityFilter->GetOutput());
+  binaryContourFilter->Update();
+
+  //this->BoundaryImage = binaryContourFilter->GetOutput();
+  this->BoundaryImage->Graft(binaryContourFilter->GetOutput());
 }
 
-void CriminisiInpainting::CreateBlankUnsignedCharPatch(UnsignedCharImageType::Pointer patch)
+template <class T>
+void CriminisiInpainting::CreateBlankPatch(typename T::Pointer patch)
 {
-  UnsignedCharImageType::IndexType start;
-  start[0] = 0;
-  start[1] = 0;
+  typename T::IndexType start;
+  start.Fill(0);
 
-  UnsignedCharImageType::RegionType region(start, this->GetUnsignedCharPatchSize());
+  typename T::RegionType region(start, this->GetPatchSize());
 
   patch->SetRegions(region);
   patch->Allocate();
 
-  itk::ImageRegionIterator<UnsignedCharImageType> imageIterator(patch, patch->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<T> imageIterator(patch, patch->GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
     {
@@ -637,39 +937,19 @@ void CriminisiInpainting::CreateBlankUnsignedCharPatch(UnsignedCharImageType::Po
     }
 }
 
-void CriminisiInpainting::CreateBlankFloatPatch(FloatImageType::Pointer patch)
+template <class T>
+void CriminisiInpainting::CreateConstantPatch(typename T::Pointer patch, unsigned char value)
 {
-  FloatImageType::IndexType start;
+  typename T::IndexType start;
   start[0] = 0;
   start[1] = 0;
 
-  FloatImageType::RegionType region(start, this->GetUnsignedCharPatchSize());
+  typename T::RegionType region(start, this->GetPatchSize());
 
   patch->SetRegions(region);
   patch->Allocate();
 
-  itk::ImageRegionIterator<FloatImageType> imageIterator(patch, patch->GetLargestPossibleRegion());
-
-  while(!imageIterator.IsAtEnd())
-    {
-    imageIterator.Set(0);
-    ++imageIterator;
-    }
-}
-
-
-void CriminisiInpainting::CreateConstantUnsignedCharPatch(UnsignedCharImageType::Pointer patch, unsigned char value)
-{
-  UnsignedCharImageType::IndexType start;
-  start[0] = 0;
-  start[1] = 0;
-
-  UnsignedCharImageType::RegionType region(start, this->GetUnsignedCharPatchSize());
-
-  patch->SetRegions(region);
-  patch->Allocate();
-
-  itk::ImageRegionIterator<UnsignedCharImageType> imageIterator(patch, patch->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<T> imageIterator(patch, patch->GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
     {
@@ -678,25 +958,6 @@ void CriminisiInpainting::CreateConstantUnsignedCharPatch(UnsignedCharImageType:
     }
 }
 
-void CriminisiInpainting::CreateConstantFloatPatch(FloatImageType::Pointer patch, float value)
-{
-  FloatImageType::IndexType start;
-  start[0] = 0;
-  start[1] = 0;
-
-  FloatImageType::RegionType region(start, this->GetUnsignedCharPatchSize());
-
-  patch->SetRegions(region);
-  patch->Allocate();
-
-  itk::ImageRegionIterator<FloatImageType> imageIterator(patch, patch->GetLargestPossibleRegion());
-
-  while(!imageIterator.IsAtEnd())
-    {
-    imageIterator.Set(value);
-    ++imageIterator;
-    }
-}
 
 void CriminisiInpainting::CreateConstantFloatBlockingPatch(FloatImageType::Pointer patch, float value)
 {
@@ -706,8 +967,8 @@ void CriminisiInpainting::CreateConstantFloatBlockingPatch(FloatImageType::Point
   start[1] = 0;
 
   FloatImageType::SizeType size;
-  size[0] = 3*this->GetUnsignedCharPatchSize()[0];
-  size[1] = 3*this->GetUnsignedCharPatchSize()[1];
+  size[0] = 3*this->GetPatchSize()[0];
+  size[1] = 3*this->GetPatchSize()[1];
 
   FloatImageType::RegionType region(start, size);
 
@@ -727,11 +988,11 @@ void CriminisiInpainting::UpdateMask(UnsignedCharImageType::IndexType pixel)
 {
   // Create a black patch
   UnsignedCharImageType::Pointer blackPatch = UnsignedCharImageType::New();
-  CreateBlankUnsignedCharPatch(blackPatch);
+  CreateBlankPatch<UnsignedCharImageType>(blackPatch);
 
   pixel[0] -= blackPatch->GetLargestPossibleRegion().GetSize()[0]/2;
   pixel[1] -= blackPatch->GetLargestPossibleRegion().GetSize()[1]/2;
-  
+
   // Paste it into the mask
   typedef itk::PasteImageFilter <UnsignedCharImageType, UnsignedCharImageType >
           PasteImageFilterType;
@@ -750,6 +1011,8 @@ void CriminisiInpainting::UpdateMask(UnsignedCharImageType::IndexType pixel)
 
 void CriminisiInpainting::ComputeBoundaryNormals()
 {
+  // Blur the mask, compute the gradient, then keep the normals only at the original mask boundary
+
   typedef itk::DiscreteGaussianImageFilter<
           UnsignedCharImageType, FloatImageType >  filterType;
 
@@ -765,16 +1028,36 @@ void CriminisiInpainting::ComputeBoundaryNormals()
   gradientFilter->SetInput(gaussianFilter->GetOutput());
   gradientFilter->Update();
 
+  // Only keep the normals at the boundary
   typedef itk::MaskImageFilter< VectorImageType, UnsignedCharImageType, VectorImageType > MaskFilterType;
   MaskFilterType::Pointer maskFilter = MaskFilterType::New();
   maskFilter->SetInput1(gradientFilter->GetOutput());
   maskFilter->SetInput2(this->BoundaryImage);
   maskFilter->Update();
 
-  this->BoundaryNormals = maskFilter->GetOutput();
+  //this->BoundaryNormals = maskFilter->GetOutput();
+  this->BoundaryNormals->Graft(maskFilter->GetOutput());
+
+  // Normalize
+  itk::ImageRegionIterator<VectorImageType> imageIterator(this->BoundaryNormals,this->BoundaryNormals->GetLargestPossibleRegion());
+  itk::ImageRegionConstIterator<UnsignedCharImageType> boundaryIterator(this->BoundaryImage,this->BoundaryImage->GetLargestPossibleRegion());
+  imageIterator.GoToBegin();
+  boundaryIterator.GoToBegin();
+
+  while(!imageIterator.IsAtEnd())
+    {
+    if(boundaryIterator.Get()) // The pixel is on the boundary
+      {
+      VectorImageType::PixelType p = imageIterator.Get();
+      p.Normalize();
+      imageIterator.Set(p);
+      }
+    ++imageIterator;
+    ++boundaryIterator;
+    }
 }
 
-FloatImageType::IndexType CriminisiInpainting::FindHighestPriority(FloatImageType::Pointer priorityImage)
+itk::Index<2> CriminisiInpainting::FindHighestPriority(FloatImageType::Pointer priorityImage)
 {
   typedef itk::MinimumMaximumImageCalculator <FloatImageType>
           ImageCalculatorFilterType;
@@ -787,8 +1070,14 @@ FloatImageType::IndexType CriminisiInpainting::FindHighestPriority(FloatImageTyp
   return imageCalculatorFilter->GetIndexOfMaximum();
 }
 
-ColorImageType::IndexType CriminisiInpainting::FindBestPatchMatch(ColorImageType::IndexType queryPixel)
+ColorImageType::IndexType CriminisiInpainting::FindBestPatchMatch(itk::Index<2> queryPixel)
 {
+  if(!this->Image->GetLargestPossibleRegion().IsInside(GetRegionAroundPixel(queryPixel)))
+    {
+    std::cerr << "queryPixel is too close to the border!" << std::endl;
+    exit(-1);
+    }
+
   this->MeanDifferenceImage->SetRegions(this->Image->GetLargestPossibleRegion());
   this->MeanDifferenceImage->Allocate();
 
@@ -807,7 +1096,7 @@ ColorImageType::IndexType CriminisiInpainting::FindBestPatchMatch(ColorImageType
   itk::ImageRegionConstIterator<UnsignedCharImageType> fixedMaskPatchIterator(this->Mask, GetRegionAroundPixel(queryPixel));
   fixedMaskPatchIterator.GoToBegin();
 
-  unsigned int numberOfPixelsInNeighborhood = this->GetUnsignedCharPatchSize()[0] * this->GetUnsignedCharPatchSize()[1];
+  unsigned int numberOfPixelsInNeighborhood = this->GetPatchSize()[0] * this->GetPatchSize()[1];
   // Loop over every pixel in the image with a neighborhood
   while(!imageIterator.IsAtEnd())
     {
@@ -876,15 +1165,10 @@ ColorImageType::IndexType CriminisiInpainting::FindBestPatchMatch(ColorImageType
   // Paste a blank patch into the correlation image so that we don't match a region within the current patch or anywhere near it
   FloatImageType::Pointer blankPatch = FloatImageType::New();
   CreateConstantFloatBlockingPatch(blankPatch, highestValue);
-  CopyPatchIntoImage(blankPatch, this->MeanDifferenceImage, queryPixel);
+  CopyPatchIntoImage<FloatImageType>(blankPatch, this->MeanDifferenceImage, queryPixel);
 
   ReplaceValue(this->MeanDifferenceImage, -1, highestValue);
-    {
-    FloatImageWriterType::Pointer writer = FloatImageWriterType::New();
-    writer->SetFileName("BlankedCorrelation.mhd");
-    writer->SetInput(this->MeanDifferenceImage);
-    writer->Update();
-    }
+  WriteImage<FloatImageType>(this->MeanDifferenceImage, "BlankedCorrelation.mhd");
 
   imageCalculatorFilter->SetImage(this->MeanDifferenceImage);
   imageCalculatorFilter->Compute();
@@ -894,17 +1178,17 @@ ColorImageType::IndexType CriminisiInpainting::FindBestPatchMatch(ColorImageType
   return bestMatchIndex;
 }
 
-void CriminisiInpainting::CopyPatchIntoImage(UnsignedCharImageType::Pointer patch, UnsignedCharImageType::Pointer &image, UnsignedCharImageType::IndexType position)
+template <class T>
+void CriminisiInpainting::CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer &image, itk::Index<2> position)
 {
-  typedef itk::PasteImageFilter <UnsignedCharImageType, UnsignedCharImageType >
-          PasteImageFilterType;
+  typedef itk::PasteImageFilter<T, T> PasteImageFilterType;
 
   // We have passed the center of the patch, but the paste filter wants the lower left corner of the patch
   position[0] -= patch->GetLargestPossibleRegion().GetSize()[0]/2;
   position[1] -= patch->GetLargestPossibleRegion().GetSize()[1]/2;
 
-  PasteImageFilterType::Pointer pasteFilter
-          = PasteImageFilterType::New ();
+  typename PasteImageFilterType::Pointer pasteFilter
+          = PasteImageFilterType::New();
   pasteFilter->SetInput(0, image);
   pasteFilter->SetInput(1, patch);
   pasteFilter->SetSourceRegion(patch->GetLargestPossibleRegion());
@@ -915,104 +1199,25 @@ void CriminisiInpainting::CopyPatchIntoImage(UnsignedCharImageType::Pointer patc
   image = pasteFilter->GetOutput();
 }
 
-
-void CriminisiInpainting::CopyPatchIntoImage(ColorImageType::Pointer patch, ColorImageType::Pointer &image, ColorImageType::IndexType position)
+template <class T>
+void CriminisiInpainting::CopyPatchIntoTargetRegion(typename T::Pointer patch, typename T::Pointer image, itk::Index<2> position)
 {
-  typedef itk::PasteImageFilter <ColorImageType, ColorImageType >
-          PasteImageFilterType;
+  itk::ImageRegionConstIterator<T> patchIterator(patch,patch->GetLargestPossibleRegion());
+  itk::ImageRegionConstIterator<UnsignedCharImageType> maskIterator(this->Mask,GetRegionAroundPixel(position));
+  itk::ImageRegionIterator<T> imageIterator(image, GetRegionAroundPixel(position));
 
-  // We have passed the center of the patch, but the paste filter wants the lower left corner of the patch
-  position[0] -= patch->GetLargestPossibleRegion().GetSize()[0]/2;
-  position[1] -= patch->GetLargestPossibleRegion().GetSize()[1]/2;
-
-  PasteImageFilterType::Pointer pasteFilter
-          = PasteImageFilterType::New ();
-  pasteFilter->SetInput(0, image);
-  pasteFilter->SetInput(1, patch);
-  pasteFilter->SetSourceRegion(patch->GetLargestPossibleRegion());
-  pasteFilter->SetDestinationIndex(position);
-  pasteFilter->InPlaceOn();
-  pasteFilter->Update();
-
-  image = pasteFilter->GetOutput();
-}
-
-void CriminisiInpainting::CopyPatchIntoImage(VectorImageType::Pointer patch, VectorImageType::Pointer &image, VectorImageType::IndexType position)
-{
-  typedef itk::PasteImageFilter <VectorImageType, VectorImageType >
-          PasteImageFilterType;
-
-  // We have passed the center of the patch, but the paste filter wants the lower left corner of the patch
-  position[0] -= patch->GetLargestPossibleRegion().GetSize()[0]/2;
-  position[1] -= patch->GetLargestPossibleRegion().GetSize()[1]/2;
-
-  PasteImageFilterType::Pointer pasteFilter
-          = PasteImageFilterType::New ();
-  pasteFilter->SetInput(0, image);
-  pasteFilter->SetInput(1, patch);
-  pasteFilter->SetSourceRegion(patch->GetLargestPossibleRegion());
-  pasteFilter->SetDestinationIndex(position);
-  pasteFilter->InPlaceOn();
-  pasteFilter->Update();
-
-  image = pasteFilter->GetOutput();
-}
-
-void CriminisiInpainting::CopyPatchIntoImage(FloatImageType::Pointer patch, FloatImageType::Pointer &image, FloatImageType::IndexType position)
-{
-  typedef itk::PasteImageFilter <FloatImageType, FloatImageType >
-          PasteImageFilterType;
-
-  // We have passed the center of the patch, but the paste filter wants the lower left corner of the patch
-  position[0] -= patch->GetLargestPossibleRegion().GetSize()[0]/2;
-  position[1] -= patch->GetLargestPossibleRegion().GetSize()[1]/2;
-
-  PasteImageFilterType::Pointer pasteFilter
-          = PasteImageFilterType::New ();
-  pasteFilter->SetInput(0, image);
-  pasteFilter->SetInput(1, patch);
-  pasteFilter->SetSourceRegion(patch->GetLargestPossibleRegion());
-  pasteFilter->SetDestinationIndex(position);
-  pasteFilter->InPlaceOn();
-  pasteFilter->Update();
-
-  image = pasteFilter->GetOutput();
-}
-
-void CriminisiInpainting::WriteValidIsophoteImage()
-{
-  VectorImageType::Pointer validIsophotes = VectorImageType::New();
-  validIsophotes->Graft(this->IsophoteImage);
-
-  itk::ImageRegionIterator<VectorImageType> iterator(validIsophotes,validIsophotes->GetLargestPossibleRegion());
-
-  itk::NeighborhoodIterator<VectorImageType> neighborhoodIterator(this->PatchRadius, validIsophotes, validIsophotes->GetLargestPossibleRegion() );
-
-  itk::CovariantVector<float, 2> emptyVector;
-  emptyVector[0] = 0;
-  emptyVector[1] = 0;
-  
-  while(!iterator.IsAtEnd())
+  while(!patchIterator.IsAtEnd())
     {
-    //std::cout << "iterator: " << iterator.GetIndex() << std::endl;
-    //std::cout << "neighborhood iterator: " << neighborhoodIterator.GetIndex() << std::endl;
-    if(neighborhoodIterator.InBounds())
+    if(maskIterator.Get()) // we are in the target region
       {
-      iterator.Set(GetAverageIsophote(iterator.GetIndex()));
+      imageIterator.Set(patchIterator.Get());
       }
-    else
-      {
-      iterator.Set(emptyVector);
-      }
-    ++iterator;
-    ++neighborhoodIterator;
+    ++imageIterator;
+    ++maskIterator;
+    ++patchIterator;
     }
-  
-  VectorImageWriterType::Pointer writer = VectorImageWriterType::New();
-  writer->SetFileName("ValidIsophotes.mhd");
-  writer->SetInput(validIsophotes);
-  writer->Update();
 }
+
 
 void CriminisiInpainting::ComputeAllPriorities()
 {
@@ -1026,10 +1231,12 @@ void CriminisiInpainting::ComputeAllPriorities()
   // The main loop is over the boundary image. We only want to compute priorities at boundary pixels
   while(!boundaryIterator.IsAtEnd())
     {
-    // If the pixel is not on the boundary, skip it and set its priority to zero.
+    // If the pixel is not on the boundary, skip it and set its priority to -1.
+    // -1 is used instead of 0 because if the priorities on the boundary get to 0, we still want to choose a boundary
+    // point rather than a random image point.
     if(boundaryIterator.Get() == 0)
       {
-      priorityIterator.Set(0);
+      priorityIterator.Set(-1);
       ++boundaryIterator;
       ++priorityIterator;
       continue;
@@ -1049,7 +1256,7 @@ float CriminisiInpainting::ComputePriority(UnsignedCharImageType::IndexType quer
   double confidence = ComputeConfidenceTerm(queryPixel);
   double data = ComputeDataTerm(queryPixel);
 
-  return confidence + data;
+  return confidence * data;
 }
 
 
@@ -1057,7 +1264,8 @@ float CriminisiInpainting::ComputeConfidenceTerm(UnsignedCharImageType::IndexTyp
 {
   itk::ImageRegionConstIterator<UnsignedCharImageType> maskIterator(this->Mask, GetRegionAroundPixel(queryPixel));
   itk::ImageRegionConstIterator<FloatImageType> confidenceIterator(this->ConfidenceImage, GetRegionAroundPixel(queryPixel));
-
+  maskIterator.GoToBegin();
+  confidenceIterator.GoToBegin();
   // confidence = sum of the confidences of patch pixels in the source region / area of the patch
 
   unsigned int numberOfPixels = GetNumberOfPixelsInPatch();
@@ -1081,7 +1289,6 @@ float CriminisiInpainting::ComputeConfidenceTerm(UnsignedCharImageType::IndexTyp
 float CriminisiInpainting::ComputeDataTerm(UnsignedCharImageType::IndexType queryPixel)
 {
   itk::CovariantVector<float, 2> isophote = this->IsophoteImage->GetPixel(queryPixel);
-  //itk::CovariantVector<float, 2> isophote = GetAverageIsophote(queryPixel);
   itk::CovariantVector<float, 2> boundaryNormal = this->BoundaryNormals->GetPixel(queryPixel);
 
   double alpha = 255; // for grey scale images
@@ -1127,11 +1334,11 @@ itk::CovariantVector<float, 2> CriminisiInpainting::GetAverageIsophote(UnsignedC
     v[0] = 0; v[1] = 0;
     return v;
     }
-    
+
   itk::ImageRegionConstIterator<UnsignedCharImageType> iterator(this->Mask,GetRegionAroundPixel(queryPixel));
 
   std::vector<itk::CovariantVector<float, 2> > vectors;
-  
+
   while(!iterator.IsAtEnd())
     {
     if(IsValidPatch(iterator.GetIndex(), 3))
@@ -1150,7 +1357,7 @@ itk::CovariantVector<float, 2> CriminisiInpainting::GetAverageIsophote(UnsignedC
     {
     return averageVector;
     }
-    
+
   for(unsigned int i = 0; i < vectors.size(); i++)
     {
     averageVector[0] += vectors[i][0];
@@ -1164,7 +1371,7 @@ itk::CovariantVector<float, 2> CriminisiInpainting::GetAverageIsophote(UnsignedC
 
 UnsignedCharImageType::RegionType CriminisiInpainting::GetRegionAroundPixel(UnsignedCharImageType::IndexType pixel)
 {
-  return GetRegionAroundPixel(pixel, this->GetUnsignedCharPatchSize()[0]/2);
+  return GetRegionAroundPixel(pixel, this->GetPatchSize()[0]/2);
 }
 
 UnsignedCharImageType::RegionType CriminisiInpainting::GetRegionAroundPixel(UnsignedCharImageType::IndexType pixel, unsigned int radius)
@@ -1182,21 +1389,9 @@ UnsignedCharImageType::RegionType CriminisiInpainting::GetRegionAroundPixel(Unsi
   return region;
 }
 
-ColorImageType::RegionType CriminisiInpainting::GetColorRegionAroundPixel(ColorImageType::IndexType pixel)
-{
-  pixel[0] -= this->GetColorPatchSize()[0]/2;
-  pixel[1] -= this->GetColorPatchSize()[1]/2;
-
-  ColorImageType::RegionType region;
-  region.SetIndex(pixel);
-  region.SetSize(this->GetColorPatchSize());
-
-  return region;
-}
-
 void CriminisiInpainting::UpdateConfidenceImage(FloatImageType::IndexType sourcePixel, FloatImageType::IndexType targetPixel)
 {
-  // loop over all pixels in the target region which were just filled and update their
+  // Loop over all pixels in the target region which were just filled and update their
   itk::ImageRegionIterator<FloatImageType> confidenceIterator(this->ConfidenceImage, GetRegionAroundPixel(targetPixel));
   itk::ImageRegionIterator<UnsignedCharImageType> maskIterator(this->Mask, GetRegionAroundPixel(targetPixel));
   confidenceIterator.GoToBegin();
@@ -1204,7 +1399,7 @@ void CriminisiInpainting::UpdateConfidenceImage(FloatImageType::IndexType source
 
   while(!maskIterator.IsAtEnd())
     {
-    if(maskIterator.Get()) // this was a target pixel, compute its confidence
+    if(maskIterator.Get()) // This was a target pixel, compute its confidence
       {
       confidenceIterator.Set(ComputeConfidenceTerm(maskIterator.GetIndex()));
       }
@@ -1213,9 +1408,9 @@ void CriminisiInpainting::UpdateConfidenceImage(FloatImageType::IndexType source
     }
 }
 
-void CriminisiInpainting::UpdateIsophoteImage(FloatImageType::IndexType sourcePixel, FloatImageType::IndexType targetPixel)
+void CriminisiInpainting::UpdateIsophoteImage(FloatImageType::IndexType sourcePixel, itk::Index<2> targetPixel)
 {
-  // Copy confidences from best patch
+  // Copy isophotes from best patch
   typedef itk::RegionOfInterestImageFilter< VectorImageType,
                                             VectorImageType > ExtractFilterType;
 
@@ -1247,7 +1442,7 @@ void CriminisiInpainting::UpdateIsophoteImage(FloatImageType::IndexType sourcePi
     ++maskIterator;
   }
 
-  CopyPatchIntoImage(image, this->IsophoteImage, targetPixel);
+  CopyPatchIntoTargetRegion<VectorImageType>(image, this->IsophoteImage, targetPixel);
 }
 
 void CriminisiInpainting::ColorToGrayscale(ColorImageType::Pointer colorImage, UnsignedCharImageType::Pointer grayscaleImage)
@@ -1267,7 +1462,6 @@ void CriminisiInpainting::ColorToGrayscale(ColorImageType::Pointer colorImage, U
 
   while(!colorImageIterator.IsAtEnd())
   {
-
     grayscaleImageIterator.Set(colorImageIterator.Get().GetNorm()*(255./largestNorm));
 
     ++colorImageIterator;
@@ -1277,7 +1471,7 @@ void CriminisiInpainting::ColorToGrayscale(ColorImageType::Pointer colorImage, U
 
 unsigned int CriminisiInpainting::GetNumberOfPixelsInPatch()
 {
-  return this->GetUnsignedCharPatchSize()[0]*this->GetUnsignedCharPatchSize()[1];
+  return this->GetPatchSize()[0]*this->GetPatchSize()[1];
 }
 
 void CriminisiInpainting::CreateBorderMask(FloatImageType::Pointer image)
@@ -1312,19 +1506,9 @@ void CriminisiInpainting::ReplaceValue(FloatImageType::Pointer image, float oldV
     }
 }
 
-UnsignedCharImageType::SizeType CriminisiInpainting::GetUnsignedCharPatchSize()
+itk::Size<2> CriminisiInpainting::GetPatchSize()
 {
-  UnsignedCharImageType::SizeType patchSize;
-
-  patchSize[0] = (this->PatchRadius[0]*2)+1;
-  patchSize[1] = (this->PatchRadius[1]*2)+1;
-
-  return patchSize;
-}
-
-ColorImageType::SizeType CriminisiInpainting::GetColorPatchSize()
-{
-  ColorImageType::SizeType patchSize;
+  itk::Size<2> patchSize;
 
   patchSize[0] = (this->PatchRadius[0]*2)+1;
   patchSize[1] = (this->PatchRadius[1]*2)+1;
@@ -1347,4 +1531,30 @@ void CriminisiInpainting::DebugTests()
       }
     ++patchIterator;
     }
+}
+
+template <class T>
+void CriminisiInpainting::WriteScaledImage(typename T::Pointer image, std::string filename)
+{
+  typedef itk::RescaleIntensityImageFilter<T, UnsignedCharImageType> RescaleFilterType; // expected ';' before rescaleFilter
+
+  typename RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
+  rescaleFilter->SetInput(image);
+  rescaleFilter->SetOutputMinimum(0);
+  rescaleFilter->SetOutputMaximum(255);
+  rescaleFilter->Update();
+
+  typename itk::ImageFileWriter<T>::Pointer writer = itk::ImageFileWriter<T>::New();
+  writer->SetFileName(filename);
+  writer->SetInput(image);
+  writer->Update();
+}
+
+template <class T>
+void CriminisiInpainting::WriteImage(typename T::Pointer image, std::string filename)
+{
+  typename itk::ImageFileWriter<T>::Pointer writer = itk::ImageFileWriter<T>::New();
+  writer->SetFileName(filename);
+  writer->SetInput(image);
+  writer->Update();
 }
