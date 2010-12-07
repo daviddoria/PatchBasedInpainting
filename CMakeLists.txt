@@ -9,5 +9,5 @@ INCLUDE(${VTK_USE_FILE})
 FIND_PACKAGE(ITK REQUIRED)
 INCLUDE(${ITK_USE_FILE})
 
-ADD_EXECUTABLE(CriminisiInpainting CriminisiInpainting.cpp)
+ADD_EXECUTABLE(CriminisiInpainting Example.cpp CriminisiInpainting.cpp CustomStyle.cpp)
 TARGET_LINK_LIBRARIES(CriminisiInpainting vtkHybrid ITKBasicFilters ITKCommon ITKIO)
