@@ -15,36 +15,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CustomStyle_H
-#define CustomStyle_H
+#ifndef Types_H
+#define Types_H
 
-#include <vtkInteractorStyleImage.h>
-#include <vtkObjectFactory.h>
-#include <vtkSmartPointer.h>
+#include "itkImage.h"
+#include "itkCovariantVector.h"
 
-class vtkRenderer;
-class vtkImageData;
-class vtkImageActor;
-
-class CustomStyle : public vtkInteractorStyleImage
-{
-  public:
-    static CustomStyle* New();
-    vtkTypeMacro(CustomStyle, vtkInteractorStyleImage);
-
-    CustomStyle();
-
-    void CallbackFunction(vtkObject* caller,
-                    long unsigned int eventId,
-                    void* callData );
-
-    void OnKeyPress();
-
-  vtkRenderer* RightRenderer;
-  vtkImageData* Image;
-  vtkImageData* Mask;
-  vtkSmartPointer<vtkImageActor> InpaintedActor;
-
-};
+typedef itk::Image<float,2> FloatImageType;
+typedef itk::Image<unsigned char,2> UnsignedCharImageType;
+typedef itk::Image<itk::CovariantVector<unsigned char, 3> ,2> ColorImageType;
 
 #endif

@@ -1,3 +1,20 @@
+/*
+Copyright (C) 2010 David Doria, daviddoria@gmail.com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #ifndef CriminisiInpainting_h
 #define CriminisiInpainting_h
 
@@ -33,13 +50,11 @@
 typedef itk::Image< itk::CovariantVector<float, 2>, 2 > VectorImageType;
 typedef itk::Image< unsigned char, 2 > UnsignedCharImageType;
 typedef itk::Image< itk::CovariantVector<unsigned char, 3>, 2 > ColorImageType;
-typedef itk::Image< itk::CovariantVector<int, 3>, 2 > CIELABImageType;
 typedef itk::Image< float, 2 > FloatImageType;
 
 typedef itk::ConstantBoundaryCondition<FloatImageType>  FloatBoundaryConditionType;
 typedef itk::ConstantBoundaryCondition<UnsignedCharImageType>  UnsignedCharBoundaryConditionType;
 typedef itk::ConstantBoundaryCondition<ColorImageType>  ColorBoundaryConditionType;
-typedef itk::ConstantBoundaryCondition<CIELABImageType>  CIELABBoundaryConditionType;
 
 typedef itk::ConstNeighborhoodIterator<UnsignedCharImageType, UnsignedCharBoundaryConditionType>::NeighborhoodType UnsignedCharNeighborhoodType;
 typedef itk::ConstNeighborhoodIterator<FloatImageType, UnsignedCharBoundaryConditionType>::NeighborhoodType FloatNeighborhoodType;
@@ -56,11 +71,12 @@ class CriminisiInpainting
     CriminisiInpainting();
 
     void Inpaint();
-    void SetImage(ColorImageType::Pointer image){this->Image->Graft(image);}
-    void SetInputMask(UnsignedCharImageType::Pointer mask){this->InputMask->Graft(mask);}
+    void SetImage(ColorImageType::Pointer image);
+    void SetInputMask(UnsignedCharImageType::Pointer mask);
 
     // Debugging
     void SetWriteIntermediateImages(bool);
+
   private:
     // Debugging
     bool WriteIntermediateImages;
@@ -82,20 +98,19 @@ class CriminisiInpainting
     FloatImageType::Pointer PriorityImage;
 
     // Functions
-    template <class T>
-    void CopyPatchIntoTargetRegion(typename T::Pointer patch, typename T::Pointer image, itk::Index<2> position);
-    itk::CovariantVector<int ,3> RGBtoCIELAB(itk::CovariantVector<unsigned char, 3> rgb);
-    void CreateCIELABImage();
 
+    void Initialize();
+    
     // Debugging
     void DebugTests();
-    void WriteDebugImages(itk::Index<2> pixelToFill, unsigned int iteration);
+    void DebugWriteAllImages(itk::Index<2> pixelToFill, unsigned int iteration);
+    void DebugWritePatchToFill(itk::Index<2> pixelToFill, unsigned int iteration);
+    void DebugWritePixelToFill(itk::Index<2> pixelToFill, unsigned int iteration);
+    void DebugWritePatchToFillLocation(itk::Index<2> pixelToFill, unsigned int iteration);
 
     itk::CovariantVector<float, 2> GetAverageIsophote(itk::Index<2> queryPixel);
     bool IsValidPatch(itk::Index<2> queryPixel, unsigned int radius);
 
-    void ReplaceValue(FloatImageType::Pointer iamge, float oldValue, float newValue);
-    void CreateBorderMask(FloatImageType::Pointer mask);
     void ColorToGrayscale(ColorImageType::Pointer colorImage, UnsignedCharImageType::Pointer grayscaleImage);
 
     unsigned int GetNumberOfPixelsInPatch();
@@ -119,32 +134,13 @@ class CriminisiInpainting
     float ComputeConfidenceTerm(itk::Index<2> queryPixel);
     float ComputeDataTerm(itk::Index<2> queryPixel);
 
-    template <class T>
-    void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer &image, itk::Index<2> position);
-
     itk::Index<2> FindHighestPriority(FloatImageType::Pointer priorityImage);
 
-    itk::Index<2> FindBestPatchMatch(itk::Index<2> pixel);
-
     void UpdateMask(itk::Index<2> pixel);
-
-    // General operations
-    itk::ImageRegion<2> GetRegionAroundPixel(itk::Index<2> pixel);
-    itk::ImageRegion<2> GetRegionAroundPixel(itk::Index<2> pixel, unsigned int radius);
-
-    template <class T>
-    void CreateBlankPatch(typename T::Pointer patch);
-
-    template <class T>
-    void CreateConstantPatch(typename T::Pointer patch, unsigned char value);
-
-    void CreateConstantFloatBlockingPatch(FloatImageType::Pointer patch, float value);
 
     template <class T>
     void WriteScaledImage(typename T::Pointer image, std::string filename);
 
-    template <class T>
-    void WriteImage(typename T::Pointer image, std::string filename);
 };
 
 #endif

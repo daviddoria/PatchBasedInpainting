@@ -1,3 +1,20 @@
+/*
+Copyright (C) 2010 David Doria, daviddoria@gmail.com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "CriminisiInpainting.h"
 
 int main(int argc, char *argv[])
@@ -20,23 +37,10 @@ int main(int argc, char *argv[])
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 
-  typedef itk::BinaryThresholdImageFilter <UnsignedCharImageType, UnsignedCharImageType>
-          BinaryThresholdImageFilterType;
-
-  BinaryThresholdImageFilterType::Pointer thresholdFilter
-          = BinaryThresholdImageFilterType::New();
-  thresholdFilter->SetInput(maskReader->GetOutput());
-  thresholdFilter->SetLowerThreshold(122);
-  thresholdFilter->SetUpperThreshold(255);
-  thresholdFilter->SetInsideValue(255);
-  thresholdFilter->SetOutsideValue(0);
-  thresholdFilter->InPlaceOn();
-  thresholdFilter->Update();
-
   CriminisiInpainting Inpainting;
   Inpainting.SetWriteIntermediateImages(true);
   Inpainting.SetImage(imageReader->GetOutput());
-  Inpainting.SetInputMask(thresholdFilter->GetOutput());
+  Inpainting.SetInputMask(maskReader->GetOutput());
   Inpainting.Inpaint();
 
   /*
