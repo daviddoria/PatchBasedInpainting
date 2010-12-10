@@ -1,19 +1,20 @@
-/*
-Copyright (C) 2010 David Doria, daviddoria@gmail.com
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/*=========================================================================
+ *
+ *  Copyright David Doria 2010 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
 
 #ifndef HELPERS_H
 #define HELPERS_H
@@ -24,9 +25,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "itkImageFileWriter.h"
 #include "itkPasteImageFilter.h"
 #include "itkMinimumMaximumImageCalculator.h"
-#include "itkPasteImageFilter.h"
+#include "itkRegionOfInterestImageFilter.h"
+#include "itkRescaleIntensityImageFilter.h"
 
 ///////// Declarations ///////////
+template <class T>
+void WriteScaledImage(typename T::Pointer image, std::string filename);
+
+template <class T>
+void CopyPatch(typename T::Pointer sourceImage, typename T::Pointer targetImage, itk::Index<2> sourcePosition, itk::Index<2> targetPosition, unsigned int radius);
+
 template <class T>
 void CreateConstantPatch(typename T::Pointer patch, typename T::PixelType value, unsigned int radius);
 
@@ -42,9 +50,6 @@ void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, it
 template <class T>
 void CreateBlankPatch(typename T::Pointer patch, unsigned int radius);
 
-template <>
-void CreateBlankPatch<UnsignedCharImageType>(UnsignedCharImageType::Pointer patch, unsigned int radius);
-
 template <class T>
 float MaxValue(typename T::Pointer image);
 
@@ -57,11 +62,8 @@ float MinValue(typename T::Pointer image);
 template <class T>
 itk::Index<2> MinValueLocation(typename T::Pointer image);
 
-template <class T>
-void CopyPatchIntoTargetRegion(typename T::Pointer patch, typename T::Pointer image, itk::Index<2> position);
-
 // Non template function declarations
-itk::ImageRegion<2> GetRegionAroundPixel(itk::Index<2> pixel, unsigned int radius);
+itk::ImageRegion<2> GetRegionInRadiusAroundPixel(itk::Index<2> pixel, unsigned int radius);
 
 ///////// Definitions ///////////
 template<typename T>
@@ -94,7 +96,7 @@ void WriteImage(typename T::Pointer image, std::string filename)
 template <class T>
 void CreateBlankPatch(typename T::Pointer patch, unsigned int radius)
 {
-  CreateConstantPatch(patch, typename T::PixelType::Zero(), radius);
+  CreateConstantPatch<T>(patch, itk::NumericTraits< typename T::PixelType >::Zero, radius);
 }
 
 template <class T>
@@ -179,17 +181,24 @@ itk::Index<2> MinValueLocation(typename T::Pointer image)
 template <class T>
 void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, UnsignedCharImageType::Pointer mask, itk::Index<2> position)
 {
+  // This function copies 'patch' into 'image' centered at 'position' only where the 'mask' is non-zero
+
   // 'Mask' must be the same size as 'image'
   if(mask->GetLargestPossibleRegion().GetSize()[0] != image->GetLargestPossibleRegion().GetSize()[0])
     {
     std::cerr << "mask and image must be the same size!" << std::endl;
     exit(-1);
     }
-    
-  // This function copies 'patch' into 'image' centered at 'position' only where the 'mask' is non-zero
+
+  // The PasteFilter expects the lower left corner of the destination position, but we have passed the center pixel.
+  position[0] -= patch->GetLargestPossibleRegion().GetSize()[0]/2;
+  position[1] -= patch->GetLargestPossibleRegion().GetSize()[1]/2;
+
+  itk::ImageRegion<2> region = GetRegionInRadiusAroundPixel(position, patch->GetLargestPossibleRegion().GetSize()[0]/2);
+
   itk::ImageRegionConstIterator<T> patchIterator(patch,patch->GetLargestPossibleRegion());
-  itk::ImageRegionConstIterator<UnsignedCharImageType> maskIterator(mask,GetRegionAroundPixel(position, patch->GetLargestPossibleRegion().GetSize()[0]));
-  itk::ImageRegionIterator<T> imageIterator(image, GetRegionAroundPixel(position, patch->GetLargestPossibleRegion().GetSize()[0]));
+  itk::ImageRegionConstIterator<UnsignedCharImageType> maskIterator(mask,region);
+  itk::ImageRegionIterator<T> imageIterator(image, region);
 
   while(!patchIterator.IsAtEnd())
     {
@@ -212,7 +221,7 @@ void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, it
   // The PasteFilter expects the lower left corner of the destination position, but we have passed the center pixel.
   position[0] -= patch->GetLargestPossibleRegion().GetSize()[0]/2;
   position[1] -= patch->GetLargestPossibleRegion().GetSize()[1]/2;
-  
+
   typedef itk::PasteImageFilter <T, T> PasteImageFilterType;
 
   typename PasteImageFilterType::Pointer pasteFilter = PasteImageFilterType::New();
@@ -222,8 +231,41 @@ void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, it
   pasteFilter->SetDestinationIndex(position);
   pasteFilter->InPlaceOn();
   pasteFilter->Update();
-  
+
   image->Graft(pasteFilter->GetOutput());
+}
+
+template <class T>
+void CopyPatch(typename T::Pointer sourceImage, typename T::Pointer targetImage,
+               itk::Index<2> sourcePosition, itk::Index<2> targetPosition, unsigned int radius)
+{
+  // Copy a patch of radius 'radius' centered at 'sourcePosition' from 'sourceImage' to 'targetImage' centered at 'targetPosition'
+  typedef itk::RegionOfInterestImageFilter<T,T> ExtractFilterType;
+
+  typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+  extractFilter->SetRegionOfInterest(GetRegionInRadiusAroundPixel(sourcePosition, radius));
+  extractFilter->SetInput(sourceImage);
+  extractFilter->Update();
+
+  CopyPatchIntoImage<T>(extractFilter->GetOutput(), targetImage, targetPosition);
+}
+
+
+template <class T>
+void WriteScaledImage(typename T::Pointer image, std::string filename)
+{
+  typedef itk::RescaleIntensityImageFilter<T, UnsignedCharImageType> RescaleFilterType; // expected ';' before rescaleFilter
+
+  typename RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
+  rescaleFilter->SetInput(image);
+  rescaleFilter->SetOutputMinimum(0);
+  rescaleFilter->SetOutputMaximum(255);
+  rescaleFilter->Update();
+
+  typename itk::ImageFileWriter<T>::Pointer writer = itk::ImageFileWriter<T>::New();
+  writer->SetFileName(filename);
+  writer->SetInput(image);
+  writer->Update();
 }
 
 #endif

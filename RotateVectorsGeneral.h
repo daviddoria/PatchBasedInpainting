@@ -39,13 +39,22 @@ public:
     }
   inline TOutput operator()( const TInput & A ) const
     {
-      // Rotate the vector by 90 degrees.
-      TInput output;
+      typedef itk::Vector<double, 2> VectorType;
+      VectorType v;
+      v[0] = A[0];
+      v[1] = A[1];
 
-      output[0] = -A[1];
-      output[1] = A[0];
+      typedef itk::Rigid2DTransform< float > TransformType;
 
-      return output;
+      TransformType::Pointer transform = TransformType::New();
+      transform->SetAngle(M_PI/2.0);
+
+      VectorType outputV = transform->TransformVector(v);
+      TOutput transformedVector;
+      transformedVector[0] = outputV[0];
+      transformedVector[1] = outputV[1];
+
+      return transformedVector;
     }
 };
 

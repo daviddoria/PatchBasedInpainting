@@ -1,19 +1,20 @@
-/*
-Copyright (C) 2010 David Doria, daviddoria@gmail.com
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/*=========================================================================
+ *
+ *  Copyright David Doria 2010 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
 
 #ifndef CriminisiInpainting_h
 #define CriminisiInpainting_h
@@ -83,8 +84,7 @@ class CriminisiInpainting
 
     // Data members
     ColorImageType::Pointer Image;
-    //CIELABImageType::Pointer CIELABImage;
-    ColorImageType::Pointer Patch;
+    //ColorImageType::Pointer Patch;
     UnsignedCharImageType::Pointer InputMask;
     UnsignedCharImageType::Pointer Mask;
     FloatImageType::Pointer ConfidenceImage;
@@ -100,11 +100,11 @@ class CriminisiInpainting
     // Functions
 
     void Initialize();
-    
+
     // Debugging
     void DebugTests();
-    void DebugWriteAllImages(itk::Index<2> pixelToFill, unsigned int iteration);
-    void DebugWritePatchToFill(itk::Index<2> pixelToFill, unsigned int iteration);
+    void DebugWriteAllImages(itk::Index<2> pixelToFill, itk::Index<2> bestMatchPixel, unsigned int iteration);
+    void DebugWritePatch(itk::Index<2> pixel, std::string filePrefix, unsigned int iteration);
     void DebugWritePixelToFill(itk::Index<2> pixelToFill, unsigned int iteration);
     void DebugWritePatchToFillLocation(itk::Index<2> pixelToFill, unsigned int iteration);
 
@@ -114,9 +114,6 @@ class CriminisiInpainting
     void ColorToGrayscale(ColorImageType::Pointer colorImage, UnsignedCharImageType::Pointer grayscaleImage);
 
     unsigned int GetNumberOfPixelsInPatch();
-
-    void UpdateConfidenceImage(itk::Index<2> sourcePixel, itk::Index<2> targetPixel);
-    void UpdateIsophoteImage(itk::Index<2> sourcePixel, itk::Index<2> targetPixel);
 
     itk::Size<2> GetPatchSize();
 
@@ -137,9 +134,6 @@ class CriminisiInpainting
     itk::Index<2> FindHighestPriority(FloatImageType::Pointer priorityImage);
 
     void UpdateMask(itk::Index<2> pixel);
-
-    template <class T>
-    void WriteScaledImage(typename T::Pointer image, std::string filename);
 
 };
 

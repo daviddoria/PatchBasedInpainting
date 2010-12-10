@@ -1,19 +1,20 @@
-/*
-Copyright (C) 2010 David Doria, daviddoria@gmail.com
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/*=========================================================================
+ *
+ *  Copyright David Doria 2010 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
 
 #ifndef SelfPatchMatch_H
 #define SelfPatchMatch_H
@@ -56,7 +57,7 @@ float ImageDifference(const TImage* image1, const TImage* image2, const TMask* v
   typename TImage::PixelType image2Pixel;
   typename TMask::PixelType maskPixel;
 
-  double totalDifference = 0;
+  double totalSquaredDifference = 0;
   unsigned int numberOfValidPixels = 0;
   while(!image1Iterator.IsAtEnd())
     {
@@ -74,7 +75,9 @@ float ImageDifference(const TImage* image1, const TImage* image2, const TMask* v
 
     for(unsigned int component = 0; component < TImage::PixelType::GetNumberOfComponents(); component++)
       {
-      totalDifference += std::abs(static_cast<float>(image1Pixel[component]) - static_cast<float>(image2Pixel[component]));
+      float pixel1 = static_cast<float>(image1Pixel[component]);
+      float pixel2 = static_cast<float>(image2Pixel[component]);
+      totalSquaredDifference += ( (pixel1 - pixel2) * (pixel1 - pixel2) );
       }
     numberOfValidPixels++;
 
@@ -83,7 +86,8 @@ float ImageDifference(const TImage* image1, const TImage* image2, const TMask* v
     ++maskIterator;
     }
 
-  return totalDifference/static_cast<float>(numberOfValidPixels);
+  //return totalSquaredDifference/static_cast<float>(numberOfValidPixels); // average squared difference
+  return totalSquaredDifference; // sum of squared differences
 }
 
 // This function takes an image, a mask, a query pixel, and a patchRadius and finds the best pixel patch.
@@ -96,7 +100,7 @@ itk::Index<2> SelfPatchMatch(TImage* image, TMask* mask, itk::Index<2> queryPixe
   typedef itk::RegionOfInterestImageFilter< TImage,
                                             TImage> ExtractImageFilterType;
   typename ExtractImageFilterType::Pointer extractImageFilter = ExtractImageFilterType::New();
-  extractImageFilter->SetRegionOfInterest(GetRegionAroundPixel(queryPixel, patchRadius));
+  extractImageFilter->SetRegionOfInterest(GetRegionInRadiusAroundPixel(queryPixel, patchRadius));
   extractImageFilter->SetInput(image);
   extractImageFilter->Update();
 
@@ -171,13 +175,13 @@ void PatchImageDifference(const TImage* image, const TMask* imageMask, const TIm
     {
     // Get the patch of image around the current pixel
     typename ExtractImageFilterType::Pointer extractImageFilter = ExtractImageFilterType::New();
-    extractImageFilter->SetRegionOfInterest(GetRegionAroundPixel(centralIterator.GetIndex(), patchRadius));
+    extractImageFilter->SetRegionOfInterest(GetRegionInRadiusAroundPixel(centralIterator.GetIndex(), patchRadius));
     extractImageFilter->SetInput(image);
     extractImageFilter->Update();
 
     // Get the patch of mask around the current pixel
     typename ExtractMaskFilterType::Pointer extractMaskFilter = ExtractMaskFilterType::New();
-    extractMaskFilter->SetRegionOfInterest(GetRegionAroundPixel(centralIterator.GetIndex(), patchRadius));
+    extractMaskFilter->SetRegionOfInterest(GetRegionInRadiusAroundPixel(centralIterator.GetIndex(), patchRadius));
     extractMaskFilter->SetInput(imageMask);
     extractMaskFilter->Update();
 
