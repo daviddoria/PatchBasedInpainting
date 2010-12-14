@@ -41,7 +41,6 @@
 #include "itkMaskImageFilter.h"
 #include "itkMinimumMaximumImageCalculator.h"
 #include "itkPasteImageFilter.h"
-#include "itkRegionOfInterestImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
 #include "itkRigid2DTransform.h"
 #include "itkSubtractImageFilter.h"
@@ -64,7 +63,7 @@ typedef itk::ConstNeighborhoodIterator<ColorImageType, ColorBoundaryConditionTyp
 typedef  itk::ImageFileReader< UnsignedCharImageType  > UnsignedCharImageReaderType;
 typedef  itk::ImageFileReader< ColorImageType  > ColorImageReaderType;
 
-
+template <class TImage>
 class CriminisiInpainting
 {
   public:
@@ -72,8 +71,9 @@ class CriminisiInpainting
     CriminisiInpainting();
 
     void Inpaint();
-    void SetImage(ColorImageType::Pointer image);
+    void SetImage(typename TImage::Pointer image);
     void SetInputMask(UnsignedCharImageType::Pointer mask);
+    void SetPatchRadius(unsigned int);
 
     // Debugging
     void SetWriteIntermediateImages(bool);
@@ -83,14 +83,13 @@ class CriminisiInpainting
     bool WriteIntermediateImages;
 
     // Data members
-    ColorImageType::Pointer Image;
+    typename TImage::Pointer Image;
     //ColorImageType::Pointer Patch;
     UnsignedCharImageType::Pointer InputMask;
     UnsignedCharImageType::Pointer Mask;
     FloatImageType::Pointer ConfidenceImage;
     UnsignedCharImageType::SizeType PatchRadius;
 
-    FloatImageType::Pointer MeanDifferenceImage;
     VectorImageType::Pointer IsophoteImage;
     UnsignedCharImageType::Pointer BoundaryImage;
     VectorImageType::Pointer BoundaryNormals;
@@ -98,20 +97,18 @@ class CriminisiInpainting
     FloatImageType::Pointer PriorityImage;
 
     // Functions
-
     void Initialize();
 
     // Debugging
     void DebugTests();
     void DebugWriteAllImages(itk::Index<2> pixelToFill, itk::Index<2> bestMatchPixel, unsigned int iteration);
     void DebugWritePatch(itk::Index<2> pixel, std::string filePrefix, unsigned int iteration);
+    void DebugWritePatch(itk::Index<2> pixel, std::string filename);
     void DebugWritePixelToFill(itk::Index<2> pixelToFill, unsigned int iteration);
     void DebugWritePatchToFillLocation(itk::Index<2> pixelToFill, unsigned int iteration);
 
     itk::CovariantVector<float, 2> GetAverageIsophote(itk::Index<2> queryPixel);
     bool IsValidPatch(itk::Index<2> queryPixel, unsigned int radius);
-
-    void ColorToGrayscale(ColorImageType::Pointer colorImage, UnsignedCharImageType::Pointer grayscaleImage);
 
     unsigned int GetNumberOfPixelsInPatch();
 

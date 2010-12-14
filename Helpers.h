@@ -62,6 +62,9 @@ float MinValue(typename T::Pointer image);
 template <class T>
 itk::Index<2> MinValueLocation(typename T::Pointer image);
 
+template <typename TImage>
+void ColorToGrayscale(typename TImage::Pointer colorImage, UnsignedCharImageType::Pointer grayscaleImage);
+
 // Non template function declarations
 itk::ImageRegion<2> GetRegionInRadiusAroundPixel(itk::Index<2> pixel, unsigned int radius);
 
@@ -266,6 +269,29 @@ void WriteScaledImage(typename T::Pointer image, std::string filename)
   writer->SetFileName(filename);
   writer->SetInput(image);
   writer->Update();
+}
+
+template <typename TImage>
+void ColorToGrayscale(typename TImage::Pointer colorImage, UnsignedCharImageType::Pointer grayscaleImage)
+{
+  grayscaleImage->SetRegions(colorImage->GetLargestPossibleRegion());
+  grayscaleImage->Allocate();
+
+  itk::ImageRegionConstIterator<TImage> colorImageIterator(colorImage,colorImage->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<UnsignedCharImageType> grayscaleImageIterator(grayscaleImage,grayscaleImage->GetLargestPossibleRegion());
+
+  typename TImage::PixelType largestPixel;
+  largestPixel.Fill(255);
+
+  float largestNorm = largestPixel.GetNorm();
+
+  while(!colorImageIterator.IsAtEnd())
+  {
+    grayscaleImageIterator.Set(colorImageIterator.Get().GetNorm()*(255./largestNorm));
+
+    ++colorImageIterator;
+    ++grayscaleImageIterator;
+  }
 }
 
 #endif

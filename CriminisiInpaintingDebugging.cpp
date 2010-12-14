@@ -20,11 +20,10 @@
 
 #include "Helpers.h"
 
-#include <iomanip> // detfill, setw
+#include <iomanip> // setfill, setw
 
-
-
-void CriminisiInpainting::DebugWriteAllImages(itk::Index<2> pixelToFill, itk::Index<2> bestMatchPixel, unsigned int iteration)
+template <class TImage>
+void CriminisiInpainting<TImage>::DebugWriteAllImages(itk::Index<2> pixelToFill, itk::Index<2> bestMatchPixel, unsigned int iteration)
 {
   std::cout << "Writing debug images for iteration " << iteration << std::endl;
 
@@ -36,9 +35,6 @@ void CriminisiInpainting::DebugWriteAllImages(itk::Index<2> pixelToFill, itk::In
 
   DebugWritePixelToFill(pixelToFill, iteration);
   std::cout << "Wrote pixelToFill." << std::endl;
-
-  DebugWritePatch(pixelToFill, "PatchToFill", iteration);
-  std::cout << "Wrote bestPatch." << std::endl;
 
   {
   std::stringstream padded;
@@ -77,13 +73,6 @@ void CriminisiInpainting::DebugWriteAllImages(itk::Index<2> pixelToFill, itk::In
 
   {
   std::stringstream padded;
-  padded << "Difference_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  WriteImage<FloatImageType>(this->MeanDifferenceImage, padded.str());
-  std::cout << "Wrote difference." << std::endl;
-  }
-
-  {
-  std::stringstream padded;
   padded << "Mask_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
   WriteImage<UnsignedCharImageType>(this->Mask, padded.str());
   std::cout << "Wrote mask." << std::endl;
@@ -92,28 +81,37 @@ void CriminisiInpainting::DebugWriteAllImages(itk::Index<2> pixelToFill, itk::In
   {
   std::stringstream padded;
   padded << "FilledImage_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  WriteImage<ColorImageType>(this->Image, padded.str());
+  WriteImage<TImage>(this->Image, padded.str());
   std::cout << "Wrote filled image." << std::endl;
   }
 }
 
-void CriminisiInpainting::DebugWritePatch(itk::Index<2> pixel, std::string filePrefix, unsigned int iteration)
+template <class TImage>
+void CriminisiInpainting<TImage>::DebugWritePatch(itk::Index<2> pixel, std::string filePrefix, unsigned int iteration)
 {
-  typedef itk::RegionOfInterestImageFilter< ColorImageType,
-                                            ColorImageType > ExtractFilterType;
+  std::stringstream padded;
+  padded << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
+  DebugWritePatch(pixel, padded.str());
 
-  ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+}
+
+template <class TImage>
+void CriminisiInpainting<TImage>::DebugWritePatch(itk::Index<2> pixel, std::string filename)
+{
+  typedef itk::RegionOfInterestImageFilter< TImage,
+                                            TImage> ExtractFilterType;
+
+  typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
   extractFilter->SetRegionOfInterest(GetRegionInRadiusAroundPixel(pixel, this->PatchRadius[0]));
   extractFilter->SetInput(this->Image);
   extractFilter->Update();
 
-  std::stringstream padded;
-  padded << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  WriteImage<ColorImageType>(extractFilter->GetOutput(), padded.str());
+  WriteImage<TImage>(extractFilter->GetOutput(), filename);
 
 }
 
-void CriminisiInpainting::DebugWritePixelToFill(itk::Index<2> pixelToFill, unsigned int iteration)
+template <class TImage>
+void CriminisiInpainting<TImage>::DebugWritePixelToFill(itk::Index<2> pixelToFill, unsigned int iteration)
 {
   // Create a blank image with the pixel to fill colored white
   UnsignedCharImageType::Pointer pixelImage = UnsignedCharImageType::New();
@@ -142,7 +140,8 @@ void CriminisiInpainting::DebugWritePixelToFill(itk::Index<2> pixelToFill, unsig
   WriteImage<UnsignedCharImageType>(pixelImage, padded.str());
 }
 
-void CriminisiInpainting::DebugWritePatchToFillLocation(itk::Index<2> pixelToFill, unsigned int iteration)
+template <class TImage>
+void CriminisiInpainting<TImage>::DebugWritePatchToFillLocation(itk::Index<2> pixelToFill, unsigned int iteration)
 {
   // Create a blank image with the patch that has been filled colored white
   UnsignedCharImageType::Pointer patchImage = UnsignedCharImageType::New();
@@ -167,8 +166,8 @@ void CriminisiInpainting::DebugWritePatchToFillLocation(itk::Index<2> pixelToFil
   WriteImage<UnsignedCharImageType>(patchImage, padded.str());
 }
 
-
-void CriminisiInpainting::DebugTests()
+template <class TImage>
+void CriminisiInpainting<TImage>::DebugTests()
 {
   /*
   // Check to make sure patch doesn't have any masked pixels
@@ -186,3 +185,6 @@ void CriminisiInpainting::DebugTests()
     }
   */
 }
+
+template class CriminisiInpainting<ColorImageType>;
+template class CriminisiInpainting<RGBDIImageType>;

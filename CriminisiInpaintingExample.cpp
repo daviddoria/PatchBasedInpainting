@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 {
   if(argc != 3)
     {
-    std::cerr << "Required arguments: image.jpg imageMask.jpg" << std::endl;
+    std::cerr << "Required arguments: image imageMask" << std::endl;
     return EXIT_FAILURE;
     }
   std::string imageFilename = argv[1];
@@ -38,7 +38,8 @@ int main(int argc, char *argv[])
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 
-  CriminisiInpainting Inpainting;
+  CriminisiInpainting<ColorImageType> Inpainting;
+  Inpainting.SetPatchRadius(7);
   Inpainting.SetWriteIntermediateImages(true);
   Inpainting.SetImage(imageReader->GetOutput());
   Inpainting.SetInputMask(maskReader->GetOutput());
