@@ -30,14 +30,14 @@
 
 /////////////// Declarations ///////////////////////
 template <typename TImage, typename TMask>
-itk::Index<2> SelfPatchMatch(TImage* image, TMask* mask, itk::Index<2> queryPixel, unsigned int patchRadius, unsigned int iteration);
+itk::Index<2> SelfPatchMatch(TImage* image, TMask* mask, itk::Index<2> queryPixel, unsigned int patchRadius, unsigned int iteration, std::vector<float> weights);
 
 template< typename TImage, typename TMask>
 void ComputeDifferenceImage(const TImage* image, const TMask* mask,
-                            itk::Index<2> queryPixel, unsigned int patchRadius, FloatImageType* output);
+                            itk::Index<2> queryPixel, unsigned int patchRadius, FloatImageType* output, std::vector<float> weights);
 
 template< typename TImage, typename TMask>
-float PatchDifference(const TImage* image, const TMask* mask, itk::Index<2> queryPixel, itk::Index<2> currentPixel, unsigned int patchRadius, float RGBWeight);
+float PatchDifference(const TImage* image, const TMask* mask, itk::Index<2> queryPixel, itk::Index<2> currentPixel, unsigned int patchRadius, std::vector<float> weights);
 
 /////////////// Definitions ///////////////////////
 
@@ -46,11 +46,13 @@ float PatchDifference(const TImage* image, const TMask* mask, itk::Index<2> quer
 // (i.e. no data was defined in the 'image' in the 'mask != 0' region.)
 // We want the best matching patch to come from a region that has no 'missing' pixels - i.e. it does not overlap the non-zero region of the mask.
 template <typename TImage, typename TMask>
-itk::Index<2> SelfPatchMatch(TImage* image, TMask* mask, itk::Index<2> queryPixel, unsigned int patchRadius, unsigned int iteration)
+itk::Index<2> SelfPatchMatch(TImage* image, TMask* mask, itk::Index<2> queryPixel, unsigned int patchRadius, unsigned int iteration, std::vector<float> weights)
 {
+  try
+  {
   FloatImageType::Pointer differenceImage = FloatImageType::New();
 
-  ComputeDifferenceImage(image, mask, queryPixel, patchRadius, differenceImage);
+  ComputeDifferenceImage(image, mask, queryPixel, patchRadius, differenceImage, weights);
 
   // Compute the maximum value of the difference image. We will use this to fill the constant blank patch
   //float highestValue = MaxValue<FloatImageType>(differenceImage);
@@ -78,19 +80,123 @@ itk::Index<2> SelfPatchMatch(TImage* image, TMask* mask, itk::Index<2> queryPixe
     ++maskIterator;
     }
 
+/*
   std::stringstream padded;
   padded << "Difference_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
   WriteImage<FloatImageType>(differenceImage, padded.str());
+*/
 
   itk::Index<2> bestMatchIndex = MinValueLocation<FloatImageType>(differenceImage);
   //std::cout << "BestMatchIndex: " << bestMatchIndex << std::endl;
   return bestMatchIndex;
+
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in SelfPatchMatch!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
 }
 
 // This function computes the average difference of the corresponding pixels in a region around 'queryPixel' and 'currentPixel' where 'mask' is non-zero. We require all pixels in region 2 to be valid, so that we guarantee when the patch is copied the region will be filled in with valid pixels.
 template< typename TImage, typename TMask>
-float PatchDifference(const TImage* image, const TMask* mask, itk::Index<2> queryPixel, itk::Index<2> currentPixel, unsigned int patchRadius, float RGBWeight)
+float PatchDifference(const TImage* image, const TMask* mask, itk::Index<2> queryPixel, itk::Index<2> currentPixel, unsigned int patchRadius, std::vector<float> weights)
 {
+  try
+  {
+  itk::Size<2> radius;
+  radius.Fill(patchRadius);
+
+  itk::Size<2> onePixelSize;
+  onePixelSize.Fill(1);
+
+  itk::ImageRegion<2> queryRegion(queryPixel, onePixelSize); // This is a 1 pixel region indicating the center of the patch. The neighborhood iterator takes care of creating the actual region
+
+  itk::ImageRegion<2> currentRegion(currentPixel, onePixelSize); // This is a 1 pixel region indicating the center of the patch. The neighborhood iterator takes care of creating the actual region
+
+  itk::ConstNeighborhoodIterator<TImage> queryPatchIterator(radius, image, queryRegion);
+  itk::ConstNeighborhoodIterator<TImage> currentPatchIterator(radius, image, currentRegion);
+
+  itk::ConstNeighborhoodIterator<TMask> queryMaskIterator(radius, mask, queryRegion);
+  itk::ConstNeighborhoodIterator<TMask> currentMaskIterator(radius, mask, currentRegion);
+
+  typename TImage::PixelType queryPatchPixel;
+  typename TImage::PixelType currentPatchPixel;
+  typename TMask::PixelType queryMaskPixel;
+  typename TMask::PixelType currentMaskPixel;
+
+  double totalSquaredDifference = 0;
+  unsigned int numberOfValidPixels = 0;
+  while(!queryPatchIterator.IsAtEnd())
+    {
+    for(unsigned int i = 0; i < (patchRadius*2 + 1)*(patchRadius*2 + 1); i++) // the number of pixels in the neighborhood
+      {
+      bool queryIsInBounds;
+      bool currentIsInBounds;
+      queryPatchPixel = queryPatchIterator.GetPixel(i, queryIsInBounds);
+      currentPatchPixel = currentPatchIterator.GetPixel(i, currentIsInBounds);
+      if(!(queryIsInBounds && currentIsInBounds))
+        {
+        continue;
+        }
+      bool inbounds; // this is not used
+      queryMaskPixel = queryMaskIterator.GetPixel(i, inbounds);
+      currentMaskPixel = currentMaskIterator.GetPixel(i, inbounds);
+
+
+      if(currentMaskPixel != 0) // part of the current patch in the hole, but we require the best patch to be entirely outside the hole
+        {
+        return itk::NumericTraits< typename FloatImageType::PixelType >::max(); // the whole computation should not be done at all
+        }
+      if(queryMaskPixel != 0) // If these are '!=' or '==' depends on if the mask is "black = valid" or "black = invalid"
+        {
+        // Do nothing
+        }
+      else
+        {
+        // Weight the components
+        for(unsigned int component = 0; component < TImage::PixelType::GetNumberOfComponents(); component++)
+          {
+          float pixel1 = static_cast<float>(queryPatchPixel[component]);
+          float pixel2 = static_cast<float>(currentPatchPixel[component]);
+          totalSquaredDifference += weights[component] * ( (pixel1 - pixel2) * (pixel1 - pixel2) );
+          }
+
+        numberOfValidPixels++;
+        }
+
+      } // end for loop over neighborhood
+
+    ++queryPatchIterator;
+    ++currentPatchIterator;
+    ++queryMaskIterator;
+    ++currentMaskIterator;
+    }
+
+  //return totalSquaredDifference/static_cast<float>(numberOfValidPixels); // average squared difference
+  return totalSquaredDifference; // sum of squared differences
+
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in PatchDifference!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}
+
+#if 0
+// This version does not allow patches to overlap the image boundary
+
+// This function computes the average difference of the corresponding pixels in a region around 'queryPixel' and 'currentPixel' where 'mask' is non-zero. We require all pixels in region 2 to be valid, so that we guarantee when the patch is copied the region will be filled in with valid pixels.
+template< typename TImage, typename TMask>
+float PatchDifference(const TImage* image, const TMask* mask, itk::Index<2> queryPixel, itk::Index<2> currentPixel, unsigned int patchRadius, std::vector<float> weights)
+{
+  try
+  {
+  // !!! This function breaks when the pixel to fill is near the image border !!!
+  //itk::ImageRegion<2>
   itk::ImageRegionConstIterator<TImage> queryPatchIterator(image, GetRegionInRadiusAroundPixel(queryPixel, patchRadius));
   queryPatchIterator.GoToBegin();
 
@@ -127,21 +233,14 @@ float PatchDifference(const TImage* image, const TMask* mask, itk::Index<2> quer
       queryPatchPixel = queryPatchIterator.Get();
       currentPatchPixel = currentPatchIterator.Get();
 
-      // Weight the RGB components
-      for(unsigned int component = 0; component < 3; component++)
+      // Weight the components
+      for(unsigned int component = 0; component < TImage::PixelType::GetNumberOfComponents(); component++)
         {
         float pixel1 = static_cast<float>(queryPatchPixel[component]);
         float pixel2 = static_cast<float>(currentPatchPixel[component]);
-        totalSquaredDifference += (0.33 * RGBWeight) * ( (pixel1 - pixel2) * (pixel1 - pixel2) );
+        totalSquaredDifference += weights[component] * ( (pixel1 - pixel2) * (pixel1 - pixel2) );
         }
 
-      // Weight the remaining components
-      for(unsigned int component = 3; component < TImage::PixelType::GetNumberOfComponents(); component++)
-        {
-        float pixel1 = static_cast<float>(queryPatchPixel[component]);
-        float pixel2 = static_cast<float>(currentPatchPixel[component]);
-        totalSquaredDifference += 1./(TImage::PixelType::GetNumberOfComponents() - 3.) * (1. - RGBWeight) * ( (pixel1 - pixel2) * (pixel1 - pixel2) );
-        }
       numberOfValidPixels++;
       }
 
@@ -153,12 +252,23 @@ float PatchDifference(const TImage* image, const TMask* mask, itk::Index<2> quer
 
   //return totalSquaredDifference/static_cast<float>(numberOfValidPixels); // average squared difference
   return totalSquaredDifference; // sum of squared differences
+
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in PatchDifference!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
 }
+#endif
 
 template< typename TImage, typename TMask>
 void ComputeDifferenceImage(const TImage* image, const TMask* mask,
-                            itk::Index<2> queryPixel, unsigned int patchRadius, FloatImageType* output)
+                            itk::Index<2> queryPixel, unsigned int patchRadius, FloatImageType* output, std::vector<float> weights)
 {
+  try
+  {
   // This function moves a patch centered at 'queryPixel' over an image and computes the mean difference of the valid pixels at each point.
   // Only patch with zero invalid (masked) pixels are compared.
 
@@ -187,7 +297,7 @@ void ComputeDifferenceImage(const TImage* image, const TMask* mask,
 
   while(!centralIterator.IsAtEnd())
     {
-    float difference = PatchDifference(image, mask, queryPixel, centralIterator.GetIndex(), patchRadius);
+    float difference = PatchDifference(image, mask, queryPixel, centralIterator.GetIndex(), patchRadius, weights);
     outputIterator.Set(difference);
 
     ++centralIterator;
@@ -208,6 +318,14 @@ void ComputeDifferenceImage(const TImage* image, const TMask* mask,
       }
     ++faceListIterator;
     }
+
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in ComputeDifferenceImage!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
 
 }
 

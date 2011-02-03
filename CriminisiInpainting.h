@@ -19,6 +19,9 @@
 #ifndef CriminisiInpainting_h
 #define CriminisiInpainting_h
 
+#include "Types.h"
+#include "Helpers.h"
+
 #include "itkAddImageFilter.h"
 #include "itkBinaryContourImageFilter.h"
 #include "itkBinaryDilateImageFilter.h"
@@ -47,11 +50,13 @@
 #include "itkUnaryFunctorImageFilter.h"
 #include "itkVariableLengthVector.h"
 
+#include <iomanip> // setfill, setw
+/*
 typedef itk::Image< itk::CovariantVector<float, 2>, 2 > VectorImageType;
 typedef itk::Image< unsigned char, 2 > UnsignedCharImageType;
 typedef itk::Image< itk::CovariantVector<unsigned char, 3>, 2 > ColorImageType;
 typedef itk::Image< float, 2 > FloatImageType;
-
+*/
 typedef itk::ConstantBoundaryCondition<FloatImageType>  FloatBoundaryConditionType;
 typedef itk::ConstantBoundaryCondition<UnsignedCharImageType>  UnsignedCharBoundaryConditionType;
 typedef itk::ConstantBoundaryCondition<ColorImageType>  ColorBoundaryConditionType;
@@ -60,8 +65,6 @@ typedef itk::ConstNeighborhoodIterator<UnsignedCharImageType, UnsignedCharBounda
 typedef itk::ConstNeighborhoodIterator<FloatImageType, UnsignedCharBoundaryConditionType>::NeighborhoodType FloatNeighborhoodType;
 typedef itk::ConstNeighborhoodIterator<ColorImageType, ColorBoundaryConditionType>::NeighborhoodType ColorNeighborhoodType;
 
-typedef  itk::ImageFileReader< UnsignedCharImageType  > UnsignedCharImageReaderType;
-typedef  itk::ImageFileReader< ColorImageType  > ColorImageReaderType;
 
 template <class TImage>
 class CriminisiInpainting
@@ -74,6 +77,8 @@ class CriminisiInpainting
     void SetImage(typename TImage::Pointer image);
     void SetInputMask(UnsignedCharImageType::Pointer mask);
     void SetPatchRadius(unsigned int);
+
+    void SetWeights(std::vector<float>);
 
     // Debugging
     void SetWriteIntermediateImages(bool);
@@ -100,9 +105,12 @@ class CriminisiInpainting
     void Initialize();
 
     // Debugging
-    void DebugTests();
     void DebugWriteAllImages(itk::Index<2> pixelToFill, itk::Index<2> bestMatchPixel, unsigned int iteration);
     void DebugWritePatch(itk::Index<2> pixel, std::string filePrefix, unsigned int iteration);
+
+    template <typename TDebugImageType>
+    void DebugWriteImage(typename TDebugImageType::Pointer image, std::string filePrefix, unsigned int iteration);
+
     void DebugWritePatch(itk::Index<2> pixel, std::string filename);
     void DebugWritePixelToFill(itk::Index<2> pixelToFill, unsigned int iteration);
     void DebugWritePatchToFillLocation(itk::Index<2> pixelToFill, unsigned int iteration);
@@ -132,6 +140,17 @@ class CriminisiInpainting
 
     void UpdateMask(itk::Index<2> pixel);
 
+    // How much weight (0-1) is given to each component of the image
+    std::vector<float> Weights;
 };
+
+template <class TImage>
+template <typename TDebugImageType>
+void CriminisiInpainting<TImage>::DebugWriteImage(typename TDebugImageType::Pointer image, std::string filePrefix, unsigned int iteration)
+{
+  std::stringstream padded;
+  padded << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
+  WriteImage<TDebugImageType>(image, padded.str());
+}
 
 #endif

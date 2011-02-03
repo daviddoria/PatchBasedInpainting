@@ -20,11 +20,19 @@
 #define Types_H
 
 #include "itkImage.h"
+#include "itkImageFileReader.h"
 #include "itkCovariantVector.h"
 
+// Image types
 typedef itk::Image<float,2> FloatImageType;
 typedef itk::Image<unsigned char,2> UnsignedCharImageType;
 typedef itk::Image<itk::CovariantVector<unsigned char, 3> ,2> ColorImageType;
+typedef itk::Image< itk::CovariantVector<float, 2>, 2 > VectorImageType;
+
+// Reader types
+typedef  itk::ImageFileReader< UnsignedCharImageType  > UnsignedCharImageReaderType;
+typedef  itk::ImageFileReader< ColorImageType  > ColorImageReaderType;
+
 typedef itk::Image<itk::CovariantVector<float, 5>, 2> RGBDIImageType;
 
 #endif

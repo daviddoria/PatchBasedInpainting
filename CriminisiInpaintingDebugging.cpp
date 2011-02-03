@@ -36,55 +36,17 @@ void CriminisiInpainting<TImage>::DebugWriteAllImages(itk::Index<2> pixelToFill,
   DebugWritePixelToFill(pixelToFill, iteration);
   std::cout << "Wrote pixelToFill." << std::endl;
 
-  {
-  std::stringstream padded;
-  padded << "Isophotes" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  WriteImage<VectorImageType>(this->IsophoteImage, padded.str());
-  std::cout << "Wrote isophotes." << std::endl;
-  }
+  DebugWriteImage<VectorImageType>(this->IsophoteImage,"Isophotes", iteration);
+  DebugWriteImage<FloatImageType>(this->ConfidenceImage,"Confidence", iteration);
+  DebugWriteImage<UnsignedCharImageType>(this->BoundaryImage,"Boundary", iteration);
+  DebugWriteImage<VectorImageType>(this->BoundaryNormals,"BoundaryNormals", iteration);
+  DebugWriteImage<FloatImageType>(this->PriorityImage,"Priorities", iteration);
+  DebugWriteImage<UnsignedCharImageType>(this->Mask,"Mask", iteration);
+  DebugWriteImage<TImage>(this->Image,"FilledImage", iteration);
 
-  {
-  std::stringstream padded;
-  padded << "Confidence_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  WriteImage<FloatImageType>(this->ConfidenceImage, padded.str());
-  std::cout << "Wrote confidence." << std::endl;
-  }
-
-  {
-  std::stringstream padded;
-  padded << "Boundary_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  WriteImage<UnsignedCharImageType>(this->BoundaryImage, padded.str());
-  std::cout << "Wrote boundary." << std::endl;
-  }
-
-  {
-  std::stringstream padded;
-  padded << "BoundaryNormals_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  WriteImage<VectorImageType>(this->BoundaryNormals, padded.str());
-  std::cout << "Wrote boundaryNormals." << std::endl;
-  }
-
-  {
-  std::stringstream padded;
-  padded << "Priorities_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  WriteImage<FloatImageType>(this->PriorityImage, padded.str());
-  std::cout << "Wrote priorities." << std::endl;
-  }
-
-  {
-  std::stringstream padded;
-  padded << "Mask_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  WriteImage<UnsignedCharImageType>(this->Mask, padded.str());
-  std::cout << "Wrote mask." << std::endl;
-  }
-
-  {
-  std::stringstream padded;
-  padded << "FilledImage_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  WriteImage<TImage>(this->Image, padded.str());
-  std::cout << "Wrote filled image." << std::endl;
-  }
 }
+
+
 
 template <class TImage>
 void CriminisiInpainting<TImage>::DebugWritePatch(itk::Index<2> pixel, std::string filePrefix, unsigned int iteration)
@@ -92,7 +54,6 @@ void CriminisiInpainting<TImage>::DebugWritePatch(itk::Index<2> pixel, std::stri
   std::stringstream padded;
   padded << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
   DebugWritePatch(pixel, padded.str());
-
 }
 
 template <class TImage>
@@ -164,26 +125,6 @@ void CriminisiInpainting<TImage>::DebugWritePatchToFillLocation(itk::Index<2> pi
   std::stringstream padded;
   padded << "PatchToFillLocation_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
   WriteImage<UnsignedCharImageType>(patchImage, padded.str());
-}
-
-template <class TImage>
-void CriminisiInpainting<TImage>::DebugTests()
-{
-  /*
-  // Check to make sure patch doesn't have any masked pixels
-  itk::ImageRegionIterator<ColorImageType> patchIterator(this->Patch,this->Patch->GetLargestPossibleRegion());
-
-  while(!patchIterator.IsAtEnd())
-    {
-    ColorImageType::PixelType val = patchIterator.Get();
-    if(val[0] == 0 && val[1] == 255 && val[2] == 0)
-      {
-      std::cerr << "Patch has a blank pixel!" << std::endl;
-      exit(-1);
-      }
-    ++patchIterator;
-    }
-  */
 }
 
 template class CriminisiInpainting<ColorImageType>;
