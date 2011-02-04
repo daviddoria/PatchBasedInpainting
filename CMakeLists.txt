@@ -9,9 +9,6 @@ INCLUDE(${VTK_USE_FILE})
 FIND_PACKAGE(ITK REQUIRED)
 INCLUDE(${ITK_USE_FILE})
 
-# Gourds.png GourdsMask.png 1
-# BlackWhite.png BlackWhiteMask.png 5
-
 ADD_EXECUTABLE(CriminisiInpainting CriminisiInpaintingExample.cpp Helpers.cpp)
 TARGET_LINK_LIBRARIES(CriminisiInpainting vtkHybrid ITKBasicFilters ITKCommon ITKIO)
 #
@@ -21,14 +18,14 @@ TARGET_LINK_LIBRARIES(CriminisiInpainting vtkHybrid ITKBasicFilters ITKCommon IT
 # ADD_EXECUTABLE(TestPatchDifference TestPatchDifference.cpp Helpers.cpp)
 # TARGET_LINK_LIBRARIES(TestPatchDifference vtkHybrid ITKBasicFilters ITKCommon ITKIO)
 
-# ADD_EXECUTABLE(ErroneousGradientDemo ErroneousGradientDemo.cpp Helpers.cpp )
-# TARGET_LINK_LIBRARIES(ErroneousGradientDemo ITKBasicFilters ITKCommon ITKIO)
+# ADD_EXECUTABLE(DemoErroneousGradient DemoErroneousGradient.cpp Helpers.cpp )
+# TARGET_LINK_LIBRARIES(DemoErroneousGradient ITKBasicFilters ITKCommon ITKIO)
 
-# ADD_EXECUTABLE(BoundaryNormalsDemo BoundaryNormalsDemo.cpp Helpers.cpp )
-# TARGET_LINK_LIBRARIES(BoundaryNormalsDemo ITKBasicFilters ITKCommon ITKIO)
-#
-# ADD_EXECUTABLE(InnerOuterBoundaryDemo InnerOuterBoundaryDemo.cpp Helpers.cpp )
-# TARGET_LINK_LIBRARIES(InnerOuterBoundaryDemo ITKBasicFilters ITKCommon ITKIO)
+# ADD_EXECUTABLE(DemoBoundaryNormals DemoBoundaryNormals.cpp Helpers.cpp )
+# TARGET_LINK_LIBRARIES(DemoBoundaryNormals ITKBasicFilters ITKCommon ITKIO)
+
+ADD_EXECUTABLE(DemoInnerOuterBoundary DemoInnerOuterBoundary.cpp Helpers.cpp )
+TARGET_LINK_LIBRARIES(DemoInnerOuterBoundary ITKBasicFilters ITKCommon ITKIO)
 
 # ADD_EXECUTABLE(PatchImageDifferenceExample PatchImageDifferenceExample.cpp SelfPatchMatch.h Helpers.h  Helpers.cpp)
 # TARGET_LINK_LIBRARIES(PatchImageDifferenceExample vtkHybrid ITKBasicFilters ITKCommon ITKIO)

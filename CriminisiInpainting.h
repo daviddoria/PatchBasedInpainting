@@ -1,6 +1,6 @@
 /*=========================================================================
  *
- *  Copyright David Doria 2010 daviddoria@gmail.com
+ *  Copyright David Doria 2011 daviddoria@gmail.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -51,20 +51,6 @@
 #include "itkVariableLengthVector.h"
 
 #include <iomanip> // setfill, setw
-/*
-typedef itk::Image< itk::CovariantVector<float, 2>, 2 > VectorImageType;
-typedef itk::Image< unsigned char, 2 > UnsignedCharImageType;
-typedef itk::Image< itk::CovariantVector<unsigned char, 3>, 2 > ColorImageType;
-typedef itk::Image< float, 2 > FloatImageType;
-*/
-//typedef itk::ConstantBoundaryCondition<FloatImageType>  FloatBoundaryConditionType;
-//typedef itk::ConstantBoundaryCondition<UnsignedCharImageType>  UnsignedCharBoundaryConditionType;
-//typedef itk::ConstantBoundaryCondition<ColorImageType>  ColorBoundaryConditionType;
-
-//typedef itk::ConstNeighborhoodIterator<UnsignedCharImageType, UnsignedCharBoundaryConditionType>::NeighborhoodType UnsignedCharNeighborhoodType;
-//typedef itk::ConstNeighborhoodIterator<FloatImageType, UnsignedCharBoundaryConditionType>::NeighborhoodType FloatNeighborhoodType;
-//typedef itk::ConstNeighborhoodIterator<ColorImageType, ColorBoundaryConditionType>::NeighborhoodType ColorNeighborhoodType;
-
 
 template <class TImage>
 class CriminisiInpainting

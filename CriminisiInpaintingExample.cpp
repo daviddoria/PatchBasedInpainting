@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   imageReader->SetFileName(imageFilename.c_str());
   imageReader->Update();
 
-  UnsignedCharImageReaderType::Pointer maskReader = UnsignedCharImageReaderType::New();
+  UnsignedCharScalarImageReaderType::Pointer maskReader = UnsignedCharScalarImageReaderType::New();
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 

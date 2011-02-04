@@ -1,6 +1,6 @@
 /*=========================================================================
  *
- *  Copyright David Doria 2010 daviddoria@gmail.com
+ *  Copyright David Doria 2011 daviddoria@gmail.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ typedef itk::Image<FloatVector3Type , 2> FloatVector3ImageType;
 typedef itk::Image<FloatVector2Type , 2> FloatVector2ImageType;
 
 // Reader types
-typedef  itk::ImageFileReader< UnsignedCharScalarImageType  > UnsignedCharImageReaderType;
+typedef  itk::ImageFileReader< UnsignedCharScalarImageType  > UnsignedCharScalarImageReaderType;
 typedef  itk::ImageFileReader< FloatVector3ImageType  > FloatVector3ImageReaderType;
 
 // Special types (Doria only)
