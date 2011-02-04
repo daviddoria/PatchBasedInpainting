@@ -30,9 +30,13 @@
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
 
-///////// Declarations ///////////
+namespace Helpers
+{
+
+itk::Index<2> GetRegionCenter(itk::ImageRegion<2> region);
+
 template <class T>
-void WriteScaledImage(typename T::Pointer image, std::string filename);
+void WriteScaledScalarImage(typename T::Pointer image, std::string filename);
 
 template <class T>
 void CopyPatch(typename T::Pointer sourceImage, typename T::Pointer targetImage, itk::Index<2> sourcePosition, itk::Index<2> targetPosition, unsigned int radius);
@@ -46,6 +50,9 @@ void ReplaceValue(typename T::Pointer image, typename T::PixelType queryValue, t
 template<typename T>
 void WriteImage(typename T::Pointer image, std::string filename);
 
+template<typename T>
+void WriteUnsignedCharImage(typename T::Pointer image, std::string filename);
+
 template <class T>
 void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, itk::Index<2> position);
 
@@ -53,7 +60,8 @@ template <class T>
 void CreateBlankPatch(typename T::Pointer patch, unsigned int radius);
 
 template <class T>
-void CopySelfPatchIntoValidRegion(typename T::Pointer image, UnsignedCharImageType::Pointer mask, itk::Index<2> sourcePixel, itk::Index<2> destinationPixel, unsigned int radius);
+void CopySelfPatchIntoValidRegion(typename T::Pointer image, const UnsignedCharScalarImageType::Pointer mask,
+                                  itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> destinationRegion);
 
 template <class T>
 float MaxValue(typename T::Pointer image);
@@ -68,379 +76,18 @@ template <class T>
 itk::Index<2> MinValueLocation(typename T::Pointer image);
 
 template <typename TImage>
-void ColorToGrayscale(typename TImage::Pointer colorImage, UnsignedCharImageType::Pointer grayscaleImage);
+void ColorToGrayscale(typename TImage::Pointer colorImage, UnsignedCharScalarImageType::Pointer grayscaleImage);
 
 // Non template function declarations
 itk::ImageRegion<2> GetRegionInRadiusAroundPixel(itk::Index<2> pixel, unsigned int radius);
 
-///////// Definitions ///////////
-template<typename T>
-void ReplaceValue(typename T::Pointer image, typename T::PixelType queryValue, typename T::PixelType replacementValue)
-{
-  // This function replaces all pixels in 'image' equal to 'queryValue' with 'replacementValue'
-  itk::ImageRegionIterator<T> imageIterator(image, image->GetLargestPossibleRegion());
-  imageIterator.GoToBegin();
-  while(!imageIterator.IsAtEnd())
-    {
-    if(imageIterator.Get() == queryValue)
-      {
-      imageIterator.Set(replacementValue);
-      }
-    ++imageIterator;
-    }
-}
+template <typename TPixelType>
+double PixelSquaredDifference(TPixelType, TPixelType);
 
-template<typename T>
-void WriteImage(typename T::Pointer image, std::string filename)
-{
-  // This is a convenience function so that images can be written in 1 line instead of 4.
-  typename itk::ImageFileWriter<T>::Pointer writer = itk::ImageFileWriter<T>::New();
-  writer->SetFileName(filename);
-  writer->SetInput(image);
-  writer->Update();
-}
+bool IsValidPatch(const UnsignedCharScalarImageType::Pointer mask, itk::ImageRegion<2> region);
 
+}// end namespace
 
-template <class T>
-void CreateBlankPatch(typename T::Pointer patch, unsigned int radius)
-{
-  CreateConstantPatch<T>(patch, itk::NumericTraits< typename T::PixelType >::Zero, radius);
-}
-
-template <class T>
-void CreateConstantPatch(typename T::Pointer patch, typename T::PixelType value, unsigned int radius)
-{
-  try
-  {
-  typename T::IndexType start;
-  start.Fill(0);
-
-  typename T::SizeType size;
-  size.Fill(radius*2 + 1);
-
-  typename T::RegionType region(start, size);
-
-  patch->SetRegions(region);
-  patch->Allocate();
-
-  itk::ImageRegionIterator<T> imageIterator(patch, patch->GetLargestPossibleRegion());
-
-  while(!imageIterator.IsAtEnd())
-    {
-    imageIterator.Set(value);
-    ++imageIterator;
-    }
-
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in CreateConstantPatch!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
-
-template <class T>
-float MaxValue(typename T::Pointer image)
-{
-  typedef typename itk::MinimumMaximumImageCalculator<T>
-          ImageCalculatorFilterType;
-
-  typename ImageCalculatorFilterType::Pointer imageCalculatorFilter
-          = ImageCalculatorFilterType::New ();
-  imageCalculatorFilter->SetImage(image);
-  imageCalculatorFilter->Compute();
-
-  return imageCalculatorFilter->GetMaximum();
-}
-
-template <class T>
-float MaxValueLocation(typename T::Pointer image)
-{
-  typedef typename itk::MinimumMaximumImageCalculator<T>
-          ImageCalculatorFilterType;
-
-  typename ImageCalculatorFilterType::Pointer imageCalculatorFilter
-          = ImageCalculatorFilterType::New ();
-  imageCalculatorFilter->SetImage(image);
-  imageCalculatorFilter->Compute();
-
-  return imageCalculatorFilter->GetIndexOfMaximum();
-}
-
-template <class T>
-float MinValue(typename T::Pointer image)
-{
-  typedef typename itk::MinimumMaximumImageCalculator<T>
-          ImageCalculatorFilterType;
-
-  typename ImageCalculatorFilterType::Pointer imageCalculatorFilter
-          = ImageCalculatorFilterType::New ();
-  imageCalculatorFilter->SetImage(image);
-  imageCalculatorFilter->Compute();
-
-  return imageCalculatorFilter->GetMinimum();
-}
-
-template <class T>
-itk::Index<2> MinValueLocation(typename T::Pointer image)
-{
-  typedef typename itk::MinimumMaximumImageCalculator<T>
-          ImageCalculatorFilterType;
-
-  typename ImageCalculatorFilterType::Pointer imageCalculatorFilter
-          = ImageCalculatorFilterType::New ();
-  imageCalculatorFilter->SetImage(image);
-  imageCalculatorFilter->Compute();
-
-  return imageCalculatorFilter->GetIndexOfMinimum();
-}
-
-template <class T>
-void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, UnsignedCharImageType::Pointer mask, itk::Index<2> position)
-{
-  try
-  {
-  // This function copies 'patch' into 'image' centered at 'position' only where the 'mask' is non-zero
-
-  // 'Mask' must be the same size as 'image'
-  if(mask->GetLargestPossibleRegion().GetSize() != image->GetLargestPossibleRegion().GetSize())
-    {
-    std::cerr << "mask and image must be the same size!" << std::endl;
-    exit(-1);
-    }
-
-  // The PasteFilter expects the lower left corner of the destination position, but we have passed the center pixel.
-  position[0] -= patch->GetLargestPossibleRegion().GetSize()[0]/2;
-  position[1] -= patch->GetLargestPossibleRegion().GetSize()[1]/2;
-
-  itk::ImageRegion<2> region = GetRegionInRadiusAroundPixel(position, patch->GetLargestPossibleRegion().GetSize()[0]/2);
-
-  itk::ImageRegionConstIterator<T> patchIterator(patch,patch->GetLargestPossibleRegion());
-  itk::ImageRegionConstIterator<UnsignedCharImageType> maskIterator(mask,region);
-  itk::ImageRegionIterator<T> imageIterator(image, region);
-
-  while(!patchIterator.IsAtEnd())
-    {
-    if(maskIterator.Get()) // we are in the target region
-      {
-      imageIterator.Set(patchIterator.Get());
-      }
-    ++imageIterator;
-    ++maskIterator;
-    ++patchIterator;
-    }
-
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in CopyPatchIntoImage(patch, image, mask, position)!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
-
-
-template <class T>
-void CopySelfPatchIntoValidRegion(typename T::Pointer image, UnsignedCharImageType::Pointer mask, itk::Index<2> sourcePixel, itk::Index<2> destinationPixel, unsigned int patchRadius)
-{
-  try
-  {
-  // This function copies a patch of radius 'radius' into itself only where the 'mask' is non-zero.
-  // 'mask' must be the same size as 'image'.
-
-  itk::Size<2> radius;
-  radius.Fill(patchRadius);
-
-  itk::Size<2> onePixelSize;
-  onePixelSize.Fill(1);
-
-  itk::ImageRegion<2> sourceRegion(sourcePixel, onePixelSize); // This is a 1 pixel region indicating the center of the patch. The neighborhood iterator takes care of creating the actual region
-
-  itk::ImageRegion<2> destinationRegion(destinationPixel, onePixelSize); // This is a 1 pixel region indicating the center of the patch. The neighborhood iterator takes care of creating the actual region
-
-  itk::ConstNeighborhoodIterator<T> sourcePatchIterator(radius, image, sourceRegion);
-  itk::NeighborhoodIterator<T> destinationPatchIterator(radius, image, destinationRegion);
-
-  itk::ConstNeighborhoodIterator<UnsignedCharImageType> destinationMaskPatchIterator(radius, mask, destinationRegion);
-
-  typename T::PixelType sourcePixelValue;
-  typename T::PixelType destinationPixelValue;
-  typename UnsignedCharImageType::PixelType maskPixelValue;
-
-  while(!destinationPatchIterator.IsAtEnd())
-    {
-    for(unsigned int i = 0; i < (patchRadius*2 + 1)*(patchRadius*2 + 1); i++) // the number of pixels in the neighborhood
-      {
-      bool sourceIsInBounds;
-      bool destinationIsInBounds;
-      sourcePixelValue = sourcePatchIterator.GetPixel(i, sourceIsInBounds);
-      destinationPixelValue = destinationPatchIterator.GetPixel(i, destinationIsInBounds);
-      if(!(sourceIsInBounds && destinationIsInBounds))
-        {
-        // do nothing
-        }
-      else
-        {
-        bool inbounds; // this is not used
-        maskPixelValue = destinationMaskPatchIterator.GetPixel(i, inbounds);
-
-        if(maskPixelValue) // we are in the target region
-          {
-          destinationPatchIterator.SetPixel(i, sourcePixelValue);
-          }
-        }// end else
-      } // end for loop over neighborhood pixels
-      ++sourcePatchIterator;
-      ++destinationMaskPatchIterator;
-      ++destinationPatchIterator;
-    } // end while loop (should only be one iteration)
-
-  } // end try
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in CopySelfPatchIntoValidRegion!" << std::endl;
-    std::cerr << err << std::endl;
-    std::cout << "sourcePixel: " << sourcePixel
-              << "destinationPixel: " << destinationPixel
-              << "patchRadius: " << patchRadius << std::endl;
-    exit(-1);
-  }
-}
-
-#if 0
-// This version requires both patches to be entirely within the image region
-template <class T>
-void CopySelfPatchIntoValidRegion(typename T::Pointer image, UnsignedCharImageType::Pointer mask, itk::Index<2> sourcePixel, itk::Index<2> destinationPixel, unsigned int radius)
-{
-  try
-  {
-  // This function copies a patch of radius 'radius' into itself only where the 'mask' is non-zero.
-  // 'mask' must be the same size as 'image'.
-
-  itk::ImageRegion<2> sourceRegion = GetRegionInRadiusAroundPixel(sourcePixel, radius);
-  itk::ImageRegion<2> destinationRegion = GetRegionInRadiusAroundPixel(destinationPixel, radius);
-
-  itk::ImageRegionConstIterator<T> sourceIterator(image, sourceRegion);
-  itk::ImageRegionConstIterator<UnsignedCharImageType> maskIterator(mask,destinationRegion);
-  itk::ImageRegionIterator<T> destinationIterator(image, destinationRegion);
-
-  while(!destinationIterator.IsAtEnd())
-    {
-    if(maskIterator.Get()) // we are in the target region
-      {
-      destinationIterator.Set(sourceIterator.Get());
-      }
-    ++sourceIterator;
-    ++maskIterator;
-    ++destinationIterator;
-    }
-
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in CopySelfPatchIntoValidRegion!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
-#endif
-
-template <class T>
-void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, itk::Index<2> position)
-{
-  try
-  {
-  // This function copies 'patch' into 'image' centered at 'position'.
-
-  // The PasteFilter expects the lower left corner of the destination position, but we have passed the center pixel.
-  position[0] -= patch->GetLargestPossibleRegion().GetSize()[0]/2;
-  position[1] -= patch->GetLargestPossibleRegion().GetSize()[1]/2;
-
-  typedef itk::PasteImageFilter <T, T> PasteImageFilterType;
-
-  typename PasteImageFilterType::Pointer pasteFilter = PasteImageFilterType::New();
-  pasteFilter->SetInput(0, image);
-  pasteFilter->SetInput(1, patch);
-  pasteFilter->SetSourceRegion(patch->GetLargestPossibleRegion());
-  pasteFilter->SetDestinationIndex(position);
-  pasteFilter->InPlaceOn();
-  pasteFilter->Update();
-
-  image->Graft(pasteFilter->GetOutput());
-
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in CopyPatchIntoImage(patch, image, position)!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
-
-template <class T>
-void CopyPatch(typename T::Pointer sourceImage, typename T::Pointer targetImage,
-               itk::Index<2> sourcePosition, itk::Index<2> targetPosition, unsigned int radius)
-{
-  try
-  {
-  // Copy a patch of radius 'radius' centered at 'sourcePosition' from 'sourceImage' to 'targetImage' centered at 'targetPosition'
-  typedef itk::RegionOfInterestImageFilter<T,T> ExtractFilterType;
-
-  typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
-  extractFilter->SetRegionOfInterest(GetRegionInRadiusAroundPixel(sourcePosition, radius));
-  extractFilter->SetInput(sourceImage);
-  extractFilter->Update();
-
-  CopyPatchIntoImage<T>(extractFilter->GetOutput(), targetImage, targetPosition);
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in CopyPatch!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
-
-
-template <class T>
-void WriteScaledImage(typename T::Pointer image, std::string filename)
-{
-  typedef itk::RescaleIntensityImageFilter<T, UnsignedCharImageType> RescaleFilterType; // expected ';' before rescaleFilter
-
-  typename RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
-  rescaleFilter->SetInput(image);
-  rescaleFilter->SetOutputMinimum(0);
-  rescaleFilter->SetOutputMaximum(255);
-  rescaleFilter->Update();
-
-  typename itk::ImageFileWriter<T>::Pointer writer = itk::ImageFileWriter<T>::New();
-  writer->SetFileName(filename);
-  writer->SetInput(image);
-  writer->Update();
-}
-
-template <typename TImage>
-void ColorToGrayscale(typename TImage::Pointer colorImage, UnsignedCharImageType::Pointer grayscaleImage)
-{
-  grayscaleImage->SetRegions(colorImage->GetLargestPossibleRegion());
-  grayscaleImage->Allocate();
-
-  itk::ImageRegionConstIterator<TImage> colorImageIterator(colorImage,colorImage->GetLargestPossibleRegion());
-  itk::ImageRegionIterator<UnsignedCharImageType> grayscaleImageIterator(grayscaleImage,grayscaleImage->GetLargestPossibleRegion());
-
-  typename TImage::PixelType largestPixel;
-  largestPixel.Fill(255);
-
-  float largestNorm = largestPixel.GetNorm();
-
-  while(!colorImageIterator.IsAtEnd())
-  {
-    grayscaleImageIterator.Set(colorImageIterator.Get().GetNorm()*(255./largestNorm));
-
-    ++colorImageIterator;
-    ++grayscaleImageIterator;
-  }
-}
+#include "Helpers.txx"
 
 #endif

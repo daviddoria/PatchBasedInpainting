@@ -16,14 +16,15 @@
  *
  *=========================================================================*/
 
-#include "CriminisiInpainting.h"
+#include "Types.h"
+#include "SelfPatchMatch.h"
 
 int main(int argc, char *argv[])
 {
-  if(argc != 4)
+  if(argc != 3)
     {
     std::cerr << "Only gave " << argc << " arguments!" << std::endl;
-    std::cerr << "Required arguments: image imageMask patchRadius" << std::endl;
+    std::cerr << "Required arguments: image mask" << std::endl;
     return EXIT_FAILURE;
     }
   std::string imageFilename = argv[1];
@@ -31,14 +32,7 @@ int main(int argc, char *argv[])
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
 
-  std::stringstream ssPatchRadius;
-  ssPatchRadius << argv[3];
-  int patchRadius;
-  ssPatchRadius >> patchRadius;
-
-  std::cout << "Patch radius: " << patchRadius << std::endl;
-
-  FloatVector3ImageReaderType::Pointer imageReader = FloatVector3ImageReaderType::New();
+  ColorImageReaderType::Pointer imageReader = ColorImageReaderType::New();
   imageReader->SetFileName(imageFilename.c_str());
   imageReader->Update();
 
@@ -46,18 +40,23 @@ int main(int argc, char *argv[])
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 
-  CriminisiInpainting<FloatVector3ImageType> Inpainting;
-  Inpainting.SetPatchRadius(patchRadius);
-  std::vector<float> weights(3);
-  weights[0] = .33;
-  weights[1] = .33;
-  weights[2] = .33;
-  Inpainting.SetWeights(weights);
-  //Inpainting.SetWriteIntermediateImages(true);
-  Inpainting.SetWriteIntermediateImages(false);
-  Inpainting.SetImage(imageReader->GetOutput());
-  Inpainting.SetInputMask(maskReader->GetOutput());
-  Inpainting.Inpaint();
+  itk::Index<2> queryPixel;
+  queryPixel[0] = 10;
+  queryPixel[1] = 10;
 
+  unsigned int patchRadius = 5;
+
+  /*
+  itk::Index<2> bestMatch = SelfPatchMatch(imageReader->GetOutput(), maskReader->GetOutput(), queryPixel, patchRadius);
+
+  std::cout << "Best match: " << bestMatch << std::endl;
+
+  if(bestMatch != queryPixel)
+    {
+    std::cerr << "Error: the best match should be the query pixel!" << std::endl;
+    std::cerr << "Query: " << queryPixel << " Best match: " << bestMatch << std::endl;
+    return EXIT_FAILURE;
+    }
+  */
   return EXIT_SUCCESS;
 }

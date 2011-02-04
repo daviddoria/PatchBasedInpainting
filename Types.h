@@ -23,16 +23,26 @@
 #include "itkImageFileReader.h"
 #include "itkCovariantVector.h"
 
-// Image types
-typedef itk::Image<float,2> FloatImageType;
-typedef itk::Image<unsigned char,2> UnsignedCharImageType;
-typedef itk::Image<itk::CovariantVector<unsigned char, 3> ,2> ColorImageType;
-typedef itk::Image< itk::CovariantVector<float, 2>, 2 > VectorImageType;
+// Scalar image types
+typedef itk::Image<float,2> FloatScalarImageType;
+typedef itk::Image<unsigned char,2> UnsignedCharScalarImageType;
+typedef UnsignedCharScalarImageType MaskImageType;
+
+// Vector types
+typedef itk::CovariantVector<unsigned char, 3> UnsignedCharVectorType;
+typedef itk::CovariantVector<float, 3> FloatVector3Type;
+typedef itk::CovariantVector<float, 2> FloatVector2Type;
+
+// Vector image types
+typedef itk::Image<UnsignedCharVectorType ,2> UnsignedCharVectorImageType;
+typedef itk::Image<FloatVector3Type , 2> FloatVector3ImageType;
+typedef itk::Image<FloatVector2Type , 2> FloatVector2ImageType;
 
 // Reader types
-typedef  itk::ImageFileReader< UnsignedCharImageType  > UnsignedCharImageReaderType;
-typedef  itk::ImageFileReader< ColorImageType  > ColorImageReaderType;
+typedef  itk::ImageFileReader< UnsignedCharScalarImageType  > UnsignedCharImageReaderType;
+typedef  itk::ImageFileReader< FloatVector3ImageType  > FloatVector3ImageReaderType;
 
+// Special types (Doria only)
 typedef itk::Image<itk::CovariantVector<float, 5>, 2> RGBDIImageType;
 
 #endif

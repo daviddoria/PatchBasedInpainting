@@ -9,8 +9,17 @@ INCLUDE(${VTK_USE_FILE})
 FIND_PACKAGE(ITK REQUIRED)
 INCLUDE(${ITK_USE_FILE})
 
-ADD_EXECUTABLE(CriminisiInpainting CriminisiInpaintingExample.cpp CriminisiInpainting.cpp CriminisiInpaintingDebugging.cpp CustomStyle.cpp SelfPatchMatch.h Helpers.h Helpers.cpp RotateVectors.h CriminisiInpainting.h)
+# Gourds.png GourdsMask.png 1
+# BlackWhite.png BlackWhiteMask.png 5
+
+ADD_EXECUTABLE(CriminisiInpainting CriminisiInpaintingExample.cpp Helpers.cpp)
 TARGET_LINK_LIBRARIES(CriminisiInpainting vtkHybrid ITKBasicFilters ITKCommon ITKIO)
+#
+# ADD_EXECUTABLE(TestSelfPatchMatch TestSelfPatchMatch.cpp Helpers.cpp)
+# TARGET_LINK_LIBRARIES(TestSelfPatchMatch vtkHybrid ITKBasicFilters ITKCommon ITKIO)
+#
+# ADD_EXECUTABLE(TestPatchDifference TestPatchDifference.cpp Helpers.cpp)
+# TARGET_LINK_LIBRARIES(TestPatchDifference vtkHybrid ITKBasicFilters ITKCommon ITKIO)
 
 # ADD_EXECUTABLE(ErroneousGradientDemo ErroneousGradientDemo.cpp Helpers.cpp )
 # TARGET_LINK_LIBRARIES(ErroneousGradientDemo ITKBasicFilters ITKCommon ITKIO)

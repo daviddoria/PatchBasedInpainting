@@ -17,6 +17,8 @@
  *=========================================================================*/
 
 #include "Helpers.h"
+namespace Helpers
+{
 
 itk::ImageRegion<2> GetRegionInRadiusAroundPixel(itk::Index<2> pixel, unsigned int radius)
 {
@@ -35,3 +37,30 @@ itk::ImageRegion<2> GetRegionInRadiusAroundPixel(itk::Index<2> pixel, unsigned i
 
   return region;
 }
+
+bool IsValidPatch(const MaskImageType::Pointer mask, itk::ImageRegion<2> region)
+{
+  itk::ImageRegionConstIterator<MaskImageType> maskIterator(mask,region);
+
+  while(!maskIterator.IsAtEnd())
+    {
+    if(maskIterator.Get() > 0)
+      {
+      return false;
+      }
+
+    ++maskIterator;
+    }
+  return true;
+}
+
+itk::Index<2> GetRegionCenter(itk::ImageRegion<2> region)
+{
+  itk::Index<2> center;
+  center[0] = region.GetIndex()[0] + region.GetSize()[0] / 2;
+  center[1] = region.GetIndex()[1] + region.GetSize()[1] / 2;
+
+  return center;
+}
+
+} // end namespace
