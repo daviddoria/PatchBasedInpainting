@@ -39,6 +39,7 @@ CriminisiInpainting<TImage>::CriminisiInpainting()
   this->Mask = MaskImageType::New();
   this->InputMask = MaskImageType::New();
   this->Image = TImage::New();
+  this->Result = TImage::New();
   //this->Patch = ColorImageType::New();
   this->ConfidenceImage = FloatScalarImageType::New();
 
@@ -48,6 +49,12 @@ CriminisiInpainting<TImage>::CriminisiInpainting()
     {
     this->Weights[i] = 1.0/this->Weights.size();
     }
+}
+
+template <class TImage>
+typename TImage::Pointer CriminisiInpainting<TImage>::GetResult()
+{
+  return this->Result;
 }
 
 template <class TImage>
@@ -284,8 +291,9 @@ void CriminisiInpainting<TImage>::Inpaint()
     iteration++;
     } // end main while loop
 
-  Helpers::WriteImage<TImage>(this->Image, "result.mhd");
-  Helpers::WriteUnsignedCharImage<TImage>(this->Image, "result.png");
+  this->Result->Graft(this->Image);
+  //Helpers::WriteImage<TImage>(this->Image, "result.mhd");
+  //Helpers::WriteUnsignedCharImage<TImage>(this->Image, "result.png");
 
   }// end try
   catch( itk::ExceptionObject & err )

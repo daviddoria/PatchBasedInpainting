@@ -48,16 +48,13 @@ int main(int argc, char *argv[])
 
   CriminisiInpainting<FloatVector3ImageType> Inpainting;
   Inpainting.SetPatchRadius(patchRadius);
-  std::vector<float> weights(3);
-  weights[0] = .33;
-  weights[1] = .33;
-  weights[2] = .33;
-  Inpainting.SetWeights(weights);
   //Inpainting.SetWriteIntermediateImages(true);
   Inpainting.SetWriteIntermediateImages(false);
   Inpainting.SetImage(imageReader->GetOutput());
   Inpainting.SetInputMask(maskReader->GetOutput());
   Inpainting.Inpaint();
+
+  Helpers::WriteUnsignedCharImage<FloatVector3ImageType>(Inpainting.GetResult(), "result2.png");
 
   return EXIT_SUCCESS;
 }

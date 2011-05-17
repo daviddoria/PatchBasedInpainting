@@ -69,12 +69,14 @@ public:
   // Debugging
   void SetWriteIntermediateImages(bool);
 
+  typename TImage::Pointer GetResult();
 private:
   // Debugging
   bool WriteIntermediateImages;
 
-  // Data members
+  // Data
   typename TImage::Pointer Image;
+  typename TImage::Pointer Result;
 
   UnsignedCharScalarImageType::Pointer InputMask;
   UnsignedCharScalarImageType::Pointer Mask;
