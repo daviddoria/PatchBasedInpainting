@@ -19,9 +19,12 @@
 #ifndef CriminisiInpainting_h
 #define CriminisiInpainting_h
 
-#include "Types.h"
+// Custom
 #include "Helpers.h"
+#include "Types.h"
+class EventThrower;
 
+// ITK
 #include "itkAddImageFilter.h"
 #include "itkBinaryContourImageFilter.h"
 #include "itkBinaryDilateImageFilter.h"
@@ -48,45 +51,90 @@
 #include "itkRigid2DTransform.h"
 #include "itkSubtractImageFilter.h"
 #include "itkUnaryFunctorImageFilter.h"
-#include "itkVariableLengthVector.h"
+//#include "itkVariableLengthVector.h"
 
+// VTK
+#include <vtkSmartPointer.h>
+
+// STL
 #include <iomanip> // setfill, setw
 
-template <class TImage>
-class CriminisiInpainting
+// Qt
+#include <QObject>
+
+class CriminisiInpainting : public QObject
 {
+  Q_OBJECT
+signals:
+  void RefreshSignal();
 public:
 
+  // Constructor
   CriminisiInpainting();
 
+  // The real work is done here.
   void Inpaint();
-  void SetImage(typename TImage::Pointer image);
-  void SetInputMask(MaskImageType::Pointer mask);
+  
+  // Specify the image to inpaint.
+  void SetImage(FloatVectorImageType::Pointer image);
+  
+  // Specify the region to inpaint.
+  void SetMask(MaskImageType::Pointer mask);
+  
+  // Specify the size of the patches to copy.
   void SetPatchRadius(unsigned int);
 
-  void SetWeights(std::vector<float>);
+  // Specify if you want to see debugging outputs.
+  void SetDebug(bool);
 
-  // Debugging
-  void SetWriteIntermediateImages(bool);
+  // Compute the confidence values for pixels that were just inpainted.
+  void UpdateConfidences(itk::ImageRegion<2>);
+  
+  // Get the output of the inpainting.
+  FloatVectorImageType::Pointer GetResult();
+  
+  // Get the current confidence image
+  FloatScalarImageType::Pointer GetConfidenceImage();
 
-  typename TImage::Pointer GetResult();
+  // Get the current confidence image
+  FloatScalarImageType::Pointer GetPriorityImage();
+  
+  // Get the current boundary image
+  UnsignedCharScalarImageType::Pointer GetBoundaryImage();
+  
+  // This object allows this class to invoke VTK events.
+  vtkSmartPointer<EventThrower> Thrower;
+  
 private:
-  // Debugging
-  bool WriteIntermediateImages;
 
-  // Data
-  typename TImage::Pointer Image;
-  typename TImage::Pointer Result;
+  // Image to inpaint. This should not be modified throughout the algorithm.
+  FloatVectorImageType::Pointer OriginalImage;
+  
+  // The result of the inpainting.
+  FloatVectorImageType::Pointer CurrentImage;
 
-  UnsignedCharScalarImageType::Pointer InputMask;
-  UnsignedCharScalarImageType::Pointer Mask;
+  // The mask specifying the region to inpaint. This does not change throughout the algorithm - it is the original mask.
+  UnsignedCharScalarImageType::Pointer OriginalMask;
+  
+  // This mask is updated as patches are copied.
+  UnsignedCharScalarImageType::Pointer CurrentMask;
+  
+  // Keep track of the confidence of each pixel
   FloatScalarImageType::Pointer ConfidenceImage;
+  
+  // The patch radius.
   itk::Size<2> PatchRadius;
 
+  // Store the computed isophotes.
   FloatVector2ImageType::Pointer IsophoteImage;
+  
+  // Keep track of the edge of the region to inpaint.
   UnsignedCharScalarImageType::Pointer BoundaryImage;
+  
+  // Store the computed boundary normals.
   FloatVector2ImageType::Pointer BoundaryNormals;
 
+  // Keep track of the priority of each pixel.
   FloatScalarImageType::Pointer PriorityImage;
 
   // Functions
@@ -96,9 +144,6 @@ private:
   void DebugWriteAllImages(itk::Index<2> pixelToFill, itk::Index<2> bestMatchPixel, unsigned int iteration);
   void DebugWritePatch(itk::Index<2> pixel, std::string filePrefix, unsigned int iteration);
   void DebugWritePatch(itk::ImageRegion<2> region, std::string filename);
-
-  template <typename TDebugImageType>
-  void DebugWriteImage(typename TDebugImageType::Pointer image, std::string filePrefix, unsigned int iteration);
 
   void DebugWritePatch(itk::Index<2> pixel, std::string filename);
   void DebugWritePixelToFill(itk::Index<2> pixelToFill, unsigned int iteration);
@@ -112,34 +157,53 @@ private:
 
   itk::Size<2> GetPatchSize();
 
+  // Find the boundary of a region.
   void FindBoundary();
+  
+  // Compute the isophotes.
   void ComputeIsophotes();
+  
+  // Determine whether or not the inpainting is completed by seeing if there are any pixels in the mask that still need to be filled.
   bool HasMoreToInpaint(MaskImageType::Pointer mask);
 
+  // Compute the normals of a region boundary.
   void ComputeBoundaryNormals();
 
+  // ?
   void ExpandMask();
 
   // Criminisi specific functions
+  // Compute the priorities at all boundary pixels.
   void ComputeAllPriorities();
+  
+  // Compute the priority of a specific pixel.
   float ComputePriority(itk::Index<2> queryPixel);
+  
+  // Compute the Confidence at a pixel.
   float ComputeConfidenceTerm(itk::Index<2> queryPixel);
+  
+  // Compute the Data at a pixel.
   float ComputeDataTerm(itk::Index<2> queryPixel);
 
+  // Find the highest priority patch to be filled.
   itk::Index<2> FindHighestPriority(FloatScalarImageType::Pointer priorityImage);
 
+  // Update the mask so that the pixel that was filled is marked as filled.
   void UpdateMask(itk::Index<2> pixel);
 
-  // How much weight (0-1) is given to each component of the image
-  std::vector<float> Weights;
-
+  // Locate all patches that are completely inside of the image and completely inside of the source region
   void ComputeSourcePatches();
+  
+  // Store the list of source patches computed with ComputeSourcePatches()
   std::vector<itk::ImageRegion<2> > SourcePatches;
+  
+  bool Debug;
+  void DebugMessage(const std::string&);
+  
+  template <typename T>
+  void DebugMessage(const std::string& message, T value);
 };
 
-
-
-#include "CriminisiInpainting.txx"
-#include "CriminisiInpaintingDebugging.txx"
+#include "CriminisiInpainting.hxx"
 
 #endif

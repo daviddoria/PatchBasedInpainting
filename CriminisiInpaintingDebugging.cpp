@@ -22,17 +22,7 @@
 
 #include <iomanip> // setfill, setw
 
-template <class TImage>
-template <typename TDebugImageType>
-void CriminisiInpainting<TImage>::DebugWriteImage(typename TDebugImageType::Pointer image, std::string filePrefix, unsigned int iteration)
-{
-  std::stringstream padded;
-  padded << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
-  Helpers::WriteImage<TDebugImageType>(image, padded.str());
-}
-
-template <class TImage>
-void CriminisiInpainting<TImage>::DebugWriteAllImages(itk::Index<2> pixelToFill, itk::Index<2> bestMatchPixel, unsigned int iteration)
+void CriminisiInpainting::DebugWriteAllImages(itk::Index<2> pixelToFill, itk::Index<2> bestMatchPixel, unsigned int iteration)
 {
   std::cout << "Writing debug images for iteration " << iteration << std::endl;
 
@@ -45,39 +35,41 @@ void CriminisiInpainting<TImage>::DebugWriteAllImages(itk::Index<2> pixelToFill,
   DebugWritePixelToFill(pixelToFill, iteration);
   std::cout << "Wrote pixelToFill." << std::endl;
 
-  DebugWriteImage<FloatVector2ImageType>(this->IsophoteImage,"Isophotes", iteration);
-  DebugWriteImage<FloatScalarImageType>(this->ConfidenceImage,"Confidence", iteration);
-  DebugWriteImage<UnsignedCharScalarImageType>(this->BoundaryImage,"Boundary", iteration);
-  DebugWriteImage<FloatVector2ImageType>(this->BoundaryNormals,"BoundaryNormals", iteration);
-  DebugWriteImage<FloatScalarImageType>(this->PriorityImage,"Priorities", iteration);
-  DebugWriteImage<MaskImageType>(this->Mask,"Mask", iteration);
-  DebugWriteImage<TImage>(this->Image,"FilledImage", iteration);
+  Helpers::DebugWriteImage<FloatVector2ImageType>(this->IsophoteImage,"Isophotes", iteration);
+  Helpers::DebugWriteImage<FloatScalarImageType>(this->ConfidenceImage,"Confidence", iteration);
+  Helpers::DebugWriteImage<UnsignedCharScalarImageType>(this->BoundaryImage,"Boundary", iteration);
+  Helpers::DebugWriteImage<FloatVector2ImageType>(this->BoundaryNormals,"BoundaryNormals", iteration);
+  Helpers::DebugWriteImage<FloatScalarImageType>(this->PriorityImage,"Priorities", iteration);
+  Helpers::DebugWriteImage<MaskImageType>(this->CurrentMask,"Mask", iteration);
+  Helpers::DebugWriteImage<FloatVectorImageType>(this->CurrentImage,"FilledImage", iteration);
 
 }
 
-template <class TImage>
-void CriminisiInpainting<TImage>::DebugWritePatch(itk::Index<2> pixel, std::string filePrefix, unsigned int iteration)
+void CriminisiInpainting::DebugWritePatch(itk::Index<2> pixel, std::string filePrefix, unsigned int iteration)
 {
   std::stringstream padded;
   padded << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
   DebugWritePatch(pixel, padded.str());
 }
 
-template <class TImage>
-void CriminisiInpainting<TImage>::DebugWritePatch(itk::ImageRegion<2> region, std::string filename)
+void CriminisiInpainting::DebugWritePatch(itk::ImageRegion<2> region, std::string filename)
 {
+  if(!this->Debug)
+    {
+    return;
+    }
  try
   {
-  typedef itk::RegionOfInterestImageFilter< TImage,
-                                            TImage> ExtractFilterType;
+  typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
+                                            FloatVectorImageType> ExtractFilterType;
 
-  region.Crop(this->Image->GetLargestPossibleRegion());
+  region.Crop(this->CurrentImage->GetLargestPossibleRegion());
 
-  typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+  ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
   extractFilter->SetRegionOfInterest(region);
-  extractFilter->SetInput(this->Image);
+  extractFilter->SetInput(this->CurrentImage);
   extractFilter->Update();
-
+  /*
   typedef itk::Image<itk::CovariantVector<unsigned char, TImage::PixelType::Dimension>, 2> OutputImageType;
 
   typedef itk::CastImageFilter< TImage, OutputImageType > CastFilterType;
@@ -86,6 +78,7 @@ void CriminisiInpainting<TImage>::DebugWritePatch(itk::ImageRegion<2> region, st
   castFilter->Update();
 
   Helpers::WriteImage<OutputImageType>(castFilter->GetOutput(), filename);
+  */
   }// end try
   catch( itk::ExceptionObject & err )
   {
@@ -95,23 +88,22 @@ void CriminisiInpainting<TImage>::DebugWritePatch(itk::ImageRegion<2> region, st
   }
 }
 
-template <class TImage>
-void CriminisiInpainting<TImage>::DebugWritePatch(itk::Index<2> pixel, std::string filename)
+void CriminisiInpainting::DebugWritePatch(itk::Index<2> pixel, std::string filename)
 {
   try
   {
-  typedef itk::RegionOfInterestImageFilter< TImage,
-                                            TImage> ExtractFilterType;
+  typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
+                                            FloatVectorImageType> ExtractFilterType;
 
   itk::ImageRegion<2> region = Helpers::GetRegionInRadiusAroundPixel(pixel, this->PatchRadius[0]);
-  region.Crop(this->Image->GetLargestPossibleRegion());
+  region.Crop(this->CurrentImage->GetLargestPossibleRegion());
 
-  typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+  ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
   extractFilter->SetRegionOfInterest(region);
-  extractFilter->SetInput(this->Image);
+  extractFilter->SetInput(this->CurrentImage);
   extractFilter->Update();
 
-  Helpers::WriteImage<TImage>(extractFilter->GetOutput(), filename);
+  Helpers::WriteImage<FloatVectorImageType>(extractFilter->GetOutput(), filename);
   }// end try
   catch( itk::ExceptionObject & err )
   {
@@ -121,12 +113,11 @@ void CriminisiInpainting<TImage>::DebugWritePatch(itk::Index<2> pixel, std::stri
   }
 }
 
-template <class TImage>
-void CriminisiInpainting<TImage>::DebugWritePixelToFill(itk::Index<2> pixelToFill, unsigned int iteration)
+void CriminisiInpainting::DebugWritePixelToFill(itk::Index<2> pixelToFill, unsigned int iteration)
 {
   // Create a blank image with the pixel to fill colored white
   UnsignedCharScalarImageType::Pointer pixelImage = UnsignedCharScalarImageType::New();
-  pixelImage->SetRegions(this->Mask->GetLargestPossibleRegion());
+  pixelImage->SetRegions(this->CurrentMask->GetLargestPossibleRegion());
   pixelImage->Allocate();
 
   itk::ImageRegionIterator<UnsignedCharScalarImageType> iterator(pixelImage, pixelImage->GetLargestPossibleRegion());
@@ -151,12 +142,11 @@ void CriminisiInpainting<TImage>::DebugWritePixelToFill(itk::Index<2> pixelToFil
   Helpers::WriteImage<UnsignedCharScalarImageType>(pixelImage, padded.str());
 }
 
-template <class TImage>
-void CriminisiInpainting<TImage>::DebugWritePatchToFillLocation(itk::Index<2> pixelToFill, unsigned int iteration)
+void CriminisiInpainting::DebugWritePatchToFillLocation(itk::Index<2> pixelToFill, unsigned int iteration)
 {
   // Create a blank image with the patch that has been filled colored white
   UnsignedCharScalarImageType::Pointer patchImage = UnsignedCharScalarImageType::New();
-  patchImage->SetRegions(this->Mask->GetLargestPossibleRegion());
+  patchImage->SetRegions(this->CurrentMask->GetLargestPossibleRegion());
   patchImage->Allocate();
   // Make image black
   itk::ImageRegionIterator<UnsignedCharScalarImageType> blackIterator(patchImage, patchImage->GetLargestPossibleRegion());
@@ -175,4 +165,13 @@ void CriminisiInpainting<TImage>::DebugWritePatchToFillLocation(itk::Index<2> pi
   std::stringstream padded;
   padded << "PatchToFillLocation_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
   Helpers::WriteImage<UnsignedCharScalarImageType>(patchImage, padded.str());
+}
+
+
+void CriminisiInpainting::DebugMessage(const std::string& message)
+{
+  if(this->Debug)
+    {
+    std::cout << message << std::endl;
+    }
 }

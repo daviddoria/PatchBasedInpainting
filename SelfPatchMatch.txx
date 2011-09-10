@@ -28,6 +28,7 @@
 template< typename TImage, typename TMask>
 float PatchDifference(const TImage* image, const TMask* mask, itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion)
 {
+  // This function assumes that all pixels in the source region are unmasked.
   try
   {
   assert(image->GetLargestPossibleRegion().IsInside(sourceRegion));
@@ -46,9 +47,12 @@ float PatchDifference(const TImage* image, const TMask* mask, itk::ImageRegion<2
     sourceRegion.SetIndex(sourceRegion.GetIndex() - offset);
     }
 
-  itk::ImageRegionConstIteratorWithIndex<TImage> sourcePatchIterator(image, sourceRegion);
-  itk::ImageRegionConstIteratorWithIndex<TImage> targetPatchIterator(image, targetRegion);
-  itk::ImageRegionConstIteratorWithIndex<TMask> maskIterator(mask, targetRegion);
+  //itk::ImageRegionConstIteratorWithIndex<TImage> sourcePatchIterator(image, sourceRegion);
+  //itk::ImageRegionConstIteratorWithIndex<TImage> targetPatchIterator(image, targetRegion);
+  //itk::ImageRegionConstIteratorWithIndex<TMask> maskIterator(mask, targetRegion);
+  itk::ImageRegionConstIterator<TImage> sourcePatchIterator(image, sourceRegion);
+  itk::ImageRegionConstIterator<TImage> targetPatchIterator(image, targetRegion);
+  itk::ImageRegionConstIterator<TMask> maskIterator(mask, targetRegion);
 
   double sum = 0;
   unsigned int validPixelCounter = 0;

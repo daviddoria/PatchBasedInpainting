@@ -18,8 +18,51 @@
 
 #include "itkCastImageFilter.h"
 
+#include <iomanip> // for setfill()
+
+// VTK
+#include <vtkImageData.h>
+
 namespace Helpers
 {
+
+/** Copy the input to the output*/
+template<typename TImage>
+void DeepCopy(typename TImage::Pointer input, typename TImage::Pointer output)
+{
+  output->SetRegions(input->GetLargestPossibleRegion());
+  output->Allocate();
+
+  itk::ImageRegionConstIterator<TImage> inputIterator(input, input->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<TImage> outputIterator(output, output->GetLargestPossibleRegion());
+
+  while(!inputIterator.IsAtEnd())
+    {
+    outputIterator.Set(inputIterator.Get());
+    ++inputIterator;
+    ++outputIterator;
+    }
+}
+
+/** Copy the input to the output*/
+template<typename TImage>
+void DeepCopyVectorImage(typename TImage::Pointer input, typename TImage::Pointer output)
+{
+  output->SetRegions(input->GetLargestPossibleRegion());
+  output->SetNumberOfComponentsPerPixel(input->GetNumberOfComponentsPerPixel());
+  output->Allocate();
+
+  itk::ImageRegionConstIterator<TImage> inputIterator(input, input->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<TImage> outputIterator(output, output->GetLargestPossibleRegion());
+
+  while(!inputIterator.IsAtEnd())
+    {
+    outputIterator.Set(inputIterator.Get());
+    ++inputIterator;
+    ++outputIterator;
+    }
+    
+}
 
 template <typename TPixelType>
 double PixelSquaredDifference(TPixelType pixel1, TPixelType pixel2)
@@ -58,26 +101,37 @@ void WriteImage(typename T::Pointer image, std::string filename)
   writer->Update();
 }
 
+
 template<typename T>
-void WriteUnsignedCharImage(typename T::Pointer image, std::string filename)
+void WriteRGBImage(typename T::Pointer input, std::string filename)
 {
-  // Convert the input image to an unsigned char (possibly vector) image.
+  typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> RGBImageType;
 
-  //std::cout << "Input pixels have dimension " << T::PixelType::Dimension << std::endl;
+  RGBImageType::Pointer output = RGBImageType::New();
+  output->SetRegions(input->GetLargestPossibleRegion());
+  output->Allocate();
 
-  typedef itk::Image<itk::CovariantVector<unsigned char, T::PixelType::Dimension>, 2> OutputImageType;
+  itk::ImageRegionConstIterator<T> inputIterator(input, input->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<RGBImageType> outputIterator(output, output->GetLargestPossibleRegion());
 
-  typedef itk::CastImageFilter< T, OutputImageType > CastFilterType;
-  typename CastFilterType::Pointer castFilter = CastFilterType::New();
-  castFilter->SetInput(image);
-  castFilter->Update();
+  while(!inputIterator.IsAtEnd())
+    {
+    itk::CovariantVector<unsigned char, 3> pixel;
+    for(unsigned int i = 0; i < 3; ++i)
+      {
+      pixel[i] = inputIterator.Get()[i];
+      }
+    outputIterator.Set(pixel);
+    ++inputIterator;
+    ++outputIterator;
+    }
 
-  typename itk::ImageFileWriter<OutputImageType>::Pointer writer = itk::ImageFileWriter<OutputImageType>::New();
+  typename itk::ImageFileWriter<RGBImageType>::Pointer writer = itk::ImageFileWriter<RGBImageType>::New();
   writer->SetFileName(filename);
-  writer->SetInput(castFilter->GetOutput());
+  writer->SetInput(output);
   writer->Update();
-}
 
+}
 
 template <class T>
 void CreateBlankPatch(typename T::Pointer patch, unsigned int radius)
@@ -367,6 +421,52 @@ void ColorToGrayscale(typename TImage::Pointer colorImage, UnsignedCharScalarIma
     ++colorImageIterator;
     ++grayscaleImageIterator;
   }
+}
+
+template <typename TDebugImageType>
+void DebugWriteImage(typename TDebugImageType::Pointer image, std::string filePrefix, unsigned int iteration)
+{
+  std::stringstream padded;
+  padded << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
+  Helpers::WriteImage<TDebugImageType>(image, padded.str());
+}
+
+template <typename TImage>
+void ITKScalarImagetoVTKImage(typename TImage::Pointer image, vtkImageData* outputImage)
+{
+  //std::cout << "ITKScalarImagetoVTKImage()" << std::endl;
+  
+  // Rescale and cast for display
+  typedef itk::RescaleIntensityImageFilter<TImage, UnsignedCharScalarImageType > RescaleFilterType;
+  typename RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
+  rescaleFilter->SetOutputMinimum(0);
+  rescaleFilter->SetOutputMaximum(255);
+  rescaleFilter->SetInput(image);
+  rescaleFilter->Update();
+
+  // Setup and allocate the VTK image
+  outputImage->SetNumberOfScalarComponents(1);
+  outputImage->SetScalarTypeToUnsignedChar();
+  outputImage->SetDimensions(image->GetLargestPossibleRegion().GetSize()[0],
+                             image->GetLargestPossibleRegion().GetSize()[1],
+                             1);
+
+  outputImage->AllocateScalars();
+
+  // Copy all of the scaled magnitudes to the output image
+  itk::ImageRegionConstIteratorWithIndex<UnsignedCharScalarImageType> imageIterator(rescaleFilter->GetOutput(), rescaleFilter->GetOutput()->GetLargestPossibleRegion());
+  imageIterator.GoToBegin();
+
+  while(!imageIterator.IsAtEnd())
+    {
+    unsigned char* pixel = static_cast<unsigned char*>(outputImage->GetScalarPointer(imageIterator.GetIndex()[0],
+                                                                                     imageIterator.GetIndex()[1],0));
+    pixel[0] = imageIterator.Get();
+
+    ++imageIterator;
+    }
+    
+  outputImage->Modified();
 }
 
 }// end namespace

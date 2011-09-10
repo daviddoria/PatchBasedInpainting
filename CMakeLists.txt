@@ -7,37 +7,68 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) #fix the dynamic linking error (RPAT
 
 #include_directories(/home/doriad/src/ITK/Wrapping/WrapITK/ExternalProjects/ItkVtkGlue/src/)
 
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+#INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+
+FIND_PACKAGE(Qt4 REQUIRED)
+INCLUDE(${QT_USE_FILE})
+
+QT4_WRAP_UI(UISrcs Form.ui)
+QT4_WRAP_CPP(MOCSrcs Form.h ProgressThread.h CriminisiInpainting.h)
+
 FIND_PACKAGE(VTK REQUIRED)
 INCLUDE(${VTK_USE_FILE})
 
 FIND_PACKAGE(ITK REQUIRED)
 INCLUDE(${ITK_USE_FILE})
 
-ADD_EXECUTABLE(CriminisiInpainting CriminisiInpaintingExample.cpp Helpers.cpp)
-TARGET_LINK_LIBRARIES(CriminisiInpainting vtkHybrid ${ITK_LIBRARIES})
-INSTALL( TARGETS CriminisiInpainting
-  RUNTIME DESTINATION ${INSTALL_DIR} )
-#
+# Interactive
+ADD_EXECUTABLE(CriminisiInpaintingInteractive EventThrower.cxx 
+CriminisiInpainting.cpp 
+CriminisiInpaintingDebugging.cpp 
+ProgressThread.cpp
+Interactive.cpp Helpers.cpp Form.cxx ${UISrcs} ${MOCSrcs})
+TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
+INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
+
+# Non-interactive
+# ADD_EXECUTABLE(CriminisiInpainting CriminisiInpaintingExample.cpp Helpers.cpp)
+# TARGET_LINK_LIBRARIES(CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# INSTALL( TARGETS CriminisiInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+
 # ADD_EXECUTABLE(TestSelfPatchMatch TestSelfPatchMatch.cpp Helpers.cpp)
-# TARGET_LINK_LIBRARIES(TestSelfPatchMatch vtkHybrid ITKBasicFilters ITKCommon ITKIO)
+# TARGET_LINK_LIBRARIES(TestSelfPatchMatch ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 #
 # ADD_EXECUTABLE(TestPatchDifference TestPatchDifference.cpp Helpers.cpp)
-# TARGET_LINK_LIBRARIES(TestPatchDifference vtkHybrid ITKBasicFilters ITKCommon ITKIO)
+# TARGET_LINK_LIBRARIES(TestPatchDifference ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
 # ADD_EXECUTABLE(DemoErroneousGradient DemoErroneousGradient.cpp Helpers.cpp )
-# TARGET_LINK_LIBRARIES(DemoErroneousGradient ITKBasicFilters ITKCommon ITKIO)
+# TARGET_LINK_LIBRARIES(DemoErroneousGradient ${ITK_LIBRARIES})
 
 # ADD_EXECUTABLE(DemoBoundaryNormals DemoBoundaryNormals.cpp Helpers.cpp )
-# TARGET_LINK_LIBRARIES(DemoBoundaryNormals ITKBasicFilters ITKCommon ITKIO)
+# TARGET_LINK_LIBRARIES(DemoBoundaryNormals ${ITK_LIBRARIES})
 
 # ADD_EXECUTABLE(DemoInnerOuterBoundary DemoInnerOuterBoundary.cpp Helpers.cpp )
-# TARGET_LINK_LIBRARIES(DemoInnerOuterBoundary ITKBasicFilters ITKCommon ITKIO)
+# TARGET_LINK_LIBRARIES(DemoInnerOuterBoundary ${ITK_LIBRARIES})
 
 # ADD_EXECUTABLE(PatchImageDifferenceExample PatchImageDifferenceExample.cpp SelfPatchMatch.h Helpers.h  Helpers.cpp)
-# TARGET_LINK_LIBRARIES(PatchImageDifferenceExample vtkHybrid ITKBasicFilters ITKCommon ITKIO)
+# TARGET_LINK_LIBRARIES(PatchImageDifferenceExample ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 #
 # ADD_EXECUTABLE(SelfPatchMatchExample SelfPatchMatchExample.cpp SelfPatchMatch.h Helpers.h  Helpers.cpp)
-# TARGET_LINK_LIBRARIES(SelfPatchMatchExample vtkHybrid ITKBasicFilters ITKCommon ITKIO)
+# TARGET_LINK_LIBRARIES(SelfPatchMatchExample ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
 # ADD_EXECUTABLE(CriminisiInpaintingRGBDI CriminisiInpaintingExampleRGBDI.cxx CriminisiInpainting.cpp CriminisiInpaintingDebugging.cpp CustomStyle.cpp SelfPatchMatch.h Helpers.h Helpers.cpp RotateVectors.h CriminisiInpainting.h)
-# TARGET_LINK_LIBRARIES(CriminisiInpaintingRGBDI vtkHybrid ITKBasicFilters ITKCommon ITKIO)
+# TARGET_LINK_LIBRARIES(CriminisiInpaintingRGBDI ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+
+#---------------------------------------------------------------------
+# Testing
+
+SET( BUILD_TESTING OFF CACHE BOOL
+  "Perform some tests." )
+IF( ITKTOOLS_BUILD_TESTING )
+  ENABLE_TESTING()
+  set(BaselineDir ${CriminisiInpainting_SOURCE_DIR}/../Testing/Baselines/)
+  set(DataDir ${CriminisiInpainting_SOURCE_DIR}/../Testing/Data/)
+  set(ExeDir ${CriminisiInpainting_BINARY_DIR})
+  set(OutDir ${CriminisiInpainting_BINARY_DIR}/Testing/)
+ENDIF()

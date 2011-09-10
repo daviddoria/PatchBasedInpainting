@@ -19,8 +19,10 @@
 #ifndef HELPERS_H
 #define HELPERS_H
 
+// Custom
 #include "Types.h"
 
+// ITK
 #include "itkConstNeighborhoodIterator.h"
 #include "itkImageRegionIterator.h"
 #include "itkImageFileWriter.h"
@@ -30,10 +32,30 @@
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
 
+// VTK
+class vtkImageData;
+
 namespace Helpers
 {
+  
+  
+template<typename TImage>
+void DeepCopy(typename TImage::Pointer input, typename TImage::Pointer output);
+
+template<typename TImage>
+void DeepCopyVectorImage(typename TImage::Pointer input, typename TImage::Pointer output);
+
+void ITKImagetoVTKImage(FloatVectorImageType::Pointer image, vtkImageData* outputImage); // This function simply drives ITKImagetoVTKRGBImage or ITKImagetoVTKMagnitudeImage
+void ITKImagetoVTKRGBImage(FloatVectorImageType::Pointer image, vtkImageData* outputImage);
+void ITKImagetoVTKMagnitudeImage(FloatVectorImageType::Pointer image, vtkImageData* outputImage);
+
+template <typename TImage>
+void ITKScalarImagetoVTKImage(typename TImage::Pointer image, vtkImageData* outputImage);
 
 itk::Index<2> GetRegionCenter(itk::ImageRegion<2> region);
+
+template <typename TDebugImageType>
+void DebugWriteImage(typename TDebugImageType::Pointer image, std::string filePrefix, unsigned int iteration);
 
 template <class T>
 void WriteScaledScalarImage(typename T::Pointer image, std::string filename);
@@ -49,9 +71,6 @@ void ReplaceValue(typename T::Pointer image, typename T::PixelType queryValue, t
 
 template<typename T>
 void WriteImage(typename T::Pointer image, std::string filename);
-
-template<typename T>
-void WriteUnsignedCharImage(typename T::Pointer image, std::string filename);
 
 template <class T>
 void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, itk::Index<2> position);

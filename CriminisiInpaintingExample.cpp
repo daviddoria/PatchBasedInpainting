@@ -20,33 +20,39 @@
 
 int main(int argc, char *argv[])
 {
+  // Verify arguments
   if(argc != 4)
     {
     std::cerr << "Only gave " << argc << " arguments!" << std::endl;
     std::cerr << "Required arguments: image imageMask patchRadius" << std::endl;
     return EXIT_FAILURE;
     }
+
+  // Parse arguments
   std::string imageFilename = argv[1];
   std::string maskFilename = argv[2];
-  std::cout << "Reading image: " << imageFilename << std::endl;
-  std::cout << "Reading mask: " << maskFilename << std::endl;
 
   std::stringstream ssPatchRadius;
   ssPatchRadius << argv[3];
-  int patchRadius;
+  int patchRadius = 0;
   ssPatchRadius >> patchRadius;
 
+  // Output arguments
+  std::cout << "Reading image: " << imageFilename << std::endl;
+  std::cout << "Reading mask: " << maskFilename << std::endl;
   std::cout << "Patch radius: " << patchRadius << std::endl;
 
-  FloatVector3ImageReaderType::Pointer imageReader = FloatVector3ImageReaderType::New();
+  typedef  itk::ImageFileReader< FloatVectorImageType > ImageReaderType;
+  ImageReaderType::Pointer imageReader = ImageReaderType::New();
   imageReader->SetFileName(imageFilename.c_str());
   imageReader->Update();
 
-  UnsignedCharScalarImageReaderType::Pointer maskReader = UnsignedCharScalarImageReaderType::New();
+  typedef  itk::ImageFileReader< UnsignedCharScalarImageType  > MaskReaderType;
+  MaskReaderType::Pointer maskReader = MaskReaderType::New();
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 
-  CriminisiInpainting<FloatVector3ImageType> Inpainting;
+  CriminisiInpainting Inpainting;
   Inpainting.SetPatchRadius(patchRadius);
   //Inpainting.SetWriteIntermediateImages(true);
   Inpainting.SetWriteIntermediateImages(false);
@@ -54,7 +60,7 @@ int main(int argc, char *argv[])
   Inpainting.SetInputMask(maskReader->GetOutput());
   Inpainting.Inpaint();
 
-  Helpers::WriteUnsignedCharImage<FloatVector3ImageType>(Inpainting.GetResult(), "result2.png");
+  Helpers::WriteUnsignedCharImage<FloatVectorImageType>(Inpainting.GetResult(), "result2.png");
 
   return EXIT_SUCCESS;
 }

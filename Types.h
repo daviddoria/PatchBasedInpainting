@@ -19,9 +19,12 @@
 #ifndef Types_H
 #define Types_H
 
+#include "itkCovariantVector.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
-#include "itkCovariantVector.h"
+#include "itkVectorImage.h"
+
+typedef itk::VectorImage<float,2> FloatVectorImageType;
 
 // Scalar image types
 typedef itk::Image<float,2> FloatScalarImageType;
@@ -38,11 +41,5 @@ typedef itk::Image<UnsignedCharVectorType ,2> UnsignedCharVectorImageType;
 typedef itk::Image<FloatVector3Type , 2> FloatVector3ImageType;
 typedef itk::Image<FloatVector2Type , 2> FloatVector2ImageType;
 
-// Reader types
-typedef  itk::ImageFileReader< UnsignedCharScalarImageType  > UnsignedCharScalarImageReaderType;
-typedef  itk::ImageFileReader< FloatVector3ImageType  > FloatVector3ImageReaderType;
-
-// Special types (Doria only)
-typedef itk::Image<itk::CovariantVector<float, 5>, 2> RGBDIImageType;
 
 #endif
