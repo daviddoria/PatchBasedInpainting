@@ -22,7 +22,6 @@
 // Custom
 #include "Helpers.h"
 #include "Types.h"
-class EventThrower;
 
 // ITK
 #include "itkAddImageFilter.h"
@@ -88,7 +87,7 @@ public:
   void SetDebug(bool);
 
   // Compute the confidence values for pixels that were just inpainted.
-  void UpdateConfidences(itk::ImageRegion<2>);
+  void UpdateConfidences(const itk::ImageRegion<2>);
   
   // Get the output of the inpainting.
   FloatVectorImageType::Pointer GetResult();
@@ -101,9 +100,15 @@ public:
   
   // Get the current boundary image
   UnsignedCharScalarImageType::Pointer GetBoundaryImage();
+
+  // Get the current boundary image
+  FloatVector2ImageType::Pointer GetBoundaryNormalsImage();
   
-  // This object allows this class to invoke VTK events.
-  vtkSmartPointer<EventThrower> Thrower;
+  // Get the current isophote image
+  FloatVector2ImageType::Pointer GetIsophoteImage();
+
+  // Get the current data image
+  FloatScalarImageType::Pointer GetDataImage();
   
 private:
 
@@ -121,6 +126,9 @@ private:
   
   // Keep track of the confidence of each pixel
   FloatScalarImageType::Pointer ConfidenceImage;
+
+  // Keep track of the data term of each pixel
+  FloatScalarImageType::Pointer DataImage;
   
   // The patch radius.
   itk::Size<2> PatchRadius;
@@ -137,21 +145,31 @@ private:
   // Keep track of the priority of each pixel.
   FloatScalarImageType::Pointer PriorityImage;
 
+  void ComputeAllDataTerms();
+  
   // Functions
   void Initialize();
+  void InitializeMask();
+  void InitializeConfidence();
+  void InitializeData();
+  void InitializePriority();
+  void InitializeImage();
 
   // Debugging
-  void DebugWriteAllImages(itk::Index<2> pixelToFill, itk::Index<2> bestMatchPixel, unsigned int iteration);
-  void DebugWritePatch(itk::Index<2> pixel, std::string filePrefix, unsigned int iteration);
-  void DebugWritePatch(itk::ImageRegion<2> region, std::string filename);
+  void DebugWriteAllImages();
+  void DebugWriteAllImages(const itk::Index<2> pixelToFill, const itk::Index<2> bestMatchPixel, const unsigned int iteration);
+  void DebugWritePatch(const itk::Index<2> pixel, const std::string filePrefix, const unsigned int iteration);
+  void DebugWritePatch(const itk::ImageRegion<2> region, const std::string filename);
 
-  void DebugWritePatch(itk::Index<2> pixel, std::string filename);
-  void DebugWritePixelToFill(itk::Index<2> pixelToFill, unsigned int iteration);
-  void DebugWritePatchToFillLocation(itk::Index<2> pixelToFill, unsigned int iteration);
+  void DebugWritePatch(const itk::Index<2> pixel, const std::string filename);
+  void DebugWritePixelToFill(const itk::Index<2> pixelToFill, const unsigned int iteration);
+  void DebugWritePatchToFillLocation(const itk::Index<2> pixelToFill, const unsigned int iteration);
 
-  itk::CovariantVector<float, 2> GetAverageIsophote(itk::Index<2> queryPixel);
-  bool IsValidPatch(itk::Index<2> queryPixel, unsigned int radius);
-  bool IsValidPatch(itk::ImageRegion<2> patch);
+  itk::CovariantVector<float, 2> GetAverageIsophote(const itk::Index<2> queryPixel);
+  bool IsValidPatch(const itk::Index<2> queryPixel, const unsigned int radius);
+  bool IsValidPatch(const itk::ImageRegion<2> patch);
+  
+  itk::ImageRegion<2> CropToValidRegion(const itk::ImageRegion<2> patch);
 
   unsigned int GetNumberOfPixelsInPatch();
 
@@ -164,12 +182,12 @@ private:
   void ComputeIsophotes();
   
   // Determine whether or not the inpainting is completed by seeing if there are any pixels in the mask that still need to be filled.
-  bool HasMoreToInpaint(MaskImageType::Pointer mask);
+  bool HasMoreToInpaint();
 
   // Compute the normals of a region boundary.
   void ComputeBoundaryNormals();
 
-  // ?
+  // Enlarge the mask so that isophotes are not computed over the mask/image boundary
   void ExpandMask();
 
   // Criminisi specific functions
@@ -177,19 +195,19 @@ private:
   void ComputeAllPriorities();
   
   // Compute the priority of a specific pixel.
-  float ComputePriority(itk::Index<2> queryPixel);
+  float ComputePriority(const itk::Index<2> queryPixel);
   
   // Compute the Confidence at a pixel.
-  float ComputeConfidenceTerm(itk::Index<2> queryPixel);
+  float ComputeConfidenceTerm(const itk::Index<2> queryPixel);
   
   // Compute the Data at a pixel.
-  float ComputeDataTerm(itk::Index<2> queryPixel);
+  float ComputeDataTerm(const itk::Index<2> queryPixel);
 
   // Find the highest priority patch to be filled.
   itk::Index<2> FindHighestPriority(FloatScalarImageType::Pointer priorityImage);
 
   // Update the mask so that the pixel that was filled is marked as filled.
-  void UpdateMask(itk::Index<2> pixel);
+  void UpdateMask(const itk::Index<2> pixel);
 
   // Locate all patches that are completely inside of the image and completely inside of the source region
   void ComputeSourcePatches();
@@ -202,6 +220,9 @@ private:
   
   template <typename T>
   void DebugMessage(const std::string& message, T value);
+
+  // This member tracks the current iteration. This is only necessary to help construct useful filenames for debugging outputs from anywhere in the class.
+  unsigned int Iteration;
 };
 
 #include "CriminisiInpainting.hxx"

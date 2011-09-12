@@ -49,10 +49,12 @@ void ITKImagetoVTKImage(FloatVectorImageType::Pointer image, vtkImageData* outpu
 void ITKImagetoVTKRGBImage(FloatVectorImageType::Pointer image, vtkImageData* outputImage);
 void ITKImagetoVTKMagnitudeImage(FloatVectorImageType::Pointer image, vtkImageData* outputImage);
 
+void ITKImagetoVTKVectorFieldImage(FloatVector2ImageType::Pointer image, vtkImageData* outputImage);
+
 template <typename TImage>
 void ITKScalarImagetoVTKImage(typename TImage::Pointer image, vtkImageData* outputImage);
 
-itk::Index<2> GetRegionCenter(itk::ImageRegion<2> region);
+itk::Index<2> GetRegionCenter(const itk::ImageRegion<2> region);
 
 template <typename TDebugImageType>
 void DebugWriteImage(typename TDebugImageType::Pointer image, std::string filePrefix, unsigned int iteration);
@@ -67,7 +69,7 @@ template <class T>
 void CreateConstantPatch(typename T::Pointer patch, typename T::PixelType value, unsigned int radius);
 
 template<typename T>
-void ReplaceValue(typename T::Pointer image, typename T::PixelType queryValue, typename T::PixelType replacementValue);
+void ReplaceValue(typename T::Pointer image, const typename T::PixelType queryValue, const typename T::PixelType replacementValue);
 
 template<typename T>
 void WriteImage(typename T::Pointer image, std::string filename);
@@ -76,7 +78,7 @@ template <class T>
 void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, itk::Index<2> position);
 
 template <class T>
-void CreateBlankPatch(typename T::Pointer patch, unsigned int radius);
+void CreateBlankPatch(typename T::Pointer patch, const unsigned int radius);
 
 template <class T>
 void CopySelfPatchIntoValidRegion(typename T::Pointer image, const UnsignedCharScalarImageType::Pointer mask,
@@ -98,15 +100,17 @@ template <typename TImage>
 void ColorToGrayscale(typename TImage::Pointer colorImage, UnsignedCharScalarImageType::Pointer grayscaleImage);
 
 // Non template function declarations
-itk::ImageRegion<2> GetRegionInRadiusAroundPixel(itk::Index<2> pixel, unsigned int radius);
+itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2> pixel, const unsigned int radius);
 
 template <typename TPixelType>
-double PixelSquaredDifference(TPixelType, TPixelType);
+double PixelSquaredDifference(const TPixelType, const TPixelType);
 
-bool IsValidPatch(const UnsignedCharScalarImageType::Pointer mask, itk::ImageRegion<2> region);
+bool IsValidPatch(const UnsignedCharScalarImageType::Pointer mask, const itk::ImageRegion<2> region);
+
+
 
 }// end namespace
 
-#include "Helpers.txx"
+#include "Helpers.hxx"
 
 #endif

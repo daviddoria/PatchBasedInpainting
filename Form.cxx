@@ -34,10 +34,12 @@
 // VTK
 #include <vtkActor.h>
 #include <vtkActor2D.h>
+#include <vtkArrowSource.h>
 #include <vtkCamera.h>
 #include <vtkCommand.h>
 #include <vtkDataSetSurfaceFilter.h>
 #include <vtkFloatArray.h>
+#include <vtkGlyph2D.h>
 #include <vtkImageData.h>
 #include <vtkImageSlice.h>
 #include <vtkImageSliceMapper.h>
@@ -83,6 +85,8 @@ Form::Form()
 {
   this->setupUi(this);
 
+  this->Debug = true;
+  
   // Setup icons
   QIcon openIcon = QIcon::fromTheme("document-open");
   QIcon saveIcon = QIcon::fromTheme("document-save");
@@ -134,6 +138,46 @@ Form::Form()
   
   this->BoundaryImageSliceMapper->SetInputConnection(this->VTKBoundaryImage->GetProducerPort());
   this->BoundaryImageSlice->SetMapper(this->BoundaryImageSliceMapper);
+
+  // Initialize and link the data image display objects
+  this->VTKDataImage = vtkSmartPointer<vtkImageData>::New();
+  this->DataImageSlice = vtkSmartPointer<vtkImageSlice>::New();
+  this->DataImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
+
+  this->DataImageSliceMapper->SetInputConnection(this->VTKDataImage->GetProducerPort());
+  this->DataImageSlice->SetMapper(this->DataImageSliceMapper);
+
+  // Setup the arrows for boundary normals and isophote visualization
+  vtkSmartPointer<vtkArrowSource> arrowSource = vtkSmartPointer<vtkArrowSource>::New();
+  arrowSource->Update();
+  
+  // Isophote display
+  this->IsophoteMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+  this->VTKIsophoteImage = vtkSmartPointer<vtkImageData>::New();
+  this->IsophoteActor = vtkSmartPointer<vtkActor>::New();
+  this->IsophoteGlyph = vtkSmartPointer<vtkGlyph2D>::New();
+  
+  this->IsophoteGlyph->SetInputConnection(this->VTKIsophoteImage->GetProducerPort());
+  this->IsophoteGlyph->SetSource(arrowSource->GetOutput());
+  this->IsophoteGlyph->OrientOn();
+  this->IsophoteGlyph->SetVectorModeToUseVector();
+  
+  this->IsophoteMapper->SetInputConnection(this->IsophoteGlyph->GetOutputPort());
+  this->IsophoteActor->SetMapper(this->IsophoteMapper);
+  
+  // BoundaryNormals display
+  this->BoundaryNormalsMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+  this->VTKBoundaryNormalsImage = vtkSmartPointer<vtkImageData>::New();
+  this->BoundaryNormalsActor = vtkSmartPointer<vtkActor>::New();
+  this->BoundaryNormalsGlyph = vtkSmartPointer<vtkGlyph2D>::New();
+  
+  this->BoundaryNormalsGlyph->SetInputConnection(this->VTKBoundaryNormalsImage->GetProducerPort());
+  this->BoundaryNormalsGlyph->SetSource(arrowSource->GetOutput());
+  this->BoundaryNormalsGlyph->OrientOn();
+  this->BoundaryNormalsGlyph->SetVectorModeToUseVector();
+  
+  this->BoundaryNormalsMapper->SetInputConnection(this->BoundaryNormalsGlyph->GetOutputPort());
+  this->BoundaryNormalsActor->SetMapper(this->BoundaryNormalsMapper);
   
   // Add objects to the renderer
   this->Renderer = vtkSmartPointer<vtkRenderer>::New();
@@ -143,6 +187,9 @@ Form::Form()
   this->Renderer->AddViewProp(this->ConfidenceImageSlice);
   this->Renderer->AddViewProp(this->BoundaryImageSlice);
   this->Renderer->AddViewProp(this->PriorityImageSlice);
+  this->Renderer->AddViewProp(this->DataImageSlice);
+  this->Renderer->AddViewProp(this->IsophoteActor);
+  this->Renderer->AddViewProp(this->BoundaryNormalsActor);
 
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
@@ -278,35 +325,73 @@ void Form::RefreshSlot()
   this->ConfidenceImageSlice->VisibilityOff();
   this->PriorityImageSlice->VisibilityOff();
   this->BoundaryImageSlice->VisibilityOff();
+  this->DataImageSlice->VisibilityOff();
+  this->BoundaryNormalsActor->VisibilityOff();
+  this->IsophoteActor->VisibilityOff();
 
   if(this->chkImage->isChecked())
     {
-    //std::cout << "chkImage" << std::endl;
     this->ImageSlice->VisibilityOn();
     Helpers::ITKImagetoVTKImage(this->Inpainting.GetResult(), this->VTKImage);
-    //this->Renderer->AddViewProp(this->ImageSlice);
     }
   else if(this->chkConfidence->isChecked())
     {
-    //std::cout << "chkConfidence" << std::endl;
     this->ConfidenceImageSlice->VisibilityOn();
     Helpers::ITKScalarImagetoVTKImage<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), this->VTKConfidenceImage);
-    //this->Renderer->AddViewProp(this->ConfidenceImageSlice);
     }
   else if(this->chkPriority->isChecked())
     {
     this->PriorityImageSlice->VisibilityOn();
     Helpers::ITKScalarImagetoVTKImage<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), this->VTKPriorityImage);
-    //this->Renderer->AddViewProp(this->PriorityImageSlice);
     }
   else if(this->chkBoundary->isChecked())
     {
     this->BoundaryImageSlice->VisibilityOn();
     Helpers::ITKScalarImagetoVTKImage<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), this->VTKBoundaryImage);
-    //this->Renderer->AddViewProp(this->BoundaryImageSlice);
     }
-
+  else if(this->chkIsophotes->isChecked())
+    {
+    this->IsophoteActor->VisibilityOn();
+    Helpers::ITKImagetoVTKVectorFieldImage(this->Inpainting.GetIsophoteImage(), this->VTKIsophoteImage);
+    }
+  else if(this->chkData->isChecked())
+    {
+    this->DataImageSlice->VisibilityOn();
+    Helpers::ITKScalarImagetoVTKImage<FloatScalarImageType>(this->Inpainting.GetDataImage(), this->VTKDataImage);
+    }
+  else if(this->chkBoundaryNormals->isChecked())
+    {
+    this->BoundaryNormalsActor->VisibilityOn();
+    Helpers::ITKImagetoVTKVectorFieldImage(this->Inpainting.GetBoundaryNormalsImage(), this->VTKBoundaryNormalsImage);
+    }
+    
   Refresh();
+
+  // Debugging only
+  {
+  typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
+  ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
+  imageCalculatorFilter->SetImage(this->Inpainting.GetPriorityImage());
+  imageCalculatorFilter->Compute();
+  DebugMessage<float>("Highest priority: ", imageCalculatorFilter->GetMaximum());
+  }
+
+  {
+  typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
+  ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
+  imageCalculatorFilter->SetImage(this->Inpainting.GetConfidenceImage());
+  imageCalculatorFilter->Compute();
+  DebugMessage<float>("Highest conficence: ", imageCalculatorFilter->GetMaximum());
+  }
+
+  {
+  typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
+  ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
+  imageCalculatorFilter->SetImage(this->Inpainting.GetDataImage());
+  imageCalculatorFilter->Compute();
+  DebugMessage<float>("Highest data: ", imageCalculatorFilter->GetMaximum());
+  }
+  
 }
 
 void Form::Refresh()
@@ -369,4 +454,13 @@ void Form::on_actionFlipImage_activated()
     SetCameraPosition2();
     }
   this->Flipped = !this->Flipped;
+}
+
+
+void Form::DebugMessage(const std::string& message)
+{
+  if(this->Debug)
+    {
+    std::cout << message << std::endl;
+    }
 }

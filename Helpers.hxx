@@ -65,7 +65,7 @@ void DeepCopyVectorImage(typename TImage::Pointer input, typename TImage::Pointe
 }
 
 template <typename TPixelType>
-double PixelSquaredDifference(TPixelType pixel1, TPixelType pixel2)
+double PixelSquaredDifference(const TPixelType pixel1, const TPixelType pixel2)
 {
   /*
   std::cout << "pixel1: " << pixel1 << " pixel2: " << pixel2
@@ -76,7 +76,7 @@ double PixelSquaredDifference(TPixelType pixel1, TPixelType pixel2)
 }
 
 template<typename T>
-void ReplaceValue(typename T::Pointer image, typename T::PixelType queryValue, typename T::PixelType replacementValue)
+void ReplaceValue(typename T::Pointer image, const typename T::PixelType queryValue, const typename T::PixelType replacementValue)
 {
   // This function replaces all pixels in 'image' equal to 'queryValue' with 'replacementValue'
   itk::ImageRegionIterator<T> imageIterator(image, image->GetLargestPossibleRegion());
@@ -134,7 +134,7 @@ void WriteRGBImage(typename T::Pointer input, std::string filename)
 }
 
 template <class T>
-void CreateBlankPatch(typename T::Pointer patch, unsigned int radius)
+void CreateBlankPatch(typename T::Pointer patch, const unsigned int radius)
 {
   CreateConstantPatch<T>(patch, itk::NumericTraits< typename T::PixelType >::Zero, radius);
 }
@@ -406,8 +406,8 @@ void ColorToGrayscale(typename TImage::Pointer colorImage, UnsignedCharScalarIma
   grayscaleImage->SetRegions(colorImage->GetLargestPossibleRegion());
   grayscaleImage->Allocate();
 
-  itk::ImageRegionConstIterator<TImage> colorImageIterator(colorImage,colorImage->GetLargestPossibleRegion());
-  itk::ImageRegionIterator<UnsignedCharScalarImageType> grayscaleImageIterator(grayscaleImage,grayscaleImage->GetLargestPossibleRegion());
+  itk::ImageRegionConstIterator<TImage> colorImageIterator(colorImage, colorImage->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<UnsignedCharScalarImageType> grayscaleImageIterator(grayscaleImage, grayscaleImage->GetLargestPossibleRegion());
 
   typename TImage::PixelType largestPixel;
   largestPixel.Fill(255);
@@ -415,19 +415,19 @@ void ColorToGrayscale(typename TImage::Pointer colorImage, UnsignedCharScalarIma
   float largestNorm = largestPixel.GetNorm();
 
   while(!colorImageIterator.IsAtEnd())
-  {
+    {
     grayscaleImageIterator.Set(colorImageIterator.Get().GetNorm()*(255./largestNorm));
 
     ++colorImageIterator;
     ++grayscaleImageIterator;
-  }
+    }
 }
 
 template <typename TDebugImageType>
 void DebugWriteImage(typename TDebugImageType::Pointer image, std::string filePrefix, unsigned int iteration)
 {
   std::stringstream padded;
-  padded << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
+  padded << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mha";
   Helpers::WriteImage<TDebugImageType>(image, padded.str());
 }
 

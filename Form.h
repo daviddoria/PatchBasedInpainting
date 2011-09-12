@@ -108,6 +108,23 @@ protected:
   vtkSmartPointer<vtkImageData> VTKBoundaryImage;
   vtkSmartPointer<vtkImageSlice> BoundaryImageSlice;
   vtkSmartPointer<vtkImageSliceMapper> BoundaryImageSliceMapper;
+
+  // Data image display (this is the "Data" term that is later combined with the Confidence to compute the Priority)
+  vtkSmartPointer<vtkImageData> VTKDataImage;
+  vtkSmartPointer<vtkImageSlice> DataImageSlice;
+  vtkSmartPointer<vtkImageSliceMapper> DataImageSliceMapper;
+
+  // Isophote display
+  vtkSmartPointer<vtkPolyDataMapper> IsophoteMapper;
+  vtkSmartPointer<vtkActor> IsophoteActor;
+  vtkSmartPointer<vtkImageData> VTKIsophoteImage;
+  vtkSmartPointer<vtkGlyph2D> IsophoteGlyph;
+
+  // Boundary normals display
+  vtkSmartPointer<vtkPolyDataMapper> BoundaryNormalsMapper;
+  vtkSmartPointer<vtkActor> BoundaryNormalsActor;
+  vtkSmartPointer<vtkImageData> VTKBoundaryNormalsImage;
+  vtkSmartPointer<vtkGlyph2D> BoundaryNormalsGlyph;
   
   // The data that the user loads
   FloatVectorImageType::Pointer Image;
@@ -116,6 +133,16 @@ protected:
   CriminisiInpainting Inpainting;
   
   ProgressThread ComputationThread;
+
+  bool Debug;
+
+  // These functions output the message only if the Debug member is set to true
+  void DebugMessage(const std::string&);
+
+  template <typename T>
+  void DebugMessage(const std::string& message, T value);
 };
+
+#include "Form.hxx"
 
 #endif // Form_H

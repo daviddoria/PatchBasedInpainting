@@ -23,20 +23,22 @@
 
 // VTK
 #include <vtkImageData.h>
+#include <vtkPointData.h>
 
 namespace Helpers
 {
 
-itk::ImageRegion<2> GetRegionInRadiusAroundPixel(itk::Index<2> pixel, unsigned int radius)
+itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2> pixel, const unsigned int radius)
 {
   // This function returns a Region with the specified 'radius' centered at 'pixel'. By the definition of the radius of a square patch, the output region is (radius*2 + 1)x(radius*2 + 1).
 
   // The "index" is the lower left corner, so we need to subtract the radius from the center to obtain it
-  pixel[0] -= radius;
-  pixel[1] -= radius;
+  itk::Index<2> lowerLeft;
+  lowerLeft[0] = pixel[0] - radius;
+  lowerLeft[1] = pixel[1] - radius;
 
   itk::ImageRegion<2> region;
-  region.SetIndex(pixel);
+  region.SetIndex(lowerLeft);
   itk::Size<2> size;
   size[0] = radius*2 + 1;
   size[1] = radius*2 + 1;
@@ -45,7 +47,7 @@ itk::ImageRegion<2> GetRegionInRadiusAroundPixel(itk::Index<2> pixel, unsigned i
   return region;
 }
 
-bool IsValidPatch(const MaskImageType::Pointer mask, itk::ImageRegion<2> region)
+bool IsValidPatch(const MaskImageType::Pointer mask, const itk::ImageRegion<2> region)
 {
   itk::ImageRegionConstIterator<MaskImageType> maskIterator(mask,region);
 
@@ -61,7 +63,7 @@ bool IsValidPatch(const MaskImageType::Pointer mask, itk::ImageRegion<2> region)
   return true;
 }
 
-itk::Index<2> GetRegionCenter(itk::ImageRegion<2> region)
+itk::Index<2> GetRegionCenter(const itk::ImageRegion<2> region)
 {
   itk::Index<2> center;
   center[0] = region.GetIndex()[0] + region.GetSize()[0] / 2;
@@ -84,6 +86,40 @@ void ITKImagetoVTKImage(FloatVectorImageType::Pointer image, vtkImageData* outpu
     ITKImagetoVTKMagnitudeImage(image, outputImage);
     }
     
+  outputImage->Modified();
+}
+
+void ITKImagetoVTKVectorFieldImage(FloatVector2ImageType::Pointer image, vtkImageData* outputImage)
+{
+  //std::cout << "ITKImagetoVTKVectorFieldImage()" << std::endl;
+
+  // Setup and allocate the image data
+  outputImage->SetNumberOfScalarComponents(3); // We really want this to be 2, but VTK complains, so we must add a 3rd component (0) to every pixel
+  outputImage->SetScalarTypeToFloat();
+  outputImage->SetDimensions(image->GetLargestPossibleRegion().GetSize()[0],
+                             image->GetLargestPossibleRegion().GetSize()[1],
+                             1);
+
+  outputImage->AllocateScalars();
+
+  // Copy all of the input image pixels to the output image
+  itk::ImageRegionConstIteratorWithIndex<FloatVector2ImageType> imageIterator(image,image->GetLargestPossibleRegion());
+  imageIterator.GoToBegin();
+
+  while(!imageIterator.IsAtEnd())
+    {
+    float* pixel = static_cast<float*>(outputImage->GetScalarPointer(imageIterator.GetIndex()[0],
+								     imageIterator.GetIndex()[1],0));
+
+    FloatVector2ImageType::PixelType inputPixel = imageIterator.Get();
+    pixel[0] = inputPixel[0];
+    pixel[1] = inputPixel[1];
+    pixel[2] = 0;
+
+    ++imageIterator;
+    }
+
+  outputImage->GetPointData()->SetActiveVectors("ImageScalars");
   outputImage->Modified();
 }
 

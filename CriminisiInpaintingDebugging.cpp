@@ -22,7 +22,22 @@
 
 #include <iomanip> // setfill, setw
 
-void CriminisiInpainting::DebugWriteAllImages(itk::Index<2> pixelToFill, itk::Index<2> bestMatchPixel, unsigned int iteration)
+void CriminisiInpainting::DebugWriteAllImages()
+{
+  Helpers::DebugWriteImage<FloatScalarImageType>(this->ConfidenceImage, "ConfidenceImage", this->Iteration);
+  Helpers::DebugWriteImage<FloatScalarImageType>(this->DataImage, "DataImage", this->Iteration);
+  Helpers::DebugWriteImage<FloatScalarImageType>(this->PriorityImage, "PriorityImage", this->Iteration);
+  
+  Helpers::DebugWriteImage<FloatVector2ImageType>(this->IsophoteImage, "IsophoteImage", this->Iteration);
+  
+  Helpers::DebugWriteImage<UnsignedCharScalarImageType>(this->BoundaryImage, "BoundaryImage", this->Iteration);
+  Helpers::DebugWriteImage<FloatVector2ImageType>(this->BoundaryNormals, "BoundaryNormals", this->Iteration);
+  
+  Helpers::DebugWriteImage<MaskImageType>(this->CurrentMask, "CurrentMask", this->Iteration);
+  Helpers::DebugWriteImage<FloatVectorImageType>(this->CurrentImage, "CurrentImage", this->Iteration);
+}
+
+void CriminisiInpainting::DebugWriteAllImages(const itk::Index<2> pixelToFill, const itk::Index<2> bestMatchPixel, const unsigned int iteration)
 {
   std::cout << "Writing debug images for iteration " << iteration << std::endl;
 
@@ -45,40 +60,40 @@ void CriminisiInpainting::DebugWriteAllImages(itk::Index<2> pixelToFill, itk::In
 
 }
 
-void CriminisiInpainting::DebugWritePatch(itk::Index<2> pixel, std::string filePrefix, unsigned int iteration)
+void CriminisiInpainting::DebugWritePatch(const itk::Index<2> pixel, const std::string filePrefix, const unsigned int iteration)
 {
   std::stringstream padded;
   padded << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
   DebugWritePatch(pixel, padded.str());
 }
 
-void CriminisiInpainting::DebugWritePatch(itk::ImageRegion<2> region, std::string filename)
+void CriminisiInpainting::DebugWritePatch(const itk::ImageRegion<2> inputRegion, const std::string filename)
 {
   if(!this->Debug)
     {
     return;
     }
- try
+  try
   {
-  typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
-                                            FloatVectorImageType> ExtractFilterType;
+    typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
+					      FloatVectorImageType> ExtractFilterType;
+    itk::ImageRegion<2> region = inputRegion;
+    region.Crop(this->CurrentImage->GetLargestPossibleRegion());
 
-  region.Crop(this->CurrentImage->GetLargestPossibleRegion());
+    ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+    extractFilter->SetRegionOfInterest(region);
+    extractFilter->SetInput(this->CurrentImage);
+    extractFilter->Update();
+    /*
+    typedef itk::Image<itk::CovariantVector<unsigned char, TImage::PixelType::Dimension>, 2> OutputImageType;
 
-  ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
-  extractFilter->SetRegionOfInterest(region);
-  extractFilter->SetInput(this->CurrentImage);
-  extractFilter->Update();
-  /*
-  typedef itk::Image<itk::CovariantVector<unsigned char, TImage::PixelType::Dimension>, 2> OutputImageType;
+    typedef itk::CastImageFilter< TImage, OutputImageType > CastFilterType;
+    typename CastFilterType::Pointer castFilter = CastFilterType::New();
+    castFilter->SetInput(extractFilter->GetOutput());
+    castFilter->Update();
 
-  typedef itk::CastImageFilter< TImage, OutputImageType > CastFilterType;
-  typename CastFilterType::Pointer castFilter = CastFilterType::New();
-  castFilter->SetInput(extractFilter->GetOutput());
-  castFilter->Update();
-
-  Helpers::WriteImage<OutputImageType>(castFilter->GetOutput(), filename);
-  */
+    Helpers::WriteImage<OutputImageType>(castFilter->GetOutput(), filename);
+    */
   }// end try
   catch( itk::ExceptionObject & err )
   {
@@ -88,22 +103,22 @@ void CriminisiInpainting::DebugWritePatch(itk::ImageRegion<2> region, std::strin
   }
 }
 
-void CriminisiInpainting::DebugWritePatch(itk::Index<2> pixel, std::string filename)
+void CriminisiInpainting::DebugWritePatch(const itk::Index<2> pixel, const std::string filename)
 {
   try
   {
-  typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
-                                            FloatVectorImageType> ExtractFilterType;
+    typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
+					      FloatVectorImageType> ExtractFilterType;
 
-  itk::ImageRegion<2> region = Helpers::GetRegionInRadiusAroundPixel(pixel, this->PatchRadius[0]);
-  region.Crop(this->CurrentImage->GetLargestPossibleRegion());
+    itk::ImageRegion<2> region = Helpers::GetRegionInRadiusAroundPixel(pixel, this->PatchRadius[0]);
+    region.Crop(this->CurrentImage->GetLargestPossibleRegion());
 
-  ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
-  extractFilter->SetRegionOfInterest(region);
-  extractFilter->SetInput(this->CurrentImage);
-  extractFilter->Update();
+    ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+    extractFilter->SetRegionOfInterest(region);
+    extractFilter->SetInput(this->CurrentImage);
+    extractFilter->Update();
 
-  Helpers::WriteImage<FloatVectorImageType>(extractFilter->GetOutput(), filename);
+    Helpers::WriteImage<FloatVectorImageType>(extractFilter->GetOutput(), filename);
   }// end try
   catch( itk::ExceptionObject & err )
   {
@@ -113,7 +128,7 @@ void CriminisiInpainting::DebugWritePatch(itk::Index<2> pixel, std::string filen
   }
 }
 
-void CriminisiInpainting::DebugWritePixelToFill(itk::Index<2> pixelToFill, unsigned int iteration)
+void CriminisiInpainting::DebugWritePixelToFill(const itk::Index<2> pixelToFill, const unsigned int iteration)
 {
   // Create a blank image with the pixel to fill colored white
   UnsignedCharScalarImageType::Pointer pixelImage = UnsignedCharScalarImageType::New();
@@ -142,7 +157,7 @@ void CriminisiInpainting::DebugWritePixelToFill(itk::Index<2> pixelToFill, unsig
   Helpers::WriteImage<UnsignedCharScalarImageType>(pixelImage, padded.str());
 }
 
-void CriminisiInpainting::DebugWritePatchToFillLocation(itk::Index<2> pixelToFill, unsigned int iteration)
+void CriminisiInpainting::DebugWritePatchToFillLocation(const itk::Index<2> pixelToFill, const unsigned int iteration)
 {
   // Create a blank image with the patch that has been filled colored white
   UnsignedCharScalarImageType::Pointer patchImage = UnsignedCharScalarImageType::New();
