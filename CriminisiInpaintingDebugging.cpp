@@ -33,7 +33,7 @@ void CriminisiInpainting::DebugWriteAllImages()
   Helpers::DebugWriteImage<UnsignedCharScalarImageType>(this->BoundaryImage, "BoundaryImage", this->Iteration);
   Helpers::DebugWriteImage<FloatVector2ImageType>(this->BoundaryNormals, "BoundaryNormals", this->Iteration);
   
-  Helpers::DebugWriteImage<MaskImageType>(this->CurrentMask, "CurrentMask", this->Iteration);
+  Helpers::DebugWriteImage<Mask>(this->CurrentMask, "CurrentMask", this->Iteration);
   Helpers::DebugWriteImage<FloatVectorImageType>(this->CurrentImage, "CurrentImage", this->Iteration);
 }
 
@@ -55,7 +55,7 @@ void CriminisiInpainting::DebugWriteAllImages(const itk::Index<2> pixelToFill, c
   Helpers::DebugWriteImage<UnsignedCharScalarImageType>(this->BoundaryImage,"Boundary", iteration);
   Helpers::DebugWriteImage<FloatVector2ImageType>(this->BoundaryNormals,"BoundaryNormals", iteration);
   Helpers::DebugWriteImage<FloatScalarImageType>(this->PriorityImage,"Priorities", iteration);
-  Helpers::DebugWriteImage<MaskImageType>(this->CurrentMask,"Mask", iteration);
+  Helpers::DebugWriteImage<Mask>(this->CurrentMask,"Mask", iteration);
   Helpers::DebugWriteImage<FloatVectorImageType>(this->CurrentImage,"FilledImage", iteration);
 
 }

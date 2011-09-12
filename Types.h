@@ -29,7 +29,6 @@ typedef itk::VectorImage<float,2> FloatVectorImageType;
 // Scalar image types
 typedef itk::Image<float,2> FloatScalarImageType;
 typedef itk::Image<unsigned char,2> UnsignedCharScalarImageType;
-typedef UnsignedCharScalarImageType MaskImageType;
 
 // Vector types
 typedef itk::CovariantVector<unsigned char, 3> UnsignedCharVectorType;

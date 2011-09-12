@@ -26,6 +26,15 @@
 #include <vtkSeedWidget.h>
 #include <vtkPointHandleRepresentation2D.h>
 
+class vtkActor;
+class vtkBorderWidget;
+class vtkImageData;
+class vtkImageSlice;
+class vtkImageSliceMapper;
+class vtkPolyData;
+class vtkPolyDataMapper;
+
+
 // ITK
 #include "itkImage.h"
 
@@ -37,15 +46,8 @@
 #include "ProgressThread.h"
 #include "Types.h"
 
-// Forward declarations
-class vtkActor;
-class vtkBorderWidget;
-class vtkImageData;
-class vtkImageSlice;
-class vtkImageSliceMapper;
-class vtkPolyData;
-class vtkPolyDataMapper;
-class vtkInteractorStyleImage;
+class InteractorStyleImageNoLevel;
+
 
 class Form : public QMainWindow, public Ui::Form
 {
@@ -65,7 +67,11 @@ public:
 public slots:
   void on_actionOpenImage_activated();
   void on_actionOpenMask_activated();
+  void on_actionOpenMaskInverted_activated();
   void on_actionSaveResult_activated();
+  
+  void on_chkImage_clicked();
+  void on_chkMask_clicked();
   
   void on_btnInpaint_clicked();
   
@@ -82,7 +88,7 @@ public slots:
 protected:
   
   // The interactor to allow us to zoom and pan the image
-  vtkSmartPointer<vtkInteractorStyleImage> InteractorStyle;
+  vtkSmartPointer<InteractorStyleImageNoLevel> InteractorStyle;
   
   // Track if the image has been flipped
   bool Flipped;
@@ -109,6 +115,11 @@ protected:
   vtkSmartPointer<vtkImageSlice> BoundaryImageSlice;
   vtkSmartPointer<vtkImageSliceMapper> BoundaryImageSliceMapper;
 
+  // Mask image display
+  vtkSmartPointer<vtkImageData> VTKMaskImage;
+  vtkSmartPointer<vtkImageSlice> MaskImageSlice;
+  vtkSmartPointer<vtkImageSliceMapper> MaskImageSliceMapper;
+  
   // Data image display (this is the "Data" term that is later combined with the Confidence to compute the Priority)
   vtkSmartPointer<vtkImageData> VTKDataImage;
   vtkSmartPointer<vtkImageSlice> DataImageSlice;
@@ -128,7 +139,7 @@ protected:
   
   // The data that the user loads
   FloatVectorImageType::Pointer Image;
-  UnsignedCharScalarImageType::Pointer Mask;
+  Mask::Pointer MaskImage;
   
   CriminisiInpainting Inpainting;
   

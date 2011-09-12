@@ -31,51 +31,54 @@ float PatchDifference(const TImage* image, const TMask* mask, itk::ImageRegion<2
   // This function assumes that all pixels in the source region are unmasked.
   try
   {
-  assert(image->GetLargestPossibleRegion().IsInside(sourceRegion));
+    assert(image->GetLargestPossibleRegion().IsInside(sourceRegion));
 
-  if(!image->GetLargestPossibleRegion().IsInside(targetRegion))
-    {
-    // Move the source region to the target region
-    itk::Offset<2> offset = targetRegion.GetIndex() - sourceRegion.GetIndex();
-    sourceRegion.SetIndex(sourceRegion.GetIndex() + offset);
-
-    // Make the target region be entirely inside the image
-    targetRegion.Crop(image->GetLargestPossibleRegion());
-    sourceRegion.Crop(image->GetLargestPossibleRegion());
-
-    // Move the source region back
-    sourceRegion.SetIndex(sourceRegion.GetIndex() - offset);
-    }
-
-  //itk::ImageRegionConstIteratorWithIndex<TImage> sourcePatchIterator(image, sourceRegion);
-  //itk::ImageRegionConstIteratorWithIndex<TImage> targetPatchIterator(image, targetRegion);
-  //itk::ImageRegionConstIteratorWithIndex<TMask> maskIterator(mask, targetRegion);
-  itk::ImageRegionConstIterator<TImage> sourcePatchIterator(image, sourceRegion);
-  itk::ImageRegionConstIterator<TImage> targetPatchIterator(image, targetRegion);
-  itk::ImageRegionConstIterator<TMask> maskIterator(mask, targetRegion);
-
-  double sum = 0;
-  unsigned int validPixelCounter = 0;
-  while(!sourcePatchIterator.IsAtEnd())
-    {
-    if(!maskIterator.Get()) // we are at an unmasked (i.e. valid) pixel
+    if(!image->GetLargestPossibleRegion().IsInside(targetRegion))
       {
-      double difference = Helpers::PixelSquaredDifference(sourcePatchIterator.Get(), targetPatchIterator.Get());
-      sum +=  difference;
-      validPixelCounter++;
+      // Move the source region to the target region
+      itk::Offset<2> offset = targetRegion.GetIndex() - sourceRegion.GetIndex();
+      sourceRegion.SetIndex(sourceRegion.GetIndex() + offset);
+
+      // Make the target region be entirely inside the image
+      targetRegion.Crop(image->GetLargestPossibleRegion());
+      sourceRegion.Crop(image->GetLargestPossibleRegion());
+
+      // Move the source region back
+      sourceRegion.SetIndex(sourceRegion.GetIndex() - offset);
       }
 
-    ++sourcePatchIterator;
-    ++targetPatchIterator;
-    ++maskIterator;
-    } // end while
+    //itk::ImageRegionConstIteratorWithIndex<TImage> sourcePatchIterator(image, sourceRegion);
+    //itk::ImageRegionConstIteratorWithIndex<TImage> targetPatchIterator(image, targetRegion);
+    //itk::ImageRegionConstIteratorWithIndex<TMask> maskIterator(mask, targetRegion);
+    itk::ImageRegionConstIterator<TImage> sourcePatchIterator(image, sourceRegion);
+    itk::ImageRegionConstIterator<TImage> targetPatchIterator(image, targetRegion);
+    itk::ImageRegionConstIterator<TMask> maskIterator(mask, targetRegion);
 
-  if(validPixelCounter == 0)
-    {
-    std::cout << "Warning: zero valid pixels in PatchDifference." << std::endl;
-    return 0;
-    }
-  return sum/static_cast<float>(validPixelCounter);
+    double sum = 0;
+    unsigned int validPixelCounter = 0;
+    while(!sourcePatchIterator.IsAtEnd())
+      {
+      if(!maskIterator.Get()) // we are at an unmasked (i.e. valid) pixel
+	{
+	double difference = Helpers::PixelSquaredDifference(sourcePatchIterator.Get(), targetPatchIterator.Get());
+	sum +=  difference;
+	validPixelCounter++;
+	}
+
+      ++sourcePatchIterator;
+      ++targetPatchIterator;
+      ++maskIterator;
+      } // end while
+
+    if(validPixelCounter == 0)
+      {
+      std::cerr << "Zero valid pixels in PatchDifference." << std::endl;
+      std::cerr << "Source region: " << sourceRegion << std::endl;
+      std::cerr << "Target region: " << targetRegion << std::endl;
+      exit(-1);
+      }
+      
+    return sum/static_cast<float>(validPixelCounter);
   } //end try
   catch( itk::ExceptionObject & err )
   {

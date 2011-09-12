@@ -19,14 +19,18 @@
 #ifndef SelfPatchMatch_H
 #define SelfPatchMatch_H
 
+// Custom
 #include "Helpers.h"
+#include "Mask.h"
 #include "Types.h"
 
+// ITK
 #include "itkNeighborhoodAlgorithm.h"
 #include "itkAndImageFilter.h"
 #include "itkNumericTraits.h"
 #include "itkImageRegion.h"
 
+// STL
 #include <iomanip> // setfill, setw
 #include <vector>
 

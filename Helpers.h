@@ -20,6 +20,7 @@
 #define HELPERS_H
 
 // Custom
+#include "Mask.h"
 #include "Types.h"
 
 // ITK
@@ -104,9 +105,6 @@ itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2> pixel, cons
 
 template <typename TPixelType>
 double PixelSquaredDifference(const TPixelType, const TPixelType);
-
-bool IsValidPatch(const UnsignedCharScalarImageType::Pointer mask, const itk::ImageRegion<2> region);
-
 
 
 }// end namespace

@@ -40,7 +40,6 @@
 #include <vtkImageData.h>
 #include <vtkImageSlice.h>
 #include <vtkImageSliceMapper.h>
-#include <vtkInteractorStyleImage.h>
 #include <vtkLookupTable.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
@@ -60,6 +59,8 @@
 
 // Custom
 #include "Helpers.h"
+#include "InteractorStyleImageNoLevel.h"
+#include "Mask.h"
 #include "Types.h"
 
 void Form::on_actionHelp_activated()
@@ -92,13 +93,15 @@ Form::Form()
 
   actionOpenMask->setIcon(openIcon);
   this->toolBar->addAction(actionOpenMask);
+  actionOpenMask->setEnabled(false);
 
   actionSaveResult->setIcon(saveIcon);
   this->toolBar->addAction(actionSaveResult);
 
   this->Flipped = false;
   
-  this->InteractorStyle = vtkSmartPointer<vtkInteractorStyleImage>::New();
+  //this->InteractorStyle = vtkSmartPointer<vtkInteractorStyleImage>::New();
+  this->InteractorStyle = vtkSmartPointer<InteractorStyleImageNoLevel>::New();
   
   // Initialize and link the image display objects
   this->VTKImage = vtkSmartPointer<vtkImageData>::New();
@@ -134,6 +137,14 @@ Form::Form()
   this->BoundaryImageSliceMapper->SetInputConnection(this->VTKBoundaryImage->GetProducerPort());
   this->BoundaryImageSlice->SetMapper(this->BoundaryImageSliceMapper);
 
+  // Initialize and link the mask image display objects
+  this->VTKMaskImage = vtkSmartPointer<vtkImageData>::New();
+  this->MaskImageSlice = vtkSmartPointer<vtkImageSlice>::New();
+  this->MaskImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
+  
+  this->MaskImageSliceMapper->SetInputConnection(this->VTKMaskImage->GetProducerPort());
+  this->MaskImageSlice->SetMapper(this->MaskImageSliceMapper);
+  
   // Initialize and link the data image display objects
   this->VTKDataImage = vtkSmartPointer<vtkImageData>::New();
   this->DataImageSlice = vtkSmartPointer<vtkImageSlice>::New();
@@ -187,6 +198,7 @@ Form::Form()
   this->Renderer->AddViewProp(this->DataImageSlice);
   this->Renderer->AddViewProp(this->IsophoteActor);
   this->Renderer->AddViewProp(this->BoundaryNormalsActor);
+  this->Renderer->AddViewProp(this->MaskImageSlice);
 
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
@@ -195,7 +207,7 @@ Form::Form()
   //this->Mask = NULL;
   
   this->Image = FloatVectorImageType::New();
-  this->Mask = UnsignedCharScalarImageType::New();
+  this->MaskImage = Mask::New();
   
   connect(&ComputationThread, SIGNAL(StartProgressSignal()), this, SLOT(StartProgressSlot()), Qt::QueuedConnection);
   connect(&ComputationThread, SIGNAL(StopProgressSignal()), this, SLOT(StopProgressSlot()), Qt::QueuedConnection);
@@ -276,12 +288,35 @@ void Form::on_actionOpenImage_activated()
   
   Helpers::ITKImagetoVTKImage(this->Image, this->VTKImage);
   
+  this->Inpainting.SetImage(this->Image);
+    
   this->Renderer->ResetCamera();
   this->qvtkWidget->GetRenderWindow()->Render();
   
   this->statusBar()->showMessage("Opened image.");
+  actionOpenMask->setEnabled(true);
 }
 
+
+void Form::on_actionOpenMaskInverted_activated()
+{
+  std::cout << "on_actionOpenMaskInverted_activated()" << std::endl;
+  on_actionOpenMask_activated();
+  this->MaskImage->Invert();
+  this->Inpainting.SetMask(this->MaskImage);
+  Helpers::WriteImage<Mask>(this->MaskImage, "InvertedMask.png");
+}
+
+void Form::on_chkImage_clicked()
+{
+  RefreshSlot();
+}
+
+void Form::on_chkMask_clicked()
+{
+  RefreshSlot();
+}
+  
 
 void Form::on_actionOpenMask_activated()
 {
@@ -295,21 +330,27 @@ void Form::on_actionOpenMask_activated()
     return;
     }
 
-  typedef itk::ImageFileReader<UnsignedCharScalarImageType> ReaderType;
+  typedef itk::ImageFileReader<Mask> ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName(fileName.toStdString());
   reader->Update();
+  
+  if(this->Image->GetLargestPossibleRegion() != reader->GetOutput()->GetLargestPossibleRegion())
+    {
+    std::cerr << "Image and mask must be the same size!" << std::endl;
+    return;
+    }
 
-  //this->Mask = reader->GetOutput();
-  Helpers::DeepCopy<UnsignedCharScalarImageType>(reader->GetOutput(), this->Mask);
-  std::cout << "Mask in Form is size: " << this->Mask->GetLargestPossibleRegion() << std::endl;
+  // For this program, we ALWAYS assume the hole to be filled is white, and the valid/source region is black.
+  // This is not simply reversible because of some subtle erosion operations that are performed.
+  // For this reason, we provide an "load inverted mask" action in the file menu.
+  this->MaskImage->SetValidValue(0);
+  this->MaskImage->SetHoleValue(255);
   
-  /*
-  Helpers::ITKImagetoVTKImage(this->Image, this->VTKImage);
-  
-  this->Renderer->ResetCamera();
-  this->qvtkWidget->GetRenderWindow()->Render();
-  */
+  this->MaskImage->Cleanup();
+
+  Helpers::DeepCopy<Mask>(reader->GetOutput(), this->MaskImage);
+  this->Inpainting.SetMask(this->MaskImage);
   
   this->statusBar()->showMessage("Opened mask.");
 }
@@ -325,11 +366,17 @@ void Form::RefreshSlot()
   this->DataImageSlice->VisibilityOff();
   this->BoundaryNormalsActor->VisibilityOff();
   this->IsophoteActor->VisibilityOff();
+  this->MaskImageSlice->VisibilityOff();
 
   if(this->chkImage->isChecked())
     {
     this->ImageSlice->VisibilityOn();
     Helpers::ITKImagetoVTKImage(this->Inpainting.GetResult(), this->VTKImage);
+    }
+  else if(this->chkMask->isChecked())
+    {
+    this->MaskImageSlice->VisibilityOn();
+    Helpers::ITKScalarImagetoVTKImage<Mask>(this->Inpainting.GetMaskImage(), this->VTKMaskImage);
     }
   else if(this->chkConfidence->isChecked())
     {
@@ -353,7 +400,7 @@ void Form::RefreshSlot()
     Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), normalizedIsophotes);
     Helpers::NormalizeVectorImage(normalizedIsophotes);
   
-    typedef itk::MaskImageFilter< FloatVector2ImageType, MaskImageType, FloatVector2ImageType> MaskFilterType;
+    typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType> MaskFilterType;
     typename MaskFilterType::Pointer maskFilter = MaskFilterType::New();
     maskFilter->SetInput(normalizedIsophotes);
     maskFilter->SetMaskImage(this->Inpainting.GetBoundaryImage());
@@ -436,7 +483,7 @@ void Form::on_btnInpaint_clicked()
   
   this->Inpainting.SetDebug(true);
   this->Inpainting.SetImage(this->Image);
-  this->Inpainting.SetMask(this->Mask);
+  this->Inpainting.SetMask(this->MaskImage);
   //this->Inpainting.Inpaint();
   std::cout << "starting ComputationThread..." << std::endl;
   ComputationThread.start();

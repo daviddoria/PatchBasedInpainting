@@ -31,7 +31,8 @@ namespace Helpers
 itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2> pixel, const unsigned int radius)
 {
   // This function returns a Region with the specified 'radius' centered at 'pixel'. By the definition of the radius of a square patch, the output region is (radius*2 + 1)x(radius*2 + 1).
-
+  // Note: This region is not necessarily entirely inside the image!
+  
   // The "index" is the lower left corner, so we need to subtract the radius from the center to obtain it
   itk::Index<2> lowerLeft;
   lowerLeft[0] = pixel[0] - radius;
@@ -47,21 +48,6 @@ itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2> pixel, cons
   return region;
 }
 
-bool IsValidPatch(const MaskImageType::Pointer mask, const itk::ImageRegion<2> region)
-{
-  itk::ImageRegionConstIterator<MaskImageType> maskIterator(mask,region);
-
-  while(!maskIterator.IsAtEnd())
-    {
-    if(maskIterator.Get() > 0)
-      {
-      return false;
-      }
-
-    ++maskIterator;
-    }
-  return true;
-}
 
 itk::Index<2> GetRegionCenter(const itk::ImageRegion<2> region)
 {

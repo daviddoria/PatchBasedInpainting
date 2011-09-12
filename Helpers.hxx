@@ -18,10 +18,14 @@
 
 #include "itkCastImageFilter.h"
 
+// STL
 #include <iomanip> // for setfill()
 
 // VTK
 #include <vtkImageData.h>
+
+// Custom
+#include "Mask.h"
 
 namespace Helpers
 {
@@ -229,7 +233,7 @@ itk::Index<2> MinValueLocation(typename T::Pointer image)
 }
 
 template <class T>
-void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, UnsignedCharScalarImageType::Pointer mask, itk::Index<2> position)
+void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, Mask::Pointer mask, itk::Index<2> position)
 {
   try
   {
@@ -249,12 +253,12 @@ void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, Un
   itk::ImageRegion<2> region = GetRegionInRadiusAroundPixel(position, patch->GetLargestPossibleRegion().GetSize()[0]/2);
 
   itk::ImageRegionConstIterator<T> patchIterator(patch,patch->GetLargestPossibleRegion());
-  itk::ImageRegionConstIterator<MaskImageType> maskIterator(mask,region);
+  itk::ImageRegionConstIterator<Mask> maskIterator(mask,region);
   itk::ImageRegionIterator<T> imageIterator(image, region);
 
   while(!patchIterator.IsAtEnd())
     {
-    if(maskIterator.Get()) // we are in the target region
+    if(mask->IsHole(maskIterator.GetIndex())) // we are in the target region
       {
       imageIterator.Set(patchIterator.Get());
       }
@@ -275,40 +279,40 @@ void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, Un
 
 
 template <class T>
-void CopySelfPatchIntoValidRegion(typename T::Pointer image, const MaskImageType::Pointer mask,
+void CopySelfPatchIntoValidRegion(typename T::Pointer image, const Mask::Pointer mask,
                                   itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> destinationRegion)
 {
   try
   {
-  assert(image->GetLargestPossibleRegion().IsInside(sourceRegion));
-  assert(IsValidPatch(mask, sourceRegion));
-  assert(sourceRegion.GetSize() == destinationRegion.GetSize());
+    assert(image->GetLargestPossibleRegion().IsInside(sourceRegion));
+    assert(mask->IsValid(sourceRegion));
+    assert(sourceRegion.GetSize() == destinationRegion.GetSize());
 
-  // Move the source region to the desintation region
-  itk::Offset<2> offset = destinationRegion.GetIndex() - sourceRegion.GetIndex();
-  sourceRegion.SetIndex(sourceRegion.GetIndex() + offset);
+    // Move the source region to the desintation region
+    itk::Offset<2> offset = destinationRegion.GetIndex() - sourceRegion.GetIndex();
+    sourceRegion.SetIndex(sourceRegion.GetIndex() + offset);
 
-  // Make the destination be entirely inside the image
-  destinationRegion.Crop(image->GetLargestPossibleRegion());
-  sourceRegion.Crop(image->GetLargestPossibleRegion());
+    // Make the destination be entirely inside the image
+    destinationRegion.Crop(image->GetLargestPossibleRegion());
+    sourceRegion.Crop(image->GetLargestPossibleRegion());
 
-  // Move the source region back
-  sourceRegion.SetIndex(sourceRegion.GetIndex() - offset);
+    // Move the source region back
+    sourceRegion.SetIndex(sourceRegion.GetIndex() - offset);
 
-  itk::ImageRegionConstIterator<T> sourceIterator(image, sourceRegion);
-  itk::ImageRegionIterator<T> destinationIterator(image, destinationRegion);
-  itk::ImageRegionConstIterator<MaskImageType> maskIterator(mask, destinationRegion);
+    itk::ImageRegionConstIterator<T> sourceIterator(image, sourceRegion);
+    itk::ImageRegionIterator<T> destinationIterator(image, destinationRegion);
+    itk::ImageRegionConstIterator<Mask> maskIterator(mask, destinationRegion);
 
-  while(!sourceIterator.IsAtEnd())
-    {
-    if(maskIterator.Get()) // we are in the target region
+    while(!sourceIterator.IsAtEnd())
       {
-      destinationIterator.Set(sourceIterator.Get());
+      if(mask->IsHole(maskIterator.GetIndex())) // we are in the target region
+	{
+	destinationIterator.Set(sourceIterator.Get());
+	}
+      ++sourceIterator;
+      ++maskIterator;
+      ++destinationIterator;
       }
-    ++sourceIterator;
-    ++maskIterator;
-    ++destinationIterator;
-    }
 
   }
   catch( itk::ExceptionObject & err )

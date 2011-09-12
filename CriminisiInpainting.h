@@ -78,7 +78,7 @@ public:
   void SetImage(FloatVectorImageType::Pointer image);
   
   // Specify the region to inpaint.
-  void SetMask(MaskImageType::Pointer mask);
+  void SetMask(Mask::Pointer mask);
   
   // Specify the size of the patches to copy.
   void SetPatchRadius(unsigned int);
@@ -110,6 +110,9 @@ public:
   // Get the current data image
   FloatScalarImageType::Pointer GetDataImage();
   
+  // Get the current mask image
+  Mask::Pointer GetMaskImage();
+  
 private:
 
   // Image to inpaint. This should not be modified throughout the algorithm.
@@ -119,10 +122,10 @@ private:
   FloatVectorImageType::Pointer CurrentImage;
 
   // The mask specifying the region to inpaint. This does not change throughout the algorithm - it is the original mask.
-  UnsignedCharScalarImageType::Pointer OriginalMask;
+  Mask::Pointer OriginalMask;
   
   // This mask is updated as patches are copied.
-  UnsignedCharScalarImageType::Pointer CurrentMask;
+  Mask::Pointer CurrentMask;
   
   // Keep track of the confidence of each pixel
   FloatScalarImageType::Pointer ConfidenceImage;
@@ -167,7 +170,6 @@ private:
 
   itk::CovariantVector<float, 2> GetAverageIsophote(const itk::Index<2> queryPixel);
   bool IsValidPatch(const itk::Index<2> queryPixel, const unsigned int radius);
-  bool IsValidPatch(const itk::ImageRegion<2> patch);
   
   itk::ImageRegion<2> CropToValidRegion(const itk::ImageRegion<2> patch);
 

@@ -24,7 +24,11 @@ ADD_EXECUTABLE(CriminisiInpaintingInteractive
 CriminisiInpainting.cpp 
 CriminisiInpaintingDebugging.cpp 
 ProgressThread.cpp
-Interactive.cpp Helpers.cpp Form.cxx ${UISrcs} ${MOCSrcs})
+Interactive.cpp 
+Helpers.cpp 
+Form.cxx 
+InteractorStyleImageNoLevel.cxx
+${UISrcs} ${MOCSrcs})
 TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
 INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 

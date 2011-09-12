@@ -171,7 +171,7 @@
            <property name="geometry">
             <rect>
              <x>50</x>
-             <y>210</y>
+             <y>200</y>
              <width>161</width>
              <height>22</height>
             </rect>
@@ -180,12 +180,25 @@
             <string>Boundary normals</string>
            </property>
           </widget>
+          <widget class="QCheckBox" name="chkMask">
+           <property name="geometry">
+            <rect>
+             <x>50</x>
+             <y>230</y>
+             <width>95</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Mask</string>
+           </property>
+          </widget>
          </widget>
         </item>
        </layout>
       </item>
       <item>
-       <widget class="QVTKWidget" name="qvtkWidget"/>
+       <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
       </item>
      </layout>
     </item>
@@ -206,6 +219,7 @@
     </property>
     <addaction name="actionOpenImage"/>
     <addaction name="actionOpenMask"/>
+    <addaction name="actionOpenMaskInverted"/>
     <addaction name="actionFlipImage"/>
     <addaction name="actionSaveResult"/>
     <addaction name="actionQuit"/>
@@ -299,6 +313,11 @@
   <action name="actionOpenMask">
    <property name="text">
     <string>Open Mask</string>
+   </property>
+  </action>
+  <action name="actionOpenMaskInverted">
+   <property name="text">
+    <string>Open Mask Inverted</string>
    </property>
   </action>
  </widget>
