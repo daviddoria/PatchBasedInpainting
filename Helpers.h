@@ -37,7 +37,7 @@ class vtkImageData;
 
 namespace Helpers
 {
-  
+void NormalizeVectorImage(FloatVector2ImageType::Pointer image);
   
 template<typename TImage>
 void DeepCopy(typename TImage::Pointer input, typename TImage::Pointer output);

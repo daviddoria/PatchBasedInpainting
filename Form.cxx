@@ -33,11 +33,8 @@
 
 // VTK
 #include <vtkActor.h>
-#include <vtkActor2D.h>
 #include <vtkArrowSource.h>
 #include <vtkCamera.h>
-#include <vtkCommand.h>
-#include <vtkDataSetSurfaceFilter.h>
 #include <vtkFloatArray.h>
 #include <vtkGlyph2D.h>
 #include <vtkImageData.h>
@@ -47,7 +44,6 @@
 #include <vtkLookupTable.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
-#include <vtkPointPicker.h>
 #include <vtkProperty2D.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkPoints.h>
@@ -59,11 +55,10 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkSmartPointer.h>
 #include <vtkImageSliceMapper.h>
-#include <vtkVertexGlyphFilter.h>
 #include <vtkXMLPolyDataReader.h>
+#include <vtkXMLImageDataWriter.h> // For debugging only
 
 // Custom
-#include "EventThrower.h"
 #include "Helpers.h"
 #include "Types.h"
 
@@ -161,6 +156,7 @@ Form::Form()
   this->IsophoteGlyph->SetSource(arrowSource->GetOutput());
   this->IsophoteGlyph->OrientOn();
   this->IsophoteGlyph->SetVectorModeToUseVector();
+  this->IsophoteGlyph->SetScaleFactor(10);
   
   this->IsophoteMapper->SetInputConnection(this->IsophoteGlyph->GetOutputPort());
   this->IsophoteActor->SetMapper(this->IsophoteMapper);
@@ -175,6 +171,7 @@ Form::Form()
   this->BoundaryNormalsGlyph->SetSource(arrowSource->GetOutput());
   this->BoundaryNormalsGlyph->OrientOn();
   this->BoundaryNormalsGlyph->SetVectorModeToUseVector();
+  this->BoundaryNormalsGlyph->SetScaleFactor(10);
   
   this->BoundaryNormalsMapper->SetInputConnection(this->BoundaryNormalsGlyph->GetOutputPort());
   this->BoundaryNormalsActor->SetMapper(this->BoundaryNormalsMapper);
@@ -254,7 +251,7 @@ void Form::StopProgressSlot()
 void Form::on_actionOpenImage_activated()
 {
   // Get a filename to open
-  QString fileName = QFileDialog::getOpenFileName(this, "Open File", ".", "Image Files (*.jpg *.jpeg *.bmp *.png *.mha)");
+  QString fileName = QFileDialog::getOpenFileName(this, "Open File", ".", "Image Files (*.jpg *.jpeg *.bmp *.png *.mha);;PNG Files (*.png)");
 
   std::cout << "Got filename: " << fileName.toStdString() << std::endl;
   if(fileName.toStdString().empty())
@@ -351,8 +348,29 @@ void Form::RefreshSlot()
     }
   else if(this->chkIsophotes->isChecked())
     {
+    // Mask the isophotes image with the current boundary
+    FloatVector2ImageType::Pointer normalizedIsophotes = FloatVector2ImageType::New();
+    Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), normalizedIsophotes);
+    Helpers::NormalizeVectorImage(normalizedIsophotes);
+  
+    typedef itk::MaskImageFilter< FloatVector2ImageType, MaskImageType, FloatVector2ImageType> MaskFilterType;
+    typename MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+    maskFilter->SetInput(normalizedIsophotes);
+    maskFilter->SetMaskImage(this->Inpainting.GetBoundaryImage());
+    FloatVector2ImageType::PixelType zero;
+    zero.Fill(0);
+    maskFilter->SetOutsideValue(zero);
+    maskFilter->Update();
+  
+    Helpers::ITKImagetoVTKVectorFieldImage(maskFilter->GetOutput(), this->VTKIsophoteImage);
+    
+    vtkSmartPointer<vtkXMLImageDataWriter> writer =
+      vtkSmartPointer<vtkXMLImageDataWriter>::New();
+    writer->SetFileName("VTKIsophotes.vti");
+    writer->SetInputConnection(this->VTKIsophoteImage->GetProducerPort());
+    writer->Write();
+    
     this->IsophoteActor->VisibilityOn();
-    Helpers::ITKImagetoVTKVectorFieldImage(this->Inpainting.GetIsophoteImage(), this->VTKIsophoteImage);
     }
   else if(this->chkData->isChecked())
     {
@@ -362,7 +380,13 @@ void Form::RefreshSlot()
   else if(this->chkBoundaryNormals->isChecked())
     {
     this->BoundaryNormalsActor->VisibilityOn();
+  
     Helpers::ITKImagetoVTKVectorFieldImage(this->Inpainting.GetBoundaryNormalsImage(), this->VTKBoundaryNormalsImage);
+//     vtkSmartPointer<vtkXMLImageDataWriter> writer =
+//       vtkSmartPointer<vtkXMLImageDataWriter>::New();
+//     writer->SetFileName("VTKBoundaryNormals.vti");
+//     writer->SetInputConnection(this->VTKBoundaryNormalsImage->GetProducerPort());
+//     writer->Write();
     }
     
   Refresh();

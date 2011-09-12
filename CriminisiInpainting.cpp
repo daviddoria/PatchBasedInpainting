@@ -243,11 +243,16 @@ void CriminisiInpainting::InitializeImage()
   invertIntensityFilter->SetInput(this->CurrentMask);
   invertIntensityFilter->Update();
   
-  // Mask the input image with the inverted mask (blank the region in the input image that we will fill in)
+  // Mask the input image with the inverted mask (blank the region in the input image that we will fill in).
+  // This is how the MaskImageFilter works:
+  //   if pixel_from_mask_image != 0
+  //     pixel_output_image = pixel_input_image
+  //   else
+  //     pixel_output_image = outside_value
   typedef itk::MaskImageFilter< FloatVectorImageType, MaskImageType, FloatVectorImageType> MaskFilterType;
   typename MaskFilterType::Pointer maskFilter = MaskFilterType::New();
-  maskFilter->SetInput1(this->OriginalImage);
-  maskFilter->SetInput2(invertIntensityFilter->GetOutput());
+  maskFilter->SetInput(this->OriginalImage);
+  maskFilter->SetMaskImage(invertIntensityFilter->GetOutput());
 
   // We set non-masked pixels to green so we can visually ensure these pixels are not being copied during the inpainting
   FloatVectorImageType::PixelType green;

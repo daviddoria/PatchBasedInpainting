@@ -89,6 +89,19 @@ void ITKImagetoVTKImage(FloatVectorImageType::Pointer image, vtkImageData* outpu
   outputImage->Modified();
 }
 
+void NormalizeVectorImage(FloatVector2ImageType::Pointer image)
+{
+  itk::ImageRegionIterator<FloatVector2ImageType> imageIterator(image, image->GetLargestPossibleRegion());
+
+  while(!imageIterator.IsAtEnd())
+    {
+    FloatVector2ImageType::PixelType pixel = imageIterator.Get();
+    pixel.Normalize();
+    imageIterator.Set(pixel);
+    ++imageIterator;
+    }
+}
+
 void ITKImagetoVTKVectorFieldImage(FloatVector2ImageType::Pointer image, vtkImageData* outputImage)
 {
   //std::cout << "ITKImagetoVTKVectorFieldImage()" << std::endl;
@@ -104,7 +117,6 @@ void ITKImagetoVTKVectorFieldImage(FloatVector2ImageType::Pointer image, vtkImag
 
   // Copy all of the input image pixels to the output image
   itk::ImageRegionConstIteratorWithIndex<FloatVector2ImageType> imageIterator(image,image->GetLargestPossibleRegion());
-  imageIterator.GoToBegin();
 
   while(!imageIterator.IsAtEnd())
     {

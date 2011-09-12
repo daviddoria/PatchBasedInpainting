@@ -5,10 +5,7 @@ PROJECT(CriminisiInpainting)
 SET( INSTALL_DIR ${CMAKE_INSTALL_PREFIX} )
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) #fix the dynamic linking error (RPATH) that would occur without this
 
-#include_directories(/home/doriad/src/ITK/Wrapping/WrapITK/ExternalProjects/ItkVtkGlue/src/)
-
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
-#INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
 FIND_PACKAGE(Qt4 REQUIRED)
 INCLUDE(${QT_USE_FILE})
@@ -23,7 +20,7 @@ FIND_PACKAGE(ITK REQUIRED)
 INCLUDE(${ITK_USE_FILE})
 
 # Interactive
-ADD_EXECUTABLE(CriminisiInpaintingInteractive EventThrower.cxx 
+ADD_EXECUTABLE(CriminisiInpaintingInteractive
 CriminisiInpainting.cpp 
 CriminisiInpaintingDebugging.cpp 
 ProgressThread.cpp
