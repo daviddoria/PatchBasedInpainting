@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 PROJECT(CriminisiInpainting)
 
 # Where to copy executables when 'make install' is run
-SET( INSTALL_DIR ${CMAKE_INSTALL_PREFIX} )
+SET(INSTALL_DIR ${CMAKE_INSTALL_PREFIX} )
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) #fix the dynamic linking error (RPATH) that would occur without this
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
@@ -23,11 +23,12 @@ INCLUDE(${ITK_USE_FILE})
 ADD_EXECUTABLE(CriminisiInpaintingInteractive
 CriminisiInpainting.cpp 
 CriminisiInpaintingDebugging.cpp 
-ProgressThread.cpp
-Interactive.cpp 
-Helpers.cpp 
 Form.cxx 
+Helpers.cpp 
+Interactive.cpp 
 InteractorStyleImageNoLevel.cxx
+ProgressThread.cpp
+SelfPatchCompare.cpp
 ${UISrcs} ${MOCSrcs})
 TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
 INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
@@ -37,9 +38,6 @@ INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DI
 # TARGET_LINK_LIBRARIES(CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 # INSTALL( TARGETS CriminisiInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 
-# ADD_EXECUTABLE(TestSelfPatchMatch TestSelfPatchMatch.cpp Helpers.cpp)
-# TARGET_LINK_LIBRARIES(TestSelfPatchMatch ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-#
 # ADD_EXECUTABLE(TestPatchDifference TestPatchDifference.cpp Helpers.cpp)
 # TARGET_LINK_LIBRARIES(TestPatchDifference ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
@@ -64,12 +62,14 @@ INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DI
 #---------------------------------------------------------------------
 # Testing
 
-SET( BUILD_TESTING OFF CACHE BOOL
-  "Perform some tests." )
-IF( ITKTOOLS_BUILD_TESTING )
-  ENABLE_TESTING()
-  set(BaselineDir ${CriminisiInpainting_SOURCE_DIR}/../Testing/Baselines/)
-  set(DataDir ${CriminisiInpainting_SOURCE_DIR}/../Testing/Data/)
-  set(ExeDir ${CriminisiInpainting_BINARY_DIR})
-  set(OutDir ${CriminisiInpainting_BINARY_DIR}/Testing/)
-ENDIF()
+# SET( BUILD_TESTING OFF CACHE BOOL "Perform some tests." )
+# IF( ITKTOOLS_BUILD_TESTING )
+#   ENABLE_TESTING()
+#   set(BaselineDir ${CriminisiInpainting_SOURCE_DIR}/../Testing/Baselines/)
+#   set(DataDir ${CriminisiInpainting_SOURCE_DIR}/../Testing/Data/)
+#   set(ExeDir ${CriminisiInpainting_BINARY_DIR})
+#   set(OutDir ${CriminisiInpainting_BINARY_DIR}/Testing/)
+# ENDIF()
+# 
+# ADD_EXECUTABLE(TestSelfPatchCompare TestSelfPatchCompare.cpp SelfPatchCompare.cpp)
+# TARGET_LINK_LIBRARIES(TestSelfPatchCompare ${ITK_LIBRARIES})

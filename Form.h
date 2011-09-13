@@ -58,6 +58,7 @@ public:
   Form();
   ~Form() {};
   
+  // These function deal with flipping the image
   void SetCameraPosition(double leftToRight[3], double bottomToTop[3]);
   void SetCameraPosition1();
   void SetCameraPosition2();
@@ -70,10 +71,23 @@ public slots:
   void on_actionOpenMaskInverted_activated();
   void on_actionSaveResult_activated();
   
+  void on_chkDebug_clicked();
+  void on_chkUseConfidence_clicked();
+  void on_chkUseData_clicked();
+  void on_sldAlpha_valueChanged(int);
+  
   void on_chkImage_clicked();
   void on_chkMask_clicked();
+  void on_chkPriority_clicked();
+  void on_chkConfidence_clicked();
+  void on_chkBoundary_clicked();
+  void on_chkIsophotes_clicked();
+  void on_chkData_clicked();
+  void on_chkBoundaryNormals_clicked();
   
   void on_btnInpaint_clicked();
+  void on_btnStop_clicked();
+  void on_btnReset_clicked();
   
   void on_actionHelp_activated();
   void on_actionQuit_activated();

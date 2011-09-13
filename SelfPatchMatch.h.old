@@ -34,17 +34,17 @@
 #include <iomanip> // setfill, setw
 #include <vector>
 
-template< typename TImage, typename TMask>
-float PatchDifference(const TImage* image, const TMask* mask, itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion);
+template< typename TImage>
+float PatchDifference(const TImage* image, const Mask* mask, const itk::ImageRegion<2> sourceRegion, const itk::ImageRegion<2> targetRegion);
 
-template< typename TImage, typename TMask>
-float PatchDifference(const TImage* image, const TMask* mask, itk::Index<2> queryPixel, itk::Index<2> currentPixel, unsigned int patchRadius, std::vector<float> weights);
+template< typename TImage>
+float PatchDifference(const TImage* image, const Mask* mask, const itk::Index<2> queryPixel, const itk::Index<2> currentPixel, const unsigned int patchRadius, const std::vector<float> weights);
 
-template< typename TImage, typename TMask>
-float PatchDifference(const TImage* image, const TMask* mask, itk::Index<2> queryPixel, itk::Index<2> currentPixel, unsigned int patchRadius);
+template< typename TImage>
+float PatchDifference(const TImage* image, const Mask* mask, const itk::Index<2> queryPixel, const itk::Index<2> currentPixel, const unsigned int patchRadius);
 
-template< typename TImage, typename TMask>
-unsigned int BestPatch(const TImage* image, const TMask* mask, std::vector<itk::ImageRegion<2> > sourceRegions, itk::ImageRegion<2> targetRegion);
+template< typename TImage>
+unsigned int BestPatch(const TImage* image, const Mask* mask, const std::vector<itk::ImageRegion<2> > sourceRegions, const itk::ImageRegion<2> targetRegion);
 
 #include "SelfPatchMatch.txx"
 

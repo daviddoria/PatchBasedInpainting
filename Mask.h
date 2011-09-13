@@ -67,7 +67,7 @@ class Mask : public itk::Image< unsigned char, 2>
   const NeighborhoodAccessorFunctorType GetNeighborhoodAccessor() const
   { return NeighborhoodAccessorFunctorType(); }
   
-  bool IsHole(itk::Index<2> index)
+  bool IsHole(itk::Index<2> index) const
   {
     if(this->GetPixel(index) == this->HoleValue)
       {
@@ -77,7 +77,7 @@ class Mask : public itk::Image< unsigned char, 2>
   }
   
   
-  bool IsValid(const itk::ImageRegion<2> region)
+  bool IsValid(const itk::ImageRegion<2> region) const
   {
     // If any of the pixels in the region are invalid, the region is invalid.
     
@@ -97,7 +97,7 @@ class Mask : public itk::Image< unsigned char, 2>
     return true;
   }
 
-  bool IsValid(itk::Index<2> index)
+  bool IsValid(itk::Index<2> index) const
   {
     if(this->GetPixel(index) == this->ValidValue)
       {
@@ -130,7 +130,8 @@ class Mask : public itk::Image< unsigned char, 2>
   
   void Cleanup()
   {
-    // Exchange HoleValue and ValidValue, but leave everything else alone.
+    // We want to interpret pixels that are "pretty much hole value" as holes, and pixels that
+    // are "pretty much valid value" as valid. The "do not use" pixels must be very far away from both of these values.
     itk::ImageRegionIterator<Mask> maskIterator(this, this->GetLargestPossibleRegion());
     
     float tolerance = 4;
@@ -138,10 +139,12 @@ class Mask : public itk::Image< unsigned char, 2>
       {
       if(fabs(maskIterator.Get() - this->ValidValue) < tolerance)
 	{
+        //std::cout << "Setting valid pixel to " << static_cast<unsigned int>(this->ValidValue) << std::endl;
 	maskIterator.Set(this->ValidValue);
 	}
       else if(fabs(maskIterator.Get() - this->HoleValue) < tolerance)
 	{
+        //std::cout << "Setting hole pixel to " << static_cast<unsigned int>(this->HoleValue) << std::endl;
 	maskIterator.Set(this->HoleValue);
 	}
       ++maskIterator;
@@ -159,17 +162,17 @@ class Mask : public itk::Image< unsigned char, 2>
     this->ValidValue = value; 
   }
   
-  unsigned char GetHoleValue()
+  unsigned char GetHoleValue() const
   {
     return this->HoleValue;
   }
   
-  unsigned char GetValidValue()
+  unsigned char GetValidValue() const
   {
     return this->ValidValue;
   }
   
-  void OutputMembers()
+  void OutputMembers() const
   {
     std::cout << "HoleValue: " << static_cast<unsigned int>(this->HoleValue) << std::endl;
     std::cout << "ValidValue: " << static_cast<unsigned int>(this->ValidValue) << std::endl;

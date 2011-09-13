@@ -222,6 +222,24 @@ Form::Form()
   connect(&Inpainting, SIGNAL(RefreshSignal()), this, SLOT(RefreshSlot()), Qt::QueuedConnection);
 };
 
+void Form::on_chkDebug_clicked()
+{
+  QDir directoryMaker;
+  directoryMaker.mkdir("Debug");
+  
+  this->Inpainting.SetDebug(this->chkDebug->isChecked());
+}
+
+void Form::on_chkUseConfidence_clicked()
+{
+  this->Inpainting.SetUseConfidence(this->chkUseConfidence->isChecked());
+}
+
+void Form::on_chkUseData_clicked()
+{
+  this->Inpainting.SetUseData(this->chkUseData->isChecked());
+}
+  
 
 void Form::on_actionQuit_activated()
 {
@@ -303,8 +321,13 @@ void Form::on_actionOpenMaskInverted_activated()
   std::cout << "on_actionOpenMaskInverted_activated()" << std::endl;
   on_actionOpenMask_activated();
   this->MaskImage->Invert();
+  this->MaskImage->Cleanup();
+  
   this->Inpainting.SetMask(this->MaskImage);
-  Helpers::WriteImage<Mask>(this->MaskImage, "InvertedMask.png");
+  if(this->Debug)
+    {
+    Helpers::WriteImage<Mask>(this->MaskImage, "Debug/InvertedMask.png");
+    }
 }
 
 void Form::on_chkImage_clicked()
@@ -316,7 +339,36 @@ void Form::on_chkMask_clicked()
 {
   RefreshSlot();
 }
-  
+
+void Form::on_chkPriority_clicked()
+{
+  RefreshSlot();
+}
+
+void Form::on_chkConfidence_clicked()
+{
+  RefreshSlot();
+}
+
+void Form::on_chkBoundary_clicked()
+{
+  RefreshSlot();
+}
+
+void Form::on_chkIsophotes_clicked()
+{
+  RefreshSlot();
+}
+
+void Form::on_chkData_clicked()
+{
+  RefreshSlot();
+}
+
+void Form::on_chkBoundaryNormals_clicked()
+{
+  RefreshSlot();
+}
 
 void Form::on_actionOpenMask_activated()
 {
@@ -341,6 +393,8 @@ void Form::on_actionOpenMask_activated()
     return;
     }
 
+  Helpers::DeepCopy<Mask>(reader->GetOutput(), this->MaskImage);
+  
   // For this program, we ALWAYS assume the hole to be filled is white, and the valid/source region is black.
   // This is not simply reversible because of some subtle erosion operations that are performed.
   // For this reason, we provide an "load inverted mask" action in the file menu.
@@ -349,7 +403,7 @@ void Form::on_actionOpenMask_activated()
   
   this->MaskImage->Cleanup();
 
-  Helpers::DeepCopy<Mask>(reader->GetOutput(), this->MaskImage);
+  // This is only set here so we can visualize the mask right away
   this->Inpainting.SetMask(this->MaskImage);
   
   this->statusBar()->showMessage("Opened mask.");
@@ -376,22 +430,22 @@ void Form::RefreshSlot()
   else if(this->chkMask->isChecked())
     {
     this->MaskImageSlice->VisibilityOn();
-    Helpers::ITKScalarImagetoVTKImage<Mask>(this->Inpainting.GetMaskImage(), this->VTKMaskImage);
+    Helpers::ITKScalarImageToScaledVTKImage<Mask>(this->Inpainting.GetMaskImage(), this->VTKMaskImage);
     }
   else if(this->chkConfidence->isChecked())
     {
     this->ConfidenceImageSlice->VisibilityOn();
-    Helpers::ITKScalarImagetoVTKImage<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), this->VTKConfidenceImage);
+    Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), this->VTKConfidenceImage);
     }
   else if(this->chkPriority->isChecked())
     {
     this->PriorityImageSlice->VisibilityOn();
-    Helpers::ITKScalarImagetoVTKImage<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), this->VTKPriorityImage);
+    Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), this->VTKPriorityImage);
     }
   else if(this->chkBoundary->isChecked())
     {
     this->BoundaryImageSlice->VisibilityOn();
-    Helpers::ITKScalarImagetoVTKImage<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), this->VTKBoundaryImage);
+    Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), this->VTKBoundaryImage);
     }
   else if(this->chkIsophotes->isChecked())
     {
@@ -408,59 +462,74 @@ void Form::RefreshSlot()
     zero.Fill(0);
     maskFilter->SetOutsideValue(zero);
     maskFilter->Update();
+    
+    if(this->Debug)
+      {
+      Helpers::WriteImage<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ShowIsophotes.BoundaryIsophotes.mha");
+      Helpers::WriteImage<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), "Debug/ShowIsophotes.Boundary.mha");
+      }
   
     Helpers::ITKImagetoVTKVectorFieldImage(maskFilter->GetOutput(), this->VTKIsophoteImage);
     
-    vtkSmartPointer<vtkXMLImageDataWriter> writer =
-      vtkSmartPointer<vtkXMLImageDataWriter>::New();
-    writer->SetFileName("VTKIsophotes.vti");
-    writer->SetInputConnection(this->VTKIsophoteImage->GetProducerPort());
-    writer->Write();
+    if(this->Debug)
+      {
+      vtkSmartPointer<vtkXMLImageDataWriter> writer =
+	vtkSmartPointer<vtkXMLImageDataWriter>::New();
+      writer->SetFileName("Debug/VTKIsophotes.vti");
+      writer->SetInputConnection(this->VTKIsophoteImage->GetProducerPort());
+      writer->Write();
+      }
     
     this->IsophoteActor->VisibilityOn();
     }
   else if(this->chkData->isChecked())
     {
     this->DataImageSlice->VisibilityOn();
-    Helpers::ITKScalarImagetoVTKImage<FloatScalarImageType>(this->Inpainting.GetDataImage(), this->VTKDataImage);
+    Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetDataImage(), this->VTKDataImage);
     }
   else if(this->chkBoundaryNormals->isChecked())
     {
     this->BoundaryNormalsActor->VisibilityOn();
   
     Helpers::ITKImagetoVTKVectorFieldImage(this->Inpainting.GetBoundaryNormalsImage(), this->VTKBoundaryNormalsImage);
-//     vtkSmartPointer<vtkXMLImageDataWriter> writer =
-//       vtkSmartPointer<vtkXMLImageDataWriter>::New();
-//     writer->SetFileName("VTKBoundaryNormals.vti");
-//     writer->SetInputConnection(this->VTKBoundaryNormalsImage->GetProducerPort());
-//     writer->Write();
+  
+    if(this->Debug)
+      {
+      vtkSmartPointer<vtkXMLImageDataWriter> writer =
+	vtkSmartPointer<vtkXMLImageDataWriter>::New();
+      writer->SetFileName("Debug/VTKBoundaryNormals.vti");
+      writer->SetInputConnection(this->VTKBoundaryNormalsImage->GetProducerPort());
+      writer->Write();
+      }
     }
     
   Refresh();
 
-  // Debugging only
+  if(this->Debug)
   {
-  typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
-  ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
-  imageCalculatorFilter->SetImage(this->Inpainting.GetPriorityImage());
-  imageCalculatorFilter->Compute();
-  DebugMessage<float>("Highest priority: ", imageCalculatorFilter->GetMaximum());
-  }
+    {
+    typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
+    ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
+    imageCalculatorFilter->SetImage(this->Inpainting.GetPriorityImage());
+    imageCalculatorFilter->Compute();
+    DebugMessage<float>("Highest priority: ", imageCalculatorFilter->GetMaximum());
+    }
 
-  {
-  typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
-  ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
-  imageCalculatorFilter->SetImage(this->Inpainting.GetConfidenceImage());
-  imageCalculatorFilter->Compute();
-  DebugMessage<float>("Highest conficence: ", imageCalculatorFilter->GetMaximum());
-  }
+    {
+    typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
+    ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
+    imageCalculatorFilter->SetImage(this->Inpainting.GetConfidenceImage());
+    imageCalculatorFilter->Compute();
+    DebugMessage<float>("Highest confidence: ", imageCalculatorFilter->GetMaximum());
+    }
 
-  {
-  typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
-  ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
-  imageCalculatorFilter->SetImage(this->Inpainting.GetDataImage());
-  imageCalculatorFilter->Compute();
-  DebugMessage<float>("Highest data: ", imageCalculatorFilter->GetMaximum());
+    {
+    typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
+    ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
+    imageCalculatorFilter->SetImage(this->Inpainting.GetDataImage());
+    imageCalculatorFilter->Compute();
+    DebugMessage<float>("Highest data: ", imageCalculatorFilter->GetMaximum());
+    }
   }
   
 }
@@ -474,19 +543,49 @@ void Form::Refresh()
   
 }
 
+void Form::on_btnStop_clicked()
+{
+  this->Inpainting.StopInpainting();
+}
+
+void Form::on_btnReset_clicked()
+{
+  this->Inpainting.SetImage(this->Image);
+  this->Inpainting.SetMask(this->MaskImage);
+  RefreshSlot();
+}
+  
+
 void Form::on_btnInpaint_clicked()
 {
   std::cout << "on_btnInpaint_clicked()" << std::endl;
+  
+  // Reset some things (this is so that if we want to run another completion it will work normally)
+    
   //this->Inpainting.Thrower->AddObserver(EventThrower::RefreshEvent, this, &Form::Refresh);
   
   this->Inpainting.SetPatchRadius(this->txtPatchSize->text().toUInt()/2);
   
-  this->Inpainting.SetDebug(true);
+  this->Inpainting.SetDebug(this->chkDebug->isChecked());
   this->Inpainting.SetImage(this->Image);
   this->Inpainting.SetMask(this->MaskImage);
-  //this->Inpainting.Inpaint();
+  this->Inpainting.SetAlpha(this->sldAlpha->value());
+  this->Inpainting.SetUseConfidence(this->chkUseConfidence->isChecked());
+  this->Inpainting.SetUseData(this->chkUseData->isChecked());
+  
+  RefreshSlot();
+  
   std::cout << "starting ComputationThread..." << std::endl;
   ComputationThread.start();
+}
+
+void Form::on_sldAlpha_valueChanged(int value)
+{
+  if(this->Debug)
+    {
+    std::cout << "on_sldAlpha_valueChanged" << std::endl;
+    }
+  this->Inpainting.SetAlpha(sldAlpha->value());
 }
 
 void Form::SetCameraPosition1()

@@ -79,6 +79,119 @@
             <number>24</number>
            </property>
           </widget>
+          <widget class="QCheckBox" name="chkDebug">
+           <property name="geometry">
+            <rect>
+             <x>30</x>
+             <y>70</y>
+             <width>95</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Debug</string>
+           </property>
+          </widget>
+          <widget class="QSlider" name="sldAlpha">
+           <property name="geometry">
+            <rect>
+             <x>60</x>
+             <y>210</y>
+             <width>160</width>
+             <height>19</height>
+            </rect>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>255</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_2">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>210</y>
+             <width>67</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Alpha</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="lblAlpha">
+           <property name="geometry">
+            <rect>
+             <x>100</x>
+             <y>230</y>
+             <width>67</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>255</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="btnStop">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>170</y>
+             <width>97</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Stop</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="btnReset">
+           <property name="geometry">
+            <rect>
+             <x>130</x>
+             <y>170</y>
+             <width>97</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Reset</string>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="chkUseData">
+           <property name="geometry">
+            <rect>
+             <x>150</x>
+             <y>20</y>
+             <width>95</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Data</string>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="chkUseConfidence">
+           <property name="geometry">
+            <rect>
+             <x>150</x>
+             <y>50</y>
+             <width>111</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Confidence</string>
+           </property>
+          </widget>
          </widget>
         </item>
         <item>
@@ -329,5 +442,22 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>sldAlpha</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>lblAlpha</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>150</x>
+     <y>268</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>144</x>
+     <y>287</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

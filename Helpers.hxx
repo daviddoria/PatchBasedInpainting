@@ -71,11 +71,11 @@ void DeepCopyVectorImage(typename TImage::Pointer input, typename TImage::Pointe
 template <typename TPixelType>
 double PixelSquaredDifference(const TPixelType pixel1, const TPixelType pixel2)
 {
-  /*
-  std::cout << "pixel1: " << pixel1 << " pixel2: " << pixel2
-            << " pixel1-pixel2: " << pixel1-pixel2
-            << " squared norm: " << (pixel1-pixel2).GetSquaredNorm() << std::endl;
-  */
+  
+//   std::cout << "pixel1: " << pixel1 << " pixel2: " << pixel2
+//             << " pixel1-pixel2: " << pixel1-pixel2
+//             << " squared norm: " << (pixel1-pixel2).GetSquaredNorm() << std::endl;
+  
   return (pixel1-pixel2).GetSquaredNorm();
 }
 
@@ -431,12 +431,12 @@ template <typename TDebugImageType>
 void DebugWriteImage(typename TDebugImageType::Pointer image, std::string filePrefix, unsigned int iteration)
 {
   std::stringstream padded;
-  padded << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mha";
+  padded << "Debug/" << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mha";
   Helpers::WriteImage<TDebugImageType>(image, padded.str());
 }
 
 template <typename TImage>
-void ITKScalarImagetoVTKImage(typename TImage::Pointer image, vtkImageData* outputImage)
+void ITKScalarImageToScaledVTKImage(typename TImage::Pointer image, vtkImageData* outputImage)
 {
   //std::cout << "ITKScalarImagetoVTKImage()" << std::endl;
   

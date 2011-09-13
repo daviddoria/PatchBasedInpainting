@@ -81,10 +81,13 @@ public:
   void SetMask(Mask::Pointer mask);
   
   // Specify the size of the patches to copy.
-  void SetPatchRadius(unsigned int);
+  void SetPatchRadius(const unsigned int);
 
   // Specify if you want to see debugging outputs.
-  void SetDebug(bool);
+  void SetDebug(const bool);
+  
+  // Specify alpha
+  void SetAlpha(const float);
 
   // Compute the confidence values for pixels that were just inpainted.
   void UpdateConfidences(const itk::ImageRegion<2>);
@@ -112,6 +115,12 @@ public:
   
   // Get the current mask image
   Mask::Pointer GetMaskImage();
+  
+  // Stop the procedure
+  void StopInpainting();
+  
+  void SetUseConfidence(const bool);
+  void SetUseData(const bool);
   
 private:
 
@@ -197,13 +206,13 @@ private:
   void ComputeAllPriorities();
   
   // Compute the priority of a specific pixel.
-  float ComputePriority(const itk::Index<2> queryPixel);
+  float ComputePriority(const itk::Index<2>& queryPixel);
   
   // Compute the Confidence at a pixel.
-  float ComputeConfidenceTerm(const itk::Index<2> queryPixel);
+  float ComputeConfidenceTerm(const itk::Index<2>& queryPixel);
   
   // Compute the Data at a pixel.
-  float ComputeDataTerm(const itk::Index<2> queryPixel);
+  float ComputeDataTerm(const itk::Index<2>& queryPixel);
 
   // Find the highest priority patch to be filled.
   itk::Index<2> FindHighestPriority(FloatScalarImageType::Pointer priorityImage);
@@ -225,6 +234,14 @@ private:
 
   // This member tracks the current iteration. This is only necessary to help construct useful filenames for debugging outputs from anywhere in the class.
   unsigned int Iteration;
+  
+  // This is the denominator of the data term expression.
+  float Alpha;
+  
+  bool Stop;
+  
+  bool UseConfidence;
+  bool UseData;
 };
 
 #include "CriminisiInpainting.hxx"

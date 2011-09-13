@@ -20,7 +20,7 @@
 
 // Custom
 #include "RotateVectors.h"
-#include "SelfPatchMatch.h"
+#include "SelfPatchCompare.h"
 #include "Helpers.h"
 
 // STL
@@ -51,6 +51,10 @@ CriminisiInpainting::CriminisiInpainting()
   
   this->Debug = true;
   this->Iteration = 0;
+  this->Alpha = 255.;
+  this->Stop = false;
+  this->UseConfidence = true;
+  this->UseData = true;
 }
 
 FloatVectorImageType::Pointer CriminisiInpainting::GetResult()
@@ -99,6 +103,7 @@ void CriminisiInpainting::ComputeSourcePatches()
 
   try
   {
+    this->SourcePatches.clear();
     itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->OriginalImage, this->OriginalImage->GetLargestPossibleRegion());
 
     while(!imageIterator.IsAtEnd())
@@ -132,7 +137,7 @@ void CriminisiInpainting::ComputeSourcePatches()
 
 }
 
-void CriminisiInpainting::SetPatchRadius(unsigned int radius)
+void CriminisiInpainting::SetPatchRadius(const unsigned int radius)
 {
   // Since this is the radius of the patch, there are no restrictions for the radius to be odd or even.
   this->PatchRadius.Fill(radius);
@@ -158,9 +163,14 @@ void CriminisiInpainting::SetMask(Mask::Pointer mask)
   this->OriginalMask->DeepCopyFrom(mask);
 }
 
-void CriminisiInpainting::SetDebug(bool flag)
+void CriminisiInpainting::SetDebug(const bool flag)
 {
   this->Debug = flag;
+}
+
+void CriminisiInpainting::SetAlpha(const float alpha)
+{
+  this->Alpha = alpha;
 }
 
 void CriminisiInpainting::ExpandMask()
@@ -181,13 +191,14 @@ void CriminisiInpainting::ExpandMask()
   
   if(this->Debug)
     {
-    Helpers::WriteImage<Mask>(expandMaskFilter->GetOutput(), "ExpandMask.expandedMask.mha");
+    Helpers::WriteImage<Mask>(expandMaskFilter->GetOutput(), "Debug/ExpandMask.expandedMask.mha");
     }
     
   //Helpers::DeepCopy<Mask>(expandMaskFilter->GetOutput(), this->CurrentMask);
   this->CurrentMask->DeepCopyFrom(expandMaskFilter->GetOutput());
 
   //WriteScaledImage<Mask>(this->Mask, "expandedMask.mhd");
+  RefreshSignal();
 }
 
 void CriminisiInpainting::InitializeMask()
@@ -254,7 +265,7 @@ void CriminisiInpainting::InitializeImage()
 
     ++maskIterator;
     }
-  
+  RefreshSignal();
 }
 
 void CriminisiInpainting::InitializePriority()
@@ -272,38 +283,38 @@ void CriminisiInpainting::Initialize()
     InitializeMask();
     if(this->Debug)
       {
-      Helpers::WriteImage<Mask>(this->CurrentMask, "OriginalMask.mha");
+      Helpers::WriteImage<Mask>(this->CurrentMask, "Debug/Initialize.CurrentMask.mha");
+      }
+      
+    InitializeImage();
+    if(this->Debug)
+      {
+      Helpers::WriteImage<FloatVectorImageType>(this->CurrentImage, "Debug/Initialize.CurrentImage.mha");
       }
       
     // Do this before we mask the image with the expanded mask
     ComputeIsophotes();
     if(this->Debug)
       {
-      Helpers::WriteImage<FloatVector2ImageType>(this->IsophoteImage, "OriginalIsophotes.mha");
+      Helpers::WriteImage<FloatVector2ImageType>(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha");
       }
     
     InitializeData();
     if(this->Debug)
       {
-      Helpers::WriteImage<FloatScalarImageType>(this->DataImage, "OriginalData.mha");
+      Helpers::WriteImage<FloatScalarImageType>(this->DataImage, "Debug/Initialize.DataImage.mha");
       }
       
     InitializePriority();
     if(this->Debug)
       {
-      Helpers::WriteImage<FloatScalarImageType>(this->PriorityImage, "OriginalPriority.mha");
+      Helpers::WriteImage<FloatScalarImageType>(this->PriorityImage, "Debug/Initialize.PriorityImage.mha");
       }
       
     InitializeConfidence();
     if(this->Debug)
       {
-      Helpers::WriteImage<FloatScalarImageType>(this->ConfidenceImage, "OriginalConfidence.mha");
-      }
-      
-    InitializeImage();
-    if(this->Debug)
-      {
-      Helpers::WriteImage<FloatVectorImageType>(this->CurrentImage, "OriginalImage.mha");
+      Helpers::WriteImage<FloatScalarImageType>(this->ConfidenceImage, "Debug/Initialize.ConfidenceImage.mha");
       }
       
     // Debugging outputs
@@ -325,25 +336,27 @@ void CriminisiInpainting::Inpaint()
   //std::cout << "CriminisiInpainting::Inpaint()" << std::endl;
   try
   {
+    // Start the procedure
+    this->Stop = false;
     Initialize();
     ComputeSourcePatches();
 
     this->Iteration = 0;
-    while(HasMoreToInpaint())
+    while(HasMoreToInpaint() && !this->Stop)
       {
       std::cout << "Iteration: " << this->Iteration << std::endl;
 
       FindBoundary();
       if(this->Debug)
 	{
-	Helpers::WriteImage<UnsignedCharScalarImageType>(this->BoundaryImage, "BoundaryImage.mha");
+	Helpers::WriteImage<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage.mha");
 	}
       DebugMessage("Found boundary.");
     
       ComputeBoundaryNormals();
       if(this->Debug)
 	{
-	Helpers::WriteImage<FloatVector2ImageType>(this->BoundaryNormals, "BoundaryNormals.mha");
+	Helpers::WriteImage<FloatVector2ImageType>(this->BoundaryNormals, "Debug/BoundaryNormals.mha");
 	}
       DebugMessage("Computed boundary normals.");
 
@@ -356,16 +369,24 @@ void CriminisiInpainting::Inpaint()
       DebugMessage<itk::Index<2> >("Highest priority found to be ", pixelToFill);
       //std::cout << "Filling: " << pixelToFill << std::endl;
 
-      this->DebugWritePatch(pixelToFill, "PatchToFill", this->Iteration); // this must be done here because it is before the filling
+      //this->DebugWritePatch(pixelToFill, "PatchToFill", this->Iteration); // this must be done here because it is before the filling
 
       //itk::Index<2> bestMatchPixel = SelfPatchMatch<TImage, UnsignedCharImageType>(this->Image, this->Mask, pixelToFill, this->PatchRadius[0], iteration, this->Weights);
       //std::cout << "Best match pixel: " << bestMatchPixel << std::endl;
 
       itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
 
+      
+      //unsigned int bestMatchSourcePatchId = BestPatch<FloatVectorImageType>(this->CurrentImage, this->CurrentMask, this->SourcePatches, targetRegion);
+      //DebugMessage<unsigned int>("Found best patch to be ", bestMatchSourcePatchId);
       DebugMessage("Finding best patch...");
-      unsigned int bestMatchSourcePatchId = BestPatch<FloatVectorImageType, Mask>(this->CurrentImage, this->CurrentMask, this->SourcePatches, targetRegion);
-      DebugMessage<unsigned int>("Found best patch to be ", bestMatchSourcePatchId);
+      SelfPatchCompare patchCompare;
+      patchCompare.SetImage(this->CurrentImage);
+      patchCompare.SetMask(this->CurrentMask);
+      patchCompare.SetSourceRegions(this->SourcePatches);
+      patchCompare.SetTargetRegion(targetRegion);
+      unsigned int bestMatchSourcePatchId = patchCompare.FindBestPatch();
+      DebugMessage("Found best patch.");
       
       //this->DebugWritePatch(this->SourcePatches[bestMatchSourcePatchId], "SourcePatch.png");
       //this->DebugWritePatch(targetRegion, "TargetPatch.png");
@@ -411,28 +432,18 @@ void CriminisiInpainting::ComputeIsophotes()
   {
     if(this->Debug)
       {
-      Helpers::WriteImage<FloatVectorImageType>(this->CurrentImage, "ComputeIsophotes.input.mha");
+      Helpers::WriteImage<FloatVectorImageType>(this->CurrentImage, "Debug/ComputeIsophotes.input.mha");
       }
     
     typedef itk::VectorMagnitudeImageFilter<FloatVectorImageType, UnsignedCharScalarImageType>  VectorMagnitudeFilterType;
     VectorMagnitudeFilterType::Pointer magnitudeFilter = VectorMagnitudeFilterType::New();
-    magnitudeFilter->SetInput(this->CurrentImage);
+    magnitudeFilter->SetInput(this->OriginalImage); // We use the original image here because the image that has been painted green inside the hole has a strong gradient around the hole.
     magnitudeFilter->Update();
     
     if(this->Debug)
       {
-      Helpers::WriteImage<UnsignedCharScalarImageType>(magnitudeFilter->GetOutput(), "ComputeIsophotes.magnitude.mha");
+      Helpers::WriteImage<UnsignedCharScalarImageType>(magnitudeFilter->GetOutput(), "Debug/ComputeIsophotes.magnitude.mha");
       }
-    /*
-    // Convert the color input image to a grayscale image
-    UnsignedCharScalarImageType::Pointer grayscaleImage = UnsignedCharScalarImageType::New();
-    Helpers::ColorToGrayscale<FloatVectorImageType>(this->CurrentImage, grayscaleImage);
-
-    if(this->Debug)
-      {
-      Helpers::WriteImage<UnsignedCharScalarImageType>(grayscaleImage, "ComputeIsophotes.greyscale.mha");
-      }
-    */
 
     // Blur the image to compute better gradient estimates
     typedef itk::DiscreteGaussianImageFilter<UnsignedCharScalarImageType, FloatScalarImageType >  BlurFilterType;
@@ -443,7 +454,7 @@ void CriminisiInpainting::ComputeIsophotes()
 
     if(this->Debug)
       {
-      Helpers::WriteImage<FloatScalarImageType>(blurFilter->GetOutput(), "ComputeIsophotes.blurred.mha");
+      Helpers::WriteImage<FloatScalarImageType>(blurFilter->GetOutput(), "Debug/ComputeIsophotes.blurred.mha");
       }
 
     // Compute the gradient
@@ -455,7 +466,7 @@ void CriminisiInpainting::ComputeIsophotes()
 
     if(this->Debug)
       {
-      Helpers::WriteImage<FloatVector2ImageType>(gradientFilter->GetOutput(), "ComputeIsophotes.gradient.mha");
+      Helpers::WriteImage<FloatVector2ImageType>(gradientFilter->GetOutput(), "Debug/ComputeIsophotes.gradient.mha");
       }
 
     // Rotate the gradient 90 degrees to obtain isophotes from gradient
@@ -470,7 +481,7 @@ void CriminisiInpainting::ComputeIsophotes()
 
     if(this->Debug)
       {
-      Helpers::WriteImage<FloatVector2ImageType>(rotateFilter->GetOutput(), "ComputeIsophotes.rotatedGradient.mha");
+      Helpers::WriteImage<FloatVector2ImageType>(rotateFilter->GetOutput(), "Debug/ComputeIsophotes.rotatedGradient.mha");
       }
       
     // Mask the isophote image with the expanded version of the inpainting mask.
@@ -484,7 +495,7 @@ void CriminisiInpainting::ComputeIsophotes()
 
     if(this->Debug)
       {
-      Helpers::WriteImage<Mask>(invertMaskFilter->GetOutput(), "ComputeIsophotes.invertedMask.mha");
+      Helpers::WriteImage<Mask>(invertMaskFilter->GetOutput(), "Debug/ComputeIsophotes.invertedMask.mha");
       }
 
     //std::cout << "rotateFilter: " << rotateFilter->GetOutput()->GetLargestPossibleRegion() << std::endl;
@@ -499,7 +510,7 @@ void CriminisiInpainting::ComputeIsophotes()
 
     if(this->Debug)
       {
-      Helpers::WriteImage<FloatVector2ImageType>(maskFilter->GetOutput(), "ComputeIsophotes.maskedIsophotes.mha");
+      Helpers::WriteImage<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ComputeIsophotes.maskedIsophotes.mha");
       }
       
     Helpers::DeepCopy<FloatVector2ImageType>(maskFilter->GetOutput(), this->IsophoteImage);
@@ -513,78 +524,115 @@ void CriminisiInpainting::ComputeIsophotes()
   }
 }
 
+void CriminisiInpainting::StopInpainting()
+{
+  this->Stop = true;
+}
+
 bool CriminisiInpainting::HasMoreToInpaint()
 {
-  itk::ImageRegionIterator<Mask> imageIterator(this->CurrentMask, this->CurrentMask->GetLargestPossibleRegion());
-
-  while(!imageIterator.IsAtEnd())
-    {
-    if(this->CurrentMask->IsHole(imageIterator.GetIndex()))
+  try
+  {
+    if(this->Debug)
       {
-      return true;
+      Helpers::WriteImage<Mask>(this->CurrentMask, "Debug/HasMoreToInpaint.input.png");
+      }
+      
+    itk::ImageRegionIterator<Mask> maskIterator(this->CurrentMask, this->CurrentMask->GetLargestPossibleRegion());
+
+    while(!maskIterator.IsAtEnd())
+      {
+  //     if(this->Debug)
+  //       {
+  //       std::cout << "HasMoreToInpaint - mask pixel: " << static_cast<unsigned int>(maskIterator.Get()) << std::endl;
+  //       }
+      if(this->CurrentMask->IsHole(maskIterator.GetIndex()))
+	{
+	return true;
+	}
+
+      ++maskIterator;
       }
 
-    ++imageIterator;
-    }
-
-  return false;
+    // If no pixels were holes, then we don't have any more to inpaint.
+    return false;
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in HasMoreToInpaint!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
 }
 
 void CriminisiInpainting::FindBoundary()
 {
   try
   {
-    /*
-    // If we simply find the boundary of the mask, the isophotes will not be copied into these pixels because they are 1 pixel
-    // away from the filled region
-    typedef itk::BinaryContourImageFilter <UnsignedCharImageType, UnsignedCharImageType >
-            binaryContourImageFilterType;
-
-    binaryContourImageFilterType::Pointer binaryContourFilter
-            = binaryContourImageFilterType::New ();
-    binaryContourFilter->SetInput(this->Mask);
-    binaryContourFilter->Update();
-
-    this->BoundaryImage = binaryContourFilter->GetOutput();
-    */
-
-    // Instead, we have to invert the mask before finding the boundary
+    // Compute the "outer" boundary of the region to fill. That is, we want the boundary pixels to be in the source region.
 
     if(Debug)
       {
-      Helpers::WriteImage<Mask>(this->CurrentMask, "FindBoundary.CurrentMask.mha");
-      Helpers::WriteImage<Mask>(this->CurrentMask, "FindBoundary.CurrentMask.png");
+      Helpers::WriteImage<Mask>(this->CurrentMask, "Debug/FindBoundary.CurrentMask.mha");
+      Helpers::WriteImage<Mask>(this->CurrentMask, "Debug/FindBoundary.CurrentMask.png");
+      }
+
+    // Create a binary image (throw away the "dont use" pixels)
+    Mask::Pointer holeOnly = Mask::New();
+    holeOnly->DeepCopyFrom(this->CurrentMask);
+    
+    itk::ImageRegionIterator<Mask> maskIterator(holeOnly, holeOnly->GetLargestPossibleRegion());
+    // This should result in a white hole on a black background
+    while(!maskIterator.IsAtEnd())
+      {
+      itk::Index<2> currentPixel = maskIterator.GetIndex();
+      if(!holeOnly->IsHole(currentPixel))
+	{
+	holeOnly->SetPixel(currentPixel, holeOnly->GetValidValue());
+	}
+      ++maskIterator;
+      }
+
+    if(Debug)
+      {
+      Helpers::WriteImage<Mask>(this->CurrentMask, "Debug/FindBoundary.HoleOnly.mha");
+      Helpers::WriteImage<Mask>(this->CurrentMask, "Debug/FindBoundary.HoleOnly.png");
       }
       
-    // Invert the mask
-    typedef itk::InvertIntensityImageFilter <Mask> InvertIntensityImageFilterType;
-    InvertIntensityImageFilterType::Pointer invertIntensityFilter = InvertIntensityImageFilterType::New();
-    invertIntensityFilter->SetInput(this->CurrentMask);
-    invertIntensityFilter->Update();
-
-    if(Debug)
-      {
-      Helpers::WriteImage<Mask>(invertIntensityFilter->GetOutput(), "FindBoundary.InvertedMask.mha");
-      }
-
+    // Since the hole is white, we want the foreground value of the contour filter to be black. This means that the boundary will
+    // be detected in the black pixel region, which is on the outside edge of the hole like we want. However,
+    // The BinaryContourImageFilter will change all non-boundary pixels to the background color, so the resulting output will be inverted -
+    // the boundary pixels will be black and the non-boundary pixels will be white.
+    
     // Find the boundary
     typedef itk::BinaryContourImageFilter <Mask, Mask> binaryContourImageFilterType;
     binaryContourImageFilterType::Pointer binaryContourFilter = binaryContourImageFilterType::New();
-    binaryContourFilter->SetInput(invertIntensityFilter->GetOutput());
+    binaryContourFilter->SetInput(holeOnly);
+    binaryContourFilter->SetFullyConnected(true);
+    binaryContourFilter->SetForegroundValue(holeOnly->GetValidValue());
+    binaryContourFilter->SetBackgroundValue(holeOnly->GetHoleValue());
     binaryContourFilter->Update();
 
     if(Debug)
       {
-      Helpers::WriteImage<Mask>(binaryContourFilter->GetOutput(), "FindBoundary.Boundary.mha");
+      Helpers::WriteImage<Mask>(binaryContourFilter->GetOutput(), "Debug/FindBoundary.Boundary.mha");
+      Helpers::WriteImage<Mask>(binaryContourFilter->GetOutput(), "Debug/FindBoundary.Boundary.png");
       }
 
+    // Since we want to interpret non-zero pixels as boundary pixels, we must invert the image.
+    typedef itk::InvertIntensityImageFilter <Mask> InvertIntensityImageFilterType;
+    InvertIntensityImageFilterType::Pointer invertIntensityFilter = InvertIntensityImageFilterType::New();
+    invertIntensityFilter->SetInput(binaryContourFilter->GetOutput());
+    invertIntensityFilter->SetMaximum(255);
+    invertIntensityFilter->Update();
+    
     //this->BoundaryImage = binaryContourFilter->GetOutput();
     //this->BoundaryImage->Graft(binaryContourFilter->GetOutput());
-    Helpers::DeepCopy<UnsignedCharScalarImageType>(binaryContourFilter->GetOutput(), this->BoundaryImage);
+    Helpers::DeepCopy<UnsignedCharScalarImageType>(invertIntensityFilter->GetOutput(), this->BoundaryImage);
 
     if(Debug)
       {
-      Helpers::WriteImage<UnsignedCharScalarImageType>(this->BoundaryImage, "FindBoundary.BoundaryImage.mha");
+      Helpers::WriteImage<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/FindBoundary.BoundaryImage.mha");
       }
   }
   catch( itk::ExceptionObject & err )
@@ -639,8 +687,8 @@ void CriminisiInpainting::ComputeBoundaryNormals()
     
     if(Debug)
       {
-      Helpers::WriteImage<UnsignedCharScalarImageType>(this->BoundaryImage, "ComputeBoundaryNormals.BoundaryImage.mha");
-      Helpers::WriteImage<Mask>(this->CurrentMask, "ComputeBoundaryNormals.CurrentMask.mha");
+      Helpers::WriteImage<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/ComputeBoundaryNormals.BoundaryImage.mha");
+      Helpers::WriteImage<Mask>(this->CurrentMask, "Debug/ComputeBoundaryNormals.CurrentMask.mha");
       }
       
     // Blur the mask
@@ -652,7 +700,7 @@ void CriminisiInpainting::ComputeBoundaryNormals()
 
     if(Debug)
       {
-      Helpers::WriteImage<FloatScalarImageType>(gaussianFilter->GetOutput(), "ComputeBoundaryNormals.BlurredMask.mha");
+      Helpers::WriteImage<FloatScalarImageType>(gaussianFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMask.mha");
       }
 
     // Compute the gradient of the blurred mask
@@ -663,7 +711,7 @@ void CriminisiInpainting::ComputeBoundaryNormals()
 
     if(Debug)
       {
-      Helpers::WriteImage<FloatVector2ImageType>(gradientFilter->GetOutput(), "ComputeBoundaryNormals.BlurredMaskGradient.mha");
+      Helpers::WriteImage<FloatVector2ImageType>(gradientFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMaskGradient.mha");
       }
 
     // Only keep the normals at the boundary
@@ -677,7 +725,7 @@ void CriminisiInpainting::ComputeBoundaryNormals()
 
     if(Debug)
       {
-      Helpers::WriteImage<FloatVector2ImageType>(maskFilter->GetOutput(), "ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha");
+      Helpers::WriteImage<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha");
       }
       
     //this->BoundaryNormals = maskFilter->GetOutput();
@@ -685,26 +733,24 @@ void CriminisiInpainting::ComputeBoundaryNormals()
     Helpers::DeepCopy<FloatVector2ImageType>(maskFilter->GetOutput(), this->BoundaryNormals);
 
     // Normalize the vectors because we just care about their direction (the Data term computation calls for the normalized boundary normal)
-    itk::ImageRegionIterator<FloatVector2ImageType> imageIterator(this->BoundaryNormals, this->BoundaryNormals->GetLargestPossibleRegion());
+    itk::ImageRegionIterator<FloatVector2ImageType> boundaryNormalsIterator(this->BoundaryNormals, this->BoundaryNormals->GetLargestPossibleRegion());
     itk::ImageRegionConstIterator<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
-    imageIterator.GoToBegin();
-    boundaryIterator.GoToBegin();
 
-    while(!imageIterator.IsAtEnd())
+    while(!boundaryNormalsIterator.IsAtEnd())
       {
       if(boundaryIterator.Get()) // The pixel is on the boundary
         {
-        FloatVector2ImageType::PixelType p = imageIterator.Get();
+        FloatVector2ImageType::PixelType p = boundaryNormalsIterator.Get();
         p.Normalize();
-        imageIterator.Set(p);
+        boundaryNormalsIterator.Set(p);
         }
-      ++imageIterator;
+      ++boundaryNormalsIterator;
       ++boundaryIterator;
       }
 
     if(Debug)
       {
-      Helpers::WriteImage<FloatVector2ImageType>(this->BoundaryNormals, "ComputeBoundaryNormals.BoundaryNormals.mha");
+      Helpers::WriteImage<FloatVector2ImageType>(this->BoundaryNormals, "Debug/ComputeBoundaryNormals.BoundaryNormals.mha");
       }
   }
   catch( itk::ExceptionObject & err )
@@ -719,16 +765,36 @@ itk::Index<2> CriminisiInpainting::FindHighestPriority(FloatScalarImageType::Poi
 {
   try
   {
-  typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
+    // We would rather explicity find the maximum on the boundary
+    /*
+    typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
+    ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
+    imageCalculatorFilter->SetImage(priorityImage);
+    imageCalculatorFilter->Compute();
+    
+    DebugMessage<float>("Highest priority: ", imageCalculatorFilter->GetMaximum());
+    DebugMessage<float>("Lowest priority: ", imageCalculatorFilter->GetMinimum());
+    
+    return imageCalculatorFilter->GetIndexOfMaximum();
+    */
+    float maxPriority = 0; // priorities are non-negative, so anything better than 0 will win
+    itk::Index<2> locationOfMaxPriority;
+    itk::ImageRegionConstIteratorWithIndex<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
 
-  ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
-  imageCalculatorFilter->SetImage(priorityImage);
-  imageCalculatorFilter->Compute();
-  
-  DebugMessage<float>("Highest priority: ", imageCalculatorFilter->GetMaximum());
-  DebugMessage<float>("Lowest priority: ", imageCalculatorFilter->GetMinimum());
-
-  return imageCalculatorFilter->GetIndexOfMaximum();
+    while(!boundaryIterator.IsAtEnd())
+      {
+      if(boundaryIterator.Get())
+	{
+	if(this->PriorityImage->GetPixel(boundaryIterator.GetIndex()) > maxPriority)
+	  {
+	  maxPriority = this->PriorityImage->GetPixel(boundaryIterator.GetIndex());
+	  locationOfMaxPriority = boundaryIterator.GetIndex();
+	  }
+	}
+      ++boundaryIterator;
+      }
+    DebugMessage<float>("Highest priority: ", maxPriority);
+    return locationOfMaxPriority;
   }
   catch( itk::ExceptionObject & err )
   {
@@ -747,14 +813,12 @@ void CriminisiInpainting::ComputeAllPriorities()
     itk::ImageRegionIterator<FloatScalarImageType> priorityIterator(this->PriorityImage, this->PriorityImage->GetLargestPossibleRegion());
 
     // Blank the priority image.
-    // -1 is used instead of 0 because if the priorities on the boundary get down to 0, if the non-boundary pixels priorities were set to 0, then we would end up choosing a random point from anywhere in the image,
-    this->PriorityImage->FillBuffer(-1);
+    this->PriorityImage->FillBuffer(0);
 
-    // The main loop is over the boundary image. We only want to compute priorities at boundary pixels
+    // The main loop is over the boundary image. We only want to compute priorities at boundary pixels.
     unsigned int boundaryPixelCounter = 0;
     while(!boundaryIterator.IsAtEnd())
       {
-
       if(boundaryIterator.Get() != 0) // Pixel is on the boundary
 	{
 	float priority = ComputePriority(boundaryIterator.GetIndex());
@@ -775,18 +839,32 @@ void CriminisiInpainting::ComputeAllPriorities()
   }
 }
 
-float CriminisiInpainting::ComputePriority(const itk::Index<2> queryPixel)
+float CriminisiInpainting::ComputePriority(const itk::Index<2>& queryPixel)
 {
   //double confidence = ComputeConfidenceTerm(queryPixel);
   //double data = ComputeDataTerm(queryPixel);
 
-  double confidence = this->ConfidenceImage->GetPixel(queryPixel);
-  double data = this->DataImage->GetPixel(queryPixel);
+  if(this->Debug)
+    {
+    std::cout << "UseConfidence: " << this->UseConfidence << " UseData: " << this->UseData << std::endl;
+    }
 
-  return confidence * data;
+  float priority = 1.0;
+  if(this->UseConfidence)
+    {
+    float confidence = this->ConfidenceImage->GetPixel(queryPixel);
+    priority *= confidence;
+    }
+  if(this->UseData)
+    {
+    float data = this->DataImage->GetPixel(queryPixel);
+    priority *= data;
+    }
+
+  return priority;
 }
 
-float CriminisiInpainting::ComputeConfidenceTerm(const itk::Index<2> queryPixel)
+float CriminisiInpainting::ComputeConfidenceTerm(const itk::Index<2>& queryPixel)
 {
   //DebugMessage<itk::Index<2>>("Computing confidence for ", queryPixel);
   try
@@ -835,7 +913,7 @@ float CriminisiInpainting::ComputeConfidenceTerm(const itk::Index<2> queryPixel)
   }
 }
 
-float CriminisiInpainting::ComputeDataTerm(const itk::Index<2> queryPixel)
+float CriminisiInpainting::ComputeDataTerm(const itk::Index<2>& queryPixel)
 {
   try
   {
@@ -847,16 +925,15 @@ float CriminisiInpainting::ComputeDataTerm(const itk::Index<2> queryPixel)
       //std::cout << "Isophote: " << isophote << std::endl;
       //std::cout << "Boundary normal: " << boundaryNormal << std::endl;
       }
-    double alpha = 255; // for grey scale images
-    // D(p) = |dot(isophote direction at p, normal of the front at p)|/alpha
+    // D(p) = |dot(isophote at p, normalized normal of the front at p)|/alpha
 
     vnl_double_2 vnlIsophote(isophote[0], isophote[1]);
 
     vnl_double_2 vnlNormal(boundaryNormal[0], boundaryNormal[1]);
 
-    double dot = std::abs(dot_product(vnlIsophote,vnlNormal));
+    float dot = std::abs(dot_product(vnlIsophote,vnlNormal));
 
-    float dataTerm = dot/alpha;
+    float dataTerm = dot/this->Alpha;
 
     return dataTerm;
   }
@@ -1029,4 +1106,14 @@ itk::ImageRegion<2> CriminisiInpainting::CropToValidRegion(const itk::ImageRegio
   region.Crop(inputRegion);
   
   return region;
+}
+
+void CriminisiInpainting::SetUseConfidence(const bool value)
+{
+  this->UseConfidence = value;
+}
+
+void CriminisiInpainting::SetUseData(const bool value)
+{
+  this->UseData = value;
 }

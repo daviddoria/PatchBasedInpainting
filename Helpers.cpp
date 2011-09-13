@@ -102,7 +102,7 @@ void ITKImagetoVTKVectorFieldImage(FloatVector2ImageType::Pointer image, vtkImag
   outputImage->AllocateScalars();
 
   // Copy all of the input image pixels to the output image
-  itk::ImageRegionConstIteratorWithIndex<FloatVector2ImageType> imageIterator(image,image->GetLargestPossibleRegion());
+  itk::ImageRegionConstIteratorWithIndex<FloatVector2ImageType> imageIterator(image, image->GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
     {

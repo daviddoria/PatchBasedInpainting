@@ -53,7 +53,7 @@ void ITKImagetoVTKMagnitudeImage(FloatVectorImageType::Pointer image, vtkImageDa
 void ITKImagetoVTKVectorFieldImage(FloatVector2ImageType::Pointer image, vtkImageData* outputImage);
 
 template <typename TImage>
-void ITKScalarImagetoVTKImage(typename TImage::Pointer image, vtkImageData* outputImage);
+void ITKScalarImageToScaledVTKImage(typename TImage::Pointer image, vtkImageData* outputImage);
 
 itk::Index<2> GetRegionCenter(const itk::ImageRegion<2> region);
 
