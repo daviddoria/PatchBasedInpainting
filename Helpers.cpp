@@ -28,6 +28,27 @@
 namespace Helpers
 {
 
+void VectorImageToRGBImage(FloatVectorImageType::Pointer image, RGBImageType::Pointer rgbImage)
+{
+  // Only the first 3 components are used (assumed to be RGB)
+  rgbImage->SetRegions(image->GetLargestPossibleRegion());
+  rgbImage->Allocate();
+
+  itk::ImageRegionConstIteratorWithIndex<FloatVectorImageType> inputIterator(image, image->GetLargestPossibleRegion());
+  
+  while(!inputIterator.IsAtEnd())
+    {
+    FloatVectorImageType::PixelType inputPixel = inputIterator.Get();
+    RGBImageType::PixelType outputPixel;
+    outputPixel.SetRed(inputPixel[0]);
+    outputPixel.SetGreen(inputPixel[1]);
+    outputPixel.SetBlue(inputPixel[2]);
+  
+    rgbImage->SetPixel(inputIterator.GetIndex(), outputPixel);
+    ++inputIterator;
+    }
+}
+
 itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2> pixel, const unsigned int radius)
 {
   // This function returns a Region with the specified 'radius' centered at 'pixel'. By the definition of the radius of a square patch, the output region is (radius*2 + 1)x(radius*2 + 1).

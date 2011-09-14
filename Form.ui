@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>600</height>
+    <height>841</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -79,17 +79,17 @@
             <number>24</number>
            </property>
           </widget>
-          <widget class="QCheckBox" name="chkDebug">
+          <widget class="QCheckBox" name="chkDebugMessages">
            <property name="geometry">
             <rect>
-             <x>30</x>
+             <x>140</x>
              <y>70</y>
-             <width>95</width>
+             <width>131</width>
              <height>22</height>
             </rect>
            </property>
            <property name="text">
-            <string>Debug</string>
+            <string>Debug Messagse</string>
            </property>
           </widget>
           <widget class="QSlider" name="sldAlpha">
@@ -178,18 +178,99 @@
            <property name="text">
             <string>Data</string>
            </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
           </widget>
           <widget class="QCheckBox" name="chkUseConfidence">
            <property name="geometry">
             <rect>
              <x>150</x>
-             <y>50</y>
+             <y>40</y>
              <width>111</width>
              <height>22</height>
             </rect>
            </property>
            <property name="text">
             <string>Confidence</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="chkDebugImages">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>70</y>
+             <width>121</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Debug Images</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_3">
+           <property name="geometry">
+            <rect>
+             <x>150</x>
+             <y>0</y>
+             <width>67</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Priority</string>
+           </property>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_3">
+          <property name="title">
+           <string>Difference</string>
+          </property>
+          <widget class="QRadioButton" name="radDifferenceAll">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>30</y>
+             <width>114</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>All</string>
+           </property>
+          </widget>
+          <widget class="QRadioButton" name="radDifferenceDepth">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>60</y>
+             <width>161</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Depth weighted</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QRadioButton" name="radAll255">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>90</y>
+             <width>114</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>All255</string>
            </property>
           </widget>
          </widget>

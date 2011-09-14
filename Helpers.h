@@ -52,13 +52,18 @@ void ITKImagetoVTKMagnitudeImage(FloatVectorImageType::Pointer image, vtkImageDa
 
 void ITKImagetoVTKVectorFieldImage(FloatVector2ImageType::Pointer image, vtkImageData* outputImage);
 
+void VectorImageToRGBImage(FloatVectorImageType::Pointer image, RGBImageType::Pointer rgbImage);
+
 template <typename TImage>
 void ITKScalarImageToScaledVTKImage(typename TImage::Pointer image, vtkImageData* outputImage);
 
 itk::Index<2> GetRegionCenter(const itk::ImageRegion<2> region);
 
 template <typename TDebugImageType>
-void DebugWriteImage(typename TDebugImageType::Pointer image, std::string filePrefix, unsigned int iteration);
+void DebugWriteSequentialImage(typename TDebugImageType::Pointer image, const std::string& filePrefix, const unsigned int iteration);
+
+template <typename TDebugImageType>
+void DebugWriteImageConditional(typename TDebugImageType::Pointer image, const std::string& fileName, const bool condition);
 
 template <class T>
 void WriteScaledScalarImage(typename T::Pointer image, std::string filename);
@@ -103,8 +108,8 @@ void ColorToGrayscale(typename TImage::Pointer colorImage, UnsignedCharScalarIma
 // Non template function declarations
 itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2> pixel, const unsigned int radius);
 
-template <typename TPixelType>
-double PixelSquaredDifference(const TPixelType, const TPixelType);
+// template <typename TPixelType>
+// float PixelSquaredDifference(const TPixelType&, const TPixelType&);
 
 
 }// end namespace

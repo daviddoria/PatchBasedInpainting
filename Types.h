@@ -25,6 +25,9 @@
 #include "itkVectorImage.h"
 
 typedef itk::VectorImage<float,2> FloatVectorImageType;
+typedef itk::VariableLengthVector<float> VectorType;
+
+typedef itk::Image<itk::RGBPixel<unsigned char>, 2> RGBImageType;
 
 // Scalar image types
 typedef itk::Image<float,2> FloatScalarImageType;

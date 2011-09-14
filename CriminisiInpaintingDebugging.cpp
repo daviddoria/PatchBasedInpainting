@@ -24,20 +24,20 @@
 
 void CriminisiInpainting::DebugWriteAllImages()
 {
-  Helpers::DebugWriteImage<FloatScalarImageType>(this->ConfidenceImage, "ConfidenceImage", this->Iteration);
-  Helpers::DebugWriteImage<FloatScalarImageType>(this->DataImage, "DataImage", this->Iteration);
-  Helpers::DebugWriteImage<FloatScalarImageType>(this->PriorityImage, "PriorityImage", this->Iteration);
+  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->ConfidenceImage, "ConfidenceImage", this->Iteration);
+  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->DataImage, "DataImage", this->Iteration);
+  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->PriorityImage, "PriorityImage", this->Iteration);
   
-  Helpers::DebugWriteImage<FloatVector2ImageType>(this->IsophoteImage, "IsophoteImage", this->Iteration);
+  Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage, "IsophoteImage", this->Iteration);
   
-  Helpers::DebugWriteImage<UnsignedCharScalarImageType>(this->BoundaryImage, "BoundaryImage", this->Iteration);
-  Helpers::DebugWriteImage<FloatVector2ImageType>(this->BoundaryNormals, "BoundaryNormals", this->Iteration);
+  Helpers::DebugWriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage, "BoundaryImage", this->Iteration);
+  Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals, "BoundaryNormals", this->Iteration);
   
-  Helpers::DebugWriteImage<Mask>(this->CurrentMask, "CurrentMask", this->Iteration);
-  Helpers::DebugWriteImage<FloatVectorImageType>(this->CurrentImage, "CurrentImage", this->Iteration);
+  Helpers::DebugWriteSequentialImage<Mask>(this->CurrentMask, "CurrentMask", this->Iteration);
+  Helpers::DebugWriteSequentialImage<FloatVectorImageType>(this->CurrentImage, "CurrentImage", this->Iteration);
 }
 
-void CriminisiInpainting::DebugWriteAllImages(const itk::Index<2> pixelToFill, const itk::Index<2> bestMatchPixel, const unsigned int iteration)
+void CriminisiInpainting::DebugWriteAllImages(const itk::Index<2>& pixelToFill, const itk::Index<2>& bestMatchPixel, const unsigned int iteration)
 {
   std::cout << "Writing debug images for iteration " << iteration << std::endl;
 
@@ -50,26 +50,26 @@ void CriminisiInpainting::DebugWriteAllImages(const itk::Index<2> pixelToFill, c
   DebugWritePixelToFill(pixelToFill, iteration);
   std::cout << "Wrote pixelToFill." << std::endl;
 
-  Helpers::DebugWriteImage<FloatVector2ImageType>(this->IsophoteImage,"Isophotes", iteration);
-  Helpers::DebugWriteImage<FloatScalarImageType>(this->ConfidenceImage,"Confidence", iteration);
-  Helpers::DebugWriteImage<UnsignedCharScalarImageType>(this->BoundaryImage,"Boundary", iteration);
-  Helpers::DebugWriteImage<FloatVector2ImageType>(this->BoundaryNormals,"BoundaryNormals", iteration);
-  Helpers::DebugWriteImage<FloatScalarImageType>(this->PriorityImage,"Priorities", iteration);
-  Helpers::DebugWriteImage<Mask>(this->CurrentMask,"Mask", iteration);
-  Helpers::DebugWriteImage<FloatVectorImageType>(this->CurrentImage,"FilledImage", iteration);
+  Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage,"Isophotes", iteration);
+  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->ConfidenceImage,"Confidence", iteration);
+  Helpers::DebugWriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage,"Boundary", iteration);
+  Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals,"BoundaryNormals", iteration);
+  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->PriorityImage,"Priorities", iteration);
+  Helpers::DebugWriteSequentialImage<Mask>(this->CurrentMask,"Mask", iteration);
+  Helpers::DebugWriteSequentialImage<FloatVectorImageType>(this->CurrentImage,"FilledImage", iteration);
 
 }
 
-void CriminisiInpainting::DebugWritePatch(const itk::Index<2> pixel, const std::string filePrefix, const unsigned int iteration)
+void CriminisiInpainting::DebugWritePatch(const itk::Index<2>& pixel, const std::string& filePrefix, const unsigned int iteration)
 {
   std::stringstream padded;
   padded << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
   DebugWritePatch(pixel, padded.str());
 }
 
-void CriminisiInpainting::DebugWritePatch(const itk::ImageRegion<2> inputRegion, const std::string filename)
+void CriminisiInpainting::DebugWritePatch(const itk::ImageRegion<2>& inputRegion, const std::string& filename)
 {
-  if(!this->Debug)
+  if(!this->DebugImages)
     {
     return;
     }
@@ -103,7 +103,7 @@ void CriminisiInpainting::DebugWritePatch(const itk::ImageRegion<2> inputRegion,
   }
 }
 
-void CriminisiInpainting::DebugWritePatch(const itk::Index<2> pixel, const std::string filename)
+void CriminisiInpainting::DebugWritePatch(const itk::Index<2>& pixel, const std::string& filename)
 {
   try
   {
@@ -128,7 +128,7 @@ void CriminisiInpainting::DebugWritePatch(const itk::Index<2> pixel, const std::
   }
 }
 
-void CriminisiInpainting::DebugWritePixelToFill(const itk::Index<2> pixelToFill, const unsigned int iteration)
+void CriminisiInpainting::DebugWritePixelToFill(const itk::Index<2>& pixelToFill, const unsigned int iteration)
 {
   // Create a blank image with the pixel to fill colored white
   UnsignedCharScalarImageType::Pointer pixelImage = UnsignedCharScalarImageType::New();
@@ -157,7 +157,7 @@ void CriminisiInpainting::DebugWritePixelToFill(const itk::Index<2> pixelToFill,
   Helpers::WriteImage<UnsignedCharScalarImageType>(pixelImage, padded.str());
 }
 
-void CriminisiInpainting::DebugWritePatchToFillLocation(const itk::Index<2> pixelToFill, const unsigned int iteration)
+void CriminisiInpainting::DebugWritePatchToFillLocation(const itk::Index<2>& pixelToFill, const unsigned int iteration)
 {
   // Create a blank image with the patch that has been filled colored white
   UnsignedCharScalarImageType::Pointer patchImage = UnsignedCharScalarImageType::New();
@@ -185,7 +185,7 @@ void CriminisiInpainting::DebugWritePatchToFillLocation(const itk::Index<2> pixe
 
 void CriminisiInpainting::DebugMessage(const std::string& message)
 {
-  if(this->Debug)
+  if(this->DebugMessages)
     {
     std::cout << message << std::endl;
     }

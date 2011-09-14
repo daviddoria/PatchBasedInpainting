@@ -37,40 +37,29 @@
 // STL
 #include <vector>
 
+template< typename TImage>
 class SelfPatchCompare
 {
-  
 public:
-  SelfPatchCompare(const unsigned int);
-  
+  float PatchDifference(const itk::ImageRegion<2> sourceRegion);
+
+  float PatchDifference(const TImage* image, const Mask* mask, const itk::Index<2> queryPixel, const itk::Index<2> currentPixel, const unsigned int patchRadius);
+
   unsigned int FindBestPatch();
 
-  void SetImage(FloatVectorImageType::Pointer);
+  void SetImage(typename TImage::Pointer);
 
   void SetMask(Mask::Pointer mask);
 
   void SetTargetRegion(const itk::ImageRegion<2>);
 
   void SetSourceRegions(const std::vector<itk::ImageRegion<2> >&);
-
-  float SlowDifference(const itk::ImageRegion<2>& sourceRegion);
-  float PatchDifferenceManual(const itk::ImageRegion<2>& sourceRegion);
-  float PatchDifferenceExternal(const itk::ImageRegion<2>& sourceRegion);
-  float PatchDifferenceBoundary(const itk::ImageRegion<2>& sourceRegion);
-
-  // Prepare to do some comparisons by finding all of the valid pixels in the target region
-  void ComputeOffsets();
-
-  virtual float PixelDifference(const VectorType &a, const VectorType &b) = 0;
-  float NonVirtualPixelDifference(const VectorType &a, const VectorType &b);
   
-protected:
-  // If a channel of one pixel was white (255) and the corresponding channel of the other pixel
-  // was black (0), the difference would be 255, so the difference squared would be 255*255
-  static const float MaxColorDifference = 255*255;
-  
+private:
   // These are the offsets of the target region which we with to compare
-  std::vector<FloatVectorImageType::OffsetValueType> ValidOffsets;
+  std::vector<typename TImage::OffsetValueType> ValidOffsets;
+
+  void ComputeOffsets();
 
   // This is the target region we wish to compare. It may be partially invalid.
   itk::ImageRegion<2> TargetRegion;
@@ -79,13 +68,12 @@ protected:
   std::vector<itk::ImageRegion<2> > SourceRegions;
   
   // This is the image from which to take the patches
-  FloatVectorImageType::Pointer Image;
+  typename TImage::Pointer Image;
 
   // This is the mask to check the validity of target pixels
   Mask::Pointer MaskImage;
-
-  unsigned int NumberOfComponentsPerPixel;
-
 };
+
+#include "SelfPatchCompare.hxx"
 
 #endif

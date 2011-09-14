@@ -71,10 +71,15 @@ public slots:
   void on_actionOpenMaskInverted_activated();
   void on_actionSaveResult_activated();
   
-  void on_chkDebug_clicked();
+  void on_chkDebugImages_clicked();
+  void on_chkDebugMessages_clicked();
   void on_chkUseConfidence_clicked();
   void on_chkUseData_clicked();
   void on_sldAlpha_valueChanged(int);
+  
+  void on_radDifferenceAll_clicked();
+  void on_radDifferenceAll255_clicked();
+  void on_radDifferenceDepth_clicked();
   
   void on_chkImage_clicked();
   void on_chkMask_clicked();
@@ -159,7 +164,8 @@ protected:
   
   ProgressThread ComputationThread;
 
-  bool Debug;
+  bool DebugImages;
+  bool DebugMessages;
 
   // These functions output the message only if the Debug member is set to true
   void DebugMessage(const std::string&);

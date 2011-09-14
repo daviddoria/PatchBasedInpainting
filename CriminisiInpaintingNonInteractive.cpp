@@ -21,10 +21,9 @@
 int main(int argc, char *argv[])
 {
   // Verify arguments
-  if(argc != 4)
+  if(argc != 5)
     {
-    std::cerr << "Only gave " << argc << " arguments!" << std::endl;
-    std::cerr << "Required arguments: image imageMask patchRadius" << std::endl;
+    std::cerr << "Required arguments: image imageMask patchRadius output" << std::endl;
     return EXIT_FAILURE;
     }
 
@@ -37,30 +36,32 @@ int main(int argc, char *argv[])
   int patchRadius = 0;
   ssPatchRadius >> patchRadius;
 
+  std::string outputFilename = argv[4];
+  
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
   std::cout << "Patch radius: " << patchRadius << std::endl;
+  std::cout << "Output: " << outputFilename << std::endl;
 
   typedef  itk::ImageFileReader< FloatVectorImageType > ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
   imageReader->SetFileName(imageFilename.c_str());
   imageReader->Update();
 
-  typedef  itk::ImageFileReader< UnsignedCharScalarImageType  > MaskReaderType;
+  typedef  itk::ImageFileReader< Mask  > MaskReaderType;
   MaskReaderType::Pointer maskReader = MaskReaderType::New();
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 
   CriminisiInpainting Inpainting;
   Inpainting.SetPatchRadius(patchRadius);
-  //Inpainting.SetWriteIntermediateImages(true);
-  Inpainting.SetWriteIntermediateImages(false);
+  Inpainting.SetDebug(false);
   Inpainting.SetImage(imageReader->GetOutput());
-  Inpainting.SetInputMask(maskReader->GetOutput());
+  Inpainting.SetMask(maskReader->GetOutput());
   Inpainting.Inpaint();
 
-  Helpers::WriteUnsignedCharImage<FloatVectorImageType>(Inpainting.GetResult(), "result2.png");
+  Helpers::WriteImage<FloatVectorImageType>(Inpainting.GetResult(), outputFilename);
 
   return EXIT_SUCCESS;
 }

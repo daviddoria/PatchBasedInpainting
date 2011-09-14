@@ -68,16 +68,25 @@ void DeepCopyVectorImage(typename TImage::Pointer input, typename TImage::Pointe
     
 }
 
-template <typename TPixelType>
-double PixelSquaredDifference(const TPixelType pixel1, const TPixelType pixel2)
-{
-  
-//   std::cout << "pixel1: " << pixel1 << " pixel2: " << pixel2
-//             << " pixel1-pixel2: " << pixel1-pixel2
-//             << " squared norm: " << (pixel1-pixel2).GetSquaredNorm() << std::endl;
-  
-  return (pixel1-pixel2).GetSquaredNorm();
-}
+// template <typename TPixelType>
+// float PixelSquaredDifference(const TPixelType& pixel1, const TPixelType& pixel2)
+// {
+//   
+// //   std::cout << "pixel1: " << pixel1 << " pixel2: " << pixel2
+// //             << " pixel1-pixel2: " << pixel1-pixel2
+// //             << " squared norm: " << (pixel1-pixel2).GetSquaredNorm() << std::endl;
+//   
+//   //return (pixel1-pixel2).GetSquaredNorm();
+//   
+//   float difference = 0;
+//   unsigned int componentsPerPixel = pixel1.GetSize();
+//   for(unsigned int i = 0; i < componentsPerPixel; ++i)
+//     {
+//     difference += (pixel1[i] - pixel2[i]) * 
+// 		  (pixel1[i] - pixel2[i]);
+//     }
+//   return difference;
+// }
 
 template<typename T>
 void ReplaceValue(typename T::Pointer image, const typename T::PixelType queryValue, const typename T::PixelType replacementValue)
@@ -427,13 +436,23 @@ void ColorToGrayscale(typename TImage::Pointer colorImage, UnsignedCharScalarIma
     }
 }
 
-template <typename TDebugImageType>
-void DebugWriteImage(typename TDebugImageType::Pointer image, std::string filePrefix, unsigned int iteration)
+template <typename TImageType>
+void DebugWriteSequentialImage(typename TImageType::Pointer image, const std::string& filePrefix, const unsigned int iteration)
 {
   std::stringstream padded;
   padded << "Debug/" << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mha";
-  Helpers::WriteImage<TDebugImageType>(image, padded.str());
+  Helpers::WriteImage<TImageType>(image, padded.str());
 }
+
+template <typename TImageType>
+void DebugWriteImageConditional(typename TImageType::Pointer image, const std::string& fileName, const bool condition)
+{
+  if(condition)
+    {
+    WriteImage<TImageType>(image, fileName);
+    }
+}
+
 
 template <typename TImage>
 void ITKScalarImageToScaledVTKImage(typename TImage::Pointer image, vtkImageData* outputImage)

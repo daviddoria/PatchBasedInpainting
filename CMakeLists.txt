@@ -30,13 +30,39 @@ InteractorStyleImageNoLevel.cxx
 ProgressThread.cpp
 SelfPatchCompare.cpp
 ${UISrcs} ${MOCSrcs})
+set_target_properties(CriminisiInpaintingInteractive PROPERTIES COMPILE_FLAGS "-DINTERACTIVE")
+
 TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
 INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 
 # Non-interactive
-# ADD_EXECUTABLE(CriminisiInpainting CriminisiInpaintingExample.cpp Helpers.cpp)
+# Should look something like this:
+# ADD_EXECUTABLE(CriminisiInpainting 
+# CriminisiInpaintingNonInteractive.cpp
+# CriminisiInpainting.cpp 
+# CriminisiInpaintingDebugging.cpp 
+# SelfPatchCompare.cpp 
+# Helpers.cpp)
 # TARGET_LINK_LIBRARIES(CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 # INSTALL( TARGETS CriminisiInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+
+# Until we get this question answered, we must build everything
+# ADD_EXECUTABLE(CriminisiInpainting 
+# CriminisiInpaintingNonInteractive.cpp
+# CriminisiInpainting.cpp 
+# CriminisiInpaintingDebugging.cpp 
+# SelfPatchCompare.cpp 
+# Helpers.cpp
+# 
+# ProgressThread.cpp
+# InteractorStyleImageNoLevel.cxx
+# Form.cxx 
+# ${UISrcs} ${MOCSrcs})
+# TARGET_LINK_LIBRARIES(CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} QVTK)
+# INSTALL( TARGETS CriminisiInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+
+
+
 
 # ADD_EXECUTABLE(TestPatchDifference TestPatchDifference.cpp Helpers.cpp)
 # TARGET_LINK_LIBRARIES(TestPatchDifference ${VTK_LIBRARIES} ${ITK_LIBRARIES})
@@ -59,7 +85,7 @@ INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DI
 # ADD_EXECUTABLE(CriminisiInpaintingRGBDI CriminisiInpaintingExampleRGBDI.cxx CriminisiInpainting.cpp CriminisiInpaintingDebugging.cpp CustomStyle.cpp SelfPatchMatch.h Helpers.h Helpers.cpp RotateVectors.h CriminisiInpainting.h)
 # TARGET_LINK_LIBRARIES(CriminisiInpaintingRGBDI ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
-#---------------------------------------------------------------------
+##################################################################
 # Testing
 
 # SET( BUILD_TESTING OFF CACHE BOOL "Perform some tests." )

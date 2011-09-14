@@ -81,7 +81,8 @@ Form::Form()
 {
   this->setupUi(this);
 
-  this->Debug = true;
+  this->DebugImages = false;
+  this->DebugMessages = false;
   
   // Setup icons
   QIcon openIcon = QIcon::fromTheme("document-open");
@@ -222,12 +223,32 @@ Form::Form()
   connect(&Inpainting, SIGNAL(RefreshSignal()), this, SLOT(RefreshSlot()), Qt::QueuedConnection);
 };
 
-void Form::on_chkDebug_clicked()
+void Form::on_radDifferenceAll_clicked()
+{
+  this->Inpainting.SetDifferenceType(CriminisiInpainting::DIFFERENCE_ALL);
+}
+
+void Form::on_radDifferenceAll255_clicked()
+{
+  this->Inpainting.SetDifferenceType(CriminisiInpainting::DIFFERENCE_ALL255);
+}
+
+void Form::on_radDifferenceDepth_clicked()
+{
+  this->Inpainting.SetDifferenceType(CriminisiInpainting::DIFFERENCE_DEPTH);
+}
+  
+void Form::on_chkDebugImages_clicked()
 {
   QDir directoryMaker;
   directoryMaker.mkdir("Debug");
   
-  this->Inpainting.SetDebug(this->chkDebug->isChecked());
+  this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
+}
+
+void Form::on_chkDebugMessages_clicked()
+{
+  this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
 }
 
 void Form::on_chkUseConfidence_clicked()
@@ -324,7 +345,7 @@ void Form::on_actionOpenMaskInverted_activated()
   this->MaskImage->Cleanup();
   
   this->Inpainting.SetMask(this->MaskImage);
-  if(this->Debug)
+  if(this->DebugImages)
     {
     Helpers::WriteImage<Mask>(this->MaskImage, "Debug/InvertedMask.png");
     }
@@ -463,7 +484,7 @@ void Form::RefreshSlot()
     maskFilter->SetOutsideValue(zero);
     maskFilter->Update();
     
-    if(this->Debug)
+    if(this->DebugImages)
       {
       Helpers::WriteImage<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ShowIsophotes.BoundaryIsophotes.mha");
       Helpers::WriteImage<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), "Debug/ShowIsophotes.Boundary.mha");
@@ -471,7 +492,7 @@ void Form::RefreshSlot()
   
     Helpers::ITKImagetoVTKVectorFieldImage(maskFilter->GetOutput(), this->VTKIsophoteImage);
     
-    if(this->Debug)
+    if(this->DebugImages)
       {
       vtkSmartPointer<vtkXMLImageDataWriter> writer =
 	vtkSmartPointer<vtkXMLImageDataWriter>::New();
@@ -493,7 +514,7 @@ void Form::RefreshSlot()
   
     Helpers::ITKImagetoVTKVectorFieldImage(this->Inpainting.GetBoundaryNormalsImage(), this->VTKBoundaryNormalsImage);
   
-    if(this->Debug)
+    if(this->DebugImages)
       {
       vtkSmartPointer<vtkXMLImageDataWriter> writer =
 	vtkSmartPointer<vtkXMLImageDataWriter>::New();
@@ -505,7 +526,7 @@ void Form::RefreshSlot()
     
   Refresh();
 
-  if(this->Debug)
+  if(this->DebugImages)
   {
     {
     typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
@@ -566,12 +587,22 @@ void Form::on_btnInpaint_clicked()
   
   this->Inpainting.SetPatchRadius(this->txtPatchSize->text().toUInt()/2);
   
-  this->Inpainting.SetDebug(this->chkDebug->isChecked());
+  this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
+  this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
   this->Inpainting.SetImage(this->Image);
   this->Inpainting.SetMask(this->MaskImage);
   this->Inpainting.SetAlpha(this->sldAlpha->value());
   this->Inpainting.SetUseConfidence(this->chkUseConfidence->isChecked());
   this->Inpainting.SetUseData(this->chkUseData->isChecked());
+  
+  if(this->radDifferenceDepth->isChecked())
+    {
+    this->Inpainting.SetDifferenceType(CriminisiInpainting::DIFFERENCE_DEPTH);
+    }
+  else if(this->radDifferenceAll->isChecked())
+    {
+    this->Inpainting.SetDifferenceType(CriminisiInpainting::DIFFERENCE_ALL);
+    }
   
   RefreshSlot();
   
@@ -581,7 +612,7 @@ void Form::on_btnInpaint_clicked()
 
 void Form::on_sldAlpha_valueChanged(int value)
 {
-  if(this->Debug)
+  if(this->DebugMessages)
     {
     std::cout << "on_sldAlpha_valueChanged" << std::endl;
     }
@@ -629,7 +660,7 @@ void Form::on_actionFlipImage_activated()
 
 void Form::DebugMessage(const std::string& message)
 {
-  if(this->Debug)
+  if(this->DebugMessages)
     {
     std::cout << message << std::endl;
     }

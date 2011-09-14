@@ -61,13 +61,30 @@
 // Qt
 #include <QObject>
 
+// #if defined(INTERACTIVE)
+// class CriminisiInpainting : public QObject
+// #else
+// class CriminisiInpainting
+// #endif
+// {
+// #if defined(INTERACTIVE)
+//   Q_OBJECT
+// signals:
+//   void RefreshSignal();
+// #endif
+  
 class CriminisiInpainting : public QObject
 {
   Q_OBJECT
 signals:
   void RefreshSignal();
+
 public:
 
+  enum DifferenceTypeEnum {DIFFERENCE_ALL, DIFFERENCE_ALL255, DIFFERENCE_DEPTH};
+  
+  void SetDifferenceType(const int);
+  
   // Constructor
   CriminisiInpainting();
 
@@ -84,13 +101,15 @@ public:
   void SetPatchRadius(const unsigned int);
 
   // Specify if you want to see debugging outputs.
-  void SetDebug(const bool);
+  void SetDebugImages(const bool);
+  
+  void SetDebugMessages(const bool);
   
   // Specify alpha
   void SetAlpha(const float);
 
   // Compute the confidence values for pixels that were just inpainted.
-  void UpdateConfidences(const itk::ImageRegion<2>);
+  void UpdateConfidences(const itk::ImageRegion<2>&);
   
   // Get the output of the inpainting.
   FloatVectorImageType::Pointer GetResult();
@@ -169,18 +188,18 @@ private:
 
   // Debugging
   void DebugWriteAllImages();
-  void DebugWriteAllImages(const itk::Index<2> pixelToFill, const itk::Index<2> bestMatchPixel, const unsigned int iteration);
-  void DebugWritePatch(const itk::Index<2> pixel, const std::string filePrefix, const unsigned int iteration);
-  void DebugWritePatch(const itk::ImageRegion<2> region, const std::string filename);
+  void DebugWriteAllImages(const itk::Index<2>& pixelToFill, const itk::Index<2>& bestMatchPixel, const unsigned int iteration);
+  void DebugWritePatch(const itk::Index<2>& pixel, const std::string& filePrefix, const unsigned int iteration);
+  void DebugWritePatch(const itk::ImageRegion<2>& region, const std::string& filename);
 
-  void DebugWritePatch(const itk::Index<2> pixel, const std::string filename);
-  void DebugWritePixelToFill(const itk::Index<2> pixelToFill, const unsigned int iteration);
-  void DebugWritePatchToFillLocation(const itk::Index<2> pixelToFill, const unsigned int iteration);
+  void DebugWritePatch(const itk::Index<2>& pixel, const std::string& filename);
+  void DebugWritePixelToFill(const itk::Index<2>& pixelToFill, const unsigned int iteration);
+  void DebugWritePatchToFillLocation(const itk::Index<2>& pixelToFill, const unsigned int iteration);
 
-  itk::CovariantVector<float, 2> GetAverageIsophote(const itk::Index<2> queryPixel);
-  bool IsValidPatch(const itk::Index<2> queryPixel, const unsigned int radius);
+  itk::CovariantVector<float, 2> GetAverageIsophote(const itk::Index<2>& queryPixel);
+  bool IsValidPatch(const itk::Index<2>& queryPixel, const unsigned int radius);
   
-  itk::ImageRegion<2> CropToValidRegion(const itk::ImageRegion<2> patch);
+  itk::ImageRegion<2> CropToValidRegion(const itk::ImageRegion<2>& patch);
 
   unsigned int GetNumberOfPixelsInPatch();
 
@@ -226,7 +245,8 @@ private:
   // Store the list of source patches computed with ComputeSourcePatches()
   std::vector<itk::ImageRegion<2> > SourcePatches;
   
-  bool Debug;
+  bool DebugImages;
+  bool DebugMessages;
   void DebugMessage(const std::string&);
   
   template <typename T>
@@ -242,6 +262,8 @@ private:
   
   bool UseConfidence;
   bool UseData;
+  
+  int DifferenceType;
 };
 
 #include "CriminisiInpainting.hxx"
