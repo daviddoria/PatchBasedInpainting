@@ -19,14 +19,54 @@
 #include "Helpers.h"
 
 // ITK
+#include "itkImageAdaptor.h"
+#include "itkImageToVectorImageFilter.h"
 #include "itkVectorMagnitudeImageFilter.h"
+#include "itkVectorIndexSelectionCastImageFilter.h"
 
 // VTK
 #include <vtkImageData.h>
 #include <vtkPointData.h>
 
+// Custom
+#include "itkRGBToLabColorSpacePixelAccessor.h"
+
 namespace Helpers
 {
+
+void RGBImageToCIELabImage(RGBImageType::Pointer rgbImage, FloatVectorImageType::Pointer cielabImage)
+{
+  // Convert RGB image to Lab color space
+  typedef itk::Accessor::RGBToLabColorSpacePixelAccessor<unsigned char, float> RGBToLabColorSpaceAccessorType;
+  typedef itk::ImageAdaptor<RGBImageType, RGBToLabColorSpaceAccessorType> RGBToLabAdaptorType;
+  RGBToLabAdaptorType::Pointer rgbToLabAdaptor = RGBToLabAdaptorType::New();
+  rgbToLabAdaptor->SetImage(rgbImage);
+  
+  // Disassembler
+  typedef itk::VectorIndexSelectionCastImageFilter<RGBToLabAdaptorType, FloatScalarImageType> VectorIndexSelectionFilterType;
+  VectorIndexSelectionFilterType::Pointer vectorIndexSelectionFilter = VectorIndexSelectionFilterType::New();
+  vectorIndexSelectionFilter->SetInput(rgbToLabAdaptor);
+  
+  std::vector<FloatScalarImageType::Pointer> channels;
+  
+  // Reassembler
+  typedef itk::ImageToVectorImageFilter<FloatScalarImageType> ReassemblerType;
+  typename ReassemblerType::Pointer reassembler = ReassemblerType::New();
+  
+  for(unsigned int i = 0; i < 3; ++i)
+    {
+    channels.push_back(FloatScalarImageType::New());
+    vectorIndexSelectionFilter->SetIndex(i);
+    vectorIndexSelectionFilter->Update();
+    DeepCopy<FloatScalarImageType>(vectorIndexSelectionFilter->GetOutput(), channels[i]);
+    reassembler->SetNthInput(i, channels[i]);
+    }
+ 
+  reassembler->Update();
+  
+  // Copy to the output
+  DeepCopyVectorImage<FloatVectorImageType>(reassembler->GetOutput(), cielabImage);
+}
 
 void VectorImageToRGBImage(FloatVectorImageType::Pointer image, RGBImageType::Pointer rgbImage)
 {

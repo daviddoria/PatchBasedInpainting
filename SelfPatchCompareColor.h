@@ -6,6 +6,8 @@
 class SelfPatchCompareColor : public SelfPatchCompare
 {
 public:
+  SelfPatchCompareColor(const unsigned int components) : SelfPatchCompare(components) {}
+  
   float PixelDifference(const VectorType &a, const VectorType &b)
   {
     float difference = 0;

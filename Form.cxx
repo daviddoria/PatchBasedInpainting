@@ -222,21 +222,6 @@ Form::Form()
   
   connect(&Inpainting, SIGNAL(RefreshSignal()), this, SLOT(RefreshSlot()), Qt::QueuedConnection);
 };
-
-void Form::on_radDifferenceAll_clicked()
-{
-  this->Inpainting.SetDifferenceType(CriminisiInpainting::DIFFERENCE_ALL);
-}
-
-void Form::on_radDifferenceAll255_clicked()
-{
-  this->Inpainting.SetDifferenceType(CriminisiInpainting::DIFFERENCE_ALL255);
-}
-
-void Form::on_radDifferenceDepth_clicked()
-{
-  this->Inpainting.SetDifferenceType(CriminisiInpainting::DIFFERENCE_DEPTH);
-}
   
 void Form::on_chkDebugImages_clicked()
 {
@@ -250,17 +235,6 @@ void Form::on_chkDebugMessages_clicked()
 {
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
 }
-
-void Form::on_chkUseConfidence_clicked()
-{
-  this->Inpainting.SetUseConfidence(this->chkUseConfidence->isChecked());
-}
-
-void Form::on_chkUseData_clicked()
-{
-  this->Inpainting.SetUseData(this->chkUseData->isChecked());
-}
-  
 
 void Form::on_actionQuit_activated()
 {
@@ -591,32 +565,11 @@ void Form::on_btnInpaint_clicked()
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
   this->Inpainting.SetImage(this->Image);
   this->Inpainting.SetMask(this->MaskImage);
-  this->Inpainting.SetAlpha(this->sldAlpha->value());
-  this->Inpainting.SetUseConfidence(this->chkUseConfidence->isChecked());
-  this->Inpainting.SetUseData(this->chkUseData->isChecked());
-  
-  if(this->radDifferenceDepth->isChecked())
-    {
-    this->Inpainting.SetDifferenceType(CriminisiInpainting::DIFFERENCE_DEPTH);
-    }
-  else if(this->radDifferenceAll->isChecked())
-    {
-    this->Inpainting.SetDifferenceType(CriminisiInpainting::DIFFERENCE_ALL);
-    }
   
   RefreshSlot();
   
   std::cout << "starting ComputationThread..." << std::endl;
   ComputationThread.start();
-}
-
-void Form::on_sldAlpha_valueChanged(int value)
-{
-  if(this->DebugMessages)
-    {
-    std::cout << "on_sldAlpha_valueChanged" << std::endl;
-    }
-  this->Inpainting.SetAlpha(sldAlpha->value());
 }
 
 void Form::SetCameraPosition1()

@@ -38,6 +38,9 @@ class vtkImageData;
 
 namespace Helpers
 {
+  
+void RGBImageToCIELabImage(RGBImageType::Pointer rgbImage, FloatVectorImageType::Pointer cielabImage);
+  
 void NormalizeVectorImage(FloatVector2ImageType::Pointer image);
   
 template<typename TImage>

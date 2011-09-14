@@ -25,19 +25,14 @@
 #include "SelfPatchCompare.h"
 #include "SelfPatchCompareColor.h"
 #include "SelfPatchCompareAll.h"
-#include "SelfPatchCompareAll255.h"
-#include "SelfPatchCompareDepth.h"
-
 
 // STL
 #include <iostream>
-//#include <iomanip> // setfill and setw
 
 // VXL
 #include <vnl/vnl_double_2.h>
 
 // ITK
-//#include "itkVectorMagnitudeImageFilter.h"
 #include "itkRGBToLuminanceImageFilter.h"
 
 CriminisiInpainting::CriminisiInpainting()
@@ -52,6 +47,7 @@ CriminisiInpainting::CriminisiInpainting()
   this->CurrentMask = Mask::New();
   this->OriginalImage = FloatVectorImageType::New();
   this->CurrentImage = FloatVectorImageType::New();
+  this->CIELabImage = FloatVectorImageType::New();
   
   this->ConfidenceImage = FloatScalarImageType::New();
   this->DataImage = FloatScalarImageType::New();
@@ -59,12 +55,8 @@ CriminisiInpainting::CriminisiInpainting()
   this->DebugImages = false;
   this->DebugMessages = false;
   this->Iteration = 0;
-  this->Alpha = 255.;
-  this->Stop = false;
-  this->UseConfidence = true;
-  this->UseData = true;
   
-  this->DifferenceType = DIFFERENCE_DEPTH;
+  this->Stop = false;
 }
 
 void CriminisiInpainting::SetDifferenceType(const int differenceType)
@@ -165,6 +157,12 @@ void CriminisiInpainting::SetImage(FloatVectorImageType::Pointer image)
   
   // Initialize the result to the original image
   Helpers::DeepCopyVectorImage<FloatVectorImageType>(image, this->CurrentImage);
+  
+  RGBImageType::Pointer rgbImage = RGBImageType::New();
+  Helpers::VectorImageToRGBImage(this->CurrentImage, rgbImage);
+  
+  Helpers::RGBImageToCIELabImage(rgbImage, this->CIELabImage);
+  Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->CIELabImage, "Debug/SetImage.CIELab.mha", this->DebugImages);
 }
 
 void CriminisiInpainting::SetMask(Mask::Pointer mask)
@@ -186,11 +184,6 @@ void CriminisiInpainting::SetDebugMessages(const bool flag)
 void CriminisiInpainting::SetDebugImages(const bool flag)
 {
   this->DebugImages = flag;
-}
-
-void CriminisiInpainting::SetAlpha(const float alpha)
-{
-  this->Alpha = alpha;
 }
 
 void CriminisiInpainting::ExpandMask()
@@ -406,25 +399,10 @@ void CriminisiInpainting::Inpaint()
       DebugMessage("Finding best patch...");
       
       SelfPatchCompare* patchCompare;
-      if(this->DifferenceType == DIFFERENCE_ALL)
-	{
-	patchCompare = new SelfPatchCompareAll(this->CurrentImage->GetNumberOfComponentsPerPixel());
-	}
-      else if(this->DifferenceType == DIFFERENCE_ALL255)
-	{
-	patchCompare = new SelfPatchCompareAll255(this->CurrentImage->GetNumberOfComponentsPerPixel());
-	}
-      else if(this->DifferenceType == DIFFERENCE_DEPTH)
-	{
-	patchCompare = new SelfPatchCompareDepth(this->CurrentImage->GetNumberOfComponentsPerPixel());
-	}
-      else
-	{
-	std::cerr << "Invalid DifferenceType selected!" << std::endl;
-	exit(-1);
-	}
+      patchCompare = new SelfPatchCompareColor(this->CurrentImage->GetNumberOfComponentsPerPixel());
       
-      patchCompare->SetImage(this->CurrentImage);
+      //patchCompare->SetImage(this->CurrentImage);
+      patchCompare->SetImage(this->CIELabImage);
       patchCompare->SetMask(this->CurrentMask);
       patchCompare->SetSourceRegions(this->SourcePatches);
       patchCompare->SetTargetRegion(targetRegion);
@@ -449,10 +427,7 @@ void CriminisiInpainting::Inpaint()
       DebugMessage("Updated mask.");
       
       // Sanity check everything
-      if(this->DebugImages)
-	{
-	DebugWriteAllImages();
-	}
+      DebugWriteAllImages();
 
       this->Iteration++;
 #if defined(INTERACTIVE)
@@ -885,22 +860,10 @@ float CriminisiInpainting::ComputePriority(const itk::Index<2>& queryPixel)
   //double confidence = ComputeConfidenceTerm(queryPixel);
   //double data = ComputeDataTerm(queryPixel);
 
-  if(this->DebugMessages)
-    {
-    //std::cout << "UseConfidence: " << this->UseConfidence << " UseData: " << this->UseData << std::endl;
-    }
+  float confidence = this->ConfidenceImage->GetPixel(queryPixel);
+  float data = this->DataImage->GetPixel(queryPixel);
 
-  float priority = 1.0;
-  if(this->UseConfidence)
-    {
-    float confidence = this->ConfidenceImage->GetPixel(queryPixel);
-    priority *= confidence;
-    }
-  if(this->UseData)
-    {
-    float data = this->DataImage->GetPixel(queryPixel);
-    priority *= data;
-    }
+  float priority = confidence * data;
 
   return priority;
 }
@@ -937,7 +900,7 @@ float CriminisiInpainting::ComputeConfidenceTerm(const itk::Index<2>& queryPixel
     float areaOfPatch = static_cast<float>(numberOfPixels);
     
     float confidence = sum/areaOfPatch;
-    //DebugMessage<float>("Confidence: ", confidence);
+    DebugMessage<float>("Confidence: ", confidence);
 
     return confidence;
   }
@@ -1142,14 +1105,4 @@ itk::ImageRegion<2> CriminisiInpainting::CropToValidRegion(const itk::ImageRegio
   region.Crop(inputRegion);
   
   return region;
-}
-
-void CriminisiInpainting::SetUseConfidence(const bool value)
-{
-  this->UseConfidence = value;
-}
-
-void CriminisiInpainting::SetUseData(const bool value)
-{
-  this->UseData = value;
 }

@@ -105,9 +105,6 @@ public:
   
   void SetDebugMessages(const bool);
   
-  // Specify alpha
-  void SetAlpha(const float);
-
   // Compute the confidence values for pixels that were just inpainted.
   void UpdateConfidences(const itk::ImageRegion<2>&);
   
@@ -143,11 +140,17 @@ public:
   
 private:
 
+  // This is the suggested value in Criminisi's paper, but it does not change anything at all, as we find argmax of the priorities, and alpha is a simple scaling factor of the priorities.
+  static const float Alpha = 255;
+  
   // Image to inpaint. This should not be modified throughout the algorithm.
   FloatVectorImageType::Pointer OriginalImage;
   
-  // The result of the inpainting.
+  // The intermediate steps and eventually the result of the inpainting.
   FloatVectorImageType::Pointer CurrentImage;
+  
+  // The CIELab conversion of the input RGB image
+  FloatVectorImageType::Pointer CIELabImage;
 
   // The mask specifying the region to inpaint. This does not change throughout the algorithm - it is the original mask.
   Mask::Pointer OriginalMask;
@@ -245,25 +248,29 @@ private:
   // Store the list of source patches computed with ComputeSourcePatches()
   std::vector<itk::ImageRegion<2> > SourcePatches;
   
+ // This member tracks the current iteration. This is only necessary to help construct useful filenames for debugging outputs from anywhere in the class.
+  unsigned int Iteration;
+  
+  // This flag can be set whiel the algorithm is running to tell it to stop at the end of the current iteration.
+  bool Stop;
+  
+  // This variable determines which Difference subclass is instantiated.
+  int DifferenceType;
+  
+  //// Debugging ////
+  // Should we output images at every iteration?
   bool DebugImages;
+  
+  // Should we output verbose information about what is happenening at every iteration?
   bool DebugMessages;
+  
+  // Output a message if DebugMessages is set to true.
   void DebugMessage(const std::string&);
   
+  // Output a message and a value if DebugMessages is set to true.
   template <typename T>
   void DebugMessage(const std::string& message, T value);
 
-  // This member tracks the current iteration. This is only necessary to help construct useful filenames for debugging outputs from anywhere in the class.
-  unsigned int Iteration;
-  
-  // This is the denominator of the data term expression.
-  float Alpha;
-  
-  bool Stop;
-  
-  bool UseConfidence;
-  bool UseData;
-  
-  int DifferenceType;
 };
 
 #include "CriminisiInpainting.hxx"
