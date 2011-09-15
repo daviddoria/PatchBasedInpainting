@@ -21,36 +21,12 @@
 
 // Custom
 #include "Helpers.h"
+#include "Patch.h"
 #include "Types.h"
 
 // ITK
-#include "itkAddImageFilter.h"
-#include "itkBinaryContourImageFilter.h"
-#include "itkBinaryDilateImageFilter.h"
-#include "itkBinaryErodeImageFilter.h"
-#include "itkBinaryThresholdImageFilter.h"
-#include "itkCastImageFilter.h"
-#include "itkConstNeighborhoodIterator.h"
-#include "itkConstantBoundaryCondition.h"
 #include "itkCovariantVector.h"
-#include "itkDiscreteGaussianImageFilter.h"
-#include "itkFlatStructuringElement.h"
-#include "itkGradientImageFilter.h"
 #include "itkImage.h"
-#include "itkImageDuplicator.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkImageRegionIterator.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkInvertIntensityImageFilter.h"
-#include "itkMaskImageFilter.h"
-#include "itkMinimumMaximumImageCalculator.h"
-#include "itkPasteImageFilter.h"
-#include "itkRescaleIntensityImageFilter.h"
-#include "itkRigid2DTransform.h"
-#include "itkSubtractImageFilter.h"
-#include "itkUnaryFunctorImageFilter.h"
-//#include "itkVariableLengthVector.h"
 
 // VTK
 #include <vtkSmartPointer.h>
@@ -146,12 +122,15 @@ private:
   // Image to inpaint. This should not be modified throughout the algorithm.
   FloatVectorImageType::Pointer OriginalImage;
   
-  // The intermediate steps and eventually the result of the inpainting.
-  FloatVectorImageType::Pointer CurrentImage;
-  
   // The CIELab conversion of the input RGB image
   FloatVectorImageType::Pointer CIELabImage;
-
+  
+  // The intermediate steps and eventually the result of the inpainting.
+  FloatVectorImageType::Pointer CurrentOutputImage;
+  
+  // This image will be used for all patch to patch comparisons. It should point at either OriginalImage or CIELabImage.
+  FloatVectorImageType::Pointer CompareImage;
+  
   // The mask specifying the region to inpaint. This does not change throughout the algorithm - it is the original mask.
   Mask::Pointer OriginalMask;
   
@@ -246,7 +225,7 @@ private:
   void ComputeSourcePatches();
   
   // Store the list of source patches computed with ComputeSourcePatches()
-  std::vector<itk::ImageRegion<2> > SourcePatches;
+  std::vector<Patch> SourcePatches;
   
  // This member tracks the current iteration. This is only necessary to help construct useful filenames for debugging outputs from anywhere in the class.
   unsigned int Iteration;
@@ -271,6 +250,7 @@ private:
   template <typename T>
   void DebugMessage(const std::string& message, T value);
 
+  itk::ImageRegion<2> FullImageRegion;
 };
 
 #include "CriminisiInpainting.hxx"

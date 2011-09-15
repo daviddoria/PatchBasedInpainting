@@ -23,6 +23,7 @@
 #include "itkCastImageFilter.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
+#include "itkMaskImageFilter.h"
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkVector.h"
 

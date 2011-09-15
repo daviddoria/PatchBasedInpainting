@@ -33,7 +33,15 @@
 #include <vnl/vnl_double_2.h>
 
 // ITK
+#include "itkBinaryContourImageFilter.h"
+#include "itkBinaryDilateImageFilter.h"
+#include "itkDiscreteGaussianImageFilter.h"
+#include "itkFlatStructuringElement.h"
+#include "itkGradientImageFilter.h"
+#include "itkInvertIntensityImageFilter.h"
+#include "itkMaskImageFilter.h"
 #include "itkRGBToLuminanceImageFilter.h"
+
 
 CriminisiInpainting::CriminisiInpainting()
 {
@@ -46,8 +54,11 @@ CriminisiInpainting::CriminisiInpainting()
   this->OriginalMask = Mask::New();
   this->CurrentMask = Mask::New();
   this->OriginalImage = FloatVectorImageType::New();
-  this->CurrentImage = FloatVectorImageType::New();
+  this->CurrentOutputImage = FloatVectorImageType::New();
   this->CIELabImage = FloatVectorImageType::New();
+  
+  // We want to use the CIELab image for patch to patch comparisons.
+  this->CompareImage = this->CIELabImage;
   
   this->ConfidenceImage = FloatScalarImageType::New();
   this->DataImage = FloatScalarImageType::New();
@@ -66,7 +77,7 @@ void CriminisiInpainting::SetDifferenceType(const int differenceType)
 
 FloatVectorImageType::Pointer CriminisiInpainting::GetResult()
 {
-  return this->CurrentImage;
+  return this->CurrentOutputImage;
 }
 
 FloatScalarImageType::Pointer CriminisiInpainting::GetPriorityImage()
@@ -122,7 +133,8 @@ void CriminisiInpainting::ComputeSourcePatches()
 	{
 	if(this->CurrentMask->IsValid(region))
 	  {
-	  this->SourcePatches.push_back(region);
+	  this->SourcePatches.push_back(Patch(this->OriginalImage, region));
+	  DebugMessage("Added a source patch.");
 	  }
 	}
     
@@ -156,13 +168,15 @@ void CriminisiInpainting::SetImage(FloatVectorImageType::Pointer image)
   Helpers::DeepCopyVectorImage<FloatVectorImageType>(image, this->OriginalImage);
   
   // Initialize the result to the original image
-  Helpers::DeepCopyVectorImage<FloatVectorImageType>(image, this->CurrentImage);
+  Helpers::DeepCopyVectorImage<FloatVectorImageType>(image, this->CurrentOutputImage);
   
   RGBImageType::Pointer rgbImage = RGBImageType::New();
-  Helpers::VectorImageToRGBImage(this->CurrentImage, rgbImage);
+  Helpers::VectorImageToRGBImage(this->CurrentOutputImage, rgbImage);
   
   Helpers::RGBImageToCIELabImage(rgbImage, this->CIELabImage);
   Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->CIELabImage, "Debug/SetImage.CIELab.mha", this->DebugImages);
+  
+  this->FullImageRegion = image->GetLargestPossibleRegion();
 }
 
 void CriminisiInpainting::SetMask(Mask::Pointer mask)
@@ -261,7 +275,7 @@ void CriminisiInpainting::InitializeData()
 void CriminisiInpainting::InitializeImage()
 {
   // Initialize to the input
-  Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->OriginalImage, this->CurrentImage);
+  Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->OriginalImage, this->CurrentOutputImage);
   
   // We set hole pixels to green so we can visually ensure these pixels are not being copied during the inpainting
   FloatVectorImageType::PixelType green;
@@ -275,7 +289,7 @@ void CriminisiInpainting::InitializeImage()
     {
     if(this->CurrentMask->IsHole(maskIterator.GetIndex()))
       {
-      this->CurrentImage->SetPixel(maskIterator.GetIndex(), green);
+      this->CurrentOutputImage->SetPixel(maskIterator.GetIndex(), green);
       }
 
     ++maskIterator;
@@ -306,7 +320,7 @@ void CriminisiInpainting::Initialize()
     InitializeImage();
     if(this->DebugImages)
       {
-      Helpers::WriteImage<FloatVectorImageType>(this->CurrentImage, "Debug/Initialize.CurrentImage.mha");
+      Helpers::WriteImage<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentImage.mha");
       }
       
     // Do this before we mask the image with the expanded mask
@@ -355,7 +369,11 @@ void CriminisiInpainting::Inpaint()
   {
     // Start the procedure
     this->Stop = false;
+    
+    DebugMessage("Initializing...");
     Initialize();
+    
+    DebugMessage("Computing source patches...");
     ComputeSourcePatches();
 
     this->Iteration = 0;
@@ -364,17 +382,13 @@ void CriminisiInpainting::Inpaint()
       std::cout << "Iteration: " << this->Iteration << std::endl;
 
       FindBoundary();
-      if(this->DebugImages)
-	{
-	Helpers::WriteImage<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage.mha");
-	}
+      Helpers::DebugWriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage.mha", this->DebugImages);
+
       DebugMessage("Found boundary.");
     
       ComputeBoundaryNormals();
-      if(this->DebugImages)
-	{
-	Helpers::WriteImage<FloatVector2ImageType>(this->BoundaryNormals, "Debug/BoundaryNormals.mha");
-	}
+      Helpers::DebugWriteImageConditional<FloatVector2ImageType>(this->BoundaryNormals, "Debug/BoundaryNormals.mha", this->DebugImages);
+
       DebugMessage("Computed boundary normals.");
 
       ComputeAllDataTerms();
@@ -392,20 +406,20 @@ void CriminisiInpainting::Inpaint()
       //std::cout << "Best match pixel: " << bestMatchPixel << std::endl;
 
       itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
-
+      Patch targetPatch(this->CompareImage, targetRegion);
       
       //unsigned int bestMatchSourcePatchId = BestPatch<FloatVectorImageType>(this->CurrentImage, this->CurrentMask, this->SourcePatches, targetRegion);
       
       DebugMessage("Finding best patch...");
       
       SelfPatchCompare* patchCompare;
-      patchCompare = new SelfPatchCompareColor(this->CurrentImage->GetNumberOfComponentsPerPixel());
+      patchCompare = new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel());
       
       //patchCompare->SetImage(this->CurrentImage);
-      patchCompare->SetImage(this->CIELabImage);
+      patchCompare->SetImage(this->CompareImage);
       patchCompare->SetMask(this->CurrentMask);
-      patchCompare->SetSourceRegions(this->SourcePatches);
-      patchCompare->SetTargetRegion(targetRegion);
+      patchCompare->SetSourcePatches(this->SourcePatches);
+      patchCompare->SetTargetPatch(targetPatch);
       unsigned int bestMatchSourcePatchId = patchCompare->FindBestPatch();
       //DebugMessage<unsigned int>("Found best patch to be ", bestMatchSourcePatchId);
       //std::cout << "Found best patch to be " << bestMatchSourcePatchId << std::endl;
@@ -414,13 +428,13 @@ void CriminisiInpainting::Inpaint()
       //this->DebugWritePatch(targetRegion, "TargetPatch.png");
       
       // Copy the patch. This is the actual inpainting step.
-      Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CurrentImage, this->CurrentMask, this->SourcePatches[bestMatchSourcePatchId], targetRegion);
+      Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, this->SourcePatches[bestMatchSourcePatchId].Region, targetRegion);
 
       // Copy the new confidences into the confidence image
       UpdateConfidences(targetRegion);
 
       // The isophotes can be copied because they would only change slightly if recomputed.
-      Helpers::CopySelfPatchIntoValidRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, this->SourcePatches[bestMatchSourcePatchId], targetRegion);
+      Helpers::CopySelfPatchIntoValidRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, this->SourcePatches[bestMatchSourcePatchId].Region, targetRegion);
 
       // Update the mask
       this->UpdateMask(pixelToFill);
@@ -449,7 +463,7 @@ void CriminisiInpainting::ComputeIsophotes()
   
   try
   {
-    Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->CurrentImage, "Debug/ComputeIsophotes.input.mha", this->DebugImages);
+    Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/ComputeIsophotes.input.mha", this->DebugImages);
     
     /*
     // This only works when the image is RGB
@@ -1101,7 +1115,7 @@ itk::Size<2> CriminisiInpainting::GetPatchSize()
 
 itk::ImageRegion<2> CriminisiInpainting::CropToValidRegion(const itk::ImageRegion<2>& inputRegion)
 {
-  itk::ImageRegion<2> region = this->CurrentMask->GetLargestPossibleRegion(); // This could have been CurrentImage, or any of the other images - they should all be the same size
+  itk::ImageRegion<2> region = this->FullImageRegion;
   region.Crop(inputRegion);
   
   return region;

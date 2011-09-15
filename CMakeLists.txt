@@ -27,6 +27,7 @@ Form.cxx
 Helpers.cpp 
 Interactive.cpp 
 InteractorStyleImageNoLevel.cxx
+Patch.cpp
 ProgressThread.cpp
 SelfPatchCompare.cpp
 ${UISrcs} ${MOCSrcs})

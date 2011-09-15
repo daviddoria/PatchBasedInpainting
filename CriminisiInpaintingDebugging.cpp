@@ -34,7 +34,7 @@ void CriminisiInpainting::DebugWriteAllImages()
   Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals, "BoundaryNormals", this->Iteration);
   
   Helpers::DebugWriteSequentialImage<Mask>(this->CurrentMask, "CurrentMask", this->Iteration);
-  Helpers::DebugWriteSequentialImage<FloatVectorImageType>(this->CurrentImage, "CurrentImage", this->Iteration);
+  Helpers::DebugWriteSequentialImage<FloatVectorImageType>(this->CurrentOutputImage, "CurrentImage", this->Iteration);
 }
 
 void CriminisiInpainting::DebugWriteAllImages(const itk::Index<2>& pixelToFill, const itk::Index<2>& bestMatchPixel, const unsigned int iteration)
@@ -56,7 +56,7 @@ void CriminisiInpainting::DebugWriteAllImages(const itk::Index<2>& pixelToFill, 
   Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals,"BoundaryNormals", iteration);
   Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->PriorityImage,"Priorities", iteration);
   Helpers::DebugWriteSequentialImage<Mask>(this->CurrentMask,"Mask", iteration);
-  Helpers::DebugWriteSequentialImage<FloatVectorImageType>(this->CurrentImage,"FilledImage", iteration);
+  Helpers::DebugWriteSequentialImage<FloatVectorImageType>(this->CurrentOutputImage,"FilledImage", iteration);
 
 }
 
@@ -78,11 +78,11 @@ void CriminisiInpainting::DebugWritePatch(const itk::ImageRegion<2>& inputRegion
     typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
 					      FloatVectorImageType> ExtractFilterType;
     itk::ImageRegion<2> region = inputRegion;
-    region.Crop(this->CurrentImage->GetLargestPossibleRegion());
+    region.Crop(this->CurrentOutputImage->GetLargestPossibleRegion());
 
     ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
     extractFilter->SetRegionOfInterest(region);
-    extractFilter->SetInput(this->CurrentImage);
+    extractFilter->SetInput(this->CurrentOutputImage);
     extractFilter->Update();
     /*
     typedef itk::Image<itk::CovariantVector<unsigned char, TImage::PixelType::Dimension>, 2> OutputImageType;
@@ -111,11 +111,11 @@ void CriminisiInpainting::DebugWritePatch(const itk::Index<2>& pixel, const std:
 					      FloatVectorImageType> ExtractFilterType;
 
     itk::ImageRegion<2> region = Helpers::GetRegionInRadiusAroundPixel(pixel, this->PatchRadius[0]);
-    region.Crop(this->CurrentImage->GetLargestPossibleRegion());
+    region.Crop(this->CurrentOutputImage->GetLargestPossibleRegion());
 
     ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
     extractFilter->SetRegionOfInterest(region);
-    extractFilter->SetInput(this->CurrentImage);
+    extractFilter->SetInput(this->CurrentOutputImage);
     extractFilter->Update();
 
     Helpers::WriteImage<FloatVectorImageType>(extractFilter->GetOutput(), filename);

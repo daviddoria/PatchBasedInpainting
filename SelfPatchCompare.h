@@ -29,6 +29,7 @@
 // Custom
 #include "Helpers.h"
 #include "Mask.h"
+#include "Patch.h"
 #include "Types.h"
 
 // ITK
@@ -45,18 +46,18 @@ public:
   
   unsigned int FindBestPatch();
 
-  void SetImage(FloatVectorImageType::Pointer);
+  void SetImage(const FloatVectorImageType::Pointer);
 
-  void SetMask(Mask::Pointer mask);
+  void SetMask(const Mask::Pointer mask);
 
-  void SetTargetRegion(const itk::ImageRegion<2>);
+  void SetTargetPatch(const Patch&);
 
-  void SetSourceRegions(const std::vector<itk::ImageRegion<2> >&);
+  void SetSourcePatches(const std::vector<Patch>&);
 
-  float SlowDifference(const itk::ImageRegion<2>& sourceRegion);
-  float PatchDifferenceManual(const itk::ImageRegion<2>& sourceRegion);
-  float PatchDifferenceExternal(const itk::ImageRegion<2>& sourceRegion);
-  float PatchDifferenceBoundary(const itk::ImageRegion<2>& sourceRegion);
+  float SlowDifference(const Patch& sourcePatch);
+  float PatchDifferenceManual(const Patch& sourcePatch);
+  float PatchDifferenceExternal(const Patch& sourcePatch);
+  float PatchDifferenceBoundary(const Patch& sourcePatch);
 
   // Prepare to do some comparisons by finding all of the valid pixels in the target region
   void ComputeOffsets();
@@ -73,10 +74,10 @@ protected:
   std::vector<FloatVectorImageType::OffsetValueType> ValidOffsets;
 
   // This is the target region we wish to compare. It may be partially invalid.
-  itk::ImageRegion<2> TargetRegion;
+  Patch TargetPatch;
 
   // These are the fully valid source regions
-  std::vector<itk::ImageRegion<2> > SourceRegions;
+  std::vector<Patch> SourcePatches;
   
   // This is the image from which to take the patches
   FloatVectorImageType::Pointer Image;
