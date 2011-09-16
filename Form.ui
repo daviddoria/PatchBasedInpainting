@@ -29,18 +29,18 @@
             <rect>
              <x>10</x>
              <y>40</y>
-             <width>67</width>
+             <width>91</width>
              <height>17</height>
             </rect>
            </property>
            <property name="text">
-            <string>Patch Size</string>
+            <string>Patch Radius</string>
            </property>
           </widget>
-          <widget class="QLineEdit" name="txtPatchSize">
+          <widget class="QLineEdit" name="txtPatchRadius">
            <property name="geometry">
             <rect>
-             <x>90</x>
+             <x>110</x>
              <y>40</y>
              <width>41</width>
              <height>27</height>
@@ -50,7 +50,7 @@
             <string>Sets the width/height of a square patch</string>
            </property>
            <property name="text">
-            <string>20</string>
+            <string>10</string>
            </property>
           </widget>
           <widget class="QPushButton" name="btnInpaint">

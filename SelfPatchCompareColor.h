@@ -16,7 +16,8 @@ public:
     for(unsigned int i = 0; i < 3; ++i)
       {
       diff = a[i] - b[i];
-      difference += diff * diff;
+      //difference += diff * diff; // Squared difference
+      difference += abs(diff); // Absolute difference
       }
     return difference;
   }

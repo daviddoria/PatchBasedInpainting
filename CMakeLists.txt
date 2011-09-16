@@ -36,17 +36,16 @@ TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive ${VTK_LIBRARIES} QVTK ${ITK
 INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 
 # Non-interactive
-# Should look something like this:
-ADD_EXECUTABLE(CriminisiInpainting
-CriminisiInpaintingNonInteractive.cpp
-CriminisiInpainting.cpp
-CriminisiInpaintingDebugging.cpp
-Patch.cpp
-Helpers.cpp
-SelfPatchCompare.cpp
-)
-TARGET_LINK_LIBRARIES(CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-INSTALL( TARGETS CriminisiInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+# ADD_EXECUTABLE(CriminisiInpainting
+# CriminisiInpaintingNonInteractive.cpp
+# CriminisiInpainting.cpp
+# CriminisiInpaintingDebugging.cpp
+# Patch.cpp
+# Helpers.cpp
+# SelfPatchCompare.cpp
+# )
+# TARGET_LINK_LIBRARIES(CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# INSTALL( TARGETS CriminisiInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 
 
 # ADD_EXECUTABLE(TestPatchDifference TestPatchDifference.cpp Helpers.cpp)

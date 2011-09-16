@@ -39,6 +39,7 @@
 #include <vtkFloatArray.h>
 #include <vtkGlyph2D.h>
 #include <vtkImageData.h>
+#include <vtkImageProperty.h>
 #include <vtkImageSlice.h>
 #include <vtkImageSliceMapper.h>
 #include <vtkLookupTable.h>
@@ -108,7 +109,9 @@ Form::Form()
   // Initialize and link the image display objects
   this->VTKImage = vtkSmartPointer<vtkImageData>::New();
   this->ImageSlice = vtkSmartPointer<vtkImageSlice>::New();
+  this->ImageSlice->GetProperty()->SetInterpolationTypeToNearest();
   this->ImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
+  this->ImageSliceMapper->BorderOn();
   
   this->ImageSliceMapper->SetInputConnection(this->VTKImage->GetProducerPort());
   this->ImageSlice->SetMapper(this->ImageSliceMapper);
@@ -117,7 +120,9 @@ Form::Form()
   // Initialize and link the priority image display objects
   this->VTKPriorityImage = vtkSmartPointer<vtkImageData>::New();
   this->PriorityImageSlice = vtkSmartPointer<vtkImageSlice>::New();
+  this->PriorityImageSlice->GetProperty()->SetInterpolationTypeToNearest();
   this->PriorityImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
+  this->PriorityImageSliceMapper->BorderOn();
   
   this->PriorityImageSliceMapper->SetInputConnection(this->VTKPriorityImage->GetProducerPort());
   this->PriorityImageSlice->SetMapper(this->PriorityImageSliceMapper);
@@ -126,7 +131,9 @@ Form::Form()
   // Initialize and link the confidence image display objects
   this->VTKConfidenceImage = vtkSmartPointer<vtkImageData>::New();
   this->ConfidenceImageSlice = vtkSmartPointer<vtkImageSlice>::New();
+  this->ConfidenceImageSlice->GetProperty()->SetInterpolationTypeToNearest();
   this->ConfidenceImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
+  this->ConfidenceImageSliceMapper->BorderOn();
   
   this->ConfidenceImageSliceMapper->SetInputConnection(this->VTKConfidenceImage->GetProducerPort());
   this->ConfidenceImageSlice->SetMapper(this->ConfidenceImageSliceMapper);
@@ -134,7 +141,9 @@ Form::Form()
   // Initialize and link the boundary image display objects
   this->VTKBoundaryImage = vtkSmartPointer<vtkImageData>::New();
   this->BoundaryImageSlice = vtkSmartPointer<vtkImageSlice>::New();
+  this->BoundaryImageSlice->GetProperty()->SetInterpolationTypeToNearest();
   this->BoundaryImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
+  this->BoundaryImageSliceMapper->BorderOn();
   
   this->BoundaryImageSliceMapper->SetInputConnection(this->VTKBoundaryImage->GetProducerPort());
   this->BoundaryImageSlice->SetMapper(this->BoundaryImageSliceMapper);
@@ -142,7 +151,9 @@ Form::Form()
   // Initialize and link the mask image display objects
   this->VTKMaskImage = vtkSmartPointer<vtkImageData>::New();
   this->MaskImageSlice = vtkSmartPointer<vtkImageSlice>::New();
+  this->MaskImageSlice->GetProperty()->SetInterpolationTypeToNearest();
   this->MaskImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
+  this->MaskImageSliceMapper->BorderOn();
   
   this->MaskImageSliceMapper->SetInputConnection(this->VTKMaskImage->GetProducerPort());
   this->MaskImageSlice->SetMapper(this->MaskImageSliceMapper);
@@ -150,6 +161,7 @@ Form::Form()
   // Initialize and link the data image display objects
   this->VTKDataImage = vtkSmartPointer<vtkImageData>::New();
   this->DataImageSlice = vtkSmartPointer<vtkImageSlice>::New();
+  this->DataImageSlice->GetProperty()->SetInterpolationTypeToNearest();
   this->DataImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
 
   this->DataImageSliceMapper->SetInputConnection(this->VTKDataImage->GetProducerPort());
@@ -557,11 +569,8 @@ void Form::on_btnInpaint_clicked()
   std::cout << "on_btnInpaint_clicked()" << std::endl;
   
   // Reset some things (this is so that if we want to run another completion it will work normally)
-    
-  //this->Inpainting.Thrower->AddObserver(EventThrower::RefreshEvent, this, &Form::Refresh);
-  
-  this->Inpainting.SetPatchRadius(this->txtPatchSize->text().toUInt()/2);
-  
+
+  this->Inpainting.SetPatchRadius(this->txtPatchRadius->text().toUInt());
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
   this->Inpainting.SetImage(this->Image);

@@ -60,7 +60,7 @@ public:
   void SetDebugMessages(const bool);
   
   // Compute the confidence values for pixels that were just inpainted.
-  void UpdateConfidences(const itk::ImageRegion<2>&);
+  void UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value);
   
   // Get the output of the inpainting.
   FloatVectorImageType::Pointer GetResult();
@@ -194,8 +194,8 @@ private:
   // Find the highest priority patch to be filled.
   itk::Index<2> FindHighestPriority(FloatScalarImageType::Pointer priorityImage);
 
-  // Update the mask so that the pixel that was filled is marked as filled.
-  void UpdateMask(const itk::Index<2> pixel);
+  // Update the mask so that the pixels in the region that was filled are marked as filled.
+  void UpdateMask(const itk::ImageRegion<2> region);
 
   // Locate all patches that are completely inside of the image and completely inside of the source region
   void ComputeSourcePatches();

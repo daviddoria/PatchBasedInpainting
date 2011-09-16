@@ -133,13 +133,14 @@ void CriminisiInpainting::ComputeSourcePatches()
 	if(this->CurrentMask->IsValid(region))
 	  {
 	  this->SourcePatches.push_back(Patch(this->OriginalImage, region));
-	  DebugMessage("Added a source patch.");
+	  //DebugMessage("Added a source patch.");
 	  }
 	}
     
       ++imageIterator;
       }
-    std::cout << "There are " << this->SourcePatches.size() << " source patches." << std::endl;
+    DebugMessage<unsigned int>("Number of source patches: ", this->SourcePatches.size());
+    
     if(this->SourcePatches.size() == 0)
       {
       std::cerr << "There must be at least 1 source patch!" << std::endl;
@@ -400,14 +401,15 @@ void CriminisiInpainting::Iterate()
   // Copy the patch. This is the actual inpainting step.
   Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, this->SourcePatches[bestMatchSourcePatchId].Region, targetRegion);
 
+  float confidence = ComputeConfidenceTerm(pixelToFill);
   // Copy the new confidences into the confidence image
-  UpdateConfidences(targetRegion);
+  UpdateConfidences(targetRegion, confidence);
 
   // The isophotes can be copied because they would only change slightly if recomputed.
   Helpers::CopySelfPatchIntoValidRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, this->SourcePatches[bestMatchSourcePatchId].Region, targetRegion);
 
   // Update the mask
-  this->UpdateMask(pixelToFill);
+  this->UpdateMask(targetRegion);
   DebugMessage("Updated mask.");
 
   // Sanity check everything
@@ -652,18 +654,16 @@ void CriminisiInpainting::FindBoundary()
   }
 }
 
-void CriminisiInpainting::UpdateMask(const itk::Index<2> inputPixel)
+void CriminisiInpainting::UpdateMask(const itk::ImageRegion<2> region)
 {
   try
   {
+    /*
     // Create a black patch
     Mask::Pointer blackPatch = Mask::New();
     //Helpers::CreateBlankPatch<UnsignedCharScalarImageType>(blackPatch, this->PatchRadius[0]);
     Helpers::CreateConstantPatch<Mask>(blackPatch, this->CurrentMask->GetValidValue(), this->PatchRadius[0]);
-    itk::Index<2> pixel;
-    pixel[0] = inputPixel[0] - blackPatch->GetLargestPossibleRegion().GetSize()[0]/2;
-    pixel[1] = inputPixel[1] - blackPatch->GetLargestPossibleRegion().GetSize()[1]/2;
-
+    
     // Paste it into the mask
     typedef itk::PasteImageFilter <Mask, Mask> PasteImageFilterType;
     PasteImageFilterType::Pointer pasteFilter = PasteImageFilterType::New();
@@ -672,13 +672,26 @@ void CriminisiInpainting::UpdateMask(const itk::Index<2> inputPixel)
     pasteFilter->SetSourceImage(blackPatch);
     pasteFilter->SetDestinationImage(this->CurrentMask);
     pasteFilter->SetSourceRegion(blackPatch->GetLargestPossibleRegion());
-    pasteFilter->SetDestinationIndex(pixel);
+    pasteFilter->SetDestinationIndex(region.GetIndex());
     pasteFilter->Update();
 
     // Not sure how Mask::DeepCopyFrom would work on the output of a filter, so do this manually.
     Helpers::DeepCopy<Mask>(pasteFilter->GetOutput(), this->CurrentMask);
     this->CurrentMask->SetHoleValue(this->OriginalMask->GetHoleValue());
     this->CurrentMask->SetValidValue(this->OriginalMask->GetValidValue());
+    */
+    
+    itk::ImageRegionIterator<Mask> maskIterator(this->CurrentMask, region);
+  
+    while(!maskIterator.IsAtEnd())
+      {
+      if(this->CurrentMask->IsHole(maskIterator.GetIndex()))
+	{
+	maskIterator.Set(this->CurrentMask->GetValidValue());
+	}
+  
+      ++maskIterator;
+      }
   }
   catch( itk::ExceptionObject & err )
   {
@@ -937,45 +950,29 @@ float CriminisiInpainting::ComputeDataTerm(const itk::Index<2>& queryPixel)
   }
 }
 
-// This struct is used by UpdateConfidences to keep track of the pixels and their values that should be replaced.
-// We have to do this in a two pass fashion because the old neighboring values cannot be changed until all new values
-// have been computed.
-struct UpdatePixel
-{
-  UpdatePixel(const itk::Index<2>& i, const float v) : index(i), value(v) {}
-  itk::Index<2> index;
-  float value;
-};
-
-void CriminisiInpainting::UpdateConfidences(const itk::ImageRegion<2>& inputRegion)
+void CriminisiInpainting::UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value)
 {
   try
   {
     // Force the region to update to be entirely inside the image
-    itk::ImageRegion<2> region = CropToValidRegion(inputRegion);
+    itk::ImageRegion<2> region = CropToValidRegion(targetRegion);
     
     // Use an iterator to find masked pixels. Compute their new value, and save it in a vector of pixels and their new values.
     // Do not update the pixels until after all new values have been computed, because we want to use the old values in all of
     // the computations.
     itk::ImageRegionConstIterator<Mask> maskIterator(this->CurrentMask, region);
 
-    std::vector<UpdatePixel> pixelsToUpdate;
     while(!maskIterator.IsAtEnd())
       {
       if(this->CurrentMask->IsHole(maskIterator.GetIndex()))
 	{
 	itk::Index<2> currentPixel = maskIterator.GetIndex();
-	pixelsToUpdate.push_back(UpdatePixel(currentPixel, ComputeConfidenceTerm(currentPixel)));
+	this->ConfidenceImage->SetPixel(currentPixel, value);
 	}
 
       ++maskIterator;
       } // end while looop with iterator
 
-    // Actually update the pixels
-    for(unsigned int i = 0; i < pixelsToUpdate.size(); ++i)
-      {
-      this->ConfidenceImage->SetPixel(pixelsToUpdate[i].index, pixelsToUpdate[i].value);
-      }
   } // end try
   catch( itk::ExceptionObject & err )
   {
