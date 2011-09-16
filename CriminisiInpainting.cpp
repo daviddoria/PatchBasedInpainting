@@ -67,7 +67,6 @@ CriminisiInpainting::CriminisiInpainting()
   this->DebugMessages = false;
   this->Iteration = 0;
   
-  this->Stop = false;
 }
 
 void CriminisiInpainting::SetDifferenceType(const int differenceType)
@@ -311,43 +310,29 @@ void CriminisiInpainting::Initialize()
 {
   try
   {
+    this->Iteration = 0;
+    
     InitializeMask();
-    if(this->DebugImages)
-      {
-      Helpers::WriteImage<Mask>(this->CurrentMask, "Debug/Initialize.CurrentMask.mha");
-      }
-      
+    Helpers::DebugWriteImageConditional<Mask>(this->CurrentMask, "Debug/Initialize.CurrentMask.mha", this->DebugImages);
+  
     InitializeImage();
-    if(this->DebugImages)
-      {
-      Helpers::WriteImage<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentImage.mha");
-      }
-      
+    Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentImage.mha", this->DebugImages);
+  
     // Do this before we mask the image with the expanded mask
     ComputeIsophotes();
-    if(this->DebugImages)
-      {
-      Helpers::WriteImage<FloatVector2ImageType>(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha");
-      }
-    
+    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha", this->DebugImages);
+
     InitializeData();
-    if(this->DebugImages)
-      {
-      Helpers::WriteImage<FloatScalarImageType>(this->DataImage, "Debug/Initialize.DataImage.mha");
-      }
-      
+    Helpers::DebugWriteImageConditional<FloatScalarImageType>(this->DataImage, "Debug/Initialize.DataImage.mha", this->DebugImages);
+  
     InitializePriority();
-    if(this->DebugImages)
-      {
-      Helpers::WriteImage<FloatScalarImageType>(this->PriorityImage, "Debug/Initialize.PriorityImage.mha");
-      }
-      
+    Helpers::DebugWriteImageConditional<FloatScalarImageType>(this->PriorityImage, "Debug/Initialize.PriorityImage.mha", this->DebugImages);
+  
     InitializeConfidence();
-    if(this->DebugImages)
-      {
-      Helpers::WriteImage<FloatScalarImageType>(this->ConfidenceImage, "Debug/Initialize.ConfidenceImage.mha");
-      }
-      
+    Helpers::DebugWriteImageConditional<FloatScalarImageType>(this->ConfidenceImage, "Debug/Initialize.ConfidenceImage.mha", this->DebugImages);
+
+    DebugMessage("Computing source patches...");
+    ComputeSourcePatches();
     // Debugging outputs
     //WriteImage<TImage>(this->Image, "InitialImage.mhd");
     //WriteImage<UnsignedCharImageType>(this->Mask, "InitialMask.mhd");
@@ -362,92 +347,91 @@ void CriminisiInpainting::Initialize()
   }
 }
 
+void CriminisiInpainting::Iterate()
+{
+  std::cout << "Iteration: " << this->Iteration << std::endl;
+
+  FindBoundary();
+  Helpers::DebugWriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage.mha", this->DebugImages);
+
+  DebugMessage("Found boundary.");
+
+  ComputeBoundaryNormals();
+  Helpers::DebugWriteImageConditional<FloatVector2ImageType>(this->BoundaryNormals, "Debug/BoundaryNormals.mha", this->DebugImages);
+
+  DebugMessage("Computed boundary normals.");
+
+  ComputeAllDataTerms();
+
+  ComputeAllPriorities();
+  DebugMessage("Computed priorities.");
+
+  itk::Index<2> pixelToFill = FindHighestPriority(this->PriorityImage);
+  DebugMessage<itk::Index<2> >("Highest priority found to be ", pixelToFill);
+  //std::cout << "Filling: " << pixelToFill << std::endl;
+
+  //this->DebugWritePatch(pixelToFill, "PatchToFill", this->Iteration); // this must be done here because it is before the filling
+
+  //itk::Index<2> bestMatchPixel = SelfPatchMatch<TImage, UnsignedCharImageType>(this->Image, this->Mask, pixelToFill, this->PatchRadius[0], iteration, this->Weights);
+  //std::cout << "Best match pixel: " << bestMatchPixel << std::endl;
+
+  itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
+  Patch targetPatch(this->CompareImage, targetRegion);
+
+  //unsigned int bestMatchSourcePatchId = BestPatch<FloatVectorImageType>(this->CurrentImage, this->CurrentMask, this->SourcePatches, targetRegion);
+
+  DebugMessage("Finding best patch...");
+
+  SelfPatchCompare* patchCompare;
+  patchCompare = new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel());
+
+  //patchCompare->SetImage(this->CurrentImage);
+  patchCompare->SetImage(this->CompareImage);
+  patchCompare->SetMask(this->CurrentMask);
+  patchCompare->SetSourcePatches(this->SourcePatches);
+  patchCompare->SetTargetPatch(targetPatch);
+  unsigned int bestMatchSourcePatchId = patchCompare->FindBestPatch();
+  //DebugMessage<unsigned int>("Found best patch to be ", bestMatchSourcePatchId);
+  //std::cout << "Found best patch to be " << bestMatchSourcePatchId << std::endl;
+
+  //this->DebugWritePatch(this->SourcePatches[bestMatchSourcePatchId], "SourcePatch.png");
+  //this->DebugWritePatch(targetRegion, "TargetPatch.png");
+
+  // Copy the patch. This is the actual inpainting step.
+  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, this->SourcePatches[bestMatchSourcePatchId].Region, targetRegion);
+
+  // Copy the new confidences into the confidence image
+  UpdateConfidences(targetRegion);
+
+  // The isophotes can be copied because they would only change slightly if recomputed.
+  Helpers::CopySelfPatchIntoValidRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, this->SourcePatches[bestMatchSourcePatchId].Region, targetRegion);
+
+  // Update the mask
+  this->UpdateMask(pixelToFill);
+  DebugMessage("Updated mask.");
+
+  // Sanity check everything
+  DebugWriteAllImages();
+
+  this->Iteration++;
+
+}
+
 void CriminisiInpainting::Inpaint()
 {
+  // This function is intended to be used by the command line version. It will do the complete inpainting without updating any UI or the ability to stop before it is complete.
   //std::cout << "CriminisiInpainting::Inpaint()" << std::endl;
   try
   {
     // Start the procedure
-    this->Stop = false;
-    
     DebugMessage("Initializing...");
     Initialize();
-    
-    DebugMessage("Computing source patches...");
-    ComputeSourcePatches();
 
     this->Iteration = 0;
-    while(HasMoreToInpaint() && !this->Stop)
+    while(HasMoreToInpaint())
       {
-      std::cout << "Iteration: " << this->Iteration << std::endl;
-
-      FindBoundary();
-      Helpers::DebugWriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage.mha", this->DebugImages);
-
-      DebugMessage("Found boundary.");
-    
-      ComputeBoundaryNormals();
-      Helpers::DebugWriteImageConditional<FloatVector2ImageType>(this->BoundaryNormals, "Debug/BoundaryNormals.mha", this->DebugImages);
-
-      DebugMessage("Computed boundary normals.");
-
-      ComputeAllDataTerms();
-    
-      ComputeAllPriorities();
-      DebugMessage("Computed priorities.");
-      
-      itk::Index<2> pixelToFill = FindHighestPriority(this->PriorityImage);
-      DebugMessage<itk::Index<2> >("Highest priority found to be ", pixelToFill);
-      //std::cout << "Filling: " << pixelToFill << std::endl;
-
-      //this->DebugWritePatch(pixelToFill, "PatchToFill", this->Iteration); // this must be done here because it is before the filling
-
-      //itk::Index<2> bestMatchPixel = SelfPatchMatch<TImage, UnsignedCharImageType>(this->Image, this->Mask, pixelToFill, this->PatchRadius[0], iteration, this->Weights);
-      //std::cout << "Best match pixel: " << bestMatchPixel << std::endl;
-
-      itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
-      Patch targetPatch(this->CompareImage, targetRegion);
-      
-      //unsigned int bestMatchSourcePatchId = BestPatch<FloatVectorImageType>(this->CurrentImage, this->CurrentMask, this->SourcePatches, targetRegion);
-      
-      DebugMessage("Finding best patch...");
-      
-      SelfPatchCompare* patchCompare;
-      patchCompare = new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel());
-      
-      //patchCompare->SetImage(this->CurrentImage);
-      patchCompare->SetImage(this->CompareImage);
-      patchCompare->SetMask(this->CurrentMask);
-      patchCompare->SetSourcePatches(this->SourcePatches);
-      patchCompare->SetTargetPatch(targetPatch);
-      unsigned int bestMatchSourcePatchId = patchCompare->FindBestPatch();
-      //DebugMessage<unsigned int>("Found best patch to be ", bestMatchSourcePatchId);
-      //std::cout << "Found best patch to be " << bestMatchSourcePatchId << std::endl;
-      
-      //this->DebugWritePatch(this->SourcePatches[bestMatchSourcePatchId], "SourcePatch.png");
-      //this->DebugWritePatch(targetRegion, "TargetPatch.png");
-      
-      // Copy the patch. This is the actual inpainting step.
-      Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, this->SourcePatches[bestMatchSourcePatchId].Region, targetRegion);
-
-      // Copy the new confidences into the confidence image
-      UpdateConfidences(targetRegion);
-
-      // The isophotes can be copied because they would only change slightly if recomputed.
-      Helpers::CopySelfPatchIntoValidRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, this->SourcePatches[bestMatchSourcePatchId].Region, targetRegion);
-
-      // Update the mask
-      this->UpdateMask(pixelToFill);
-      DebugMessage("Updated mask.");
-      
-      // Sanity check everything
-      DebugWriteAllImages();
-
-      this->Iteration++;
-#if defined(INTERACTIVE)
-      emit RefreshSignal();
-#endif
-      } // end while(HasMoreToInpaint) loop
+      Iterate();
+      }
 
   }// end try
   catch( itk::ExceptionObject & err )
@@ -552,11 +536,6 @@ void CriminisiInpainting::ComputeIsophotes()
     std::cerr << err << std::endl;
     exit(-1);
   }
-}
-
-void CriminisiInpainting::StopInpainting()
-{
-  this->Stop = true;
 }
 
 bool CriminisiInpainting::HasMoreToInpaint()

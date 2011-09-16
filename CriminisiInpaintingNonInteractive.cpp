@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 
   CriminisiInpainting Inpainting;
   Inpainting.SetPatchRadius(patchRadius);
-  Inpainting.SetDebug(false);
+  //Inpainting.SetDebug(false);
   Inpainting.SetImage(imageReader->GetOutput());
   Inpainting.SetMask(maskReader->GetOutput());
   Inpainting.Inpaint();

@@ -27,33 +27,9 @@
 // ITK
 #include "itkCovariantVector.h"
 #include "itkImage.h"
-
-// VTK
-#include <vtkSmartPointer.h>
-
-// STL
-#include <iomanip> // setfill, setw
-
-// Qt
-#include <QObject>
-
-// #if defined(INTERACTIVE)
-// class CriminisiInpainting : public QObject
-// #else
-// class CriminisiInpainting
-// #endif
-// {
-// #if defined(INTERACTIVE)
-//   Q_OBJECT
-// signals:
-//   void RefreshSignal();
-// #endif
   
-class CriminisiInpainting : public QObject
+class CriminisiInpainting
 {
-  Q_OBJECT
-signals:
-  void RefreshSignal();
 
 public:
 
@@ -63,6 +39,8 @@ public:
   
   // Constructor
   CriminisiInpainting();
+
+  void Iterate();
 
   // The real work is done here.
   void Inpaint();
@@ -108,11 +86,13 @@ public:
   // Get the current mask image
   Mask::Pointer GetMaskImage();
   
-  // Stop the procedure
-  void StopInpainting();
-  
   void SetUseConfidence(const bool);
   void SetUseData(const bool);
+
+  void Initialize();
+
+  // Determine whether or not the inpainting is completed by seeing if there are any pixels in the mask that still need to be filled.
+  bool HasMoreToInpaint();
   
 private:
 
@@ -161,7 +141,6 @@ private:
   void ComputeAllDataTerms();
   
   // Functions
-  void Initialize();
   void InitializeMask();
   void InitializeConfidence();
   void InitializeData();
@@ -192,9 +171,6 @@ private:
   
   // Compute the isophotes.
   void ComputeIsophotes();
-  
-  // Determine whether or not the inpainting is completed by seeing if there are any pixels in the mask that still need to be filled.
-  bool HasMoreToInpaint();
 
   // Compute the normals of a region boundary.
   void ComputeBoundaryNormals();
@@ -229,9 +205,6 @@ private:
   
  // This member tracks the current iteration. This is only necessary to help construct useful filenames for debugging outputs from anywhere in the class.
   unsigned int Iteration;
-  
-  // This flag can be set whiel the algorithm is running to tell it to stop at the end of the current iteration.
-  bool Stop;
   
   // This variable determines which Difference subclass is instantiated.
   int DifferenceType;

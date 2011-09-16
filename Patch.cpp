@@ -13,7 +13,8 @@ Patch::Patch(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2
   regionOfInterestImageFilter->SetRegionOfInterest(region);
   regionOfInterestImageFilter->SetInput(image);
   regionOfInterestImageFilter->Update();
-  
+  */
+  /*
   // Compute the histogram of each channel
   for(unsigned int i = 0; i < image->GetNumberOfComponentsPerPixel(); ++i)
     {
@@ -21,6 +22,7 @@ Patch::Patch(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2
     IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
     indexSelectionFilter->SetIndex(i);
     indexSelectionFilter->SetInput(image);
+    indexSelectionFilter->GetOutput()->SetRequestedRegion(region);
     indexSelectionFilter->Update();
   
     const unsigned int MeasurementVectorSize = 1;

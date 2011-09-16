@@ -165,6 +165,7 @@ protected:
 
   template <typename T>
   void DebugMessage(const std::string& message, T value);
+
 };
 
 #include "Form.hxx"

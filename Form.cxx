@@ -84,7 +84,7 @@ Form::Form()
 
   this->DebugImages = false;
   this->DebugMessages = false;
-  
+
   // Setup icons
   QIcon openIcon = QIcon::fromTheme("document-open");
   QIcon saveIcon = QIcon::fromTheme("document-save");
@@ -221,7 +221,7 @@ Form::Form()
   
   ComputationThread.SetObject(&(this->Inpainting));
   
-  connect(&Inpainting, SIGNAL(RefreshSignal()), this, SLOT(RefreshSlot()), Qt::QueuedConnection);
+  connect(&ComputationThread, SIGNAL(RefreshSignal()), this, SLOT(RefreshSlot()), Qt::QueuedConnection);
 };
   
 void Form::on_chkDebugImages_clicked()
@@ -541,7 +541,7 @@ void Form::Refresh()
 
 void Form::on_btnStop_clicked()
 {
-  this->Inpainting.StopInpainting();
+  this->ComputationThread.StopInpainting();
 }
 
 void Form::on_btnReset_clicked()

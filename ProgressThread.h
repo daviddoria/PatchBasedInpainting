@@ -37,22 +37,32 @@ signals:
 
   // This signal is emitted to stop the progress bar
   void StopProgressSignal();
+
+  void RefreshSignal();
+
 };
 
 class ProgressThread : public ProgressThreadObject
 {
 public:
 
+  ProgressThread();
+  
   // This function is called when the thread is started
   void run();
 
   // This function is called when the thread is stopped
   void exit();
 
+  void StopInpainting();
+
   void SetObject(CriminisiInpainting*);
+  CriminisiInpainting* GetObject();
+  
 private:
   // We need a pointer to this object so we can perform the computations in this thread
   CriminisiInpainting* Inpainting;
+  bool Stop;
 };
 
 #endif
