@@ -73,6 +73,8 @@ public slots:
   void on_actionOpenMaskInverted_activated();
   void on_actionSaveResult_activated();
   
+  void on_chkDisplayUsedPatches_clicked();
+  
   void on_chkDebugImages_clicked();
   void on_chkDebugMessages_clicked();
   
@@ -155,12 +157,14 @@ protected:
   vtkSmartPointer<vtkPolyDataMapper> IsophoteMapper;
   vtkSmartPointer<vtkActor> IsophoteActor;
   vtkSmartPointer<vtkImageData> VTKIsophoteImage;
+  vtkSmartPointer<vtkPolyData> VTKNonZeroIsophoteVectors;
   vtkSmartPointer<vtkGlyph2D> IsophoteGlyph;
 
   // Boundary normals display
   vtkSmartPointer<vtkPolyDataMapper> BoundaryNormalsMapper;
   vtkSmartPointer<vtkActor> BoundaryNormalsActor;
   vtkSmartPointer<vtkImageData> VTKBoundaryNormalsImage;
+  vtkSmartPointer<vtkPolyData> VTKNonZeroBoundaryNormals;
   vtkSmartPointer<vtkGlyph2D> BoundaryNormalsGlyph;
   
   // The data that the user loads

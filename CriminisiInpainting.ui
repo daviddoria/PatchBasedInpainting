@@ -84,12 +84,12 @@
             <rect>
              <x>10</x>
              <y>100</y>
-             <width>131</width>
+             <width>151</width>
              <height>22</height>
             </rect>
            </property>
            <property name="text">
-            <string>Debug Messagse</string>
+            <string>Debug Messages</string>
            </property>
           </widget>
           <widget class="QPushButton" name="btnStop">
@@ -265,6 +265,13 @@
           </item>
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QCheckBox" name="chkDisplayUsedPatches">
+              <property name="text">
+               <string>Show used patches</string>
+              </property>
+             </widget>
+            </item>
             <item>
              <widget class="QLabel" name="label_2">
               <property name="text">

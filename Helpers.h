@@ -35,6 +35,7 @@
 
 // VTK
 class vtkImageData;
+class vtkPolyData;
 
 namespace Helpers
 {
@@ -117,6 +118,9 @@ itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2> pixel, cons
 
 void BlankAndOutlineImage(vtkImageData*, const unsigned char color[3]);
 
+void KeepNonZeroVectors(vtkImageData* image, vtkPolyData* output);
+
+void ConvertNonZeroPixelsToVectors(FloatVector2ImageType::Pointer vectorImage, vtkPolyData* output);
 
 }// end namespace
 

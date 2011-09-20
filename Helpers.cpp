@@ -25,8 +25,13 @@
 #include "itkVectorIndexSelectionCastImageFilter.h"
 
 // VTK
+#include <vtkFloatArray.h>
 #include <vtkImageData.h>
+#include <vtkImageMagnitude.h>
 #include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
+#include <vtkThresholdPoints.h>
 
 // Custom
 #include "itkRGBToLabColorSpacePixelAccessor.h"
@@ -303,6 +308,59 @@ void BlankAndOutlineImage(vtkImageData* image, const unsigned char color[3])
       }
     }
   image->Modified();
+}
+
+void KeepNonZeroVectors(vtkImageData* image, vtkPolyData* output)
+{
+  vtkSmartPointer<vtkImageMagnitude> magnitudeFilter = vtkSmartPointer<vtkImageMagnitude>::New();
+  magnitudeFilter->SetInputConnection(image->GetProducerPort());
+  magnitudeFilter->Update(); // This filter produces a vtkImageData with an array named "Magnitude"
+  
+  image->GetPointData()->AddArray(magnitudeFilter->GetOutput()->GetPointData()->GetScalars());
+  image->GetPointData()->SetActiveScalars("Magnitude");
+  
+  vtkSmartPointer<vtkThresholdPoints> thresholdPoints = vtkSmartPointer<vtkThresholdPoints>::New();
+  thresholdPoints->SetInputConnection(image->GetProducerPort());
+  thresholdPoints->ThresholdByUpper(.05);
+  thresholdPoints->Update();
+  
+  output->DeepCopy(thresholdPoints->GetOutput());
+  output->GetPointData()->RemoveArray("Magnitude");
+  output->GetPointData()->SetActiveScalars("ImageScalars");
+  
+  output->Modified();
+}
+
+void ConvertNonZeroPixelsToVectors(FloatVector2ImageType::Pointer vectorImage, vtkPolyData* output)
+{
+  vtkSmartPointer<vtkFloatArray> vectors = vtkSmartPointer<vtkFloatArray>::New();
+  vectors->SetNumberOfComponents(3);
+  
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  
+  // Copy all of the input image pixels to the output image
+  itk::ImageRegionConstIteratorWithIndex<FloatVector2ImageType> imageIterator(vectorImage, vectorImage->GetLargestPossibleRegion());
+
+  while(!imageIterator.IsAtEnd())
+    {
+    FloatVector2ImageType::PixelType inputPixel = imageIterator.Get();
+    if(inputPixel.GetNorm() > .05)
+      {
+      float v[3];
+      v[0] = inputPixel[0];
+      v[1] = inputPixel[1];
+      v[2] = 0;
+      vectors->InsertNextTupleValue(v);
+      
+      points->InsertNextPoint(imageIterator.GetIndex()[0], imageIterator.GetIndex()[1], 0);
+      }
+    
+    ++imageIterator;
+    }
+
+  output->SetPoints(points);
+  output->GetPointData()->SetVectors(vectors);
+  
 }
 
 } // end namespace

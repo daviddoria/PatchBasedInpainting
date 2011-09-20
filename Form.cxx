@@ -57,6 +57,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkImageSliceMapper.h>
 #include <vtkXMLPolyDataReader.h>
+#include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLImageDataWriter.h> // For debugging only
 
 // Custom
@@ -200,8 +201,9 @@ Form::Form()
   this->VTKIsophoteImage = vtkSmartPointer<vtkImageData>::New();
   this->IsophoteActor = vtkSmartPointer<vtkActor>::New();
   this->IsophoteGlyph = vtkSmartPointer<vtkGlyph2D>::New();
+  this->VTKNonZeroIsophoteVectors = vtkSmartPointer<vtkPolyData>::New();
   
-  this->IsophoteGlyph->SetInputConnection(this->VTKIsophoteImage->GetProducerPort());
+  this->IsophoteGlyph->SetInputConnection(this->VTKNonZeroIsophoteVectors->GetProducerPort());
   this->IsophoteGlyph->SetSource(arrowSource->GetOutput());
   this->IsophoteGlyph->OrientOn();
   this->IsophoteGlyph->SetVectorModeToUseVector();
@@ -215,8 +217,9 @@ Form::Form()
   this->VTKBoundaryNormalsImage = vtkSmartPointer<vtkImageData>::New();
   this->BoundaryNormalsActor = vtkSmartPointer<vtkActor>::New();
   this->BoundaryNormalsGlyph = vtkSmartPointer<vtkGlyph2D>::New();
+  this->VTKNonZeroBoundaryNormals = vtkSmartPointer<vtkPolyData>::New();
   
-  this->BoundaryNormalsGlyph->SetInputConnection(this->VTKBoundaryNormalsImage->GetProducerPort());
+  this->BoundaryNormalsGlyph->SetInputConnection(this->VTKNonZeroBoundaryNormals->GetProducerPort());
   this->BoundaryNormalsGlyph->SetSource(arrowSource->GetOutput());
   this->BoundaryNormalsGlyph->OrientOn();
   this->BoundaryNormalsGlyph->SetVectorModeToUseVector();
@@ -269,11 +272,14 @@ void Form::on_chkDebugImages_clicked()
   directoryMaker.mkdir("Debug");
   
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
+  this->DebugImages = this->chkDebugImages->isChecked();
+  std::cout << "this->DebugImages: " << this->DebugImages << std::endl;
 }
 
 void Form::on_chkDebugMessages_clicked()
 {
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
+  this->DebugMessages = this->chkDebugMessages->isChecked();
 }
 
 void Form::on_actionQuit_activated()
@@ -484,37 +490,43 @@ void Form::RefreshSlot()
     }
   else if(this->chkIsophotes->isChecked())
     {
-    // Mask the isophotes image with the current boundary
-    FloatVector2ImageType::Pointer normalizedIsophotes = FloatVector2ImageType::New();
-    Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), normalizedIsophotes);
-    Helpers::NormalizeVectorImage(normalizedIsophotes);
-  
-    typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType> MaskFilterType;
-    typename MaskFilterType::Pointer maskFilter = MaskFilterType::New();
-    maskFilter->SetInput(normalizedIsophotes);
-    maskFilter->SetMaskImage(this->Inpainting.GetBoundaryImage());
-    FloatVector2ImageType::PixelType zero;
-    zero.Fill(0);
-    maskFilter->SetOutsideValue(zero);
-    maskFilter->Update();
-    
-    if(this->DebugImages)
+    if(this->Inpainting.GetIsophoteImage()->GetLargestPossibleRegion().GetSize()[0] != 0)
       {
-      Helpers::WriteImage<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ShowIsophotes.BoundaryIsophotes.mha");
-      Helpers::WriteImage<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), "Debug/ShowIsophotes.Boundary.mha");
-      }
-  
-    Helpers::ITKImagetoVTKVectorFieldImage(maskFilter->GetOutput(), this->VTKIsophoteImage);
+      // Mask the isophotes image with the current boundary, because we only want to display the isophotes we are interested in.
+      FloatVector2ImageType::Pointer normalizedIsophotes = FloatVector2ImageType::New();
+      Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), normalizedIsophotes);
+      Helpers::NormalizeVectorImage(normalizedIsophotes);
     
-    if(this->DebugImages)
-      {
-      vtkSmartPointer<vtkXMLImageDataWriter> writer =
-	vtkSmartPointer<vtkXMLImageDataWriter>::New();
-      writer->SetFileName("Debug/VTKIsophotes.vti");
-      writer->SetInputConnection(this->VTKIsophoteImage->GetProducerPort());
-      writer->Write();
+      typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType> MaskFilterType;
+      typename MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+      maskFilter->SetInput(normalizedIsophotes);
+      maskFilter->SetMaskImage(this->Inpainting.GetBoundaryImage());
+      FloatVector2ImageType::PixelType zero;
+      zero.Fill(0);
+      maskFilter->SetOutsideValue(zero);
+      maskFilter->Update();
+      
+      if(this->DebugImages)
+	{
+	Helpers::WriteImage<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ShowIsophotes.BoundaryIsophotes.mha");
+	Helpers::WriteImage<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), "Debug/ShowIsophotes.Boundary.mha");
+	}
+
+      Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), this->VTKNonZeroIsophoteVectors);
+      
+      if(this->DebugImages)
+	{
+	vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
+	writer->SetFileName("Debug/VTKIsophotes.vti");
+	writer->SetInputConnection(this->VTKIsophoteImage->GetProducerPort());
+	writer->Write();
+      
+	vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
+	polyDataWriter->SetFileName("Debug/VTKIsophotes.vtp");
+	polyDataWriter->SetInputConnection(this->VTKNonZeroIsophoteVectors->GetProducerPort());
+	polyDataWriter->Write();
+	}
       }
-    
     this->IsophoteActor->VisibilityOn();
     }
   else if(this->chkData->isChecked())
@@ -526,15 +538,26 @@ void Form::RefreshSlot()
     {
     this->BoundaryNormalsActor->VisibilityOn();
   
-    Helpers::ITKImagetoVTKVectorFieldImage(this->Inpainting.GetBoundaryNormalsImage(), this->VTKBoundaryNormalsImage);
-  
-    if(this->DebugImages)
+    if(this->Inpainting.GetBoundaryNormalsImage()->GetLargestPossibleRegion().GetSize()[0] != 0)
       {
-      vtkSmartPointer<vtkXMLImageDataWriter> writer =
-	vtkSmartPointer<vtkXMLImageDataWriter>::New();
-      writer->SetFileName("Debug/VTKBoundaryNormals.vti");
-      writer->SetInputConnection(this->VTKBoundaryNormalsImage->GetProducerPort());
-      writer->Write();
+      Helpers::ConvertNonZeroPixelsToVectors(this->Inpainting.GetBoundaryNormalsImage(), this->VTKNonZeroBoundaryNormals);
+    
+      if(this->DebugImages)
+	{
+	std::cout << "Writing boundary normals..." << std::endl;
+      
+	Helpers::WriteImage<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), "Debug/RefreshSlot.BoundaryNormals.mha");
+      
+	vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
+	writer->SetFileName("Debug/RefreshSlot.VTKBoundaryNormals.vti");
+	writer->SetInputConnection(this->VTKBoundaryNormalsImage->GetProducerPort());
+	writer->Write();
+      
+	vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
+	polyDataWriter->SetFileName("Debug/RefreshSlot.VTKBoundaryNormals.vtp");
+	polyDataWriter->SetInputConnection(this->VTKNonZeroBoundaryNormals->GetProducerPort());
+	polyDataWriter->Write();
+	}
       }
     }
     
@@ -714,6 +737,23 @@ void Form::IterationCompleteSlot()
   std::cout << "IterationCompleteSlot()" << std::endl;
   
   this->CurrentUsedPatchDisplayed++;
-  DisplayUsedPatches();
+  if(this->chkDisplayUsedPatches->isChecked())
+    {
+    DisplayUsedPatches();
+    }
   Refresh();
+}
+
+void Form::on_chkDisplayUsedPatches_clicked()
+{
+  if(this->chkDisplayUsedPatches->isChecked())
+    {
+    this->SourcePatchSlice->VisibilityOn();
+    this->TargetPatchSlice->VisibilityOn();
+    }
+  else
+    {
+    this->SourcePatchSlice->VisibilityOff();
+    this->TargetPatchSlice->VisibilityOff();
+    }
 }
