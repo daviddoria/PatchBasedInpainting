@@ -89,7 +89,7 @@ float SelfPatchCompare::SlowDifference(const Patch& sourcePatch)
   
   try
   {
-    assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
+    //assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
 
     itk::ImageRegion<2> newSourceRegion = sourcePatch.Region;
     itk::ImageRegion<2> newTargetRegion = this->TargetPatch.Region;
@@ -231,7 +231,7 @@ float SelfPatchCompare::PatchDifferenceExternal(const Patch& sourcePatch)
   // This function assumes that all pixels in the source region are unmasked.
   try
   {
-    assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
+    //assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
 
     float totalDifference = 0;
 
@@ -296,7 +296,7 @@ float SelfPatchCompare::PatchDifferenceBoundary(const Patch& sourcePatch)
   // This function assumes that all pixels in the source region are unmasked.
   try
   {
-    assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
+    //assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
 
     itk::ImageRegion<2> newSourceRegion = sourcePatch.Region;
 

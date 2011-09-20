@@ -16,7 +16,7 @@
  *
  *=========================================================================*/
 
-#include "ui_Form.h"
+#include "ui_CriminisiInpainting.h"
 #include "Form.h"
 
 // ITK
@@ -65,6 +65,10 @@
 #include "Mask.h"
 #include "Types.h"
 
+const unsigned char Form::Green[3] = {0,255,0};
+const unsigned char Form::Red[3] = {255,0,0};
+
+
 void Form::on_actionHelp_activated()
 {
   QTextEdit* help=new QTextEdit();
@@ -83,6 +87,8 @@ Form::Form()
 {
   this->setupUi(this);
 
+  this->CurrentUsedPatchDisplayed = -1;
+  
   this->DebugImages = false;
   this->DebugMessages = false;
 
@@ -116,6 +122,25 @@ Form::Form()
   this->ImageSliceMapper->SetInputConnection(this->VTKImage->GetProducerPort());
   this->ImageSlice->SetMapper(this->ImageSliceMapper);
   
+  // Source patch display
+  this->SourcePatch = vtkSmartPointer<vtkImageData>::New();
+  this->SourcePatchSlice = vtkSmartPointer<vtkImageSlice>::New();
+  this->SourcePatchSlice->GetProperty()->SetInterpolationTypeToNearest();
+  this->SourcePatchSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
+  this->SourcePatchSliceMapper->BorderOn();
+  
+  this->SourcePatchSliceMapper->SetInputConnection(this->SourcePatch->GetProducerPort());
+  this->SourcePatchSlice->SetMapper(this->SourcePatchSliceMapper);
+  
+  // Target patch display
+  this->TargetPatch = vtkSmartPointer<vtkImageData>::New();
+  this->TargetPatchSlice = vtkSmartPointer<vtkImageSlice>::New();
+  this->TargetPatchSlice->GetProperty()->SetInterpolationTypeToNearest();
+  this->TargetPatchSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
+  this->TargetPatchSliceMapper->BorderOn();
+  
+  this->TargetPatchSliceMapper->SetInputConnection(this->TargetPatch->GetProducerPort());
+  this->TargetPatchSlice->SetMapper(this->TargetPatchSliceMapper);
   
   // Initialize and link the priority image display objects
   this->VTKPriorityImage = vtkSmartPointer<vtkImageData>::New();
@@ -126,8 +151,7 @@ Form::Form()
   
   this->PriorityImageSliceMapper->SetInputConnection(this->VTKPriorityImage->GetProducerPort());
   this->PriorityImageSlice->SetMapper(this->PriorityImageSliceMapper);
-  
-  
+    
   // Initialize and link the confidence image display objects
   this->VTKConfidenceImage = vtkSmartPointer<vtkImageData>::New();
   this->ConfidenceImageSlice = vtkSmartPointer<vtkImageSlice>::New();
@@ -213,6 +237,8 @@ Form::Form()
   this->Renderer->AddViewProp(this->IsophoteActor);
   this->Renderer->AddViewProp(this->BoundaryNormalsActor);
   this->Renderer->AddViewProp(this->MaskImageSlice);
+  this->Renderer->AddViewProp(this->TargetPatchSlice);
+  this->Renderer->AddViewProp(this->SourcePatchSlice);
 
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
@@ -225,6 +251,7 @@ Form::Form()
   
   connect(&ComputationThread, SIGNAL(StartProgressSignal()), this, SLOT(StartProgressSlot()), Qt::QueuedConnection);
   connect(&ComputationThread, SIGNAL(StopProgressSignal()), this, SLOT(StopProgressSlot()), Qt::QueuedConnection);
+  connect(&ComputationThread, SIGNAL(IterationCompleteSignal()), this, SLOT(IterationCompleteSlot()), Qt::QueuedConnection);
 
   // Set the progress bar to marquee mode
   this->progressBar->setMinimum(0);
@@ -419,7 +446,7 @@ void Form::on_actionOpenMask_activated()
 
 void Form::RefreshSlot()
 {
-  std::cout << "RefreshSlot()" << std::endl;
+  DebugMessage("RefreshSlot()");
 
   this->ImageSlice->VisibilityOff();
   this->ConfidenceImageSlice->VisibilityOff();
@@ -544,7 +571,7 @@ void Form::RefreshSlot()
 
 void Form::Refresh()
 {
-  std::cout << "Refresh()" << std::endl;
+  DebugMessage("Refresh()");
   
   this->qvtkWidget->GetRenderWindow()->Render();
   //this->Renderer->Render();
@@ -566,7 +593,7 @@ void Form::on_btnReset_clicked()
 
 void Form::on_btnInpaint_clicked()
 {
-  std::cout << "on_btnInpaint_clicked()" << std::endl;
+  DebugMessage("on_btnInpaint_clicked()");
   
   // Reset some things (this is so that if we want to run another completion it will work normally)
 
@@ -578,7 +605,7 @@ void Form::on_btnInpaint_clicked()
   
   RefreshSlot();
   
-  std::cout << "starting ComputationThread..." << std::endl;
+  DebugMessage("Starting ComputationThread...");
   ComputationThread.start();
 }
 
@@ -627,4 +654,66 @@ void Form::DebugMessage(const std::string& message)
     {
     std::cout << message << std::endl;
     }
+}
+
+void Form::on_btnPrevious_clicked()
+{
+  if(this->CurrentUsedPatchDisplayed > 0)
+    {
+    this->CurrentUsedPatchDisplayed--;
+    }
+  DisplayUsedPatches();
+}
+
+void Form::on_btnNext_clicked()
+{
+  if(this->CurrentUsedPatchDisplayed > static_cast<int>(this->Inpainting.GetIteration()))
+    {
+    return;
+    }
+  this->CurrentUsedPatchDisplayed++;
+  DisplayUsedPatches();
+}
+
+void Form::DisplayUsedPatches()
+{
+  unsigned int patchSize = this->txtPatchRadius->text().toUInt() * 2 + 1;
+  
+  // Target
+  Patch targetPatch;
+  bool validTargetPatch = this->Inpainting.GetUsedTargetPatch(this->CurrentUsedPatchDisplayed, targetPatch);
+  if(validTargetPatch)
+    {
+    std::cout << "Displaying used target patch " << this->CurrentUsedPatchDisplayed << " : " << targetPatch.Region << std::endl;
+    this->TargetPatch->SetDimensions(patchSize, patchSize, 1);
+    Helpers::BlankAndOutlineImage(this->TargetPatch, this->Red);
+    this->TargetPatchSlice->SetPosition(targetPatch.Region.GetIndex()[0], targetPatch.Region.GetIndex()[1], 0);
+    }
+  
+  // Source
+  Patch sourcePatch;
+  bool validSourcePatch = this->Inpainting.GetUsedSourcePatch(this->CurrentUsedPatchDisplayed, sourcePatch);
+  if(validSourcePatch)
+    std::cout << "Displaying used source patch " << this->CurrentUsedPatchDisplayed << " : " << sourcePatch.Region << std::endl;
+    {
+    this->SourcePatch->SetDimensions(patchSize, patchSize, 1);
+    Helpers::BlankAndOutlineImage(this->SourcePatch, this->Green);
+    this->SourcePatchSlice->SetPosition(sourcePatch.Region.GetIndex()[0], sourcePatch.Region.GetIndex()[1], 0);
+    }
+  
+  if(validSourcePatch && validTargetPatch)
+    {
+    std::stringstream ss;
+    ss << this->CurrentUsedPatchDisplayed;
+    this->lblCurrentUsedPatches->setText(ss.str().c_str());
+    }
+}
+
+void Form::IterationCompleteSlot()
+{
+  std::cout << "IterationCompleteSlot()" << std::endl;
+  
+  this->CurrentUsedPatchDisplayed++;
+  DisplayUsedPatches();
+  Refresh();
 }

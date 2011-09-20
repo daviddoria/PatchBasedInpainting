@@ -94,6 +94,11 @@ public:
   // Determine whether or not the inpainting is completed by seeing if there are any pixels in the mask that still need to be filled.
   bool HasMoreToInpaint();
   
+  bool GetUsedTargetPatch(const unsigned int id, Patch& patch);
+  bool GetUsedSourcePatch(const unsigned int id, Patch& patch);
+  
+  unsigned int GetIteration();
+  
 private:
 
   // This is the suggested value in Criminisi's paper, but it does not change anything at all, as we find argmax of the priorities, and alpha is a simple scaling factor of the priorities.
@@ -223,7 +228,12 @@ private:
   template <typename T>
   void DebugMessage(const std::string& message, T value);
 
+  // This is set when the image is loaded so that the region of all of the images can be addressed without referencing any specific image.
   itk::ImageRegion<2> FullImageRegion;
+  
+  // These are tracked for visualization purposes only.
+  std::vector<Patch> UsedTargetPatches;
+  std::vector<Patch> UsedSourcePatches;
 };
 
 #include "CriminisiInpainting.hxx"

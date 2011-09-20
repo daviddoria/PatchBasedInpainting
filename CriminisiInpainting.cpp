@@ -350,7 +350,7 @@ void CriminisiInpainting::Initialize()
 
 void CriminisiInpainting::Iterate()
 {
-  std::cout << "Iteration: " << this->Iteration << std::endl;
+  std::cout << "Starting iteration: " << this->Iteration << std::endl;
 
   FindBoundary();
   Helpers::DebugWriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage.mha", this->DebugImages);
@@ -378,6 +378,7 @@ void CriminisiInpainting::Iterate()
 
   itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
   Patch targetPatch(this->CompareImage, targetRegion);
+  this->UsedTargetPatches.push_back(targetPatch);
 
   //unsigned int bestMatchSourcePatchId = BestPatch<FloatVectorImageType>(this->CurrentImage, this->CurrentMask, this->SourcePatches, targetRegion);
 
@@ -399,8 +400,10 @@ void CriminisiInpainting::Iterate()
   //this->DebugWritePatch(targetRegion, "TargetPatch.png");
 
   // Copy the patch. This is the actual inpainting step.
-  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, this->SourcePatches[bestMatchSourcePatchId].Region, targetRegion);
-
+  Patch sourcePatch = this->SourcePatches[bestMatchSourcePatchId];
+  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, sourcePatch.Region, targetRegion);
+  this->UsedSourcePatches.push_back(sourcePatch);
+  
   float confidence = ComputeConfidenceTerm(pixelToFill);
   // Copy the new confidences into the confidence image
   UpdateConfidences(targetRegion, confidence);
@@ -1095,4 +1098,29 @@ itk::ImageRegion<2> CriminisiInpainting::CropToValidRegion(const itk::ImageRegio
   region.Crop(inputRegion);
   
   return region;
+}
+
+bool CriminisiInpainting::GetUsedTargetPatch(const unsigned int id, Patch& patch)
+{
+  if(id < this->UsedTargetPatches.size())
+    {
+    patch = this->UsedTargetPatches[id]; 
+    return true;
+    }
+  return false;
+}
+
+bool CriminisiInpainting::GetUsedSourcePatch(const unsigned int id, Patch& patch)
+{
+  if(id < this->UsedSourcePatches.size())
+    {
+    patch = this->UsedSourcePatches[id]; 
+    return true;
+    }
+  return false;
+}
+  
+unsigned int CriminisiInpainting::GetIteration()
+{
+  return this->Iteration;
 }

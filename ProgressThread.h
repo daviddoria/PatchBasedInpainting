@@ -39,6 +39,8 @@ signals:
   void StopProgressSignal();
 
   void RefreshSignal();
+  
+  void IterationCompleteSignal();
 
 };
 

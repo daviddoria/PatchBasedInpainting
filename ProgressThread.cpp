@@ -30,6 +30,7 @@ void ProgressThread::run()
   while(this->Inpainting->HasMoreToInpaint() && !this->Stop)
     {
     this->Inpainting->Iterate();
+    IterationCompleteSignal();
     RefreshSignal();
     }
 

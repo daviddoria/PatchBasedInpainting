@@ -19,7 +19,7 @@
 #ifndef FORM_H
 #define FORM_H
 
-#include "ui_Form.h"
+#include "ui_CriminisiInpainting.h"
 
 // VTK
 #include <vtkSmartPointer.h>
@@ -34,7 +34,6 @@ class vtkImageSliceMapper;
 class vtkPolyData;
 class vtkPolyDataMapper;
 
-
 // ITK
 #include "itkImage.h"
 
@@ -48,8 +47,7 @@ class vtkPolyDataMapper;
 
 class InteractorStyleImageNoLevel;
 
-
-class Form : public QMainWindow, public Ui::Form
+class Form : public QMainWindow, public Ui::CriminisiInpaintingMainWindow
 {
   Q_OBJECT
 public:
@@ -66,6 +64,10 @@ public:
   void Refresh();
   
 public slots:
+  
+  void on_btnPrevious_clicked();
+  void on_btnNext_clicked();
+  
   void on_actionOpenImage_activated();
   void on_actionOpenMask_activated();
   void on_actionOpenMaskInverted_activated();
@@ -97,6 +99,8 @@ public slots:
   
   void RefreshSlot();
   
+  void IterationCompleteSlot();
+  
 protected:
   
   // The interactor to allow us to zoom and pan the image
@@ -106,6 +110,16 @@ protected:
   bool Flipped;
 
   vtkSmartPointer<vtkRenderer> Renderer;
+  
+  // Source patch display
+  vtkSmartPointer<vtkImageData> SourcePatch;
+  vtkSmartPointer<vtkImageSlice> SourcePatchSlice;
+  vtkSmartPointer<vtkImageSliceMapper> SourcePatchSliceMapper;
+  
+  // Target patch display
+  vtkSmartPointer<vtkImageData> TargetPatch;
+  vtkSmartPointer<vtkImageSlice> TargetPatchSlice;
+  vtkSmartPointer<vtkImageSliceMapper> TargetPatchSliceMapper;
   
   // Image display
   vtkSmartPointer<vtkImageData> VTKImage;
@@ -160,12 +174,22 @@ protected:
   bool DebugImages;
   bool DebugMessages;
 
-  // These functions output the message only if the Debug member is set to true
+  // Output the message only if the Debug member is set to true
   void DebugMessage(const std::string&);
 
+  // Output the message and value only if the Debug member is set to true
   template <typename T>
   void DebugMessage(const std::string& message, T value);
 
+  // This is not unsigned because we start at -1, indicating there is no patch to display
+  int CurrentUsedPatchDisplayed;
+  
+  void DisplayUsedPatches();
+  
+  
+  static const unsigned char Green[3];
+  static const unsigned char Red[3];
+  
 };
 
 #include "Form.hxx"

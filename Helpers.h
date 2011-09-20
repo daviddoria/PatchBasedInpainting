@@ -115,6 +115,9 @@ itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2> pixel, cons
 // float PixelSquaredDifference(const TPixelType&, const TPixelType&);
 
 
+void BlankAndOutlineImage(vtkImageData*, const unsigned char color[3]);
+
+
 }// end namespace
 
 #include "Helpers.hxx"
