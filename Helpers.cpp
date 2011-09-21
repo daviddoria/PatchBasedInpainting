@@ -526,11 +526,10 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(FloatVectorI
 }
 
 
-HistogramType::Pointer ComputeNDHistogramOfRegionManual(FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region)
+HistogramType::Pointer ComputeNDHistogramOfRegionManual(FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension)
 {
   const unsigned int MeasurementVectorSize = image->GetNumberOfComponentsPerPixel();
-  const unsigned int binsPerDimension = 30;
-
+  
   HistogramType::MeasurementVectorType lowerBound(MeasurementVectorSize);
   lowerBound.Fill(0);
 
@@ -566,10 +565,9 @@ HistogramType::Pointer ComputeNDHistogramOfRegionManual(FloatVectorImageType::Po
 }
 
 
-HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region)
+HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension)
 {
   const unsigned int MeasurementVectorSize = image->GetNumberOfComponentsPerPixel();
-  const unsigned int binsPerDimension = 30;
 
   HistogramType::MeasurementVectorType lowerBound(MeasurementVectorSize);
   lowerBound.Fill(0);

@@ -240,6 +240,11 @@ private:
   // These are tracked for visualization purposes only.
   std::vector<Patch> UsedTargetPatches;
   std::vector<Patch> UsedSourcePatches;
+  
+  float HistogramDifferenceND(const Patch& patch1, const Patch& patch2);
+  float HistogramDifference1D(const Patch& patch1, const Patch& patch2);
+  
+  unsigned int HistogramBinsPerDimension;
 };
 
 #include "CriminisiInpainting.hxx"

@@ -67,6 +67,7 @@ CriminisiInpainting::CriminisiInpainting()
   this->DebugMessages = false;
   this->Iteration = 0;
   
+  this->HistogramBinsPerDimension = 10;
 }
 
 void CriminisiInpainting::SetDifferenceType(const int differenceType)
@@ -440,6 +441,38 @@ void CriminisiInpainting::FindBestPatchForHighestPriority(Patch& sourcePatch, Pa
   
 }
 
+float CriminisiInpainting::HistogramDifference1D(const Patch& patch1, const Patch& patch2)
+{
+  // N 1D histograms
+  std::vector<HistogramType::Pointer> sourceHistograms = Helpers::ComputeHistogramsOfRegionManual(this->CurrentOutputImage, patch1.Region);
+  std::cout << "Source histograms: " << std::endl;
+  for(unsigned int i = 0; i < sourceHistograms.size(); ++i)
+    {
+    Helpers::OutputHistogram(sourceHistograms[i]);
+    }
+    
+  std::vector<HistogramType::Pointer> targetHistograms = Helpers::ComputeHistogramsOfMaskedRegion(this->CurrentOutputImage, this->CurrentMask, patch2.Region);
+  std::cout << "Target histograms: " << std::endl;
+  for(unsigned int i = 0; i < targetHistograms.size(); ++i)
+    {
+    Helpers::OutputHistogram(targetHistograms[i]);
+    }
+
+  float totalDifference = 0;
+  for(unsigned int i = 0; i < targetHistograms.size(); ++i)
+    {
+    totalDifference += Helpers::HistogramDifference(sourceHistograms[i], targetHistograms[i]);
+    }
+  
+  std::cout << "Histogram difference: " << totalDifference << std::endl;
+  return totalDifference;
+}
+
+float CriminisiInpainting::HistogramDifferenceND(const Patch& patch1, const Patch& patch2)
+{
+  return 0;
+}
+
 void CriminisiInpainting::FindBestPatchLookAhead(Patch& bestSourcePatch, Patch& bestTargetPatch)
 {
   // This function returns 'sourcePatch' and 'targetPatch' by reference
@@ -497,33 +530,11 @@ void CriminisiInpainting::FindBestPatchLookAhead(Patch& bestSourcePatch, Patch& 
     Helpers::SetRegionToConstant<FloatScalarImageType>(CurrentPriorityImage, Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]), 0.0f);
     
     std::cout << "Potential pair: Source: " << sourcePatch.Region << " Target: " << targetPatch.Region << std::endl;
-    /*
-    // N 1D histograms
-    std::vector<HistogramType::Pointer> sourceHistograms = Helpers::ComputeHistogramsOfRegionManual(this->CurrentOutputImage, sourcePatch.Region);
-    std::cout << "Source histograms: " << std::endl;
-    for(unsigned int i = 0; i < sourceHistograms.size(); ++i)
-      {
-      Helpers::OutputHistogram(sourceHistograms[i]);
-      }
-      
-    std::vector<HistogramType::Pointer> targetHistograms = Helpers::ComputeHistogramsOfMaskedRegion(this->CurrentOutputImage, this->CurrentMask, targetPatch.Region);
-    std::cout << "Target histograms: " << std::endl;
-    for(unsigned int i = 0; i < targetHistograms.size(); ++i)
-      {
-      Helpers::OutputHistogram(targetHistograms[i]);
-      }
 
-    float totalDifference = 0;
-    for(unsigned int i = 0; i < targetHistograms.size(); ++i)
-      {
-      totalDifference += Helpers::HistogramDifference(sourceHistograms[i], targetHistograms[i]);
-      }
-    histogramScores.push_back(totalDifference);
-    std::cout << "Histogram difference: " << totalDifference << std::endl;
-    */
-
-    HistogramType::Pointer sourceHistogram = Helpers::ComputeNDHistogramOfRegionManual(this->CurrentOutputImage, sourcePatch.Region);
-    HistogramType::Pointer targetHistogram = Helpers::ComputeNDHistogramOfMaskedRegionManual(this->CurrentOutputImage, this->CurrentMask, targetPatch.Region);
+    //HistogramType::Pointer sourceHistogram = Helpers::ComputeNDHistogramOfRegionManual(this->CurrentOutputImage, sourcePatch.Region, this->HistogramBinsPerDimension);
+    HistogramType::Pointer sourceHistogram = Helpers::ComputeNDHistogramOfMaskedRegionManual(this->CurrentOutputImage, this->CurrentMask, sourcePatch.Region, this->HistogramBinsPerDimension);
+    HistogramType::Pointer targetHistogram = Helpers::ComputeNDHistogramOfMaskedRegionManual(this->CurrentOutputImage, this->CurrentMask, targetPatch.Region, this->HistogramBinsPerDimension);
+    
     float histogramDifference = Helpers::NDHistogramDifference(sourceHistogram, targetHistogram);
     histogramScores.push_back(histogramDifference);
     }

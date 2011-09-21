@@ -147,9 +147,9 @@ float HistogramDifference(HistogramType::Pointer, HistogramType::Pointer);
 
 float NDHistogramDifference(HistogramType::Pointer, HistogramType::Pointer);
 
-HistogramType::Pointer ComputeNDHistogramOfRegionManual(FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
+HistogramType::Pointer ComputeNDHistogramOfRegionManual(FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
 
-HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region);
+HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
 
 std::string ZeroPad(const unsigned int number, const unsigned int rep);
 
