@@ -714,6 +714,10 @@ void Form::DisplayUsedPatches()
     Helpers::BlankAndOutlineImage(this->TargetPatch, this->Red);
     this->TargetPatchSlice->SetPosition(targetPatch.Region.GetIndex()[0], targetPatch.Region.GetIndex()[1], 0);
     }
+
+  std::stringstream ssTarget;
+  ssTarget << "(" << targetPatch.Region.GetIndex()[0] << ", " << targetPatch.Region.GetIndex()[1] << ")";
+  this->lblTargetCorner->setText(ssTarget.str().c_str());
   
   // Source
   Patch sourcePatch;
@@ -725,7 +729,12 @@ void Form::DisplayUsedPatches()
     Helpers::BlankAndOutlineImage(this->SourcePatch, this->Green);
     this->SourcePatchSlice->SetPosition(sourcePatch.Region.GetIndex()[0], sourcePatch.Region.GetIndex()[1], 0);
     }
-  
+
+  std::stringstream ssSource;
+  ssSource << "(" << sourcePatch.Region.GetIndex()[0] << ", " << sourcePatch.Region.GetIndex()[1] << ")";
+  this->lblSourceCorner->setText(ssSource.str().c_str());
+
+  // Iteration display
   if(validSourcePatch && validTargetPatch)
     {
     std::stringstream ss;
