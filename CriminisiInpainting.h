@@ -65,9 +65,12 @@ public:
   // Get the output of the inpainting.
   FloatVectorImageType::Pointer GetResult();
   
-  // Get the current confidence image
+  // Get the current confidence image (confidences computed on the current boundary)
   FloatScalarImageType::Pointer GetConfidenceImage();
 
+  // Get the current confidence map image
+  FloatScalarImageType::Pointer GetConfidenceMapImage();
+  
   // Get the current confidence image
   FloatScalarImageType::Pointer GetPriorityImage();
   
@@ -94,8 +97,10 @@ public:
   // Determine whether or not the inpainting is completed by seeing if there are any pixels in the mask that still need to be filled.
   bool HasMoreToInpaint();
   
-  bool GetUsedTargetPatch(const unsigned int id, Patch& patch);
-  bool GetUsedSourcePatch(const unsigned int id, Patch& patch);
+  bool GetUsedPatchPair(const unsigned int id, PatchPair& patchPair);
+  
+  bool GetBestHistogramScore(const unsigned int id, float& score);
+  bool GetPotentialPatchPairs(const unsigned int iteration, std::vector<PatchPair>& patchPairs);
   
   unsigned int GetIteration();
   
@@ -105,7 +110,7 @@ private:
   void FindBestPatchForHighestPriority(Patch& sourcePatch, Patch& targetPatch);
   
   // This is a new idea to try to fill several patches and return the best pair
-  void FindBestPatchLookAhead(Patch& sourcePatch, Patch& targetPatch);
+  void FindBestPatchLookAhead(PatchPair& bestPatchPair);
   
   // This is the suggested value in Criminisi's paper, but it does not change anything at all, as we find argmax of the priorities, and alpha is a simple scaling factor of the priorities.
   static const float Alpha = 255;
@@ -129,6 +134,9 @@ private:
   Mask::Pointer CurrentMask;
   
   // Keep track of the confidence of each pixel
+  FloatScalarImageType::Pointer ConfidenceMapImage;
+  
+  // Store the computed confidences on the boundary
   FloatScalarImageType::Pointer ConfidenceImage;
 
   // Keep track of the data term of each pixel
@@ -151,9 +159,12 @@ private:
 
   void ComputeAllDataTerms();
   
-  // Functions
+  void ComputeAllConfidenceTerms();
+  
+  // Initialization functions
   void InitializeMask();
   void InitializeConfidence();
+  void InitializeConfidenceMap();
   void InitializeData();
   void InitializePriority();
   void InitializeImage();
@@ -238,13 +249,16 @@ private:
   itk::ImageRegion<2> FullImageRegion;
   
   // These are tracked for visualization purposes only.
-  std::vector<Patch> UsedTargetPatches;
-  std::vector<Patch> UsedSourcePatches;
+  std::vector<PatchPair> UsedPatchPairs;
+  
+  std::vector<std::vector<PatchPair> > PotentialPatchPairs;
   
   float HistogramDifferenceND(const Patch& patch1, const Patch& patch2);
   float HistogramDifference1D(const Patch& patch1, const Patch& patch2);
   
   unsigned int HistogramBinsPerDimension;
+  
+  unsigned int MaxPotentialPatches;
 };
 
 #include "CriminisiInpainting.hxx"

@@ -8,6 +8,16 @@ Patch::Patch(const itk::ImageRegion<2>& region)
   this->Region = region;
 }
 
+bool SortByAverageSSD(const PatchPair& pair1, const PatchPair& pair2)
+{
+  return (pair1.AverageSSD < pair2.AverageSSD);
+}
+
+bool SortByHistogramDifference(const PatchPair& pair1, const PatchPair& pair2)
+{
+  return (pair1.HistogramDifference < pair2.HistogramDifference);
+}
+
 #if 0
 Patch::Patch(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region)
 {

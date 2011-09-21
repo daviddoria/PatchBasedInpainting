@@ -18,241 +18,206 @@
     <item row="0" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3,1">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout" stretch="3,2">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
         <item>
-         <widget class="QGroupBox" name="groupBox">
-          <property name="title">
-           <string>Settings</string>
-          </property>
-          <widget class="QLabel" name="label">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>40</y>
-             <width>91</width>
-             <height>17</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Patch Radius</string>
-           </property>
-          </widget>
-          <widget class="QLineEdit" name="txtPatchRadius">
-           <property name="geometry">
-            <rect>
-             <x>110</x>
-             <y>40</y>
-             <width>41</width>
-             <height>27</height>
-            </rect>
-           </property>
-           <property name="toolTip">
-            <string>Sets the width/height of a square patch</string>
-           </property>
-           <property name="text">
-            <string>10</string>
-           </property>
-          </widget>
-          <widget class="QPushButton" name="btnInpaint">
-           <property name="geometry">
-            <rect>
-             <x>70</x>
-             <y>140</y>
-             <width>97</width>
-             <height>27</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Inpaint</string>
-           </property>
-          </widget>
-          <widget class="QProgressBar" name="progressBar">
-           <property name="geometry">
-            <rect>
-             <x>50</x>
-             <y>180</y>
-             <width>118</width>
-             <height>23</height>
-            </rect>
-           </property>
-           <property name="value">
-            <number>24</number>
-           </property>
-          </widget>
-          <widget class="QCheckBox" name="chkDebugMessages">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>100</y>
-             <width>151</width>
-             <height>22</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Debug Messages</string>
-           </property>
-          </widget>
-          <widget class="QPushButton" name="btnStop">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>210</y>
-             <width>97</width>
-             <height>27</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Stop</string>
-           </property>
-          </widget>
-          <widget class="QPushButton" name="btnReset">
-           <property name="geometry">
-            <rect>
-             <x>20</x>
-             <y>240</y>
-             <width>97</width>
-             <height>27</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Reset</string>
-           </property>
-          </widget>
-          <widget class="QCheckBox" name="chkDebugImages">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>70</y>
-             <width>121</width>
-             <height>22</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Debug Images</string>
-           </property>
-          </widget>
-         </widget>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Settings</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkDebugImages">
+            <property name="text">
+             <string>Debug Images</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkDebugMessages">
+            <property name="text">
+             <string>Debug Messages</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>Patch radius:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="txtPatchRadius">
+              <property name="text">
+               <string>10</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnInpaint">
+            <property name="text">
+             <string>Inpaint</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QProgressBar" name="progressBar">
+            <property name="value">
+             <number>24</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnStop">
+            <property name="text">
+             <string>Stop</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnReset">
+            <property name="text">
+             <string>Reset</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="QLabel" name="label_7">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Display</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="chkImage">
+              <property name="text">
+               <string>Image</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="chkPriority">
+              <property name="text">
+               <string>Priority</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="chkConfidence">
+              <property name="text">
+               <string>Confidence</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="chkConfidenceMap">
+              <property name="text">
+               <string>Confidence map</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="chkBoundary">
+              <property name="text">
+               <string>Boundary</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="chkIsophotes">
+              <property name="text">
+               <string>Isophotes</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="chkData">
+              <property name="text">
+               <string>Data</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="chkBoundaryNormals">
+              <property name="text">
+               <string>Boundary normals</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="chkMask">
+              <property name="text">
+               <string>Mask</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="chkPotentialPatches">
+              <property name="text">
+               <string>Potential patches</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </item>
         <item>
-         <widget class="QGroupBox" name="groupBox_2">
-          <property name="title">
-           <string>Display</string>
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
           </property>
-          <widget class="QCheckBox" name="chkPriority">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>60</y>
-             <width>95</width>
-             <height>22</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Priority</string>
-           </property>
-          </widget>
-          <widget class="QCheckBox" name="chkConfidence">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>90</y>
-             <width>111</width>
-             <height>22</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Confidence</string>
-           </property>
-          </widget>
-          <widget class="QCheckBox" name="chkImage">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>30</y>
-             <width>95</width>
-             <height>22</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Image</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-          <widget class="QCheckBox" name="chkBoundary">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>120</y>
-             <width>95</width>
-             <height>22</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Boundary</string>
-           </property>
-          </widget>
-          <widget class="QCheckBox" name="chkIsophotes">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>150</y>
-             <width>95</width>
-             <height>22</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Isophotes</string>
-           </property>
-          </widget>
-          <widget class="QCheckBox" name="chkData">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>180</y>
-             <width>95</width>
-             <height>22</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Data</string>
-           </property>
-          </widget>
-          <widget class="QCheckBox" name="chkBoundaryNormals">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>210</y>
-             <width>161</width>
-             <height>22</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Boundary normals</string>
-           </property>
-          </widget>
-          <widget class="QCheckBox" name="chkMask">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>240</y>
-             <width>95</width>
-             <height>22</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Mask</string>
-           </property>
-          </widget>
-         </widget>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </item>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2" stretch="9,1">
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget"/>
+         <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -305,32 +270,95 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>Target corner:</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Target corner:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblTargetCorner">
+            <property name="text">
+             <string>(0,0)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
-         <widget class="QLabel" name="lblTargetCorner">
-          <property name="text">
-           <string>(0,0)</string>
-          </property>
-         </widget>
+         <widget class="QGraphicsView" name="gfxTarget"/>
         </item>
         <item>
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Source corner:</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Source corner:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblSourceCorner">
+            <property name="text">
+             <string>(0,0)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
-         <widget class="QLabel" name="lblSourceCorner">
-          <property name="text">
-           <string>(0,0)</string>
+         <widget class="QGraphicsView" name="gfxSource"/>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Average SSD:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblAverageSSD">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>Histogram dist:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblHistogramDistance">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
           </property>
-         </widget>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </item>

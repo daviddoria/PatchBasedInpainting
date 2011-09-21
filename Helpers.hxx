@@ -24,6 +24,9 @@
 // VTK
 #include <vtkImageData.h>
 
+// Qt
+#include <QColor>
+
 // Custom
 #include "Mask.h"
 
@@ -555,5 +558,80 @@ void WritePatch(typename TImage::Pointer image, const Patch& patch, const std::s
   writer->SetInput(regionOfInterestImageFilter->GetOutput());
   writer->Update();
 }
+
+template<typename TImage>
+void BlankAndOutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value)
+{
+  itk::ImageRegionIterator<TImage> iterator(image, region);
+
+  // Blank region
+  while(!iterator.IsAtEnd())
+    {
+    iterator.Set(0);
+    ++iterator;
+    }
+    
+  // Outline region
+  iterator.GoToBegin();
+  
+  for(unsigned int i = region.GetIndex()[0]; i < region.GetIndex()[0] + region.GetSize()[0]; ++i)
+    {
+    itk::Index<2> index;
+    index[0] = i;
+    index[1] = region.GetIndex()[1];
+    image->SetPixel(index, value);
+  
+    index[0] = i;
+    index[1] = region.GetIndex()[1] + region.GetSize()[1];
+    image->SetPixel(index, value);
+    }
+    
+  for(unsigned int j = region.GetIndex()[1]; j < region.GetIndex()[1] + region.GetSize()[1]; ++j)
+    {
+    itk::Index<2> index;
+    index[0] = region.GetIndex()[0];
+    index[1] = j;
+    image->SetPixel(index, value);
+  
+    index[0] = region.GetIndex()[0] + region.GetSize()[0];
+    index[1] = j;
+    image->SetPixel(index, value);
+    }
+
+}
+
+
+template <typename TImage>
+QImage GetQImage(typename TImage::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region)
+{
+  QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888); // Should probably be Format_RGB888
+  itk::ImageRegionIterator<FloatVectorImageType> imageIterator(image, region);
+
+  while(!imageIterator.IsAtEnd())
+    {
+    FloatVectorImageType::PixelType pixel = imageIterator.Get();
+    
+    itk::Index<2> index;
+    index[0] = imageIterator.GetIndex()[0] - region.GetIndex()[0];
+    index[1] = imageIterator.GetIndex()[1] - region.GetIndex()[1];
+
+    if(mask && mask->IsHole(imageIterator.GetIndex()))
+      {
+      QColor pixelColor(0, 255, 0);
+      qimage.setPixel(index[0], index[1], pixelColor.rgb());
+      }
+    else
+      {
+      QColor pixelColor(static_cast<int>(pixel[0]), static_cast<int>(pixel[1]), static_cast<int>(pixel[2]));
+      qimage.setPixel(index[0], index[1], pixelColor.rgb());
+      }
+    
+    ++imageIterator;
+    }
+
+  //return qimage; // The actual image region
+  return qimage.mirrored(false, true); // The flipped image region
+}
+
 
 }// end namespace

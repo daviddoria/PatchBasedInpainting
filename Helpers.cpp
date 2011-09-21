@@ -94,7 +94,7 @@ void VectorImageToRGBImage(FloatVectorImageType::Pointer image, RGBImageType::Po
     }
 }
 
-itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2> pixel, const unsigned int radius)
+itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2>& pixel, const unsigned int radius)
 {
   // This function returns a Region with the specified 'radius' centered at 'pixel'. By the definition of the radius of a square patch, the output region is (radius*2 + 1)x(radius*2 + 1).
   // Note: This region is not necessarily entirely inside the image!
@@ -115,8 +115,9 @@ itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2> pixel, cons
 }
 
 
-itk::Index<2> GetRegionCenter(const itk::ImageRegion<2> region)
+itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region)
 {
+  // This assumes that the region is an odd size in both dimensions
   itk::Index<2> center;
   center[0] = region.GetIndex()[0] + region.GetSize()[0] / 2;
   center[1] = region.GetIndex()[1] + region.GetSize()[1] / 2;
@@ -682,6 +683,38 @@ std::string ZeroPad(const unsigned int number, const unsigned int rep)
   Padded << std::setfill('0') << std::setw(rep) << number;
 
   return Padded.str();
+}
+
+void MakePixelsTransparent(vtkImageData* inputImage, vtkImageData* outputImage, const unsigned char value)
+{
+  int dims[3];
+  inputImage->GetDimensions(dims);
+ 
+  outputImage->SetScalarTypeToUnsignedChar();
+  outputImage->SetNumberOfScalarComponents(4);
+  outputImage->SetDimensions(dims);
+  outputImage->AllocateScalars();
+  
+  for(int i = 0; i < dims[0]; ++i)
+    {
+    for(int j = 0; j < dims[1]; ++j)
+      {
+      unsigned char* inputPixel = static_cast<unsigned char*>(inputImage->GetScalarPointer(i,j,0));
+      unsigned char* outputPixel = static_cast<unsigned char*>(outputImage->GetScalarPointer(i,j,0));
+
+      outputPixel[0] = 0;
+      outputPixel[1] = inputPixel[0];
+      outputPixel[2] = 0;
+      if(inputPixel[0] == value)
+	{
+	outputPixel[3] = 0; // invisible  
+	}
+      else
+	{
+	outputPixel[3] = 255; // visible
+	}
+      }
+    }
 }
 
 } // end namespace

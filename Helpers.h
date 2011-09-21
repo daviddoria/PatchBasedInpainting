@@ -34,6 +34,9 @@
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
 
+// Qt
+#include <QImage>
+
 // VTK
 class vtkImageData;
 class vtkPolyData;
@@ -62,7 +65,7 @@ void VectorImageToRGBImage(FloatVectorImageType::Pointer image, RGBImageType::Po
 template <typename TImage>
 void ITKScalarImageToScaledVTKImage(typename TImage::Pointer image, vtkImageData* outputImage);
 
-itk::Index<2> GetRegionCenter(const itk::ImageRegion<2> region);
+itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region);
 
 template <typename TDebugImageType>
 void DebugWriteSequentialImage(typename TDebugImageType::Pointer image, const std::string& filePrefix, const unsigned int iteration);
@@ -114,13 +117,16 @@ template <typename TImage>
 void ColorToGrayscale(typename TImage::Pointer colorImage, UnsignedCharScalarImageType::Pointer grayscaleImage);
 
 // Non template function declarations
-itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2> pixel, const unsigned int radius);
+itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2>& pixel, const unsigned int radius);
 
 // template <typename TPixelType>
 // float PixelSquaredDifference(const TPixelType&, const TPixelType&);
 
 
 void BlankAndOutlineImage(vtkImageData*, const unsigned char color[3]);
+
+template<typename TImage>
+void BlankAndOutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value);
 
 void KeepNonZeroVectors(vtkImageData* image, vtkPolyData* output);
 
@@ -152,6 +158,12 @@ HistogramType::Pointer ComputeNDHistogramOfRegionManual(FloatVectorImageType::Po
 HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
 
 std::string ZeroPad(const unsigned int number, const unsigned int rep);
+
+
+template <typename TImage>
+QImage GetQImage(typename TImage::Pointer image, const itk::ImageRegion<2>& region);
+
+void MakePixelsTransparent(vtkImageData* inputImage, vtkImageData* outputImage, const unsigned char value);
 
 }// end namespace
 

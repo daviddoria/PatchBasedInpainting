@@ -61,6 +61,7 @@ CriminisiInpainting::CriminisiInpainting()
   this->CompareImage = this->CIELabImage;
   
   this->ConfidenceImage = FloatScalarImageType::New();
+  this->ConfidenceMapImage = FloatScalarImageType::New();
   this->DataImage = FloatScalarImageType::New();
   
   this->DebugImages = false;
@@ -68,6 +69,7 @@ CriminisiInpainting::CriminisiInpainting()
   this->Iteration = 0;
   
   this->HistogramBinsPerDimension = 10;
+  this->MaxPotentialPatches = 10;
 }
 
 void CriminisiInpainting::SetDifferenceType(const int differenceType)
@@ -88,6 +90,11 @@ FloatScalarImageType::Pointer CriminisiInpainting::GetPriorityImage()
 FloatScalarImageType::Pointer CriminisiInpainting::GetConfidenceImage()
 {
   return this->ConfidenceImage;
+}
+
+FloatScalarImageType::Pointer CriminisiInpainting::GetConfidenceMapImage()
+{
+  return this->ConfidenceMapImage;
 }
 
 UnsignedCharScalarImageType::Pointer CriminisiInpainting::GetBoundaryImage()
@@ -237,7 +244,7 @@ void CriminisiInpainting::InitializeMask()
   ExpandMask();
 }
 
-void CriminisiInpainting::InitializeConfidence()
+void CriminisiInpainting::InitializeConfidenceMap()
 {
 
   // Clone the mask - we need to invert the mask to actually perform the masking, but we don't want to disturb the original mask
@@ -262,16 +269,24 @@ void CriminisiInpainting::InitializeConfidence()
   rescaleFilter->SetOutputMaximum(1);
   rescaleFilter->Update();
 
-  Helpers::DeepCopy<FloatScalarImageType>(rescaleFilter->GetOutput(), this->ConfidenceImage);
-  //WriteImage<FloatImageType>(this->ConfidenceImage, "InitialConfidence.mhd");
+  Helpers::DeepCopy<FloatScalarImageType>(rescaleFilter->GetOutput(), this->ConfidenceMapImage);
+
 }
 
 void CriminisiInpainting::InitializeData()
 {
-  // Create a blank priority image
+  // Create a blank image
   this->DataImage->SetRegions(this->OriginalImage->GetLargestPossibleRegion());
   this->DataImage->Allocate();
   this->DataImage->FillBuffer(0);
+}
+
+void CriminisiInpainting::InitializeConfidence()
+{
+  // Create a blank image
+  this->ConfidenceImage->SetRegions(this->FullImageRegion);
+  this->ConfidenceImage->Allocate();
+  this->ConfidenceImage->FillBuffer(0);
 }
 
 void CriminisiInpainting::InitializeImage()
@@ -332,7 +347,9 @@ void CriminisiInpainting::Initialize()
     Helpers::DebugWriteImageConditional<FloatScalarImageType>(this->PriorityImage, "Debug/Initialize.PriorityImage.mha", this->DebugImages);
   
     InitializeConfidence();
-    Helpers::DebugWriteImageConditional<FloatScalarImageType>(this->ConfidenceImage, "Debug/Initialize.ConfidenceImage.mha", this->DebugImages);
+    
+    InitializeConfidenceMap();
+    Helpers::DebugWriteImageConditional<FloatScalarImageType>(this->ConfidenceMapImage, "Debug/Initialize.ConfidenceMapImage.mha", this->DebugImages);
 
     DebugMessage("Computing source patches...");
     ComputeSourcePatches();
@@ -365,41 +382,38 @@ void CriminisiInpainting::Iterate()
   DebugMessage("Computed boundary normals.");
 
   ComputeAllDataTerms();
-
+  ComputeAllConfidenceTerms();
   ComputeAllPriorities();
   DebugMessage("Computed priorities.");
 
-  Patch sourcePatch;
-  Patch targetPatch;
-  
+  PatchPair patchPair;
+    
   //FindBestPatchForHighestPriority(sourcePatch, targetPatch);
   
-  FindBestPatchLookAhead(sourcePatch, targetPatch);
+  FindBestPatchLookAhead(patchPair);
 
   std::stringstream ssSource;
-  ssSource << "source_" << Helpers::ZeroPad(this->Iteration, 3) << ".mha";
-  Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, sourcePatch, ssSource.str());
+  ssSource << "Debug/source_" << Helpers::ZeroPad(this->Iteration, 3) << ".mha";
+  Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, patchPair.SourcePatch, ssSource.str());
 
   std::stringstream ssTarget;
-  ssTarget << "target_" << Helpers::ZeroPad(this->Iteration, 3) << ".mha";
-  Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, targetPatch, ssTarget.str());
+  ssTarget << "Debug/target_" << Helpers::ZeroPad(this->Iteration, 3) << ".mha";
+  Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, patchPair.TargetPatch, ssTarget.str());
   
-  this->UsedSourcePatches.push_back(sourcePatch);
-  this->UsedTargetPatches.push_back(targetPatch);
+  this->UsedPatchPairs.push_back(patchPair);
   
   // Copy the patch. This is the actual inpainting step.
-  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, sourcePatch.Region, targetPatch.Region);
-  
-  
-  float confidence = ComputeConfidenceTerm(Helpers::GetRegionCenter(targetPatch.Region));
+  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, patchPair.SourcePatch.Region, patchPair.TargetPatch.Region);
+    
+  float confidence = this->ConfidenceImage->GetPixel(Helpers::GetRegionCenter(patchPair.TargetPatch.Region));
   // Copy the new confidences into the confidence image
-  UpdateConfidences(targetPatch.Region, confidence);
+  UpdateConfidences(patchPair.TargetPatch.Region, confidence);
 
   // The isophotes can be copied because they would only change slightly if recomputed.
-  Helpers::CopySelfPatchIntoValidRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, sourcePatch.Region, targetPatch.Region);
+  Helpers::CopySelfPatchIntoValidRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, patchPair.SourcePatch.Region, patchPair.TargetPatch.Region);
 
   // Update the mask
-  this->UpdateMask(targetPatch.Region);
+  this->UpdateMask(patchPair.TargetPatch.Region);
   DebugMessage("Updated mask.");
 
   // Sanity check everything
@@ -473,26 +487,19 @@ float CriminisiInpainting::HistogramDifferenceND(const Patch& patch1, const Patc
   return 0;
 }
 
-void CriminisiInpainting::FindBestPatchLookAhead(Patch& bestSourcePatch, Patch& bestTargetPatch)
+void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 {
   // This function returns 'sourcePatch' and 'targetPatch' by reference
   
   FloatScalarImageType::Pointer CurrentPriorityImage = FloatScalarImageType::New();
   Helpers::DeepCopy<FloatScalarImageType>(this->PriorityImage, CurrentPriorityImage);
   
+  std::vector<PatchPair> patchPairs;
   
-  //unsigned int largestAttempts = 5;
-  //unsigned int numberOfAttempts = std::min(largestAttempts, Helpers::CountNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage));
-  
-  unsigned int numberOfAttempts = 5;
-  
-  std::vector<float> ssdScores;
-  std::vector<Patch> sourcePatches;
-  std::vector<Patch> targetPatches;
-  std::vector<float> histogramScores;
-  
-  for(unsigned int i = 0; i < numberOfAttempts; ++i)
+  for(unsigned int i = 0; i < this->MaxPotentialPatches; ++i)
     {
+    PatchPair patchPair;
+  
     float highestPriority = 0;
     itk::Index<2> pixelToFill = FindHighestValueOnBoundary(CurrentPriorityImage, highestPriority);
 
@@ -506,7 +513,8 @@ void CriminisiInpainting::FindBestPatchLookAhead(Patch& bestSourcePatch, Patch& 
 
     itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
     Patch targetPatch(targetRegion);
-    targetPatches.push_back(targetPatch);
+    
+    patchPair.TargetPatch = targetPatch;
     
     SelfPatchCompare* patchCompare;
     patchCompare = new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel());
@@ -515,9 +523,9 @@ void CriminisiInpainting::FindBestPatchLookAhead(Patch& bestSourcePatch, Patch& 
     patchCompare->SetSourcePatches(this->SourcePatches);
     patchCompare->SetTargetPatch(targetPatch);
     
-    float distance = 0;
-    unsigned int bestMatchSourcePatchId = patchCompare->FindBestPatch(distance);
-    ssdScores.push_back(distance);
+    float averageSSD = 0;
+    unsigned int bestMatchSourcePatchId = patchCompare->FindBestPatch(averageSSD);
+    patchPair.AverageSSD = averageSSD;
     
     //DebugMessage<unsigned int>("Found best patch to be ", bestMatchSourcePatchId);
     //std::cout << "Found best patch to be " << bestMatchSourcePatchId << std::endl;
@@ -525,32 +533,50 @@ void CriminisiInpainting::FindBestPatchLookAhead(Patch& bestSourcePatch, Patch& 
     //this->DebugWritePatch(this->SourcePatches[bestMatchSourcePatchId], "SourcePatch.png");
     //this->DebugWritePatch(targetRegion, "TargetPatch.png");
     Patch sourcePatch = this->SourcePatches[bestMatchSourcePatchId];
-    sourcePatches.push_back(sourcePatch);
+    patchPair.SourcePatch = sourcePatch;
     
+    // Blank a region around the current potential patch to fill. This will ensure the next potential patch to fill is reasonably far away.
     Helpers::SetRegionToConstant<FloatScalarImageType>(CurrentPriorityImage, Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]), 0.0f);
     
-    std::cout << "Potential pair: Source: " << sourcePatch.Region << " Target: " << targetPatch.Region << std::endl;
+    //std::cout << "Potential pair: Source: " << sourcePatch.Region << " Target: " << targetPatch.Region << std::endl;
 
     //HistogramType::Pointer sourceHistogram = Helpers::ComputeNDHistogramOfRegionManual(this->CurrentOutputImage, sourcePatch.Region, this->HistogramBinsPerDimension);
     HistogramType::Pointer sourceHistogram = Helpers::ComputeNDHistogramOfMaskedRegionManual(this->CurrentOutputImage, this->CurrentMask, sourcePatch.Region, this->HistogramBinsPerDimension);
     HistogramType::Pointer targetHistogram = Helpers::ComputeNDHistogramOfMaskedRegionManual(this->CurrentOutputImage, this->CurrentMask, targetPatch.Region, this->HistogramBinsPerDimension);
     
     float histogramDifference = Helpers::NDHistogramDifference(sourceHistogram, targetHistogram);
-    histogramScores.push_back(histogramDifference);
+    patchPair.HistogramDifference = histogramDifference;
+    
+    patchPairs.push_back(patchPair);
     }
   
-  std::cout << "Scores: " << std::endl;
-  for(unsigned int i = 0; i < ssdScores.size(); ++i)
+//   std::cout << "Scores: " << std::endl;
+//   for(unsigned int i = 0; i < ssdScores.size(); ++i)
+//     {
+//     std::cout << i << ": " << ssdScores[i] << std::endl;
+//     }
+  
+  std::sort(patchPairs.begin(), patchPairs.end(), SortByAverageSSD);
+  
+  float histogramDifferenceThreshold = .4;
+  
+  unsigned int bestAttempt = 0;
+  
+  for(unsigned int i = 0; i < patchPairs.size(); ++i)
     {
-    std::cout << i << ": " << ssdScores[i] << std::endl;
+    if(patchPairs[i].HistogramDifference < histogramDifferenceThreshold)
+      {
+      bestAttempt = i;
+      break;
+      }
     }
-  
-  //unsigned int bestAttempt = Helpers::argmin(ssdScores);
-  unsigned int bestAttempt = Helpers::argmin(histogramScores);
+    
   std::cout << "Best attempt was " << bestAttempt << std::endl;
   
-  bestSourcePatch = sourcePatches[bestAttempt];
-  bestTargetPatch = targetPatches[bestAttempt];
+  bestPatchPair = patchPairs[bestAttempt];
+  
+  this->PotentialPatchPairs.push_back(patchPairs);
+  
 }
 
 void CriminisiInpainting::Inpaint()
@@ -1019,10 +1045,8 @@ float CriminisiInpainting::ComputeConfidenceTerm(const itk::Index<2>& queryPixel
     itk::ImageRegion<2> region = this->CurrentMask->GetLargestPossibleRegion();
     region.Crop(Helpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius[0]));
     itk::ImageRegionConstIterator<Mask> maskIterator(this->CurrentMask, region);
-    itk::ImageRegionConstIterator<FloatScalarImageType> confidenceIterator(this->ConfidenceImage, region);
+    itk::ImageRegionConstIterator<FloatScalarImageType> confidenceIterator(this->ConfidenceMapImage, region);
 
-    maskIterator.GoToBegin();
-    confidenceIterator.GoToBegin();
     // The confidence is computed as the sum of the confidences of patch pixels in the source region / area of the patch
 
     float sum = 0;
@@ -1102,7 +1126,7 @@ void CriminisiInpainting::UpdateConfidences(const itk::ImageRegion<2>& targetReg
       if(this->CurrentMask->IsHole(maskIterator.GetIndex()))
 	{
 	itk::Index<2> currentPixel = maskIterator.GetIndex();
-	this->ConfidenceImage->SetPixel(currentPixel, value);
+	this->ConfidenceMapImage->SetPixel(currentPixel, value);
 	}
 
       ++maskIterator;
@@ -1143,6 +1167,36 @@ void CriminisiInpainting::ComputeAllDataTerms()
   catch( itk::ExceptionObject & err )
   {
     std::cerr << "ExceptionObject caught in ComputeAllDataTerms!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}
+
+
+void CriminisiInpainting::ComputeAllConfidenceTerms()
+{
+  try
+  {
+    itk::ImageRegionConstIteratorWithIndex<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
+
+    // Blank the data term image
+    this->ConfidenceImage->FillBuffer(0);
+
+    while(!boundaryIterator.IsAtEnd())
+      {
+      if(boundaryIterator.Get() != 0) // This is a pixel on the current boundary
+	{
+	itk::Index<2> currentPixel = boundaryIterator.GetIndex();
+	float confidenceTerm = ComputeConfidenceTerm(currentPixel);
+	this->ConfidenceImage->SetPixel(currentPixel, confidenceTerm);
+	}
+
+      ++boundaryIterator;
+      }
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in ComputeAllConfidenceTerms!" << std::endl;
     std::cerr << err << std::endl;
     exit(-1);
   }
@@ -1232,25 +1286,26 @@ itk::ImageRegion<2> CriminisiInpainting::CropToValidRegion(const itk::ImageRegio
   return region;
 }
 
-bool CriminisiInpainting::GetUsedTargetPatch(const unsigned int id, Patch& patch)
+bool CriminisiInpainting::GetPotentialPatchPairs(const unsigned int iteration, std::vector<PatchPair>& patchPairs)
 {
-  if(id < this->UsedTargetPatches.size())
+  if(iteration < this->PotentialPatchPairs.size())
     {
-    patch = this->UsedTargetPatches[id]; 
+    patchPairs = this->PotentialPatchPairs[iteration]; 
     return true;
     }
   return false;
 }
 
-bool CriminisiInpainting::GetUsedSourcePatch(const unsigned int id, Patch& patch)
+bool CriminisiInpainting::GetUsedPatchPair(const unsigned int id, PatchPair& patchPair)
 {
-  if(id < this->UsedSourcePatches.size())
+  if(id < this->UsedPatchPairs.size())
     {
-    patch = this->UsedSourcePatches[id]; 
+    patchPair = this->UsedPatchPairs[id]; 
     return true;
     }
   return false;
 }
+
   
 unsigned int CriminisiInpainting::GetIteration()
 {

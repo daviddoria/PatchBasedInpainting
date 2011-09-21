@@ -42,8 +42,10 @@ class vtkPolyDataMapper;
 
 // Custom
 #include "CriminisiInpainting.h"
+#include "Layer.h"
 #include "ProgressThread.h"
 #include "Types.h"
+#include "VectorLayer.h"
 
 class InteractorStyleImageNoLevel;
 
@@ -82,10 +84,12 @@ public slots:
   void on_chkMask_clicked();
   void on_chkPriority_clicked();
   void on_chkConfidence_clicked();
+  void on_chkConfidenceMap_clicked();
   void on_chkBoundary_clicked();
   void on_chkIsophotes_clicked();
   void on_chkData_clicked();
   void on_chkBoundaryNormals_clicked();
+  void on_chkPotentialPatches_clicked();
   
   void on_btnInpaint_clicked();
   void on_btnStop_clicked();
@@ -103,7 +107,14 @@ public slots:
   
   void IterationCompleteSlot();
   
+  void ExtractIsophotesForDisplay();
 protected:
+  
+  void DisplayBoundaryNormals();
+  void DisplayMask();
+  void DisplayConfidence();
+  void DisplayPriority();
+  void DisplayData();
   
   // The interactor to allow us to zoom and pan the image
   vtkSmartPointer<InteractorStyleImageNoLevel> InteractorStyle;
@@ -114,58 +125,41 @@ protected:
   vtkSmartPointer<vtkRenderer> Renderer;
   
   // Source patch display
-  vtkSmartPointer<vtkImageData> SourcePatch;
-  vtkSmartPointer<vtkImageSlice> SourcePatchSlice;
-  vtkSmartPointer<vtkImageSliceMapper> SourcePatchSliceMapper;
+  Layer SourcePatchLayer;
   
   // Target patch display
-  vtkSmartPointer<vtkImageData> TargetPatch;
-  vtkSmartPointer<vtkImageSlice> TargetPatchSlice;
-  vtkSmartPointer<vtkImageSliceMapper> TargetPatchSliceMapper;
+  Layer TargetPatchLayer;
   
   // Image display
-  vtkSmartPointer<vtkImageData> VTKImage;
-  vtkSmartPointer<vtkImageSlice> ImageSlice;
-  vtkSmartPointer<vtkImageSliceMapper> ImageSliceMapper;
+  Layer ImageLayer;
   
-  // Confidence image display
-  vtkSmartPointer<vtkImageData> VTKConfidenceImage;
-  vtkSmartPointer<vtkImageSlice> ConfidenceImageSlice;
-  vtkSmartPointer<vtkImageSliceMapper> ConfidenceImageSliceMapper;
-
+  // Confidence on the boundary
+  Layer ConfidenceLayer;
+  
+  // Confidence map display
+  Layer ConfidenceMapLayer;
+  
+  // Potential patch image display
+  UnsignedCharScalarImageType::Pointer PotentialPatchImage;
+  Layer PotentialPatchesLayer;
+  
   // Priority image display
-  vtkSmartPointer<vtkImageData> VTKPriorityImage;
-  vtkSmartPointer<vtkImageSlice> PriorityImageSlice;
-  vtkSmartPointer<vtkImageSliceMapper> PriorityImageSliceMapper;
+  Layer PriorityLayer;
   
   // Boundary image display
-  vtkSmartPointer<vtkImageData> VTKBoundaryImage;
-  vtkSmartPointer<vtkImageSlice> BoundaryImageSlice;
-  vtkSmartPointer<vtkImageSliceMapper> BoundaryImageSliceMapper;
+  Layer BoundaryLayer;
 
   // Mask image display
-  vtkSmartPointer<vtkImageData> VTKMaskImage;
-  vtkSmartPointer<vtkImageSlice> MaskImageSlice;
-  vtkSmartPointer<vtkImageSliceMapper> MaskImageSliceMapper;
+  Layer MaskLayer;
   
   // Data image display (this is the "Data" term that is later combined with the Confidence to compute the Priority)
-  vtkSmartPointer<vtkImageData> VTKDataImage;
-  vtkSmartPointer<vtkImageSlice> DataImageSlice;
-  vtkSmartPointer<vtkImageSliceMapper> DataImageSliceMapper;
-
+  Layer DataLayer;
+  
   // Isophote display
-  vtkSmartPointer<vtkPolyDataMapper> IsophoteMapper;
-  vtkSmartPointer<vtkActor> IsophoteActor;
-  vtkSmartPointer<vtkImageData> VTKIsophoteImage;
-  vtkSmartPointer<vtkPolyData> VTKNonZeroIsophoteVectors;
-  vtkSmartPointer<vtkGlyph2D> IsophoteGlyph;
+  VectorLayer IsophoteLayer;
 
   // Boundary normals display
-  vtkSmartPointer<vtkPolyDataMapper> BoundaryNormalsMapper;
-  vtkSmartPointer<vtkActor> BoundaryNormalsActor;
-  vtkSmartPointer<vtkImageData> VTKBoundaryNormalsImage;
-  vtkSmartPointer<vtkPolyData> VTKNonZeroBoundaryNormals;
-  vtkSmartPointer<vtkGlyph2D> BoundaryNormalsGlyph;
+  VectorLayer BoundaryNormalsLayer;
   
   // The data that the user loads
   FloatVectorImageType::Pointer Image;
@@ -193,7 +187,13 @@ protected:
   
   static const unsigned char Green[3];
   static const unsigned char Red[3];
+
+  QGraphicsScene* SourcePatchScene;
+  QGraphicsScene* TargetPatchScene;
   
+  QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx);
+  
+  void OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename);
 };
 
 #include "Form.hxx"

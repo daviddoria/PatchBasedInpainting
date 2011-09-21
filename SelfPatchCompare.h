@@ -42,7 +42,7 @@ class SelfPatchCompare
 {
   
 public:
-  SelfPatchCompare(const unsigned int);
+  SelfPatchCompare(const unsigned int numberOfComponentsPerPixel);
   
   // This function returns the Id of the best source patch, as well as returns the minDistance by reference
   unsigned int FindBestPatch(float& minDistance);
@@ -57,7 +57,7 @@ public:
 
   float SlowDifference(const Patch& sourcePatch);
   float PatchDifferenceManual(const Patch& sourcePatch);
-  float PatchDifferenceExternal(const Patch& sourcePatch);
+  float PatchAverageSquaredDifference(const Patch& sourcePatch);
   float PatchDifferenceBoundary(const Patch& sourcePatch);
 
   // Prepare to do some comparisons by finding all of the valid pixels in the target region

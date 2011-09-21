@@ -31,6 +31,11 @@ void Form::on_chkConfidence_clicked()
   RefreshSlot();
 }
 
+void Form::on_chkConfidenceMap_clicked()
+{
+  RefreshSlot();
+}
+
 void Form::on_chkBoundary_clicked()
 {
   RefreshSlot();

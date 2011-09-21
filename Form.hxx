@@ -9,3 +9,4 @@ void Form::DebugMessage(const std::string& message, T value)
     std::cout << message << " " << ss.str() << std::endl;
     }
 }
+

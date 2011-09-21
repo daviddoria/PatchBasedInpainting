@@ -226,7 +226,7 @@ float SelfPatchCompare::PatchDifferenceManual(const Patch& sourcePatch)
 
 
 
-float SelfPatchCompare::PatchDifferenceExternal(const Patch& sourcePatch)
+float SelfPatchCompare::PatchAverageSquaredDifference(const Patch& sourcePatch)
 {
   // This function assumes that all pixels in the source region are unmasked.
   try
@@ -234,28 +234,26 @@ float SelfPatchCompare::PatchDifferenceExternal(const Patch& sourcePatch)
     //assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
 
     float totalDifference = 0;
-
-    unsigned int componentsPerPixel = this->Image->GetNumberOfComponentsPerPixel();
     
     FloatVectorImageType::InternalPixelType *buffptr = this->Image->GetBufferPointer();
     unsigned int offsetDifference = (this->Image->ComputeOffset(this->TargetPatch.Region.GetIndex())
-                                    - this->Image->ComputeOffset(sourcePatch.Region.GetIndex())) * componentsPerPixel;
+                                    - this->Image->ComputeOffset(sourcePatch.Region.GetIndex())) * this->NumberOfComponentsPerPixel;
 
     float difference = 0;
     
     FloatVectorImageType::PixelType sourcePixel;
-    sourcePixel.SetSize(componentsPerPixel);
+    sourcePixel.SetSize(this->NumberOfComponentsPerPixel);
     
     FloatVectorImageType::PixelType targetPixel;
-    targetPixel.SetSize(componentsPerPixel);
+    targetPixel.SetSize(this->NumberOfComponentsPerPixel);
     
     FloatVectorImageType::PixelType differencePixel;
-    differencePixel.SetSize(componentsPerPixel);
+    differencePixel.SetSize(this->NumberOfComponentsPerPixel);
     
     for(unsigned int pixelId = 0; pixelId < this->ValidOffsets.size(); ++pixelId)
       {
       
-      for(unsigned int i = 0; i < componentsPerPixel; ++i)
+      for(unsigned int i = 0; i < this->NumberOfComponentsPerPixel; ++i)
         {
 	sourcePixel[i] = buffptr[this->ValidOffsets[pixelId] + i];
         targetPixel[i] = buffptr[this->ValidOffsets[pixelId] - offsetDifference + i];
@@ -380,7 +378,7 @@ unsigned int SelfPatchCompare::FindBestPatch(float& minDistance)
       ComputeOffsets();
       for(unsigned int i = 0; i < this->SourcePatches.size(); ++i)
 	{
-	float distance = PatchDifferenceExternal(this->SourcePatches[i]);
+	float distance = PatchAverageSquaredDifference(this->SourcePatches[i]);
 	//float distance = PatchDifferenceManual(this->SourceRegions[i]);
 	//std::cout << "Patch " << i << " distance " << distance << std::endl;
 	if(distance < minDistance)

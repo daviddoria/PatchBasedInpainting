@@ -88,6 +88,12 @@ Form::Form()
 {
   this->setupUi(this);
 
+  this->TargetPatchScene = new QGraphicsScene();
+  this->gfxTarget->setScene(TargetPatchScene);
+ 
+  this->SourcePatchScene = new QGraphicsScene();
+  this->gfxSource->setScene(SourcePatchScene);
+  
   this->CurrentUsedPatchDisplayed = -1;
   
   this->DebugImages = false;
@@ -110,138 +116,27 @@ Form::Form()
 
   this->Flipped = false;
   
-  //this->InteractorStyle = vtkSmartPointer<vtkInteractorStyleImage>::New();
   this->InteractorStyle = vtkSmartPointer<InteractorStyleImageNoLevel>::New();
-  
-  // Initialize and link the image display objects
-  this->VTKImage = vtkSmartPointer<vtkImageData>::New();
-  this->ImageSlice = vtkSmartPointer<vtkImageSlice>::New();
-  this->ImageSlice->GetProperty()->SetInterpolationTypeToNearest();
-  this->ImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
-  this->ImageSliceMapper->BorderOn();
-  
-  this->ImageSliceMapper->SetInputConnection(this->VTKImage->GetProducerPort());
-  this->ImageSlice->SetMapper(this->ImageSliceMapper);
-  
-  // Source patch display
-  this->SourcePatch = vtkSmartPointer<vtkImageData>::New();
-  this->SourcePatchSlice = vtkSmartPointer<vtkImageSlice>::New();
-  this->SourcePatchSlice->GetProperty()->SetInterpolationTypeToNearest();
-  this->SourcePatchSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
-  this->SourcePatchSliceMapper->BorderOn();
-  
-  this->SourcePatchSliceMapper->SetInputConnection(this->SourcePatch->GetProducerPort());
-  this->SourcePatchSlice->SetMapper(this->SourcePatchSliceMapper);
-  
-  // Target patch display
-  this->TargetPatch = vtkSmartPointer<vtkImageData>::New();
-  this->TargetPatchSlice = vtkSmartPointer<vtkImageSlice>::New();
-  this->TargetPatchSlice->GetProperty()->SetInterpolationTypeToNearest();
-  this->TargetPatchSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
-  this->TargetPatchSliceMapper->BorderOn();
-  
-  this->TargetPatchSliceMapper->SetInputConnection(this->TargetPatch->GetProducerPort());
-  this->TargetPatchSlice->SetMapper(this->TargetPatchSliceMapper);
-  
-  // Initialize and link the priority image display objects
-  this->VTKPriorityImage = vtkSmartPointer<vtkImageData>::New();
-  this->PriorityImageSlice = vtkSmartPointer<vtkImageSlice>::New();
-  this->PriorityImageSlice->GetProperty()->SetInterpolationTypeToNearest();
-  this->PriorityImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
-  this->PriorityImageSliceMapper->BorderOn();
-  
-  this->PriorityImageSliceMapper->SetInputConnection(this->VTKPriorityImage->GetProducerPort());
-  this->PriorityImageSlice->SetMapper(this->PriorityImageSliceMapper);
     
-  // Initialize and link the confidence image display objects
-  this->VTKConfidenceImage = vtkSmartPointer<vtkImageData>::New();
-  this->ConfidenceImageSlice = vtkSmartPointer<vtkImageSlice>::New();
-  this->ConfidenceImageSlice->GetProperty()->SetInterpolationTypeToNearest();
-  this->ConfidenceImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
-  this->ConfidenceImageSliceMapper->BorderOn();
-  
-  this->ConfidenceImageSliceMapper->SetInputConnection(this->VTKConfidenceImage->GetProducerPort());
-  this->ConfidenceImageSlice->SetMapper(this->ConfidenceImageSliceMapper);
-  
-  // Initialize and link the boundary image display objects
-  this->VTKBoundaryImage = vtkSmartPointer<vtkImageData>::New();
-  this->BoundaryImageSlice = vtkSmartPointer<vtkImageSlice>::New();
-  this->BoundaryImageSlice->GetProperty()->SetInterpolationTypeToNearest();
-  this->BoundaryImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
-  this->BoundaryImageSliceMapper->BorderOn();
-  
-  this->BoundaryImageSliceMapper->SetInputConnection(this->VTKBoundaryImage->GetProducerPort());
-  this->BoundaryImageSlice->SetMapper(this->BoundaryImageSliceMapper);
-
-  // Initialize and link the mask image display objects
-  this->VTKMaskImage = vtkSmartPointer<vtkImageData>::New();
-  this->MaskImageSlice = vtkSmartPointer<vtkImageSlice>::New();
-  this->MaskImageSlice->GetProperty()->SetInterpolationTypeToNearest();
-  this->MaskImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
-  this->MaskImageSliceMapper->BorderOn();
-  
-  this->MaskImageSliceMapper->SetInputConnection(this->VTKMaskImage->GetProducerPort());
-  this->MaskImageSlice->SetMapper(this->MaskImageSliceMapper);
-  
-  // Initialize and link the data image display objects
-  this->VTKDataImage = vtkSmartPointer<vtkImageData>::New();
-  this->DataImageSlice = vtkSmartPointer<vtkImageSlice>::New();
-  this->DataImageSlice->GetProperty()->SetInterpolationTypeToNearest();
-  this->DataImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
-
-  this->DataImageSliceMapper->SetInputConnection(this->VTKDataImage->GetProducerPort());
-  this->DataImageSlice->SetMapper(this->DataImageSliceMapper);
-
-  // Setup the arrows for boundary normals and isophote visualization
-  vtkSmartPointer<vtkArrowSource> arrowSource = vtkSmartPointer<vtkArrowSource>::New();
-  arrowSource->Update();
-  
-  // Isophote display
-  this->IsophoteMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-  this->VTKIsophoteImage = vtkSmartPointer<vtkImageData>::New();
-  this->IsophoteActor = vtkSmartPointer<vtkActor>::New();
-  this->IsophoteGlyph = vtkSmartPointer<vtkGlyph2D>::New();
-  this->VTKNonZeroIsophoteVectors = vtkSmartPointer<vtkPolyData>::New();
-  
-  this->IsophoteGlyph->SetInputConnection(this->VTKNonZeroIsophoteVectors->GetProducerPort());
-  this->IsophoteGlyph->SetSource(arrowSource->GetOutput());
-  this->IsophoteGlyph->OrientOn();
-  this->IsophoteGlyph->SetVectorModeToUseVector();
-  this->IsophoteGlyph->SetScaleFactor(10);
-  
-  this->IsophoteMapper->SetInputConnection(this->IsophoteGlyph->GetOutputPort());
-  this->IsophoteActor->SetMapper(this->IsophoteMapper);
-  
-  // BoundaryNormals display
-  this->BoundaryNormalsMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-  this->VTKBoundaryNormalsImage = vtkSmartPointer<vtkImageData>::New();
-  this->BoundaryNormalsActor = vtkSmartPointer<vtkActor>::New();
-  this->BoundaryNormalsGlyph = vtkSmartPointer<vtkGlyph2D>::New();
-  this->VTKNonZeroBoundaryNormals = vtkSmartPointer<vtkPolyData>::New();
-  
-  this->BoundaryNormalsGlyph->SetInputConnection(this->VTKNonZeroBoundaryNormals->GetProducerPort());
-  this->BoundaryNormalsGlyph->SetSource(arrowSource->GetOutput());
-  this->BoundaryNormalsGlyph->OrientOn();
-  this->BoundaryNormalsGlyph->SetVectorModeToUseVector();
-  this->BoundaryNormalsGlyph->SetScaleFactor(10);
-  
-  this->BoundaryNormalsMapper->SetInputConnection(this->BoundaryNormalsGlyph->GetOutputPort());
-  this->BoundaryNormalsActor->SetMapper(this->BoundaryNormalsMapper);
-  
+  // Potential patch image
+  this->PotentialPatchImage = UnsignedCharScalarImageType::New();
+    
   // Add objects to the renderer
   this->Renderer = vtkSmartPointer<vtkRenderer>::New();
   this->qvtkWidget->GetRenderWindow()->AddRenderer(this->Renderer);
   
-  this->Renderer->AddViewProp(this->ImageSlice);
-  this->Renderer->AddViewProp(this->ConfidenceImageSlice);
-  this->Renderer->AddViewProp(this->BoundaryImageSlice);
-  this->Renderer->AddViewProp(this->PriorityImageSlice);
-  this->Renderer->AddViewProp(this->DataImageSlice);
-  this->Renderer->AddViewProp(this->IsophoteActor);
-  this->Renderer->AddViewProp(this->BoundaryNormalsActor);
-  this->Renderer->AddViewProp(this->MaskImageSlice);
-  this->Renderer->AddViewProp(this->TargetPatchSlice);
-  this->Renderer->AddViewProp(this->SourcePatchSlice);
+  this->Renderer->AddViewProp(this->ImageLayer.ImageSlice);
+  this->Renderer->AddViewProp(this->ConfidenceLayer.ImageSlice);
+  this->Renderer->AddViewProp(this->ConfidenceMapLayer.ImageSlice);
+  this->Renderer->AddViewProp(this->BoundaryLayer.ImageSlice);
+  this->Renderer->AddViewProp(this->PriorityLayer.ImageSlice);
+  this->Renderer->AddViewProp(this->DataLayer.ImageSlice);
+  this->Renderer->AddViewProp(this->IsophoteLayer.Actor);
+  this->Renderer->AddViewProp(this->BoundaryNormalsLayer.Actor);
+  this->Renderer->AddViewProp(this->MaskLayer.ImageSlice);
+  this->Renderer->AddViewProp(this->PotentialPatchesLayer.ImageSlice);
+  this->Renderer->AddViewProp(this->TargetPatchLayer.ImageSlice);
+  this->Renderer->AddViewProp(this->SourcePatchLayer.ImageSlice);
 
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
@@ -292,7 +187,7 @@ void Form::on_actionSaveResult_activated()
   // Get a filename to save
   QString fileName = QFileDialog::getSaveFileName(this, "Save File", ".", "Image Files (*.jpg *.jpeg *.bmp *.png *.mha)");
 
-  std::cout << "Got filename: " << fileName.toStdString() << std::endl;
+  DebugMessage<std::string>("Got filename: ", fileName.toStdString());
   if(fileName.toStdString().empty())
     {
     std::cout << "Filename was empty." << std::endl;
@@ -324,7 +219,7 @@ void Form::on_actionOpenImage_activated()
   // Get a filename to open
   QString fileName = QFileDialog::getOpenFileName(this, "Open File", ".", "Image Files (*.jpg *.jpeg *.bmp *.png *.mha);;PNG Files (*.png)");
 
-  std::cout << "Got filename: " << fileName.toStdString() << std::endl;
+  DebugMessage<std::string>("Got filename: ", fileName.toStdString());
   if(fileName.toStdString().empty())
     {
     std::cout << "Filename was empty." << std::endl;
@@ -334,7 +229,7 @@ void Form::on_actionOpenImage_activated()
   // Set the working directory
   QFileInfo fileInfo(fileName);
   std::string workingDirectory = fileInfo.absoluteDir().absolutePath().toStdString() + "/";
-  std::cout << "Working directory set to: " << workingDirectory << std::endl;
+  DebugMessage<std::string>("Working directory set to: ", workingDirectory);
   QDir::setCurrent(QString(workingDirectory.c_str()));
     
   typedef itk::ImageFileReader<FloatVectorImageType> ReaderType;
@@ -345,7 +240,7 @@ void Form::on_actionOpenImage_activated()
   //this->Image = reader->GetOutput();
   Helpers::DeepCopyVectorImage<FloatVectorImageType>(reader->GetOutput(), this->Image);
   
-  Helpers::ITKImagetoVTKImage(this->Image, this->VTKImage);
+  Helpers::ITKImagetoVTKImage(this->Image, this->ImageLayer.ImageData);
   
   this->Inpainting.SetImage(this->Image);
     
@@ -371,52 +266,13 @@ void Form::on_actionOpenMaskInverted_activated()
     }
 }
 
-void Form::on_chkImage_clicked()
-{
-  RefreshSlot();
-}
-
-void Form::on_chkMask_clicked()
-{
-  RefreshSlot();
-}
-
-void Form::on_chkPriority_clicked()
-{
-  RefreshSlot();
-}
-
-void Form::on_chkConfidence_clicked()
-{
-  RefreshSlot();
-}
-
-void Form::on_chkBoundary_clicked()
-{
-  RefreshSlot();
-}
-
-void Form::on_chkIsophotes_clicked()
-{
-  RefreshSlot();
-}
-
-void Form::on_chkData_clicked()
-{
-  RefreshSlot();
-}
-
-void Form::on_chkBoundaryNormals_clicked()
-{
-  RefreshSlot();
-}
 
 void Form::on_actionOpenMask_activated()
 {
   // Get a filename to open
   QString fileName = QFileDialog::getOpenFileName(this, "Open File", ".", "Image Files (*.png *.bmp)");
 
-  std::cout << "Got filename: " << fileName.toStdString() << std::endl;
+  DebugMessage<std::string>("Got filename: ", fileName.toStdString());
   if(fileName.toStdString().empty())
     {
     std::cout << "Filename was empty." << std::endl;
@@ -450,152 +306,146 @@ void Form::on_actionOpenMask_activated()
   this->statusBar()->showMessage("Opened mask.");
 }
 
+void Form::ExtractIsophotesForDisplay()
+{
+  if(this->Inpainting.GetIsophoteImage()->GetLargestPossibleRegion().GetSize()[0] != 0)
+    {
+    // Mask the isophotes image with the current boundary, because we only want to display the isophotes we are interested in.
+    FloatVector2ImageType::Pointer normalizedIsophotes = FloatVector2ImageType::New();
+    Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), normalizedIsophotes);
+    Helpers::NormalizeVectorImage(normalizedIsophotes);
+
+    typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType> MaskFilterType;
+    typename MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+    maskFilter->SetInput(normalizedIsophotes);
+    maskFilter->SetMaskImage(this->Inpainting.GetBoundaryImage());
+    FloatVector2ImageType::PixelType zero;
+    zero.Fill(0);
+    maskFilter->SetOutsideValue(zero);
+    maskFilter->Update();
+    
+    if(this->DebugImages)
+      {
+      Helpers::WriteImage<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ShowIsophotes.BoundaryIsophotes.mha");
+      Helpers::WriteImage<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), "Debug/ShowIsophotes.Boundary.mha");
+      }
+
+    Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), this->IsophoteLayer.Vectors);
+    
+    if(this->DebugImages)
+      {
+      vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
+      writer->SetFileName("Debug/VTKIsophotes.vti");
+      writer->SetInputConnection(this->IsophoteLayer.ImageData->GetProducerPort());
+      writer->Write();
+    
+      vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
+      polyDataWriter->SetFileName("Debug/VTKIsophotes.vtp");
+      polyDataWriter->SetInputConnection(this->IsophoteLayer.Vectors->GetProducerPort());
+      polyDataWriter->Write();
+      }
+    } 
+}
+
+void Form::DisplayMask()
+{
+  vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
+  Helpers::ITKScalarImageToScaledVTKImage<Mask>(this->Inpainting.GetMaskImage(), temp);  
+  Helpers::MakePixelsTransparent(temp, this->MaskLayer.ImageData, 0); // Set the zero pixels of the mask to transparent
+}
+
+void Form::DisplayConfidence()
+{
+  vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
+  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), temp);  
+  Helpers::MakePixelsTransparent(temp, this->ConfidenceLayer.ImageData, 0); // Set the zero pixels to transparent
+}
+
+void Form::DisplayPriority()
+{
+  vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
+  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), temp);
+  Helpers::MakePixelsTransparent(temp, this->PriorityLayer.ImageData, 0); // Set the zero pixels to transparent
+}
+
+void Form::DisplayData()
+{
+  vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
+  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetDataImage(), temp);
+  Helpers::MakePixelsTransparent(temp, this->DataLayer.ImageData, 0); // Set the zero pixels to transparent
+}
+
 void Form::RefreshSlot()
 {
   DebugMessage("RefreshSlot()");
 
-  this->ImageSlice->VisibilityOff();
-  this->ConfidenceImageSlice->VisibilityOff();
-  this->PriorityImageSlice->VisibilityOff();
-  this->BoundaryImageSlice->VisibilityOff();
-  this->DataImageSlice->VisibilityOff();
-  this->BoundaryNormalsActor->VisibilityOff();
-  this->IsophoteActor->VisibilityOff();
-  this->MaskImageSlice->VisibilityOff();
-
-  if(this->chkImage->isChecked())
-    {
-    this->ImageSlice->VisibilityOn();
-    Helpers::ITKImagetoVTKImage(this->Inpainting.GetResult(), this->VTKImage);
-    }
-  else if(this->chkMask->isChecked())
-    {
-    this->MaskImageSlice->VisibilityOn();
-    Helpers::ITKScalarImageToScaledVTKImage<Mask>(this->Inpainting.GetMaskImage(), this->VTKMaskImage);
-    }
-  else if(this->chkConfidence->isChecked())
-    {
-    this->ConfidenceImageSlice->VisibilityOn();
-    Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), this->VTKConfidenceImage);
-    }
-  else if(this->chkPriority->isChecked())
-    {
-    this->PriorityImageSlice->VisibilityOn();
-    Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), this->VTKPriorityImage);
-    }
-  else if(this->chkBoundary->isChecked())
-    {
-    this->BoundaryImageSlice->VisibilityOn();
-    Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), this->VTKBoundaryImage);
-    }
-  else if(this->chkIsophotes->isChecked())
-    {
-    if(this->Inpainting.GetIsophoteImage()->GetLargestPossibleRegion().GetSize()[0] != 0)
-      {
-      // Mask the isophotes image with the current boundary, because we only want to display the isophotes we are interested in.
-      FloatVector2ImageType::Pointer normalizedIsophotes = FloatVector2ImageType::New();
-      Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), normalizedIsophotes);
-      Helpers::NormalizeVectorImage(normalizedIsophotes);
-    
-      typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType> MaskFilterType;
-      typename MaskFilterType::Pointer maskFilter = MaskFilterType::New();
-      maskFilter->SetInput(normalizedIsophotes);
-      maskFilter->SetMaskImage(this->Inpainting.GetBoundaryImage());
-      FloatVector2ImageType::PixelType zero;
-      zero.Fill(0);
-      maskFilter->SetOutsideValue(zero);
-      maskFilter->Update();
-      
-      if(this->DebugImages)
-	{
-	Helpers::WriteImage<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ShowIsophotes.BoundaryIsophotes.mha");
-	Helpers::WriteImage<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), "Debug/ShowIsophotes.Boundary.mha");
-	}
-
-      Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), this->VTKNonZeroIsophoteVectors);
-      
-      if(this->DebugImages)
-	{
-	vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
-	writer->SetFileName("Debug/VTKIsophotes.vti");
-	writer->SetInputConnection(this->VTKIsophoteImage->GetProducerPort());
-	writer->Write();
-      
-	vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
-	polyDataWriter->SetFileName("Debug/VTKIsophotes.vtp");
-	polyDataWriter->SetInputConnection(this->VTKNonZeroIsophoteVectors->GetProducerPort());
-	polyDataWriter->Write();
-	}
-      }
-    this->IsophoteActor->VisibilityOn();
-    }
-  else if(this->chkData->isChecked())
-    {
-    this->DataImageSlice->VisibilityOn();
-    Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetDataImage(), this->VTKDataImage);
-    }
-  else if(this->chkBoundaryNormals->isChecked())
-    {
-    this->BoundaryNormalsActor->VisibilityOn();
+  this->ImageLayer.ImageSlice->SetVisibility(this->chkImage->isChecked());
+  Helpers::ITKImagetoVTKImage(this->Inpainting.GetResult(), this->ImageLayer.ImageData);
   
-    if(this->Inpainting.GetBoundaryNormalsImage()->GetLargestPossibleRegion().GetSize()[0] != 0)
-      {
-      Helpers::ConvertNonZeroPixelsToVectors(this->Inpainting.GetBoundaryNormalsImage(), this->VTKNonZeroBoundaryNormals);
+  this->MaskLayer.ImageSlice->SetVisibility(this->chkMask->isChecked());
+  DisplayMask();
+  
+  this->ConfidenceMapLayer.ImageSlice->SetVisibility(this->chkConfidenceMap->isChecked());
+  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetConfidenceMapImage(), this->ConfidenceMapLayer.ImageData);
+  
+  this->ConfidenceLayer.ImageSlice->SetVisibility(this->chkConfidence->isChecked());
+  DisplayConfidence();
+  
+  this->PriorityLayer.ImageSlice->SetVisibility(this->chkPriority->isChecked());
+  DisplayPriority();
+  
+  this->BoundaryLayer.ImageSlice->SetVisibility(this->chkBoundary->isChecked());
+  Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), this->BoundaryLayer.ImageData);
+  
+  this->IsophoteLayer.Actor->SetVisibility(this->chkIsophotes->isChecked());
+  ExtractIsophotesForDisplay();
+  
+  this->DataLayer.ImageSlice->SetVisibility(this->chkData->isChecked());
+  DisplayData();    
     
-      if(this->DebugImages)
-	{
-	std::cout << "Writing boundary normals..." << std::endl;
-      
-	Helpers::WriteImage<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), "Debug/RefreshSlot.BoundaryNormals.mha");
-      
-	vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
-	writer->SetFileName("Debug/RefreshSlot.VTKBoundaryNormals.vti");
-	writer->SetInputConnection(this->VTKBoundaryNormalsImage->GetProducerPort());
-	writer->Write();
-      
-	vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
-	polyDataWriter->SetFileName("Debug/RefreshSlot.VTKBoundaryNormals.vtp");
-	polyDataWriter->SetInputConnection(this->VTKNonZeroBoundaryNormals->GetProducerPort());
-	polyDataWriter->Write();
-	}
-      }
-    }
-    
+  this->BoundaryNormalsLayer.Actor->SetVisibility(this->chkBoundaryNormals->isChecked());
+  
+  DisplayBoundaryNormals();
+
+  this->PotentialPatchesLayer.ImageSlice->SetVisibility(this->chkPotentialPatches->isChecked());
+  //Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetDataImage(), this->VTKDataImage);
+  
   Refresh();
-
-  if(this->DebugImages)
-  {
-    {
-    typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
-    ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
-    imageCalculatorFilter->SetImage(this->Inpainting.GetPriorityImage());
-    imageCalculatorFilter->Compute();
-    DebugMessage<float>("Highest priority: ", imageCalculatorFilter->GetMaximum());
-    }
-
-    {
-    typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
-    ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
-    imageCalculatorFilter->SetImage(this->Inpainting.GetConfidenceImage());
-    imageCalculatorFilter->Compute();
-    DebugMessage<float>("Highest confidence: ", imageCalculatorFilter->GetMaximum());
-    }
-
-    {
-    typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
-    ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
-    imageCalculatorFilter->SetImage(this->Inpainting.GetDataImage());
-    imageCalculatorFilter->Compute();
-    DebugMessage<float>("Highest data: ", imageCalculatorFilter->GetMaximum());
-    }
-  }
   
+}
+
+void Form::DisplayBoundaryNormals()
+{
+  if(this->Inpainting.GetBoundaryNormalsImage()->GetLargestPossibleRegion().GetSize()[0] != 0)
+    {
+    Helpers::ConvertNonZeroPixelsToVectors(this->Inpainting.GetBoundaryNormalsImage(), this->BoundaryNormalsLayer.Vectors);
+  
+    if(this->DebugImages)
+      {
+      std::cout << "Writing boundary normals..." << std::endl;
+    
+      Helpers::WriteImage<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), "Debug/RefreshSlot.BoundaryNormals.mha");
+    
+      vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
+      writer->SetFileName("Debug/RefreshSlot.VTKBoundaryNormals.vti");
+      writer->SetInputConnection(this->BoundaryNormalsLayer.ImageData->GetProducerPort());
+      writer->Write();
+    
+      vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
+      polyDataWriter->SetFileName("Debug/RefreshSlot.VTKBoundaryNormals.vtp");
+      polyDataWriter->SetInputConnection(this->BoundaryNormalsLayer.Vectors->GetProducerPort());
+      polyDataWriter->Write();
+      }
+    }  
 }
 
 void Form::Refresh()
 {
   DebugMessage("Refresh()");
   
+  this->SourcePatchLayer.ImageSlice->SetVisibility(this->chkDisplayUsedPatches->isChecked());
+  this->TargetPatchLayer.ImageSlice->SetVisibility(this->chkDisplayUsedPatches->isChecked());
+    
   this->qvtkWidget->GetRenderWindow()->Render();
   //this->Renderer->Render();
   
@@ -620,6 +470,12 @@ void Form::on_btnInpaint_clicked()
   
   // Reset some things (this is so that if we want to run another completion it will work normally)
 
+  if(!this->Image || !this->MaskImage || this->Image->GetLargestPossibleRegion() != this->MaskImage->GetLargestPossibleRegion())
+    {
+    std::cerr << "Must have loaded both an image and a mask and they must be the same size!" << std::endl;
+    return;
+    }
+  
   this->Inpainting.SetPatchRadius(this->txtPatchRadius->text().toUInt());
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
@@ -630,44 +486,6 @@ void Form::on_btnInpaint_clicked()
   
   DebugMessage("Starting ComputationThread...");
   ComputationThread.start();
-}
-
-void Form::SetCameraPosition1()
-{
-  double leftToRight[3] = {-1,0,0};
-  double bottomToTop[3] = {0,1,0};
-  SetCameraPosition(leftToRight, bottomToTop);
-}
-
-void Form::SetCameraPosition2()
-{
-  double leftToRight[3] = {-1,0,0};
-  double bottomToTop[3] = {0,-1,0};
-
-  SetCameraPosition(leftToRight, bottomToTop);
-}
-
-void Form::SetCameraPosition(double leftToRight[3], double bottomToTop[3])
-{
-  this->InteractorStyle->SetImageOrientation(leftToRight, bottomToTop);
-
-  this->Renderer->ResetCamera();
-  this->Renderer->ResetCameraClippingRange();
-  this->qvtkWidget->GetRenderWindow()->Render();
-}
-
-
-void Form::on_actionFlipImage_activated()
-{
-  if(this->Flipped)
-    {
-    SetCameraPosition1();
-    }   
-  else
-    {
-    SetCameraPosition2();
-    }
-  this->Flipped = !this->Flipped;
 }
 
 
@@ -695,54 +513,101 @@ void Form::on_btnNext_clicked()
   if(this->CurrentUsedPatchDisplayed < static_cast<int>(this->Inpainting.GetIteration()) - 1)
     {
     this->CurrentUsedPatchDisplayed++;
-    DisplayUsedPatches();
     }
-
+  DisplayUsedPatches();
 }
 
 void Form::DisplayUsedPatches()
 {
   unsigned int patchSize = this->txtPatchRadius->text().toUInt() * 2 + 1;
   
+  PatchPair patchPair;
+  this->Inpainting.GetUsedPatchPair(this->CurrentUsedPatchDisplayed, patchPair);
+
   // Target
-  Patch targetPatch;
-  bool validTargetPatch = this->Inpainting.GetUsedTargetPatch(this->CurrentUsedPatchDisplayed, targetPatch);
-  if(validTargetPatch)
-    {
-    std::cout << "Displaying used target patch " << this->CurrentUsedPatchDisplayed << " : " << targetPatch.Region << std::endl;
-    this->TargetPatch->SetDimensions(patchSize, patchSize, 1);
-    Helpers::BlankAndOutlineImage(this->TargetPatch, this->Red);
-    this->TargetPatchSlice->SetPosition(targetPatch.Region.GetIndex()[0], targetPatch.Region.GetIndex()[1], 0);
-    }
+  Patch targetPatch = patchPair.TargetPatch;
+
+  //std::cout << "Displaying used target patch " << this->CurrentUsedPatchDisplayed << " : " << targetPatch.Region << std::endl;
+  this->TargetPatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
+  Helpers::BlankAndOutlineImage(this->TargetPatchLayer.ImageData, this->Red);
+  this->TargetPatchLayer.ImageSlice->SetPosition(targetPatch.Region.GetIndex()[0], targetPatch.Region.GetIndex()[1], 0);
+
+  QImage targetImage = Helpers::GetQImage<FloatVectorImageType>(this->Image, this->MaskImage, targetPatch.Region);
+  targetImage = FitToGraphicsView(targetImage, gfxTarget);
+  this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
 
   std::stringstream ssTarget;
   ssTarget << "(" << targetPatch.Region.GetIndex()[0] << ", " << targetPatch.Region.GetIndex()[1] << ")";
   this->lblTargetCorner->setText(ssTarget.str().c_str());
   
   // Source
-  Patch sourcePatch;
-  bool validSourcePatch = this->Inpainting.GetUsedSourcePatch(this->CurrentUsedPatchDisplayed, sourcePatch);
-  if(validSourcePatch)
-    std::cout << "Displaying used source patch " << this->CurrentUsedPatchDisplayed << " : " << sourcePatch.Region << std::endl;
-    {
-    this->SourcePatch->SetDimensions(patchSize, patchSize, 1);
-    Helpers::BlankAndOutlineImage(this->SourcePatch, this->Green);
-    this->SourcePatchSlice->SetPosition(sourcePatch.Region.GetIndex()[0], sourcePatch.Region.GetIndex()[1], 0);
-    }
+  Patch sourcePatch = patchPair.SourcePatch;
+  
+  //std::cout << "Displaying used source patch " << this->CurrentUsedPatchDisplayed << " : " << sourcePatch.Region << std::endl;
+  this->SourcePatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
+  Helpers::BlankAndOutlineImage(this->SourcePatchLayer.ImageData, this->Green);
+  this->SourcePatchLayer.ImageSlice->SetPosition(sourcePatch.Region.GetIndex()[0], sourcePatch.Region.GetIndex()[1], 0);
+
+  QImage sourceImage = Helpers::GetQImage<FloatVectorImageType>(this->Image, this->MaskImage, sourcePatch.Region);
+  sourceImage = FitToGraphicsView(sourceImage, gfxTarget);
+  this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
 
   std::stringstream ssSource;
   ssSource << "(" << sourcePatch.Region.GetIndex()[0] << ", " << sourcePatch.Region.GetIndex()[1] << ")";
   this->lblSourceCorner->setText(ssSource.str().c_str());
 
   // Iteration display
-  if(validSourcePatch && validTargetPatch)
-    {
-    std::stringstream ss;
-    ss << this->CurrentUsedPatchDisplayed;
-    this->lblCurrentUsedPatches->setText(ss.str().c_str());
-    }
 
+  std::stringstream ss;
+  ss << this->CurrentUsedPatchDisplayed;
+  this->lblCurrentUsedPatches->setText(ss.str().c_str());
+
+  float ssd = patchPair.AverageSSD;
+  
+  std::stringstream ssSSD;
+  ssSSD << ssd;
+  this->lblAverageSSD->setText(ssSSD.str().c_str());
+  
+  std::stringstream ssHistogramDifference;
+  ssHistogramDifference << patchPair.HistogramDifference;
+  this->lblHistogramDistance->setText(ssHistogramDifference.str().c_str());
+  
+  std::vector<PatchPair> potentialPatchPairs;
+  this->Inpainting.GetPotentialPatchPairs(this->CurrentUsedPatchDisplayed, potentialPatchPairs);
+  
+  std::stringstream ssPatchPairsFile;
+  ssPatchPairsFile << "Debug/PatchPairs_" << Helpers::ZeroPad(this->Inpainting.GetIteration(), 3) << ".txt";
+  OutputPairs(potentialPatchPairs, ssPatchPairsFile.str());
+  
+  this->PotentialPatchImage->SetRegions(this->Image->GetLargestPossibleRegion());
+  this->PotentialPatchImage->Allocate();
+  this->PotentialPatchImage->FillBuffer(0);
+  
+  for(unsigned int i = 0; i < potentialPatchPairs.size(); ++i)
+    {
+    Helpers::BlankAndOutlineRegion<UnsignedCharScalarImageType>(this->PotentialPatchImage, potentialPatchPairs[i].TargetPatch.Region, static_cast<unsigned char>(255));
+    }
+  
+  vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
+  Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>(this->PotentialPatchImage, temp);
+  Helpers::MakePixelsTransparent(temp, this->PotentialPatchesLayer.ImageData, 0);
+  
   Refresh();
+}
+
+void Form::OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename)
+{
+  std::ofstream fout(filename.c_str());
+  
+  for(unsigned int i = 0; i < patchPairs.size(); ++i)
+    {
+    fout << "Potential patch " << i << ": " << std::endl
+	 << "target index: " << patchPairs[i].TargetPatch.Region.GetIndex() << std::endl
+	 << "ssd score: " << patchPairs[i].AverageSSD << std::endl
+	 << "histogram score: " << patchPairs[i].HistogramDifference << std::endl;
+    }
+    
+  fout.close();
 }
 
 void Form::IterationCompleteSlot()
@@ -757,16 +622,17 @@ void Form::IterationCompleteSlot()
   Refresh();
 }
 
-void Form::on_chkDisplayUsedPatches_clicked()
+QImage Form::FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx)
 {
-  if(this->chkDisplayUsedPatches->isChecked())
+  // The fudge factors so that the scroll bars do not appear
+  
+  unsigned int fudge = 6;
+  if(gfx->height() < gfx->width())
     {
-    this->SourcePatchSlice->VisibilityOn();
-    this->TargetPatchSlice->VisibilityOn();
+    return qimage.scaledToHeight(gfx->height() - fudge);
     }
   else
     {
-    this->SourcePatchSlice->VisibilityOff();
-    this->TargetPatchSlice->VisibilityOff();
+    return qimage.scaledToWidth(gfx->width() - fudge);
     }
 }

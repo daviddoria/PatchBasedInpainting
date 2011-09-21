@@ -24,12 +24,15 @@ ADD_EXECUTABLE(CriminisiInpaintingInteractive
 CriminisiInpainting.cpp 
 CriminisiInpaintingDebugging.cpp 
 Form.cxx 
+FormGUIElements.cxx 
 Helpers.cpp 
 Interactive.cpp 
 InteractorStyleImageNoLevel.cxx
+Layer.cpp
 Patch.cpp
 ProgressThread.cpp
 SelfPatchCompare.cpp
+VectorLayer.cpp
 ${UISrcs} ${MOCSrcs})
 
 TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
