@@ -306,14 +306,14 @@ void Form::on_actionSaveResult_activated()
 
 void Form::StartProgressSlot()
 {
-  std::cout << "Form::StartProgressSlot()" << std::endl;
+  //std::cout << "Form::StartProgressSlot()" << std::endl;
   // Connected to the StartProgressSignal of the ProgressThread member
   this->progressBar->show();
 }
 
 void Form::StopProgressSlot()
 {
-  std::cout << "Form::StopProgressSlot()" << std::endl;
+  //std::cout << "Form::StopProgressSlot()" << std::endl;
   // When the ProgressThread emits the StopProgressSignal, we need to display the result of the segmentation
 
   this->progressBar->hide();
@@ -662,7 +662,7 @@ void Form::on_actionFlipImage_activated()
   if(this->Flipped)
     {
     SetCameraPosition1();
-    }
+    }   
   else
     {
     SetCameraPosition2();
@@ -690,12 +690,14 @@ void Form::on_btnPrevious_clicked()
 
 void Form::on_btnNext_clicked()
 {
-  if(this->CurrentUsedPatchDisplayed > static_cast<int>(this->Inpainting.GetIteration()))
+  std::cout << "CurrentUsedPatchDisplayed: " << this->CurrentUsedPatchDisplayed << " Inpainting iteration: " <<  static_cast<int>(this->Inpainting.GetIteration()) << std::endl;
+  
+  if(this->CurrentUsedPatchDisplayed < static_cast<int>(this->Inpainting.GetIteration()) - 1)
     {
-    return;
+    this->CurrentUsedPatchDisplayed++;
+    DisplayUsedPatches();
     }
-  this->CurrentUsedPatchDisplayed++;
-  DisplayUsedPatches();
+
 }
 
 void Form::DisplayUsedPatches()
@@ -730,11 +732,13 @@ void Form::DisplayUsedPatches()
     ss << this->CurrentUsedPatchDisplayed;
     this->lblCurrentUsedPatches->setText(ss.str().c_str());
     }
+
+  Refresh();
 }
 
 void Form::IterationCompleteSlot()
 {
-  std::cout << "IterationCompleteSlot()" << std::endl;
+  //std::cout << "IterationCompleteSlot()" << std::endl;
   
   this->CurrentUsedPatchDisplayed++;
   if(this->chkDisplayUsedPatches->isChecked())

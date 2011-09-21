@@ -17,7 +17,7 @@ void ProgressThread::StopInpainting()
 
 void ProgressThread::run()
 {
-  std::cout << "ProgressThread::run()" << std::endl;
+  //std::cout << "ProgressThread::run()" << std::endl;
   // When the thread is started, emit the signal to start the marquee progress bar
   emit StartProgressSignal();
 

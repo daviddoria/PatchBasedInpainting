@@ -45,7 +45,10 @@ typedef itk::Image<FloatVector2Type , 2> FloatVector2ImageType;
 
 // Histograms
 #include "itkImageToHistogramFilter.h"
-typedef itk::Statistics::ImageToHistogramFilter< FloatVectorImageType > ImageToHistogramFilterType;
-  
+//typedef itk::Statistics::ImageToHistogramFilter< FloatVectorImageType > VectorImageToHistogramFilterType;
+//typedef VectorImageToHistogramFilterType::HistogramType VectorHistogramType;
+
+typedef itk::Statistics::ImageToHistogramFilter< FloatScalarImageType> ImageToHistogramFilterType;
+typedef ImageToHistogramFilterType::HistogramType HistogramType;
 
 #endif

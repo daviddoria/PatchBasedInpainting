@@ -21,6 +21,7 @@
 
 // Custom
 #include "Mask.h"
+#include "Patch.h"
 #include "Types.h"
 
 // ITK
@@ -104,6 +105,9 @@ template <class T>
 float MinValue(typename T::Pointer image);
 
 template <class T>
+unsigned int argmin(typename std::vector<T>& vec);
+
+template <class T>
 itk::Index<2> MinValueLocation(typename T::Pointer image);
 
 template <typename TImage>
@@ -121,6 +125,33 @@ void BlankAndOutlineImage(vtkImageData*, const unsigned char color[3]);
 void KeepNonZeroVectors(vtkImageData* image, vtkPolyData* output);
 
 void ConvertNonZeroPixelsToVectors(FloatVector2ImageType::Pointer vectorImage, vtkPolyData* output);
+
+template<typename TImage>
+void SetRegionToConstant(typename TImage::Pointer image, const itk::ImageRegion<2>& region,const typename TImage::PixelType& constant);
+
+template<typename TImage>
+unsigned int CountNonZeroPixels(typename TImage::Pointer image);
+
+template<typename TImage>
+void WritePatch(typename TImage::Pointer image, const Patch& patch);
+
+std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
+
+std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
+
+std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region);
+
+void OutputHistogram(HistogramType::Pointer);
+
+float HistogramDifference(HistogramType::Pointer, HistogramType::Pointer);
+
+float NDHistogramDifference(HistogramType::Pointer, HistogramType::Pointer);
+
+HistogramType::Pointer ComputeNDHistogramOfRegionManual(FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
+
+HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region);
+
+std::string ZeroPad(const unsigned int number, const unsigned int rep);
 
 }// end namespace
 

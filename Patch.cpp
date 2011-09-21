@@ -3,6 +3,12 @@
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkVectorIndexSelectionCastImageFilter.h"
 
+Patch::Patch(const itk::ImageRegion<2>& region)
+{
+  this->Region = region;
+}
+
+#if 0
 Patch::Patch(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region)
 {
   this->Region = region;
@@ -51,3 +57,4 @@ Patch::Patch(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2
     }
   */
 }
+#endif

@@ -132,7 +132,8 @@ void CriminisiInpainting::ComputeSourcePatches()
 	{
 	if(this->CurrentMask->IsValid(region))
 	  {
-	  this->SourcePatches.push_back(Patch(this->OriginalImage, region));
+	  //this->SourcePatches.push_back(Patch(this->OriginalImage, region));
+	  this->SourcePatches.push_back(Patch(region));
 	  //DebugMessage("Added a source patch.");
 	  }
 	}
@@ -350,7 +351,7 @@ void CriminisiInpainting::Initialize()
 
 void CriminisiInpainting::Iterate()
 {
-  std::cout << "Starting iteration: " << this->Iteration << std::endl;
+  DebugMessage<unsigned int>("Starting iteration: ", this->Iteration);
 
   FindBoundary();
   Helpers::DebugWriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage.mha", this->DebugImages);
@@ -367,52 +368,37 @@ void CriminisiInpainting::Iterate()
   ComputeAllPriorities();
   DebugMessage("Computed priorities.");
 
-  itk::Index<2> pixelToFill = FindHighestPriority(this->PriorityImage);
-  DebugMessage<itk::Index<2> >("Highest priority found to be ", pixelToFill);
-  //std::cout << "Filling: " << pixelToFill << std::endl;
-
-  //this->DebugWritePatch(pixelToFill, "PatchToFill", this->Iteration); // this must be done here because it is before the filling
-
-  //itk::Index<2> bestMatchPixel = SelfPatchMatch<TImage, UnsignedCharImageType>(this->Image, this->Mask, pixelToFill, this->PatchRadius[0], iteration, this->Weights);
-  //std::cout << "Best match pixel: " << bestMatchPixel << std::endl;
-
-  itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
-  Patch targetPatch(this->CompareImage, targetRegion);
-  this->UsedTargetPatches.push_back(targetPatch);
-
-  //unsigned int bestMatchSourcePatchId = BestPatch<FloatVectorImageType>(this->CurrentImage, this->CurrentMask, this->SourcePatches, targetRegion);
-
-  DebugMessage("Finding best patch...");
-
-  SelfPatchCompare* patchCompare;
-  patchCompare = new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel());
-
-  //patchCompare->SetImage(this->CurrentImage);
-  patchCompare->SetImage(this->CompareImage);
-  patchCompare->SetMask(this->CurrentMask);
-  patchCompare->SetSourcePatches(this->SourcePatches);
-  patchCompare->SetTargetPatch(targetPatch);
-  unsigned int bestMatchSourcePatchId = patchCompare->FindBestPatch();
-  //DebugMessage<unsigned int>("Found best patch to be ", bestMatchSourcePatchId);
-  //std::cout << "Found best patch to be " << bestMatchSourcePatchId << std::endl;
-
-  //this->DebugWritePatch(this->SourcePatches[bestMatchSourcePatchId], "SourcePatch.png");
-  //this->DebugWritePatch(targetRegion, "TargetPatch.png");
-
-  // Copy the patch. This is the actual inpainting step.
-  Patch sourcePatch = this->SourcePatches[bestMatchSourcePatchId];
-  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, sourcePatch.Region, targetRegion);
-  this->UsedSourcePatches.push_back(sourcePatch);
+  Patch sourcePatch;
+  Patch targetPatch;
   
-  float confidence = ComputeConfidenceTerm(pixelToFill);
+  //FindBestPatchForHighestPriority(sourcePatch, targetPatch);
+  
+  FindBestPatchLookAhead(sourcePatch, targetPatch);
+
+  std::stringstream ssSource;
+  ssSource << "source_" << Helpers::ZeroPad(this->Iteration, 3) << ".mha";
+  Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, sourcePatch, ssSource.str());
+
+  std::stringstream ssTarget;
+  ssTarget << "target_" << Helpers::ZeroPad(this->Iteration, 3) << ".mha";
+  Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, targetPatch, ssTarget.str());
+  
+  this->UsedSourcePatches.push_back(sourcePatch);
+  this->UsedTargetPatches.push_back(targetPatch);
+  
+  // Copy the patch. This is the actual inpainting step.
+  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, sourcePatch.Region, targetPatch.Region);
+  
+  
+  float confidence = ComputeConfidenceTerm(Helpers::GetRegionCenter(targetPatch.Region));
   // Copy the new confidences into the confidence image
-  UpdateConfidences(targetRegion, confidence);
+  UpdateConfidences(targetPatch.Region, confidence);
 
   // The isophotes can be copied because they would only change slightly if recomputed.
-  Helpers::CopySelfPatchIntoValidRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, this->SourcePatches[bestMatchSourcePatchId].Region, targetRegion);
+  Helpers::CopySelfPatchIntoValidRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, sourcePatch.Region, targetPatch.Region);
 
   // Update the mask
-  this->UpdateMask(targetRegion);
+  this->UpdateMask(targetPatch.Region);
   DebugMessage("Updated mask.");
 
   // Sanity check everything
@@ -420,6 +406,140 @@ void CriminisiInpainting::Iterate()
 
   this->Iteration++;
 
+}
+
+void CriminisiInpainting::FindBestPatchForHighestPriority(Patch& sourcePatch, Patch& targetPatch)
+{
+  // This function returns 'sourcePatch' and 'targetPatch' by reference
+  
+  float highestPriority = 0;
+  itk::Index<2> pixelToFill = FindHighestValueOnBoundary(this->PriorityImage, highestPriority);
+  DebugMessage<itk::Index<2> >("Highest priority found to be ", pixelToFill);
+
+  itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
+  targetPatch.Region = targetRegion;
+  
+  DebugMessage("Finding best patch...");
+
+  SelfPatchCompare* patchCompare;
+  patchCompare = new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel());
+  patchCompare->SetImage(this->CompareImage);
+  patchCompare->SetMask(this->CurrentMask);
+  patchCompare->SetSourcePatches(this->SourcePatches);
+  patchCompare->SetTargetPatch(targetPatch);
+  
+  float distance = 0;
+  unsigned int bestMatchSourcePatchId = patchCompare->FindBestPatch(distance);
+  //DebugMessage<unsigned int>("Found best patch to be ", bestMatchSourcePatchId);
+  //std::cout << "Found best patch to be " << bestMatchSourcePatchId << std::endl;
+
+  //this->DebugWritePatch(this->SourcePatches[bestMatchSourcePatchId], "SourcePatch.png");
+  //this->DebugWritePatch(targetRegion, "TargetPatch.png");
+
+  sourcePatch = this->SourcePatches[bestMatchSourcePatchId];
+  
+}
+
+void CriminisiInpainting::FindBestPatchLookAhead(Patch& bestSourcePatch, Patch& bestTargetPatch)
+{
+  // This function returns 'sourcePatch' and 'targetPatch' by reference
+  
+  FloatScalarImageType::Pointer CurrentPriorityImage = FloatScalarImageType::New();
+  Helpers::DeepCopy<FloatScalarImageType>(this->PriorityImage, CurrentPriorityImage);
+  
+  
+  //unsigned int largestAttempts = 5;
+  //unsigned int numberOfAttempts = std::min(largestAttempts, Helpers::CountNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage));
+  
+  unsigned int numberOfAttempts = 5;
+  
+  std::vector<float> ssdScores;
+  std::vector<Patch> sourcePatches;
+  std::vector<Patch> targetPatches;
+  std::vector<float> histogramScores;
+  
+  for(unsigned int i = 0; i < numberOfAttempts; ++i)
+    {
+    float highestPriority = 0;
+    itk::Index<2> pixelToFill = FindHighestValueOnBoundary(CurrentPriorityImage, highestPriority);
+
+    // We want to do at least one comparison, but if we are near the end of the completion, there may not be more than 1 priority max
+    if(highestPriority < .0001 && i > 0)
+      {
+      std::cout << "Highest priority was only " << highestPriority << std::endl;
+      break;
+      }
+    //DebugMessage<itk::Index<2> >("Highest priority found to be ", pixelToFill);
+
+    itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
+    Patch targetPatch(targetRegion);
+    targetPatches.push_back(targetPatch);
+    
+    SelfPatchCompare* patchCompare;
+    patchCompare = new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel());
+    patchCompare->SetImage(this->CompareImage);
+    patchCompare->SetMask(this->CurrentMask);
+    patchCompare->SetSourcePatches(this->SourcePatches);
+    patchCompare->SetTargetPatch(targetPatch);
+    
+    float distance = 0;
+    unsigned int bestMatchSourcePatchId = patchCompare->FindBestPatch(distance);
+    ssdScores.push_back(distance);
+    
+    //DebugMessage<unsigned int>("Found best patch to be ", bestMatchSourcePatchId);
+    //std::cout << "Found best patch to be " << bestMatchSourcePatchId << std::endl;
+
+    //this->DebugWritePatch(this->SourcePatches[bestMatchSourcePatchId], "SourcePatch.png");
+    //this->DebugWritePatch(targetRegion, "TargetPatch.png");
+    Patch sourcePatch = this->SourcePatches[bestMatchSourcePatchId];
+    sourcePatches.push_back(sourcePatch);
+    
+    Helpers::SetRegionToConstant<FloatScalarImageType>(CurrentPriorityImage, Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]), 0.0f);
+    
+    std::cout << "Potential pair: Source: " << sourcePatch.Region << " Target: " << targetPatch.Region << std::endl;
+    /*
+    // N 1D histograms
+    std::vector<HistogramType::Pointer> sourceHistograms = Helpers::ComputeHistogramsOfRegionManual(this->CurrentOutputImage, sourcePatch.Region);
+    std::cout << "Source histograms: " << std::endl;
+    for(unsigned int i = 0; i < sourceHistograms.size(); ++i)
+      {
+      Helpers::OutputHistogram(sourceHistograms[i]);
+      }
+      
+    std::vector<HistogramType::Pointer> targetHistograms = Helpers::ComputeHistogramsOfMaskedRegion(this->CurrentOutputImage, this->CurrentMask, targetPatch.Region);
+    std::cout << "Target histograms: " << std::endl;
+    for(unsigned int i = 0; i < targetHistograms.size(); ++i)
+      {
+      Helpers::OutputHistogram(targetHistograms[i]);
+      }
+
+    float totalDifference = 0;
+    for(unsigned int i = 0; i < targetHistograms.size(); ++i)
+      {
+      totalDifference += Helpers::HistogramDifference(sourceHistograms[i], targetHistograms[i]);
+      }
+    histogramScores.push_back(totalDifference);
+    std::cout << "Histogram difference: " << totalDifference << std::endl;
+    */
+
+    HistogramType::Pointer sourceHistogram = Helpers::ComputeNDHistogramOfRegionManual(this->CurrentOutputImage, sourcePatch.Region);
+    HistogramType::Pointer targetHistogram = Helpers::ComputeNDHistogramOfMaskedRegionManual(this->CurrentOutputImage, this->CurrentMask, targetPatch.Region);
+    float histogramDifference = Helpers::NDHistogramDifference(sourceHistogram, targetHistogram);
+    histogramScores.push_back(histogramDifference);
+    }
+  
+  std::cout << "Scores: " << std::endl;
+  for(unsigned int i = 0; i < ssdScores.size(); ++i)
+    {
+    std::cout << i << ": " << ssdScores[i] << std::endl;
+    }
+  
+  //unsigned int bestAttempt = Helpers::argmin(ssdScores);
+  unsigned int bestAttempt = Helpers::argmin(histogramScores);
+  std::cout << "Best attempt was " << bestAttempt << std::endl;
+  
+  bestSourcePatch = sourcePatches[bestAttempt];
+  bestTargetPatch = targetPatches[bestAttempt];
 }
 
 void CriminisiInpainting::Inpaint()
@@ -786,8 +906,9 @@ void CriminisiInpainting::ComputeBoundaryNormals()
   }
 }
 
-itk::Index<2> CriminisiInpainting::FindHighestPriority(FloatScalarImageType::Pointer priorityImage)
+itk::Index<2> CriminisiInpainting::FindHighestValueOnBoundary(FloatScalarImageType::Pointer image, float& maxPriority)
 {
+  // Return the highest priority pixel. Return the value of that priority by reference.
   try
   {
     // We would rather explicity find the maximum on the boundary
@@ -802,7 +923,7 @@ itk::Index<2> CriminisiInpainting::FindHighestPriority(FloatScalarImageType::Poi
     
     return imageCalculatorFilter->GetIndexOfMaximum();
     */
-    float maxPriority = 0; // priorities are non-negative, so anything better than 0 will win
+    maxPriority = 0; // priorities are non-negative, so anything better than 0 will win
     itk::Index<2> locationOfMaxPriority;
     itk::ImageRegionConstIteratorWithIndex<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
 
@@ -810,9 +931,9 @@ itk::Index<2> CriminisiInpainting::FindHighestPriority(FloatScalarImageType::Poi
       {
       if(boundaryIterator.Get())
 	{
-	if(this->PriorityImage->GetPixel(boundaryIterator.GetIndex()) > maxPriority)
+	if(image->GetPixel(boundaryIterator.GetIndex()) > maxPriority)
 	  {
-	  maxPriority = this->PriorityImage->GetPixel(boundaryIterator.GetIndex());
+	  maxPriority = image->GetPixel(boundaryIterator.GetIndex());
 	  locationOfMaxPriority = boundaryIterator.GetIndex();
 	  }
 	}

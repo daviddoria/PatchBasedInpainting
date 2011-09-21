@@ -262,7 +262,7 @@ float SelfPatchCompare::PatchDifferenceExternal(const Patch& sourcePatch)
         }
     
       
-      difference = PixelDifference(sourcePixel, targetPixel); // This call seems to make it very slow?
+      difference = PixelDifference(sourcePixel, targetPixel);
       //difference = NonVirtualPixelDifference(sourcePixel, targetPixel); // This call seems to make it very slow?
       //difference = (sourcePixel-targetPixel).GetSquaredNorm(); // horribly slow
       
@@ -276,7 +276,8 @@ float SelfPatchCompare::PatchDifferenceExternal(const Patch& sourcePatch)
 // 		      (sourcePixel[i] - targetPixel[i]);
 // 	}
 
-      totalDifference += difference;
+      //totalDifference += difference;
+      totalDifference += difference*difference;
       }
 
     float averageDifference = totalDifference/static_cast<float>(this->ValidOffsets.size());
@@ -348,11 +349,13 @@ float SelfPatchCompare::PatchDifferenceBoundary(const Patch& sourcePatch)
 }
 
 
-unsigned int SelfPatchCompare::FindBestPatch()
+unsigned int SelfPatchCompare::FindBestPatch(float& minDistance)
 {
+  // This function returns the Id of the best source patch, as well as returns the minDistance by reference
+  
   try
   {
-    float minDistance = std::numeric_limits<float>::infinity();
+    minDistance = std::numeric_limits<float>::infinity();
     unsigned int bestMatchId = 0;
     if(!this->Image->GetLargestPossibleRegion().IsInside(this->TargetPatch.Region))
       {  

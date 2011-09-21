@@ -101,6 +101,12 @@ public:
   
 private:
 
+  // This is the original Criminisi idea of filling the highest priority first
+  void FindBestPatchForHighestPriority(Patch& sourcePatch, Patch& targetPatch);
+  
+  // This is a new idea to try to fill several patches and return the best pair
+  void FindBestPatchLookAhead(Patch& sourcePatch, Patch& targetPatch);
+  
   // This is the suggested value in Criminisi's paper, but it does not change anything at all, as we find argmax of the priorities, and alpha is a simple scaling factor of the priorities.
   static const float Alpha = 255;
   
@@ -196,8 +202,8 @@ private:
   // Compute the Data at a pixel.
   float ComputeDataTerm(const itk::Index<2>& queryPixel);
 
-  // Find the highest priority patch to be filled.
-  itk::Index<2> FindHighestPriority(FloatScalarImageType::Pointer priorityImage);
+  // Return the highest priority pixel. Return the value of that priority by reference.
+  itk::Index<2> FindHighestValueOnBoundary(FloatScalarImageType::Pointer priorityImage, float& maxPriority);
 
   // Update the mask so that the pixels in the region that was filled are marked as filled.
   void UpdateMask(const itk::ImageRegion<2> region);

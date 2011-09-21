@@ -492,4 +492,68 @@ void ITKScalarImageToScaledVTKImage(typename TImage::Pointer image, vtkImageData
   outputImage->Modified();
 }
 
+template<typename TImage>
+void SetRegionToConstant(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value)
+{
+  typename itk::ImageRegionIterator<TImage> imageIterator(image, region);
+
+  while(!imageIterator.IsAtEnd())
+    {
+    imageIterator.Set(value);
+
+    ++imageIterator;
+    }
+}
+
+template<typename TImage>
+unsigned int CountNonZeroPixels(typename TImage::Pointer image)
+{
+  typename itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
+
+  unsigned int nonZeroPixels = 0;
+  while(!imageIterator.IsAtEnd())
+    {
+    if(imageIterator.Get())
+      {
+      nonZeroPixels++;
+      }
+
+    ++imageIterator;
+    }
+  return nonZeroPixels;
+}
+
+template <class T>
+unsigned int argmin(typename std::vector<T>& vec)
+{
+  T minValue = std::numeric_limits<T>::max();
+  unsigned int minLocation = 0;
+  for(unsigned int i = 0; i < vec.size(); ++i)
+    {
+    if(vec[i] < minValue)
+      {
+      minValue = vec[i];
+      minLocation = i;
+      }
+    }
+    
+  return minLocation;
+}
+
+template<typename TImage>
+void WritePatch(typename TImage::Pointer image, const Patch& patch, const std::string& filename)
+{
+  typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
+
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  regionOfInterestImageFilter->SetRegionOfInterest(patch.Region);
+  regionOfInterestImageFilter->SetInput(image);
+  regionOfInterestImageFilter->Update();
+  
+  typename itk::ImageFileWriter<TImage>::Pointer writer = itk::ImageFileWriter<TImage>::New();
+  writer->SetFileName(filename);
+  writer->SetInput(regionOfInterestImageFilter->GetOutput());
+  writer->Update();
+}
+
 }// end namespace

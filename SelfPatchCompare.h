@@ -44,7 +44,8 @@ class SelfPatchCompare
 public:
   SelfPatchCompare(const unsigned int);
   
-  unsigned int FindBestPatch();
+  // This function returns the Id of the best source patch, as well as returns the minDistance by reference
+  unsigned int FindBestPatch(float& minDistance);
 
   void SetImage(const FloatVectorImageType::Pointer);
 
