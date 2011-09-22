@@ -1,6 +1,6 @@
 
 template <typename T>
-void Form::DebugMessage(const std::string& message, T value)
+void Form::DebugMessage(const std::string& message, const T value)
 {
   if(this->DebugMessages)
     {

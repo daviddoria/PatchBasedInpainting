@@ -22,7 +22,8 @@ INCLUDE(${ITK_USE_FILE})
 # Interactive
 ADD_EXECUTABLE(CriminisiInpaintingInteractive
 CriminisiInpainting.cpp 
-CriminisiInpaintingDebugging.cpp 
+CriminisiInpaintingDebugging.cpp
+CriminisiInpaintingInterface.cpp
 Form.cxx 
 FormGUIElements.cxx 
 Helpers.cpp 

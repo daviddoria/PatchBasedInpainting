@@ -75,7 +75,7 @@ public slots:
   void on_actionOpenMaskInverted_activated();
   void on_actionSaveResult_activated();
   
-  void on_chkDisplayUsedPatches_clicked();
+  void on_chkHighlightUsedPatches_clicked();
   
   void on_chkDebugImages_clicked();
   void on_chkDebugMessages_clicked();
@@ -92,6 +92,8 @@ public slots:
   void on_chkPotentialPatches_clicked();
   
   void on_btnInpaint_clicked();
+  void on_btnStep_clicked();
+  void on_btnInitialize_clicked();
   void on_btnStop_clicked();
   void on_btnReset_clicked();
   
@@ -115,6 +117,10 @@ protected:
   void DisplayConfidence();
   void DisplayPriority();
   void DisplayData();
+
+  void Initialize();
+  void IterationComplete();
+  void ChangeDisplayedIteration();
   
   // The interactor to allow us to zoom and pan the image
   vtkSmartPointer<InteractorStyleImageNoLevel> InteractorStyle;
@@ -162,8 +168,8 @@ protected:
   VectorLayer BoundaryNormalsLayer;
   
   // The data that the user loads
-  FloatVectorImageType::Pointer Image;
-  Mask::Pointer MaskImage;
+  FloatVectorImageType::Pointer UserImage;
+  Mask::Pointer UserMaskImage;
   
   CriminisiInpainting Inpainting;
   
@@ -177,13 +183,16 @@ protected:
 
   // Output the message and value only if the Debug member is set to true
   template <typename T>
-  void DebugMessage(const std::string& message, T value);
+  void DebugMessage(const std::string& message, const T value);
 
   // This is not unsigned because we start at -1, indicating there is no patch to display
   int CurrentUsedPatchDisplayed;
   
   void DisplayUsedPatches();
+  void DisplayUsedPatchInformation();
   
+  void HighlightUsedPatches();
+  void DrawPotentialPatches();
   
   static const unsigned char Green[3];
   static const unsigned char Red[3];
@@ -194,6 +203,11 @@ protected:
   QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx);
   
   void OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename);
+  
+  // These are the state of the completion at every step. The index represents the image AFTER the index'th step.
+  // That is, the image at index 0 is the image after 0 iterations (the original image). At index 1 is the image after the first target region has been filled, etc.
+  std::vector<FloatVectorImageType::Pointer> IntermediateImages;
+  std::vector<Mask::Pointer> IntermediateMaskImages;
 };
 
 #include "Form.hxx"

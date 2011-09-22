@@ -474,3 +474,124 @@ void ComputeDifferenceImage(const TImage* image, const TMask* mask,
     exit(-1);
   }
 }
+
+
+float CriminisiInpainting::HistogramDifference1D(const Patch& patch1, const Patch& patch2)
+{
+  // N 1D histograms
+  std::vector<HistogramType::Pointer> sourceHistograms = Helpers::ComputeHistogramsOfRegionManual(this->CurrentOutputImage, patch1.Region);
+  std::cout << "Source histograms: " << std::endl;
+  for(unsigned int i = 0; i < sourceHistograms.size(); ++i)
+    {
+    Helpers::OutputHistogram(sourceHistograms[i]);
+    }
+
+  std::vector<HistogramType::Pointer> targetHistograms = Helpers::ComputeHistogramsOfMaskedRegion(this->CurrentOutputImage, this->CurrentMask, patch2.Region);
+  std::cout << "Target histograms: " << std::endl;
+  for(unsigned int i = 0; i < targetHistograms.size(); ++i)
+    {
+    Helpers::OutputHistogram(targetHistograms[i]);
+    }
+
+  float totalDifference = 0;
+  for(unsigned int i = 0; i < targetHistograms.size(); ++i)
+    {
+    totalDifference += Helpers::HistogramDifference(sourceHistograms[i], targetHistograms[i]);
+    }
+
+  std::cout << "Histogram difference: " << totalDifference << std::endl;
+  return totalDifference;
+}
+
+
+void CriminisiInpainting::UpdateMask(const itk::ImageRegion<2> region)
+{
+  try
+  {
+    /*
+    // Create a black patch
+    Mask::Pointer blackPatch = Mask::New();
+    //Helpers::CreateBlankPatch<UnsignedCharScalarImageType>(blackPatch, this->PatchRadius[0]);
+    Helpers::CreateConstantPatch<Mask>(blackPatch, this->CurrentMask->GetValidValue(), this->PatchRadius[0]);
+
+    // Paste it into the mask
+    typedef itk::PasteImageFilter <Mask, Mask> PasteImageFilterType;
+    PasteImageFilterType::Pointer pasteFilter = PasteImageFilterType::New();
+    //pasteFilter->SetInput(0, this->CurrentMask);
+    //pasteFilter->SetInput(1, blackPatch);
+    pasteFilter->SetSourceImage(blackPatch);
+    pasteFilter->SetDestinationImage(this->CurrentMask);
+    pasteFilter->SetSourceRegion(blackPatch->GetLargestPossibleRegion());
+    pasteFilter->SetDestinationIndex(region.GetIndex());
+    pasteFilter->Update();
+
+    // Not sure how Mask::DeepCopyFrom would work on the output of a filter, so do this manually.
+    Helpers::DeepCopy<Mask>(pasteFilter->GetOutput(), this->CurrentMask);
+    this->CurrentMask->SetHoleValue(this->OriginalMask->GetHoleValue());
+    this->CurrentMask->SetValidValue(this->OriginalMask->GetValidValue());
+    */
+
+    itk::ImageRegionIterator<Mask> maskIterator(this->CurrentMask, region);
+
+    while(!maskIterator.IsAtEnd())
+      {
+      if(this->CurrentMask->IsHole(maskIterator.GetIndex()))
+        {
+        maskIterator.Set(this->CurrentMask->GetValidValue());
+        }
+
+      ++maskIterator;
+      }
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in UpdateMask!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}
+
+
+itk::Index<2> CriminisiInpainting::FindHighestValueOnBoundary(FloatScalarImageType::Pointer image, float& maxPriority)
+{
+  // Return the highest priority pixel. Return the value of that priority by reference.
+  try
+  {
+    // We would rather explicity find the maximum on the boundary
+    /*
+    typedef itk::MinimumMaximumImageCalculator <FloatScalarImageType> ImageCalculatorFilterType;
+    ImageCalculatorFilterType::Pointer imageCalculatorFilter = ImageCalculatorFilterType::New ();
+    imageCalculatorFilter->SetImage(priorityImage);
+    imageCalculatorFilter->Compute();
+
+    DebugMessage<float>("Highest priority: ", imageCalculatorFilter->GetMaximum());
+    DebugMessage<float>("Lowest priority: ", imageCalculatorFilter->GetMinimum());
+
+    return imageCalculatorFilter->GetIndexOfMaximum();
+    */
+    maxPriority = 0; // priorities are non-negative, so anything better than 0 will win
+    itk::Index<2> locationOfMaxPriority;
+    itk::ImageRegionConstIteratorWithIndex<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
+
+    while(!boundaryIterator.IsAtEnd())
+      {
+      if(boundaryIterator.Get())
+        {
+        if(image->GetPixel(boundaryIterator.GetIndex()) > maxPriority)
+          {
+          maxPriority = image->GetPixel(boundaryIterator.GetIndex());
+          locationOfMaxPriority = boundaryIterator.GetIndex();
+          }
+        }
+      ++boundaryIterator;
+      }
+    DebugMessage<float>("Highest priority: ", maxPriority);
+    return locationOfMaxPriority;
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in FindHighestPriority!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}

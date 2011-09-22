@@ -5,63 +5,60 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 
-void Form::on_chkDisplayUsedPatches_clicked()
+void Form::on_chkHighlightUsedPatches_clicked()
 {
   Refresh();
 }
 
-
 void Form::on_chkImage_clicked()
 {
-  RefreshSlot();
+  Refresh();
 }
 
 void Form::on_chkMask_clicked()
 {
-  RefreshSlot();
+  Refresh();
 }
 
 void Form::on_chkPriority_clicked()
 {
-  RefreshSlot();
+  Refresh();
 }
 
 void Form::on_chkConfidence_clicked()
 {
-  RefreshSlot();
+  Refresh();
 }
 
 void Form::on_chkConfidenceMap_clicked()
 {
-  RefreshSlot();
+  Refresh();
 }
 
 void Form::on_chkBoundary_clicked()
 {
-  RefreshSlot();
+  Refresh();
 }
 
 void Form::on_chkIsophotes_clicked()
 {
-  RefreshSlot();
+  Refresh();
 }
 
 void Form::on_chkData_clicked()
 {
-  RefreshSlot();
+  Refresh();
 }
 
 void Form::on_chkBoundaryNormals_clicked()
 {
-  RefreshSlot();
+  Refresh();
 }
 
 void Form::on_chkPotentialPatches_clicked()
 {
-  RefreshSlot();
+  Refresh();
 }
-
-
 
 void Form::SetCameraPosition1()
 {
@@ -86,7 +83,6 @@ void Form::SetCameraPosition(double leftToRight[3], double bottomToTop[3])
   this->Renderer->ResetCameraClippingRange();
   this->qvtkWidget->GetRenderWindow()->Render();
 }
-
 
 void Form::on_actionFlipImage_activated()
 {

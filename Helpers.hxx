@@ -35,7 +35,7 @@ namespace Helpers
 
 /** Copy the input to the output*/
 template<typename TImage>
-void DeepCopy(typename TImage::Pointer input, typename TImage::Pointer output)
+void DeepCopy(const typename TImage::Pointer input, typename TImage::Pointer output)
 {
   output->SetRegions(input->GetLargestPossibleRegion());
   output->Allocate();
@@ -53,7 +53,7 @@ void DeepCopy(typename TImage::Pointer input, typename TImage::Pointer output)
 
 /** Copy the input to the output*/
 template<typename TImage>
-void DeepCopyVectorImage(typename TImage::Pointer input, typename TImage::Pointer output)
+void DeepCopyVectorImage(const typename TImage::Pointer input, typename TImage::Pointer output)
 {
   output->SetRegions(input->GetLargestPossibleRegion());
   output->SetNumberOfComponentsPerPixel(input->GetNumberOfComponentsPerPixel());
@@ -108,7 +108,7 @@ void ReplaceValue(typename T::Pointer image, const typename T::PixelType queryVa
 }
 
 template<typename T>
-void WriteImage(typename T::Pointer image, std::string filename)
+void WriteImage(const typename T::Pointer image, const std::string& filename)
 {
   // This is a convenience function so that images can be written in 1 line instead of 4.
   typename itk::ImageFileWriter<T>::Pointer writer = itk::ImageFileWriter<T>::New();
@@ -119,7 +119,7 @@ void WriteImage(typename T::Pointer image, std::string filename)
 
 
 template<typename T>
-void WriteRGBImage(typename T::Pointer input, std::string filename)
+void WriteRGBImage(const typename T::Pointer input, const std::string& filename)
 {
   typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> RGBImageType;
 
@@ -156,7 +156,7 @@ void CreateBlankPatch(typename T::Pointer patch, const unsigned int radius)
 }
 
 template <class T>
-void CreateConstantPatch(typename T::Pointer patch, typename T::PixelType value, unsigned int radius)
+void CreateConstantPatch(typename T::Pointer patch, const typename T::PixelType value, const unsigned int radius)
 {
   try
   {
@@ -189,7 +189,7 @@ void CreateConstantPatch(typename T::Pointer patch, typename T::PixelType value,
 }
 
 template <class T>
-float MaxValue(typename T::Pointer image)
+float MaxValue(const typename T::Pointer image)
 {
   typedef typename itk::MinimumMaximumImageCalculator<T>
           ImageCalculatorFilterType;
@@ -203,7 +203,7 @@ float MaxValue(typename T::Pointer image)
 }
 
 template <class T>
-float MaxValueLocation(typename T::Pointer image)
+float MaxValueLocation(const typename T::Pointer image)
 {
   typedef typename itk::MinimumMaximumImageCalculator<T>
           ImageCalculatorFilterType;
@@ -217,7 +217,7 @@ float MaxValueLocation(typename T::Pointer image)
 }
 
 template <class T>
-float MinValue(typename T::Pointer image)
+float MinValue(const typename T::Pointer image)
 {
   typedef typename itk::MinimumMaximumImageCalculator<T>
           ImageCalculatorFilterType;
@@ -231,7 +231,7 @@ float MinValue(typename T::Pointer image)
 }
 
 template <class T>
-itk::Index<2> MinValueLocation(typename T::Pointer image)
+itk::Index<2> MinValueLocation(const typename T::Pointer image)
 {
   typedef typename itk::MinimumMaximumImageCalculator<T>
           ImageCalculatorFilterType;
@@ -245,7 +245,7 @@ itk::Index<2> MinValueLocation(typename T::Pointer image)
 }
 
 template <class T>
-void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, Mask::Pointer mask, itk::Index<2> position)
+void CopyPatchIntoImage(const typename T::Pointer patch, typename T::Pointer image, const Mask::Pointer mask, const itk::Index<2>& position)
 {
   try
   {
@@ -292,7 +292,7 @@ void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, Ma
 
 template <class T>
 void CopySelfPatchIntoValidRegion(typename T::Pointer image, const Mask::Pointer mask,
-                                  itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> destinationRegion)
+                                  const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput)
 {
   try
   {
@@ -300,6 +300,10 @@ void CopySelfPatchIntoValidRegion(typename T::Pointer image, const Mask::Pointer
     assert(mask->IsValid(sourceRegion));
     assert(sourceRegion.GetSize() == destinationRegion.GetSize());
 
+    // We pass the regions by const reference, so copy them here before they are mutated
+    itk::ImageRegion<2> sourceRegion = sourceRegionInput;
+    itk::ImageRegion<2> destinationRegion = destinationRegionInput;
+    
     // Move the source region to the desintation region
     itk::Offset<2> offset = destinationRegion.GetIndex() - sourceRegion.GetIndex();
     sourceRegion.SetIndex(sourceRegion.GetIndex() + offset);
@@ -336,40 +340,41 @@ void CopySelfPatchIntoValidRegion(typename T::Pointer image, const Mask::Pointer
 }
 
 template <class T>
-void CopyPatchIntoImage(typename T::Pointer patch, typename T::Pointer image, itk::Index<2> position)
+void CopyPatchIntoImage(const typename T::Pointer patch, typename T::Pointer image, const itk::Index<2>& centerPixel)
 {
   try
   {
-  // This function copies 'patch' into 'image' centered at 'position'.
+    // This function copies 'patch' into 'image' centered at 'position'.
 
-  // The PasteFilter expects the lower left corner of the destination position, but we have passed the center pixel.
-  position[0] -= patch->GetLargestPossibleRegion().GetSize()[0]/2;
-  position[1] -= patch->GetLargestPossibleRegion().GetSize()[1]/2;
+    // The PasteFilter expects the lower left corner of the destination position, but we have passed the center pixel.
+    itk::Index<2> cornerPixel;
+    cornerPixel[0] = centerPixel[0] - patch->GetLargestPossibleRegion().GetSize()[0]/2;
+    cornerPixel[1] = centerPixel[1] - patch->GetLargestPossibleRegion().GetSize()[1]/2;
 
-  typedef itk::PasteImageFilter <T, T> PasteImageFilterType;
+    typedef itk::PasteImageFilter <T, T> PasteImageFilterType;
 
-  typename PasteImageFilterType::Pointer pasteFilter = PasteImageFilterType::New();
-  pasteFilter->SetInput(0, image);
-  pasteFilter->SetInput(1, patch);
-  pasteFilter->SetSourceRegion(patch->GetLargestPossibleRegion());
-  pasteFilter->SetDestinationIndex(position);
-  pasteFilter->InPlaceOn();
-  pasteFilter->Update();
+    typename PasteImageFilterType::Pointer pasteFilter = PasteImageFilterType::New();
+    pasteFilter->SetInput(0, image);
+    pasteFilter->SetInput(1, patch);
+    pasteFilter->SetSourceRegion(patch->GetLargestPossibleRegion());
+    pasteFilter->SetDestinationIndex(cornerPixel);
+    pasteFilter->InPlaceOn();
+    pasteFilter->Update();
 
-  image->Graft(pasteFilter->GetOutput());
+    image->Graft(pasteFilter->GetOutput());
 
   }
   catch( itk::ExceptionObject & err )
   {
-    std::cerr << "ExceptionObject caught in CopyPatchIntoImage(patch, image, position)!" << std::endl;
+    std::cerr << "ExceptionObject caught in CopyPatchIntoImage(patch, image, centerPixel)!" << std::endl;
     std::cerr << err << std::endl;
     exit(-1);
   }
 }
 
 template <class T>
-void CopyPatch(typename T::Pointer sourceImage, typename T::Pointer targetImage,
-               itk::Index<2> sourcePosition, itk::Index<2> targetPosition, unsigned int radius)
+void CopyPatch(const typename T::Pointer sourceImage, typename T::Pointer targetImage,
+               const itk::Index<2>& sourcePosition, const itk::Index<2>& targetPosition, const unsigned int radius)
 {
   try
   {
@@ -393,7 +398,7 @@ void CopyPatch(typename T::Pointer sourceImage, typename T::Pointer targetImage,
 
 
 template <class T>
-void WriteScaledScalarImage(typename T::Pointer image, std::string filename)
+void WriteScaledScalarImage(const typename T::Pointer image, const std::string& filename)
 {
   if(T::PixelType::Dimension > 1)
     {
@@ -417,7 +422,7 @@ void WriteScaledScalarImage(typename T::Pointer image, std::string filename)
 
 
 template <typename TImage>
-void ColorToGrayscale(typename TImage::Pointer colorImage, UnsignedCharScalarImageType::Pointer grayscaleImage)
+void ColorToGrayscale(const typename TImage::Pointer colorImage, UnsignedCharScalarImageType::Pointer grayscaleImage)
 {
   grayscaleImage->SetRegions(colorImage->GetLargestPossibleRegion());
   grayscaleImage->Allocate();
@@ -440,7 +445,7 @@ void ColorToGrayscale(typename TImage::Pointer colorImage, UnsignedCharScalarIma
 }
 
 template <typename TImageType>
-void DebugWriteSequentialImage(typename TImageType::Pointer image, const std::string& filePrefix, const unsigned int iteration)
+void DebugWriteSequentialImage(const typename TImageType::Pointer image, const std::string& filePrefix, const unsigned int iteration)
 {
   std::stringstream padded;
   padded << "Debug/" << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mha";
@@ -448,7 +453,7 @@ void DebugWriteSequentialImage(typename TImageType::Pointer image, const std::st
 }
 
 template <typename TImageType>
-void DebugWriteImageConditional(typename TImageType::Pointer image, const std::string& fileName, const bool condition)
+void DebugWriteImageConditional(const typename TImageType::Pointer image, const std::string& fileName, const bool condition)
 {
   if(condition)
     {
@@ -458,7 +463,7 @@ void DebugWriteImageConditional(typename TImageType::Pointer image, const std::s
 
 
 template <typename TImage>
-void ITKScalarImageToScaledVTKImage(typename TImage::Pointer image, vtkImageData* outputImage)
+void ITKScalarImageToScaledVTKImage(const typename TImage::Pointer image, vtkImageData* outputImage)
 {
   //std::cout << "ITKScalarImagetoVTKImage()" << std::endl;
   
@@ -509,7 +514,7 @@ void SetRegionToConstant(typename TImage::Pointer image, const itk::ImageRegion<
 }
 
 template<typename TImage>
-unsigned int CountNonZeroPixels(typename TImage::Pointer image)
+unsigned int CountNonZeroPixels(const typename TImage::Pointer image)
 {
   typename itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
 
@@ -527,7 +532,7 @@ unsigned int CountNonZeroPixels(typename TImage::Pointer image)
 }
 
 template <class T>
-unsigned int argmin(typename std::vector<T>& vec)
+unsigned int argmin(const typename std::vector<T>& vec)
 {
   T minValue = std::numeric_limits<T>::max();
   unsigned int minLocation = 0;
@@ -544,20 +549,75 @@ unsigned int argmin(typename std::vector<T>& vec)
 }
 
 template<typename TImage>
-void WritePatch(typename TImage::Pointer image, const Patch& patch, const std::string& filename)
+void WriteRegion(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename)
 {
   typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
 
   typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
-  regionOfInterestImageFilter->SetRegionOfInterest(patch.Region);
+  regionOfInterestImageFilter->SetRegionOfInterest(region);
   regionOfInterestImageFilter->SetInput(image);
   regionOfInterestImageFilter->Update();
-  
+
   typename itk::ImageFileWriter<TImage>::Pointer writer = itk::ImageFileWriter<TImage>::New();
   writer->SetFileName(filename);
   writer->SetInput(regionOfInterestImageFilter->GetOutput());
   writer->Update();
 }
+
+template<typename TImage>
+void WriteMaskedPatch(const typename TImage::Pointer image, const Mask::Pointer mask, const Patch& patch, const std::string& filename)
+{
+  WriteMaskedRegion<TImage>(image, mask, patch.Region, filename);
+}
+
+template<typename TImage>
+void WriteMaskedRegion(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, const std::string& filename)
+{
+  typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  regionOfInterestImageFilter->SetRegionOfInterest(region);
+  regionOfInterestImageFilter->SetInput(image);
+  regionOfInterestImageFilter->Update();
+
+  typedef itk::RegionOfInterestImageFilter<Mask, Mask> RegionOfInterestMaskFilterType;
+  typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter = RegionOfInterestMaskFilterType::New();
+  regionOfInterestMaskFilter->SetRegionOfInterest(region);
+  regionOfInterestMaskFilter->SetInput(mask);
+  regionOfInterestMaskFilter->Update();
+
+  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+
+  typename TImage::PixelType greenPixel(3);
+  greenPixel[0] = 0;
+  greenPixel[1] = 255;
+  greenPixel[0] = 0;
+  
+  while(!imageIterator.IsAtEnd())
+    {
+    typename TImage::PixelType pixel = imageIterator.Get();
+
+    itk::Index<2> index = imageIterator.GetIndex();
+
+    if(regionOfInterestMaskFilter->GetOutput()->IsHole(imageIterator.GetIndex()))
+      {
+      regionOfInterestImageFilter->GetOutput()->SetPixel(index, greenPixel);
+      }
+
+    ++imageIterator;
+    }
+
+  typename itk::ImageFileWriter<TImage>::Pointer writer = itk::ImageFileWriter<TImage>::New();
+  writer->SetFileName(filename);
+  writer->SetInput(regionOfInterestImageFilter->GetOutput());
+  writer->Update();
+}
+
+template<typename TImage>
+void WritePatch(const typename TImage::Pointer image, const Patch& patch, const std::string& filename)
+{
+  WriteRegion<TImage>(image, patch.Region, filename);
+}
+
 
 template<typename TImage>
 void BlankAndOutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value)
@@ -600,17 +660,18 @@ void BlankAndOutlineRegion(typename TImage::Pointer image, const itk::ImageRegio
 
 }
 
-
+#if 0
 template <typename TImage>
 QImage GetQImage(typename TImage::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region)
 {
   QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888); // Should probably be Format_RGB888
-  itk::ImageRegionIterator<FloatVectorImageType> imageIterator(image, region);
+  itk::ImageRegionIterator<TImage> imageIterator(image, region);
 
   while(!imageIterator.IsAtEnd())
     {
-    FloatVectorImageType::PixelType pixel = imageIterator.Get();
-    
+    typename TImage::PixelType pixel = imageIterator.Get();
+
+    // Map the specified region of the image to the full QImage. That is, the region.GetIndex() should map to (0,0)
     itk::Index<2> index;
     index[0] = imageIterator.GetIndex()[0] - region.GetIndex()[0];
     index[1] = imageIterator.GetIndex()[1] - region.GetIndex()[1];
@@ -632,6 +693,49 @@ QImage GetQImage(typename TImage::Pointer image, Mask::Pointer mask, const itk::
   //return qimage; // The actual image region
   return qimage.mirrored(false, true); // The flipped image region
 }
+#endif
 
+template <typename TImage>
+QImage GetQImage(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region)
+{
+  QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888); // Should probably be Format_RGB888
+
+  typedef itk::RegionOfInterestImageFilter< TImage, TImage > RegionOfInterestImageFilterType;
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  regionOfInterestImageFilter->SetRegionOfInterest(region);
+  regionOfInterestImageFilter->SetInput(image);
+  regionOfInterestImageFilter->Update();
+
+  typedef itk::RegionOfInterestImageFilter< Mask, Mask> RegionOfInterestMaskFilterType;
+  typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter = RegionOfInterestMaskFilterType::New();
+  regionOfInterestMaskFilter->SetRegionOfInterest(region);
+  regionOfInterestMaskFilter->SetInput(mask);
+  regionOfInterestMaskFilter->Update();
+  
+  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+
+  while(!imageIterator.IsAtEnd())
+    {
+    typename TImage::PixelType pixel = imageIterator.Get();
+
+    itk::Index<2> index = imageIterator.GetIndex();
+
+    if(regionOfInterestMaskFilter->GetOutput()->IsHole(index))
+      {
+      QColor pixelColor(0, 255, 0);
+      qimage.setPixel(index[0], index[1], pixelColor.rgb());
+      }
+    else
+      {
+      QColor pixelColor(static_cast<int>(pixel[0]), static_cast<int>(pixel[1]), static_cast<int>(pixel[2]));
+      qimage.setPixel(index[0], index[1], pixelColor.rgb());
+      }
+
+    ++imageIterator;
+    }
+
+  //return qimage; // The actual image region
+  return qimage.mirrored(false, true); // The flipped image region
+}
 
 }// end namespace

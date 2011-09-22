@@ -80,6 +80,20 @@
            </layout>
           </item>
           <item>
+           <widget class="QPushButton" name="btnInitialize">
+            <property name="text">
+             <string>Initialize</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnStep">
+            <property name="text">
+             <string>Step</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="btnInpaint">
             <property name="text">
              <string>Inpaint</string>
@@ -217,7 +231,7 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2" stretch="9,1">
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
+         <widget class="QVTKWidget" name="qvtkWidget"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -231,9 +245,9 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="QCheckBox" name="chkDisplayUsedPatches">
+             <widget class="QCheckBox" name="chkHighlightUsedPatches">
               <property name="text">
-               <string>Show used patches</string>
+               <string>Highlight used patches</string>
               </property>
              </widget>
             </item>
@@ -288,7 +302,23 @@
          </layout>
         </item>
         <item>
-         <widget class="QGraphicsView" name="gfxTarget"/>
+         <widget class="QGraphicsView" name="gfxTarget">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="baseSize">
+           <size>
+            <width>50</width>
+            <height>50</height>
+           </size>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -309,7 +339,20 @@
          </layout>
         </item>
         <item>
-         <widget class="QGraphicsView" name="gfxSource"/>
+         <widget class="QGraphicsView" name="gfxSource">
+          <property name="baseSize">
+           <size>
+            <width>50</width>
+            <height>50</height>
+           </size>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">

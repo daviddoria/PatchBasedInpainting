@@ -46,10 +46,10 @@ public:
   void Inpaint();
   
   // Specify the image to inpaint.
-  void SetImage(FloatVectorImageType::Pointer image);
+  void SetImage(const FloatVectorImageType::Pointer image);
   
   // Specify the region to inpaint.
-  void SetMask(Mask::Pointer mask);
+  void SetMask(const Mask::Pointer mask);
   
   // Specify the size of the patches to copy.
   void SetPatchRadius(const unsigned int);
@@ -103,6 +103,8 @@ public:
   bool GetPotentialPatchPairs(const unsigned int iteration, std::vector<PatchPair>& patchPairs);
   
   unsigned int GetIteration();
+  
+  itk::ImageRegion<2> GetFullRegion();
   
 private:
 
@@ -161,14 +163,15 @@ private:
   
   void ComputeAllConfidenceTerms();
   
+  // Set the region to the full region and allocate an image
+  template<typename TImage>
+  void InitializeImage(typename TImage::Pointer);
+  
   // Initialization functions
   void InitializeMask();
-  void InitializeConfidence();
   void InitializeConfidenceMap();
-  void InitializeData();
-  void InitializePriority();
-  void InitializeImage();
-
+  void InitializeTargetImage();
+  
   // Debugging
   void DebugWriteAllImages();
   void DebugWriteAllImages(const itk::Index<2>& pixelToFill, const itk::Index<2>& bestMatchPixel, const unsigned int iteration);
@@ -181,6 +184,7 @@ private:
 
   itk::CovariantVector<float, 2> GetAverageIsophote(const itk::Index<2>& queryPixel);
   bool IsValidPatch(const itk::Index<2>& queryPixel, const unsigned int radius);
+  bool IsValidRegion(const itk::ImageRegion<2>& region);
   
   itk::ImageRegion<2> CropToValidRegion(const itk::ImageRegion<2>& patch);
 
@@ -213,14 +217,14 @@ private:
   // Compute the Data at a pixel.
   float ComputeDataTerm(const itk::Index<2>& queryPixel);
 
-  // Return the highest priority pixel. Return the value of that priority by reference.
-  itk::Index<2> FindHighestValueOnBoundary(FloatScalarImageType::Pointer priorityImage, float& maxPriority);
+  // Return the highest value of the specified image out of the pixels under the current BoundaryImage.
+  itk::Index<2> FindHighestValueOnBoundary(const FloatScalarImageType::Pointer image, float& maxValue);
 
   // Update the mask so that the pixels in the region that was filled are marked as filled.
-  void UpdateMask(const itk::ImageRegion<2> region);
+  void UpdateMask(const itk::ImageRegion<2>& region);
 
-  // Locate all patches that are completely inside of the image and completely inside of the source region
-  void ComputeSourcePatches();
+  // Locate all patches centered at pixels in 'region' that are completely inside of the image and completely inside of the source region
+  void ComputeSourcePatches(const itk::ImageRegion<2>& region);
   
   // Store the list of source patches computed with ComputeSourcePatches()
   std::vector<Patch> SourcePatches;
@@ -243,7 +247,7 @@ private:
   
   // Output a message and a value if DebugMessages is set to true.
   template <typename T>
-  void DebugMessage(const std::string& message, T value);
+  void DebugMessage(const std::string& message, const T value);
 
   // This is set when the image is loaded so that the region of all of the images can be addressed without referencing any specific image.
   itk::ImageRegion<2> FullImageRegion;
@@ -253,7 +257,7 @@ private:
   
   std::vector<std::vector<PatchPair> > PotentialPatchPairs;
   
-  float HistogramDifferenceND(const Patch& patch1, const Patch& patch2);
+  
   float HistogramDifference1D(const Patch& patch1, const Patch& patch2);
   
   unsigned int HistogramBinsPerDimension;

@@ -67,7 +67,7 @@ class Mask : public itk::Image< unsigned char, 2>
   const NeighborhoodAccessorFunctorType GetNeighborhoodAccessor() const
   { return NeighborhoodAccessorFunctorType(); }
   
-  bool IsHole(itk::Index<2> index) const
+  bool IsHole(const itk::Index<2>& index) const
   {
     if(this->GetPixel(index) == this->HoleValue)
       {
@@ -75,9 +75,8 @@ class Mask : public itk::Image< unsigned char, 2>
       }
     return false;
   }
-  
-  
-  bool IsValid(const itk::ImageRegion<2> region) const
+    
+  bool IsValid(const itk::ImageRegion<2>& region) const
   {
     // If any of the pixels in the region are invalid, the region is invalid.
     
@@ -97,7 +96,7 @@ class Mask : public itk::Image< unsigned char, 2>
     return true;
   }
 
-  bool IsValid(itk::Index<2> index) const
+  bool IsValid(const itk::Index<2>& index) const
   {
     if(this->GetPixel(index) == this->ValidValue)
       {
@@ -152,12 +151,12 @@ class Mask : public itk::Image< unsigned char, 2>
     
   }
   
-  void SetHoleValue(unsigned char value)
+  void SetHoleValue(const unsigned char value)
   {
     this->HoleValue = value; 
   }
   
-  void SetValidValue(unsigned char value)
+  void SetValidValue(const unsigned char value)
   {
     this->ValidValue = value; 
   }
@@ -178,7 +177,7 @@ class Mask : public itk::Image< unsigned char, 2>
     std::cout << "ValidValue: " << static_cast<unsigned int>(this->ValidValue) << std::endl;
   }
   
-  void DeepCopyFrom(Mask::Pointer inputMask)
+  void DeepCopyFrom(const Mask::Pointer inputMask)
   {
     this->SetRegions(inputMask->GetLargestPossibleRegion());
     this->Allocate();

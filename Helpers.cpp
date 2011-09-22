@@ -39,7 +39,75 @@
 namespace Helpers
 {
 
-void RGBImageToCIELabImage(RGBImageType::Pointer rgbImage, FloatVectorImageType::Pointer cielabImage)
+bool HasHoleNeighbor(const itk::Index<2>& pixel, const Mask::Pointer mask)
+{
+  itk::Offset<2> offset;
+  offset[0] = 0;
+  offset[1] = 1;
+  
+  if(mask->IsHole(pixel + offset))
+    {
+    return true;
+    }
+
+  offset[0] = 1;
+  offset[1] = 0;
+  if(mask->IsHole(pixel + offset))
+    {
+    return true;
+    }
+
+  offset[0] = 0;
+  offset[1] = -1;
+  if(mask->IsHole(pixel + offset))
+    {
+    return true;
+    }
+
+  offset[0] = -1;
+  offset[1] = 0;
+  if(mask->IsHole(pixel + offset))
+    {
+    return true;
+    }
+
+  offset[0] = 1;
+  offset[1] = 1;
+  if(mask->IsHole(pixel + offset))
+    {
+    return true;
+    }
+
+  offset[0] = -1;
+  offset[1] = -1;
+  if(mask->IsHole(pixel + offset))
+    {
+    return true;
+    }
+
+  offset[0] = 1;
+  offset[1] = -1;
+  if(mask->IsHole(pixel + offset))
+    {
+    return true;
+    }
+
+  offset[0] = -1;
+  offset[1] = 1;
+  if(mask->IsHole(pixel + offset))
+    {
+    return true;
+    }
+
+  return false;
+}
+
+unsigned int SideLengthFromRadius(const unsigned int radius)
+{
+  return radius*2 + 1;
+}
+
+void RGBImageToCIELabImage(const RGBImageType::Pointer rgbImage, FloatVectorImageType::Pointer cielabImage)
 {
   // Convert RGB image to Lab color space
   typedef itk::Accessor::RGBToLabColorSpacePixelAccessor<unsigned char, float> RGBToLabColorSpaceAccessorType;
@@ -73,7 +141,7 @@ void RGBImageToCIELabImage(RGBImageType::Pointer rgbImage, FloatVectorImageType:
   DeepCopyVectorImage<FloatVectorImageType>(reassembler->GetOutput(), cielabImage);
 }
 
-void VectorImageToRGBImage(FloatVectorImageType::Pointer image, RGBImageType::Pointer rgbImage)
+void VectorImageToRGBImage(const FloatVectorImageType::Pointer image, RGBImageType::Pointer rgbImage)
 {
   // Only the first 3 components are used (assumed to be RGB)
   rgbImage->SetRegions(image->GetLargestPossibleRegion());
@@ -127,7 +195,7 @@ itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region)
 
 
 // Convert a vector ITK image to a VTK image for display
-void ITKImagetoVTKImage(FloatVectorImageType::Pointer image, vtkImageData* outputImage)
+void ITKImagetoVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
 {
   //std::cout << "ITKImagetoVTKImage()" << std::endl;
   if(image->GetNumberOfComponentsPerPixel() >= 3)
@@ -155,7 +223,7 @@ void NormalizeVectorImage(FloatVector2ImageType::Pointer image)
     }
 }
 
-void ITKImagetoVTKVectorFieldImage(FloatVector2ImageType::Pointer image, vtkImageData* outputImage)
+void ITKImagetoVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, vtkImageData* outputImage)
 {
   //std::cout << "ITKImagetoVTKVectorFieldImage()" << std::endl;
 
@@ -189,7 +257,7 @@ void ITKImagetoVTKVectorFieldImage(FloatVector2ImageType::Pointer image, vtkImag
 }
 
 // Convert a vector ITK image to a VTK image for display
-void ITKImagetoVTKRGBImage(FloatVectorImageType::Pointer image, vtkImageData* outputImage)
+void ITKImagetoVTKRGBImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
 {
   // This function assumes an ND (with N>3) image has the first 3 channels as RGB and extra information in the remaining channels.
   
@@ -230,7 +298,7 @@ void ITKImagetoVTKRGBImage(FloatVectorImageType::Pointer image, vtkImageData* ou
 
 
 // Convert a vector ITK image to a VTK image for display
-void ITKImagetoVTKMagnitudeImage(FloatVectorImageType::Pointer image, vtkImageData* outputImage)
+void ITKImagetoVTKMagnitudeImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
 {
   //std::cout << "ITKImagetoVTKMagnitudeImage()" << std::endl;
   // Compute the magnitude of the ITK image
@@ -332,7 +400,7 @@ void KeepNonZeroVectors(vtkImageData* image, vtkPolyData* output)
   output->Modified();
 }
 
-void ConvertNonZeroPixelsToVectors(FloatVector2ImageType::Pointer vectorImage, vtkPolyData* output)
+void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType::Pointer vectorImage, vtkPolyData* output)
 {
   vtkSmartPointer<vtkFloatArray> vectors = vtkSmartPointer<vtkFloatArray>::New();
   vectors->SetNumberOfComponents(3);
@@ -364,7 +432,7 @@ void ConvertNonZeroPixelsToVectors(FloatVector2ImageType::Pointer vectorImage, v
   
 }
 
-std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region)
+std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region)
 {
   
   std::vector<HistogramType::Pointer> histograms;
@@ -412,7 +480,7 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(FloatVectorImageTy
 }
 
 
-std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region)
+std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region)
 {
   
   std::vector<HistogramType::Pointer> histograms;
@@ -471,7 +539,7 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(FloatVectorI
   return histograms;
 }
 
-std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region)
+std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region)
 {
   
   std::vector<HistogramType::Pointer> histograms;
@@ -527,7 +595,7 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(FloatVectorI
 }
 
 
-HistogramType::Pointer ComputeNDHistogramOfRegionManual(FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension)
+HistogramType::Pointer ComputeNDHistogramOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension)
 {
   const unsigned int MeasurementVectorSize = image->GetNumberOfComponentsPerPixel();
   
@@ -566,7 +634,7 @@ HistogramType::Pointer ComputeNDHistogramOfRegionManual(FloatVectorImageType::Po
 }
 
 
-HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension)
+HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(const FloatVectorImageType::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension)
 {
   const unsigned int MeasurementVectorSize = image->GetNumberOfComponentsPerPixel();
 
@@ -609,7 +677,7 @@ HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(FloatVectorImageTy
   return histogram;
 }
 
-void OutputHistogram(HistogramType::Pointer histogram)
+void OutputHistogram(const HistogramType::Pointer histogram)
 {
   for(unsigned int i = 0; i < histogram->GetSize(0); ++i)
     {
@@ -618,7 +686,7 @@ void OutputHistogram(HistogramType::Pointer histogram)
   std::cout << std::endl;
 }
 
-float NDHistogramDifference(HistogramType::Pointer histogram1, HistogramType::Pointer histogram2)
+float NDHistogramDifference(const HistogramType::Pointer histogram1, const HistogramType::Pointer histogram2)
 {
   unsigned int totalBins = 1;
   for(unsigned int i = 0; i < histogram1->GetSize().GetNumberOfElements(); ++i)
@@ -647,7 +715,7 @@ float NDHistogramDifference(HistogramType::Pointer histogram1, HistogramType::Po
   return totalDifference;
 }
 
-float HistogramDifference(HistogramType::Pointer histogram1, HistogramType::Pointer histogram2)
+float HistogramDifference(const HistogramType::Pointer histogram1, const HistogramType::Pointer histogram2)
 {
   if(histogram1->GetSize(0) != histogram2->GetSize(0))
     {

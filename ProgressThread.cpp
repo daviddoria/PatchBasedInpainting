@@ -25,13 +25,13 @@ void ProgressThread::run()
   this->Stop = false;
 
   //DebugMessage("Initializing...");
-  this->Inpainting->Initialize();
-
+  
+  //RefreshSignal();
+  
   while(this->Inpainting->HasMoreToInpaint() && !this->Stop)
     {
     this->Inpainting->Iterate();
     IterationCompleteSignal();
-    RefreshSignal();
     }
 
   // When the function is finished, end the thread
