@@ -195,7 +195,7 @@ itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region)
 
 
 // Convert a vector ITK image to a VTK image for display
-void ITKImagetoVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
+void ITKVectorImagetoVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
 {
   //std::cout << "ITKImagetoVTKImage()" << std::endl;
   if(image->GetNumberOfComponentsPerPixel() >= 3)
@@ -429,7 +429,7 @@ void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType::Pointer vectorIm
 
   output->SetPoints(points);
   output->GetPointData()->SetVectors(vectors);
-  
+  output->Modified();
 }
 
 std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region)
@@ -782,6 +782,22 @@ void MakePixelsTransparent(vtkImageData* inputImage, vtkImageData* outputImage, 
 	outputPixel[3] = 255; // visible
 	}
       }
+    }
+}
+
+
+QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx)
+{
+  // The fudge factors so that the scroll bars do not appear
+  
+  unsigned int fudge = 6;
+  if(gfx->height() < gfx->width())
+    {
+    return qimage.scaledToHeight(gfx->height() - fudge);
+    }
+  else
+    {
+    return qimage.scaledToWidth(gfx->width() - fudge);
     }
 }
 

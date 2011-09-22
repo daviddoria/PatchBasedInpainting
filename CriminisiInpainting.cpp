@@ -66,7 +66,7 @@ CriminisiInpainting::CriminisiInpainting()
   
   this->DebugImages = false;
   this->DebugMessages = false;
-  this->Iteration = 0;
+  this->NumberOfCompletedIterations = 0;
   
   this->HistogramBinsPerDimension = 10;
   //this->MaxPotentialPatches = 10;
@@ -207,11 +207,14 @@ void CriminisiInpainting::Initialize()
   DebugMessage("Initialize()");
   try
   {
-    this->Iteration = 0;
+    this->NumberOfCompletedIterations = 0;
     
     InitializeMask();
     Helpers::DebugWriteImageConditional<Mask>(this->CurrentMask, "Debug/Initialize.CurrentMask.mha", this->DebugImages);
   
+    // We find the boundary of the mask at every iteration (in Iterate()), but we do this here so that everything is initialized and valid if we are observing this class for display.
+    FindBoundary();
+    
     InitializeTargetImage();
     Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentImage.mha", this->DebugImages);
   
@@ -246,8 +249,8 @@ void CriminisiInpainting::Initialize()
 
 void CriminisiInpainting::Iterate()
 {
-  DebugMessage<unsigned int>("Starting iteration: ", this->Iteration);
-
+  DebugMessage("Iterate()");
+  
   FindBoundary();
   Helpers::DebugWriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage.mha", this->DebugImages);
 
@@ -270,11 +273,11 @@ void CriminisiInpainting::Iterate()
   FindBestPatchLookAhead(patchPair);
 
   std::stringstream ssSource;
-  ssSource << "Debug/source_" << Helpers::ZeroPad(this->Iteration, 3) << ".mha";
+  ssSource << "Debug/source_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
   Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, patchPair.SourcePatch, ssSource.str());
 
   std::stringstream ssTarget;
-  ssTarget << "Debug/target_" << Helpers::ZeroPad(this->Iteration, 3) << ".mha";
+  ssTarget << "Debug/target_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
   Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, patchPair.TargetPatch, ssTarget.str());
   
   this->UsedPatchPairs.push_back(patchPair);
@@ -299,7 +302,9 @@ void CriminisiInpainting::Iterate()
   // Add new source patches
   ComputeSourcePatches(patchPair.TargetPatch.Region);
   
-  this->Iteration++;
+  this->NumberOfCompletedIterations++;
+
+  DebugMessage<unsigned int>("Completed iteration: ", this->NumberOfCompletedIterations);
 
 }
 
@@ -448,7 +453,7 @@ void CriminisiInpainting::Inpaint()
     DebugMessage("Initializing...");
     Initialize();
 
-    this->Iteration = 0;
+    this->NumberOfCompletedIterations = 0;
     while(HasMoreToInpaint())
       {
       Iterate();
@@ -890,7 +895,8 @@ float CriminisiInpainting::ComputeDataTerm(const itk::Index<2>& queryPixel)
 
     float dot = std::abs(dot_product(vnlIsophote,vnlNormal));
 
-    float dataTerm = dot/this->Alpha;
+    float alpha = 255; // This doesn't actually contribue anything, since the argmax of the priority is all that is used, and alpha ends up just being a scaling factor since the proiority is purely multiplicative.
+    float dataTerm = dot/alpha;
 
     return dataTerm;
   }
@@ -1008,59 +1014,6 @@ bool CriminisiInpainting::IsValidRegion(const itk::ImageRegion<2>& region)
   return this->CurrentMask->IsValid(region);
 }
 
-FloatVector2Type CriminisiInpainting::GetAverageIsophote(const itk::Index<2>& queryPixel)
-{
-  try
-  {
-    if(!this->CurrentMask->GetLargestPossibleRegion().IsInside(Helpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius[0])))
-      {
-      FloatVector2Type v;
-      v[0] = 0; v[1] = 0;
-      return v;
-      }
-
-    itk::ImageRegionConstIterator<Mask> iterator(this->CurrentMask,Helpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius[0]));
-
-    std::vector<FloatVector2Type> vectors;
-
-    unsigned int radius = 3; // Why 3?
-    while(!iterator.IsAtEnd())
-      {
-      if(IsValidPatch(iterator.GetIndex(), radius))
-	{
-	vectors.push_back(this->IsophoteImage->GetPixel(iterator.GetIndex()));
-	}
-
-      ++iterator;
-      }
-
-    FloatVector2Type averageVector;
-    averageVector[0] = 0;
-    averageVector[1] = 0;
-
-    if(vectors.size() == 0)
-      {
-      return averageVector;
-      }
-
-    for(unsigned int i = 0; i < vectors.size(); i++)
-      {
-      averageVector[0] += vectors[i][0];
-      averageVector[1] += vectors[i][1];
-      }
-    averageVector[0] /= vectors.size();
-    averageVector[1] /= vectors.size();
-
-    return averageVector;
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in GetAverageIsophote!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
-
 unsigned int CriminisiInpainting::GetNumberOfPixelsInPatch()
 {
   return this->GetPatchSize()[0]*this->GetPatchSize()[1];
@@ -1071,7 +1024,7 @@ itk::Size<2> CriminisiInpainting::GetPatchSize()
   itk::Size<2> patchSize;
 
   patchSize[0] = Helpers::SideLengthFromRadius(this->PatchRadius[0]);
-  patchSize[1] = Helpers::SideLengthFromRadius(this->PatchRadius[0]);
+  patchSize[1] = Helpers::SideLengthFromRadius(this->PatchRadius[1]);
 
   return patchSize;
 }
@@ -1104,7 +1057,7 @@ bool CriminisiInpainting::GetUsedPatchPair(const unsigned int id, PatchPair& pat
   return false;
 }
   
-unsigned int CriminisiInpainting::GetIteration()
+unsigned int CriminisiInpainting::GetNumberOfCompletedIterations()
 {
-  return this->Iteration;
+  return this->NumberOfCompletedIterations;
 }

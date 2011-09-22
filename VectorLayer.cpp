@@ -37,10 +37,11 @@ VectorLayer::VectorLayer()
   arrowSource->Update();
   
   this->GlyphFilter->SetInputConnection(this->Vectors->GetProducerPort());
-  this->GlyphFilter->SetSource(arrowSource->GetOutput());
-  this->GlyphFilter->OrientOn();
-  this->GlyphFilter->SetVectorModeToUseVector();
-  this->GlyphFilter->SetScaleFactor(10);
+  this->GlyphFilter->SetSourceConnection(arrowSource->GetOutputPort());
+  //this->GlyphFilter->OrientOn();
+  //this->GlyphFilter->SetVectorModeToUseVector();
+  this->GlyphFilter->SetScaleModeToScaleByVector();
+  //this->GlyphFilter->SetScaleFactor(10);
   
   this->Mapper->SetInputConnection(this->GlyphFilter->GetOutputPort());
   this->Actor->SetMapper(this->Mapper);

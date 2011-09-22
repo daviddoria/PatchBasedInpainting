@@ -42,6 +42,7 @@ class vtkPolyDataMapper;
 
 // Custom
 #include "CriminisiInpainting.h"
+#include "InpaintingVisualizationStack.h"
 #include "Layer.h"
 #include "ProgressThread.h"
 #include "Types.h"
@@ -67,8 +68,8 @@ public:
   
 public slots:
   
-  void on_btnPrevious_clicked();
-  void on_btnNext_clicked();
+  void on_btnDisplayPreviousStep_clicked();
+  void on_btnDisplayNextStep_clicked();
   
   void on_actionOpenImage_activated();
   void on_actionOpenMask_activated();
@@ -110,16 +111,26 @@ public slots:
   void IterationCompleteSlot();
   
   void ExtractIsophotesForDisplay();
+  
 protected:
   
+  // These functions display the iteration indicated by the member 'CurrentUsedPatchDisplayed'
+  void DisplayBoundary();
   void DisplayBoundaryNormals();
   void DisplayMask();
   void DisplayConfidence();
+  void DisplayConfidenceMap();
   void DisplayPriority();
   void DisplayData();
+  void DisplayImage();
 
+  // Initialize everything.
   void Initialize();
+  
+  // Save everything at the end of an iteration.
   void IterationComplete();
+  
+  // This function is called when the "Previous" or "Next" buttons are pressed, and at the end of IterationComplete().
   void ChangeDisplayedIteration();
   
   // The interactor to allow us to zoom and pan the image
@@ -128,6 +139,7 @@ protected:
   // Track if the image has been flipped
   bool Flipped;
 
+  // The only renderer
   vtkSmartPointer<vtkRenderer> Renderer;
   
   // Source patch display
@@ -146,7 +158,8 @@ protected:
   Layer ConfidenceMapLayer;
   
   // Potential patch image display
-  UnsignedCharScalarImageType::Pointer PotentialPatchImage;
+  UnsignedCharScalarImageType::Pointer PotentialTargetPatchesImage;
+  
   Layer PotentialPatchesLayer;
   
   // Priority image display
@@ -167,15 +180,22 @@ protected:
   // Boundary normals display
   VectorLayer BoundaryNormalsLayer;
   
-  // The data that the user loads
+  // The image that the user loads
   FloatVectorImageType::Pointer UserImage;
+  
+  // The mask that the user loads
   Mask::Pointer UserMaskImage;
   
+  // The class that does all the work.
   CriminisiInpainting Inpainting;
   
+  // Perform the long inpainting operation in this thread so that the UI remains active.
   ProgressThread ComputationThread;
 
+  // A flag that determines if intermediate images should be output to files.
   bool DebugImages;
+  
+  // A flag that determines if debugging messages should be output.
   bool DebugMessages;
 
   // Output the message only if the Debug member is set to true
@@ -188,11 +208,17 @@ protected:
   // This is not unsigned because we start at -1, indicating there is no patch to display
   int CurrentUsedPatchDisplayed;
   
+  // Display zoomed in versions of the patches used at the current iteration
   void DisplayUsedPatches();
+  
+  // Display the text information (scores, etc) of the patches used at the current information
   void DisplayUsedPatchInformation();
   
+  // Display outlines of where the source patch came from and the target patch to which it was copied
   void HighlightUsedPatches();
-  void DrawPotentialPatches();
+  
+  // Get the potential target patches from this iteration and outline them on a blank image.
+  void CreatePotentialTargetPatchesImage();
   
   static const unsigned char Green[3];
   static const unsigned char Red[3];
@@ -200,14 +226,11 @@ protected:
   QGraphicsScene* SourcePatchScene;
   QGraphicsScene* TargetPatchScene;
   
-  QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx);
-  
   void OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename);
   
   // These are the state of the completion at every step. The index represents the image AFTER the index'th step.
   // That is, the image at index 0 is the image after 0 iterations (the original image). At index 1 is the image after the first target region has been filled, etc.
-  std::vector<FloatVectorImageType::Pointer> IntermediateImages;
-  std::vector<Mask::Pointer> IntermediateMaskImages;
+  std::vector<InpaintingVisualizationStack> IntermediateImages;
 };
 
 #include "Form.hxx"

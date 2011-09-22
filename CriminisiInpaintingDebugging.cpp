@@ -24,17 +24,17 @@
 
 void CriminisiInpainting::DebugWriteAllImages()
 {
-  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->ConfidenceImage, "ConfidenceImage", this->Iteration);
-  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->DataImage, "DataImage", this->Iteration);
-  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->PriorityImage, "PriorityImage", this->Iteration);
+  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->ConfidenceImage, "ConfidenceImage", this->NumberOfCompletedIterations);
+  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->DataImage, "DataImage", this->NumberOfCompletedIterations);
+  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->PriorityImage, "PriorityImage", this->NumberOfCompletedIterations);
   
-  Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage, "IsophoteImage", this->Iteration);
+  Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage, "IsophoteImage", this->NumberOfCompletedIterations);
   
-  Helpers::DebugWriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage, "BoundaryImage", this->Iteration);
-  Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals, "BoundaryNormals", this->Iteration);
+  Helpers::DebugWriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage, "BoundaryImage", this->NumberOfCompletedIterations);
+  Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals, "BoundaryNormals", this->NumberOfCompletedIterations);
   
-  Helpers::DebugWriteSequentialImage<Mask>(this->CurrentMask, "CurrentMask", this->Iteration);
-  Helpers::DebugWriteSequentialImage<FloatVectorImageType>(this->CurrentOutputImage, "CurrentImage", this->Iteration);
+  Helpers::DebugWriteSequentialImage<Mask>(this->CurrentMask, "CurrentMask", this->NumberOfCompletedIterations);
+  Helpers::DebugWriteSequentialImage<FloatVectorImageType>(this->CurrentOutputImage, "CurrentImage", this->NumberOfCompletedIterations);
 }
 
 void CriminisiInpainting::DebugWriteAllImages(const itk::Index<2>& pixelToFill, const itk::Index<2>& bestMatchPixel, const unsigned int iteration)

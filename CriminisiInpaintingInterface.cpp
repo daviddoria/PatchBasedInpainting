@@ -1,11 +1,5 @@
 #include "CriminisiInpainting.h"
 
-
-void CriminisiInpainting::SetDifferenceType(const int differenceType)
-{
-  this->DifferenceType = differenceType;
-}
-
 FloatVectorImageType::Pointer CriminisiInpainting::GetResult()
 {
   return this->CurrentOutputImage;

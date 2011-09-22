@@ -296,10 +296,6 @@ void CopySelfPatchIntoValidRegion(typename T::Pointer image, const Mask::Pointer
 {
   try
   {
-    assert(image->GetLargestPossibleRegion().IsInside(sourceRegion));
-    assert(mask->IsValid(sourceRegion));
-    assert(sourceRegion.GetSize() == destinationRegion.GetSize());
-
     // We pass the regions by const reference, so copy them here before they are mutated
     itk::ImageRegion<2> sourceRegion = sourceRegionInput;
     itk::ImageRegion<2> destinationRegion = destinationRegionInput;

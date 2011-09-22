@@ -118,8 +118,8 @@ Form::Form()
   
   this->InteractorStyle = vtkSmartPointer<InteractorStyleImageNoLevel>::New();
     
-  // Potential patch image
-  this->PotentialPatchImage = UnsignedCharScalarImageType::New();
+  // An image with potential target patches outlined
+  this->PotentialTargetPatchesImage = UnsignedCharScalarImageType::New();
     
   // Add objects to the renderer
   this->Renderer = vtkSmartPointer<vtkRenderer>::New();
@@ -146,8 +146,12 @@ Form::Form()
   
   connect(&ComputationThread, SIGNAL(StartProgressSignal()), this, SLOT(StartProgressSlot()), Qt::QueuedConnection);
   connect(&ComputationThread, SIGNAL(StopProgressSignal()), this, SLOT(StopProgressSlot()), Qt::QueuedConnection);
-  //connect(&ComputationThread, SIGNAL(IterationCompleteSignal()), this, SLOT(IterationCompleteSlot()), Qt::QueuedConnection);
-  connect(&ComputationThread, SIGNAL(IterationCompleteSignal()), this, SLOT(IterationCompleteSlot()), Qt::BlockingQueuedConnection);
+  connect(&ComputationThread, SIGNAL(IterationCompleteSignal()), this, SLOT(IterationCompleteSlot()), Qt::QueuedConnection);
+  
+  // Using a blocking connection allows everything (computation and drawing) to be performed sequentially which is helpful for debugging, but makes the interface very very choppy.
+  // We are assuming that the computation takes longer than the drawing.
+  //connect(&ComputationThread, SIGNAL(IterationCompleteSignal()), this, SLOT(IterationCompleteSlot()), Qt::BlockingQueuedConnection);
+  
   connect(&ComputationThread, SIGNAL(RefreshSignal()), this, SLOT(RefreshSlot()), Qt::QueuedConnection);
 
   // Set the progress bar to marquee mode
@@ -237,7 +241,7 @@ void Form::on_actionOpenImage_activated()
   //this->Image = reader->GetOutput();
   Helpers::DeepCopyVectorImage<FloatVectorImageType>(reader->GetOutput(), this->UserImage);
   
-  Helpers::ITKImagetoVTKImage(this->UserImage, this->ImageLayer.ImageData);
+  Helpers::ITKVectorImagetoVTKImage(this->UserImage, this->ImageLayer.ImageData);
   
   this->Inpainting.SetImage(this->UserImage);
     
@@ -303,28 +307,25 @@ void Form::on_actionOpenMask_activated()
 
 void Form::ExtractIsophotesForDisplay()
 {
-  if(this->Inpainting.GetIsophoteImage()->GetLargestPossibleRegion().GetSize()[0] != 0)
+  if(this->IntermediateImages[this->CurrentUsedPatchDisplayed].Isophotes->GetLargestPossibleRegion().GetSize()[0] != 0)
     {
     // Mask the isophotes image with the current boundary, because we only want to display the isophotes we are interested in.
     FloatVector2ImageType::Pointer normalizedIsophotes = FloatVector2ImageType::New();
-    Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), normalizedIsophotes);
+    Helpers::DeepCopy<FloatVector2ImageType>(this->IntermediateImages[this->CurrentUsedPatchDisplayed].Isophotes, normalizedIsophotes);
     Helpers::NormalizeVectorImage(normalizedIsophotes);
 
     typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType> MaskFilterType;
     typename MaskFilterType::Pointer maskFilter = MaskFilterType::New();
     maskFilter->SetInput(normalizedIsophotes);
-    maskFilter->SetMaskImage(this->Inpainting.GetBoundaryImage());
+    maskFilter->SetMaskImage(this->IntermediateImages[this->CurrentUsedPatchDisplayed].Boundary);
     FloatVector2ImageType::PixelType zero;
     zero.Fill(0);
     maskFilter->SetOutsideValue(zero);
     maskFilter->Update();
+  
+    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ShowIsophotes.BoundaryIsophotes.mha", this->DebugImages);
+    Helpers::DebugWriteImageConditional<UnsignedCharScalarImageType>(this->IntermediateImages[this->CurrentUsedPatchDisplayed].Boundary, "Debug/ShowIsophotes.Boundary.mha", this->DebugImages);
     
-    if(this->DebugImages)
-      {
-      Helpers::WriteImage<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ShowIsophotes.BoundaryIsophotes.mha");
-      Helpers::WriteImage<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), "Debug/ShowIsophotes.Boundary.mha");
-      }
-
     Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), this->IsophoteLayer.Vectors);
     
     if(this->DebugImages)
@@ -345,28 +346,43 @@ void Form::ExtractIsophotesForDisplay()
 void Form::DisplayMask()
 {
   vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
-  Helpers::ITKScalarImageToScaledVTKImage<Mask>(this->Inpainting.GetMaskImage(), temp);  
+  Helpers::ITKScalarImageToScaledVTKImage<Mask>(this->IntermediateImages[this->CurrentUsedPatchDisplayed].MaskImage, temp);  
   Helpers::MakePixelsTransparent(temp, this->MaskLayer.ImageData, 0); // Set the zero pixels of the mask to transparent
 }
 
 void Form::DisplayConfidence()
 {
   vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
-  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), temp);  
+  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->CurrentUsedPatchDisplayed].Confidence, temp);  
   Helpers::MakePixelsTransparent(temp, this->ConfidenceLayer.ImageData, 0); // Set the zero pixels to transparent
+}
+
+void Form::DisplayConfidenceMap()
+{
+  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->CurrentUsedPatchDisplayed].ConfidenceMap, this->ConfidenceMapLayer.ImageData);
+}
+
+void Form::DisplayImage()
+{
+  Helpers::ITKVectorImagetoVTKImage(this->IntermediateImages[this->CurrentUsedPatchDisplayed].Image, this->ImageLayer.ImageData);
+}
+
+void Form::DisplayBoundary()
+{
+  Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>(this->IntermediateImages[this->CurrentUsedPatchDisplayed].Boundary, this->BoundaryLayer.ImageData);
 }
 
 void Form::DisplayPriority()
 {
   vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
-  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), temp);
+  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->CurrentUsedPatchDisplayed].Priority, temp);
   Helpers::MakePixelsTransparent(temp, this->PriorityLayer.ImageData, 0); // Set the zero pixels to transparent
 }
 
 void Form::DisplayData()
 {
   vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
-  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetDataImage(), temp);
+  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->CurrentUsedPatchDisplayed].Data, temp);
   Helpers::MakePixelsTransparent(temp, this->DataLayer.ImageData, 0); // Set the zero pixels to transparent
 }
 
@@ -382,7 +398,7 @@ void Form::DisplayBoundaryNormals()
 {
   if(this->Inpainting.GetBoundaryNormalsImage()->GetLargestPossibleRegion().GetSize()[0] != 0)
     {
-    Helpers::ConvertNonZeroPixelsToVectors(this->Inpainting.GetBoundaryNormalsImage(), this->BoundaryNormalsLayer.Vectors);
+    Helpers::ConvertNonZeroPixelsToVectors(this->IntermediateImages[this->CurrentUsedPatchDisplayed].BoundaryNormals, this->BoundaryNormalsLayer.Vectors);
   
     if(this->DebugImages)
       {
@@ -408,13 +424,13 @@ void Form::Refresh()
   DebugMessage("Refresh()");
 
   this->ImageLayer.ImageSlice->SetVisibility(this->chkImage->isChecked());
-  Helpers::ITKImagetoVTKImage(this->Inpainting.GetResult(), this->ImageLayer.ImageData);
+  DisplayImage();
 
   this->MaskLayer.ImageSlice->SetVisibility(this->chkMask->isChecked());
   DisplayMask();
 
   this->ConfidenceMapLayer.ImageSlice->SetVisibility(this->chkConfidenceMap->isChecked());
-  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetConfidenceMapImage(), this->ConfidenceMapLayer.ImageData);
+  DisplayConfidenceMap();
 
   this->ConfidenceLayer.ImageSlice->SetVisibility(this->chkConfidence->isChecked());
   DisplayConfidence();
@@ -423,7 +439,7 @@ void Form::Refresh()
   DisplayPriority();
 
   this->BoundaryLayer.ImageSlice->SetVisibility(this->chkBoundary->isChecked());
-  Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), this->BoundaryLayer.ImageData);
+  DisplayBoundary();
 
   this->IsophoteLayer.Actor->SetVisibility(this->chkIsophotes->isChecked());
   ExtractIsophotesForDisplay();
@@ -460,13 +476,11 @@ void Form::on_btnReset_clicked()
   
 void Form::on_btnStep_clicked()
 {
-  this->CurrentUsedPatchDisplayed = this->Inpainting.GetIteration();
-
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
   this->Inpainting.Iterate();
   
-  ChangeDisplayedIteration();
+  IterationComplete();
 }
 
 void Form::on_btnInitialize_clicked()
@@ -514,7 +528,7 @@ void Form::DebugMessage(const std::string& message)
     }
 }
 
-void Form::on_btnPrevious_clicked()
+void Form::on_btnDisplayPreviousStep_clicked()
 {
   if(this->CurrentUsedPatchDisplayed > 0)
     {
@@ -523,12 +537,12 @@ void Form::on_btnPrevious_clicked()
   ChangeDisplayedIteration();
 }
 
-void Form::on_btnNext_clicked()
+void Form::on_btnDisplayNextStep_clicked()
 {
-  std::cout << "CurrentUsedPatchDisplayed: " << this->CurrentUsedPatchDisplayed
-            << " Inpainting iteration: " <<  static_cast<int>(this->Inpainting.GetIteration()) << std::endl;
+  //std::cout << "CurrentUsedPatchDisplayed: " << this->CurrentUsedPatchDisplayed
+    //        << " Inpainting iteration: " <<  static_cast<int>(this->Inpainting.GetIteration()) << std::endl;
   
-  if(this->CurrentUsedPatchDisplayed < static_cast<int>(this->Inpainting.GetIteration()) - 1)
+  if(this->CurrentUsedPatchDisplayed < static_cast<int>(this->Inpainting.GetNumberOfCompletedIterations()) - 1)
     {
     this->CurrentUsedPatchDisplayed++;
     }
@@ -541,10 +555,23 @@ void Form::DisplayUsedPatches()
   PatchPair patchPair;
   this->Inpainting.GetUsedPatchPair(this->CurrentUsedPatchDisplayed, patchPair);
 
+  FloatVectorImageType::Pointer currentImage = this->IntermediateImages[this->CurrentUsedPatchDisplayed].Image;
+  
+  // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration (as the current mask has been cleared where the target patch was copied).
+  Mask::Pointer currentMask;
+  if(this->chkDisplayMaskedTargetPatch->isChecked())
+    {
+    currentMask = this->IntermediateImages[this->CurrentUsedPatchDisplayed - 1].MaskImage;
+    }
+  else
+    {
+    currentMask = this->IntermediateImages[this->CurrentUsedPatchDisplayed].MaskImage;
+    }
+  
   // Target
   Patch targetPatch = patchPair.TargetPatch;
-  QImage targetImage = Helpers::GetQImage<FloatVectorImageType>(this->IntermediateImages[this->CurrentUsedPatchDisplayed], this->IntermediateMaskImages[this->CurrentUsedPatchDisplayed], targetPatch.Region);
-  targetImage = FitToGraphicsView(targetImage, gfxTarget);
+  QImage targetImage = Helpers::GetQImage<FloatVectorImageType>(currentImage, currentMask, targetPatch.Region);
+  targetImage = Helpers::FitToGraphicsView(targetImage, gfxTarget);
   this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
 
   //Helpers::WritePatch<FloatVectorImageType>(this->Image, targetPatch, "targetPatch.mha");
@@ -552,8 +579,8 @@ void Form::DisplayUsedPatches()
   
   // Source
   Patch sourcePatch = patchPair.SourcePatch;
-  QImage sourceImage = Helpers::GetQImage<FloatVectorImageType>(this->IntermediateImages[this->CurrentUsedPatchDisplayed], this->IntermediateMaskImages[this->CurrentUsedPatchDisplayed], sourcePatch.Region);
-  sourceImage = FitToGraphicsView(sourceImage, gfxTarget);
+  QImage sourceImage = Helpers::GetQImage<FloatVectorImageType>(currentImage, currentMask, sourcePatch.Region);
+  sourceImage = Helpers::FitToGraphicsView(sourceImage, gfxTarget);
   this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
 
   Refresh();
@@ -629,28 +656,28 @@ void Form::DisplayUsedPatchInformation()
   Refresh();
 }
 
-void Form::DrawPotentialPatches()
+void Form::CreatePotentialTargetPatchesImage()
 {
-  DebugMessage("DrawPotentialPatches()");
+  DebugMessage("CreatePotentialTargetPatchesImage()");
   // Draw potential patch pairs
   std::vector<PatchPair> potentialPatchPairs;
   this->Inpainting.GetPotentialPatchPairs(this->CurrentUsedPatchDisplayed, potentialPatchPairs);
 
-  std::stringstream ssPatchPairsFile;
-  ssPatchPairsFile << "Debug/PatchPairs_" << Helpers::ZeroPad(this->Inpainting.GetIteration(), 3) << ".txt";
-  OutputPairs(potentialPatchPairs, ssPatchPairsFile.str());
+//   std::stringstream ssPatchPairsFile;
+//   ssPatchPairsFile << "Debug/PatchPairs_" << Helpers::ZeroPad(this->Inpainting.GetIteration(), 3) << ".txt";
+//   OutputPairs(potentialPatchPairs, ssPatchPairsFile.str());
 
-  this->PotentialPatchImage->SetRegions(this->Inpainting.GetFullRegion());
-  this->PotentialPatchImage->Allocate();
-  this->PotentialPatchImage->FillBuffer(0);
+  this->PotentialTargetPatchesImage->SetRegions(this->Inpainting.GetFullRegion());
+  this->PotentialTargetPatchesImage->Allocate();
+  this->PotentialTargetPatchesImage->FillBuffer(0);
 
   for(unsigned int i = 0; i < potentialPatchPairs.size(); ++i)
     {
-    Helpers::BlankAndOutlineRegion<UnsignedCharScalarImageType>(this->PotentialPatchImage, potentialPatchPairs[i].TargetPatch.Region, static_cast<unsigned char>(255));
+    Helpers::BlankAndOutlineRegion<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage, potentialPatchPairs[i].TargetPatch.Region, static_cast<unsigned char>(255));
     }
 
   vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
-  Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>(this->PotentialPatchImage, temp);
+  Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage, temp);
   Helpers::MakePixelsTransparent(temp, this->PotentialPatchesLayer.ImageData, 0);
 
   Refresh();
@@ -675,7 +702,7 @@ void Form::ChangeDisplayedIteration()
 {
   DebugMessage("ChangeDisplayedIteration()");
   DisplayUsedPatches();
-  DrawPotentialPatches();
+  CreatePotentialTargetPatchesImage();
   HighlightUsedPatches();
   DisplayUsedPatchInformation();
 }
@@ -684,14 +711,26 @@ void Form::IterationComplete()
 {
   DebugMessage("IterationComplete()");
 
-  this->CurrentUsedPatchDisplayed++; // This starts at -1, so the first time this is called it is incremented to 0
+  // Save the intermediate images
+  
+  InpaintingVisualizationStack stack;
+  
+  Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->Inpainting.GetResult(), stack.Image);
+  Helpers::DeepCopy<Mask>(this->Inpainting.GetMaskImage(), stack.MaskImage);
+  Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
+  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), stack.Priority);
+  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetDataImage(), stack.Data);
+  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), stack.Confidence);
+  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceMapImage(), stack.ConfidenceMap);
+  Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), stack.BoundaryNormals);
+  Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), stack.Isophotes);
+  Helpers::DeepCopy<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage, stack.PotentialTargetPatchesImage);
 
-  // Copy the intermediate result
-  this->IntermediateImages.push_back(FloatVectorImageType::New());
-  Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->Inpainting.GetResult(), this->IntermediateImages[this->IntermediateImages.size()-1]);
-  this->IntermediateMaskImages.push_back(Mask::New());
-  Helpers::DeepCopy<Mask>(this->Inpainting.GetMaskImage(), this->IntermediateMaskImages[this->IntermediateMaskImages.size()-1]);
-    
+  this->IntermediateImages.push_back(stack);
+  
+  // There is an off-by-one because of 0-based arrays - the result of the first iteration is stored in the 0th component of the arrays. We compensate with the -1 below.
+  this->CurrentUsedPatchDisplayed = this->Inpainting.GetNumberOfCompletedIterations() - 1;
+
   ChangeDisplayedIteration();
 
   Refresh();
@@ -701,19 +740,4 @@ void Form::IterationCompleteSlot()
 {
   DebugMessage("IterationCompleteSlot()");
   IterationComplete();
-}
-
-QImage Form::FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx)
-{
-  // The fudge factors so that the scroll bars do not appear
-  
-  unsigned int fudge = 6;
-  if(gfx->height() < gfx->width())
-    {
-    return qimage.scaledToHeight(gfx->height() - fudge);
-    }
-  else
-    {
-    return qimage.scaledToWidth(gfx->width() - fudge);
-    }
 }

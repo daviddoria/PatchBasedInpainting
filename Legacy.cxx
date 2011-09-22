@@ -595,3 +595,57 @@ itk::Index<2> CriminisiInpainting::FindHighestValueOnBoundary(FloatScalarImageTy
     exit(-1);
   }
 }
+
+
+FloatVector2Type CriminisiInpainting::GetAverageIsophote(const itk::Index<2>& queryPixel)
+{
+  try
+  {
+    if(!this->CurrentMask->GetLargestPossibleRegion().IsInside(Helpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius[0])))
+      {
+      FloatVector2Type v;
+      v[0] = 0; v[1] = 0;
+      return v;
+      }
+
+    itk::ImageRegionConstIterator<Mask> iterator(this->CurrentMask,Helpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius[0]));
+
+    std::vector<FloatVector2Type> vectors;
+
+    unsigned int radius = 3; // Why 3?
+    while(!iterator.IsAtEnd())
+      {
+      if(IsValidPatch(iterator.GetIndex(), radius))
+	{
+	vectors.push_back(this->IsophoteImage->GetPixel(iterator.GetIndex()));
+	}
+
+      ++iterator;
+      }
+
+    FloatVector2Type averageVector;
+    averageVector[0] = 0;
+    averageVector[1] = 0;
+
+    if(vectors.size() == 0)
+      {
+      return averageVector;
+      }
+
+    for(unsigned int i = 0; i < vectors.size(); i++)
+      {
+      averageVector[0] += vectors[i][0];
+      averageVector[1] += vectors[i][1];
+      }
+    averageVector[0] /= vectors.size();
+    averageVector[1] /= vectors.size();
+
+    return averageVector;
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in GetAverageIsophote!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}

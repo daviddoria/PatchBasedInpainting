@@ -36,6 +36,7 @@
 
 // Qt
 #include <QImage>
+#include <QGraphicsView>
 
 // VTK
 class vtkImageData;
@@ -43,18 +44,13 @@ class vtkPolyData;
 
 namespace Helpers
 {
-  
+////////////////// Helpers.cpp ///////////////////
 void RGBImageToCIELabImage(const RGBImageType::Pointer rgbImage, FloatVectorImageType::Pointer cielabImage);
   
 void NormalizeVectorImage(FloatVector2ImageType::Pointer image);
-  
-template<typename TImage>
-void DeepCopy(const typename TImage::Pointer input, typename TImage::Pointer output);
 
-template<typename TImage>
-void DeepCopyVectorImage(const typename TImage::Pointer input, typename TImage::Pointer output);
 
-void ITKImagetoVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage); // This function simply drives ITKImagetoVTKRGBImage or ITKImagetoVTKMagnitudeImage
+void ITKVectorImagetoVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage); // This function simply drives ITKImagetoVTKRGBImage or ITKImagetoVTKMagnitudeImage
 void ITKImagetoVTKRGBImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage);
 void ITKImagetoVTKMagnitudeImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage);
 
@@ -62,10 +58,53 @@ void ITKImagetoVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, v
 
 void VectorImageToRGBImage(const FloatVectorImageType::Pointer image, RGBImageType::Pointer rgbImage);
 
-template <typename TImage>
-void ITKScalarImageToScaledVTKImage(const typename TImage::Pointer image, vtkImageData* outputImage);
 
 itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region);
+
+
+
+unsigned int SideLengthFromRadius(const unsigned int radius);
+
+bool HasHoleNeighbor(const itk::Index<2>& pixel, const Mask::Pointer mask);
+
+void BlankAndOutlineImage(vtkImageData*, const unsigned char color[3]);
+
+void KeepNonZeroVectors(vtkImageData* image, vtkPolyData* output); // 'image' should be const, but VTK doesn't allow it
+
+void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType::Pointer vectorImage, vtkPolyData* output);
+
+std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
+
+std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
+
+std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region);
+
+void OutputHistogram(const HistogramType::Pointer);
+
+float HistogramDifference(const HistogramType::Pointer, const HistogramType::Pointer);
+
+float NDHistogramDifference(const HistogramType::Pointer, const HistogramType::Pointer);
+
+HistogramType::Pointer ComputeNDHistogramOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
+
+HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(const FloatVectorImageType::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
+
+std::string ZeroPad(const unsigned int number, const unsigned int rep);
+
+void MakePixelsTransparent(vtkImageData* inputImage, vtkImageData* outputImage, const unsigned char value); // 'inputImage' should be const, but VTK doesn't allow it
+
+
+QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx);
+
+////////////////// Helpers.hxx ///////////////////
+template<typename TImage>
+void DeepCopy(const typename TImage::Pointer input, typename TImage::Pointer output);
+
+template<typename TImage>
+void DeepCopyVectorImage(const typename TImage::Pointer input, typename TImage::Pointer output);
+
+template <typename TImage>
+void ITKScalarImageToScaledVTKImage(const typename TImage::Pointer image, vtkImageData* outputImage);
 
 template <typename TDebugImageType>
 void DebugWriteSequentialImage(const typename TDebugImageType::Pointer image, const std::string& filePrefix, const unsigned int iteration);
@@ -122,18 +161,8 @@ itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2>& pixel, con
 // template <typename TPixelType>
 // float PixelSquaredDifference(const TPixelType&, const TPixelType&);
 
-unsigned int SideLengthFromRadius(const unsigned int radius);
-
-bool HasHoleNeighbor(const itk::Index<2>& pixel, const Mask::Pointer mask);
-
-void BlankAndOutlineImage(vtkImageData*, const unsigned char color[3]);
-
 template<typename TImage>
 void BlankAndOutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value);
-
-void KeepNonZeroVectors(vtkImageData* image, vtkPolyData* output); // 'image' should be const, but VTK doesn't allow it
-
-void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType::Pointer vectorImage, vtkPolyData* output);
 
 template<typename TImage>
 void SetRegionToConstant(typename TImage::Pointer image, const itk::ImageRegion<2>& region,const typename TImage::PixelType& constant);
@@ -153,29 +182,8 @@ void WriteMaskedRegion(const typename TImage::Pointer image, const Mask::Pointer
 template<typename TImage>
 void WriteRegion(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename);
 
-std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
-
-std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
-
-std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region);
-
-void OutputHistogram(const HistogramType::Pointer);
-
-float HistogramDifference(const HistogramType::Pointer, const HistogramType::Pointer);
-
-float NDHistogramDifference(const HistogramType::Pointer, const HistogramType::Pointer);
-
-HistogramType::Pointer ComputeNDHistogramOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
-
-HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(const FloatVectorImageType::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
-
-std::string ZeroPad(const unsigned int number, const unsigned int rep);
-
-
 template <typename TImage>
 QImage GetQImage(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
-
-void MakePixelsTransparent(vtkImageData* inputImage, vtkImageData* outputImage, const unsigned char value); // 'inputImage' should be const, but VTK doesn't allow it
 
 }// end namespace
 

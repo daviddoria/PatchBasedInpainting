@@ -27,6 +27,7 @@ CriminisiInpaintingInterface.cpp
 Form.cxx 
 FormGUIElements.cxx 
 Helpers.cpp 
+InpaintingVisualizationStack.cpp 
 Interactive.cpp 
 InteractorStyleImageNoLevel.cxx
 Layer.cpp

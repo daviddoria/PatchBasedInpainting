@@ -231,12 +231,12 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2" stretch="9,1">
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget"/>
+         <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <widget class="QPushButton" name="btnPrevious">
+           <widget class="QPushButton" name="btnDisplayPreviousStep">
             <property name="text">
              <string>Previous</string>
             </property>
@@ -271,7 +271,7 @@
            </layout>
           </item>
           <item>
-           <widget class="QPushButton" name="btnNext">
+           <widget class="QPushButton" name="btnDisplayNextStep">
             <property name="text">
              <string>Next</string>
             </property>
@@ -300,6 +300,13 @@
            </widget>
           </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkDisplayMaskedTargetPatch">
+          <property name="text">
+           <string>Display masked</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QGraphicsView" name="gfxTarget">

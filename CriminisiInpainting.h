@@ -35,17 +35,11 @@ public:
 
   enum DifferenceTypeEnum {DIFFERENCE_ALL, DIFFERENCE_ALL255, DIFFERENCE_DEPTH};
   
+  /////////////////// CriminisiInpaintingInterface.cpp //////////////////
+  
   void SetDifferenceType(const int);
   
-  // Constructor
-  CriminisiInpainting();
-
-  void Iterate();
-
-  // The real work is done here.
-  void Inpaint();
-  
-  // Specify the image to inpaint.
+    // Specify the image to inpaint.
   void SetImage(const FloatVectorImageType::Pointer image);
   
   // Specify the region to inpaint.
@@ -54,13 +48,11 @@ public:
   // Specify the size of the patches to copy.
   void SetPatchRadius(const unsigned int);
 
-  // Specify if you want to see debugging outputs.
+  // Specify if you want to write debuging images.
   void SetDebugImages(const bool);
   
+  // Specify if you want to see debugging messages.
   void SetDebugMessages(const bool);
-  
-  // Compute the confidence values for pixels that were just inpainted.
-  void UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value);
   
   // Get the output of the inpainting.
   FloatVectorImageType::Pointer GetResult();
@@ -89,9 +81,21 @@ public:
   // Get the current mask image
   Mask::Pointer GetMaskImage();
   
-  void SetUseConfidence(const bool);
-  void SetUseData(const bool);
+  /////////////////// CriminisiInpainting.cpp //////////////////
+  
+  // Constructor
+  CriminisiInpainting();
 
+  // A single step of the algorithm. The real work is done here.
+  void Iterate();
+
+  // A loop that calls Iterate() until the inpainting is complete.
+  void Inpaint();
+  
+  // Compute the confidence values for pixels that were just inpainted.
+  void UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value);
+  
+  // Initialize everything.
   void Initialize();
 
   // Determine whether or not the inpainting is completed by seeing if there are any pixels in the mask that still need to be filled.
@@ -99,11 +103,14 @@ public:
   
   bool GetUsedPatchPair(const unsigned int id, PatchPair& patchPair);
   
-  bool GetBestHistogramScore(const unsigned int id, float& score);
   bool GetPotentialPatchPairs(const unsigned int iteration, std::vector<PatchPair>& patchPairs);
   
-  unsigned int GetIteration();
+  // Return the number of completed iterations
+  unsigned int GetNumberOfCompletedIterations();
   
+  // When an image is loaded, it's size is taken as the size that everything else should be. We don't want to keep referring to Image->GetLargestPossibleRegion,
+  // so we store the region in a member variable. For the same reason, if we want to know the size of the images that this class is operating on, the user should
+  // not have to query a specific image, but rather access this more global region definition.
   itk::ImageRegion<2> GetFullRegion();
   
 private:
@@ -113,10 +120,7 @@ private:
   
   // This is a new idea to try to fill several patches and return the best pair
   void FindBestPatchLookAhead(PatchPair& bestPatchPair);
-  
-  // This is the suggested value in Criminisi's paper, but it does not change anything at all, as we find argmax of the priorities, and alpha is a simple scaling factor of the priorities.
-  static const float Alpha = 255;
-  
+
   // Image to inpaint. This should not be modified throughout the algorithm.
   FloatVectorImageType::Pointer OriginalImage;
   
@@ -159,8 +163,10 @@ private:
   // Keep track of the priority of each pixel.
   FloatScalarImageType::Pointer PriorityImage;
 
+  // Compute the data term at each pixel on the curren boundary.
   void ComputeAllDataTerms();
   
+  // Compute the confidence term at each pixel on the curren boundary.
   void ComputeAllConfidenceTerms();
   
   // Set the region to the full region and allocate an image
@@ -168,28 +174,32 @@ private:
   void InitializeImage(typename TImage::Pointer);
   
   // Initialization functions
-  void InitializeMask();
-  void InitializeConfidenceMap();
-  void InitializeTargetImage();
   
-  // Debugging
-  void DebugWriteAllImages();
-  void DebugWriteAllImages(const itk::Index<2>& pixelToFill, const itk::Index<2>& bestMatchPixel, const unsigned int iteration);
-  void DebugWritePatch(const itk::Index<2>& pixel, const std::string& filePrefix, const unsigned int iteration);
-  void DebugWritePatch(const itk::ImageRegion<2>& region, const std::string& filename);
-
-  void DebugWritePatch(const itk::Index<2>& pixel, const std::string& filename);
-  void DebugWritePixelToFill(const itk::Index<2>& pixelToFill, const unsigned int iteration);
-  void DebugWritePatchToFillLocation(const itk::Index<2>& pixelToFill, const unsigned int iteration);
-
-  itk::CovariantVector<float, 2> GetAverageIsophote(const itk::Index<2>& queryPixel);
+  // This function expands the mask a little bit. We must do this because the isophotes may not be well defined 
+  // on the original mask boundary (if the segmentation is very tight), but they will be better defined a few pixels away.
+  void InitializeMask();
+  
+  // The initial confidence is 0 in the hole and 1 elsewhere.
+  void InitializeConfidenceMap();
+  
+  // The target image is colored bright green inside the hole. This is helpful when watching the inpainting proceed.
+  void InitializeTargetImage();
+    
+  //itk::CovariantVector<float, 2> GetAverageIsophote(const itk::Index<2>& queryPixel);
+  
+  // Determine if a patch is completely valid (no hole pixels).
   bool IsValidPatch(const itk::Index<2>& queryPixel, const unsigned int radius);
+  
+  // Determine if a region is completely valid (no hole pixels).
   bool IsValidRegion(const itk::ImageRegion<2>& region);
   
-  itk::ImageRegion<2> CropToValidRegion(const itk::ImageRegion<2>& patch);
+  // Crop 'region' to be entirely inside the full region of the images we are operating on.
+  itk::ImageRegion<2> CropToValidRegion(const itk::ImageRegion<2>& region);
 
+  // Compute the number of pixels in a patch of the specified size.
   unsigned int GetNumberOfPixelsInPatch();
 
+  // We store the patch radius, so we need this function to compute the actual patch size from the radius.
   itk::Size<2> GetPatchSize();
 
   // Find the boundary of a region.
@@ -229,13 +239,35 @@ private:
   // Store the list of source patches computed with ComputeSourcePatches()
   std::vector<Patch> SourcePatches;
   
- // This member tracks the current iteration. This is only necessary to help construct useful filenames for debugging outputs from anywhere in the class.
-  unsigned int Iteration;
+  // This tracks the number of iterations that have been completed.
+  unsigned int NumberOfCompletedIterations;
   
-  // This variable determines which Difference subclass is instantiated.
-  int DifferenceType;
+  // This is set when the image is loaded so that the region of all of the images can be addressed without referencing any specific image.
+  itk::ImageRegion<2> FullImageRegion;
   
-  //// Debugging ////
+  // Store the pairs of patches that were actually used. These are tracked for visualization purposes only.
+  std::vector<PatchPair> UsedPatchPairs;
+  
+  // Store the pairs of patches that were examined at every iteration. These are tracked for visualization purposes only.
+  std::vector<std::vector<PatchPair> > PotentialPatchPairs;
+  
+  // The number of bins to use per dimension in the histogram computations.
+  unsigned int HistogramBinsPerDimension;
+  
+  // The maximum number of patch pairs to examine in deciding which one to actually fill.
+  // The number compared could actually be less than this near the end of the inpainting because there may not be enough non-zero priority values outside of one patch region.
+  unsigned int MaxPotentialPatches;
+  
+  ///////////// CriminisiInpaintingDebugging.cpp /////////////
+  void DebugWriteAllImages();
+  void DebugWriteAllImages(const itk::Index<2>& pixelToFill, const itk::Index<2>& bestMatchPixel, const unsigned int iteration);
+  void DebugWritePatch(const itk::Index<2>& pixel, const std::string& filePrefix, const unsigned int iteration);
+  void DebugWritePatch(const itk::ImageRegion<2>& region, const std::string& filename);
+
+  void DebugWritePatch(const itk::Index<2>& pixel, const std::string& filename);
+  void DebugWritePixelToFill(const itk::Index<2>& pixelToFill, const unsigned int iteration);
+  void DebugWritePatchToFillLocation(const itk::Index<2>& pixelToFill, const unsigned int iteration);
+
   // Should we output images at every iteration?
   bool DebugImages;
   
@@ -249,20 +281,6 @@ private:
   template <typename T>
   void DebugMessage(const std::string& message, const T value);
 
-  // This is set when the image is loaded so that the region of all of the images can be addressed without referencing any specific image.
-  itk::ImageRegion<2> FullImageRegion;
-  
-  // These are tracked for visualization purposes only.
-  std::vector<PatchPair> UsedPatchPairs;
-  
-  std::vector<std::vector<PatchPair> > PotentialPatchPairs;
-  
-  
-  float HistogramDifference1D(const Patch& patch1, const Patch& patch2);
-  
-  unsigned int HistogramBinsPerDimension;
-  
-  unsigned int MaxPotentialPatches;
 };
 
 #include "CriminisiInpainting.hxx"
