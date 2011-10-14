@@ -39,6 +39,42 @@
 namespace Helpers
 {
 
+itk::Index<2> GetNextPixelAlongVector(const itk::Index<2>& pixel, const FloatVector2Type& vector)
+{
+  itk::Index<2> nextPixel = pixel + GetOffsetAlongVector(vector);
+  
+  return nextPixel;
+}
+
+itk::Offset<2> GetOffsetAlongVector(const FloatVector2Type& vector)
+{
+  FloatVector2Type normalizedVector = vector;
+  normalizedVector.Normalize();
+  
+  itk::Offset<2> offset;
+  offset[0] = RoundAwayFromZero(normalizedVector[0]);
+  offset[1] = RoundAwayFromZero(normalizedVector[1]);
+  
+  return offset;
+}
+
+float RoundAwayFromZero(const float number)
+{
+  float signMultiplier = 0;
+  if(number >= 0)
+    {
+    signMultiplier = 1.0;
+    }
+  else
+    {
+    signMultiplier = -1.0;
+    }
+  float absNumber = fabs(number);
+  float rounded = ceil(absNumber) * signMultiplier;
+  
+  return rounded;
+}
+
 bool HasHoleNeighbor(const itk::Index<2>& pixel, const Mask::Pointer mask)
 {
   itk::Offset<2> offset;

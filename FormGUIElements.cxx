@@ -96,3 +96,17 @@ void Form::on_actionFlipImage_activated()
     }
   this->Flipped = !this->Flipped;
 }
+
+void Form::SetCheckboxVisibility(const bool visible)
+{
+  chkImage->setEnabled(visible);
+  chkPriority->setEnabled(visible);
+  chkConfidence->setEnabled(visible);
+  chkConfidenceMap->setEnabled(visible);
+  chkBoundary->setEnabled(visible);
+  chkIsophotes->setEnabled(visible);
+  chkData->setEnabled(visible);
+  chkBoundaryNormals->setEnabled(visible);
+  chkMask->setEnabled(visible);
+  chkPotentialPatches->setEnabled(visible);
+}

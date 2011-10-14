@@ -32,6 +32,7 @@ Interactive.cpp
 InteractorStyleImageNoLevel.cxx
 Layer.cpp
 Patch.cpp
+PatchPair.cpp
 ProgressThread.cpp
 SelfPatchCompare.cpp
 VectorLayer.cpp

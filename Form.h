@@ -81,6 +81,7 @@ public slots:
   void on_chkDebugImages_clicked();
   void on_chkDebugMessages_clicked();
   
+  // Defined in FormGUIElements.cxx
   void on_chkImage_clicked();
   void on_chkMask_clicked();
   void on_chkPriority_clicked();
@@ -91,6 +92,8 @@ public slots:
   void on_chkData_clicked();
   void on_chkBoundaryNormals_clicked();
   void on_chkPotentialPatches_clicked();
+  
+  void SetCheckboxVisibility(const bool visible);
   
   void on_btnInpaint_clicked();
   void on_btnStep_clicked();
@@ -126,6 +129,8 @@ protected:
 
   // Initialize everything.
   void Initialize();
+  
+  void SetupInitialIntermediateImages();
   
   // Save everything at the end of an iteration.
   void IterationComplete();

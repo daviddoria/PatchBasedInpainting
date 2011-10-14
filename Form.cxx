@@ -88,13 +88,15 @@ Form::Form()
 {
   this->setupUi(this);
 
+  SetCheckboxVisibility(false);
+  
   this->TargetPatchScene = new QGraphicsScene();
   this->gfxTarget->setScene(TargetPatchScene);
  
   this->SourcePatchScene = new QGraphicsScene();
   this->gfxSource->setScene(SourcePatchScene);
   
-  this->CurrentUsedPatchDisplayed = -1;
+  this->CurrentUsedPatchDisplayed = 0;
   
   this->DebugImages = false;
   this->DebugMessages = false;
@@ -250,6 +252,16 @@ void Form::on_actionOpenImage_activated()
   
   this->statusBar()->showMessage("Opened image.");
   actionOpenMask->setEnabled(true);
+  
+  if(this->UserImage && this->UserMaskImage && this->UserImage->GetLargestPossibleRegion() == this->UserMaskImage->GetLargestPossibleRegion())
+    {
+    SetupInitialIntermediateImages();
+    SetCheckboxVisibility(true);
+    }
+  else
+    {
+    SetCheckboxVisibility(false);
+    }
 }
 
 
@@ -303,6 +315,16 @@ void Form::on_actionOpenMask_activated()
   this->Inpainting.SetMask(this->UserMaskImage);
   
   this->statusBar()->showMessage("Opened mask.");
+  
+  if(this->UserImage && this->UserMaskImage && this->UserImage->GetLargestPossibleRegion() == this->UserMaskImage->GetLargestPossibleRegion())
+    {
+    SetupInitialIntermediateImages();
+    SetCheckboxVisibility(true);
+    }
+  else
+    {
+    SetCheckboxVisibility(false);
+    }
 }
 
 void Form::ExtractIsophotesForDisplay()
@@ -707,6 +729,25 @@ void Form::ChangeDisplayedIteration()
   DisplayUsedPatchInformation();
 }
 
+void Form::SetupInitialIntermediateImages()
+{
+  InpaintingVisualizationStack stack;
+  
+  Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->UserImage, stack.Image);
+  Helpers::DeepCopy<Mask>(this->UserMaskImage, stack.MaskImage);
+  Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
+  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), stack.Priority);
+  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetDataImage(), stack.Data);
+  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), stack.Confidence);
+  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceMapImage(), stack.ConfidenceMap);
+  Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), stack.BoundaryNormals);
+  Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), stack.Isophotes);
+  //Helpers::DeepCopy<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage, stack.PotentialTargetPatchesImage);
+
+  this->IntermediateImages.clear();
+  this->IntermediateImages.push_back(stack);
+}
+
 void Form::IterationComplete()
 {
   DebugMessage("IterationComplete()");
@@ -728,8 +769,8 @@ void Form::IterationComplete()
 
   this->IntermediateImages.push_back(stack);
   
-  // There is an off-by-one because of 0-based arrays - the result of the first iteration is stored in the 0th component of the arrays. We compensate with the -1 below.
-  this->CurrentUsedPatchDisplayed = this->Inpainting.GetNumberOfCompletedIterations() - 1;
+  // After one iteration, GetNumberOfCompletedIterations will be 1. This is exactly the set of intermediate images we want to display, because the 0th intermediate images are the original inputs.
+  this->CurrentUsedPatchDisplayed = this->Inpainting.GetNumberOfCompletedIterations();
 
   ChangeDisplayedIteration();
 

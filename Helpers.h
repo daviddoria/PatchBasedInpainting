@@ -44,11 +44,10 @@ class vtkPolyData;
 
 namespace Helpers
 {
-////////////////// Helpers.cpp ///////////////////
+////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 void RGBImageToCIELabImage(const RGBImageType::Pointer rgbImage, FloatVectorImageType::Pointer cielabImage);
   
 void NormalizeVectorImage(FloatVector2ImageType::Pointer image);
-
 
 void ITKVectorImagetoVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage); // This function simply drives ITKImagetoVTKRGBImage or ITKImagetoVTKMagnitudeImage
 void ITKImagetoVTKRGBImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage);
@@ -60,8 +59,6 @@ void VectorImageToRGBImage(const FloatVectorImageType::Pointer image, RGBImageTy
 
 
 itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region);
-
-
 
 unsigned int SideLengthFromRadius(const unsigned int radius);
 
@@ -93,10 +90,19 @@ std::string ZeroPad(const unsigned int number, const unsigned int rep);
 
 void MakePixelsTransparent(vtkImageData* inputImage, vtkImageData* outputImage, const unsigned char value); // 'inputImage' should be const, but VTK doesn't allow it
 
-
 QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx);
 
-////////////////// Helpers.hxx ///////////////////
+itk::Index<2> GetNextPixelAlongVector(const itk::Index<2>& pixel, const FloatVector2Type& vector);
+
+itk::Offset<2> GetOffsetAlongVector(const FloatVector2Type& vector);
+
+itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2>& pixel, const unsigned int radius);
+
+float RoundAwayFromZero(const float number);
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+////////////////// Template function declarations (defined in Helpers.hxx) ///////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
 template<typename TImage>
 void DeepCopy(const typename TImage::Pointer input, typename TImage::Pointer output);
 
@@ -155,9 +161,6 @@ itk::Index<2> MinValueLocation(const typename T::Pointer image);
 template <typename TImage>
 void ColorToGrayscale(const typename TImage::Pointer colorImage, UnsignedCharScalarImageType::Pointer grayscaleImage);
 
-// Non template function declarations
-itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2>& pixel, const unsigned int radius);
-
 // template <typename TPixelType>
 // float PixelSquaredDifference(const TPixelType&, const TPixelType&);
 
@@ -169,6 +172,12 @@ void SetRegionToConstant(typename TImage::Pointer image, const itk::ImageRegion<
 
 template<typename TImage>
 unsigned int CountNonZeroPixels(const typename TImage::Pointer image);
+
+template<typename TImage>
+std::vector<itk::Index<2> > GetNonZeroPixels(const typename TImage::Pointer image);
+
+template<typename TImage>
+std::vector<itk::Index<2> > GetNonZeroPixels(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
 
 template<typename TImage>
 void WritePatch(const typename TImage::Pointer image, const Patch& patch, const std::string& filename);

@@ -308,15 +308,16 @@ void CriminisiInpainting::Iterate()
 
 }
 
-void CriminisiInpainting::FindBestPatchForHighestPriority(Patch& sourcePatch, Patch& targetPatch)
+void CriminisiInpainting::FindBestPatchForHighestPriority(PatchPair& bestPatchPair)
 {
-  // This function returns 'sourcePatch' and 'targetPatch' by reference
+  // This function returns the best PatchPair by reference
   
   float highestPriority = 0;
   itk::Index<2> pixelToFill = FindHighestValueOnBoundary(this->PriorityImage, highestPriority);
   DebugMessage<itk::Index<2> >("Highest priority found to be ", pixelToFill);
 
   itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
+  Patch targetPatch;
   targetPatch.Region = targetRegion;
   
   DebugMessage("Finding best patch...");
@@ -335,15 +336,17 @@ void CriminisiInpainting::FindBestPatchForHighestPriority(Patch& sourcePatch, Pa
 
   //this->DebugWritePatch(this->SourcePatches[bestMatchSourcePatchId], "SourcePatch.png");
   //this->DebugWritePatch(targetRegion, "TargetPatch.png");
-
+  Patch sourcePatch;
   sourcePatch = this->SourcePatches[bestMatchSourcePatchId];
   
+  bestPatchPair.TargetPatch = targetPatch;
+  bestPatchPair.SourcePatch = sourcePatch;
 }
 
 
 void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 {
-  // This function returns 'sourcePatch' and 'targetPatch' by reference
+  // This function returns the best PatchPair by reference
   
   FloatScalarImageType::Pointer CurrentPriorityImage = FloatScalarImageType::New();
   Helpers::DeepCopy<FloatScalarImageType>(this->PriorityImage, CurrentPriorityImage);
@@ -404,12 +407,19 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     
     //std::cout << "Potential pair: Source: " << sourcePatch.Region << " Target: " << targetPatch.Region << std::endl;
 
+    /*
+    // Compute histograms and histogram difference
     //HistogramType::Pointer sourceHistogram = Helpers::ComputeNDHistogramOfRegionManual(this->CurrentOutputImage, sourcePatch.Region, this->HistogramBinsPerDimension);
     HistogramType::Pointer sourceHistogram = Helpers::ComputeNDHistogramOfMaskedRegionManual(this->CurrentOutputImage, this->CurrentMask, sourcePatch.Region, this->HistogramBinsPerDimension);
     HistogramType::Pointer targetHistogram = Helpers::ComputeNDHistogramOfMaskedRegionManual(this->CurrentOutputImage, this->CurrentMask, targetPatch.Region, this->HistogramBinsPerDimension);
     
     float histogramDifference = Helpers::NDHistogramDifference(sourceHistogram, targetHistogram);
     patchPair.HistogramDifference = histogramDifference;
+    */
+    
+    // Compute continuation difference
+    float continuationDifference = ContinuationDifference(patchPair);
+    patchPair.ContinuationDifference = continuationDifference;
     
     patchPairs.push_back(patchPair);
     }
@@ -420,6 +430,7 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 //     std::cout << i << ": " << ssdScores[i] << std::endl;
 //     }
   
+  /*
   std::sort(patchPairs.begin(), patchPairs.end(), SortByAverageSSD);
   
   float histogramDifferenceThreshold = .4;
@@ -436,9 +447,14 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     }
     
   std::cout << "Best attempt was " << bestAttempt << std::endl;
+  */
   
-  bestPatchPair = patchPairs[bestAttempt];
+  // Keep the patch pair with the best isophote continuation
+  std::sort(patchPairs.begin(), patchPairs.end(), SortByContinuationDifference);
   
+  bestPatchPair = patchPairs[0];
+  
+  // Save the list of patch pairs that were examined in this iteration
   this->PotentialPatchPairs.push_back(patchPairs);
   
 }
@@ -1060,4 +1076,62 @@ bool CriminisiInpainting::GetUsedPatchPair(const unsigned int id, PatchPair& pat
 unsigned int CriminisiInpainting::GetNumberOfCompletedIterations()
 {
   return this->NumberOfCompletedIterations;
+}
+
+float CriminisiInpainting::ContinuationDifference(const itk::Index<2>& targetPixel, const PatchPair& patchPair)
+{
+  // Determine the position of the corresponding pixel in the source patch.
+  itk::Offset<2> offset = patchPair.TargetPatch.Region.GetIndex() - targetPixel;
+  itk::Index<2> currentSourcePixel = patchPair.SourcePatch.Region.GetIndex() + offset;
+  
+  FloatVector2Type isophote = this->IsophoteImage->GetPixel(currentSourcePixel);
+  
+  itk::Index<2> nextSourcePixel = Helpers::GetNextPixelAlongVector(currentSourcePixel, isophote);
+  
+  bool valid = false;
+  
+  // If the next pixel along the isophote is in bounds and in the hole region of the source patch, we can procede
+  if(patchPair.SourcePatch.Region.IsInside(nextSourcePixel) && this->CurrentMask->IsHole(nextSourcePixel))
+    {
+    valid = true;
+    }
+  else
+    {
+    // Try the other way
+    isophote *= -1.0;
+    nextSourcePixel = Helpers::GetNextPixelAlongVector(currentSourcePixel, isophote);
+    if(patchPair.SourcePatch.Region.IsInside(nextSourcePixel) && this->CurrentMask->IsHole(nextSourcePixel))
+      {
+      valid = true;
+      }
+    }
+  
+  if(valid)
+    {
+    float difference = SelfPatchCompareAll::StaticPixelDifference(this->CurrentOutputImage->GetPixel(currentSourcePixel), this->CurrentOutputImage->GetPixel(nextSourcePixel));
+    
+    float weightedDifference = this->IsophoteImage->GetPixel(currentSourcePixel).GetNorm() * difference;
+    
+    //return difference;
+    return weightedDifference;
+    }
+  else
+    {
+    return 0.0; // Skip this comparison
+    }
+}
+
+float CriminisiInpainting::ContinuationDifference(const PatchPair& patchPair)
+{
+  float totalContinuationDifference = 0.0f;
+  
+  // Identify border pixels on the source side of the boundary. Of course the boundary is defined in the target patch. The isophote extension is later check in the source patch.
+  std::vector<itk::Index<2> > borderPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage, patchPair.TargetPatch.Region);
+  
+  for(unsigned int i = 0; i < borderPixels.size(); ++i)
+    {
+    float difference = ContinuationDifference(borderPixels[i], patchPair);
+    totalContinuationDifference += difference;
+    }
+  return totalContinuationDifference;
 }

@@ -14,18 +14,7 @@ public:
   
 //protected:
   itk::ImageRegion<2> Region;
-  std::vector<ImageToHistogramFilterType::HistogramType::Pointer> Histograms;
+  //std::vector<ImageToHistogramFilterType::HistogramType::Pointer> Histograms;
 };
-
-struct PatchPair
-{
-  Patch SourcePatch;
-  Patch TargetPatch;
-  float AverageSSD;
-  float HistogramDifference;
-};
-
-bool SortByAverageSSD(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByHistogramDifference(const PatchPair& pair1, const PatchPair& pair2);
 
 #endif

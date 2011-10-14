@@ -22,6 +22,7 @@
 // Custom
 #include "Helpers.h"
 #include "Patch.h"
+#include "PatchPair.h"
 #include "Types.h"
 
 // ITK
@@ -34,8 +35,10 @@ class CriminisiInpainting
 public:
 
   enum DifferenceTypeEnum {DIFFERENCE_ALL, DIFFERENCE_ALL255, DIFFERENCE_DEPTH};
-  
+
+  ///////////////////////////////////////////////////////////////////////
   /////////////////// CriminisiInpaintingInterface.cpp //////////////////
+  ///////////////////////////////////////////////////////////////////////
   
   void SetDifferenceType(const int);
   
@@ -81,7 +84,9 @@ public:
   // Get the current mask image
   Mask::Pointer GetMaskImage();
   
+  //////////////////////////////////////////////////////////////
   /////////////////// CriminisiInpainting.cpp //////////////////
+  //////////////////////////////////////////////////////////////
   
   // Constructor
   CriminisiInpainting();
@@ -115,8 +120,14 @@ public:
   
 private:
 
-  // This is the original Criminisi idea of filling the highest priority first
-  void FindBestPatchForHighestPriority(Patch& sourcePatch, Patch& targetPatch);
+  // Determine the difference along an extended isophote of the pixel that will be filled.
+  float ContinuationDifference(const itk::Index<2>& targetPixel, const PatchPair& patchPair);
+  
+  // Determine the difference along an extended isophote of the pixel that will be filled.
+  float ContinuationDifference(const PatchPair& patchPair);
+  
+  // This is the original Criminisi idea of filling the highest priority first. The best patch pair is returned by reference.
+  void FindBestPatchForHighestPriority(PatchPair& bestPatchPair);
   
   // This is a new idea to try to fill several patches and return the best pair
   void FindBestPatchLookAhead(PatchPair& bestPatchPair);

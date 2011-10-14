@@ -514,18 +514,44 @@ unsigned int CountNonZeroPixels(const typename TImage::Pointer image)
 {
   typename itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
 
-  unsigned int nonZeroPixels = 0;
+  unsigned int numberOfNonZeroPixels = 0;
   while(!imageIterator.IsAtEnd())
     {
     if(imageIterator.Get())
       {
-      nonZeroPixels++;
+      numberOfNonZeroPixels++;
+      }
+
+    ++imageIterator;
+    }
+  return numberOfNonZeroPixels;
+}
+
+template<typename TImage>
+std::vector<itk::Index<2> > GetNonZeroPixels(const typename TImage::Pointer image)
+{
+  return GetNonZeroPixels(image, image->GetLargestPossibleRegion());
+}
+
+template<typename TImage>
+std::vector<itk::Index<2> > GetNonZeroPixels(const typename TImage::Pointer image, const itk::ImageRegion<2>& region)
+{
+  std::vector<itk::Index<2> > nonZeroPixels;
+  
+  typename itk::ImageRegionIterator<TImage> imageIterator(image, region);
+
+  while(!imageIterator.IsAtEnd())
+    {
+    if(imageIterator.Get())
+      {
+      nonZeroPixels.push_back(imageIterator.GetIndex());
       }
 
     ++imageIterator;
     }
   return nonZeroPixels;
 }
+
 
 template <class T>
 unsigned int argmin(const typename std::vector<T>& vec)
