@@ -22,7 +22,8 @@
 #include <vtkSmartPointer.h>
 
 class vtkActor;
-class vtkGlyph2D;
+//class vtkGlyph2D;
+class vtkHedgeHog;
 class vtkImageData;
 class vtkPolyData;
 class vtkPolyDataMapper;
@@ -36,7 +37,9 @@ public:
   vtkSmartPointer<vtkActor> Actor;
   vtkSmartPointer<vtkImageData> ImageData;
   vtkSmartPointer<vtkPolyData> Vectors;
-  vtkSmartPointer<vtkGlyph2D> GlyphFilter;
+  //vtkSmartPointer<vtkGlyph2D> GlyphFilter;
+  vtkSmartPointer<vtkHedgeHog> GlyphFilter;
+  
   
 };
 

@@ -93,6 +93,8 @@ public slots:
   void on_chkBoundaryNormals_clicked();
   void on_chkPotentialPatches_clicked();
   
+  void on_chkDisplayMaskedTargetPatch_clicked();
+  
   void SetCheckboxVisibility(const bool visible);
   
   void on_btnInpaint_clicked();
@@ -113,11 +115,11 @@ public slots:
   
   void IterationCompleteSlot();
   
-  void ExtractIsophotesForDisplay();
+  void DisplayIsophotes();
   
 protected:
   
-  // These functions display the iteration indicated by the member 'CurrentUsedPatchDisplayed'
+  // These functions display the iteration indicated by the member 'IterationToDisplay'
   void DisplayBoundary();
   void DisplayBoundaryNormals();
   void DisplayMask();
@@ -210,8 +212,8 @@ protected:
   template <typename T>
   void DebugMessage(const std::string& message, const T value);
 
-  // This is not unsigned because we start at -1, indicating there is no patch to display
-  int CurrentUsedPatchDisplayed;
+  // If IterationToDisplay == 0, then we are just displaying the initial images.
+  unsigned int IterationToDisplay;
   
   // Display zoomed in versions of the patches used at the current iteration
   void DisplayUsedPatches();

@@ -117,37 +117,6 @@ void CriminisiInpainting::ComputeSourcePatches(const itk::ImageRegion<2>& region
 
 }
 
-void CriminisiInpainting::ExpandMask()
-{
-  DebugMessage("ExpandMask()");
-  // Expand the mask - this is necessary to prevent the isophotes from being undefined in the target region
-  typedef itk::FlatStructuringElement<2> StructuringElementType;
-  StructuringElementType::RadiusType radius;
-  radius.Fill(2); // Just a little bit of expansion
-  //radius.Fill(this->PatchRadius[0]); // This was working, but huge expansion
-  //radius.Fill(2.0* this->PatchRadius[0]);
-
-  StructuringElementType structuringElement = StructuringElementType::Box(radius);
-  typedef itk::BinaryDilateImageFilter<Mask, Mask, StructuringElementType> BinaryDilateImageFilterType;
-  BinaryDilateImageFilterType::Pointer expandMaskFilter = BinaryDilateImageFilterType::New();
-  expandMaskFilter->SetInput(this->CurrentMask);
-  expandMaskFilter->SetKernel(structuringElement);
-  expandMaskFilter->Update();
-
-  Helpers::DebugWriteImageConditional<Mask>(expandMaskFilter->GetOutput(), "Debug/ExpandMask.expandedMask.mha", this->DebugImages);
-    
-  //Helpers::DeepCopy<Mask>(expandMaskFilter->GetOutput(), this->CurrentMask);
-  this->CurrentMask->DeepCopyFrom(expandMaskFilter->GetOutput());
-
-  //WriteScaledImage<Mask>(this->Mask, "expandedMask.mhd");
-}
-
-void CriminisiInpainting::InitializeMask()
-{
-  DebugMessage("InitializeMask()");
-  ExpandMask();
-}
-
 void CriminisiInpainting::InitializeConfidenceMap()
 {
   DebugMessage("InitializeConfidenceMap()");
@@ -208,9 +177,6 @@ void CriminisiInpainting::Initialize()
   try
   {
     this->NumberOfCompletedIterations = 0;
-    
-    InitializeMask();
-    Helpers::DebugWriteImageConditional<Mask>(this->CurrentMask, "Debug/Initialize.CurrentMask.mha", this->DebugImages);
   
     // We find the boundary of the mask at every iteration (in Iterate()), but we do this here so that everything is initialized and valid if we are observing this class for display.
     FindBoundary();
@@ -302,10 +268,16 @@ void CriminisiInpainting::Iterate()
   // Add new source patches
   ComputeSourcePatches(patchPair.TargetPatch.Region);
   
+  // At the end of an iteration, things would be slightly out of sync. The boundary is computed at the beginning of the iteration (before the patch is filled),
+  // so at the end of the iteration, the boundary image will not correspond to the boundary of the remaining hole in the image - it will be off by 1 iteration.
+  // We fix this by calling FindBoundary again at the end of the iteration.
+  FindBoundary();
+  
   this->NumberOfCompletedIterations++;
 
   DebugMessage<unsigned int>("Completed iteration: ", this->NumberOfCompletedIterations);
 
+  
 }
 
 void CriminisiInpainting::FindBestPatchForHighestPriority(PatchPair& bestPatchPair)
@@ -1108,7 +1080,8 @@ float CriminisiInpainting::ContinuationDifference(const itk::Index<2>& targetPix
   
   if(valid)
     {
-    float difference = SelfPatchCompareAll::StaticPixelDifference(this->CurrentOutputImage->GetPixel(currentSourcePixel), this->CurrentOutputImage->GetPixel(nextSourcePixel));
+    //float difference = SelfPatchCompareAll::StaticPixelDifference(this->CurrentOutputImage->GetPixel(currentSourcePixel), this->CurrentOutputImage->GetPixel(nextSourcePixel));
+    float difference = Helpers::AngleBetween(this->IsophoteImage->GetPixel(currentSourcePixel), this->IsophoteImage->GetPixel(nextSourcePixel));
     
     float weightedDifference = this->IsophoteImage->GetPixel(currentSourcePixel).GetNorm() * difference;
     
@@ -1133,5 +1106,10 @@ float CriminisiInpainting::ContinuationDifference(const PatchPair& patchPair)
     float difference = ContinuationDifference(borderPixels[i], patchPair);
     totalContinuationDifference += difference;
     }
-  return totalContinuationDifference;
+  
+  // We don't watch patches to be penalized for having longer boundaries
+  float averageContinuationDifference = totalContinuationDifference / borderPixels.size();
+  
+  //return totalContinuationDifference;
+  return averageContinuationDifference;
 }

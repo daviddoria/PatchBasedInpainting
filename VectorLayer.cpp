@@ -19,8 +19,9 @@
 #include "VectorLayer.h"
 
 #include <vtkActor.h>
-#include <vtkArrowSource.h>
-#include <vtkGlyph2D.h>
+//#include <vtkArrowSource.h>
+//#include <vtkGlyph2D.h>
+#include <vtkHedgeHog.h>
 #include <vtkImageData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
@@ -30,18 +31,24 @@ VectorLayer::VectorLayer()
   this->Mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   this->ImageData = vtkSmartPointer<vtkImageData>::New();
   this->Actor = vtkSmartPointer<vtkActor>::New();
-  this->GlyphFilter = vtkSmartPointer<vtkGlyph2D>::New();
+  //this->GlyphFilter = vtkSmartPointer<vtkGlyph2D>::New();
+  this->GlyphFilter = vtkSmartPointer<vtkHedgeHog>::New();
   this->Vectors = vtkSmartPointer<vtkPolyData>::New();
   
+  /*
   vtkSmartPointer<vtkArrowSource> arrowSource = vtkSmartPointer<vtkArrowSource>::New();
   arrowSource->Update();
   
   this->GlyphFilter->SetInputConnection(this->Vectors->GetProducerPort());
   this->GlyphFilter->SetSourceConnection(arrowSource->GetOutputPort());
-  //this->GlyphFilter->OrientOn();
-  //this->GlyphFilter->SetVectorModeToUseVector();
-  this->GlyphFilter->SetScaleModeToScaleByVector();
+  this->GlyphFilter->OrientOn();
+  this->GlyphFilter->SetVectorModeToUseVector(); // Use vectors, not normals
+  this->GlyphFilter->SetScaleModeToScaleByVector(); // Scale the glyphs by the vector magnitude
   //this->GlyphFilter->SetScaleFactor(10);
+  */
+  
+  this->GlyphFilter->SetInputConnection(this->Vectors->GetProducerPort());
+  this->GlyphFilter->SetVectorModeToUseVector(); // Use vectors, not normals
   
   this->Mapper->SetInputConnection(this->GlyphFilter->GetOutputPort());
   this->Actor->SetMapper(this->Mapper);

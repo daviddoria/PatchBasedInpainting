@@ -67,140 +67,32 @@ class Mask : public itk::Image< unsigned char, 2>
   const NeighborhoodAccessorFunctorType GetNeighborhoodAccessor() const
   { return NeighborhoodAccessorFunctorType(); }
   
-  bool IsHole(const itk::Index<2>& index) const
-  {
-    if(this->GetPixel(index) == this->HoleValue)
-      {
-      return true;
-      }
-    return false;
-  }
+  bool IsHole(const itk::Index<2>& index) const;
     
-  bool IsValid(const itk::ImageRegion<2>& region) const
-  {
-    // If any of the pixels in the region are invalid, the region is invalid.
-    
-    itk::ImageRegionConstIterator<Mask> maskIterator(this, region);
+  bool IsValid(const itk::ImageRegion<2>& region) const;
 
-    while(!maskIterator.IsAtEnd())
-      {
-      if(!this->IsValid(maskIterator.GetIndex()))
-	{
-	//std::cout << "Mask::IsValid - Pixel " << maskIterator.GetIndex() << " has value " << static_cast<unsigned int>(maskIterator.Get()) 
-	//          << " which makes the region invalid because Mask::ValidValue = " << static_cast<unsigned int>(this->ValidValue) << std::endl;
-	return false;
-	}
+  bool IsValid(const itk::Index<2>& index) const;
+  
+  void Invert();
 
-      ++maskIterator;
-      }
-    return true;
-  }
+  void Cleanup();
+  
+  void ExpandHole();
+  
+  void SetHoleValue(const unsigned char value);
 
-  bool IsValid(const itk::Index<2>& index) const
-  {
-    if(this->GetPixel(index) == this->ValidValue)
-      {
-      return true;
-      }
-    return false;
-  }
-  
-  void Invert()
-  {
-    // Exchange HoleValue and ValidValue, but leave everything else alone.
-    itk::ImageRegionIterator<Mask> maskIterator(this, this->GetLargestPossibleRegion());
-    unsigned int invertedCounter = 0;
-    while(!maskIterator.IsAtEnd())
-      {
-      if(this->IsValid(maskIterator.GetIndex()))
-	{
-	maskIterator.Set(this->HoleValue);
-	invertedCounter++;
-	}
-      else if(this->IsHole(maskIterator.GetIndex()))
-	{
-	maskIterator.Set(this->ValidValue);
-	invertedCounter++;
-	}
-      ++maskIterator;
-      }
-    std::cout << "Inverted " << invertedCounter << " in the mask." << std::endl;
-  }
-  
-  void Cleanup()
-  {
-    // We want to interpret pixels that are "pretty much hole value" as holes, and pixels that
-    // are "pretty much valid value" as valid. The "do not use" pixels must be very far away from both of these values.
-    itk::ImageRegionIterator<Mask> maskIterator(this, this->GetLargestPossibleRegion());
-    
-    float tolerance = 4;
-    while(!maskIterator.IsAtEnd())
-      {
-      if(fabs(maskIterator.Get() - this->ValidValue) < tolerance)
-	{
-        //std::cout << "Setting valid pixel to " << static_cast<unsigned int>(this->ValidValue) << std::endl;
-	maskIterator.Set(this->ValidValue);
-	}
-      else if(fabs(maskIterator.Get() - this->HoleValue) < tolerance)
-	{
-        //std::cout << "Setting hole pixel to " << static_cast<unsigned int>(this->HoleValue) << std::endl;
-	maskIterator.Set(this->HoleValue);
-	}
-      ++maskIterator;
-      }
-    
-  }
-  
-  void SetHoleValue(const unsigned char value)
-  {
-    this->HoleValue = value; 
-  }
-  
-  void SetValidValue(const unsigned char value)
-  {
-    this->ValidValue = value; 
-  }
-  
-  unsigned char GetHoleValue() const
-  {
-    return this->HoleValue;
-  }
-  
-  unsigned char GetValidValue() const
-  {
-    return this->ValidValue;
-  }
-  
-  void OutputMembers() const
-  {
-    std::cout << "HoleValue: " << static_cast<unsigned int>(this->HoleValue) << std::endl;
-    std::cout << "ValidValue: " << static_cast<unsigned int>(this->ValidValue) << std::endl;
-  }
-  
-  void DeepCopyFrom(const Mask::Pointer inputMask)
-  {
-    this->SetRegions(inputMask->GetLargestPossibleRegion());
-    this->Allocate();
+  void SetValidValue(const unsigned char value);
 
-    itk::ImageRegionConstIterator<Mask> inputIterator(inputMask, inputMask->GetLargestPossibleRegion());
-    itk::ImageRegionIterator<Mask> thisIterator(this, this->GetLargestPossibleRegion());
-
-    while(!inputIterator.IsAtEnd())
-      {
-      thisIterator.Set(inputIterator.Get());
-      ++inputIterator;
-      ++thisIterator;
-      }
-    this->SetHoleValue(inputMask->GetHoleValue());
-    this->SetValidValue(inputMask->GetValidValue());
-  }
+  unsigned char GetHoleValue() const;
+  
+  unsigned char GetValidValue() const;
+  
+  void OutputMembers() const;
+  
+  void DeepCopyFrom(const Mask::Pointer inputMask);
   
 protected:
-  Mask()
-  {
-    this->HoleValue = 255;
-    this->ValidValue = 0;
-  }
+  Mask();
   
   unsigned char HoleValue; // Pixels with this value will be filled.
   unsigned char ValidValue; // Pixels with this value will not be filled - they are the source region.

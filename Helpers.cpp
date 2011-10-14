@@ -39,6 +39,17 @@
 namespace Helpers
 {
 
+float AngleBetween(const FloatVector2Type v1, const FloatVector2Type v2)
+{
+  FloatVector2Type v1normalized = v1;
+  v1normalized.Normalize();
+  
+  FloatVector2Type v2normalized = v2;
+  v2normalized.Normalize();
+  
+  return acos(v1normalized*v2normalized);
+}
+
 itk::Index<2> GetNextPixelAlongVector(const itk::Index<2>& pixel, const FloatVector2Type& vector)
 {
   itk::Index<2> nextPixel = pixel + GetOffsetAlongVector(vector);
@@ -381,6 +392,17 @@ void ITKImagetoVTKMagnitudeImage(const FloatVectorImageType::Pointer image, vtkI
   outputImage->Modified();
 }
 
+void SetCenterPixel(vtkImageData* image, const unsigned char color[3])
+{
+  int dims[3];
+  image->GetDimensions(dims);
+  
+  unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(dims[0]/2, dims[1]/2, 0));
+  pixel[0] = color[0];
+  pixel[1] = color[1];
+  pixel[2] = color[2];
+  pixel[3] = 255; // visible
+}
 
 void BlankAndOutlineImage(vtkImageData* image, const unsigned char color[3])
 {
@@ -440,6 +462,7 @@ void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType::Pointer vectorIm
 {
   vtkSmartPointer<vtkFloatArray> vectors = vtkSmartPointer<vtkFloatArray>::New();
   vectors->SetNumberOfComponents(3);
+  vectors->SetName("Vectors");
   
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
   

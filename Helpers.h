@@ -45,9 +45,13 @@ class vtkPolyData;
 namespace Helpers
 {
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
+void SetCenterPixel(vtkImageData* image, const unsigned char color[3]);
+
 void RGBImageToCIELabImage(const RGBImageType::Pointer rgbImage, FloatVectorImageType::Pointer cielabImage);
-  
+
 void NormalizeVectorImage(FloatVector2ImageType::Pointer image);
+
+float AngleBetween(const FloatVector2Type v1, const FloatVector2Type v2);
 
 void ITKVectorImagetoVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage); // This function simply drives ITKImagetoVTKRGBImage or ITKImagetoVTKMagnitudeImage
 void ITKImagetoVTKRGBImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage);

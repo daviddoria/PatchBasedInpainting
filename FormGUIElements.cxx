@@ -60,6 +60,11 @@ void Form::on_chkPotentialPatches_clicked()
   Refresh();
 }
 
+void Form::on_chkDisplayMaskedTargetPatch_clicked()
+{
+  DisplayUsedPatches();
+}
+
 void Form::SetCameraPosition1()
 {
   double leftToRight[3] = {-1,0,0};

@@ -31,6 +31,7 @@ InpaintingVisualizationStack.cpp
 Interactive.cpp 
 InteractorStyleImageNoLevel.cxx
 Layer.cpp
+Mask.cpp
 Patch.cpp
 PatchPair.cpp
 ProgressThread.cpp

@@ -186,10 +186,6 @@ private:
   
   // Initialization functions
   
-  // This function expands the mask a little bit. We must do this because the isophotes may not be well defined 
-  // on the original mask boundary (if the segmentation is very tight), but they will be better defined a few pixels away.
-  void InitializeMask();
-  
   // The initial confidence is 0 in the hole and 1 elsewhere.
   void InitializeConfidenceMap();
   

@@ -736,6 +736,8 @@ QImage GetQImage(const typename TImage::Pointer image, const Mask::Pointer mask,
   
   itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
 
+  QColor holeColor(0, 255, 0);
+  
   while(!imageIterator.IsAtEnd())
     {
     typename TImage::PixelType pixel = imageIterator.Get();
@@ -744,8 +746,7 @@ QImage GetQImage(const typename TImage::Pointer image, const Mask::Pointer mask,
 
     if(regionOfInterestMaskFilter->GetOutput()->IsHole(index))
       {
-      QColor pixelColor(0, 255, 0);
-      qimage.setPixel(index[0], index[1], pixelColor.rgb());
+      qimage.setPixel(index[0], index[1], holeColor.rgb());
       }
     else
       {
@@ -756,6 +757,9 @@ QImage GetQImage(const typename TImage::Pointer image, const Mask::Pointer mask,
     ++imageIterator;
     }
 
+  QColor highlightColor(255, 0, 255);
+  qimage.setPixel(region.GetSize()[0]/2, region.GetSize()[1]/2, highlightColor.rgb());
+  
   //return qimage; // The actual image region
   return qimage.mirrored(false, true); // The flipped image region
 }
