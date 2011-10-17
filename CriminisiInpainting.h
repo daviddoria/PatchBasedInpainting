@@ -218,9 +218,6 @@ private:
   // Compute the normals of a region boundary.
   void ComputeBoundaryNormals();
 
-  // Enlarge the mask so that isophotes are not computed over the mask/image boundary
-  void ExpandMask();
-
   // Criminisi specific functions
   // Compute the priorities at all boundary pixels.
   void ComputeAllPriorities();

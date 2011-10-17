@@ -482,25 +482,23 @@ void CriminisiInpainting::ComputeIsophotes()
     luminanceFilter->Update();
   
     Helpers::DebugWriteImageConditional<FloatScalarImageType>(luminanceFilter->GetOutput(), "Debug/ComputeIsophotes.luminance.mha", this->DebugImages);
-    
-    // Blur the image to compute better gradient estimates
-    typedef itk::DiscreteGaussianImageFilter<FloatScalarImageType, FloatScalarImageType >  BlurFilterType;
-    BlurFilterType::Pointer blurFilter = BlurFilterType::New();
-    blurFilter->SetInput(luminanceFilter->GetOutput());
-    //blurFilter->SetVariance(2);
-    blurFilter->SetVariance(5);
-    blurFilter->Update();
 
-    Helpers::DebugWriteImageConditional<FloatScalarImageType>(blurFilter->GetOutput(), "Debug/ComputeIsophotes.blurred.mha", true);
+    FloatScalarImageType::Pointer blurredImage = FloatScalarImageType::New();
+    Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), this->CurrentMask, 5, blurredImage);
+    
+    Helpers::DebugWriteImageConditional<FloatScalarImageType>(blurredImage, "Debug/ComputeIsophotes.blurred.mha", true);
     
     // Compute the gradient
-    // Template parameters are <TInputImage, TOperatorValueType, TOutputValueType>
-    typedef itk::GradientImageFilter<FloatScalarImageType, float, float>  GradientFilterType;
-    GradientFilterType::Pointer gradientFilter = GradientFilterType::New();
-    gradientFilter->SetInput(blurFilter->GetOutput());
-    gradientFilter->Update();
-
-    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradientFilter->GetOutput(), "Debug/ComputeIsophotes.gradient.mha", this->DebugImages);
+    FloatScalarImageType::Pointer xDerivative = FloatScalarImageType::New();
+    Helpers::MaskedDerivative<FloatScalarImageType>(blurredImage, this->CurrentMask, 0, xDerivative);
+    
+    FloatScalarImageType::Pointer yDerivative = FloatScalarImageType::New();
+    Helpers::MaskedDerivative<FloatScalarImageType>(blurredImage, this->CurrentMask, 1, yDerivative);
+    
+    FloatVector2ImageType::Pointer gradient = FloatVector2ImageType::New();
+    Helpers::GradientFromDerivatives<float>(xDerivative, yDerivative, gradient);
+    
+    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient, "Debug/ComputeIsophotes.gradient.mha", this->DebugImages);
  
     // Rotate the gradient 90 degrees to obtain isophotes from gradient
     typedef itk::UnaryFunctorImageFilter<FloatVector2ImageType, FloatVector2ImageType,
@@ -508,13 +506,12 @@ void CriminisiInpainting::ComputeIsophotes()
                   FloatVector2ImageType::PixelType> > FilterType;
 
     FilterType::Pointer rotateFilter = FilterType::New();
-    rotateFilter->SetInput(gradientFilter->GetOutput());
+    rotateFilter->SetInput(gradient);
     rotateFilter->Update();
 
     Helpers::DebugWriteImageConditional<FloatVector2ImageType>(rotateFilter->GetOutput(), "Debug/ComputeIsophotes.rotatedGradient.mha", this->DebugImages);
       
-    // Mask the isophote image with the expanded version of the inpainting mask.
-    // That is, keep only the values outside of the expanded mask. To do this, we have to first invert the mask.
+    // Mask the isophote image with the inpainting mask. That is, keep only the values outside of the expanded mask. To do this, we have to first invert the mask.
 
     // Invert the mask
     typedef itk::InvertIntensityImageFilter <Mask> InvertIntensityImageFilterType;

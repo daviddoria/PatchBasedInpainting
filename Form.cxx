@@ -309,7 +309,7 @@ void Form::on_actionOpenMask_activated()
   
   // This function expands the mask a little bit. We must do this because the isophotes may not be well defined 
   // on the original mask boundary (if the segmentation is very tight), but they will be better defined a few pixels away.
-  this->UserMaskImage->ExpandHole();
+  //this->UserMaskImage->ExpandHole();
   
   // For this program, we ALWAYS assume the hole to be filled is white, and the valid/source region is black.
   // This is not simply reversible because of some subtle erosion operations that are performed.

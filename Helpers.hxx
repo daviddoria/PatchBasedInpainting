@@ -792,9 +792,12 @@ void MaskedBlur(const typename TImage::Pointer inputImage, const Mask::Pointer m
   
   // Create the output image - data will be deep copied into it
   typename TImage::Pointer blurredImage = TImage::New();
+  blurredImage->SetRegions(inputImage->GetLargestPossibleRegion());
+  blurredImage->Allocate();
+  blurredImage->FillBuffer(0);
   
   // Initialize
-  typename TImage::Pointer operatingImage;
+  typename TImage::Pointer operatingImage = TImage::New();
   DeepCopy<TImage>(inputImage, operatingImage);
   
   for(unsigned int dimensionPass = 0; dimensionPass < 2; dimensionPass++) // The image is 2D
@@ -841,10 +844,12 @@ void MaskedBlur(const typename TImage::Pointer inputImage, const Mask::Pointer m
       ++imageIterator;
       }
 
-    // For the separable Gaussian filtering concept to work, the next pass must operate on the output of the current pass
-    DeepCopy(blurredImage, operatingImage);
+    // For the separable Gaussian filtering concept to work, the next pass must operate on the output of the current pass.
+    DeepCopy<TImage>(blurredImage, operatingImage);
     }
   
+  // Copy the final image to the output.
+  DeepCopy<TImage>(blurredImage, output);
 }
 
 template<typename TPixel>
@@ -856,7 +861,7 @@ void GradientFromDerivatives(const typename itk::Image<TPixel, 2>::Pointer xDeri
     return;
     }
     
-  output->SetRegions(xDerivative->GetLargestPossibleRegion);
+  output->SetRegions(xDerivative->GetLargestPossibleRegion());
   output->Allocate();
   
   itk::ImageRegionIterator<itk::Image<itk::CovariantVector<TPixel, 2> > > imageIterator(output, output->GetLargestPossibleRegion());
@@ -867,7 +872,7 @@ void GradientFromDerivatives(const typename itk::Image<TPixel, 2>::Pointer xDeri
     vectorPixel[0] = xDerivative->GetPixel(imageIterator.GetIndex());
     vectorPixel[1] = yDerivative->GetPixel(imageIterator.GetIndex());
   
-    output.Set(vectorPixel);
+    output->SetPixel(imageIterator.GetIndex(), vectorPixel);
  
     ++imageIterator;
     }
@@ -876,6 +881,11 @@ void GradientFromDerivatives(const typename itk::Image<TPixel, 2>::Pointer xDeri
 template <typename TImage>
 void MaskedDerivative(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output)
 {
+  // Setup the output
+  output->SetRegions(image->GetLargestPossibleRegion());
+  output->Allocate();
+  output->FillBuffer(0);
+  
   itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
  
   while(!imageIterator.IsAtEnd())
