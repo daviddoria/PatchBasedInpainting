@@ -860,4 +860,14 @@ QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx)
     }
 }
 
+itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned int dimension)
+{
+  // Manually construct a 2D offset with 0 in all dimensions except the specified dimension
+  itk::Offset<2> offset;
+  offset.Fill(0);
+  offset[dimension] = offset1D[0];
+  
+  return offset;
+}
+
 } // end namespace

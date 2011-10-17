@@ -270,8 +270,9 @@ void CriminisiInpainting::Iterate()
   
   // At the end of an iteration, things would be slightly out of sync. The boundary is computed at the beginning of the iteration (before the patch is filled),
   // so at the end of the iteration, the boundary image will not correspond to the boundary of the remaining hole in the image - it will be off by 1 iteration.
-  // We fix this by calling FindBoundary again at the end of the iteration.
+  // We fix this by computing the boundary and boundary normals again at the end of the iteration.
   FindBoundary();
+  ComputeBoundaryNormals();
   
   this->NumberOfCompletedIterations++;
 
@@ -486,7 +487,8 @@ void CriminisiInpainting::ComputeIsophotes()
     typedef itk::DiscreteGaussianImageFilter<FloatScalarImageType, FloatScalarImageType >  BlurFilterType;
     BlurFilterType::Pointer blurFilter = BlurFilterType::New();
     blurFilter->SetInput(luminanceFilter->GetOutput());
-    blurFilter->SetVariance(2);
+    //blurFilter->SetVariance(2);
+    blurFilter->SetVariance(5);
     blurFilter->Update();
 
     Helpers::DebugWriteImageConditional<FloatScalarImageType>(blurFilter->GetOutput(), "Debug/ComputeIsophotes.blurred.mha", true);
@@ -502,9 +504,8 @@ void CriminisiInpainting::ComputeIsophotes()
  
     // Rotate the gradient 90 degrees to obtain isophotes from gradient
     typedef itk::UnaryFunctorImageFilter<FloatVector2ImageType, FloatVector2ImageType,
-    RotateVectors<
-      FloatVector2ImageType::PixelType,
-      FloatVector2ImageType::PixelType> > FilterType;
+    RotateVectors<FloatVector2ImageType::PixelType,
+                  FloatVector2ImageType::PixelType> > FilterType;
 
     FilterType::Pointer rotateFilter = FilterType::New();
     rotateFilter->SetInput(gradientFilter->GetOutput());
@@ -1080,8 +1081,11 @@ float CriminisiInpainting::ContinuationDifference(const itk::Index<2>& targetPix
   
   if(valid)
     {
-    //float difference = SelfPatchCompareAll::StaticPixelDifference(this->CurrentOutputImage->GetPixel(currentSourcePixel), this->CurrentOutputImage->GetPixel(nextSourcePixel));
-    float difference = Helpers::AngleBetween(this->IsophoteImage->GetPixel(currentSourcePixel), this->IsophoteImage->GetPixel(nextSourcePixel));
+    // Compute the pixel difference.
+    //float difference = SelfPatchCompareAll::StaticPixelDifference(this->CurrentOutputImage->GetPixel(targetPixel), this->CurrentOutputImage->GetPixel(nextSourcePixel));
+
+    // We want to compare the isophote on the target side of the boundary to the isophote on the source side of the boundary.
+    float difference = Helpers::AngleBetween(this->IsophoteImage->GetPixel(targetPixel), this->IsophoteImage->GetPixel(nextSourcePixel));
     
     float weightedDifference = this->IsophoteImage->GetPixel(currentSourcePixel).GetNorm() * difference;
     

@@ -24,6 +24,10 @@
 // VTK
 #include <vtkImageData.h>
 
+// ITK
+#include "itkGaussianOperator.h"
+#include "itkImageFileWriter.h"
+
 // Qt
 #include <QColor>
 
@@ -762,6 +766,161 @@ QImage GetQImage(const typename TImage::Pointer image, const Mask::Pointer mask,
   
   //return qimage; // The actual image region
   return qimage.mirrored(false, true); // The flipped image region
+}
+
+// This struct is used inside MaskedBlur()
+struct Contribution
+{
+  float weight;
+  unsigned char value;
+  itk::Offset<2> offset;
+};
+
+template <typename TImage>
+void MaskedBlur(const typename TImage::Pointer inputImage, const Mask::Pointer mask, const unsigned int kernelRadius, typename TImage::Pointer output)
+{
+  // Create a Gaussian kernel
+  typedef itk::GaussianOperator<float, 1> GaussianOperatorType;
+  
+  // Make a (2*kernelRadius+1)x1 kernel
+  itk::Size<1> radius;
+  radius.Fill(kernelRadius);
+  
+  GaussianOperatorType gaussianOperator;
+  gaussianOperator.SetDirection(0); // It doesn't matter which direction we set - we will be interpreting the kernel as 1D (no direction)
+  gaussianOperator.CreateToRadius(radius);
+  
+  // Create the output image - data will be deep copied into it
+  typename TImage::Pointer blurredImage = TImage::New();
+  
+  // Initialize
+  typename TImage::Pointer operatingImage;
+  DeepCopy<TImage>(inputImage, operatingImage);
+  
+  for(unsigned int dimensionPass = 0; dimensionPass < 2; dimensionPass++) // The image is 2D
+    {
+    itk::ImageRegionIterator<TImage> imageIterator(operatingImage, operatingImage->GetLargestPossibleRegion());
+  
+    while(!imageIterator.IsAtEnd())
+      {
+      itk::Index<2> centerPixel = imageIterator.GetIndex();
+    
+      // Loop over all of the pixels in the kernel and use the ones that fit a criteria
+      std::vector<Contribution> contributions;
+      for(unsigned int i = 0; i < gaussianOperator.Size(); i++)
+	{
+	// Since we use 1D kernels, we must manually construct a 2D offset with 0 in all dimensions except the dimension of the current pass
+	itk::Offset<2> offset = OffsetFrom1DOffset(gaussianOperator.GetOffset(i), dimensionPass);
+      
+	itk::Index<2> pixel = centerPixel + offset;
+	if(blurredImage->GetLargestPossibleRegion().IsInside(pixel))
+	  {
+	  Contribution contribution;
+	  contribution.weight = gaussianOperator.GetElement(i);
+	  contribution.value = operatingImage->GetPixel(pixel);
+	  contribution.offset = OffsetFrom1DOffset(gaussianOperator.GetOffset(i), dimensionPass);
+	  contributions.push_back(contribution);
+	  }
+	}
+	
+      float total = 0.0f;
+      for(unsigned int i = 0; i < contributions.size(); i++)
+	{
+	total += contributions[i].weight;
+	}
+	
+      // Determine the new pixel value
+      float newPixelValue = 0.0f;
+      for(unsigned int i = 0; i < contributions.size(); i++)
+	{
+	itk::Index<2> pixel = centerPixel + contributions[i].offset;
+	newPixelValue += contributions[i].weight/total * operatingImage->GetPixel(pixel);
+	}
+	
+      blurredImage->SetPixel(centerPixel, newPixelValue);
+      ++imageIterator;
+      }
+
+    // For the separable Gaussian filtering concept to work, the next pass must operate on the output of the current pass
+    DeepCopy(blurredImage, operatingImage);
+    }
+  
+}
+
+template<typename TPixel>
+void GradientFromDerivatives(const typename itk::Image<TPixel, 2>::Pointer xDerivative, const typename itk::Image<TPixel, 2>::Pointer yDerivative, typename itk::Image<itk::CovariantVector<TPixel, 2> >::Pointer output)
+{
+  if(xDerivative->GetLargestPossibleRegion() != yDerivative->GetLargestPossibleRegion())
+    {
+    std::cerr << "X and Y derivative images must be the same size!" << std::endl;
+    return;
+    }
+    
+  output->SetRegions(xDerivative->GetLargestPossibleRegion);
+  output->Allocate();
+  
+  itk::ImageRegionIterator<itk::Image<itk::CovariantVector<TPixel, 2> > > imageIterator(output, output->GetLargestPossibleRegion());
+ 
+  while(!imageIterator.IsAtEnd())
+    {
+    itk::CovariantVector<TPixel, 2> vectorPixel;
+    vectorPixel[0] = xDerivative->GetPixel(imageIterator.GetIndex());
+    vectorPixel[1] = yDerivative->GetPixel(imageIterator.GetIndex());
+  
+    output.Set(vectorPixel);
+ 
+    ++imageIterator;
+    }
+}
+
+template <typename TImage>
+void MaskedDerivative(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output)
+{
+  itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
+ 
+  while(!imageIterator.IsAtEnd())
+    {
+    // Determine which neighbors are valid
+    bool backwardValid = false;
+    itk::Index<2> backwardIndex = imageIterator.GetIndex();
+    backwardIndex[direction]--;
+    if(image->GetLargestPossibleRegion().IsInside(backwardIndex) && mask->IsValid(backwardIndex))
+      {
+      backwardValid = true;
+      }
+      
+    bool forwardValid = false;
+    itk::Index<2> forwardIndex = imageIterator.GetIndex();
+    forwardIndex[direction]++;
+    if(image->GetLargestPossibleRegion().IsInside(forwardIndex) && mask->IsValid(forwardIndex))
+      {
+      forwardValid = true;
+      }
+      
+    // Compute the correct difference
+    float difference = 0.0f;
+    
+    if(backwardValid && !forwardValid) // Use backwards half difference
+      {
+      difference = image->GetPixel(imageIterator.GetIndex()) - image->GetPixel(backwardIndex);
+      }
+    else if(!backwardValid && forwardValid) // Use forwards half difference
+      {
+      difference = image->GetPixel(forwardIndex) - image->GetPixel(imageIterator.GetIndex());
+      }
+    else if(backwardValid && forwardValid) // Use full difference
+      {
+      difference = (image->GetPixel(forwardIndex) - image->GetPixel(backwardIndex))/2.0f;
+      }
+    else// if(!backwardValid && !forwardValid) // No valid neighbors in this direction
+      {
+      difference = 0.0f; // There is nothing we can do here, so set the derivative to zero.
+      }
+      
+    output->SetPixel(imageIterator.GetIndex(), difference);
+
+    ++imageIterator;
+    }
 }
 
 }// end namespace

@@ -27,7 +27,6 @@
 // ITK
 #include "itkConstNeighborhoodIterator.h"
 #include "itkImageRegionIterator.h"
-#include "itkImageFileWriter.h"
 #include "itkNeighborhoodIterator.h"
 #include "itkPasteImageFilter.h"
 #include "itkMinimumMaximumImageCalculator.h"
@@ -47,6 +46,8 @@ namespace Helpers
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 void SetCenterPixel(vtkImageData* image, const unsigned char color[3]);
 
+itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned int dimension);
+
 void RGBImageToCIELabImage(const RGBImageType::Pointer rgbImage, FloatVectorImageType::Pointer cielabImage);
 
 void NormalizeVectorImage(FloatVector2ImageType::Pointer image);
@@ -60,7 +61,6 @@ void ITKImagetoVTKMagnitudeImage(const FloatVectorImageType::Pointer image, vtkI
 void ITKImagetoVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, vtkImageData* outputImage);
 
 void VectorImageToRGBImage(const FloatVectorImageType::Pointer image, RGBImageType::Pointer rgbImage);
-
 
 itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region);
 
@@ -109,6 +109,9 @@ float RoundAwayFromZero(const float number);
 /////////////////////////////////////////////////////////////////////////////////////////////
 template<typename TImage>
 void DeepCopy(const typename TImage::Pointer input, typename TImage::Pointer output);
+
+template<typename TPixel>
+void GradientFromDerivatives(const typename itk::Image<TPixel, 2>::Pointer xDerivative, const typename itk::Image<TPixel, 2>::Pointer yDerivative, typename itk::Image<itk::CovariantVector<TPixel, 2> >::Pointer output);
 
 template<typename TImage>
 void DeepCopyVectorImage(const typename TImage::Pointer input, typename TImage::Pointer output);
@@ -197,6 +200,12 @@ void WriteRegion(const typename TImage::Pointer image, const itk::ImageRegion<2>
 
 template <typename TImage>
 QImage GetQImage(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
+
+template <typename TImage>
+void MaskedBlur(const typename TImage::Pointer inputImage, const Mask::Pointer mask, const unsigned int kernelRadius, typename TImage::Pointer output);
+
+template <typename TImage>
+void MaskedDerivative(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output);
 
 }// end namespace
 

@@ -21,7 +21,7 @@
 
 #include "itkCovariantVector.h"
 #include "itkImage.h"
-#include "itkImageFileReader.h"
+#include "itkRGBPixel.h"
 #include "itkVectorImage.h"
 
 typedef itk::VectorImage<float,2> FloatVectorImageType;
