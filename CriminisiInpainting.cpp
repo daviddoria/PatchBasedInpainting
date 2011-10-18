@@ -69,10 +69,38 @@ CriminisiInpainting::CriminisiInpainting()
   this->NumberOfCompletedIterations = 0;
   
   this->HistogramBinsPerDimension = 10;
-  //this->MaxPotentialPatches = 10;
-  this->MaxPotentialPatches = 2;
+  this->MaxPotentialPatches = 10;
+  //this->MaxPotentialPatches = 2;
+  
+  this->MaxPixelDifference = 0.0f;
 }
 
+void CriminisiInpainting::ComputeMaxPixelDifference()
+{
+  // We assume all values of all channels are positive, so the max difference can be computed as max(p_i - 0) because (0,0,0,...) is the minimum pixel.
+  
+  itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->OriginalImage, this->OriginalImage->GetLargestPossibleRegion());
+
+  FloatVectorImageType::PixelType maxPixel;
+  maxPixel.SetSize(this->OriginalImage->GetNumberOfComponentsPerPixel());
+  maxPixel.Fill(0);
+  
+  while(!imageIterator.IsAtEnd())
+    {
+    FloatVectorImageType::PixelType pixel = this->OriginalImage->GetPixel(imageIterator.GetIndex());
+    if(pixel.GetNorm() > maxPixel.GetNorm())
+      {
+      maxPixel = pixel;
+      }
+    ++imageIterator;
+    }
+
+  this->MaxPixelDifference = 0.0f;
+  for(unsigned int i = 0; i < this->OriginalImage->GetNumberOfComponentsPerPixel(); ++i)
+    {
+    this->MaxPixelDifference += maxPixel[i];
+    }
+}
 
 void CriminisiInpainting::ComputeSourcePatches(const itk::ImageRegion<2>& region)
 {
@@ -511,36 +539,7 @@ void CriminisiInpainting::ComputeIsophotes()
 
     Helpers::DebugWriteImageConditional<FloatVector2ImageType>(rotateFilter->GetOutput(), "Debug/ComputeIsophotes.rotatedGradient.mha", this->DebugImages);
       
-    // Mask the isophote image with the inpainting mask. That is, keep only the values outside of the expanded mask. To do this, we have to first invert the mask.
-
-    // Invert the mask
-    typedef itk::InvertIntensityImageFilter <Mask> InvertIntensityImageFilterType;
-    InvertIntensityImageFilterType::Pointer invertMaskFilter = InvertIntensityImageFilterType::New();
-    invertMaskFilter->SetInput(this->CurrentMask);
-    invertMaskFilter->Update();
-
-    if(this->DebugImages)
-      {
-      Helpers::WriteImage<Mask>(invertMaskFilter->GetOutput(), "Debug/ComputeIsophotes.invertedMask.mha");
-      }
-
-    //std::cout << "rotateFilter: " << rotateFilter->GetOutput()->GetLargestPossibleRegion() << std::endl;
-    //std::cout << "invertMaskFilter: " << invertMaskFilter->GetOutput()->GetLargestPossibleRegion() << std::endl;
-    
-    // Keep only values outside the masked region
-    typedef itk::MaskImageFilter< FloatVector2ImageType, Mask, FloatVector2ImageType > MaskFilterType;
-    MaskFilterType::Pointer maskFilter = MaskFilterType::New();
-    maskFilter->SetInput1(rotateFilter->GetOutput());
-    maskFilter->SetInput2(invertMaskFilter->GetOutput());
-    maskFilter->Update();
-
-    if(this->DebugImages)
-      {
-      Helpers::WriteImage<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ComputeIsophotes.maskedIsophotes.mha");
-      }
-      
-    Helpers::DeepCopy<FloatVector2ImageType>(maskFilter->GetOutput(), this->IsophoteImage);
-   
+    Helpers::DeepCopy<FloatVector2ImageType>(rotateFilter->GetOutput(), this->IsophoteImage);
   }
   catch( itk::ExceptionObject & err )
   {
@@ -1048,50 +1047,82 @@ unsigned int CriminisiInpainting::GetNumberOfCompletedIterations()
   return this->NumberOfCompletedIterations;
 }
 
-float CriminisiInpainting::ContinuationDifference(const itk::Index<2>& targetPixel, const PatchPair& patchPair)
+float CriminisiInpainting::ContinuationDifference(const itk::Index<2>& boundaryPixel, const PatchPair& patchPair)
 {
-  // Determine the position of the corresponding pixel in the source patch.
-  itk::Offset<2> offset = patchPair.TargetPatch.Region.GetIndex() - targetPixel;
-  itk::Index<2> currentSourcePixel = patchPair.SourcePatch.Region.GetIndex() + offset;
+  // 'boundaryPixel' should be a pixel from the target patch on the source/valid side of the boundary. We want to compare this pixel value and isophote to the pixel from the source patch that would be on the target/hole side of the boundary if that patch were to be copied.
   
-  FloatVector2Type isophote = this->IsophoteImage->GetPixel(currentSourcePixel);
+  // The boundary between the source and target regions actually exists at two places in the image - once in the source patch and once in the target patch.
+  // We need to compare the source region of the target patch to the target region of the source patch, because these are the parts of the image that will
+  // be pasted together.
   
-  itk::Index<2> nextSourcePixel = Helpers::GetNextPixelAlongVector(currentSourcePixel, isophote);
+  if(this->CurrentMask->IsHole(boundaryPixel) || !patchPair.TargetPatch.Region.IsInside(boundaryPixel))
+    {
+    std::cerr << "Error: The input boundary pixel must be on the valid side of the boundary (not in the hole)!" << std::endl;
+    exit(-1);
+    }
   
+  FloatVector2Type sourceSideIsophote = this->IsophoteImage->GetPixel(boundaryPixel);
+    
+  itk::Index<2> pixelAcrossBoundary = Helpers::GetNextPixelAlongVector(boundaryPixel, sourceSideIsophote);
+  
+  // Some pixels might not have a valid pixel on the other side of the boundary.
   bool valid = false;
   
-  // If the next pixel along the isophote is in bounds and in the hole region of the source patch, we can procede
-  if(patchPair.SourcePatch.Region.IsInside(nextSourcePixel) && this->CurrentMask->IsHole(nextSourcePixel))
+  // If the next pixel along the isophote is in bounds and in the hole region of the patch, procede.
+  if(patchPair.TargetPatch.Region.IsInside(pixelAcrossBoundary) && this->CurrentMask->IsHole(pixelAcrossBoundary))
     {
     valid = true;
     }
   else
     {
-    // Try the other way
-    isophote *= -1.0;
-    nextSourcePixel = Helpers::GetNextPixelAlongVector(currentSourcePixel, isophote);
-    if(patchPair.SourcePatch.Region.IsInside(nextSourcePixel) && this->CurrentMask->IsHole(nextSourcePixel))
+    // There is no requirement for the isophote to be pointing a particular orientation, so try to step along the negative isophote.
+    sourceSideIsophote *= -1.0;
+    pixelAcrossBoundary = Helpers::GetNextPixelAlongVector(boundaryPixel, sourceSideIsophote);
+    if(patchPair.TargetPatch.Region.IsInside(pixelAcrossBoundary) && this->CurrentMask->IsHole(pixelAcrossBoundary))
       {
       valid = true;
       }
     }
   
+  // If the pixel stepping along the isophote in either direction is valid, we can sensibly compute the differences.
   if(valid)
     {
-    // Compute the pixel difference.
-    //float difference = SelfPatchCompareAll::StaticPixelDifference(this->CurrentOutputImage->GetPixel(targetPixel), this->CurrentOutputImage->GetPixel(nextSourcePixel));
+    // Determine the position of the pixel relative to the patch corner.
+    itk::Offset<2> intraPatchOffset = pixelAcrossBoundary - patchPair.TargetPatch.Region.GetIndex();
+  
+    // Determine the position of the corresponding pixel in the source patch.
+    itk::Index<2> sourcePatchTargetPixel = patchPair.SourcePatch.Region.GetIndex() + intraPatchOffset;
+    std::cout << "sourcePatchTargetPixel: " << sourcePatchTargetPixel << std::endl;
 
+    // Get the isophote on the hole side of the boundary
+    FloatVector2Type targetSideIsophote = this->IsophoteImage->GetPixel(sourcePatchTargetPixel);
+  
+    // Compute the pixel difference.
+    float pixelDifference = SelfPatchCompareAll::StaticPixelDifference(this->CurrentOutputImage->GetPixel(boundaryPixel), this->CurrentOutputImage->GetPixel(sourcePatchTargetPixel));
+    std::cout << "pixelDifference: " << pixelDifference << std::endl;
+    float pixelDifferenceNormalized = pixelDifference / MaxPixelDifference; // This produces a score between 0 and 1.
+    std::cout << "pixelDifferenceNormalized: " << pixelDifferenceNormalized << std::endl;
+    
+    // Compute the isophote difference.
     // We want to compare the isophote on the target side of the boundary to the isophote on the source side of the boundary.
-    float difference = Helpers::AngleBetween(this->IsophoteImage->GetPixel(targetPixel), this->IsophoteImage->GetPixel(nextSourcePixel));
+    float isophoteDifference = Helpers::AngleBetween(sourceSideIsophote, targetSideIsophote);
+    std::cout << "sourceSideIsophote: " << sourceSideIsophote << std::endl;
+    std::cout << "targetSideIsophote: " << targetSideIsophote << std::endl;
+    std::cout << "isophoteDifference: " << isophoteDifference << std::endl;
+    float isophoteDifferenceNormalized = isophoteDifference/3.14159; // The maximum angle between vectors is pi, so this produces a score between 0 and 1.
+    std::cout << "isophoteDifferenceNormalized: " << isophoteDifferenceNormalized << std::endl;
     
-    float weightedDifference = this->IsophoteImage->GetPixel(currentSourcePixel).GetNorm() * difference;
+    // This is a bad idea- I thought we didn't want to penalize isophotes for being different if they weren't strong, but we do - if one side of the boundary is not strong, the other shouldn't be either! 
+    //float weightedIsophoteDifference = this->IsophoteImage->GetPixel(currentSourcePixel).GetNorm() * isophoteDifferenceNormalized; // We want to 
     
-    //return difference;
-    return weightedDifference;
+    float continuationDifference = pixelDifferenceNormalized + isophoteDifferenceNormalized; // This is a score between 0 and 2.
+    std::cout << "continuationDifference : " << continuationDifference << std::endl;
+    return continuationDifference;
     }
   else
     {
-    return 0.0; // Skip this comparison
+    std::cout << "Warning: continuationDifference skipped." << std::endl;
+    return 0.0f; // Skip this comparison
     }
 }
 

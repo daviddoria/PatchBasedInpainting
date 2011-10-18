@@ -202,6 +202,9 @@ template <typename TImage>
 QImage GetQImage(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
 
 template <typename TImage>
+QImage GetQImageMasked(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region);
+
+template <typename TImage>
 void MaskedBlur(const typename TImage::Pointer inputImage, const Mask::Pointer mask, const unsigned int kernelRadius, typename TImage::Pointer output);
 
 template <typename TImage>

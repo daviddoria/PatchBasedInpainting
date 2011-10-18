@@ -57,6 +57,9 @@ public:
   // Specify if you want to see debugging messages.
   void SetDebugMessages(const bool);
   
+  // Specify the number of top candidate patches to consider.
+  void SetMaxPotentialPatches(const unsigned int);
+  
   // Get the output of the inpainting.
   FloatVectorImageType::Pointer GetResult();
   
@@ -121,7 +124,7 @@ public:
 private:
 
   // Determine the difference along an extended isophote of the pixel that will be filled.
-  float ContinuationDifference(const itk::Index<2>& targetPixel, const PatchPair& patchPair);
+  float ContinuationDifference(const itk::Index<2>& boundaryPixel, const PatchPair& patchPair);
   
   // Determine the difference along an extended isophote of the pixel that will be filled.
   float ContinuationDifference(const PatchPair& patchPair);
@@ -261,6 +264,12 @@ private:
   // The maximum number of patch pairs to examine in deciding which one to actually fill.
   // The number compared could actually be less than this near the end of the inpainting because there may not be enough non-zero priority values outside of one patch region.
   unsigned int MaxPotentialPatches;
+  
+  // The maximum possible pixel difference in the image.
+  float MaxPixelDifference;
+  
+  // Set the member MaxPixelDifference;
+  void ComputeMaxPixelDifference();
   
   ///////////// CriminisiInpaintingDebugging.cpp /////////////
   void DebugWriteAllImages();

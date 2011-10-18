@@ -686,45 +686,43 @@ void BlankAndOutlineRegion(typename TImage::Pointer image, const itk::ImageRegio
 
 }
 
-#if 0
-template <typename TImage>
-QImage GetQImage(typename TImage::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region)
-{
-  QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888); // Should probably be Format_RGB888
-  itk::ImageRegionIterator<TImage> imageIterator(image, region);
 
+
+template <typename TImage>
+QImage GetQImage(const typename TImage::Pointer image, const itk::ImageRegion<2>& region)
+{
+  QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888);
+
+  typedef itk::RegionOfInterestImageFilter< TImage, TImage > RegionOfInterestImageFilterType;
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  regionOfInterestImageFilter->SetRegionOfInterest(region);
+  regionOfInterestImageFilter->SetInput(image);
+  regionOfInterestImageFilter->Update();
+  
+  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+  
   while(!imageIterator.IsAtEnd())
     {
     typename TImage::PixelType pixel = imageIterator.Get();
 
-    // Map the specified region of the image to the full QImage. That is, the region.GetIndex() should map to (0,0)
-    itk::Index<2> index;
-    index[0] = imageIterator.GetIndex()[0] - region.GetIndex()[0];
-    index[1] = imageIterator.GetIndex()[1] - region.GetIndex()[1];
+    itk::Index<2> index = imageIterator.GetIndex();
+    QColor pixelColor(static_cast<int>(pixel[0]), static_cast<int>(pixel[1]), static_cast<int>(pixel[2]));
+    qimage.setPixel(index[0], index[1], pixelColor.rgb());
 
-    if(mask && mask->IsHole(imageIterator.GetIndex()))
-      {
-      QColor pixelColor(0, 255, 0);
-      qimage.setPixel(index[0], index[1], pixelColor.rgb());
-      }
-    else
-      {
-      QColor pixelColor(static_cast<int>(pixel[0]), static_cast<int>(pixel[1]), static_cast<int>(pixel[2]));
-      qimage.setPixel(index[0], index[1], pixelColor.rgb());
-      }
-    
     ++imageIterator;
     }
 
+  QColor highlightColor(255, 0, 255);
+  qimage.setPixel(region.GetSize()[0]/2, region.GetSize()[1]/2, highlightColor.rgb());
+  
   //return qimage; // The actual image region
   return qimage.mirrored(false, true); // The flipped image region
 }
-#endif
 
 template <typename TImage>
-QImage GetQImage(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region)
+QImage GetQImageMasked(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region)
 {
-  QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888); // Should probably be Format_RGB888
+  QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888);
 
   typedef itk::RegionOfInterestImageFilter< TImage, TImage > RegionOfInterestImageFilterType;
   typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
@@ -808,6 +806,13 @@ void MaskedBlur(const typename TImage::Pointer inputImage, const Mask::Pointer m
       {
       itk::Index<2> centerPixel = imageIterator.GetIndex();
     
+      // We should not compute derivatives for pixels in the hole.
+      if(mask->IsHole(centerPixel))
+	{
+	++imageIterator;
+	continue;
+	}
+	
       // Loop over all of the pixels in the kernel and use the ones that fit a criteria
       std::vector<Contribution> contributions;
       for(unsigned int i = 0; i < gaussianOperator.Size(); i++)
@@ -816,7 +821,7 @@ void MaskedBlur(const typename TImage::Pointer inputImage, const Mask::Pointer m
 	itk::Offset<2> offset = OffsetFrom1DOffset(gaussianOperator.GetOffset(i), dimensionPass);
       
 	itk::Index<2> pixel = centerPixel + offset;
-	if(blurredImage->GetLargestPossibleRegion().IsInside(pixel))
+	if(blurredImage->GetLargestPossibleRegion().IsInside(pixel) && mask->IsValid(pixel))
 	  {
 	  Contribution contribution;
 	  contribution.weight = gaussianOperator.GetElement(i);
@@ -890,6 +895,13 @@ void MaskedDerivative(const typename TImage::Pointer image, const Mask::Pointer 
  
   while(!imageIterator.IsAtEnd())
     {
+    // We should not compute derivatives for pixels in the hole.
+    if(mask->IsHole(imageIterator.GetIndex()))
+      {
+      ++imageIterator;
+      continue;
+      }
+
     // Determine which neighbors are valid
     bool backwardValid = false;
     itk::Index<2> backwardIndex = imageIterator.GetIndex();

@@ -128,6 +128,8 @@ protected:
   void DisplayPriority();
   void DisplayData();
   void DisplayImage();
+  
+  void SetupPatchTable();
 
   // Initialize everything.
   void Initialize();

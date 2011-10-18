@@ -51,6 +51,11 @@ void CriminisiInpainting::SetPatchRadius(const unsigned int radius)
   this->PatchRadius.Fill(radius);
 }
 
+void CriminisiInpainting::SetMaxPotentialPatches(const unsigned int numberOfPatches)
+{
+  this->MaxPotentialPatches = numberOfPatches;
+}
+
 void CriminisiInpainting::SetImage(const FloatVectorImageType::Pointer image)
 {
   // Store the original image
@@ -66,6 +71,8 @@ void CriminisiInpainting::SetImage(const FloatVectorImageType::Pointer image)
   Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->CIELabImage, "Debug/SetImage.CIELab.mha", this->DebugImages);
 
   this->FullImageRegion = image->GetLargestPossibleRegion();
+  
+  ComputeMaxPixelDifference();
 }
 
 void CriminisiInpainting::SetMask(const Mask::Pointer mask)

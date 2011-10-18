@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>958</width>
+    <width>1196</width>
     <height>889</height>
    </rect>
   </property>
@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3,1">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3,1,2">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
         <item>
@@ -362,42 +362,6 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_6">
-          <item>
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Average SSD:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="lblAverageSSD">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_7">
-          <item>
-           <widget class="QLabel" name="label_8">
-            <property name="text">
-             <string>Histogram dist:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="lblHistogramDistance">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -412,6 +376,35 @@
         </item>
        </layout>
       </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_7">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Number of rows:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="txtNumberOfRows">
+            <property name="text">
+             <string>10</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTableWidget" name="tableWidget">
+          <property name="sortingEnabled">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
      </layout>
     </item>
    </layout>
@@ -421,7 +414,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>958</width>
+     <width>1196</width>
      <height>33</height>
     </rect>
    </property>

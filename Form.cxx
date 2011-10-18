@@ -88,6 +88,8 @@ Form::Form()
 {
   this->setupUi(this);
 
+  SetupPatchTable();
+  
   SetCheckboxVisibility(false);
   
   this->TargetPatchScene = new QGraphicsScene();
@@ -222,7 +224,14 @@ void Form::on_actionOpenImage_activated()
 {
   // Get a filename to open
   QString fileName = QFileDialog::getOpenFileName(this, "Open File", ".", "Image Files (*.jpg *.jpeg *.bmp *.png *.mha);;PNG Files (*.png)");
-
+  
+  /*
+  // The non static version of the above is something like this:
+  QFileDialog myDialog;
+  QDir fileFilter("Image Files (*.jpg *.jpeg *.bmp *.png *.mha);;PNG Files (*.png)");
+  myDialog.setFilter(fileFilter);
+  QString fileName = myDialog.exec();
+  */
   DebugMessage<std::string>("Got filename: ", fileName.toStdString());
   if(fileName.toStdString().empty())
     {
@@ -532,6 +541,7 @@ void Form::on_btnStep_clicked()
 {
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
+  this->Inpainting.SetMaxPotentialPatches(this->txtNumberOfRows->text().toUInt());
   this->Inpainting.Iterate();
   
   IterationComplete();
@@ -653,7 +663,7 @@ void Form::DisplayUsedPatches()
     }
   
   // Target
-  QImage targetImage = Helpers::GetQImage<FloatVectorImageType>(currentImage, currentMask, patchPair.TargetPatch.Region);
+  QImage targetImage = Helpers::GetQImageMasked<FloatVectorImageType>(currentImage, currentMask, patchPair.TargetPatch.Region);
   targetImage = Helpers::FitToGraphicsView(targetImage, gfxTarget);
   this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
 
@@ -661,7 +671,7 @@ void Form::DisplayUsedPatches()
   //Helpers::WriteMaskedPatch<FloatVectorImageType>(this->Inpainting.GetResult(), this->Inpainting.GetMaskImage(), targetPatch, "targetPatch.mha");
   
   // Source
-  QImage sourceImage = Helpers::GetQImage<FloatVectorImageType>(currentImage, currentMask, patchPair.SourcePatch.Region);
+  QImage sourceImage = Helpers::GetQImage<FloatVectorImageType>(currentImage, patchPair.SourcePatch.Region);
   sourceImage = Helpers::FitToGraphicsView(sourceImage, gfxTarget);
   this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
 
@@ -715,6 +725,8 @@ void Form::DisplayUsedPatchInformation()
 {
   DebugMessage("DisplayUsedPatchInformation()");
   
+  SetupPatchTable();
+  /*
   // Iteration information
   std::stringstream ss;
   ss << this->IterationToDisplay;
@@ -753,7 +765,7 @@ void Form::DisplayUsedPatchInformation()
   std::stringstream ssSource;
   ssSource << "(" << sourcePatch.Region.GetIndex()[0] << ", " << sourcePatch.Region.GetIndex()[1] << ")";
   this->lblSourceCorner->setText(ssSource.str().c_str());
-
+  */
   Refresh();
 }
 
@@ -864,4 +876,70 @@ void Form::IterationCompleteSlot()
 {
   DebugMessage("IterationCompleteSlot()");
   IterationComplete();
+}
+
+void Form::SetupPatchTable()
+{
+    // Clear the table
+  this->tableWidget->setRowCount(0);
+  
+  this->tableWidget->setColumnCount(4);
+  
+  QTableWidgetItem* header0 = new QTableWidgetItem;
+  header0->setText("Patch");
+  
+  QTableWidgetItem* header1 = new QTableWidgetItem;
+  header1->setText("Index");
+  
+  QTableWidgetItem* header2 = new QTableWidgetItem;
+  header2->setText("SSD");
+  
+  QTableWidgetItem* header3 = new QTableWidgetItem;
+  header3->setText("Continuation");
+  
+  this->tableWidget->setHorizontalHeaderItem(0, header0);
+  this->tableWidget->setHorizontalHeaderItem(1, header1);
+  this->tableWidget->setHorizontalHeaderItem(2, header2);
+  this->tableWidget->setHorizontalHeaderItem(3, header3);
+  
+  std::vector<PatchPair> patchPairs;
+  
+  // There is a -1 offset here because the 0th patch pair to be stored is after iteration 1 (as after the 0th iteration (initial conditions) there are no used patch pairs)
+  this->Inpainting.GetPotentialPatchPairs(this->IterationToDisplay - 1, patchPairs);
+  
+  for(unsigned int i = 0; i < patchPairs.size(); ++i)
+    {
+    this->tableWidget->insertRow(this->tableWidget->rowCount());
+  
+    Patch currentSourcePatch = patchPairs[i].SourcePatch;
+    
+    QImage sourceImage = Helpers::GetQImage<FloatVectorImageType>(this->IntermediateImages[this->IterationToDisplay].Image, currentSourcePatch.Region);
+    
+    // Create a label with the image as the way to display an image in the table.
+    QLabel* imageLabel = new QLabel;
+    imageLabel->setPixmap(QPixmap::fromImage(sourceImage));
+    imageLabel->setScaledContents(false);
+    this->tableWidget->setCellWidget(i, 0, imageLabel);
+
+    // Display patch location
+    std::stringstream ssLocation;
+    ssLocation << "( " << currentSourcePatch.Region.GetIndex()[0] << ", " << currentSourcePatch.Region.GetIndex()[1] << ")";
+    
+    QTableWidgetItem* indexLabel = new QTableWidgetItem;
+    indexLabel->setText(ssLocation.str().c_str());
+    this->tableWidget->setItem(i, 1, indexLabel);
+    
+    // Display SSD score
+    QTableWidgetItem* ssdLabel = new QTableWidgetItem;
+    ssdLabel->setData(0, patchPairs[i].AverageSSD);
+    this->tableWidget->setItem(i, 2, ssdLabel);
+    
+    // Display Continuation score
+    QTableWidgetItem* continuationLabel = new QTableWidgetItem;
+    continuationLabel->setData(0, patchPairs[i].ContinuationDifference);
+    this->tableWidget->setItem(i, 3, continuationLabel);
+    }
+    
+  this->tableWidget->resizeRowsToContents();
+  this->tableWidget->resizeColumnsToContents();
 }
