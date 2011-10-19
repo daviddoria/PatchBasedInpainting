@@ -20,6 +20,7 @@
 #define CriminisiInpainting_h
 
 // Custom
+#include "CandidatePatches.h"
 #include "Helpers.h"
 #include "Patch.h"
 #include "PatchPair.h"
@@ -57,12 +58,11 @@ public:
   // Specify if you want to see debugging messages.
   void SetDebugMessages(const bool);
   
-  // Specify the number of top candidate patches to consider.
-  void SetMaxPotentialPatches(const unsigned int);
-  
-  // Get the output of the inpainting.
-  FloatVectorImageType::Pointer GetResult();
-  
+  // Specify the maximum number of top candidate patches to consider. Near the end of the inpainting there may not be this many viable patches, that is why we set the max instead of the absolute number of patches.
+  void SetMaxForwardLookPatches(const unsigned int);
+
+  void SetNumberOfTopPatchesToSave(const unsigned int);
+    
   // Get the current confidence image (confidences computed on the current boundary)
   FloatScalarImageType::Pointer GetConfidenceImage();
 
@@ -83,6 +83,9 @@ public:
 
   // Get the current data image
   FloatScalarImageType::Pointer GetDataImage();
+
+  // Get the result/output of the inpainting so far. When the algorithm is complete, this will be the final output.
+  FloatVectorImageType::Pointer GetCurrentOutputImage();
   
   // Get the current mask image
   Mask::Pointer GetMaskImage();
@@ -111,7 +114,8 @@ public:
   
   bool GetUsedPatchPair(const unsigned int id, PatchPair& patchPair);
   
-  bool GetPotentialPatchPairs(const unsigned int iteration, std::vector<PatchPair>& patchPairs);
+  bool GetPotentialCandidatePatches(const unsigned int iteration, const unsigned int forwardLookId, CandidatePatches& candidatePatches);
+  bool GetAllPotentialCandidatePatches(const unsigned int iteration, std::vector<CandidatePatches>&);
   
   // Return the number of completed iterations
   unsigned int GetNumberOfCompletedIterations();
@@ -123,6 +127,8 @@ public:
   
 private:
 
+  std::vector<Patch> SortPatchesByContinuationDifference(const Patch& targetPatch);
+  
   // Determine the difference along an extended isophote of the pixel that will be filled.
   float ContinuationDifference(const itk::Index<2>& boundaryPixel, const PatchPair& patchPair);
   
@@ -140,6 +146,9 @@ private:
   
   // The CIELab conversion of the input RGB image
   FloatVectorImageType::Pointer CIELabImage;
+  
+  // The blurred image which is useful for computing gradients as well as softening pixel to pixel comparisons.
+  FloatVectorImageType::Pointer BlurredImage;
   
   // The intermediate steps and eventually the result of the inpainting.
   FloatVectorImageType::Pointer CurrentOutputImage;
@@ -255,15 +264,17 @@ private:
   // Store the pairs of patches that were actually used. These are tracked for visualization purposes only.
   std::vector<PatchPair> UsedPatchPairs;
   
-  // Store the pairs of patches that were examined at every iteration. These are tracked for visualization purposes only.
-  std::vector<std::vector<PatchPair> > PotentialPatchPairs;
+  // Store the vector of CandidatePatches that were examined at every iteration. These are tracked for visualization purposes only.
+  std::vector<std::vector<CandidatePatches> > PotentialCandidatePatches;
   
   // The number of bins to use per dimension in the histogram computations.
   unsigned int HistogramBinsPerDimension;
   
   // The maximum number of patch pairs to examine in deciding which one to actually fill.
   // The number compared could actually be less than this near the end of the inpainting because there may not be enough non-zero priority values outside of one patch region.
-  unsigned int MaxPotentialPatches;
+  unsigned int MaxForwardLookPatches;
+
+  unsigned int NumberOfTopPatchesToSave;
   
   // The maximum possible pixel difference in the image.
   float MaxPixelDifference;

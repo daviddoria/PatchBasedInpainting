@@ -25,6 +25,16 @@ void Form::on_chkPriority_clicked()
   Refresh();
 }
 
+void Form::on_chkDisplayForwardLookPatchLocations_clicked()
+{
+  Refresh();
+}
+
+void Form::on_chkDisplaySourcePatchLocations_clicked()
+{
+  Refresh();
+}
+
 void Form::on_chkConfidence_clicked()
 {
   Refresh();

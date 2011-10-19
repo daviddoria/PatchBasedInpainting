@@ -19,6 +19,7 @@
 #include "Helpers.h"
 
 // ITK
+#include "itkComposeImageFilter.h"
 #include "itkImageAdaptor.h"
 #include "itkImageToVectorImageFilter.h"
 #include "itkVectorMagnitudeImageFilter.h"
@@ -38,6 +39,36 @@
 
 namespace Helpers
 {
+
+void VectorMaskedBlur(const FloatVectorImageType::Pointer inputImage, const Mask::Pointer mask, const unsigned int kernelRadius, FloatVectorImageType::Pointer output)
+{
+  // Disassembler
+  typedef itk::VectorIndexSelectionCastImageFilter<FloatVectorImageType, FloatScalarImageType> IndexSelectionType;
+  IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+  indexSelectionFilter->SetInput(inputImage);
+  
+  // Reassembler
+  typedef itk::ComposeImageFilter<FloatScalarImageType> ImageToVectorImageFilterType;
+  ImageToVectorImageFilterType::Pointer imageToVectorImageFilter = ImageToVectorImageFilterType::New();
+  
+  std::vector< FloatScalarImageType::Pointer > filteredImages;
+  
+  for(unsigned int i = 0; i < inputImage->GetNumberOfComponentsPerPixel(); ++i)
+    {
+    indexSelectionFilter->SetIndex(i);
+    indexSelectionFilter->Update();
+  
+    FloatScalarImageType::Pointer blurred = FloatScalarImageType::New();
+    DeepCopy<FloatScalarImageType>(indexSelectionFilter->GetOutput(), blurred);
+    filteredImages.push_back(blurred);
+    imageToVectorImageFilter->SetInput(i, filteredImages[i]);
+    }
+
+  imageToVectorImageFilter->Update();
+ 
+  DeepCopyVectorImage<FloatVectorImageType>(imageToVectorImageFilter->GetOutput(), output);
+}
+
 
 float AngleBetween(const FloatVector2Type v1, const FloatVector2Type v2)
 {

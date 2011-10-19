@@ -104,6 +104,8 @@ itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2>& pixel, con
 
 float RoundAwayFromZero(const float number);
 
+void VectorMaskedBlur(const FloatVectorImageType::Pointer inputImage, const Mask::Pointer mask, const unsigned int kernelRadius, FloatVectorImageType::Pointer output);
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// Template function declarations (defined in Helpers.hxx) ///////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////

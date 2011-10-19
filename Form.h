@@ -80,6 +80,9 @@ public slots:
   
   void on_chkDebugImages_clicked();
   void on_chkDebugMessages_clicked();
+
+  void on_forwardLookingTableWidget_cellClicked(int row, int col);
+  void on_topPatchesTableWidget_cellClicked(int row, int col);
   
   // Defined in FormGUIElements.cxx
   void on_chkImage_clicked();
@@ -92,7 +95,8 @@ public slots:
   void on_chkData_clicked();
   void on_chkBoundaryNormals_clicked();
   void on_chkPotentialPatches_clicked();
-  
+  void on_chkDisplayForwardLookPatchLocations_clicked();
+  void on_chkDisplaySourcePatchLocations_clicked();
   void on_chkDisplayMaskedTargetPatch_clicked();
   
   void SetCheckboxVisibility(const bool visible);
@@ -128,9 +132,12 @@ protected:
   void DisplayPriority();
   void DisplayData();
   void DisplayImage();
-  
-  void SetupPatchTable();
 
+  int GetColumnIdByHeader(const std::string& header);
+  
+  void SetupForwardLookingTable();
+  void SetupTopPatchesTable(unsigned int forwardLookId);
+  
   // Initialize everything.
   void Initialize();
   
@@ -151,11 +158,23 @@ protected:
   // The only renderer
   vtkSmartPointer<vtkRenderer> Renderer;
   
-  // Source patch display
-  Layer SourcePatchLayer;
+  // Source patch outline display
+  Layer UsedSourcePatchLayer;
   
-  // Target patch display
-  Layer TargetPatchLayer;
+  // Target patch outline display
+  Layer UsedTargetPatchLayer;
+
+  // Outline display of all forward look patches
+  std::vector<Layer> AllForwardLookOutlineLayers;
+
+  // Selected forward look patch outline display
+  Layer SelectedForwardLookOutlineLayer;
+
+  // Outline display of all source patches
+  std::vector<Layer> AllSourcePatchOutlineLayers;
+
+  // Selected source patch outline display
+  Layer SelectedSourcePatchOutlineLayer;
   
   // Image display
   Layer ImageLayer;
@@ -219,12 +238,26 @@ protected:
   
   // Display zoomed in versions of the patches used at the current iteration
   void DisplayUsedPatches();
+  void DisplaySourcePatch(const unsigned int forwardLookId, const unsigned int topPatchId);
+  void DisplayTargetPatch(const unsigned int forwardLookId);
   
   // Display the text information (scores, etc) of the patches used at the current information
   void DisplayUsedPatchInformation();
   
   // Display outlines of where the source patch came from and the target patch to which it was copied
   void HighlightUsedPatches();
+
+  // Display outlines of the forward look target patches
+  void HighlightForwardLookPatches();
+
+  // Display the outline of the selected forward look target patch
+  void HighlightSelectedForwardLookPatch(const unsigned int id);
+  
+  // Display outlines of the source patches
+  void HighlightSourcePatches();
+  
+  // Display the outline of the selected source patch
+  void HighlightSelectedSourcePatch(const unsigned int id);
   
   // Get the potential target patches from this iteration and outline them on a blank image.
   void CreatePotentialTargetPatchesImage();

@@ -56,9 +56,11 @@ CriminisiInpainting::CriminisiInpainting()
   this->OriginalImage = FloatVectorImageType::New();
   this->CurrentOutputImage = FloatVectorImageType::New();
   this->CIELabImage = FloatVectorImageType::New();
+  this->BlurredImage = FloatVectorImageType::New();
   
-  // We want to use the CIELab image for patch to patch comparisons.
-  this->CompareImage = this->CIELabImage;
+  // Set the image to use for pixel to pixel comparisons.
+  //this->CompareImage = this->CIELabImage;
+  this->CompareImage = this->BlurredImage;
   
   this->ConfidenceImage = FloatScalarImageType::New();
   this->ConfidenceMapImage = FloatScalarImageType::New();
@@ -69,7 +71,7 @@ CriminisiInpainting::CriminisiInpainting()
   this->NumberOfCompletedIterations = 0;
   
   this->HistogramBinsPerDimension = 10;
-  this->MaxPotentialPatches = 10;
+  this->MaxForwardLookPatches = 10;
   //this->MaxPotentialPatches = 2;
   
   this->MaxPixelDifference = 0.0f;
@@ -81,10 +83,11 @@ void CriminisiInpainting::ComputeMaxPixelDifference()
   
   itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->OriginalImage, this->OriginalImage->GetLargestPossibleRegion());
 
-  FloatVectorImageType::PixelType maxPixel;
-  maxPixel.SetSize(this->OriginalImage->GetNumberOfComponentsPerPixel());
-  maxPixel.Fill(0);
+  FloatVectorImageType::PixelType zeroPixel;
+  zeroPixel.SetSize(this->OriginalImage->GetNumberOfComponentsPerPixel());
+  zeroPixel.Fill(0);
   
+  FloatVectorImageType::PixelType maxPixel = zeroPixel;
   while(!imageIterator.IsAtEnd())
     {
     FloatVectorImageType::PixelType pixel = this->OriginalImage->GetPixel(imageIterator.GetIndex());
@@ -95,11 +98,16 @@ void CriminisiInpainting::ComputeMaxPixelDifference()
     ++imageIterator;
     }
 
+  /*
   this->MaxPixelDifference = 0.0f;
   for(unsigned int i = 0; i < this->OriginalImage->GetNumberOfComponentsPerPixel(); ++i)
     {
     this->MaxPixelDifference += maxPixel[i];
     }
+  */
+  this->MaxPixelDifference = SelfPatchCompareAll::StaticPixelDifference(maxPixel, zeroPixel);
+  
+  std::cout << "MaxPixelDifference computed to be: " << this->MaxPixelDifference << std::endl;
 }
 
 void CriminisiInpainting::ComputeSourcePatches(const itk::ImageRegion<2>& region)
@@ -176,7 +184,7 @@ void CriminisiInpainting::InitializeConfidenceMap()
 
 void CriminisiInpainting::InitializeTargetImage()
 {
-  DebugMessage("InitializeImage()");
+  DebugMessage("InitializeTargetImage()");
   // Initialize to the input
   Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->OriginalImage, this->CurrentOutputImage);
   
@@ -210,12 +218,16 @@ void CriminisiInpainting::Initialize()
     FindBoundary();
     
     InitializeTargetImage();
-    Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentImage.mha", this->DebugImages);
+    Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
   
-    // Do this before we mask the image with the expanded mask
     ComputeIsophotes();
     Helpers::DebugWriteImageConditional<FloatVector2ImageType>(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha", this->DebugImages);
 
+    // Blur the image incase we want to use a blurred image for pixel to pixel comparisons.
+    unsigned int kernelRadius = 5;
+    Helpers::VectorMaskedBlur(this->OriginalImage, this->CurrentMask, kernelRadius, this->BlurredImage);
+    Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->BlurredImage, "Debug/Initialize.BlurredImage.mha", this->DebugImages);
+    
     InitializeImage<FloatScalarImageType>(this->DataImage);
     
     InitializeImage<FloatScalarImageType>(this->PriorityImage);
@@ -278,12 +290,16 @@ void CriminisiInpainting::Iterate()
   
   // Copy the patch. This is the actual inpainting step.
   Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, patchPair.SourcePatch.Region, patchPair.TargetPatch.Region);
-    
+  
+  // We also have to copy patches in the blurred image and CIELab image incase we are using those
+  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->BlurredImage, this->CurrentMask, patchPair.SourcePatch.Region, patchPair.TargetPatch.Region);
+  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CIELabImage, this->CurrentMask, patchPair.SourcePatch.Region, patchPair.TargetPatch.Region);
+  
   float confidence = this->ConfidenceImage->GetPixel(Helpers::GetRegionCenter(patchPair.TargetPatch.Region));
   // Copy the new confidences into the confidence image
   UpdateConfidences(patchPair.TargetPatch.Region, confidence);
 
-  // The isophotes can be copied because they would only change slightly if recomputed.
+  // The isophotes can be copied because they would (should!) only change slightly if recomputed. !!! TODO: Maybe they should actually be recomputed?
   Helpers::CopySelfPatchIntoValidRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, patchPair.SourcePatch.Region, patchPair.TargetPatch.Region);
 
   // Update the mask
@@ -311,7 +327,10 @@ void CriminisiInpainting::Iterate()
 
 void CriminisiInpainting::FindBestPatchForHighestPriority(PatchPair& bestPatchPair)
 {
-  // This function returns the best PatchPair by reference
+  // This function implements Criminisi's idea of "find the highest priority pixel and proceed to fill it".
+  // We have replaced this idea with FindBestPatchLookAhead().
+  
+  // This function returns the best PatchPair by reference.
   
   float highestPriority = 0;
   itk::Index<2> pixelToFill = FindHighestValueOnBoundary(this->PriorityImage, highestPriority);
@@ -351,15 +370,11 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   
   FloatScalarImageType::Pointer CurrentPriorityImage = FloatScalarImageType::New();
   Helpers::DeepCopy<FloatScalarImageType>(this->PriorityImage, CurrentPriorityImage);
+
+  std::vector<CandidatePatches> allCandidatePatches;
   
-  std::vector<PatchPair> patchPairs;
-  
-  Helpers::DebugWriteImageConditional<Mask>(this->CurrentMask, "Debug/FindBestPatchLookAhead.CurrentMask.mha", this->DebugImages);
-  
-  for(unsigned int i = 0; i < this->MaxPotentialPatches; ++i)
+  for(unsigned int i = 0; i < this->MaxForwardLookPatches; ++i)
     {
-    PatchPair patchPair;
-  
     float highestPriority = 0;
     itk::Index<2> pixelToFill = FindHighestValueOnBoundary(CurrentPriorityImage, highestPriority);
 
@@ -381,9 +396,11 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 
     itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
     Patch targetPatch(targetRegion);
+
+    CandidatePatches candidatePatches;
+    candidatePatches.TargetPatch = targetPatch;
     
-    patchPair.TargetPatch = targetPatch;
-    
+    /*
     SelfPatchCompare* patchCompare;
     patchCompare = new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel());
     patchCompare->SetImage(this->CompareImage);
@@ -401,7 +418,12 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     //this->DebugWritePatch(this->SourcePatches[bestMatchSourcePatchId], "SourcePatch.png");
     //this->DebugWritePatch(targetRegion, "TargetPatch.png");
     Patch sourcePatch = this->SourcePatches[bestMatchSourcePatchId];
-    patchPair.SourcePatch = sourcePatch;
+    */
+    
+    std::vector<Patch> patchesSortedByContinuation = SortPatchesByContinuationDifference(targetPatch);
+
+    // Keep only the number of top patches specified.
+    patchesSortedByContinuation.erase(patchesSortedByContinuation.begin() + this->NumberOfTopPatchesToSave, patchesSortedByContinuation.end());
     
     // Blank a region around the current potential patch to fill. This will ensure the next potential patch to fill is reasonably far away.
     Helpers::SetRegionToConstant<FloatScalarImageType>(CurrentPriorityImage, targetRegion, 0.0f);
@@ -419,12 +441,20 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     */
     
     // Compute continuation difference
+
+    Patch bestSourcePatch = patchesSortedByContinuation[0];
+    PatchPair patchPair;
+    patchPair.SourcePatch = bestSourcePatch;
+    patchPair.TargetPatch = targetPatch;
     float continuationDifference = ContinuationDifference(patchPair);
     patchPair.ContinuationDifference = continuationDifference;
-    
-    patchPairs.push_back(patchPair);
-    }
-  
+
+    candidatePatches.CandidateSourcePatches = patchesSortedByContinuation;
+    allCandidatePatches.push_back(candidatePatches);
+
+    } // end forward look loop
+
+    this->PotentialCandidatePatches.push_back(allCandidatePatches);
 //   std::cout << "Scores: " << std::endl;
 //   for(unsigned int i = 0; i < ssdScores.size(); ++i)
 //     {
@@ -449,14 +479,11 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     
   std::cout << "Best attempt was " << bestAttempt << std::endl;
   */
-  
-  // Keep the patch pair with the best isophote continuation
-  std::sort(patchPairs.begin(), patchPairs.end(), SortByContinuationDifference);
-  
-  bestPatchPair = patchPairs[0];
-  
-  // Save the list of patch pairs that were examined in this iteration
-  this->PotentialPatchPairs.push_back(patchPairs);
+
+  // Return the result by reference. TODO: This should be a "choose the best" rather than simply returning the best source patch of the first look ahead target patch.
+  bestPatchPair.TargetPatch = allCandidatePatches[0].TargetPatch;
+  bestPatchPair.SourcePatch = allCandidatePatches[0].CandidateSourcePatches[0];
+
   
 }
 
@@ -511,17 +538,19 @@ void CriminisiInpainting::ComputeIsophotes()
   
     Helpers::DebugWriteImageConditional<FloatScalarImageType>(luminanceFilter->GetOutput(), "Debug/ComputeIsophotes.luminance.mha", this->DebugImages);
 
-    FloatScalarImageType::Pointer blurredImage = FloatScalarImageType::New();
-    Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), this->CurrentMask, 5, blurredImage);
+    FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
+    // Blur with a Gaussian kernel
+    unsigned int kernelRadius = 5;
+    Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), this->CurrentMask, kernelRadius, blurredLuminance);
     
-    Helpers::DebugWriteImageConditional<FloatScalarImageType>(blurredImage, "Debug/ComputeIsophotes.blurred.mha", true);
+    Helpers::DebugWriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/ComputeIsophotes.blurred.mha", true);
     
     // Compute the gradient
     FloatScalarImageType::Pointer xDerivative = FloatScalarImageType::New();
-    Helpers::MaskedDerivative<FloatScalarImageType>(blurredImage, this->CurrentMask, 0, xDerivative);
+    Helpers::MaskedDerivative<FloatScalarImageType>(blurredLuminance, this->CurrentMask, 0, xDerivative);
     
     FloatScalarImageType::Pointer yDerivative = FloatScalarImageType::New();
-    Helpers::MaskedDerivative<FloatScalarImageType>(blurredImage, this->CurrentMask, 1, yDerivative);
+    Helpers::MaskedDerivative<FloatScalarImageType>(blurredLuminance, this->CurrentMask, 1, yDerivative);
     
     FloatVector2ImageType::Pointer gradient = FloatVector2ImageType::New();
     Helpers::GradientFromDerivatives<float>(xDerivative, yDerivative, gradient);
@@ -1022,11 +1051,11 @@ itk::ImageRegion<2> CriminisiInpainting::CropToValidRegion(const itk::ImageRegio
   return region;
 }
 
-bool CriminisiInpainting::GetPotentialPatchPairs(const unsigned int iteration, std::vector<PatchPair>& patchPairs)
+bool CriminisiInpainting::GetPotentialCandidatePatches(const unsigned int iteration, const unsigned int forwardLookId, CandidatePatches& candidatePatches)
 {
-  if(iteration < this->PotentialPatchPairs.size())
+  if(iteration < this->PotentialCandidatePatches.size())
     {
-    patchPairs = this->PotentialPatchPairs[iteration]; 
+    candidatePatches = this->PotentialCandidatePatches[iteration][forwardLookId];
     return true;
     }
   return false;
@@ -1092,36 +1121,39 @@ float CriminisiInpainting::ContinuationDifference(const itk::Index<2>& boundaryP
   
     // Determine the position of the corresponding pixel in the source patch.
     itk::Index<2> sourcePatchTargetPixel = patchPair.SourcePatch.Region.GetIndex() + intraPatchOffset;
-    std::cout << "sourcePatchTargetPixel: " << sourcePatchTargetPixel << std::endl;
+    //std::cout << "sourcePatchTargetPixel: " << sourcePatchTargetPixel << std::endl;
 
     // Get the isophote on the hole side of the boundary
     FloatVector2Type targetSideIsophote = this->IsophoteImage->GetPixel(sourcePatchTargetPixel);
   
     // Compute the pixel difference.
-    float pixelDifference = SelfPatchCompareAll::StaticPixelDifference(this->CurrentOutputImage->GetPixel(boundaryPixel), this->CurrentOutputImage->GetPixel(sourcePatchTargetPixel));
-    std::cout << "pixelDifference: " << pixelDifference << std::endl;
+    float pixelDifference = SelfPatchCompareAll::StaticPixelDifference(this->CompareImage->GetPixel(boundaryPixel), this->CompareImage->GetPixel(sourcePatchTargetPixel));
+    //std::cout << "pixelDifference: " << pixelDifference << std::endl;
     float pixelDifferenceNormalized = pixelDifference / MaxPixelDifference; // This produces a score between 0 and 1.
-    std::cout << "pixelDifferenceNormalized: " << pixelDifferenceNormalized << std::endl;
+    DebugMessage<float>("pixelDifferenceNormalized: ", pixelDifferenceNormalized);
     
     // Compute the isophote difference.
     // We want to compare the isophote on the target side of the boundary to the isophote on the source side of the boundary.
     float isophoteDifference = Helpers::AngleBetween(sourceSideIsophote, targetSideIsophote);
-    std::cout << "sourceSideIsophote: " << sourceSideIsophote << std::endl;
-    std::cout << "targetSideIsophote: " << targetSideIsophote << std::endl;
-    std::cout << "isophoteDifference: " << isophoteDifference << std::endl;
+    //std::cout << "sourceSideIsophote: " << sourceSideIsophote << std::endl;
+    //std::cout << "targetSideIsophote: " << targetSideIsophote << std::endl;
+    //std::cout << "isophoteDifference: " << isophoteDifference << std::endl;
+    
     float isophoteDifferenceNormalized = isophoteDifference/3.14159; // The maximum angle between vectors is pi, so this produces a score between 0 and 1.
-    std::cout << "isophoteDifferenceNormalized: " << isophoteDifferenceNormalized << std::endl;
+    DebugMessage<float>("isophoteDifferenceNormalized: ", isophoteDifferenceNormalized);
     
     // This is a bad idea- I thought we didn't want to penalize isophotes for being different if they weren't strong, but we do - if one side of the boundary is not strong, the other shouldn't be either! 
     //float weightedIsophoteDifference = this->IsophoteImage->GetPixel(currentSourcePixel).GetNorm() * isophoteDifferenceNormalized; // We want to 
     
-    float continuationDifference = pixelDifferenceNormalized + isophoteDifferenceNormalized; // This is a score between 0 and 2.
-    std::cout << "continuationDifference : " << continuationDifference << std::endl;
+    float continuationDifference = (pixelDifferenceNormalized + isophoteDifferenceNormalized)/2.0; // This is a score between 0 and 1.
+    DebugMessage<float>("continuationDifference: ", continuationDifference);
+    
     return continuationDifference;
     }
   else
     {
-    std::cout << "Warning: continuationDifference skipped." << std::endl;
+    //std::cout << "Warning: continuationDifference skipped." << std::endl;
+    //DebugMessage(Warning: continuationDifference skipped.);
     return 0.0f; // Skip this comparison
     }
 }
@@ -1144,4 +1176,74 @@ float CriminisiInpainting::ContinuationDifference(const PatchPair& patchPair)
   
   //return totalContinuationDifference;
   return averageContinuationDifference;
+}
+
+/*
+unsigned int CriminisiInpainting::FindPatchWithBestContinuationDifference(const Patch& targetPatch)
+{
+  // This is a naive method that recomputes the boundary for every pair! This is way too slow to actually use.
+  
+  std::vector<PatchPair> patchPairs;
+  std::vector<float> differences;
+  
+  for(unsigned int i = 0; i < this->SourcePatches.size(); ++i)
+    {
+    PatchPair patchPair;
+    patchPair.SourcePatch = this->SourcePatches[i];
+    patchPair.TargetPatch = targetPatch;
+    
+    float continuationDifference = ContinuationDifference(patchPair);
+    differences.push_back(continuationDifference);
+    }
+
+  unsigned int bestPatchId = Helpers::argmin<float>(differences);
+  return bestPatchId;
+}
+*/
+
+std::vector<Patch> CriminisiInpainting::SortPatchesByContinuationDifference(const Patch& targetPatch)
+{
+  // Identify border pixels on the source side of the boundary.
+  std::vector<itk::Index<2> > borderPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage, targetPatch.Region);
+  
+  std::vector<Patch> patches;
+  
+  for(unsigned int sourcePatchId = 0; sourcePatchId < this->SourcePatches.size(); ++sourcePatchId)
+    {
+    PatchPair patchPair;
+    patchPair.SourcePatch = this->SourcePatches[sourcePatchId];
+    patchPair.TargetPatch = targetPatch;
+    
+    float totalContinuationDifference = 0.0f;
+  
+    for(unsigned int i = 0; i < borderPixels.size(); ++i)
+      {
+      float difference = ContinuationDifference(borderPixels[i], patchPair);
+      totalContinuationDifference += difference;
+      }
+
+    Patch patch = this->SourcePatches[sourcePatchId];
+    patch.SortValue = totalContinuationDifference;
+    patch.Id = sourcePatchId;
+    patches.push_back(patch);
+    }
+
+  //unsigned int bestPatchId = Helpers::argmin<float>(differences);
+  
+  std::sort(patches.begin(), patches.end(), SortBySortValue);
+  
+  return patches;
+}
+
+bool CriminisiInpainting::GetAllPotentialCandidatePatches(const unsigned int iteration, std::vector<CandidatePatches>& allCandidatePatches)
+{
+  if(iteration < this->PotentialCandidatePatches.size())
+    {
+    allCandidatePatches = this->PotentialCandidatePatches[iteration];
+    return true;
+    }
+  else
+    {
+    return false;
+    }
 }

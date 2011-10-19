@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1196</width>
+    <width>1094</width>
     <height>889</height>
    </rect>
   </property>
@@ -16,9 +16,9 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3,1,2">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3,1,2,0">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
@@ -214,6 +214,46 @@
          </layout>
         </item>
         <item>
+         <layout class="QVBoxLayout" name="verticalLayout_9">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
+            <item>
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Forward look:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="txtNumberOfForwardLook">
+              <property name="text">
+               <string>3</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>Top patches:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="txtNumberOfTopPatches">
+            <property name="text">
+             <string>10</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
          <spacer name="verticalSpacer_3">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -231,7 +271,7 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2" stretch="9,1">
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
+         <widget class="QVTKWidget" name="qvtkWidget"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -287,15 +327,14 @@
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
            <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Target corner:</string>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="lblTargetCorner">
             <property name="text">
-             <string>(0,0)</string>
+             <string>Target patch</string>
             </property>
            </widget>
           </item>
@@ -312,6 +351,12 @@
          <widget class="QGraphicsView" name="gfxTarget">
           <property name="enabled">
            <bool>true</bool>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
           </property>
           <property name="baseSize">
            <size>
@@ -331,15 +376,14 @@
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
            <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Source corner:</string>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="lblSourceCorner">
             <property name="text">
-             <string>(0,0)</string>
+             <string>Source patch</string>
             </property>
            </widget>
           </item>
@@ -347,6 +391,12 @@
         </item>
         <item>
          <widget class="QGraphicsView" name="gfxSource">
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
           <property name="baseSize">
            <size>
             <width>50</width>
@@ -379,27 +429,119 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_7">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_6">
-          <item>
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Number of rows:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="txtNumberOfRows">
-            <property name="text">
-             <string>10</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="QLabel" name="label_8">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Forward looking</string>
+          </property>
+         </widget>
         </item>
         <item>
-         <widget class="QTableWidget" name="tableWidget">
+         <widget class="QTableWidget" name="forwardLookingTableWidget">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
           <property name="sortingEnabled">
            <bool>true</bool>
+          </property>
+          <property name="columnCount">
+           <number>2</number>
+          </property>
+          <attribute name="verticalHeaderVisible">
+           <bool>false</bool>
+          </attribute>
+          <column>
+           <property name="text">
+            <string>Patch</string>
+           </property>
+           <property name="textAlignment">
+            <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+           </property>
+          </column>
+          <column/>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkDisplayForwardLookPatchLocations">
+          <property name="text">
+           <string>Display locations</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_8">
+        <item>
+         <widget class="QLabel" name="label_9">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Top patches</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTableWidget" name="topPatchesTableWidget">
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
+          </property>
+          <property name="columnCount">
+           <number>9</number>
+          </property>
+          <column>
+           <property name="text">
+            <string>Patch</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Id</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Location</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>SSD</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Continuation</string>
+           </property>
+          </column>
+          <column/>
+          <column/>
+          <column/>
+          <column/>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkDisplaySourcePatchLocations">
+          <property name="text">
+           <string>Display locations</string>
           </property>
          </widget>
         </item>
@@ -414,8 +556,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1196</width>
-     <height>33</height>
+     <width>1094</width>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLeft_Pane">

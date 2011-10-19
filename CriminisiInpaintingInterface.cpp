@@ -1,6 +1,6 @@
 #include "CriminisiInpainting.h"
 
-FloatVectorImageType::Pointer CriminisiInpainting::GetResult()
+FloatVectorImageType::Pointer CriminisiInpainting::GetCurrentOutputImage()
 {
   return this->CurrentOutputImage;
 }
@@ -51,9 +51,14 @@ void CriminisiInpainting::SetPatchRadius(const unsigned int radius)
   this->PatchRadius.Fill(radius);
 }
 
-void CriminisiInpainting::SetMaxPotentialPatches(const unsigned int numberOfPatches)
+void CriminisiInpainting::SetMaxForwardLookPatches(const unsigned int numberOfPatches)
 {
-  this->MaxPotentialPatches = numberOfPatches;
+  this->MaxForwardLookPatches = numberOfPatches;
+}
+
+void CriminisiInpainting::SetNumberOfTopPatchesToSave(const unsigned int number)
+{
+  this->NumberOfTopPatchesToSave = number;
 }
 
 void CriminisiInpainting::SetImage(const FloatVectorImageType::Pointer image)

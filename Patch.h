@@ -3,7 +3,7 @@
 
 #include "Types.h"
 
-class Patch
+struct Patch
 {
 public:
   Patch(){} // This is needed to allow a std::vector<Patch> to be constructed
@@ -12,9 +12,12 @@ public:
   // This is needed if we are computing histograms upon construction.
   //Patch(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
   
-//protected:
   itk::ImageRegion<2> Region;
-  //std::vector<ImageToHistogramFilterType::HistogramType::Pointer> Histograms;
+
+  float SortValue; // This simply allows patches to be sorted by any criterion currently being evaluated.
+  unsigned int Id; // This is used for parallel sorting of patches.
 };
+
+bool SortBySortValue(const Patch& patch1, const Patch& patch2);
 
 #endif
