@@ -27,6 +27,10 @@
 #include "itkImage.h"
 #include "itkImageRegionIterator.h"
 
+#include <QColor>
+
+#include <vtkImageData.h>
+
 class Mask : public itk::Image< unsigned char, 2>
 {
   public:
@@ -91,6 +95,11 @@ class Mask : public itk::Image< unsigned char, 2>
   
   void DeepCopyFrom(const Mask::Pointer inputMask);
   
+  template<typename TImage>
+  void ApplyToImage(const typename TImage::Pointer image, const QColor& color);
+  
+  void MakeVTKImage(vtkImageData* image, const QColor& validColor, const QColor& holeColor, const bool holeTransparent, const bool validTransparent);
+  
 protected:
   Mask();
   
@@ -102,5 +111,7 @@ private:
   Mask(const Self &);    //purposely not implemented
   void operator=(const Self &); //purposely not implemented
 };
+
+#include "Mask.hxx"
 
 #endif

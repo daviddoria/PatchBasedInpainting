@@ -20,7 +20,7 @@
 #define CriminisiInpainting_h
 
 // Custom
-#include "CandidatePatches.h"
+#include "CandidatePairs.h"
 #include "Helpers.h"
 #include "Patch.h"
 #include "PatchPair.h"
@@ -114,8 +114,8 @@ public:
   
   bool GetUsedPatchPair(const unsigned int id, PatchPair& patchPair);
   
-  bool GetPotentialCandidatePatches(const unsigned int iteration, const unsigned int forwardLookId, CandidatePatches& candidatePatches);
-  bool GetAllPotentialCandidatePatches(const unsigned int iteration, std::vector<CandidatePatches>&);
+  bool GetPotentialCandidatePairs(const unsigned int iteration, const unsigned int forwardLookId, CandidatePairs& candidatePairs);
+  bool GetAllPotentialCandidatePairs(const unsigned int iteration, std::vector<CandidatePairs>&);
   
   // Return the number of completed iterations
   unsigned int GetNumberOfCompletedIterations();
@@ -127,13 +127,13 @@ public:
   
 private:
 
-  std::vector<Patch> SortPatchesByContinuationDifference(const Patch& targetPatch);
+  std::vector<PatchPair> SortPatchesByContinuationDifference(const Patch& targetPatch);
   
   // Determine the difference along an extended isophote of the pixel that will be filled.
-  float ContinuationDifference(const itk::Index<2>& boundaryPixel, const PatchPair& patchPair);
+  float ComputePixelContinuationDifference(const itk::Index<2>& boundaryPixel, const PatchPair& patchPair);
   
-  // Determine the difference along an extended isophote of the pixel that will be filled.
-  float ContinuationDifference(const PatchPair& patchPair);
+  // Determine the difference along an extended isophote of the pixel that will be filled. The PatchPair is non-const because we store the score in the class.
+  float ComputeTotalContinuationDifference(PatchPair& patchPair);
   
   // This is the original Criminisi idea of filling the highest priority first. The best patch pair is returned by reference.
   void FindBestPatchForHighestPriority(PatchPair& bestPatchPair);
@@ -265,7 +265,7 @@ private:
   std::vector<PatchPair> UsedPatchPairs;
   
   // Store the vector of CandidatePatches that were examined at every iteration. These are tracked for visualization purposes only.
-  std::vector<std::vector<CandidatePatches> > PotentialCandidatePatches;
+  std::vector<std::vector<CandidatePairs> > PotentialCandidatePairs;
   
   // The number of bins to use per dimension in the histogram computations.
   unsigned int HistogramBinsPerDimension;

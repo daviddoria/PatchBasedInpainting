@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1094</width>
-    <height>889</height>
+    <width>1319</width>
+    <height>977</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3,1,2,0">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3,1,1,2">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
         <item>
@@ -271,7 +271,7 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2" stretch="9,1">
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget"/>
+         <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -334,18 +334,11 @@
              </font>
             </property>
             <property name="text">
-             <string>Target patch</string>
+             <string>Target</string>
             </property>
            </widget>
           </item>
          </layout>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="chkDisplayMaskedTargetPatch">
-          <property name="text">
-           <string>Display masked</string>
-          </property>
-         </widget>
         </item>
         <item>
          <widget class="QGraphicsView" name="gfxTarget">
@@ -383,7 +376,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Source patch</string>
+             <string>Source</string>
             </property>
            </widget>
           </item>
@@ -408,6 +401,29 @@
           </property>
           <property name="horizontalScrollBarPolicy">
            <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_11">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Result</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGraphicsView" name="gfxResult">
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
           </property>
          </widget>
         </item>
@@ -449,6 +465,9 @@
             <height>16777215</height>
            </size>
           </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
           <property name="horizontalScrollBarPolicy">
            <enum>Qt::ScrollBarAlwaysOff</enum>
           </property>
@@ -456,8 +475,11 @@
            <bool>true</bool>
           </property>
           <property name="columnCount">
-           <number>2</number>
+           <number>1</number>
           </property>
+          <attribute name="horizontalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
           <attribute name="verticalHeaderVisible">
            <bool>false</bool>
           </attribute>
@@ -469,7 +491,6 @@
             <set>AlignHCenter|AlignVCenter|AlignCenter</set>
            </property>
           </column>
-          <column/>
          </widget>
         </item>
         <item>
@@ -505,7 +526,7 @@
            <bool>true</bool>
           </property>
           <property name="columnCount">
-           <number>9</number>
+           <number>5</number>
           </property>
           <column>
            <property name="text">
@@ -532,10 +553,6 @@
             <string>Continuation</string>
            </property>
           </column>
-          <column/>
-          <column/>
-          <column/>
-          <column/>
          </widget>
         </item>
         <item>
@@ -556,8 +573,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1094</width>
-     <height>25</height>
+     <width>1319</width>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLeft_Pane">

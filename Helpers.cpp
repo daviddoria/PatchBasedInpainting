@@ -901,4 +901,11 @@ itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned
   return offset;
 }
 
+void QColorToUCharColor(const QColor& color, unsigned char outputColor[3])
+{
+  outputColor[0] = color.red();
+  outputColor[1] = color.green();
+  outputColor[2] = color.blue();
+}
+
 } // end namespace

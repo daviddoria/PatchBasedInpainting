@@ -240,6 +240,7 @@ protected:
   void DisplayUsedPatches();
   void DisplaySourcePatch(const unsigned int forwardLookId, const unsigned int topPatchId);
   void DisplayTargetPatch(const unsigned int forwardLookId);
+  void DisplayResultPatch(const unsigned int forwardLookId, const unsigned int topPatchId);
   
   // Display the text information (scores, etc) of the patches used at the current information
   void DisplayUsedPatchInformation();
@@ -261,18 +262,27 @@ protected:
   
   // Get the potential target patches from this iteration and outline them on a blank image.
   void CreatePotentialTargetPatchesImage();
-  
-  static const unsigned char Green[3];
-  static const unsigned char Red[3];
 
   QGraphicsScene* SourcePatchScene;
   QGraphicsScene* TargetPatchScene;
+  QGraphicsScene* ResultPatchScene;
   
   void OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename);
   
   // These are the state of the completion at every step. The index represents the image AFTER the index'th step.
   // That is, the image at index 0 is the image after 0 iterations (the original image). At index 1 is the image after the first target region has been filled, etc.
   std::vector<InpaintingVisualizationStack> IntermediateImages;
+  
+  // Colors
+  QColor UsedTargetPatchColor;
+  QColor UsedSourcePatchColor;
+  QColor AllForwardLookPatchColor;
+  QColor SelectedForwardLookPatchColor;
+  QColor AllSourcePatchColor;
+  QColor SelectedSourcePatchColor;
+  QColor CenterPixelColor;
+  QColor MaskColor;
+  QColor HoleColor;
 };
 
 #include "Form.hxx"

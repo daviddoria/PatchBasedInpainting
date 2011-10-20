@@ -72,7 +72,6 @@ CriminisiInpainting::CriminisiInpainting()
   
   this->HistogramBinsPerDimension = 10;
   this->MaxForwardLookPatches = 10;
-  //this->MaxPotentialPatches = 2;
   
   this->MaxPixelDifference = 0.0f;
 }
@@ -187,24 +186,6 @@ void CriminisiInpainting::InitializeTargetImage()
   DebugMessage("InitializeTargetImage()");
   // Initialize to the input
   Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->OriginalImage, this->CurrentOutputImage);
-  
-  // We set hole pixels to green so we can visually ensure these pixels are not being copied during the inpainting
-  FloatVectorImageType::PixelType green;
-  green.SetSize(this->OriginalImage->GetNumberOfComponentsPerPixel());
-  green.Fill(0);
-  green[1] = 255;
-  
-  itk::ImageRegionConstIterator<Mask> maskIterator(this->CurrentMask, this->CurrentMask->GetLargestPossibleRegion());
-
-  while(!maskIterator.IsAtEnd())
-    {
-    if(this->CurrentMask->IsHole(maskIterator.GetIndex()))
-      {
-      this->CurrentOutputImage->SetPixel(maskIterator.GetIndex(), green);
-      }
-
-    ++maskIterator;
-    }
 }
 
 void CriminisiInpainting::Initialize()
@@ -366,14 +347,36 @@ void CriminisiInpainting::FindBestPatchForHighestPriority(PatchPair& bestPatchPa
 
 void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 {
+  DebugMessage("FindBestPatchLookAhead()");
   // This function returns the best PatchPair by reference
   
+  std::vector<CandidatePairs> allCandidatePairs;
+  
+  // If this is not the first iteration, get the potential forward look patch candidates from the previous step
+  if(this->NumberOfCompletedIterations > 0)
+    {
+    allCandidatePairs = this->PotentialCandidatePairs[this->NumberOfCompletedIterations - 1];
+  
+    // Remove the patch candidate that was actually filled
+    unsigned int idToRemove = 0;
+    for(unsigned int i = 0; i < allCandidatePairs.size(); ++i)
+      {
+      if(this->UsedPatchPairs[this->NumberOfCompletedIterations - 1].TargetPatch.Region == allCandidatePairs[i].TargetPatch.Region)
+	{
+	idToRemove = i;
+	break;
+	}
+      }
+    allCandidatePairs.erase(allCandidatePairs.begin() + idToRemove);
+    DebugMessage<unsigned int>("Removed forward look: ", idToRemove);
+    }
+  
+  // We need to temporarily modify the priority image without affecting the actual priority image, so we copy it.
   FloatScalarImageType::Pointer CurrentPriorityImage = FloatScalarImageType::New();
   Helpers::DeepCopy<FloatScalarImageType>(this->PriorityImage, CurrentPriorityImage);
 
-  std::vector<CandidatePatches> allCandidatePatches;
-  
-  for(unsigned int i = 0; i < this->MaxForwardLookPatches; ++i)
+  // Find the remaining number of patch candidates
+  for(unsigned int i = allCandidatePairs.size(); i < this->MaxForwardLookPatches; ++i)
     {
     float highestPriority = 0;
     itk::Index<2> pixelToFill = FindHighestValueOnBoundary(CurrentPriorityImage, highestPriority);
@@ -397,9 +400,8 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
     Patch targetPatch(targetRegion);
 
-    CandidatePatches candidatePatches;
-    candidatePatches.TargetPatch = targetPatch;
-    
+    CandidatePairs candidatePairs(targetPatch);
+        
     /*
     SelfPatchCompare* patchCompare;
     patchCompare = new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel());
@@ -420,10 +422,10 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     Patch sourcePatch = this->SourcePatches[bestMatchSourcePatchId];
     */
     
-    std::vector<Patch> patchesSortedByContinuation = SortPatchesByContinuationDifference(targetPatch);
+    std::vector<PatchPair> patchPairsSortedByContinuation = SortPatchesByContinuationDifference(targetPatch);
 
     // Keep only the number of top patches specified.
-    patchesSortedByContinuation.erase(patchesSortedByContinuation.begin() + this->NumberOfTopPatchesToSave, patchesSortedByContinuation.end());
+    patchPairsSortedByContinuation.erase(patchPairsSortedByContinuation.begin() + this->NumberOfTopPatchesToSave, patchPairsSortedByContinuation.end());
     
     // Blank a region around the current potential patch to fill. This will ensure the next potential patch to fill is reasonably far away.
     Helpers::SetRegionToConstant<FloatScalarImageType>(CurrentPriorityImage, targetRegion, 0.0f);
@@ -439,22 +441,13 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     float histogramDifference = Helpers::NDHistogramDifference(sourceHistogram, targetHistogram);
     patchPair.HistogramDifference = histogramDifference;
     */
-    
-    // Compute continuation difference
 
-    Patch bestSourcePatch = patchesSortedByContinuation[0];
-    PatchPair patchPair;
-    patchPair.SourcePatch = bestSourcePatch;
-    patchPair.TargetPatch = targetPatch;
-    float continuationDifference = ContinuationDifference(patchPair);
-    patchPair.ContinuationDifference = continuationDifference;
-
-    candidatePatches.CandidateSourcePatches = patchesSortedByContinuation;
-    allCandidatePatches.push_back(candidatePatches);
+    candidatePairs.CopyFrom(patchPairsSortedByContinuation);
+    allCandidatePairs.push_back(candidatePairs);
 
     } // end forward look loop
 
-    this->PotentialCandidatePatches.push_back(allCandidatePatches);
+  this->PotentialCandidatePairs.push_back(allCandidatePairs);
 //   std::cout << "Scores: " << std::endl;
 //   for(unsigned int i = 0; i < ssdScores.size(); ++i)
 //     {
@@ -481,8 +474,7 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   */
 
   // Return the result by reference. TODO: This should be a "choose the best" rather than simply returning the best source patch of the first look ahead target patch.
-  bestPatchPair.TargetPatch = allCandidatePatches[0].TargetPatch;
-  bestPatchPair.SourcePatch = allCandidatePatches[0].CandidateSourcePatches[0];
+  bestPatchPair = allCandidatePairs[0][0];
 
   
 }
@@ -518,14 +510,7 @@ void CriminisiInpainting::ComputeIsophotes()
   try
   {
     Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/ComputeIsophotes.input.mha", this->DebugImages);
-    
-    /*
-    // This only works when the image is RGB
-    typedef itk::VectorMagnitudeImageFilter<FloatVectorImageType, UnsignedCharScalarImageType>  VectorMagnitudeFilterType;
-    VectorMagnitudeFilterType::Pointer magnitudeFilter = VectorMagnitudeFilterType::New();
-    magnitudeFilter->SetInput(this->OriginalImage); // We use the original image here because the image that has been painted green inside the hole has a strong gradient around the hole.
-    magnitudeFilter->Update();
-    */
+
     RGBImageType::Pointer rgbImage = RGBImageType::New();
     Helpers::VectorImageToRGBImage(this->OriginalImage, rgbImage);
     
@@ -924,6 +909,7 @@ float CriminisiInpainting::ComputeDataTerm(const itk::Index<2>& queryPixel)
 
 void CriminisiInpainting::UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value)
 {
+  DebugMessage("UpdateConfidences()");
   try
   {
     // Force the region to update to be entirely inside the image
@@ -1051,11 +1037,11 @@ itk::ImageRegion<2> CriminisiInpainting::CropToValidRegion(const itk::ImageRegio
   return region;
 }
 
-bool CriminisiInpainting::GetPotentialCandidatePatches(const unsigned int iteration, const unsigned int forwardLookId, CandidatePatches& candidatePatches)
+bool CriminisiInpainting::GetPotentialCandidatePairs(const unsigned int iteration, const unsigned int forwardLookId, CandidatePairs& candidatePairs)
 {
-  if(iteration < this->PotentialCandidatePatches.size())
+  if(iteration < this->PotentialCandidatePairs.size())
     {
-    candidatePatches = this->PotentialCandidatePatches[iteration][forwardLookId];
+    candidatePairs = this->PotentialCandidatePairs[iteration][forwardLookId];
     return true;
     }
   return false;
@@ -1076,7 +1062,7 @@ unsigned int CriminisiInpainting::GetNumberOfCompletedIterations()
   return this->NumberOfCompletedIterations;
 }
 
-float CriminisiInpainting::ContinuationDifference(const itk::Index<2>& boundaryPixel, const PatchPair& patchPair)
+float CriminisiInpainting::ComputePixelContinuationDifference(const itk::Index<2>& boundaryPixel, const PatchPair& patchPair)
 {
   // 'boundaryPixel' should be a pixel from the target patch on the source/valid side of the boundary. We want to compare this pixel value and isophote to the pixel from the source patch that would be on the target/hole side of the boundary if that patch were to be copied.
   
@@ -1158,7 +1144,7 @@ float CriminisiInpainting::ContinuationDifference(const itk::Index<2>& boundaryP
     }
 }
 
-float CriminisiInpainting::ContinuationDifference(const PatchPair& patchPair)
+float CriminisiInpainting::ComputeTotalContinuationDifference(PatchPair& patchPair)
 {
   float totalContinuationDifference = 0.0f;
   
@@ -1167,14 +1153,15 @@ float CriminisiInpainting::ContinuationDifference(const PatchPair& patchPair)
   
   for(unsigned int i = 0; i < borderPixels.size(); ++i)
     {
-    float difference = ContinuationDifference(borderPixels[i], patchPair);
+    float difference = ComputePixelContinuationDifference(borderPixels[i], patchPair);
     totalContinuationDifference += difference;
     }
   
   // We don't watch patches to be penalized for having longer boundaries
   float averageContinuationDifference = totalContinuationDifference / borderPixels.size();
   
-  //return totalContinuationDifference;
+  patchPair.ContinuationDifference = averageContinuationDifference;
+  
   return averageContinuationDifference;
 }
 
@@ -1201,12 +1188,15 @@ unsigned int CriminisiInpainting::FindPatchWithBestContinuationDifference(const 
 }
 */
 
-std::vector<Patch> CriminisiInpainting::SortPatchesByContinuationDifference(const Patch& targetPatch)
+std::vector<PatchPair> CriminisiInpainting::SortPatchesByContinuationDifference(const Patch& targetPatch)
 {
+  // Naively, we could just call ComputeTotalContinuationDifference on each patch pair for a forward looking set. However, this
+  // would recalculate the boundary for every pair. This is a lot of extra work because the boundary does not change from source patch to source patch.
+  
   // Identify border pixels on the source side of the boundary.
   std::vector<itk::Index<2> > borderPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage, targetPatch.Region);
   
-  std::vector<Patch> patches;
+  std::vector<PatchPair> patchPairs;
   
   for(unsigned int sourcePatchId = 0; sourcePatchId < this->SourcePatches.size(); ++sourcePatchId)
     {
@@ -1218,28 +1208,27 @@ std::vector<Patch> CriminisiInpainting::SortPatchesByContinuationDifference(cons
   
     for(unsigned int i = 0; i < borderPixels.size(); ++i)
       {
-      float difference = ContinuationDifference(borderPixels[i], patchPair);
+      float difference = ComputePixelContinuationDifference(borderPixels[i], patchPair);
       totalContinuationDifference += difference;
       }
-
-    Patch patch = this->SourcePatches[sourcePatchId];
-    patch.SortValue = totalContinuationDifference;
-    patch.Id = sourcePatchId;
-    patches.push_back(patch);
+    float averageContinuationDifference = totalContinuationDifference / static_cast<float>(borderPixels.size());
+    patchPair.ContinuationDifference = averageContinuationDifference;
+    
+    patchPairs.push_back(patchPair);
     }
 
   //unsigned int bestPatchId = Helpers::argmin<float>(differences);
   
-  std::sort(patches.begin(), patches.end(), SortBySortValue);
+  std::sort(patchPairs.begin(), patchPairs.end(), SortByContinuationDifference);
   
-  return patches;
+  return patchPairs;
 }
 
-bool CriminisiInpainting::GetAllPotentialCandidatePatches(const unsigned int iteration, std::vector<CandidatePatches>& allCandidatePatches)
+bool CriminisiInpainting::GetAllPotentialCandidatePairs(const unsigned int iteration, std::vector<CandidatePairs>& allCandidatePairs)
 {
-  if(iteration < this->PotentialCandidatePatches.size())
+  if(iteration < this->PotentialCandidatePairs.size())
     {
-    allCandidatePatches = this->PotentialCandidatePatches[iteration];
+    allCandidatePairs = this->PotentialCandidatePairs[iteration];
     return true;
     }
   else

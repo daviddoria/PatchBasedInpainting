@@ -16,17 +16,30 @@
  *
  *=========================================================================*/
 
-#ifndef CANDIDATEPATCHES_H
-#define CANDIDATEPATCHES_H
+#ifndef CANDIDATEPAIRS_H
+#define CANDIDATEPAIRS_H
 
-#include "Patch.h"
+#include "PatchPair.h"
 
 #include <vector>
 
-struct CandidatePatches
+// This class stores a target patch and a list of the top N (user specified) pairs of patches based on the user specified comparison criteria.
+// All patch pairs must have the same target patch.
+
+class CandidatePairs : public std::vector<PatchPair>
 {
+public:
+  CandidatePairs(){} // This is so that we can construct a CandidatePairs to be filled by an accessor.
+  
+  CandidatePairs(const Patch& targetPatch);
+  
+  void AddCandidatePair(const PatchPair& patchPair);
+
   Patch TargetPatch;
-  std::vector<Patch> CandidateSourcePatches;
+  
+  void AddPairsFromPatches(const std::vector<Patch>& patches);
+
+  void CopyFrom(const std::vector<PatchPair>& v);
 };
 
 #endif

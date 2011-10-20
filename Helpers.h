@@ -106,6 +106,8 @@ float RoundAwayFromZero(const float number);
 
 void VectorMaskedBlur(const FloatVectorImageType::Pointer inputImage, const Mask::Pointer mask, const unsigned int kernelRadius, FloatVectorImageType::Pointer output);
 
+void QColorToUCharColor(const QColor& color, unsigned char outputColor[3]);
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// Template function declarations (defined in Helpers.hxx) ///////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
