@@ -125,15 +125,24 @@ public:
   // not have to query a specific image, but rather access this more global region definition.
   itk::ImageRegion<2> GetFullRegion();
   
+  std::vector<std::vector<CandidatePairs> >& AccessPotentialCandidatePairs();
+  
 private:
 
-  std::vector<PatchPair> SortPatchesByContinuationDifference(const Patch& targetPatch);
+  // Compute the difference between two isophotes
+  float ComputeIsophoteDifference(const FloatVector2Type v1, const FloatVector2Type v2);
+  float ComputeIsophoteDifference(const itk::Index<2>& pixel1, const itk::Index<2>& pixel2);
   
-  // Determine the difference along an extended isophote of the pixel that will be filled.
-  float ComputePixelContinuationDifference(const itk::Index<2>& boundaryPixel, const PatchPair& patchPair);
+  bool GetAdjacentBoundaryPixel(const itk::Index<2>& boundaryPixel, const PatchPair& patchPair, itk::Index<2>& adjacentBoundaryPixel);
+  
+  // Compute the continuation difference for every pair. Store the values in the PatchPair objects inside of the CandidatePairs object.
+  void ComputeAllContinuationDifferences(CandidatePairs& candidatePairs);
+  
+  
+  float ComputeNormalizedSquaredPixelDifference(const itk::Index<2>& pixel1, const itk::Index<2>& pixel2);
   
   // Determine the difference along an extended isophote of the pixel that will be filled. The PatchPair is non-const because we store the score in the class.
-  float ComputeTotalContinuationDifference(PatchPair& patchPair);
+  //float ComputeTotalContinuationDifference(PatchPair& patchPair);
   
   // This is the original Criminisi idea of filling the highest priority first. The best patch pair is returned by reference.
   void FindBestPatchForHighestPriority(PatchPair& bestPatchPair);
@@ -249,8 +258,8 @@ private:
   // Update the mask so that the pixels in the region that was filled are marked as filled.
   void UpdateMask(const itk::ImageRegion<2>& region);
 
-  // Locate all patches centered at pixels in 'region' that are completely inside of the image and completely inside of the source region
-  void ComputeSourcePatches(const itk::ImageRegion<2>& region);
+  // Locate all patches centered at pixels in 'region' that are completely inside of the image and completely inside of the source region and add them to the current list of source patches.
+  void AddSourcePatches(const itk::ImageRegion<2>& region);
   
   // Store the list of source patches computed with ComputeSourcePatches()
   std::vector<Patch> SourcePatches;
@@ -276,8 +285,8 @@ private:
 
   unsigned int NumberOfTopPatchesToSave;
   
-  // The maximum possible pixel difference in the image.
-  float MaxPixelDifference;
+  // The maximum possible pixel squared difference in the image.
+  float MaxPixelDifferenceSquared;
   
   // Set the member MaxPixelDifference;
   void ComputeMaxPixelDifference();

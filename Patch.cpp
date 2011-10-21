@@ -60,7 +60,7 @@ Patch::Patch(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2
 }
 #endif
 
-bool SortBySortValue(const Patch& patch1, const Patch& patch2)
-{
-  return (patch1.SortValue < patch2.SortValue);
-}
+// bool SortBySortValue(const Patch& patch1, const Patch& patch2)
+// {
+//   return (patch1.SortValue < patch2.SortValue);
+// }

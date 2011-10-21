@@ -5,6 +5,35 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 
+void Form::on_btnResort_clicked()
+{
+  unsigned int forwardLookId = this->forwardLookingTableWidget->currentRow();
+  
+  CandidatePairs& candidatePairs = this->Inpainting.AccessPotentialCandidatePairs()[this->IterationToDisplay - 1][forwardLookId];
+  
+  if(this->radSortBySSD->isChecked())
+    {
+    std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageSSD);
+    }
+  else if(this->radSortByBoundaryPixelDifference->isChecked())
+    {
+    std::sort(candidatePairs.begin(), candidatePairs.end(), SortByBoundaryPixelDifference);
+    }
+  else if(this->radSortByBoundaryIsophoteDifference->isChecked())
+    {
+    std::sort(candidatePairs.begin(), candidatePairs.end(), SortByBoundaryIsophoteDifference);
+    }
+  else
+    {
+    std::cerr << "No valid sorting criterion selected." << std::endl;
+    }
+  
+  SetupTopPatchesTable(forwardLookId);
+  on_topPatchesTableWidget_cellClicked(0, 0);
+  
+  Refresh();
+}
+
 void Form::on_chkHighlightUsedPatches_clicked()
 {
   Refresh();

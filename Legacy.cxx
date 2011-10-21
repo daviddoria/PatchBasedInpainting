@@ -649,3 +649,117 @@ FloatVector2Type CriminisiInpainting::GetAverageIsophote(const itk::Index<2>& qu
     exit(-1);
   }
 }
+
+
+    /*
+    // Compute histograms and histogram difference
+    //HistogramType::Pointer sourceHistogram = Helpers::ComputeNDHistogramOfRegionManual(this->CurrentOutputImage, sourcePatch.Region, this->HistogramBinsPerDimension);
+    HistogramType::Pointer sourceHistogram = Helpers::ComputeNDHistogramOfMaskedRegionManual(this->CurrentOutputImage, this->CurrentMask, sourcePatch.Region, this->HistogramBinsPerDimension);
+    HistogramType::Pointer targetHistogram = Helpers::ComputeNDHistogramOfMaskedRegionManual(this->CurrentOutputImage, this->CurrentMask, targetPatch.Region, this->HistogramBinsPerDimension);
+    
+    float histogramDifference = Helpers::NDHistogramDifference(sourceHistogram, targetHistogram);
+    patchPair.HistogramDifference = histogramDifference;
+    */
+
+    
+    
+#if 0
+unsigned int SelfPatchCompare::FindBestPatch(float& minDistance)
+{
+  // This function returns the Id of the best source patch, as well as returns the minDistance by reference
+  
+  try
+  {
+    minDistance = std::numeric_limits<float>::infinity();
+    unsigned int bestMatchId = 0;
+    if(!this->Image->GetLargestPossibleRegion().IsInside(this->Pairs.TargetPatch.Region))
+      {  
+      // Force the target region to be entirely inside the image
+      this->Pairs.TargetPatch.Region.Crop(this->Image->GetLargestPossibleRegion());
+    
+      ComputeOffsets();
+    
+      for(unsigned int i = 0; i < this->Pairs.size(); ++i)
+	{
+	float distance = PatchDifferenceBoundary(this->Pairs[i].SourcePatch);
+	//std::cout << "Patch " << i << " distance " << distance << std::endl;
+	if(distance < minDistance)
+	  {
+	  minDistance = distance;
+	  bestMatchId = i;
+	  }
+	}
+      }
+    else // The target patch is entirely inside the image
+      {
+      ComputeOffsets();
+      for(unsigned int i = 0; i < this->Pairs.size(); ++i)
+	{
+	float distance = PatchAverageSquaredDifference(this->Pairs[i].SourcePatch);
+	//float distance = PatchDifferenceManual(this->SourceRegions[i]);
+	//std::cout << "Patch " << i << " distance " << distance << std::endl;
+	if(distance < minDistance)
+	  {
+	  minDistance = distance;
+	  bestMatchId = i;
+	  }
+	}
+      }
+
+    return bestMatchId;
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in FindBestPatch!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}
+#endif
+
+
+/*
+float CriminisiInpainting::ComputeTotalContinuationDifference(PatchPair& patchPair)
+{
+  float totalContinuationDifference = 0.0f;
+  
+  // Identify border pixels on the source side of the boundary. Of course the boundary is defined in the target patch. The isophote extension is later check in the source patch.
+  std::vector<itk::Index<2> > borderPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage, patchPair.TargetPatch.Region);
+  
+  for(unsigned int i = 0; i < borderPixels.size(); ++i)
+    {
+    float difference = ComputePixelContinuationDifference(borderPixels[i], patchPair);
+    totalContinuationDifference += difference;
+    }
+  
+  // We don't watch patches to be penalized for having longer boundaries
+  float averageContinuationDifference = totalContinuationDifference / borderPixels.size();
+  
+  patchPair.SetContinuationDifference(averageContinuationDifference);
+  
+  return averageContinuationDifference;
+}
+*/
+
+/*
+unsigned int CriminisiInpainting::FindPatchWithBestContinuationDifference(const Patch& targetPatch)
+{
+  // This is a naive method that recomputes the boundary for every pair! This is way too slow to actually use.
+  
+  std::vector<PatchPair> patchPairs;
+  std::vector<float> differences;
+  
+  for(unsigned int i = 0; i < this->SourcePatches.size(); ++i)
+    {
+    PatchPair patchPair;
+    patchPair.SourcePatch = this->SourcePatches[i];
+    patchPair.TargetPatch = targetPatch;
+    
+    float continuationDifference = ContinuationDifference(patchPair);
+    differences.push_back(continuationDifference);
+    }
+
+  unsigned int bestPatchId = Helpers::argmin<float>(differences);
+  return bestPatchId;
+}
+*/

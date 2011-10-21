@@ -72,10 +72,11 @@ void Form::on_actionHelp_activated()
   
   help->setReadOnly(true);
   help->append("<h1>Criminisi Inpainting</h1>\
-  Load and image and a mask. <br/>\
+  Load an image and a mask. <br/>\
   Set the settings such as patch size. <br/>\
-  Click Inpaint.<br/> <p/>"
-  );
+  To do the complete inpainting, click 'Inpaint'.<br/>\
+  To do one step of the inpainting, click 'Step'. This will allow you to inspect forward look candidates and each of their top matches.<br/>\
+  <p/>");
   help->show();
 }
 
@@ -617,11 +618,15 @@ void Form::on_btnInpaint_clicked()
 {
   DebugMessage("on_btnInpaint_clicked()");
   
-  Initialize();
+  //Initialize();
   
   Refresh();
   
   DebugMessage("Starting ComputationThread...");
+  
+  this->Inpainting.SetMaxForwardLookPatches(this->txtNumberOfForwardLook->text().toUInt());
+  this->Inpainting.SetNumberOfTopPatchesToSave(this->txtNumberOfTopPatches->text().toUInt());
+  
   ComputationThread.start();
 }
 
@@ -1054,8 +1059,8 @@ void Form::OutputPairs(const std::vector<PatchPair>& patchPairs, const std::stri
     {
     fout << "Potential patch " << i << ": " << std::endl
 	 << "target index: " << patchPairs[i].TargetPatch.Region.GetIndex() << std::endl
-	 << "ssd score: " << patchPairs[i].AverageSSD << std::endl
-	 << "histogram score: " << patchPairs[i].HistogramDifference << std::endl;
+	 << "ssd score: " << patchPairs[i].GetAverageSSD() << std::endl;
+	 //<< "histogram score: " << patchPairs[i].HistogramDifference << std::endl;
     }
     
   fout.close();
@@ -1148,21 +1153,28 @@ void Form::SetupForwardLookingTable()
   
   this->forwardLookingTableWidget->setColumnWidth(0, cellSize);
 
-  std::vector<CandidatePairs> candidatePairs;
+  std::vector<CandidatePairs> allCandidatePairs;
   
   // There is a -1 offset here because the 0th patch pair to be stored is after iteration 1 (as after the 0th iteration (initial conditions) there are no used patch pairs)
-  bool validIteration = this->Inpainting.GetAllPotentialCandidatePairs(this->IterationToDisplay - 1, candidatePairs);
+  bool validIteration = this->Inpainting.GetAllPotentialCandidatePairs(this->IterationToDisplay - 1, allCandidatePairs);
   if(!validIteration)
     {
     return;
     }
   
-  for(unsigned int forwardLookId = 0; forwardLookId < candidatePairs.size(); ++forwardLookId)
+  unsigned int numberToDisplay = std::min(allCandidatePairs.size(), this->txtNumberOfForwardLook->text().toUInt());
+  if(allCandidatePairs.size() != this->txtNumberOfForwardLook->text().toUInt())
+    {
+    std::cerr << "Warning: Number of pairs (" << allCandidatePairs.size() << ") does not match requested number (" << this->txtNumberOfForwardLook->text().toUInt() << ")" << std::endl;
+    }
+    
+  //for(unsigned int forwardLookId = 0; forwardLookId < candidatePairs.size(); ++forwardLookId)
+  for(unsigned int forwardLookId = 0; forwardLookId < numberToDisplay; ++forwardLookId)
     {
     this->forwardLookingTableWidget->insertRow(this->forwardLookingTableWidget->rowCount());
     this->forwardLookingTableWidget->setRowHeight(forwardLookId, cellSize);
   
-    Patch currentForwardLookPatch = candidatePairs[forwardLookId].TargetPatch;
+    Patch currentForwardLookPatch = allCandidatePairs[forwardLookId].TargetPatch;
 
     // The -1 offset here is so that the patch that was actually used is still masked in the table. (If we use the current intermediate image, one of the patches would have already been filled).
     QImage patchImage = Helpers::GetQImage<FloatVectorImageType>(this->IntermediateImages[this->IterationToDisplay - 1].Image, currentForwardLookPatch.Region);
@@ -1205,7 +1217,13 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
   // There is a -1 offset here because the 0th patch pair to be stored is after iteration 1 (as after the 0th iteration (initial conditions) there are no used patch pairs)
   this->Inpainting.GetPotentialCandidatePairs(this->IterationToDisplay - 1, forwardLookId, candidatePairs);
 
-  for(unsigned int pairId = 0; pairId < candidatePairs.size(); ++pairId)
+  unsigned int numberToDisplay = std::min(candidatePairs.size(), this->txtNumberOfTopPatches->text().toUInt());
+  if(candidatePairs.size() != this->txtNumberOfTopPatches->text().toUInt())
+    {
+    std::cerr << "Warning: Number of pairs (" << candidatePairs.size() << ") does not match requested number (" << this->txtNumberOfTopPatches->text().toUInt() << ")" << std::endl;
+    }
+  //for(unsigned int pairId = 0; pairId < candidatePairs.size(); ++pairId)
+  for(unsigned int pairId = 0; pairId < numberToDisplay; ++pairId)
     {
     this->topPatchesTableWidget->insertRow(this->topPatchesTableWidget->rowCount());
     this->topPatchesTableWidget->setRowHeight(pairId, patchDisplaySize);
@@ -1221,30 +1239,45 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
     imageLabel->setScaledContents(true);
     this->topPatchesTableWidget->setCellWidget(pairId, 0, imageLabel);
 
+
+    // Display SSD score
+    QTableWidgetItem* ssdLabel = new QTableWidgetItem;
+    ssdLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetAverageSSD());
+    this->topPatchesTableWidget->setItem(pairId, 1, ssdLabel);
+
+    // Display boundary pixel difference score
+    QTableWidgetItem* boundaryPixelDifferenceLabel = new QTableWidgetItem;
+    boundaryPixelDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryPixelDifference());
+    this->topPatchesTableWidget->setItem(pairId, 2, boundaryPixelDifferenceLabel);
+    
+    // Display boundary isophote difference score
+    QTableWidgetItem* boundaryIsophoteDifferenceLabel = new QTableWidgetItem;
+    boundaryIsophoteDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryIsophoteDifference());
+    this->topPatchesTableWidget->setItem(pairId, 3, boundaryIsophoteDifferenceLabel);
+    
+    // Display total score
+    QTableWidgetItem* totalScoreLabel = new QTableWidgetItem;
+    totalScoreLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetTotalScore());
+    this->topPatchesTableWidget->setItem(pairId, 4, totalScoreLabel);
+    
+    // Store the patch/row Id. This is needed in case we sort the table using the widget header buttons.
+    QTableWidgetItem* idLabel = new QTableWidgetItem;
+    idLabel->setData(Qt::DisplayRole, pairId);
+    this->topPatchesTableWidget->setItem(pairId, 5, idLabel);
+    this->topPatchesTableWidget->setColumnHidden(5, true); // We don't want to display this value, just track it.
+    
     // Display patch location
     std::stringstream ssLocation;
     ssLocation << "( " << currentSourcePatch.Region.GetIndex()[0] << ", " << currentSourcePatch.Region.GetIndex()[1] << ")";
 
-    QTableWidgetItem* idLabel = new QTableWidgetItem;
-    idLabel->setData(Qt::DisplayRole, pairId);
-    this->topPatchesTableWidget->setItem(pairId, 1, idLabel);
-    
     QTableWidgetItem* locationLabel = new QTableWidgetItem;
     locationLabel->setText(ssLocation.str().c_str());
-    this->topPatchesTableWidget->setItem(pairId, 2, locationLabel);
-
-    // Display SSD score
-    QTableWidgetItem* ssdLabel = new QTableWidgetItem;
-    //ssdLabel->setData(Qt::DisplayRole, patchPairs[i].AverageSSD);
-    //this->topPatchesTableWidget->setItem(pairId, 3, ssdLabel);
-
-    // Display Continuation score
-    QTableWidgetItem* continuationLabel = new QTableWidgetItem;
-    continuationLabel->setData(Qt::DisplayRole, candidatePairs[pairId].ContinuationDifference);
-    this->topPatchesTableWidget->setItem(pairId, 4, continuationLabel);
+    this->topPatchesTableWidget->setItem(pairId, 6, locationLabel);
     }
 
   this->topPatchesTableWidget->selectRow(0);
+  //this->topPatchesTableWidget->horizontalHeader()->resizeColumnsToContents();
+  this->topPatchesTableWidget->resizeColumnsToContents();
 }
 
 void Form::HighlightSelectedForwardLookPatch(const unsigned int id)

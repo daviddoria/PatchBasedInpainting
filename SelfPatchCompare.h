@@ -27,6 +27,7 @@
  */
 
 // Custom
+#include "CandidatePairs.h"
 #include "Helpers.h"
 #include "Mask.h"
 #include "Patch.h"
@@ -42,18 +43,19 @@ class SelfPatchCompare
 {
   
 public:
-  SelfPatchCompare(const unsigned int numberOfComponentsPerPixel);
+  SelfPatchCompare(const unsigned int numberOfComponentsPerPixel, CandidatePairs& candidatePairs);
   
   // This function returns the Id of the best source patch, as well as returns the minDistance by reference
-  unsigned int FindBestPatch(float& minDistance);
+  //unsigned int FindBestPatch(float& minDistance);
 
+  // Compute the SSD for all of the pairs. Store the values in the PatchPair objects inside of the CandidatePairs object.
+  void ComputeAllDifferences();
+  
+  // Provide the image to work with.
   void SetImage(const FloatVectorImageType::Pointer);
 
+  // Provide the mask to work with.
   void SetMask(const Mask::Pointer mask);
-
-  void SetTargetPatch(const Patch&);
-
-  void SetSourcePatches(const std::vector<Patch>&);
 
   float SlowDifference(const Patch& sourcePatch);
   float PatchDifferenceManual(const Patch& sourcePatch);
@@ -63,8 +65,8 @@ public:
   // Prepare to do some comparisons by finding all of the valid pixels in the target region
   void ComputeOffsets();
 
-  virtual float PixelDifference(const VectorType &a, const VectorType &b) = 0;
-  float NonVirtualPixelDifference(const VectorType &a, const VectorType &b);
+  virtual float PixelDifferenceSquared(const VectorType &a, const VectorType &b) = 0;
+  float NonVirtualPixelDifferenceSquared(const VectorType &a, const VectorType &b);
   
 protected:
   // If a channel of one pixel was white (255) and the corresponding channel of the other pixel
@@ -75,10 +77,10 @@ protected:
   std::vector<FloatVectorImageType::OffsetValueType> ValidOffsets;
 
   // This is the target region we wish to compare. It may be partially invalid.
-  Patch TargetPatch;
+  //Patch TargetPatch;
 
-  // These are the fully valid source regions
-  std::vector<Patch> SourcePatches;
+  // // Provide the pairs of target/source patches. All target patches are exactly the same patch. The source regions are assumed to all be fully valid.
+  CandidatePairs& Pairs;
   
   // This is the image from which to take the patches
   FloatVectorImageType::Pointer Image;

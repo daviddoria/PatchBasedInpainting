@@ -28,7 +28,8 @@ int main( int argc, char** argv )
   QApplication::setStyle(new QCleanlooksStyle);
 
   Form myForm;
-  myForm.show();
+  //myForm.show();
+  myForm.showMaximized();
 
   return app.exec();
 }

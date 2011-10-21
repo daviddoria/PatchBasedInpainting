@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3,1,1,2">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,6,1,1,5">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
         <item>
@@ -503,7 +503,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_8">
+       <layout class="QVBoxLayout" name="verticalLayout_8" stretch="1,15,1,1,1">
         <item>
          <widget class="QLabel" name="label_9">
           <property name="font">
@@ -526,11 +526,31 @@
            <bool>true</bool>
           </property>
           <property name="columnCount">
-           <number>5</number>
+           <number>7</number>
           </property>
           <column>
            <property name="text">
             <string>Patch</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>SSD</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Bound. Pixel.</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Bound. Isop.</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Total</string>
            </property>
           </column>
           <column>
@@ -543,16 +563,6 @@
             <string>Location</string>
            </property>
           </column>
-          <column>
-           <property name="text">
-            <string>SSD</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Continuation</string>
-           </property>
-          </column>
          </widget>
         </item>
         <item>
@@ -561,6 +571,54 @@
            <string>Display locations</string>
           </property>
          </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_4">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_10">
+          <item>
+           <widget class="QRadioButton" name="radSortBySSD">
+            <property name="text">
+             <string>SSD</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radSortByBoundaryPixelDifference">
+            <property name="text">
+             <string>Boundary pix. diff.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radSortByBoundaryIsophoteDifference">
+            <property name="text">
+             <string>Boundary isop. diff.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnResort">
+            <property name="text">
+             <string>Re-sort</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>

@@ -107,6 +107,8 @@ public slots:
   void on_btnStop_clicked();
   void on_btnReset_clicked();
   
+  void on_btnResort_clicked();
+  
   void on_actionHelp_activated();
   void on_actionQuit_activated();
   

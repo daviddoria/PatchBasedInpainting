@@ -7,9 +7,12 @@ class SelfPatchCompareAll : public SelfPatchCompare
 {
 public:
   
-  SelfPatchCompareAll(const unsigned int components) : SelfPatchCompare(components){}
+  SelfPatchCompareAll(const unsigned int components, CandidatePairs& candidatePairs) : SelfPatchCompare(components, candidatePairs)
+  {
+    // Nothing special to do in this constructor - everything is done in SelfPatchCompare constructor.
+  }
   
-  float PixelDifference(const VectorType &a, const VectorType &b)
+  float PixelDifferenceSquared(const VectorType &a, const VectorType &b)
   {
     float difference = 0;
     
@@ -22,7 +25,7 @@ public:
     return difference;
   }
   
-  static float StaticPixelDifference(const VectorType &a, const VectorType &b)
+  static float StaticPixelDifferenceSquared(const VectorType &a, const VectorType &b)
   {
     float difference = 0;
     

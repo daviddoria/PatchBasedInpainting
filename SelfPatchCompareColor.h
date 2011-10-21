@@ -3,10 +3,19 @@
 
 #include "SelfPatchCompare.h"
 
+#include "CandidatePairs.h"
+
 class SelfPatchCompareColor : public SelfPatchCompare
 {
 public:
-  SelfPatchCompareColor(const unsigned int components) : SelfPatchCompare(components) {}
+  SelfPatchCompareColor(const unsigned int components, CandidatePairs& candidatePairs) : SelfPatchCompare(components, candidatePairs) 
+  {
+    if(components < 3)
+      {
+      std::cerr << "Cannot compute color differences without at least 3 components!" << std::endl;
+      exit(-1);
+      }
+  }
   
   float PixelDifference(const VectorType &a, const VectorType &b)
   {

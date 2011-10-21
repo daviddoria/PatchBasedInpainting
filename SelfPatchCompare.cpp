@@ -19,9 +19,11 @@
 #include "SelfPatchCompare.h"
 
 #include "Helpers.h"
+#include "Patch.h"
+#include "PatchPair.h"
 #include "Types.h"
 
-SelfPatchCompare::SelfPatchCompare(const unsigned int components)
+SelfPatchCompare::SelfPatchCompare(const unsigned int components, CandidatePairs& candidatePairs) : Pairs(candidatePairs)
 {
   this->NumberOfComponentsPerPixel = components;
 }
@@ -36,22 +38,12 @@ void SelfPatchCompare::SetMask(const Mask::Pointer mask)
   this->MaskImage = mask;
 }
 
-void SelfPatchCompare::SetTargetPatch(const Patch& patch)
-{
-  this->TargetPatch = patch;
-}
-
-void SelfPatchCompare::SetSourcePatches(const std::vector<Patch>& patches)
-{
-  this->SourcePatches = patches;
-}
-
 void SelfPatchCompare::ComputeOffsets()
 {
   try
   {
     // Iterate over the target region of the mask. Add the linear offset of valid pixels to the offsets to be used later in the comparison.
-    itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, this->TargetPatch.Region);
+    itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, this->Pairs.TargetPatch.Region);
 
     unsigned int componentsPerPixel = this->Image->GetNumberOfComponentsPerPixel();
     
@@ -92,12 +84,12 @@ float SelfPatchCompare::SlowDifference(const Patch& sourcePatch)
     //assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
 
     itk::ImageRegion<2> newSourceRegion = sourcePatch.Region;
-    itk::ImageRegion<2> newTargetRegion = this->TargetPatch.Region;
+    itk::ImageRegion<2> newTargetRegion = this->Pairs.TargetPatch.Region;
 
-    if(!this->Image->GetLargestPossibleRegion().IsInside(this->TargetPatch.Region))
+    if(!this->Image->GetLargestPossibleRegion().IsInside(this->Pairs.TargetPatch.Region))
       {
       // Move the source region to the target region. We move this way because we want to iterate over the mask in the target region.
-      itk::Offset<2> sourceTargetOffset = this->TargetPatch.Region.GetIndex() - sourcePatch.Region.GetIndex();
+      itk::Offset<2> sourceTargetOffset = this->Pairs.TargetPatch.Region.GetIndex() - sourcePatch.Region.GetIndex();
 
       newSourceRegion.SetIndex(sourcePatch.Region.GetIndex() + sourceTargetOffset);
 
@@ -128,7 +120,7 @@ float SelfPatchCompare::SlowDifference(const Patch& sourcePatch)
         FloatVectorImageType::PixelType targetPixel = targetPatchIterator.Get();
         //std::cout << "Source pixel: " << sourcePixel << " target pixel: " << targetPixel << std::endl;
         //float difference = Helpers::PixelSquaredDifference(sourcePixel, targetPixel);
-	float difference = PixelDifference(sourcePixel, targetPixel);
+	float difference = PixelDifferenceSquared(sourcePixel, targetPixel);
         sum +=  difference;
         validPixelCounter++;
         }
@@ -145,7 +137,7 @@ float SelfPatchCompare::SlowDifference(const Patch& sourcePatch)
       {
       std::cerr << "Zero valid pixels in PatchDifference." << std::endl;
       std::cerr << "Source region: " << sourcePatch.Region << std::endl;
-      std::cerr << "Target region: " << this->TargetPatch.Region << std::endl;
+      std::cerr << "Target region: " << this->Pairs.TargetPatch.Region << std::endl;
       std::cerr << "New source region: " << newSourceRegion << std::endl;
       std::cerr << "New target region: " << newTargetRegion << std::endl;
       exit(-1);
@@ -173,7 +165,7 @@ float SelfPatchCompare::PatchDifferenceManual(const Patch& sourcePatch)
     unsigned int componentsPerPixel = this->Image->GetNumberOfComponentsPerPixel();
     
     FloatVectorImageType::InternalPixelType *buffptr = this->Image->GetBufferPointer();
-    unsigned int offsetDifference = (this->Image->ComputeOffset(this->TargetPatch.Region.GetIndex())
+    unsigned int offsetDifference = (this->Image->ComputeOffset(this->Pairs.TargetPatch.Region.GetIndex())
                                     - this->Image->ComputeOffset(sourcePatch.Region.GetIndex())) * componentsPerPixel;
 
     float difference = 0;
@@ -233,13 +225,13 @@ float SelfPatchCompare::PatchAverageSquaredDifference(const Patch& sourcePatch)
   {
     //assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
 
-    float totalDifference = 0;
+    float totalDifference = 0.0f;
     
     FloatVectorImageType::InternalPixelType *buffptr = this->Image->GetBufferPointer();
-    unsigned int offsetDifference = (this->Image->ComputeOffset(this->TargetPatch.Region.GetIndex())
+    unsigned int offsetDifference = (this->Image->ComputeOffset(this->Pairs.TargetPatch.Region.GetIndex())
                                     - this->Image->ComputeOffset(sourcePatch.Region.GetIndex())) * this->NumberOfComponentsPerPixel;
 
-    float difference = 0;
+    float squaredDifference = 0;
     
     FloatVectorImageType::PixelType sourcePixel;
     sourcePixel.SetSize(this->NumberOfComponentsPerPixel);
@@ -260,7 +252,7 @@ float SelfPatchCompare::PatchAverageSquaredDifference(const Patch& sourcePatch)
         }
     
       
-      difference = PixelDifference(sourcePixel, targetPixel);
+      squaredDifference = PixelDifferenceSquared(sourcePixel, targetPixel);
       //difference = NonVirtualPixelDifference(sourcePixel, targetPixel); // This call seems to make it very slow?
       //difference = (sourcePixel-targetPixel).GetSquaredNorm(); // horribly slow
       
@@ -275,7 +267,7 @@ float SelfPatchCompare::PatchAverageSquaredDifference(const Patch& sourcePatch)
 // 	}
 
       //totalDifference += difference;
-      totalDifference += difference*difference;
+      totalDifference += squaredDifference;
       }
 
     float averageDifference = totalDifference/static_cast<float>(this->ValidOffsets.size());
@@ -300,7 +292,7 @@ float SelfPatchCompare::PatchDifferenceBoundary(const Patch& sourcePatch)
     itk::ImageRegion<2> newSourceRegion = sourcePatch.Region;
 
     // Move the source region to the target region. We move this way because we want to iterate over the mask in the target region.
-    itk::Offset<2> sourceTargetOffset = this->TargetPatch.Region.GetIndex() - sourcePatch.Region.GetIndex();
+    itk::Offset<2> sourceTargetOffset = this->Pairs.TargetPatch.Region.GetIndex() - sourcePatch.Region.GetIndex();
 
     newSourceRegion.SetIndex(sourcePatch.Region.GetIndex() + sourceTargetOffset);
 
@@ -318,7 +310,7 @@ float SelfPatchCompare::PatchDifferenceBoundary(const Patch& sourcePatch)
     unsigned int componentsPerPixel = this->Image->GetNumberOfComponentsPerPixel();
     
     FloatVectorImageType::InternalPixelType *buffptr = this->Image->GetBufferPointer();
-    unsigned int offsetDifference = (this->Image->ComputeOffset(this->TargetPatch.Region.GetIndex())
+    unsigned int offsetDifference = (this->Image->ComputeOffset(this->Pairs.TargetPatch.Region.GetIndex())
                                     - this->Image->ComputeOffset(newSourceRegion.GetIndex())) * componentsPerPixel;
 
     float difference = 0;
@@ -346,60 +338,43 @@ float SelfPatchCompare::PatchDifferenceBoundary(const Patch& sourcePatch)
   }
 }
 
-
-unsigned int SelfPatchCompare::FindBestPatch(float& minDistance)
+void SelfPatchCompare::ComputeAllDifferences()
 {
-  // This function returns the Id of the best source patch, as well as returns the minDistance by reference
-  
   try
   {
-    minDistance = std::numeric_limits<float>::infinity();
-    unsigned int bestMatchId = 0;
-    if(!this->Image->GetLargestPossibleRegion().IsInside(this->TargetPatch.Region))
+    std::cout << "ComputeAllDifferences()" << std::endl;
+    if(!this->Image->GetLargestPossibleRegion().IsInside(this->Pairs.TargetPatch.Region))
       {  
       // Force the target region to be entirely inside the image
-      this->TargetPatch.Region.Crop(this->Image->GetLargestPossibleRegion());
+      this->Pairs.TargetPatch.Region.Crop(this->Image->GetLargestPossibleRegion());
     
       ComputeOffsets();
     
-      for(unsigned int i = 0; i < this->SourcePatches.size(); ++i)
+      for(unsigned int i = 0; i < this->Pairs.size(); ++i)
 	{
-	float distance = PatchDifferenceBoundary(this->SourcePatches[i]);
-	//std::cout << "Patch " << i << " distance " << distance << std::endl;
-	if(distance < minDistance)
-	  {
-	  minDistance = distance;
-	  bestMatchId = i;
-	  }
+	float distance = PatchDifferenceBoundary(this->Pairs[i].SourcePatch);
+	this->Pairs[i].SetAverageSSD(distance);
 	}
       }
     else // The target patch is entirely inside the image
       {
       ComputeOffsets();
-      for(unsigned int i = 0; i < this->SourcePatches.size(); ++i)
+      for(unsigned int i = 0; i < this->Pairs.size(); ++i)
 	{
-	float distance = PatchAverageSquaredDifference(this->SourcePatches[i]);
-	//float distance = PatchDifferenceManual(this->SourceRegions[i]);
-	//std::cout << "Patch " << i << " distance " << distance << std::endl;
-	if(distance < minDistance)
-	  {
-	  minDistance = distance;
-	  bestMatchId = i;
-	  }
+	float distance = PatchAverageSquaredDifference(this->Pairs[i].SourcePatch);
+	this->Pairs[i].SetAverageSSD(distance);
 	}
       }
-
-    return bestMatchId;
   }
   catch( itk::ExceptionObject & err )
   {
-    std::cerr << "ExceptionObject caught in FindBestPatch!" << std::endl;
+    std::cerr << "ExceptionObject caught in ComputeAllDifferences!" << std::endl;
     std::cerr << err << std::endl;
     exit(-1);
   }
 }
 
-float SelfPatchCompare::NonVirtualPixelDifference(const VectorType &a, const VectorType &b)
+float SelfPatchCompare::NonVirtualPixelDifferenceSquared(const VectorType &a, const VectorType &b)
 {
   float difference = 0;
   
