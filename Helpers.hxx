@@ -27,6 +27,7 @@
 // ITK
 #include "itkGaussianOperator.h"
 #include "itkImageFileWriter.h"
+#include "itkVectorMagnitudeImageFilter.h"
 
 // Qt
 #include <QColor>
@@ -686,10 +687,8 @@ void BlankAndOutlineRegion(typename TImage::Pointer image, const itk::ImageRegio
 
 }
 
-
-
 template <typename TImage>
-QImage GetQImage(const typename TImage::Pointer image, const itk::ImageRegion<2>& region)
+QImage GetQImageColor(const typename TImage::Pointer image, const itk::ImageRegion<2>& region)
 {
   QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888);
 
@@ -715,6 +714,77 @@ QImage GetQImage(const typename TImage::Pointer image, const itk::ImageRegion<2>
   QColor highlightColor(255, 0, 255);
   qimage.setPixel(region.GetSize()[0]/2, region.GetSize()[1]/2, highlightColor.rgb());
   
+  //return qimage; // The actual image region
+  return qimage.mirrored(false, true); // The flipped image region
+}
+
+template <typename TImage>
+QImage GetQImageMagnitude(const typename TImage::Pointer image, const itk::ImageRegion<2>& region)
+{
+  QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888);
+
+  typedef itk::VectorMagnitudeImageFilter<TImage, FloatScalarImageType>  VectorMagnitudeFilterType;
+  typename VectorMagnitudeFilterType::Pointer magnitudeFilter = VectorMagnitudeFilterType::New();
+  magnitudeFilter->SetInput(image);
+  magnitudeFilter->Update();
+
+  typedef itk::RescaleIntensityImageFilter<FloatScalarImageType, UnsignedCharScalarImageType> RescaleFilterType;
+  RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
+  rescaleFilter->SetOutputMinimum(0);
+  rescaleFilter->SetOutputMaximum(255);
+  rescaleFilter->SetInput( magnitudeFilter->GetOutput() );
+  rescaleFilter->Update();
+  
+  typedef itk::RegionOfInterestImageFilter< UnsignedCharScalarImageType, UnsignedCharScalarImageType> RegionOfInterestImageFilterType;
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  regionOfInterestImageFilter->SetRegionOfInterest(region);
+  regionOfInterestImageFilter->SetInput(rescaleFilter->GetOutput());
+  regionOfInterestImageFilter->Update();
+
+  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+
+  while(!imageIterator.IsAtEnd())
+    {
+    unsigned char pixelValue = imageIterator.Get();
+
+    QColor pixelColor(static_cast<int>(pixelValue), static_cast<int>(pixelValue), static_cast<int>(pixelValue));
+
+    itk::Index<2> index = imageIterator.GetIndex();
+    qimage.setPixel(index[0], index[1], pixelColor.rgb());
+
+    ++imageIterator;
+    }
+
+  //return qimage; // The actual image region
+  return qimage.mirrored(false, true); // The flipped image region
+}
+
+
+template <typename TImage>
+QImage GetQImageScalar(const typename TImage::Pointer image, const itk::ImageRegion<2>& region)
+{
+  QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888);
+
+  typedef itk::RegionOfInterestImageFilter< TImage, TImage> RegionOfInterestImageFilterType;
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  regionOfInterestImageFilter->SetRegionOfInterest(region);
+  regionOfInterestImageFilter->SetInput(image);
+  regionOfInterestImageFilter->Update();
+
+  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+
+  while(!imageIterator.IsAtEnd())
+    {
+    typename TImage::PixelType pixelValue = imageIterator.Get();
+
+    QColor pixelColor(static_cast<int>(pixelValue), static_cast<int>(pixelValue), static_cast<int>(pixelValue));
+
+    itk::Index<2> index = imageIterator.GetIndex();
+    qimage.setPixel(index[0], index[1], pixelColor.rgb());
+
+    ++imageIterator;
+    }
+
   //return qimage; // The actual image region
   return qimage.mirrored(false, true); // The flipped image region
 }

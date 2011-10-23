@@ -61,6 +61,7 @@
 #include <vtkXMLImageDataWriter.h> // For debugging only
 
 // Custom
+#include "FileSelector.h"
 #include "Helpers.h"
 #include "InteractorStyleImageNoLevel.h"
 #include "Mask.h"
@@ -108,12 +109,8 @@ Form::Form()
   QIcon saveIcon = QIcon::fromTheme("document-save");
   
   // Setup toolbar
-  actionOpenImage->setIcon(openIcon);
-  this->toolBar->addAction(actionOpenImage);
-
-  actionOpenMask->setIcon(openIcon);
-  this->toolBar->addAction(actionOpenMask);
-  actionOpenMask->setEnabled(false);
+  actionOpen->setIcon(openIcon);
+  this->toolBar->addAction(actionOpen);
 
   actionSaveResult->setIcon(saveIcon);
   this->toolBar->addAction(actionSaveResult);
@@ -236,94 +233,33 @@ void Form::StopProgressSlot()
   this->progressBar->hide();
 }
 
-void Form::on_actionOpenImage_activated()
+void Form::on_actionOpen_activated()
 {
-  // Get a filename to open
-  QString fileName = QFileDialog::getOpenFileName(this, "Open File", ".", "Image Files (*.jpg *.jpeg *.bmp *.png *.mha);;PNG Files (*.png)");
-  
-  /*
-  // The non static version of the above is something like this:
-  QFileDialog myDialog;
-  QDir fileFilter("Image Files (*.jpg *.jpeg *.bmp *.png *.mha);;PNG Files (*.png)");
-  myDialog.setFilter(fileFilter);
-  QString fileName = myDialog.exec();
-  */
-  DebugMessage<std::string>("Got filename: ", fileName.toStdString());
-  if(fileName.toStdString().empty())
-    {
-    std::cout << "Filename was empty." << std::endl;
-    return;
-    }
+  FileSelector* fileSelector(new FileSelector);
+  fileSelector->exec();
 
-  // Set the working directory
-  QFileInfo fileInfo(fileName);
-  std::string workingDirectory = fileInfo.absoluteDir().absolutePath().toStdString() + "/";
-  DebugMessage<std::string>("Working directory set to: ", workingDirectory);
-  QDir::setCurrent(QString(workingDirectory.c_str()));
-    
-  typedef itk::ImageFileReader<FloatVectorImageType> ReaderType;
-  ReaderType::Pointer reader = ReaderType::New();
-  reader->SetFileName(fileName.toStdString());
-  reader->Update();
-
-  //this->Image = reader->GetOutput();
-  Helpers::DeepCopyVectorImage<FloatVectorImageType>(reader->GetOutput(), this->UserImage);
-  
-  Helpers::ITKVectorImagetoVTKImage(this->UserImage, this->ImageLayer.ImageData);
-  
-  this->Inpainting.SetImage(this->UserImage);
-    
-  this->Renderer->ResetCamera();
-  this->qvtkWidget->GetRenderWindow()->Render();
-  
-  this->statusBar()->showMessage("Opened image.");
-  actionOpenMask->setEnabled(true);
-  
-  /*
-  if(this->UserImage && this->UserMaskImage && this->UserImage->GetLargestPossibleRegion() == this->UserMaskImage->GetLargestPossibleRegion())
+  int result = fileSelector->result();
+  if(result) // The user clicked 'ok'
     {
-    SetupInitialIntermediateImages();
-    SetCheckboxVisibility(true);
+    std::cout << "User clicked ok." << std::endl;
+    OpenImage(fileSelector->GetImageFileName());
+    OpenMask(fileSelector->GetMaskFileName(), fileSelector->IsMaskInverted());
     }
   else
     {
-    SetCheckboxVisibility(false);
+    std::cout << "User clicked cancel." << std::endl;
+    // The user clicked 'cancel' or closed the dialog, do nothing.
     }
-  */
-  Initialize();
 }
 
 
-void Form::on_actionOpenMaskInverted_activated()
+void Form::OpenMask(const std::string& fileName, const bool inverted)
 {
-  std::cout << "on_actionOpenMaskInverted_activated()" << std::endl;
-  on_actionOpenMask_activated();
-  this->UserMaskImage->Invert();
-  this->UserMaskImage->Cleanup();
-  
-  this->Inpainting.SetMask(this->UserMaskImage);
-  Helpers::DebugWriteImageConditional<Mask>(this->UserMaskImage, "Debug/InvertedMask.png", this->DebugImages);
-  
-}
-
-
-void Form::on_actionOpenMask_activated()
-{
-  // Get a filename to open
-  QString fileName = QFileDialog::getOpenFileName(this, "Open File", ".", "Image Files (*.png *.bmp)");
-
-  DebugMessage<std::string>("Got filename: ", fileName.toStdString());
-  if(fileName.toStdString().empty())
-    {
-    std::cout << "Filename was empty." << std::endl;
-    return;
-    }
-
   typedef itk::ImageFileReader<Mask> ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
-  reader->SetFileName(fileName.toStdString());
+  reader->SetFileName(fileName);
   reader->Update();
-  
+
   if(this->UserImage->GetLargestPossibleRegion() != reader->GetOutput()->GetLargestPossibleRegion())
     {
     std::cerr << "Image and mask must be the same size!" << std::endl;
@@ -331,24 +267,74 @@ void Form::on_actionOpenMask_activated()
     }
 
   Helpers::DeepCopy<Mask>(reader->GetOutput(), this->UserMaskImage);
-  
-  // This function expands the mask a little bit. We must do this because the isophotes may not be well defined 
+
+  // This function expands the mask a little bit. We must do this because the isophotes may not be well defined
   // on the original mask boundary (if the segmentation is very tight), but they will be better defined a few pixels away.
   //this->UserMaskImage->ExpandHole();
-  
+
   // For this program, we ALWAYS assume the hole to be filled is white, and the valid/source region is black.
   // This is not simply reversible because of some subtle erosion operations that are performed.
   // For this reason, we provide an "load inverted mask" action in the file menu.
   this->UserMaskImage->SetValidValue(0);
   this->UserMaskImage->SetHoleValue(255);
-  
+
+  this->statusBar()->showMessage("Opened mask.");
+
+  /*
+  if(this->UserImage && this->UserMaskImage && this->UserImage->GetLargestPossibleRegion() == this->UserMaskImage->GetLargestPossibleRegion())
+    {
+    SetupInitialIntermediateImages();
+    SetCheckboxVisibility(true);
+    }
+  else
+    {
+    SetCheckboxVisibility(false);
+    }
+  */
+
   this->UserMaskImage->Cleanup();
+
+  if(inverted)
+    {
+    this->UserMaskImage->Invert();
+    }
 
   // This is only set here so we can visualize the mask right away
   this->Inpainting.SetMask(this->UserMaskImage);
+  //Helpers::DebugWriteImageConditional<Mask>(this->UserMaskImage, "Debug/InvertedMask.png", this->DebugImages);
   
-  this->statusBar()->showMessage("Opened mask.");
-  
+  Initialize();
+}
+
+
+void Form::OpenImage(const std::string& fileName)
+{
+  /*
+  // The non static version of the above is something like this:
+  QFileDialog myDialog;
+  QDir fileFilter("Image Files (*.jpg *.jpeg *.bmp *.png *.mha);;PNG Files (*.png)");
+  myDialog.setFilter(fileFilter);
+  QString fileName = myDialog.exec();
+  */
+
+  typedef itk::ImageFileReader<FloatVectorImageType> ReaderType;
+  ReaderType::Pointer reader = ReaderType::New();
+  reader->SetFileName(fileName);
+  reader->Update();
+
+  //this->Image = reader->GetOutput();
+  Helpers::DeepCopyVectorImage<FloatVectorImageType>(reader->GetOutput(), this->UserImage);
+
+  Helpers::ITKVectorImagetoVTKImage(this->UserImage, this->ImageLayer.ImageData);
+
+  this->Inpainting.SetImage(this->UserImage);
+
+  this->Renderer->ResetCamera();
+  this->qvtkWidget->GetRenderWindow()->Render();
+
+  this->statusBar()->showMessage("Opened image.");
+  actionOpenMask->setEnabled(true);
+
   /*
   if(this->UserImage && this->UserMaskImage && this->UserImage->GetLargestPossibleRegion() == this->UserMaskImage->GetLargestPossibleRegion())
     {
@@ -362,6 +348,8 @@ void Form::on_actionOpenMask_activated()
   */
   Initialize();
 }
+
+
 
 void Form::DisplayIsophotes()
 {
@@ -675,7 +663,7 @@ void Form::DisplaySourcePatch(const unsigned int forwardLookId, const unsigned i
     std::cerr << "Requested an illegal iteration: " << this->IterationToDisplay - 1 << std::endl;
     return;
     }
-  QImage sourceImage = Helpers::GetQImage<FloatVectorImageType>(currentImage, candidatePairs[topPatchId].SourcePatch.Region);
+  QImage sourceImage = Helpers::GetQImageColor<FloatVectorImageType>(currentImage, candidatePairs[topPatchId].SourcePatch.Region);
   sourceImage = Helpers::FitToGraphicsView(sourceImage, gfxTarget);
   this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
 
@@ -707,7 +695,7 @@ void Form::DisplayTargetPatch(const unsigned int forwardLookId)
   Mask::Pointer currentMask = this->IntermediateImages[this->IterationToDisplay - 1].MaskImage;
 
   // Target
-  QImage targetImage = Helpers::GetQImage<FloatVectorImageType>(currentImage, candidatePairs.TargetPatch.Region);
+  QImage targetImage = Helpers::GetQImageColor<FloatVectorImageType>(currentImage, candidatePairs.TargetPatch.Region);
 
   targetImage = Helpers::FitToGraphicsView(targetImage, gfxTarget);
   this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
@@ -1177,7 +1165,7 @@ void Form::SetupForwardLookingTable()
     Patch currentForwardLookPatch = allCandidatePairs[forwardLookId].TargetPatch;
 
     // The -1 offset here is so that the patch that was actually used is still masked in the table. (If we use the current intermediate image, one of the patches would have already been filled).
-    QImage patchImage = Helpers::GetQImage<FloatVectorImageType>(this->IntermediateImages[this->IterationToDisplay - 1].Image, currentForwardLookPatch.Region);
+    QImage patchImage = Helpers::GetQImageColor<FloatVectorImageType>(this->IntermediateImages[this->IterationToDisplay - 1].Image, currentForwardLookPatch.Region);
     // This does exactly the same thing, but explicitly masks the hole pixels. We would rather do the above so that we ensure everything is synchronized.
     //QImage patchImage = Helpers::GetQImageMasked<FloatVectorImageType>(this->IntermediateImages[this->IterationToDisplay - 1].Image,
     //                                                                   this->IntermediateImages[this->IterationToDisplay - 1].MaskImage,
@@ -1230,7 +1218,7 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
 
     Patch currentSourcePatch = candidatePairs[pairId].SourcePatch;
 
-    QImage sourceImage = Helpers::GetQImage<FloatVectorImageType>(this->IntermediateImages[this->IterationToDisplay].Image, currentSourcePatch.Region);
+    QImage sourceImage = Helpers::GetQImageColor<FloatVectorImageType>(this->IntermediateImages[this->IterationToDisplay].Image, currentSourcePatch.Region);
     sourceImage = sourceImage.scaledToHeight(patchDisplaySize);
 
     // Create a label with the image as the way to display an image in the table.

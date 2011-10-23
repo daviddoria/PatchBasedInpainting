@@ -10,8 +10,8 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 FIND_PACKAGE(Qt4 REQUIRED)
 INCLUDE(${QT_USE_FILE})
 
-QT4_WRAP_UI(UISrcs CriminisiInpainting.ui)
-QT4_WRAP_CPP(MOCSrcs Form.h ProgressThread.h)
+QT4_WRAP_UI(UISrcs CriminisiInpainting.ui FileSelector.ui FileSelectionWidget.ui)
+QT4_WRAP_CPP(MOCSrcs Form.h ProgressThread.h FileSelector.h FileSelectionWidget.h)
 
 FIND_PACKAGE(VTK REQUIRED)
 INCLUDE(${VTK_USE_FILE})
@@ -25,11 +25,13 @@ CandidatePairs.cpp
 CriminisiInpainting.cpp 
 CriminisiInpaintingDebugging.cpp
 CriminisiInpaintingInterface.cpp
-Form.cxx 
-FormGUIElements.cxx 
-Helpers.cpp 
-InpaintingVisualizationStack.cpp 
-Interactive.cpp 
+FileSelector.cpp
+FileSelectionWidget.cpp
+Form.cxx
+FormGUIElements.cxx
+Helpers.cpp
+InpaintingVisualizationStack.cpp
+Interactive.cpp
 InteractorStyleImageNoLevel.cxx
 Layer.cpp
 Mask.cpp

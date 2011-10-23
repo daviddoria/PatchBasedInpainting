@@ -271,7 +271,7 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2" stretch="9,1">
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
+         <widget class="QVTKWidget" name="qvtkWidget"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -632,16 +632,14 @@
      <x>0</x>
      <y>0</y>
      <width>1319</width>
-     <height>33</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLeft_Pane">
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpenImage"/>
-    <addaction name="actionOpenMask"/>
-    <addaction name="actionOpenMaskInverted"/>
+    <addaction name="actionOpen"/>
     <addaction name="actionFlipImage"/>
     <addaction name="actionSaveResult"/>
     <addaction name="actionQuit"/>
@@ -667,9 +665,9 @@
     <bool>false</bool>
    </attribute>
   </widget>
-  <action name="actionOpenImage">
+  <action name="actionOpen">
    <property name="text">
-    <string>Open Image</string>
+    <string>Open</string>
    </property>
   </action>
   <action name="actionSavePointsLeft">

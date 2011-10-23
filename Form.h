@@ -71,9 +71,7 @@ public slots:
   void on_btnDisplayPreviousStep_clicked();
   void on_btnDisplayNextStep_clicked();
   
-  void on_actionOpenImage_activated();
-  void on_actionOpenMask_activated();
-  void on_actionOpenMaskInverted_activated();
+  void on_actionOpen_activated();
   void on_actionSaveResult_activated();
   
   void on_chkHighlightUsedPatches_clicked();
@@ -97,7 +95,6 @@ public slots:
   void on_chkPotentialPatches_clicked();
   void on_chkDisplayForwardLookPatchLocations_clicked();
   void on_chkDisplaySourcePatchLocations_clicked();
-  void on_chkDisplayMaskedTargetPatch_clicked();
   
   void SetCheckboxVisibility(const bool visible);
   
@@ -135,6 +132,9 @@ protected:
   void DisplayData();
   void DisplayImage();
 
+  void OpenImage(const std::string& filename);
+  void OpenMask(const std::string& filename, const bool inverted);
+  
   int GetColumnIdByHeader(const std::string& header);
   
   void SetupForwardLookingTable();

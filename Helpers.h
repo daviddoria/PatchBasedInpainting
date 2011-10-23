@@ -203,7 +203,13 @@ template<typename TImage>
 void WriteRegion(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename);
 
 template <typename TImage>
-QImage GetQImage(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
+QImage GetQImageColor(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
+
+template <typename TImage>
+QImage GetQImageMagnitude(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
+
+template <typename TImage>
+QImage GetQImageScalar(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
 
 template <typename TImage>
 QImage GetQImageMasked(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region);
