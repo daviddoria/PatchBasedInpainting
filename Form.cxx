@@ -1153,9 +1153,10 @@ void Form::SetupForwardLookingTable()
   unsigned int numberToDisplay = std::min(allCandidatePairs.size(), this->txtNumberOfForwardLook->text().toUInt());
   if(allCandidatePairs.size() != this->txtNumberOfForwardLook->text().toUInt())
     {
-    std::cerr << "Warning: Number of pairs (" << allCandidatePairs.size() << ") does not match requested number (" << this->txtNumberOfForwardLook->text().toUInt() << ")" << std::endl;
+    std::cerr << "Warning: Number of pairs (" << allCandidatePairs.size() << ") does not match requested number ("
+              << this->txtNumberOfForwardLook->text().toUInt() << ")" << std::endl;
     }
-    
+
   //for(unsigned int forwardLookId = 0; forwardLookId < candidatePairs.size(); ++forwardLookId)
   for(unsigned int forwardLookId = 0; forwardLookId < numberToDisplay; ++forwardLookId)
     {
@@ -1177,8 +1178,12 @@ void Form::SetupForwardLookingTable()
     imageLabel->setPixmap(QPixmap::fromImage(patchImage));
     imageLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     
-    this->forwardLookingTableWidget->setCellWidget(forwardLookId, 0, imageLabel);
+    this->forwardLookingTableWidget->setCellWidget(forwardLookId, 0, imageLabel); // (row, col, widget)
 
+    // Display priority in the table
+    QTableWidgetItem* priorityLabel = new QTableWidgetItem;
+    priorityLabel->setData(Qt::DisplayRole, allCandidatePairs[forwardLookId].Priority);
+    this->forwardLookingTableWidget->setItem(forwardLookId, 1, priorityLabel); // (row, col, widget)
     }
     
   //this->forwardLookingTableWidget->resizeRowsToContents();

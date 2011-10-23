@@ -40,6 +40,12 @@ public:
   void AddPairsFromPatches(const std::vector<Patch>& patches);
 
   void CopyFrom(const std::vector<PatchPair>& v);
+
+  float Priority;
+
+  
 };
+
+bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2);
 
 #endif

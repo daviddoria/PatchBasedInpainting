@@ -21,6 +21,8 @@
 CandidatePairs::CandidatePairs(const Patch& targetPatch)
 {
   this->TargetPatch = targetPatch;
+
+  this->Priority = 0.0f;
 }
 
 void CandidatePairs::AddCandidatePair(const PatchPair& patchPair)
@@ -54,4 +56,9 @@ void CandidatePairs::CopyFrom(const std::vector<PatchPair>& v)
     {
     this->push_back(v[i]);
     }
+}
+
+bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2)
+{
+  return (candidatePairs1.Priority < candidatePairs2.Priority);
 }

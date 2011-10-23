@@ -427,6 +427,7 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 
     CandidatePairs candidatePairs(targetPatch);
     candidatePairs.AddPairsFromPatches(this->SourcePatches);
+    candidatePairs.Priority = highestPriority;
     
     SelfPatchCompare* patchCompare;
     //patchCompare = new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel(), candidatePairs);
@@ -464,6 +465,9 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     allCandidatePairs.push_back(candidatePairs);
 
     } // end forward look loop
+
+  // Sort the forward look patches so that the highest priority sets are first in the vector.
+  std::sort(allCandidatePairs.rbegin(), allCandidatePairs.rend(), SortByPriority);
 
   this->PotentialCandidatePairs.push_back(allCandidatePairs);
 //   std::cout << "Scores: " << std::endl;

@@ -469,13 +469,13 @@
            <string notr="true"/>
           </property>
           <property name="horizontalScrollBarPolicy">
-           <enum>Qt::ScrollBarAlwaysOff</enum>
+           <enum>Qt::ScrollBarAsNeeded</enum>
           </property>
           <property name="sortingEnabled">
            <bool>true</bool>
           </property>
           <property name="columnCount">
-           <number>1</number>
+           <number>2</number>
           </property>
           <attribute name="horizontalHeaderStretchLastSection">
            <bool>true</bool>
@@ -489,6 +489,11 @@
            </property>
            <property name="textAlignment">
             <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Priority</string>
            </property>
           </column>
          </widget>
