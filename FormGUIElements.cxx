@@ -7,27 +7,36 @@
 
 void Form::on_btnResort_clicked()
 {
+  
+  //unsigned int forwardLookId = this->forwardLookingTableWidget->currentRow();
+  //CandidatePairs& candidatePairs = this->Inpainting.AccessPotentialCandidatePairs()[this->IterationToDisplay - 1][forwardLookId];
+  std::vector<std::vector<CandidatePairs> >& allIterationsAllCandidatePairs = this->Inpainting.AccessPotentialCandidatePairs();
+  for(unsigned int iteration = 0; iteration < allIterationsAllCandidatePairs.size(); iteration++)
+    {
+    for(unsigned int forwardLookId = 0; forwardLookId < allIterationsAllCandidatePairs[iteration].size(); forwardLookId++)
+      {
+      CandidatePairs& candidatePairs = this->Inpainting.AccessPotentialCandidatePairs()[iteration][forwardLookId];
+
+      if(this->radSortBySSD->isChecked())
+        {
+        std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageSSD);
+        }
+      else if(this->radSortByBoundaryPixelDifference->isChecked())
+        {
+        std::sort(candidatePairs.begin(), candidatePairs.end(), SortByBoundaryPixelDifference);
+        }
+      else if(this->radSortByBoundaryIsophoteDifference->isChecked())
+        {
+        std::sort(candidatePairs.begin(), candidatePairs.end(), SortByBoundaryIsophoteDifference);
+        }
+      else
+        {
+        std::cerr << "No valid sorting criterion selected." << std::endl;
+        }
+      }
+    }
+
   unsigned int forwardLookId = this->forwardLookingTableWidget->currentRow();
-  
-  CandidatePairs& candidatePairs = this->Inpainting.AccessPotentialCandidatePairs()[this->IterationToDisplay - 1][forwardLookId];
-  
-  if(this->radSortBySSD->isChecked())
-    {
-    std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageSSD);
-    }
-  else if(this->radSortByBoundaryPixelDifference->isChecked())
-    {
-    std::sort(candidatePairs.begin(), candidatePairs.end(), SortByBoundaryPixelDifference);
-    }
-  else if(this->radSortByBoundaryIsophoteDifference->isChecked())
-    {
-    std::sort(candidatePairs.begin(), candidatePairs.end(), SortByBoundaryIsophoteDifference);
-    }
-  else
-    {
-    std::cerr << "No valid sorting criterion selected." << std::endl;
-    }
-  
   SetupTopPatchesTable(forwardLookId);
   on_topPatchesTableWidget_cellClicked(0, 0);
   
