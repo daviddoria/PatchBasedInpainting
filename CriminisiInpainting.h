@@ -116,6 +116,8 @@ public:
   
   bool GetPotentialCandidatePairs(const unsigned int iteration, const unsigned int forwardLookId, CandidatePairs& candidatePairs);
   bool GetAllPotentialCandidatePairs(const unsigned int iteration, std::vector<CandidatePairs>&);
+
+  CandidatePairs& GetPotentialCandidatePairs(const unsigned int iteration, const unsigned int forwardLookId);
   
   // Return the number of completed iterations
   unsigned int GetNumberOfCompletedIterations();

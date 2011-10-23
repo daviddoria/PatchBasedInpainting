@@ -1071,6 +1071,11 @@ itk::ImageRegion<2> CriminisiInpainting::CropToValidRegion(const itk::ImageRegio
   return region;
 }
 
+CandidatePairs& CriminisiInpainting::GetPotentialCandidatePairs(const unsigned int iteration, const unsigned int forwardLookId)
+{
+  return this->PotentialCandidatePairs[iteration][forwardLookId];
+}
+
 bool CriminisiInpainting::GetPotentialCandidatePairs(const unsigned int iteration, const unsigned int forwardLookId, CandidatePairs& candidatePairs)
 {
   if(iteration < this->PotentialCandidatePairs.size())

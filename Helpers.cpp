@@ -423,7 +423,20 @@ void ITKImagetoVTKMagnitudeImage(const FloatVectorImageType::Pointer image, vtkI
   outputImage->Modified();
 }
 
-void SetCenterPixel(vtkImageData* image, const unsigned char color[3])
+void SetRegionCenterPixel(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char color[3])
+{
+  int dims[3];
+  image->GetDimensions(dims);
+
+  unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(region.GetIndex()[0] + region.GetSize()[0]/2,
+                                                                             region.GetIndex()[1] + region.GetSize()[1]/2, 0));
+  pixel[0] = color[0];
+  pixel[1] = color[1];
+  pixel[2] = color[2];
+  pixel[3] = 255; // visible
+}
+
+void SetImageCenterPixel(vtkImageData* image, const unsigned char color[3])
 {
   int dims[3];
   image->GetDimensions(dims);
@@ -435,12 +448,32 @@ void SetCenterPixel(vtkImageData* image, const unsigned char color[3])
   pixel[3] = 255; // visible
 }
 
-void BlankAndOutlineImage(vtkImageData* image, const unsigned char color[3])
+void BlankImage(vtkImageData* image)
 {
   image->SetScalarTypeToUnsignedChar();
   image->SetNumberOfScalarComponents(4);
   image->AllocateScalars();
-  
+
+  int dims[3];
+  image->GetDimensions(dims);
+
+  for(int i = 0; i < dims[0]; ++i)
+    {
+    for(int j = 0; j < dims[1]; ++j)
+      {
+      unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(i,j,0));
+
+      pixel[0] = 0;
+      pixel[1] = 0;
+      pixel[2] = 0;
+      pixel[3] = 0; // transparent
+      }
+    }
+  image->Modified();
+}
+
+void BlankAndOutlineImage(vtkImageData* image, const unsigned char color[3])
+{
   int dims[3];
   image->GetDimensions(dims);
   
@@ -843,6 +876,23 @@ std::string ZeroPad(const unsigned int number, const unsigned int rep)
   return Padded.str();
 }
 
+void MakeImageTransparent(vtkImageData* image)
+{
+  int dims[3];
+  image->GetDimensions(dims);
+
+  for(int i = 0; i < dims[0]; ++i)
+    {
+    for(int j = 0; j < dims[1]; ++j)
+      {
+      unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(i,j,0));
+      pixel[3] = 0; // invisible
+      //pixel[3] = 255; // ?
+      }
+    }
+  image->Modified();
+}
+
 void MakePixelsTransparent(vtkImageData* inputImage, vtkImageData* outputImage, const unsigned char value)
 {
   int dims[3];
@@ -906,6 +956,91 @@ void QColorToUCharColor(const QColor& color, unsigned char outputColor[3])
   outputColor[0] = color.red();
   outputColor[1] = color.green();
   outputColor[2] = color.blue();
+}
+
+void BlankRegion(vtkImageData* image, const itk::ImageRegion<2>& region)
+{
+  // Blank the image
+  for(unsigned int i = region.GetIndex()[0]; i < region.GetIndex()[0] + region.GetSize()[0]; ++i)
+    {
+    for(unsigned int j = region.GetIndex()[1]; j < region.GetIndex()[1] + region.GetSize()[1]; ++j)
+      {
+      unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(i, region.GetIndex()[1], 0));
+      pixel[0] = 0;
+      pixel[1] = 0;
+      pixel[2] = 0;
+      pixel[3] = 0; // transparent
+      }
+    }
+  image->Modified();
+}
+
+void OutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char color[3])
+{
+//   std::cout << "Outlining region: " << region << std::endl;
+//   std::cout << "Outline color: " << static_cast<int>(value[0]) << " " << static_cast<int>(value[1]) << " " << static_cast<int>(value[2]) << std::endl;
+//   std::cout << "Image components: " << image->GetNumberOfScalarComponents() << std::endl;
+
+  
+  // Move along the top and bottom of the region, setting the border pixels.
+  for(unsigned int i = region.GetIndex()[0]; i < region.GetIndex()[0] + region.GetSize()[0]; ++i)
+    {
+    unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(i, region.GetIndex()[1], 0));
+    pixel[0] = color[0];
+    pixel[1] = color[1];
+    pixel[2] = color[2];
+    pixel[3] = 255; // visible
+
+    pixel = static_cast<unsigned char*>(image->GetScalarPointer(i, region.GetIndex()[1] + region.GetSize()[1] - 1, 0));
+    pixel[0] = color[0];
+    pixel[1] = color[1];
+    pixel[2] = color[2];
+    pixel[3] = 255; // visible
+    }
+
+  // Move along the left and right of the region, setting the border pixels.
+  for(unsigned int j = region.GetIndex()[1]; j < region.GetIndex()[1] + region.GetSize()[1]; ++j)
+    {
+    unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(region.GetIndex()[0], j, 0));
+    pixel[0] = color[0];
+    pixel[1] = color[1];
+    pixel[2] = color[2];
+    pixel[3] = 255; // visible
+
+    pixel = static_cast<unsigned char*>(image->GetScalarPointer(region.GetIndex()[0] + region.GetSize()[0] - 1, j, 0));
+    pixel[0] = color[0];
+    pixel[1] = color[1];
+    pixel[2] = color[2];
+    pixel[3] = 255; // visible
+    }
+  
+
+//   for(unsigned int i = region.GetIndex()[0]; i < region.GetIndex()[0] + region.GetSize()[0]; ++i)
+//     {
+//     for(unsigned int j = region.GetIndex()[1]; j < region.GetIndex()[1] + region.GetSize()[1]; ++j)
+//       {
+//       unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(i,j,0));
+//       if(i == region.GetIndex()[0] ||
+//          i == region.GetIndex()[0] + region.GetSize()[0] - 1||
+//          j == region.GetIndex()[1] ||
+//          j == region.GetIndex()[1] + region.GetSize()[1] - 1)
+//         {
+//         pixel[0] = color[0];
+//         pixel[1] = color[1];
+//         pixel[2] = color[2];
+//         pixel[3] = 255; // visible
+//         }
+//       }
+//     }
+    
+  image->Modified();
+}
+
+void BlankAndOutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char value[3])
+{
+
+  BlankRegion(image, region);
+  OutlineRegion(image, region, value);
 }
 
 } // end namespace

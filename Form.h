@@ -167,13 +167,13 @@ protected:
   Layer UsedTargetPatchLayer;
 
   // Outline display of all forward look patches
-  std::vector<Layer> AllForwardLookOutlineLayers;
+  Layer AllForwardLookOutlinesLayer;
 
   // Selected forward look patch outline display
   Layer SelectedForwardLookOutlineLayer;
 
   // Outline display of all source patches
-  std::vector<Layer> AllSourcePatchOutlineLayers;
+  Layer AllSourcePatchOutlinesLayer;
 
   // Selected source patch outline display
   Layer SelectedSourcePatchOutlineLayer;

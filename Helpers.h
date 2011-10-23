@@ -44,7 +44,9 @@ class vtkPolyData;
 namespace Helpers
 {
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
-void SetCenterPixel(vtkImageData* image, const unsigned char color[3]);
+void SetImageCenterPixel(vtkImageData* image, const unsigned char color[3]);
+
+void SetRegionCenterPixel(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char color[3]);
 
 itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned int dimension);
 
@@ -70,6 +72,8 @@ bool HasHoleNeighbor(const itk::Index<2>& pixel, const Mask::Pointer mask);
 
 void BlankAndOutlineImage(vtkImageData*, const unsigned char color[3]);
 
+void BlankImage(vtkImageData*);
+
 void KeepNonZeroVectors(vtkImageData* image, vtkPolyData* output); // 'image' should be const, but VTK doesn't allow it
 
 void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType::Pointer vectorImage, vtkPolyData* output);
@@ -94,6 +98,8 @@ std::string ZeroPad(const unsigned int number, const unsigned int rep);
 
 void MakePixelsTransparent(vtkImageData* inputImage, vtkImageData* outputImage, const unsigned char value); // 'inputImage' should be const, but VTK doesn't allow it
 
+void MakeImageTransparent(vtkImageData* image);
+
 QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx);
 
 itk::Index<2> GetNextPixelAlongVector(const itk::Index<2>& pixel, const FloatVector2Type& vector);
@@ -107,6 +113,12 @@ float RoundAwayFromZero(const float number);
 void VectorMaskedBlur(const FloatVectorImageType::Pointer inputImage, const Mask::Pointer mask, const unsigned int kernelRadius, FloatVectorImageType::Pointer output);
 
 void QColorToUCharColor(const QColor& color, unsigned char outputColor[3]);
+
+void BlankAndOutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char value[3]);
+
+void OutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char value[3]);
+
+void BlankRegion(vtkImageData* image, const itk::ImageRegion<2>& region);
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// Template function declarations (defined in Helpers.hxx) ///////////////////

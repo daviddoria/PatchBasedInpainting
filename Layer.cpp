@@ -26,12 +26,12 @@
 Layer::Layer()
 {
   this->ImageData = vtkSmartPointer<vtkImageData>::New();
-  this->ImageSlice = vtkSmartPointer<vtkImageSlice>::New();
-  this->ImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
-  
-  this->ImageData = vtkSmartPointer<vtkImageData>::New();
+  this->ImageData->SetScalarTypeToUnsignedChar();
+  this->ImageData->SetNumberOfScalarComponents(4); // RGBA
+
   this->ImageSlice = vtkSmartPointer<vtkImageSlice>::New();
   this->ImageSlice->GetProperty()->SetInterpolationTypeToNearest();
+
   this->ImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
   this->ImageSliceMapper->BorderOn();
   

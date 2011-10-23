@@ -3,7 +3,9 @@ void Mask::ApplyToImage(const typename TImage::Pointer image, const QColor& colo
 {
   if(image->GetLargestPossibleRegion() != this->GetLargestPossibleRegion())
     {
-    std::cerr << "Image and mask must be the same size!" << std::endl;
+    std::cerr << "Image and mask must be the same size!" << std::endl
+              << "Image region: " << image->GetLargestPossibleRegion() << std::endl
+              << "Mask region: " << this->GetLargestPossibleRegion() << std::endl;
     return;
     }
 

@@ -136,9 +136,11 @@ Form::Form()
   this->Renderer->AddViewProp(this->PotentialPatchesLayer.ImageSlice);
   this->Renderer->AddViewProp(this->UsedTargetPatchLayer.ImageSlice);
   this->Renderer->AddViewProp(this->UsedSourcePatchLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->SelectedForwardLookOutlineLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->SelectedSourcePatchOutlineLayer.ImageSlice);
-
+  this->Renderer->AddViewProp(this->AllSourcePatchOutlinesLayer.ImageSlice);
+  this->Renderer->AddViewProp(this->AllForwardLookOutlinesLayer.ImageSlice);
+  this->Renderer->AddViewProp(this->SelectedForwardLookOutlineLayer.ImageSlice);// This should be added after AllForwardLookOutlinesLayer.
+  this->Renderer->AddViewProp(this->SelectedSourcePatchOutlineLayer.ImageSlice);// This should be added after AllSourcePatchOutlinesLayer.
+  
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
   
@@ -160,23 +162,25 @@ Form::Form()
   this->progressBar->setMaximum(0);
   this->progressBar->hide();
   
-  ComputationThread.SetObject(&(this->Inpainting));
+  this->ComputationThread.SetObject(&(this->Inpainting));
   
-  UsedTargetPatchColor = Qt::red;
-  UsedSourcePatchColor = Qt::green;
-  AllForwardLookPatchColor = Qt::darkCyan;
-  SelectedForwardLookPatchColor = Qt::cyan;
-  AllSourcePatchColor = Qt::darkMagenta;
-  SelectedSourcePatchColor = Qt::magenta;
-  CenterPixelColor = Qt::blue;
-  MaskColor = Qt::darkGray;
-  HoleColor = Qt::gray;
-  
+  this->UsedTargetPatchColor = Qt::red;
+  this->UsedSourcePatchColor = Qt::green;
+  this->AllForwardLookPatchColor = Qt::darkCyan;
+  this->SelectedForwardLookPatchColor = Qt::cyan;
+  this->AllSourcePatchColor = Qt::darkMagenta;
+  this->SelectedSourcePatchColor = Qt::magenta;
+  this->CenterPixelColor = Qt::blue;
+  this->MaskColor = Qt::darkGray;
+  this->HoleColor = Qt::gray;
+
+  /*
   QPalette forwardLookingPalette = forwardLookingTableWidget->palette();
   forwardLookingPalette.setColor(QPalette::Inactive, QPalette::Window, forwardLookingPalette.color(QPalette::Active, QPalette::Window));
 
   QPalette topPatchesPalette = topPatchesTableWidget->palette();
   topPatchesPalette.setColor(QPalette::Inactive, QPalette::Window, topPatchesPalette.color(QPalette::Active, QPalette::Window));
+  */
 };
   
 void Form::on_chkDebugImages_clicked()
@@ -244,6 +248,7 @@ void Form::on_actionOpen_activated()
     std::cout << "User clicked ok." << std::endl;
     OpenImage(fileSelector->GetImageFileName());
     OpenMask(fileSelector->GetMaskFileName(), fileSelector->IsMaskInverted());
+    Initialize();
     }
   else
     {
@@ -260,14 +265,9 @@ void Form::OpenMask(const std::string& fileName, const bool inverted)
   reader->SetFileName(fileName);
   reader->Update();
 
-  if(this->UserImage->GetLargestPossibleRegion() != reader->GetOutput()->GetLargestPossibleRegion())
-    {
-    std::cerr << "Image and mask must be the same size!" << std::endl;
-    return;
-    }
-
   Helpers::DeepCopy<Mask>(reader->GetOutput(), this->UserMaskImage);
-
+  std::cout << "UserMaskImage region: " << this->UserMaskImage->GetLargestPossibleRegion() << std::endl;
+  
   // This function expands the mask a little bit. We must do this because the isophotes may not be well defined
   // on the original mask boundary (if the segmentation is very tight), but they will be better defined a few pixels away.
   //this->UserMaskImage->ExpandHole();
@@ -302,8 +302,6 @@ void Form::OpenMask(const std::string& fileName, const bool inverted)
   // This is only set here so we can visualize the mask right away
   this->Inpainting.SetMask(this->UserMaskImage);
   //Helpers::DebugWriteImageConditional<Mask>(this->UserMaskImage, "Debug/InvertedMask.png", this->DebugImages);
-  
-  Initialize();
 }
 
 
@@ -324,6 +322,7 @@ void Form::OpenImage(const std::string& fileName)
 
   //this->Image = reader->GetOutput();
   Helpers::DeepCopyVectorImage<FloatVectorImageType>(reader->GetOutput(), this->UserImage);
+  std::cout << "UserImage region: " << this->UserImage->GetLargestPossibleRegion() << std::endl;
 
   Helpers::ITKVectorImagetoVTKImage(this->UserImage, this->ImageLayer.ImageData);
 
@@ -346,7 +345,13 @@ void Form::OpenImage(const std::string& fileName)
     SetCheckboxVisibility(false);
     }
   */
-  Initialize();
+  this->AllForwardLookOutlinesLayer.ImageData->SetDimensions(this->UserImage->GetLargestPossibleRegion().GetSize()[0],
+                                                             this->UserImage->GetLargestPossibleRegion().GetSize()[1], 1);
+  this->AllForwardLookOutlinesLayer.ImageData->AllocateScalars();
+  this->AllSourcePatchOutlinesLayer.ImageData->SetDimensions(this->UserImage->GetLargestPossibleRegion().GetSize()[0],
+                                                             this->UserImage->GetLargestPossibleRegion().GetSize()[1], 1);
+  this->AllSourcePatchOutlinesLayer.ImageData->AllocateScalars();
+
 }
 
 
@@ -453,7 +458,6 @@ void Form::RefreshSlot()
   DebugMessage("RefreshSlot()");
 
   Refresh();
-  
 }
 
 void Form::DisplayBoundaryNormals()
@@ -489,34 +493,64 @@ void Form::Refresh()
   DebugMessage("Refresh()");
 
   this->ImageLayer.ImageSlice->SetVisibility(this->chkImage->isChecked());
-  DisplayImage();
+  if(this->chkImage->isChecked())
+    {
+    DisplayImage();
+    }
 
   this->MaskLayer.ImageSlice->SetVisibility(this->chkMask->isChecked());
-  DisplayMask();
+  if(this->chkMask->isChecked())
+    {
+    DisplayMask();
+    }
 
   this->ConfidenceMapLayer.ImageSlice->SetVisibility(this->chkConfidenceMap->isChecked());
-  DisplayConfidenceMap();
+  if(this->chkConfidenceMap->isChecked())
+    {
+    DisplayConfidenceMap();
+    }
 
   this->ConfidenceLayer.ImageSlice->SetVisibility(this->chkConfidence->isChecked());
-  DisplayConfidence();
+  if(this->chkConfidence->isChecked())
+    {
+    DisplayConfidence();
+    }
 
   this->PriorityLayer.ImageSlice->SetVisibility(this->chkPriority->isChecked());
-  DisplayPriority();
+  if(this->chkPriority->isChecked())
+    {
+    DisplayPriority();
+    }
 
   this->BoundaryLayer.ImageSlice->SetVisibility(this->chkBoundary->isChecked());
-  DisplayBoundary();
+  if(this->chkBoundary->isChecked())
+    {
+    DisplayBoundary();
+    }
 
   this->IsophoteLayer.Actor->SetVisibility(this->chkIsophotes->isChecked());
-  DisplayIsophotes();
+  if(this->chkIsophotes->isChecked())
+    {
+    DisplayIsophotes();
+    }
 
   this->DataLayer.ImageSlice->SetVisibility(this->chkData->isChecked());
-  DisplayData();
+  if(this->chkData->isChecked())
+    {
+    DisplayData();
+    }
 
   this->BoundaryNormalsLayer.Actor->SetVisibility(this->chkBoundaryNormals->isChecked());
-  DisplayBoundaryNormals();
+  if(this->chkBoundaryNormals->isChecked())
+    {
+    DisplayBoundaryNormals();
+    }
 
   this->PotentialPatchesLayer.ImageSlice->SetVisibility(this->chkPotentialPatches->isChecked());
-  //Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetDataImage(), this->VTKDataImage);
+  if(this->chkPotentialPatches->isChecked())
+    {
+    //Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetDataImage(), this->VTKDataImage);
+    }
   
   if(this->IterationToDisplay > 0)
     {
@@ -530,18 +564,18 @@ void Form::Refresh()
     }
 
   this->SelectedForwardLookOutlineLayer.ImageSlice->SetVisibility(this->chkDisplayForwardLookPatchLocations->isChecked());
-  HighlightForwardLookPatches();
-
-  // Make sure the selected outline is displayed on top of the the other outlines.
-  this->Renderer->RemoveViewProp(this->SelectedForwardLookOutlineLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->SelectedForwardLookOutlineLayer.ImageSlice);
+  this->AllForwardLookOutlinesLayer.ImageSlice->SetVisibility(this->chkDisplayForwardLookPatchLocations->isChecked());
+  if(this->chkDisplayForwardLookPatchLocations->isChecked())
+    {
+    HighlightForwardLookPatches();
+    }
 
   this->SelectedSourcePatchOutlineLayer.ImageSlice->SetVisibility(this->chkDisplaySourcePatchLocations->isChecked());
-  HighlightSourcePatches();
-
-  // Make sure the selected outline is displayed on top of the the other outlines.
-  this->Renderer->RemoveViewProp(this->SelectedSourcePatchOutlineLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->SelectedSourcePatchOutlineLayer.ImageSlice);
+  this->AllSourcePatchOutlinesLayer.ImageSlice->SetVisibility(this->chkDisplaySourcePatchLocations->isChecked());
+  if(this->chkDisplaySourcePatchLocations->isChecked())
+    {
+    HighlightSourcePatches();
+    }
     
   this->qvtkWidget->GetRenderWindow()->Render();
 
@@ -578,13 +612,6 @@ void Form::on_btnInitialize_clicked()
 void Form::Initialize()
 {
   // Reset some things (this is so that if we want to run another completion it will work normally)
-
-  if(!this->UserImage || !this->UserMaskImage || this->UserImage->GetLargestPossibleRegion() != this->UserMaskImage->GetLargestPossibleRegion())
-    {
-    std::cerr << "Must have loaded both an image and a mask and they must be the same size!" << std::endl;
-    SetCheckboxVisibility(false);
-    return;
-    }
 
   this->UserMaskImage->ApplyToImage<FloatVectorImageType>(this->UserImage, this->HoleColor);
   
@@ -667,7 +694,7 @@ void Form::DisplaySourcePatch(const unsigned int forwardLookId, const unsigned i
   sourceImage = Helpers::FitToGraphicsView(sourceImage, gfxTarget);
   this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
 
-  Refresh();
+  //Refresh();
 }
 
 void Form::DisplayTargetPatch(const unsigned int forwardLookId)
@@ -700,7 +727,7 @@ void Form::DisplayTargetPatch(const unsigned int forwardLookId)
   targetImage = Helpers::FitToGraphicsView(targetImage, gfxTarget);
   this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
 
-  Refresh();
+  //Refresh();
 }
 
 void Form::DisplayResultPatch(const unsigned int forwardLookId, const unsigned int topPatchId)
@@ -767,7 +794,7 @@ void Form::DisplayResultPatch(const unsigned int forwardLookId, const unsigned i
   qimage = Helpers::FitToGraphicsView(qimage, gfxResult);
   this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
 
-  Refresh();
+  //Refresh();
 }
 
 void Form::DisplayUsedPatches()
@@ -798,21 +825,18 @@ void Form::DisplayUsedPatches()
 
 void Form::HighlightForwardLookPatches()
 {
-  
   DebugMessage("HighlightForwardLookPatches()");
 
   // Delete any current highlight patches. We want to delete these (if they exist) no matter what because then they won't be displayed if the box is not checked (they will respect the check box).
-  for(unsigned int i = 0; i < this->AllForwardLookOutlineLayers.size(); ++i)
-    {
-    this->Renderer->RemoveViewProp(this->AllForwardLookOutlineLayers[i].ImageSlice);
-    }
-  this->AllForwardLookOutlineLayers.clear();
-  
+  Helpers::BlankImage(this->AllForwardLookOutlinesLayer.ImageData);
+
+  // If the user has not requested to display the patches, quit.
   if(!this->chkDisplayForwardLookPatchLocations->isChecked())
     {
     return;
     }
 
+  // Get the candidate patches and make sure we have requested a valid set.
   std::vector<CandidatePairs> candidatePairs;
   bool valid = this->Inpainting.GetAllPotentialCandidatePairs(this->IterationToDisplay - 1, candidatePairs);
   if(!valid)
@@ -820,30 +844,22 @@ void Form::HighlightForwardLookPatches()
     return;
     }
   
-  unsigned int patchSize = candidatePairs[0].TargetPatch.Region.GetSize()[0];
-  //DebugMessage<unsigned int>("Patch size: ", patchSize);
-
   unsigned char borderColor[3];
   Helpers::QColorToUCharColor(this->AllForwardLookPatchColor, borderColor);
   unsigned char centerPixelColor[3];
   Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
+  
   for(unsigned int candidateId = 0; candidateId < candidatePairs.size(); ++candidateId)
     {
-    //DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
-    Layer currentForwardLookPatchLayer;
-    this->AllForwardLookOutlineLayers.push_back(currentForwardLookPatchLayer);
-    
-    currentForwardLookPatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
-    Helpers::BlankAndOutlineImage(currentForwardLookPatchLayer.ImageData, borderColor);
-    Helpers::SetCenterPixel(currentForwardLookPatchLayer.ImageData, centerPixelColor);
-
-    this->Renderer->AddViewProp(currentForwardLookPatchLayer.ImageSlice);
-
     Patch currentPatch = candidatePairs[candidateId].TargetPatch;
-    currentForwardLookPatchLayer.ImageSlice->SetPosition(currentPatch.Region.GetIndex()[0], currentPatch.Region.GetIndex()[1], 0);
+    std::cout << "Outlining " << currentPatch.Region << std::endl;
+    //DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
+    
+    Helpers::BlankAndOutlineRegion(this->AllForwardLookOutlinesLayer.ImageData, currentPatch.Region, borderColor);
+    
+    Helpers::SetRegionCenterPixel(this->AllForwardLookOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
     }
 
-  //std::cout << "Selected forward look patch should be: " << this->forwardLookingTableWidget->currentRow() << std::endl;
   if(this->forwardLookingTableWidget->currentRow() < 0)
     {
     this->forwardLookingTableWidget->selectRow(0);
@@ -851,7 +867,6 @@ void Form::HighlightForwardLookPatches()
   HighlightSelectedForwardLookPatch(this->forwardLookingTableWidget->currentRow());
 
   this->qvtkWidget->GetRenderWindow()->Render();
-  
 }
 
 
@@ -861,46 +876,34 @@ void Form::HighlightSourcePatches()
   DebugMessage("HighlightSourcePatches()");
 
   // Delete any current highlight patches. We want to delete these (if they exist) no matter what because then they won't be displayed if the box is not checked (they will respect the check box).
-  for(unsigned int i = 0; i < this->AllSourcePatchOutlineLayers.size(); ++i)
-    {
-    this->Renderer->RemoveViewProp(this->AllSourcePatchOutlineLayers[i].ImageSlice);
-    }
-  this->AllSourcePatchOutlineLayers.clear();
-  
+  Helpers::BlankImage(this->AllSourcePatchOutlinesLayer.ImageData);
+
   if(!this->chkDisplaySourcePatchLocations->isChecked())
     {
     return;
     }
 
-  CandidatePairs candidatePairs;
-  bool valid = this->Inpainting.GetPotentialCandidatePairs(this->IterationToDisplay - 1, this->forwardLookingTableWidget->currentRow(), candidatePairs);
-  if(!valid)
-    {
-    return;
-    }
+//   CandidatePairs& candidatePairs;
+//   bool valid = this->Inpainting.GetPotentialCandidatePairs(this->IterationToDisplay - 1, this->forwardLookingTableWidget->currentRow(), candidatePairs);
+//   if(!valid)
+//     {
+//     return;
+//     }
 
-  unsigned int patchSize = candidatePairs.TargetPatch.Region.GetSize()[0];
-  //DebugMessage<unsigned int>("Patch size: ", patchSize);
+  CandidatePairs& candidatePairs = this->Inpainting.GetPotentialCandidatePairs(this->IterationToDisplay - 1, this->forwardLookingTableWidget->currentRow());
 
   unsigned char borderColor[3];
   Helpers::QColorToUCharColor(this->AllSourcePatchColor, borderColor);
   unsigned char centerPixelColor[3];
   Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
 
-  for(unsigned int candidateId = 0; candidateId < candidatePairs.size(); ++candidateId)
+  unsigned int numberToDisplay = std::min(candidatePairs.size(), this->txtNumberOfTopPatches->text().toUInt());
+  for(unsigned int candidateId = 0; candidateId < numberToDisplay; ++candidateId)
     {
     //DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
-    Layer currentSourcePatchLayer;
-    this->AllSourcePatchOutlineLayers.push_back(currentSourcePatchLayer);
-  
-    currentSourcePatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
-    Helpers::BlankAndOutlineImage(currentSourcePatchLayer.ImageData, borderColor);
-    Helpers::SetCenterPixel(currentSourcePatchLayer.ImageData, centerPixelColor);
-
-    this->Renderer->AddViewProp(currentSourcePatchLayer.ImageSlice);
-
     Patch currentPatch = candidatePairs[candidateId].SourcePatch;
-    currentSourcePatchLayer.ImageSlice->SetPosition(currentPatch.Region.GetIndex()[0], currentPatch.Region.GetIndex()[1], 0);
+    Helpers::BlankAndOutlineRegion(this->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, borderColor);
+    Helpers::SetRegionCenterPixel(this->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
     }
 
   //std::cout << "Selected forward look patch should be: " << this->forwardLookingTableWidget->currentRow() << std::endl;
@@ -943,7 +946,7 @@ void Form::HighlightUsedPatches()
   unsigned char targetPatchColor[3];
   Helpers::QColorToUCharColor(this->UsedTargetPatchColor, targetPatchColor);
   Helpers::BlankAndOutlineImage(this->UsedTargetPatchLayer.ImageData, targetPatchColor);
-  Helpers::SetCenterPixel(this->UsedTargetPatchLayer.ImageData, centerPixelColor);
+  Helpers::SetImageCenterPixel(this->UsedTargetPatchLayer.ImageData, centerPixelColor);
   this->UsedTargetPatchLayer.ImageSlice->SetPosition(targetPatch.Region.GetIndex()[0], targetPatch.Region.GetIndex()[1], 0);
 
   // Source
@@ -955,7 +958,7 @@ void Form::HighlightUsedPatches()
   unsigned char sourcePatchColor[3];
   Helpers::QColorToUCharColor(this->UsedSourcePatchColor, sourcePatchColor);
   Helpers::BlankAndOutlineImage(this->UsedSourcePatchLayer.ImageData, sourcePatchColor);
-  Helpers::SetCenterPixel(this->UsedSourcePatchLayer.ImageData, centerPixelColor);
+  Helpers::SetImageCenterPixel(this->UsedSourcePatchLayer.ImageData, centerPixelColor);
   this->UsedSourcePatchLayer.ImageSlice->SetPosition(sourcePatch.Region.GetIndex()[0], sourcePatch.Region.GetIndex()[1], 0);
 
   Refresh();
@@ -1275,6 +1278,7 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
 
 void Form::HighlightSelectedForwardLookPatch(const unsigned int id)
 {
+
   DebugMessage("HighlightSelectedForwardLookPatch()");
   // Highlight the selected forward look patch in a different color than the rest if the user has chosen to display forward look patch locations.
   if(!this->chkDisplayForwardLookPatchLocations->isChecked())
@@ -1283,16 +1287,17 @@ void Form::HighlightSelectedForwardLookPatch(const unsigned int id)
     }
   else
     {
-
     unsigned int patchRadius = this->txtPatchRadius->text().toUInt();
     unsigned int patchSize = Helpers::SideLengthFromRadius(patchRadius);
 
     this->SelectedForwardLookOutlineLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
+    this->SelectedForwardLookOutlineLayer.ImageData->AllocateScalars();
     unsigned char selectedPatchColor[3];
     Helpers::QColorToUCharColor(this->SelectedForwardLookPatchColor, selectedPatchColor);
     Helpers::BlankAndOutlineImage(this->SelectedForwardLookOutlineLayer.ImageData, selectedPatchColor);
-    unsigned char centerPixelColor[3] = {122, 0, 255};
-    Helpers::SetCenterPixel(this->SelectedForwardLookOutlineLayer.ImageData, centerPixelColor);
+    unsigned char centerPixelColor[3];
+    Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
+    Helpers::SetImageCenterPixel(this->SelectedForwardLookOutlineLayer.ImageData, centerPixelColor);
 
     std::vector<CandidatePairs> allCandidatePairs;
 
@@ -1307,6 +1312,7 @@ void Form::HighlightSelectedForwardLookPatch(const unsigned int id)
 
     this->qvtkWidget->GetRenderWindow()->Render();
     }
+
 }
 
 
@@ -1325,11 +1331,12 @@ void Form::HighlightSelectedSourcePatch(const unsigned int id)
     unsigned int patchSize = Helpers::SideLengthFromRadius(patchRadius);
 
     this->SelectedSourcePatchOutlineLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
+    this->SelectedSourcePatchOutlineLayer.ImageData->AllocateScalars();
     unsigned char selectedPatchColor[3];
     Helpers::QColorToUCharColor(this->SelectedSourcePatchColor, selectedPatchColor);
     Helpers::BlankAndOutlineImage(this->SelectedSourcePatchOutlineLayer.ImageData, selectedPatchColor);
     unsigned char centerPixelColor[3] = {122, 0, 255};
-    Helpers::SetCenterPixel(this->SelectedSourcePatchOutlineLayer.ImageData, centerPixelColor);
+    Helpers::SetImageCenterPixel(this->SelectedSourcePatchOutlineLayer.ImageData, centerPixelColor);
 
     CandidatePairs candidatePairs;
 
@@ -1358,6 +1365,7 @@ void Form::on_forwardLookingTableWidget_cellClicked(int row, int col)
   DisplayResultPatch(row, 0);
 
   HighlightSelectedForwardLookPatch(row);
+  HighlightSourcePatches();
 }
 
 void Form::on_topPatchesTableWidget_cellClicked(int row, int col)
