@@ -56,7 +56,9 @@ class Form : public QMainWindow, public Ui::CriminisiInpaintingMainWindow
 public:
 
   // Constructor/Destructor
+  void DefaultConstructor();
   Form();
+  Form(const std::string& imageFileName, const std::string& maskFileName);
   ~Form() {};
   
   // These function deal with flipping the image

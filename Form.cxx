@@ -81,9 +81,9 @@ void Form::on_actionHelp_activated()
   help->show();
 }
 
-// Constructor
-Form::Form()
+void Form::DefaultConstructor()
 {
+  // This function is called by both constructors. This avoid code duplication.
   this->setupUi(this);
 
   SetupForwardLookingTable();
@@ -181,8 +181,23 @@ Form::Form()
   QPalette topPatchesPalette = topPatchesTableWidget->palette();
   topPatchesPalette.setColor(QPalette::Inactive, QPalette::Window, topPatchesPalette.color(QPalette::Active, QPalette::Window));
   */
+}
+
+// Default constructor
+Form::Form()
+{
+  DefaultConstructor();
 };
+
+Form::Form(const std::string& imageFileName, const std::string& maskFileName)
+{
+  DefaultConstructor();
   
+  OpenImage(imageFileName);
+  OpenMask(maskFileName, false);
+  Initialize();
+}
+
 void Form::on_chkDebugImages_clicked()
 {
   QDir directoryMaker;
