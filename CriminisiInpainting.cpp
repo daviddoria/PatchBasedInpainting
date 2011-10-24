@@ -302,15 +302,21 @@ void CriminisiInpainting::Iterate()
   // Add new source patches
   // Get the region of pixels which were previous touching the hole which was the target region.
   
+  // Shift the top left corner to a position where the same size patch would overlap only the top left pixel.
   itk::Index<2> previouInvalidRegionIndex;
-  previouInvalidRegionIndex[0] = usedPatchPair.TargetPatch.Region.GetIndex()[0] - this->PatchRadius[0]*3 + 1;
-  previouInvalidRegionIndex[1] = usedPatchPair.TargetPatch.Region.GetIndex()[1] - this->PatchRadius[1]*3 + 1;
+  previouInvalidRegionIndex[0] = usedPatchPair.TargetPatch.Region.GetIndex()[0] - this->PatchRadius[0];
+  previouInvalidRegionIndex[1] = usedPatchPair.TargetPatch.Region.GetIndex()[1] - this->PatchRadius[1];
   
+  // The region from which patches overlap the used target patch has a radius 2x bigger than the original patch.
+  // The computation could be written as (2 * this->PatchRadius[0]) * 2 + 1, or simply this->PatchRadius[0] * 4 + 1
   itk::Size<2> previouInvalidRegionSize;
-  previouInvalidRegionSize[0] = this->PatchRadius[0] * 6 - 2;
-  previouInvalidRegionSize[1] = this->PatchRadius[1] * 6 - 2;
+  previouInvalidRegionSize[0] = this->PatchRadius[0] * 4 + 1;
+  previouInvalidRegionSize[1] = this->PatchRadius[1] * 4 + 1;
   
   itk::ImageRegion<2> previousInvalidRegion(previouInvalidRegionIndex, previouInvalidRegionSize);
+  
+  std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
+  std::cout << "Previously invalid region: " << previousInvalidRegion << std::endl;
   
   std::vector<Patch> newPatches = AddSourcePatches(previousInvalidRegion);
   
