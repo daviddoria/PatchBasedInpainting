@@ -19,6 +19,10 @@ struct PatchPair
   void SetBoundaryPixelDifference(const float value);
   void SetBoundaryIsophoteDifference(const float value);
   
+  bool IsValidSSD();
+  bool IsValidBoundaryPixelDifference();
+  bool IsValidBoundaryIsophoteDifference();
+  
 private:
   float AverageSSD;
   float BoundaryPixelDifference;
@@ -27,6 +31,11 @@ private:
   float TotalScore;
   
   void ComputeTotal();
+  
+  // These are initialized to false and set to true when the corresponding SetXYZ() function is called.
+  bool ValidSSD;
+  bool ValidBoundaryPixelDifference;
+  bool ValidBoundaryIsophoteDifference;
 };
 
 bool SortByAverageSSD(const PatchPair& pair1, const PatchPair& pair2);

@@ -110,16 +110,20 @@ void CriminisiInpainting::ComputeMaxPixelDifference()
   std::cout << "MaxPixelDifference computed to be: " << this->MaxPixelDifferenceSquared << std::endl;
 }
 
-void CriminisiInpainting::AddSourcePatches(const itk::ImageRegion<2>& region)
+std::vector<Patch> CriminisiInpainting::AddSourcePatches(const itk::ImageRegion<2>& region)
 {
-  // Find all full patches that are entirely Valid
+  // Add all patches in 'region' that are entirely Valid to the list of source patches.
+  // TODO: This should somehow check to make sure the patch isn't already in the list before adding it.
+  
   DebugMessage("AddSourcePatches()");
+  
+  std::vector<Patch> newPatches;
   try
   {
     itk::ImageRegion<2> newRegion = CropToValidRegion(region);
     //this->SourcePatches.clear();
     itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->CurrentOutputImage, newRegion);
-    unsigned int numberOfNewPatches = 0;
+
     while(!imageIterator.IsAtEnd())
       {
       itk::Index<2> currentPixel = imageIterator.GetIndex();
@@ -131,14 +135,14 @@ void CriminisiInpainting::AddSourcePatches(const itk::ImageRegion<2>& region)
 	  {
 	  //this->SourcePatches.push_back(Patch(this->OriginalImage, region));
 	  this->SourcePatches.push_back(Patch(currentPatchRegion));
-	  numberOfNewPatches++;
+	  newPatches.push_back(Patch(currentPatchRegion));
 	  //DebugMessage("Added a source patch.");
 	  }
 	}
     
       ++imageIterator;
       }
-    DebugMessage<unsigned int>("Number of new patches: ", numberOfNewPatches);
+    DebugMessage<unsigned int>("Number of new patches: ", newPatches.size());
     DebugMessage<unsigned int>("Number of source patches: ", this->SourcePatches.size());
     
     if(this->SourcePatches.size() == 0)
@@ -146,6 +150,7 @@ void CriminisiInpainting::AddSourcePatches(const itk::ImageRegion<2>& region)
       std::cerr << "There must be at least 1 source patch!" << std::endl;
       exit(-1);
       }
+    return newPatches;
   }// end try
   catch( itk::ExceptionObject & err )
   {
@@ -257,38 +262,38 @@ void CriminisiInpainting::Iterate()
   ComputeAllPriorities();
   DebugMessage("Computed priorities.");
 
-  PatchPair patchPair;
+  PatchPair usedPatchPair;
     
   //FindBestPatchForHighestPriority(sourcePatch, targetPatch);
   
-  FindBestPatchLookAhead(patchPair);
+  FindBestPatchLookAhead(usedPatchPair);
 
   std::stringstream ssSource;
   ssSource << "Debug/source_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
-  Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, patchPair.SourcePatch, ssSource.str());
+  Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.SourcePatch, ssSource.str());
 
   std::stringstream ssTarget;
   ssTarget << "Debug/target_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
-  Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, patchPair.TargetPatch, ssTarget.str());
+  Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch, ssTarget.str());
   
-  this->UsedPatchPairs.push_back(patchPair);
+  this->UsedPatchPairs.push_back(usedPatchPair);
   
   // Copy the patch. This is the actual inpainting step.
-  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, patchPair.SourcePatch.Region, patchPair.TargetPatch.Region);
+  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
   
   // We also have to copy patches in the blurred image and CIELab image incase we are using those
-  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->BlurredImage, this->CurrentMask, patchPair.SourcePatch.Region, patchPair.TargetPatch.Region);
-  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CIELabImage, this->CurrentMask, patchPair.SourcePatch.Region, patchPair.TargetPatch.Region);
+  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->BlurredImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
+  Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CIELabImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
   
-  float confidence = this->ConfidenceImage->GetPixel(Helpers::GetRegionCenter(patchPair.TargetPatch.Region));
+  float confidence = this->ConfidenceImage->GetPixel(Helpers::GetRegionCenter(usedPatchPair.TargetPatch.Region));
   // Copy the new confidences into the confidence image
-  UpdateConfidences(patchPair.TargetPatch.Region, confidence);
+  UpdateConfidences(usedPatchPair.TargetPatch.Region, confidence);
 
   // The isophotes can be copied because they would (should!) only change slightly if recomputed. !!! TODO: Maybe they should actually be recomputed?
-  Helpers::CopySelfPatchIntoValidRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, patchPair.SourcePatch.Region, patchPair.TargetPatch.Region);
+  Helpers::CopySelfPatchIntoValidRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
 
   // Update the mask
-  this->UpdateMask(patchPair.TargetPatch.Region);
+  this->UpdateMask(usedPatchPair.TargetPatch.Region);
   DebugMessage("Updated mask.");
 
   // Sanity check everything
@@ -298,8 +303,8 @@ void CriminisiInpainting::Iterate()
   // Get the region of pixels which were previous touching the hole which was the target region.
   
   itk::Index<2> previouInvalidRegionIndex;
-  previouInvalidRegionIndex[0] = patchPair.TargetPatch.Region.GetIndex()[0] - this->PatchRadius[0]*3 + 1;
-  previouInvalidRegionIndex[1] = patchPair.TargetPatch.Region.GetIndex()[1] - this->PatchRadius[1]*3 + 1;
+  previouInvalidRegionIndex[0] = usedPatchPair.TargetPatch.Region.GetIndex()[0] - this->PatchRadius[0]*3 + 1;
+  previouInvalidRegionIndex[1] = usedPatchPair.TargetPatch.Region.GetIndex()[1] - this->PatchRadius[1]*3 + 1;
   
   itk::Size<2> previouInvalidRegionSize;
   previouInvalidRegionSize[0] = this->PatchRadius[0] * 6 - 2;
@@ -307,7 +312,25 @@ void CriminisiInpainting::Iterate()
   
   itk::ImageRegion<2> previousInvalidRegion(previouInvalidRegionIndex, previouInvalidRegionSize);
   
-  AddSourcePatches(previousInvalidRegion);
+  std::vector<Patch> newPatches = AddSourcePatches(previousInvalidRegion);
+  
+  // Get all candidate sets in the current iteration.
+  std::vector<CandidatePairs>& candidatePairs = this->PotentialCandidatePairs[this->PotentialCandidatePairs.size() - 1];
+  for(unsigned int i = 0; i < candidatePairs.size(); ++i) 
+    {
+    // Recompute for all forward look candidates except the one that was used. Otherwise there would be an exact match!
+    if(usedPatchPair.TargetPatch.Region != candidatePairs[i].TargetPatch.Region)
+      {
+      candidatePairs[i].AddPairsFromPatches(newPatches);
+      ComputeAllContinuationDifferences(candidatePairs[i]);
+    
+      SelfPatchCompare* patchCompare;
+      patchCompare = new SelfPatchCompareAll(this->CompareImage->GetNumberOfComponentsPerPixel(), candidatePairs[i]);
+      patchCompare->SetImage(this->CompareImage);
+      patchCompare->SetMask(this->CurrentMask);
+      patchCompare->ComputeAllDifferences();
+      }
+    }
   
   // At the end of an iteration, things would be slightly out of sync. The boundary is computed at the beginning of the iteration (before the patch is filled),
   // so at the end of the iteration, the boundary image will not correspond to the boundary of the remaining hole in the image - it will be off by 1 iteration.
@@ -1201,7 +1224,11 @@ void CriminisiInpainting::ComputeAllContinuationDifferences(CandidatePairs& cand
   
   for(unsigned int sourcePatchId = 0; sourcePatchId < this->SourcePatches.size(); ++sourcePatchId)
     {
-    
+    // Only compute if the values are not already computed.
+    if(candidatePairs[sourcePatchId].IsValidBoundaryIsophoteDifference() && candidatePairs[sourcePatchId].IsValidBoundaryPixelDifference())
+      {
+      continue;
+      }
     float totalPixelDifference = 0.0f;
     float totalIsophoteDifference = 0.0f;
     unsigned int numberUsed = 0;

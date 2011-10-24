@@ -350,19 +350,29 @@ void SelfPatchCompare::ComputeAllDifferences()
     
       ComputeOffsets();
     
-      for(unsigned int i = 0; i < this->Pairs.size(); ++i)
+      for(unsigned int sourcePatchId = 0; sourcePatchId < this->Pairs.size(); ++sourcePatchId)
 	{
-	float distance = PatchDifferenceBoundary(this->Pairs[i].SourcePatch);
-	this->Pairs[i].SetAverageSSD(distance);
+	// Only compute if the values are not already computed.
+	if(this->Pairs[sourcePatchId].IsValidSSD())
+	  {
+	  continue;
+	  }
+	float distance = PatchDifferenceBoundary(this->Pairs[sourcePatchId].SourcePatch);
+	this->Pairs[sourcePatchId].SetAverageSSD(distance);
 	}
       }
     else // The target patch is entirely inside the image
       {
       ComputeOffsets();
-      for(unsigned int i = 0; i < this->Pairs.size(); ++i)
+      for(unsigned int sourcePatchId = 0; sourcePatchId < this->Pairs.size(); ++sourcePatchId)
 	{
-	float distance = PatchAverageSquaredDifference(this->Pairs[i].SourcePatch);
-	this->Pairs[i].SetAverageSSD(distance);
+	// Only compute if the values are not already computed.
+	if(this->Pairs[sourcePatchId].IsValidSSD())
+	  {
+	  continue;
+	  }
+	float distance = PatchAverageSquaredDifference(this->Pairs[sourcePatchId].SourcePatch);
+	this->Pairs[sourcePatchId].SetAverageSSD(distance);
 	}
       }
   }

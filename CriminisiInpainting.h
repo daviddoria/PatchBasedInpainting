@@ -261,7 +261,7 @@ private:
   void UpdateMask(const itk::ImageRegion<2>& region);
 
   // Locate all patches centered at pixels in 'region' that are completely inside of the image and completely inside of the source region and add them to the current list of source patches.
-  void AddSourcePatches(const itk::ImageRegion<2>& region);
+  std::vector<Patch> AddSourcePatches(const itk::ImageRegion<2>& region);
   
   // Store the list of source patches computed with ComputeSourcePatches()
   std::vector<Patch> SourcePatches;
@@ -276,6 +276,7 @@ private:
   std::vector<PatchPair> UsedPatchPairs;
   
   // Store the vector of CandidatePatches that were examined at every iteration. These are tracked for visualization purposes only.
+  // The outer vector is the iteration, and the inner vector is the look ahead patch.
   std::vector<std::vector<CandidatePairs> > PotentialCandidatePairs;
   
   // The number of bins to use per dimension in the histogram computations.

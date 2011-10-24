@@ -6,7 +6,28 @@ PatchPair::PatchPair()
   this->BoundaryIsophoteDifference = 0.0f;
   this->BoundaryPixelDifference = 0.0f;
   this->TotalScore = 0.0f;
+  
+  this->ValidSSD = false;
+  this->ValidBoundaryPixelDifference = false;
+  this->ValidBoundaryIsophoteDifference = false;
 }
+
+bool PatchPair::IsValidSSD()
+{
+  return ValidSSD;
+}
+
+bool PatchPair::IsValidBoundaryPixelDifference()
+{
+  return ValidBoundaryPixelDifference;
+}
+
+bool PatchPair::IsValidBoundaryIsophoteDifference()
+{
+  return ValidBoundaryIsophoteDifference;
+}
+
+  
 
 bool SortByAverageSSD(const PatchPair& pair1, const PatchPair& pair2)
 {
@@ -25,18 +46,21 @@ bool SortByBoundaryIsophoteDifference(const PatchPair& pair1, const PatchPair& p
 
 void PatchPair::SetAverageSSD(const float value)
 {
+  this->ValidSSD = true;
   this->AverageSSD = value;
   ComputeTotal();
 }
 
 void PatchPair::SetBoundaryPixelDifference(const float value)
 {
+  this->ValidBoundaryPixelDifference = true;
   this->BoundaryPixelDifference = value;
   ComputeTotal();
 }
 
 void PatchPair::SetBoundaryIsophoteDifference(const float value)
 {
+  this->ValidBoundaryIsophoteDifference = true;
   this->BoundaryIsophoteDifference = value;
   ComputeTotal();
 }
