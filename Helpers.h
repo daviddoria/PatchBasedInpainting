@@ -49,6 +49,7 @@ void SetImageCenterPixel(vtkImageData* image, const unsigned char color[3]);
 void SetRegionCenterPixel(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char color[3]);
 
 void Write2DVectorRegion(const FloatVector2ImageType::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename);
+void Write2DVectorImage(const FloatVector2ImageType::Pointer image, const std::string& filename);
 
 itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned int dimension);
 

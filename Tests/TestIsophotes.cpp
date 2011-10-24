@@ -73,7 +73,8 @@ int main(int argc, char *argv[])
   //inpainting.SetImage(imageReader->GetOutput());
   inpainting.ComputeMaskedIsophotes(blurredLuminance, maskReader->GetOutput());
     
-  Helpers::WriteImage<FloatVector2ImageType>(inpainting.GetIsophoteImage(), "Test/TestIsophotes.isophotes.mha");
+  //Helpers::WriteImage<FloatVector2ImageType>(inpainting.GetIsophoteImage(), );
+  Helpers::Write2DVectorImage(inpainting.GetIsophoteImage(), "Test/TestIsophotes.isophotes.mha");
   
   return EXIT_SUCCESS;
 }

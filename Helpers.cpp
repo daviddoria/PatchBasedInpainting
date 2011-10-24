@@ -219,6 +219,11 @@ void RGBImageToCIELabImage(const RGBImageType::Pointer rgbImage, FloatVectorImag
   DeepCopyVectorImage<FloatVectorImageType>(reassembler->GetOutput(), cielabImage);
 }
 
+void Write2DVectorImage(const FloatVector2ImageType::Pointer image, const std::string& filename)
+{
+  Write2DVectorRegion(image, image->GetLargestPossibleRegion(), filename);
+}
+
 void Write2DVectorRegion(const FloatVector2ImageType::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename)
 {
   // This is a separate function than WriteRegion because Paraview requires vectors to b 3D to glyph them.
