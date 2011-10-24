@@ -578,6 +578,8 @@ unsigned int argmin(const typename std::vector<T>& vec)
 template<typename TImage>
 void WriteRegion(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename)
 {
+  std::cout << "WriteRegion() " << filename << std::endl;
+  std::cout << "region " << region << std::endl;
   typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
 
   typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
@@ -585,9 +587,66 @@ void WriteRegion(const typename TImage::Pointer image, const itk::ImageRegion<2>
   regionOfInterestImageFilter->SetInput(image);
   regionOfInterestImageFilter->Update();
 
+  std::cout << "regionOfInterestImageFilter " << regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion() << std::endl;
+  
   typename itk::ImageFileWriter<TImage>::Pointer writer = itk::ImageFileWriter<TImage>::New();
   writer->SetFileName(filename);
   writer->SetInput(regionOfInterestImageFilter->GetOutput());
+  writer->Update();
+}
+
+template<typename TImage>
+void WriteRegionAsImage(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename)
+{
+  // This function varies from WriteRegion() in that the Origin of the output image is (0,0).
+  // Because of this, the region cannot be overlayed on the original image, but can be easily compared to other regions.
+  //std::cout << "WriteRegion() " << filename << std::endl;
+  //std::cout << "region " << region << std::endl;
+  
+  typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
+
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  regionOfInterestImageFilter->SetRegionOfInterest(region);
+  regionOfInterestImageFilter->SetInput(image);
+  regionOfInterestImageFilter->Update();
+  
+  itk::Point<float, 2> origin;
+  origin.Fill(0);
+  regionOfInterestImageFilter->GetOutput()->SetOrigin(origin);
+
+  //std::cout << "regionOfInterestImageFilter " << regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion() << std::endl;
+  
+  typename itk::ImageFileWriter<TImage>::Pointer writer = itk::ImageFileWriter<TImage>::New();
+  writer->SetFileName(filename);
+  writer->SetInput(regionOfInterestImageFilter->GetOutput());
+  writer->Update();
+}
+
+
+
+template<typename TImage>
+void WriteRegionUnsignedChar(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename)
+{
+  // The file that is output has Origin = (0,0) because of how VectorImageToRGBImage copies the image.
+  
+  std::cout << "WriteRegionUnsignedChar() " << filename << std::endl;
+  typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
+
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  regionOfInterestImageFilter->SetRegionOfInterest(region);
+  regionOfInterestImageFilter->SetInput(image);
+  regionOfInterestImageFilter->Update();
+
+  std::cout << "regionOfInterestImageFilter " << regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion() << std::endl;
+  
+  RGBImageType::Pointer rgbImage = RGBImageType::New();
+  VectorImageToRGBImage(regionOfInterestImageFilter->GetOutput(), rgbImage);
+  
+  std::cout << "rgbImage " << rgbImage->GetLargestPossibleRegion() << std::endl;
+  
+  typename itk::ImageFileWriter<RGBImageType>::Pointer writer = itk::ImageFileWriter<RGBImageType>::New();
+  writer->SetFileName(filename);
+  writer->SetInput(rgbImage);
   writer->Update();
 }
 

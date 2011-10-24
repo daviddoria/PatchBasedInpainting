@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,6,1,1,5">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,6,1,2,5">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
         <item>
@@ -271,7 +271,7 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2" stretch="9,1">
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget"/>
+         <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -637,7 +637,7 @@
      <x>0</x>
      <y>0</y>
      <width>1319</width>
-     <height>25</height>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLeft_Pane">

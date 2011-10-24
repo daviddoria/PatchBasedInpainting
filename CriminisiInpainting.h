@@ -129,6 +129,9 @@ public:
   
   std::vector<std::vector<CandidatePairs> >& AccessPotentialCandidatePairs();
   
+  // Compute the isophotes.
+  void ComputeMaskedIsophotes(FloatScalarImageType::Pointer image, Mask::Pointer mask);
+
 private:
 
   // Compute the difference between two isophotes
@@ -235,9 +238,6 @@ private:
   // Find the boundary of a region.
   void FindBoundary();
   
-  // Compute the isophotes.
-  void ComputeIsophotes();
-
   // Compute the normals of a region boundary.
   void ComputeBoundaryNormals();
 

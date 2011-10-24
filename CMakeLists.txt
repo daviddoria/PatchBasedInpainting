@@ -43,7 +43,8 @@ VectorLayer.cpp
 ${UISrcs} ${MOCSrcs})
 
 TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
-INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
+
+#INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 
 # Non-interactive
 # ADD_EXECUTABLE(CriminisiInpainting
@@ -57,6 +58,19 @@ INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DI
 # TARGET_LINK_LIBRARIES(CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 # INSTALL( TARGETS CriminisiInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 
+# TestIsophotes
+#--------------
+# ADD_EXECUTABLE(TestIsophotes Tests/TestIsophotes.cpp
+# CandidatePairs.cpp
+# CriminisiInpainting.cpp
+# CriminisiInpaintingDebugging.cpp
+# CriminisiInpaintingInterface.cpp
+# Helpers.cpp 
+# Mask.cpp 
+# Patch.cpp
+# PatchPair.cpp
+# SelfPatchCompare.cpp)
+# TARGET_LINK_LIBRARIES(TestIsophotes ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
 # ADD_EXECUTABLE(TestPatchDifference TestPatchDifference.cpp Helpers.cpp)
 # TARGET_LINK_LIBRARIES(TestPatchDifference ${VTK_LIBRARIES} ${ITK_LIBRARIES})

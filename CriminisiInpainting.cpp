@@ -210,9 +210,29 @@ void CriminisiInpainting::Initialize()
     InitializeTargetImage();
     Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
   
-    ComputeIsophotes();
-    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha", this->DebugImages);
+    // Compute isophotes
+    {
+    RGBImageType::Pointer rgbImage = RGBImageType::New();
+    Helpers::VectorImageToRGBImage(this->OriginalImage, rgbImage);
+    
+    Helpers::DebugWriteImageConditional<RGBImageType>(rgbImage, "Debug/Initialize.rgb.mha", this->DebugImages);
 
+    typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
+    LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
+    luminanceFilter->SetInput(rgbImage);
+    luminanceFilter->Update();
+    
+    FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
+    // Blur with a Gaussian kernel
+    unsigned int kernelRadius = 5;
+    Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), this->CurrentMask, kernelRadius, blurredLuminance);
+    
+    Helpers::DebugWriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/ComputeMaskedIsophotes.blurred.mha", true);
+    
+    ComputeMaskedIsophotes(blurredLuminance, this->CurrentMask);
+    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha", this->DebugImages);
+    }
+    
     // Blur the image incase we want to use a blurred image for pixel to pixel comparisons.
     unsigned int kernelRadius = 5;
     Helpers::VectorMaskedBlur(this->OriginalImage, this->CurrentMask, kernelRadius, this->BlurredImage);
@@ -268,13 +288,21 @@ void CriminisiInpainting::Iterate()
   
   FindBestPatchLookAhead(usedPatchPair);
 
+  std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
+  
+  std::stringstream ssTargetIsophotes;
+  ssTargetIsophotes << "Debug/TargetIsophotes_" << this->NumberOfCompletedIterations << ".mha";
+  //Helpers::WriteRegion<FloatVector2ImageType>(this->IsophoteImage, usedPatchPair.TargetPatch.Region, ssTargetIsophotes.str());
+  Helpers::Write2DVectorRegion(this->IsophoteImage, usedPatchPair.TargetPatch.Region, ssTargetIsophotes.str());
+  
   std::stringstream ssSource;
   ssSource << "Debug/source_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
   Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.SourcePatch, ssSource.str());
 
   std::stringstream ssTarget;
   ssTarget << "Debug/target_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
-  Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch, ssTarget.str());
+  //Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch, ssTarget.str());
+  Helpers::WriteRegionUnsignedChar<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch.Region, ssTarget.str());
   
   this->UsedPatchPairs.push_back(usedPatchPair);
   
@@ -320,11 +348,12 @@ void CriminisiInpainting::Iterate()
   
   std::vector<Patch> newPatches = AddSourcePatches(previousInvalidRegion);
   
+  // Recompute for all forward look candidates except the one that was used. Otherwise there would be an exact match!
   // Get all candidate sets in the current iteration.
   std::vector<CandidatePairs>& candidatePairs = this->PotentialCandidatePairs[this->PotentialCandidatePairs.size() - 1];
   for(unsigned int i = 0; i < candidatePairs.size(); ++i) 
     {
-    // Recompute for all forward look candidates except the one that was used. Otherwise there would be an exact match!
+    // Don't recompute for the target patch that was used.
     if(usedPatchPair.TargetPatch.Region != candidatePairs[i].TargetPatch.Region)
       {
       candidatePairs[i].AddPairsFromPatches(newPatches);
@@ -348,7 +377,6 @@ void CriminisiInpainting::Iterate()
 
   DebugMessage<unsigned int>("Completed iteration: ", this->NumberOfCompletedIterations);
 
-  
 }
 
 void CriminisiInpainting::FindBestPatchForHighestPriority(PatchPair& bestPatchPair)
@@ -567,43 +595,24 @@ void CriminisiInpainting::Inpaint()
   }
 }
 
-void CriminisiInpainting::ComputeIsophotes()
+void CriminisiInpainting::ComputeMaskedIsophotes(FloatScalarImageType::Pointer image, Mask::Pointer mask)
 {
-  
   try
   {
-    Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/ComputeIsophotes.input.mha", this->DebugImages);
-
-    RGBImageType::Pointer rgbImage = RGBImageType::New();
-    Helpers::VectorImageToRGBImage(this->OriginalImage, rgbImage);
-    
-    Helpers::DebugWriteImageConditional<RGBImageType>(rgbImage, "Debug/ComputeIsophotes.rgb.mha", this->DebugImages);
-
-    typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
-    LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
-    luminanceFilter->SetInput(rgbImage);
-    luminanceFilter->Update();
   
-    Helpers::DebugWriteImageConditional<FloatScalarImageType>(luminanceFilter->GetOutput(), "Debug/ComputeIsophotes.luminance.mha", this->DebugImages);
-
-    FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
-    // Blur with a Gaussian kernel
-    unsigned int kernelRadius = 5;
-    Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), this->CurrentMask, kernelRadius, blurredLuminance);
-    
-    Helpers::DebugWriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/ComputeIsophotes.blurred.mha", true);
+    Helpers::DebugWriteImageConditional<FloatScalarImageType>(image, "Debug/ComputeMaskedIsophotes.luminance.mha", this->DebugImages);
     
     // Compute the gradient
     FloatScalarImageType::Pointer xDerivative = FloatScalarImageType::New();
-    Helpers::MaskedDerivative<FloatScalarImageType>(blurredLuminance, this->CurrentMask, 0, xDerivative);
+    Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 0, xDerivative);
     
     FloatScalarImageType::Pointer yDerivative = FloatScalarImageType::New();
-    Helpers::MaskedDerivative<FloatScalarImageType>(blurredLuminance, this->CurrentMask, 1, yDerivative);
+    Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 1, yDerivative);
     
     FloatVector2ImageType::Pointer gradient = FloatVector2ImageType::New();
     Helpers::GradientFromDerivatives<float>(xDerivative, yDerivative, gradient);
     
-    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient, "Debug/ComputeIsophotes.gradient.mha", this->DebugImages);
+    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha", this->DebugImages);
  
     // Rotate the gradient 90 degrees to obtain isophotes from gradient
     typedef itk::UnaryFunctorImageFilter<FloatVector2ImageType, FloatVector2ImageType,
@@ -614,13 +623,14 @@ void CriminisiInpainting::ComputeIsophotes()
     rotateFilter->SetInput(gradient);
     rotateFilter->Update();
 
-    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(rotateFilter->GetOutput(), "Debug/ComputeIsophotes.rotatedGradient.mha", this->DebugImages);
-      
+    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.rotatedGradient.mha", this->DebugImages);
+    
+    // Store the result as a member variable.
     Helpers::DeepCopy<FloatVector2ImageType>(rotateFilter->GetOutput(), this->IsophoteImage);
   }
   catch( itk::ExceptionObject & err )
   {
-    std::cerr << "ExceptionObject caught in ComputeIsophotes!" << std::endl;
+    std::cerr << "ExceptionObject caught in ComputeMaskedIsophotes!" << std::endl;
     std::cerr << err << std::endl;
     exit(-1);
   }

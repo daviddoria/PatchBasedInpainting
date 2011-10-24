@@ -20,6 +20,12 @@
 #include <itkFlatStructuringElement.h>
 #include <itkBinaryDilateImageFilter.h>
 
+Mask::Mask()
+{
+  this->HoleValue = 255;
+  this->ValidValue = 0;
+}
+
 bool Mask::IsHole(const itk::Index<2>& index) const
 {
   if(this->GetPixel(index) == this->HoleValue)
@@ -146,13 +152,6 @@ void Mask::DeepCopyFrom(const Mask::Pointer inputMask)
     }
   this->SetHoleValue(inputMask->GetHoleValue());
   this->SetValidValue(inputMask->GetValidValue());
-}
-
-
-Mask::Mask()
-{
-  this->HoleValue = 255;
-  this->ValidValue = 0;
 }
 
 void Mask::ExpandHole()

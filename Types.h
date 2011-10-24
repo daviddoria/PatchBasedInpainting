@@ -40,7 +40,7 @@ typedef itk::CovariantVector<float, 2> FloatVector2Type;
 
 // Vector image types
 typedef itk::Image<UnsignedCharVectorType ,2> UnsignedCharVectorImageType;
-//typedef itk::Image<FloatVector3Type , 2> FloatVector3ImageType;
+typedef itk::Image<FloatVector3Type , 2> FloatVector3ImageType;
 typedef itk::Image<FloatVector2Type , 2> FloatVector2ImageType;
 
 // Histograms

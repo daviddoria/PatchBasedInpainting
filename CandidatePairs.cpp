@@ -46,7 +46,7 @@ void CandidatePairs::AddPairsFromPatches(const std::vector<Patch>& patches)
     patchPair.SourcePatch = patches[i];
     this->push_back(patchPair);
     }
-  std::cout << "Added " << patches.size() << " pairs." << std::endl;
+  std::cout << "AddPairsFromPatches(): Added " << patches.size() << " pairs." << std::endl;
 }
 
 void CandidatePairs::CopyFrom(const std::vector<PatchPair>& v)

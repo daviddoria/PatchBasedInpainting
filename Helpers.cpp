@@ -219,6 +219,47 @@ void RGBImageToCIELabImage(const RGBImageType::Pointer rgbImage, FloatVectorImag
   DeepCopyVectorImage<FloatVectorImageType>(reassembler->GetOutput(), cielabImage);
 }
 
+void Write2DVectorRegion(const FloatVector2ImageType::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename)
+{
+  // This is a separate function than WriteRegion because Paraview requires vectors to b 3D to glyph them.
+  
+  typedef itk::RegionOfInterestImageFilter<FloatVector2ImageType, FloatVector2ImageType> RegionOfInterestImageFilterType;
+
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  regionOfInterestImageFilter->SetRegionOfInterest(region);
+  regionOfInterestImageFilter->SetInput(image);
+  regionOfInterestImageFilter->Update();
+  
+  itk::Point<float, 2> origin;
+  origin.Fill(0);
+  regionOfInterestImageFilter->GetOutput()->SetOrigin(origin);
+
+  FloatVector3ImageType::Pointer vectors3D = FloatVector3ImageType::New();
+  vectors3D->SetRegions(regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+  vectors3D->Allocate();
+  
+  itk::ImageRegionConstIterator<FloatVector2ImageType> iterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+  
+  while(!iterator.IsAtEnd())
+    {
+    FloatVector2Type vec2d = iterator.Get();
+    FloatVector3Type vec3d;
+    vec3d[0] = vec2d[0];
+    vec3d[1] = vec2d[1];
+    vec3d[2] = 0;
+ 
+    vectors3D->SetPixel(iterator.GetIndex(), vec3d);
+    ++iterator;
+    }
+    
+  //std::cout << "regionOfInterestImageFilter " << regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion() << std::endl;
+  
+  itk::ImageFileWriter<FloatVector3ImageType>::Pointer writer = itk::ImageFileWriter<FloatVector3ImageType>::New();
+  writer->SetFileName(filename);
+  writer->SetInput(vectors3D);
+  writer->Update();
+}
+
 void VectorImageToRGBImage(const FloatVectorImageType::Pointer image, RGBImageType::Pointer rgbImage)
 {
   // Only the first 3 components are used (assumed to be RGB)
