@@ -76,5 +76,42 @@ int main(int argc, char *argv[])
   //Helpers::WriteImage<FloatVector2ImageType>(inpainting.GetIsophoteImage(), );
   Helpers::Write2DVectorImage(inpainting.GetIsophoteImage(), "Test/TestIsophotes.isophotes.mha");
   
+  itk::Size<2> size;
+  size.Fill(21);
+  
+  // Target
+  itk::Index<2> targetIndex;
+  targetIndex[0] = 187;
+  targetIndex[1] = 118;
+  itk::ImageRegion<2> targetRegion(targetIndex, size);
+  
+  // Source
+  itk::Index<2> sourceIndex;
+  sourceIndex[0] = 176;
+  sourceIndex[1] = 118;
+  itk::ImageRegion<2> sourceRegion(sourceIndex, size);
+  
+  //PatchPair patchPair(Patch(sourceRegion), Patch(targetRegion));
+  //PatchPair patchPair;
+  Patch sourcePatch(sourceRegion);
+  Patch targetPatch(targetRegion);
+  PatchPair patchPair(sourcePatch, targetPatch);
+  
+  inpainting.FindBoundary();
+  
+  std::vector<itk::Index<2> > borderPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(inpainting.GetBoundaryImage(), targetRegion);
+
+  for(unsigned int pixelId = 0; pixelId < borderPixels.size(); ++pixelId)
+    {
+    itk::Index<2> currentPixel = borderPixels[pixelId];
+    itk::Index<2> adjacentBoundaryPixel;
+    //bool valid = GetAdjacentBoundaryPixel(currentPixel, candidatePairs[sourcePatchId], adjacentBoundaryPixel);
+    bool valid = inpainting.GetAdjacentBoundaryPixel(currentPixel, patchPair, adjacentBoundaryPixel);
+    if(!valid)
+      {
+      continue;
+      }
+    }
+	
   return EXIT_SUCCESS;
 }

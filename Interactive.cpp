@@ -30,12 +30,12 @@ int main( int argc, char** argv )
   Form* myForm;
   if(argc == 3)
     {
-    std::cout << "Using filename arguments." << std::endl;
+    //std::cout << "Using filename arguments." << std::endl;
     myForm = new Form(argv[1], argv[2]);
     }
   else
     {
-    std::cout << "Not using filename arguments." << std::endl;
+    //std::cout << "Not using filename arguments." << std::endl;
     myForm = new Form;
     }
   //myForm.show();

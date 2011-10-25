@@ -238,11 +238,11 @@ void CriminisiInpainting::Initialize()
     Helpers::VectorMaskedBlur(this->OriginalImage, this->CurrentMask, kernelRadius, this->BlurredImage);
     Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->BlurredImage, "Debug/Initialize.BlurredImage.mha", this->DebugImages);
     
-    InitializeImage<FloatScalarImageType>(this->DataImage);
+    Helpers::InitializeImage<FloatScalarImageType>(this->DataImage, this->FullImageRegion);
     
-    InitializeImage<FloatScalarImageType>(this->PriorityImage);
+    Helpers::InitializeImage<FloatScalarImageType>(this->PriorityImage, this->FullImageRegion);
     
-    InitializeImage<FloatScalarImageType>(this->ConfidenceImage);
+    Helpers::InitializeImage<FloatScalarImageType>(this->ConfidenceImage, this->FullImageRegion);
         
     InitializeConfidenceMap();
     Helpers::DebugWriteImageConditional<FloatScalarImageType>(this->ConfidenceMapImage, "Debug/Initialize.ConfidenceMapImage.mha", this->DebugImages);
@@ -349,18 +349,17 @@ void CriminisiInpainting::Iterate()
   std::vector<Patch> newPatches = AddSourcePatches(previousInvalidRegion);
   
   // Recompute for all forward look candidates except the one that was used. Otherwise there would be an exact match!
-  // Get all candidate sets in the current iteration.
-  std::vector<CandidatePairs>& candidatePairs = this->PotentialCandidatePairs[this->PotentialCandidatePairs.size() - 1];
-  for(unsigned int i = 0; i < candidatePairs.size(); ++i) 
+  
+  for(unsigned int candidateId = 0; candidateId < this->PotentialCandidatePairs.size(); ++candidateId)
     {
     // Don't recompute for the target patch that was used.
-    if(usedPatchPair.TargetPatch.Region != candidatePairs[i].TargetPatch.Region)
+    if(usedPatchPair.TargetPatch.Region != this->PotentialCandidatePairs[candidateId].TargetPatch.Region)
       {
-      candidatePairs[i].AddPairsFromPatches(newPatches);
-      ComputeAllContinuationDifferences(candidatePairs[i]);
+      this->PotentialCandidatePairs[candidateId].AddPairsFromPatches(newPatches);
+      ComputeAllContinuationDifferences(this->PotentialCandidatePairs[candidateId]);
     
       SelfPatchCompare* patchCompare;
-      patchCompare = new SelfPatchCompareAll(this->CompareImage->GetNumberOfComponentsPerPixel(), candidatePairs[i]);
+      patchCompare = new SelfPatchCompareAll(this->CompareImage->GetNumberOfComponentsPerPixel(), this->PotentialCandidatePairs[candidateId]);
       patchCompare->SetImage(this->CompareImage);
       patchCompare->SetMask(this->CurrentMask);
       patchCompare->ComputeAllDifferences();
@@ -425,24 +424,20 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   
   std::cout << "There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
   
-  std::vector<CandidatePairs> allCandidatePairs;
-  
   // If this is not the first iteration, get the potential forward look patch candidates from the previous step
   if(this->NumberOfCompletedIterations > 0)
     {
-    allCandidatePairs = this->PotentialCandidatePairs[this->NumberOfCompletedIterations - 1];
-  
     // Remove the patch candidate that was actually filled
     unsigned int idToRemove = 0;
-    for(unsigned int i = 0; i < allCandidatePairs.size(); ++i)
+    for(unsigned int forwardLookId = 0; forwardLookId < this->PotentialCandidatePairs.size(); ++forwardLookId)
       {
-      if(this->UsedPatchPairs[this->NumberOfCompletedIterations - 1].TargetPatch.Region == allCandidatePairs[i].TargetPatch.Region)
+      if(this->UsedPatchPairs[this->NumberOfCompletedIterations - 1].TargetPatch.Region == this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region)
 	{
-	idToRemove = i;
+	idToRemove = forwardLookId;
 	break;
 	}
       }
-    allCandidatePairs.erase(allCandidatePairs.begin() + idToRemove);
+    this->PotentialCandidatePairs.erase(this->PotentialCandidatePairs.begin() + idToRemove);
     DebugMessage<unsigned int>("Removed forward look: ", idToRemove);
     }
   
@@ -451,14 +446,14 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   Helpers::DeepCopy<FloatScalarImageType>(this->PriorityImage, currentPriorityImage);
 
   // Blank all regions that are already look ahead patches.
-  for(unsigned int i = 0; i < allCandidatePairs.size(); ++i)
+  for(unsigned int forwardLookId = 0; forwardLookId < this->PotentialCandidatePairs.size(); ++forwardLookId)
     {
-    Helpers::SetRegionToConstant<FloatScalarImageType>(currentPriorityImage, allCandidatePairs[i].TargetPatch.Region, 0.0f);
+    Helpers::SetRegionToConstant<FloatScalarImageType>(currentPriorityImage, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region, 0.0f);
     }
     
   // Find the remaining number of patch candidates
-  unsigned int numberOfNewPatchesToFind = this->MaxForwardLookPatches - allCandidatePairs.size();
-  for(unsigned int i = 0; i < numberOfNewPatchesToFind; ++i)
+  unsigned int numberOfNewPatchesToFind = this->MaxForwardLookPatches - this->PotentialCandidatePairs.size();
+  for(unsigned int newPatchId = 0; newPatchId < numberOfNewPatchesToFind; ++newPatchId)
     {
     float highestPriority = 0;
     itk::Index<2> pixelToFill = FindHighestValueOnBoundary(currentPriorityImage, highestPriority);
@@ -472,7 +467,7 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
       }
 
     // We want to do at least one comparison, but if we are near the end of the completion, there may not be more than 1 priority max
-    if(highestPriority < .0001 && i > 0)
+    if(highestPriority < .0001 && newPatchId > 0)
       {
       std::cout << "Highest priority was only " << highestPriority << std::endl;
       break;
@@ -519,14 +514,13 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByContinuationDifference());
     std::cout << "Sorted " << candidatePairs.size() << " candidatePairs." << std::endl;
     
-    allCandidatePairs.push_back(candidatePairs);
+    this->PotentialCandidatePairs.push_back(candidatePairs);
 
     } // end forward look loop
 
   // Sort the forward look patches so that the highest priority sets are first in the vector.
-  std::sort(allCandidatePairs.rbegin(), allCandidatePairs.rend(), SortByPriority);
+  std::sort(this->PotentialCandidatePairs.rbegin(), this->PotentialCandidatePairs.rend(), SortByPriority);
 
-  this->PotentialCandidatePairs.push_back(allCandidatePairs);
 //   std::cout << "Scores: " << std::endl;
 //   for(unsigned int i = 0; i < ssdScores.size(); ++i)
 //     {
@@ -555,17 +549,17 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   // Choose the look ahead with the lowest score to actually fill rather than simply returning the best source patch of the first look ahead target patch.
   float lowestScore = std::numeric_limits< float >::max();
   unsigned int lowestLookAhead = 0;
-  for(unsigned int i = 0; i < allCandidatePairs.size(); ++i)
+  for(unsigned int i = 0; i < this->PotentialCandidatePairs.size(); ++i)
     {
-    if(allCandidatePairs[i][0].GetAverageSSD() < lowestScore)
+    if(this->PotentialCandidatePairs[i][0].GetAverageSSD() < lowestScore)
       {
-      lowestScore = allCandidatePairs[i][0].GetAverageSSD();
+      lowestScore = this->PotentialCandidatePairs[i][0].GetAverageSSD();
       lowestLookAhead = i;
       }
     }
 
   // Return the result by reference.
-  bestPatchPair = allCandidatePairs[lowestLookAhead][0];
+  bestPatchPair = this->PotentialCandidatePairs[lowestLookAhead][0];
   
   std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
 }
@@ -1110,19 +1104,14 @@ itk::ImageRegion<2> CriminisiInpainting::CropToValidRegion(const itk::ImageRegio
   return region;
 }
 
-CandidatePairs& CriminisiInpainting::GetPotentialCandidatePairs(const unsigned int iteration, const unsigned int forwardLookId)
+CandidatePairs& CriminisiInpainting::GetPotentialCandidatePairReference(const unsigned int forwardLookId)
 {
-  return this->PotentialCandidatePairs[iteration][forwardLookId];
+  return this->PotentialCandidatePairs[forwardLookId];
 }
 
-bool CriminisiInpainting::GetPotentialCandidatePairs(const unsigned int iteration, const unsigned int forwardLookId, CandidatePairs& candidatePairs)
+std::vector<CandidatePairs> CriminisiInpainting::GetPotentialCandidatePairs()
 {
-  if(iteration < this->PotentialCandidatePairs.size())
-    {
-    candidatePairs = this->PotentialCandidatePairs[iteration][forwardLookId];
-    return true;
-    }
-  return false;
+  return this->PotentialCandidatePairs;
 }
 
 bool CriminisiInpainting::GetUsedPatchPair(const unsigned int id, PatchPair& patchPair)
@@ -1279,21 +1268,8 @@ void CriminisiInpainting::ComputeAllContinuationDifferences(CandidatePairs& cand
 
 }
 
-bool CriminisiInpainting::GetAllPotentialCandidatePairs(const unsigned int iteration, std::vector<CandidatePairs>& allCandidatePairs)
+std::vector<CandidatePairs>& CriminisiInpainting::GetPotentialCandidatePairsReference()
 {
-  if(iteration < this->PotentialCandidatePairs.size())
-    {
-    allCandidatePairs = this->PotentialCandidatePairs[iteration];
-    return true;
-    }
-  else
-    {
-    return false;
-    }
-}
-
-std::vector<std::vector<CandidatePairs> >& CriminisiInpainting::AccessPotentialCandidatePairs()
-{
-  // Return a reference to the whole vector of vectors.
+  // Return a reference to the whole set of forward look pairs.
   return PotentialCandidatePairs;
 }

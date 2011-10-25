@@ -1,6 +1,6 @@
 #include "PatchPair.h"
 
-PatchPair::PatchPair()
+void PatchPair::DefaultConstructor()
 {
   this->AverageSSD = 0.0f;
   this->BoundaryIsophoteDifference = 0.0f;
@@ -10,6 +10,19 @@ PatchPair::PatchPair()
   this->ValidSSD = false;
   this->ValidBoundaryPixelDifference = false;
   this->ValidBoundaryIsophoteDifference = false;
+}
+
+PatchPair::PatchPair()
+{
+  DefaultConstructor();
+}
+
+PatchPair::PatchPair(const Patch& sourcePatch, const Patch& targetPatch)
+{
+  DefaultConstructor();
+  
+  this->SourcePatch = sourcePatch;
+  this->TargetPatch = targetPatch;
 }
 
 bool PatchPair::IsValidSSD()

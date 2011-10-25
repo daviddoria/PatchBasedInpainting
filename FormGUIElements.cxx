@@ -7,15 +7,11 @@
 
 void Form::on_btnResort_clicked()
 {
-  
-  //unsigned int forwardLookId = this->forwardLookingTableWidget->currentRow();
-  //CandidatePairs& candidatePairs = this->Inpainting.AccessPotentialCandidatePairs()[this->IterationToDisplay - 1][forwardLookId];
-  std::vector<std::vector<CandidatePairs> >& allIterationsAllCandidatePairs = this->Inpainting.AccessPotentialCandidatePairs();
-  for(unsigned int iteration = 0; iteration < allIterationsAllCandidatePairs.size(); iteration++)
+  for(unsigned int iteration = 0; iteration < this->AllPotentialCandidatePairs.size(); iteration++)
     {
-    for(unsigned int forwardLookId = 0; forwardLookId < allIterationsAllCandidatePairs[iteration].size(); forwardLookId++)
+    for(unsigned int forwardLookId = 0; forwardLookId < this->AllPotentialCandidatePairs[iteration].size(); forwardLookId++)
       {
-      CandidatePairs& candidatePairs = this->Inpainting.AccessPotentialCandidatePairs()[iteration][forwardLookId];
+      CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[iteration][forwardLookId];
 
       if(this->radSortBySSD->isChecked())
         {

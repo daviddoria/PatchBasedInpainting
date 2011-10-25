@@ -5,7 +5,9 @@
 
 struct PatchPair
 {
+  void DefaultConstructor();
   PatchPair();
+  PatchPair(const Patch&, const Patch&);
   
   Patch SourcePatch;
   Patch TargetPatch;

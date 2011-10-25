@@ -114,10 +114,9 @@ public:
   
   bool GetUsedPatchPair(const unsigned int id, PatchPair& patchPair);
   
-  bool GetPotentialCandidatePairs(const unsigned int iteration, const unsigned int forwardLookId, CandidatePairs& candidatePairs);
-  bool GetAllPotentialCandidatePairs(const unsigned int iteration, std::vector<CandidatePairs>&);
-
-  CandidatePairs& GetPotentialCandidatePairs(const unsigned int iteration, const unsigned int forwardLookId);
+  CandidatePairs& GetPotentialCandidatePairReference(const unsigned int forwardLookId);
+  
+  std::vector<CandidatePairs> GetPotentialCandidatePairs();
   
   // Return the number of completed iterations
   unsigned int GetNumberOfCompletedIterations();
@@ -126,19 +125,27 @@ public:
   // so we store the region in a member variable. For the same reason, if we want to know the size of the images that this class is operating on, the user should
   // not have to query a specific image, but rather access this more global region definition.
   itk::ImageRegion<2> GetFullRegion();
+
+  // Return a pointer to all forward look sets.
+  std::vector<CandidatePairs>& GetPotentialCandidatePairsReference();
   
-  std::vector<std::vector<CandidatePairs> >& AccessPotentialCandidatePairs();
+  //////////// These functions should be private, but we want to do some external testing for the moment.
   
   // Compute the isophotes.
   void ComputeMaskedIsophotes(FloatScalarImageType::Pointer image, Mask::Pointer mask);
 
+  bool GetAdjacentBoundaryPixel(const itk::Index<2>& boundaryPixel, const PatchPair& patchPair, itk::Index<2>& adjacentBoundaryPixel);
+  
+  // Find the boundary of a region.
+  void FindBoundary();
+  
 private:
 
   // Compute the difference between two isophotes
   float ComputeIsophoteDifference(const FloatVector2Type v1, const FloatVector2Type v2);
   float ComputeIsophoteDifference(const itk::Index<2>& pixel1, const itk::Index<2>& pixel2);
   
-  bool GetAdjacentBoundaryPixel(const itk::Index<2>& boundaryPixel, const PatchPair& patchPair, itk::Index<2>& adjacentBoundaryPixel);
+  
   
   // Compute the continuation difference for every pair. Store the values in the PatchPair objects inside of the CandidatePairs object.
   void ComputeAllContinuationDifferences(CandidatePairs& candidatePairs);
@@ -234,9 +241,6 @@ private:
 
   // We store the patch radius, so we need this function to compute the actual patch size from the radius.
   itk::Size<2> GetPatchSize();
-
-  // Find the boundary of a region.
-  void FindBoundary();
   
   // Compute the normals of a region boundary.
   void ComputeBoundaryNormals();
@@ -275,9 +279,8 @@ private:
   // Store the pairs of patches that were actually used. These are tracked for visualization purposes only.
   std::vector<PatchPair> UsedPatchPairs;
   
-  // Store the vector of CandidatePatches that were examined at every iteration. These are tracked for visualization purposes only.
-  // The outer vector is the iteration, and the inner vector is the look ahead patch.
-  std::vector<std::vector<CandidatePairs> > PotentialCandidatePairs;
+  // Store the current list of CandidatePatches.
+  std::vector<CandidatePairs> PotentialCandidatePairs;
   
   // The number of bins to use per dimension in the histogram computations.
   unsigned int HistogramBinsPerDimension;

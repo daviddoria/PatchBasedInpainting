@@ -272,6 +272,10 @@ protected:
   QGraphicsScene* ResultPatchScene;
   
   void OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename);
+
+  // Store the candidate forward look patches from every iteration for visualization.
+  // The outer vector is the iteration, and the inner vector is the look ahead patch.
+  std::vector<std::vector<CandidatePairs> > AllPotentialCandidatePairs;
   
   // These are the state of the completion at every step. The index represents the image AFTER the index'th step.
   // That is, the image at index 0 is the image after 0 iterations (the original image). At index 1 is the image after the first target region has been filled, etc.

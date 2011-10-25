@@ -1074,4 +1074,12 @@ void MaskedDerivative(const typename TImage::Pointer image, const Mask::Pointer 
     }
 }
 
+template<typename TImage>
+void InitializeImage(typename TImage::Pointer image, const itk::ImageRegion<2>& region)
+{
+  image->SetRegions(region);
+  image->Allocate();
+  image->FillBuffer(0);
+}
+
 }// end namespace
