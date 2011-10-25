@@ -61,8 +61,8 @@ SelfPatchCompare.cpp
 #--------------
 # --- Tests ---
 #--------------
-# ADD_EXECUTABLE(TestIsophotes Tests/TestIsophotes.cpp)
-# TARGET_LINK_LIBRARIES(TestIsophotes CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+ADD_EXECUTABLE(TestIsophotes Tests/TestIsophotes.cpp)
+TARGET_LINK_LIBRARIES(TestIsophotes CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
 ADD_EXECUTABLE(TestGradient Tests/TestGradient.cpp)
 TARGET_LINK_LIBRARIES(TestGradient CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})

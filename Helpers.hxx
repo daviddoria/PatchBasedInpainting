@@ -1152,22 +1152,22 @@ void MaskedDerivativePrewitt(const typename TImage::Pointer image, const Mask::P
 
       if(backwardValid && !forwardValid) // Use backwards half difference
         {
-        difference = image->GetPixel(centerIndex) - image->GetPixel(backwardIndex);
+        difference += image->GetPixel(centerIndex) - image->GetPixel(backwardIndex);
         numberUsed++;
         }
       else if(!backwardValid && forwardValid) // Use forwards half difference
         {
-        difference = image->GetPixel(forwardIndex) - image->GetPixel(centerIndex);
+        difference += image->GetPixel(forwardIndex) - image->GetPixel(centerIndex);
         numberUsed++;
         }
       else if(backwardValid && forwardValid) // Use full difference
         {
-        difference = (image->GetPixel(forwardIndex) - image->GetPixel(backwardIndex))/2.0f;
+        difference += (image->GetPixel(forwardIndex) - image->GetPixel(backwardIndex))/2.0f;
         numberUsed++;
         }
       else// if(!backwardValid && !forwardValid) // No valid neighbors in this direction
         {
-        difference = 0.0f; // There is nothing we can do here, so set the derivative to zero.
+        difference += 0.0f; // There is nothing we can do here, so set the derivative to zero.
         }
       } // end shift loop
 
@@ -1217,7 +1217,7 @@ void MaskedDerivativeSobel(const typename TImage::Pointer image, const Mask::Poi
       continue;
       }
 
-    float difference = 0.0f;
+    float totalDifference = 0.0f;
     unsigned int numberUsed = 0;
     for(int shift = -1; shift <= 1; shift++) // this shift is either rows or columns, depending on the derivative direction
       {
@@ -1229,6 +1229,8 @@ void MaskedDerivativeSobel(const typename TImage::Pointer image, const Mask::Poi
         continue;
         }
 
+      float difference = 0.0f;
+    
       // Determine which neighbors are valid
       bool backwardValid = false;
       itk::Index<2> backwardIndex;
@@ -1273,18 +1275,17 @@ void MaskedDerivativeSobel(const typename TImage::Pointer image, const Mask::Poi
         difference = 0.0f; // There is nothing we can do here, so set the derivative to zero.
         }
 
-      if(shift == 0)
-        {
-        difference *= 2.0;
-        }
+      difference *= static_cast<float>(weight);
+
+      totalDifference += difference;
       } // end shift loop
 
     if(numberUsed > 1)
       {
-      difference /= static_cast<float>(numberUsed);
+      totalDifference /= static_cast<float>(numberUsed);
       }
 
-    output->SetPixel(imageIterator.GetIndex(), difference);
+    output->SetPixel(imageIterator.GetIndex(), totalDifference);
 
     ++imageIterator;
     }
@@ -1300,6 +1301,18 @@ void MaskedDerivativeGaussian(const typename TImage::Pointer image, const Mask::
     exit(-1);
     }
 
+  // Create a Gaussian kernel
+  typedef itk::GaussianOperator<float, 1> GaussianOperatorType;
+
+  // Make a (2*kernelRadius+1)x1 kernel
+  itk::Size<1> radius;
+  radius.Fill(5); // Make a length 11 kernel
+
+  GaussianOperatorType gaussianOperator;
+  gaussianOperator.SetDirection(0); // It doesn't matter which direction we set - we will be interpreting the kernel as 1D (no direction)
+  gaussianOperator.SetVariance(3);
+  gaussianOperator.CreateToRadius(radius);
+  
   // Setup the output
   InitializeImage<FloatScalarImageType>(output, image->GetLargestPossibleRegion());
 
@@ -1325,10 +1338,12 @@ void MaskedDerivativeGaussian(const typename TImage::Pointer image, const Mask::
       continue;
       }
 
-    float difference = 0.0f;
-    unsigned int numberUsed = 0;
-    for(int shift = -1; shift <= 1; shift++) // this shift is either rows or columns, depending on the derivative direction
+    float totalDifference = 0.0f;
+    float totalWeight = 0.0f;
+    for(unsigned int shiftId = 0; shiftId < gaussianOperator.Size(); shiftId++) // this shift is either rows or columns, depending on the derivative direction
       {
+      int shift = gaussianOperator.GetOffset(shiftId)[0];
+    
       itk::Index<2> centerIndex;
       centerIndex[direction] = imageIterator.GetIndex()[direction];
       centerIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
@@ -1336,6 +1351,8 @@ void MaskedDerivativeGaussian(const typename TImage::Pointer image, const Mask::
         {
         continue;
         }
+
+      float difference = 0.0f;
 
       // Determine which neighbors are valid
       bool backwardValid = false;
@@ -1356,43 +1373,40 @@ void MaskedDerivativeGaussian(const typename TImage::Pointer image, const Mask::
         {
         forwardValid = true;
         }
-      unsigned int weight = 1;
-      if(shift == 0)
-        {
-        weight = 2;
-        }
+
+      float weight = gaussianOperator.GetElement(shiftId);
+
       if(backwardValid && !forwardValid) // Use backwards half difference
         {
         difference = image->GetPixel(centerIndex) - image->GetPixel(backwardIndex);
-        numberUsed += weight;
+        totalWeight += weight;
         }
       else if(!backwardValid && forwardValid) // Use forwards half difference
         {
         difference = image->GetPixel(forwardIndex) - image->GetPixel(centerIndex);
-        numberUsed += weight;
+        totalWeight += weight;
         }
       else if(backwardValid && forwardValid) // Use full difference
         {
         difference = (image->GetPixel(forwardIndex) - image->GetPixel(backwardIndex))/2.0f;
-        numberUsed += weight;
+        totalWeight += weight;
         }
       else// if(!backwardValid && !forwardValid) // No valid neighbors in this direction
         {
         difference = 0.0f; // There is nothing we can do here, so set the derivative to zero.
         }
 
-      if(shift == 0)
-        {
-        difference *= 2.0;
-        }
+      difference *= weight;
+      totalDifference += difference;
+      totalWeight += weight;
       } // end shift loop
 
-    if(numberUsed > 1)
+    if(totalWeight > 0.0f)
       {
-      difference /= static_cast<float>(numberUsed);
+      totalDifference /= totalWeight;
       }
 
-    output->SetPixel(imageIterator.GetIndex(), difference);
+    output->SetPixel(imageIterator.GetIndex(), totalDifference);
 
     ++imageIterator;
     }
@@ -1406,14 +1420,16 @@ void MaskedGradient(const typename TImage::Pointer image, const Mask::Pointer ma
   FloatScalarImageType::Pointer xDerivative = FloatScalarImageType::New();
   //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 0, xDerivative);
   //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 0, xDerivative);
-  Helpers::MaskedDerivativeSobel<FloatScalarImageType>(image, mask, 0, xDerivative);
+  //Helpers::MaskedDerivativeSobel<FloatScalarImageType>(image, mask, 0, xDerivative);
+  Helpers::MaskedDerivativeGaussian<FloatScalarImageType>(image, mask, 0, xDerivative);
   //Helpers::DebugWriteImageConditional<FloatScalarImageType>(xDerivative, "Debug/ComputeMaskedIsophotes.xderivative.mha", this->DebugImages);
 
   // Y derivative
   FloatScalarImageType::Pointer yDerivative = FloatScalarImageType::New();
   //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 1, yDerivative);
   //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 1, yDerivative);
-  Helpers::MaskedDerivativeSobel<FloatScalarImageType>(image, mask, 1, yDerivative);
+  //Helpers::MaskedDerivativeSobel<FloatScalarImageType>(image, mask, 1, yDerivative);
+  Helpers::MaskedDerivativeGaussian<FloatScalarImageType>(image, mask, 1, yDerivative);
   //Helpers::DebugWriteImageConditional<FloatScalarImageType>(yDerivative, "Debug/ComputeMaskedIsophotes.yderivative.mha", this->DebugImages);
 
   // Combine derivatives
