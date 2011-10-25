@@ -223,8 +223,8 @@ void CriminisiInpainting::Initialize()
     luminanceFilter->Update();
     
     FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
-    // Blur with a Gaussian kernel. From TestIsophotes.cpp, we have determined that after a blurring radius of 4 the resulting isophotes are indistinguishable.
-    unsigned int kernelRadius = 5;
+    // Blur with a Gaussian kernel. From TestIsophotes.cpp, it actually seems like not blurring, but using a masked sobel operator produces the most reliable isophotes.
+    unsigned int kernelRadius = 0;
     Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), this->CurrentMask, kernelRadius, blurredLuminance);
     
     Helpers::DebugWriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/ComputeMaskedIsophotes.blurred.mha", true);
@@ -600,15 +600,8 @@ void CriminisiInpainting::ComputeMaskedIsophotes(FloatScalarImageType::Pointer i
   {
     Helpers::DebugWriteImageConditional<FloatScalarImageType>(image, "Debug/ComputeMaskedIsophotes.luminance.mha", this->DebugImages);
 
-    // Compute the gradient
-    FloatScalarImageType::Pointer xDerivative = FloatScalarImageType::New();
-    Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 0, xDerivative);
-
-    FloatScalarImageType::Pointer yDerivative = FloatScalarImageType::New();
-    Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 1, yDerivative);
-
     FloatVector2ImageType::Pointer gradient = FloatVector2ImageType::New();
-    Helpers::GradientFromDerivatives<float>(xDerivative, yDerivative, gradient);
+    Helpers::MaskedGradient<FloatScalarImageType>(image, mask, gradient);
 
     //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha", this->DebugImages);
     if(this->DebugImages)

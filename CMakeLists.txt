@@ -61,20 +61,16 @@ SelfPatchCompare.cpp
 #--------------
 # --- Tests ---
 #--------------
-ADD_EXECUTABLE(TestIsophotes
-Tests/TestIsophotes.cpp
-)
-TARGET_LINK_LIBRARIES(TestIsophotes CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# ADD_EXECUTABLE(TestIsophotes Tests/TestIsophotes.cpp)
+# TARGET_LINK_LIBRARIES(TestIsophotes CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
-# ADD_EXECUTABLE(TestBoundaryNormals
-# Tests/TestBoundaryNormals.cpp
-# )
+ADD_EXECUTABLE(TestGradient Tests/TestGradient.cpp)
+TARGET_LINK_LIBRARIES(TestGradient CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+
+# ADD_EXECUTABLE(TestBoundaryNormals Tests/TestBoundaryNormals.cpp)
 # TARGET_LINK_LIBRARIES(TestBoundaryNormals CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
-# 
-# ADD_EXECUTABLE(TestFollowIsophotesAcrossBoundary
-# Tests/TestFollowIsophotesAcrossBoundary.cpp
-# )
+# ADD_EXECUTABLE(TestFollowIsophotesAcrossBoundary Tests/TestFollowIsophotesAcrossBoundary.cpp)
 # TARGET_LINK_LIBRARIES(TestFollowIsophotesAcrossBoundary CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
 # ADD_EXECUTABLE(TestPatchDifference TestPatchDifference.cpp Helpers.cpp)

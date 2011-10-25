@@ -242,6 +242,18 @@ void MaskedBlur(const typename TImage::Pointer inputImage, const Mask::Pointer m
 template <typename TImage>
 void MaskedDerivative(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output);
 
+template <typename TImage>
+void MaskedDerivativePrewitt(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output);
+
+template <typename TImage>
+void MaskedDerivativeSobel(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output);
+
+template <typename TImage>
+void MaskedDerivativeGaussian(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output);
+
+template <typename TImage>
+void MaskedGradient(const typename TImage::Pointer image, const Mask::Pointer mask, FloatVector2ImageType::Pointer output);
+
 template<typename TImage>
 void InitializeImage(typename TImage::Pointer image, const itk::ImageRegion<2>& region);
 

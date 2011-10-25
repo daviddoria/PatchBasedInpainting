@@ -1083,6 +1083,344 @@ void MaskedDerivative(const typename TImage::Pointer image, const Mask::Pointer 
     }
 }
 
+
+template <typename TImage>
+void MaskedDerivativePrewitt(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output)
+{
+  if(direction > 1)
+    {
+    std::cerr << "This function can only compute derivatives of 2D images!" << std::endl;
+    exit(-1);
+    }
+    
+  // Setup the output
+  InitializeImage<FloatScalarImageType>(output, image->GetLargestPossibleRegion());
+
+  itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
+
+  // If we are taking x derivatives, we want to use 3 columns. If we are taking y derivatives, we want to use 3 rows.
+  unsigned int shiftIndex;
+  if(direction == 0)
+    {
+    shiftIndex = 1;
+    }
+  else
+    {
+    shiftIndex = 0;
+    }
+
+  while(!imageIterator.IsAtEnd())
+    {
+    // We should not compute derivatives for pixels in the hole.
+    if(mask->IsHole(imageIterator.GetIndex()))
+      {
+      ++imageIterator;
+      continue;
+      }
+
+    float difference = 0.0f;
+    unsigned int numberUsed = 0;
+    for(int shift = -1; shift <= 1; shift++) // this shift is either rows or columns, depending on the derivative direction
+      {
+      itk::Index<2> centerIndex;
+      centerIndex[direction] = imageIterator.GetIndex()[direction];
+      centerIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
+      if(!(image->GetLargestPossibleRegion().IsInside(centerIndex) && mask->IsValid(centerIndex)))
+        {
+        continue;
+        }
+
+      // Determine which neighbors are valid
+      bool backwardValid = false;
+      itk::Index<2> backwardIndex;
+      backwardIndex[direction] = imageIterator.GetIndex()[direction] - 1;
+      backwardIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
+      if(image->GetLargestPossibleRegion().IsInside(backwardIndex) && mask->IsValid(backwardIndex))
+        {
+        backwardValid = true;
+        }
+
+      bool forwardValid = false;
+      itk::Index<2> forwardIndex;
+      forwardIndex[direction] = imageIterator.GetIndex()[direction] + 1;
+      forwardIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
+      
+      if(image->GetLargestPossibleRegion().IsInside(forwardIndex) && mask->IsValid(forwardIndex))
+        {
+        forwardValid = true;
+        }
+
+      if(backwardValid && !forwardValid) // Use backwards half difference
+        {
+        difference = image->GetPixel(centerIndex) - image->GetPixel(backwardIndex);
+        numberUsed++;
+        }
+      else if(!backwardValid && forwardValid) // Use forwards half difference
+        {
+        difference = image->GetPixel(forwardIndex) - image->GetPixel(centerIndex);
+        numberUsed++;
+        }
+      else if(backwardValid && forwardValid) // Use full difference
+        {
+        difference = (image->GetPixel(forwardIndex) - image->GetPixel(backwardIndex))/2.0f;
+        numberUsed++;
+        }
+      else// if(!backwardValid && !forwardValid) // No valid neighbors in this direction
+        {
+        difference = 0.0f; // There is nothing we can do here, so set the derivative to zero.
+        }
+      } // end shift loop
+
+    if(numberUsed > 1)
+      {
+      difference /= static_cast<float>(numberUsed);
+      }
+
+    output->SetPixel(imageIterator.GetIndex(), difference);
+
+    ++imageIterator;
+    }
+}
+
+
+template <typename TImage>
+void MaskedDerivativeSobel(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output)
+{
+  if(direction > 1)
+    {
+    std::cerr << "This function can only compute derivatives of 2D images!" << std::endl;
+    exit(-1);
+    }
+
+  // Setup the output
+  InitializeImage<FloatScalarImageType>(output, image->GetLargestPossibleRegion());
+
+  itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
+
+  // If we are taking x derivatives, we want to use 3 columns. If we are taking y derivatives, we want to use 3 rows.
+  unsigned int shiftIndex;
+  if(direction == 0)
+    {
+    shiftIndex = 1;
+    }
+  else
+    {
+    shiftIndex = 0;
+    }
+
+  while(!imageIterator.IsAtEnd())
+    {
+    // We should not compute derivatives for pixels in the hole.
+    if(mask->IsHole(imageIterator.GetIndex()))
+      {
+      ++imageIterator;
+      continue;
+      }
+
+    float difference = 0.0f;
+    unsigned int numberUsed = 0;
+    for(int shift = -1; shift <= 1; shift++) // this shift is either rows or columns, depending on the derivative direction
+      {
+      itk::Index<2> centerIndex;
+      centerIndex[direction] = imageIterator.GetIndex()[direction];
+      centerIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
+      if(!(image->GetLargestPossibleRegion().IsInside(centerIndex) && mask->IsValid(centerIndex)))
+        {
+        continue;
+        }
+
+      // Determine which neighbors are valid
+      bool backwardValid = false;
+      itk::Index<2> backwardIndex;
+      backwardIndex[direction] = imageIterator.GetIndex()[direction] - 1;
+      backwardIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
+      if(image->GetLargestPossibleRegion().IsInside(backwardIndex) && mask->IsValid(backwardIndex))
+        {
+        backwardValid = true;
+        }
+
+      bool forwardValid = false;
+      itk::Index<2> forwardIndex;
+      forwardIndex[direction] = imageIterator.GetIndex()[direction] + 1;
+      forwardIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
+
+      if(image->GetLargestPossibleRegion().IsInside(forwardIndex) && mask->IsValid(forwardIndex))
+        {
+        forwardValid = true;
+        }
+      unsigned int weight = 1;
+      if(shift == 0)
+        {
+        weight = 2;
+        }
+      if(backwardValid && !forwardValid) // Use backwards half difference
+        {
+        difference = image->GetPixel(centerIndex) - image->GetPixel(backwardIndex);
+        numberUsed += weight;
+        }
+      else if(!backwardValid && forwardValid) // Use forwards half difference
+        {
+        difference = image->GetPixel(forwardIndex) - image->GetPixel(centerIndex);
+        numberUsed += weight;
+        }
+      else if(backwardValid && forwardValid) // Use full difference
+        {
+        difference = (image->GetPixel(forwardIndex) - image->GetPixel(backwardIndex))/2.0f;
+        numberUsed += weight;
+        }
+      else// if(!backwardValid && !forwardValid) // No valid neighbors in this direction
+        {
+        difference = 0.0f; // There is nothing we can do here, so set the derivative to zero.
+        }
+
+      if(shift == 0)
+        {
+        difference *= 2.0;
+        }
+      } // end shift loop
+
+    if(numberUsed > 1)
+      {
+      difference /= static_cast<float>(numberUsed);
+      }
+
+    output->SetPixel(imageIterator.GetIndex(), difference);
+
+    ++imageIterator;
+    }
+}
+
+
+template <typename TImage>
+void MaskedDerivativeGaussian(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output)
+{
+  if(direction > 1)
+    {
+    std::cerr << "This function can only compute derivatives of 2D images!" << std::endl;
+    exit(-1);
+    }
+
+  // Setup the output
+  InitializeImage<FloatScalarImageType>(output, image->GetLargestPossibleRegion());
+
+  itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
+
+  // If we are taking x derivatives, we want to use 3 columns. If we are taking y derivatives, we want to use 3 rows.
+  unsigned int shiftIndex;
+  if(direction == 0)
+    {
+    shiftIndex = 1;
+    }
+  else
+    {
+    shiftIndex = 0;
+    }
+
+  while(!imageIterator.IsAtEnd())
+    {
+    // We should not compute derivatives for pixels in the hole.
+    if(mask->IsHole(imageIterator.GetIndex()))
+      {
+      ++imageIterator;
+      continue;
+      }
+
+    float difference = 0.0f;
+    unsigned int numberUsed = 0;
+    for(int shift = -1; shift <= 1; shift++) // this shift is either rows or columns, depending on the derivative direction
+      {
+      itk::Index<2> centerIndex;
+      centerIndex[direction] = imageIterator.GetIndex()[direction];
+      centerIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
+      if(!(image->GetLargestPossibleRegion().IsInside(centerIndex) && mask->IsValid(centerIndex)))
+        {
+        continue;
+        }
+
+      // Determine which neighbors are valid
+      bool backwardValid = false;
+      itk::Index<2> backwardIndex;
+      backwardIndex[direction] = imageIterator.GetIndex()[direction] - 1;
+      backwardIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
+      if(image->GetLargestPossibleRegion().IsInside(backwardIndex) && mask->IsValid(backwardIndex))
+        {
+        backwardValid = true;
+        }
+
+      bool forwardValid = false;
+      itk::Index<2> forwardIndex;
+      forwardIndex[direction] = imageIterator.GetIndex()[direction] + 1;
+      forwardIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
+
+      if(image->GetLargestPossibleRegion().IsInside(forwardIndex) && mask->IsValid(forwardIndex))
+        {
+        forwardValid = true;
+        }
+      unsigned int weight = 1;
+      if(shift == 0)
+        {
+        weight = 2;
+        }
+      if(backwardValid && !forwardValid) // Use backwards half difference
+        {
+        difference = image->GetPixel(centerIndex) - image->GetPixel(backwardIndex);
+        numberUsed += weight;
+        }
+      else if(!backwardValid && forwardValid) // Use forwards half difference
+        {
+        difference = image->GetPixel(forwardIndex) - image->GetPixel(centerIndex);
+        numberUsed += weight;
+        }
+      else if(backwardValid && forwardValid) // Use full difference
+        {
+        difference = (image->GetPixel(forwardIndex) - image->GetPixel(backwardIndex))/2.0f;
+        numberUsed += weight;
+        }
+      else// if(!backwardValid && !forwardValid) // No valid neighbors in this direction
+        {
+        difference = 0.0f; // There is nothing we can do here, so set the derivative to zero.
+        }
+
+      if(shift == 0)
+        {
+        difference *= 2.0;
+        }
+      } // end shift loop
+
+    if(numberUsed > 1)
+      {
+      difference /= static_cast<float>(numberUsed);
+      }
+
+    output->SetPixel(imageIterator.GetIndex(), difference);
+
+    ++imageIterator;
+    }
+}
+
+template <typename TImage>
+void MaskedGradient(const typename TImage::Pointer image, const Mask::Pointer mask, FloatVector2ImageType::Pointer output)
+{
+  // Compute the derivatives
+  // X derivative
+  FloatScalarImageType::Pointer xDerivative = FloatScalarImageType::New();
+  //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 0, xDerivative);
+  //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 0, xDerivative);
+  Helpers::MaskedDerivativeSobel<FloatScalarImageType>(image, mask, 0, xDerivative);
+  //Helpers::DebugWriteImageConditional<FloatScalarImageType>(xDerivative, "Debug/ComputeMaskedIsophotes.xderivative.mha", this->DebugImages);
+
+  // Y derivative
+  FloatScalarImageType::Pointer yDerivative = FloatScalarImageType::New();
+  //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 1, yDerivative);
+  //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 1, yDerivative);
+  Helpers::MaskedDerivativeSobel<FloatScalarImageType>(image, mask, 1, yDerivative);
+  //Helpers::DebugWriteImageConditional<FloatScalarImageType>(yDerivative, "Debug/ComputeMaskedIsophotes.yderivative.mha", this->DebugImages);
+
+  // Combine derivatives
+  Helpers::GradientFromDerivatives<float>(xDerivative, yDerivative, output);
+}
+
+
 template<typename TImage>
 void InitializeImage(typename TImage::Pointer image, const itk::ImageRegion<2>& region)
 {
