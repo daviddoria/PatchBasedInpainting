@@ -16,19 +16,12 @@
  *
  *=========================================================================*/
 
-// Custom
 #include "Mask.h"
 #include "Types.h"
 #include "CriminisiInpainting.h"
 
-// ITK
 #include "itkImageFileReader.h"
 #include "itkRGBToLuminanceImageFilter.h"
-#include "itkMaskImageFilter.h"
-
-// VTK
-#include <vtkSmartPointer.h>
-#include <vtkPolyData.h>
 
 int main(int argc, char *argv[])
 {
@@ -48,74 +41,77 @@ int main(int argc, char *argv[])
   imageReader->Update();
 
   std::cout << "Read image " << imageReader->GetOutput()->GetLargestPossibleRegion() << std::endl;
-  
+
   typedef itk::ImageFileReader<Mask> MaskReaderType;
   MaskReaderType::Pointer maskReader = MaskReaderType::New();
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 
   std::cout << "Read mask " << maskReader->GetOutput()->GetLargestPossibleRegion() << std::endl;
-  
+
   // Prepare image
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   Helpers::VectorImageToRGBImage(imageReader->GetOutput(), rgbImage);
-  
+
   Helpers::WriteImage<RGBImageType>(rgbImage, "Test/TestIsophotes.rgb.mha");
 
   typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
   LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
   luminanceFilter->SetInput(rgbImage);
   luminanceFilter->Update();
-  
+
   FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
   // Blur with a Gaussian kernel
   unsigned int kernelRadius = 5;
   Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), maskReader->GetOutput(), kernelRadius, blurredLuminance);
-  
+
   Helpers::WriteImage<FloatScalarImageType>(blurredLuminance, "Test/TestIsophotes.blurred.mha");
-    
-    
+
+
   CriminisiInpainting inpainting;
   //inpainting.SetMask(maskReader->GetOutput());
   //inpainting.SetImage(imageReader->GetOutput());
   inpainting.ComputeMaskedIsophotes(blurredLuminance, maskReader->GetOutput());
-    
+
   //Helpers::WriteImage<FloatVector2ImageType>(inpainting.GetIsophoteImage(), );
   Helpers::Write2DVectorImage(inpainting.GetIsophoteImage(), "Test/TestIsophotes.isophotes.mha");
-  
+
   itk::Size<2> size;
   size.Fill(21);
-  
+
   // Target
   itk::Index<2> targetIndex;
   targetIndex[0] = 187;
   targetIndex[1] = 118;
   itk::ImageRegion<2> targetRegion(targetIndex, size);
-  
+
   // Source
   itk::Index<2> sourceIndex;
   sourceIndex[0] = 176;
   sourceIndex[1] = 118;
   itk::ImageRegion<2> sourceRegion(sourceIndex, size);
-  
+
   //PatchPair patchPair(Patch(sourceRegion), Patch(targetRegion));
   //PatchPair patchPair;
   Patch sourcePatch(sourceRegion);
   Patch targetPatch(targetRegion);
   PatchPair patchPair(sourcePatch, targetPatch);
-  
+
   inpainting.FindBoundary();
-  
-  // Boundary isophotes
-  typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
-  MaskFilterType::Pointer maskFilter = MaskFilterType::New();
-  maskFilter->SetInput(inpainting.GetIsophoteImage());
-  maskFilter->SetMaskImage(inpainting.GetBoundaryImage());
-  maskFilter->Update();
-  //Helpers::Write2DVectorImage(maskFilter->GetOutput(), Helpers::GetSequentialFileName("BoundaryIsophotes", this->NumberOfCompletedIterations, "mha"));
-  vtkSmartPointer<vtkPolyData> boundaryIsophotes = vtkSmartPointer<vtkPolyData>::New();
-  Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), boundaryIsophotes);
-  Helpers::WritePolyData(boundaryIsophotes, "BoundaryIsophotes.vtp");
+
+  std::vector<itk::Index<2> > borderPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(inpainting.GetBoundaryImage(), targetRegion);
+
+  for(unsigned int pixelId = 0; pixelId < borderPixels.size(); ++pixelId)
+    {
+    itk::Index<2> currentPixel = borderPixels[pixelId];
+    itk::Index<2> adjacentBoundaryPixel;
+    //bool valid = GetAdjacentBoundaryPixel(currentPixel, candidatePairs[sourcePatchId], adjacentBoundaryPixel);
+    bool valid = inpainting.GetAdjacentBoundaryPixel(currentPixel, patchPair, adjacentBoundaryPixel);
+    if(!valid)
+      {
+      continue;
+      }
+    }
 
   return EXIT_SUCCESS;
 }

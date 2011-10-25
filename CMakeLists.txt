@@ -19,30 +19,32 @@ INCLUDE(${VTK_USE_FILE})
 FIND_PACKAGE(ITK REQUIRED)
 INCLUDE(${ITK_USE_FILE})
 
-# Interactive
-ADD_EXECUTABLE(CriminisiInpaintingInteractive
+add_library(CriminisiInpainting
 CandidatePairs.cpp
 CriminisiInpainting.cpp
 CriminisiInpaintingDebugging.cpp
 CriminisiInpaintingInterface.cpp
+Helpers.cpp
+Mask.cpp
+Patch.cpp
+PatchPair.cpp
+SelfPatchCompare.cpp
+)
+# Interactive
+ADD_EXECUTABLE(CriminisiInpaintingInteractive
 FileSelector.cpp
 FileSelectionWidget.cpp
 Form.cxx
 FormGUIElements.cxx
-Helpers.cpp
 InpaintingVisualizationStack.cpp
-Interactive.cpp
+Interactive.cpp #driver (contains main())
 InteractorStyleImageNoLevel.cxx
 Layer.cpp
-Mask.cpp
-Patch.cpp
-PatchPair.cpp
 ProgressThread.cpp
-SelfPatchCompare.cpp
 VectorLayer.cpp
 ${UISrcs} ${MOCSrcs})
 
-TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
+TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive CriminisiInpainting ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
 
 #INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 
@@ -60,17 +62,20 @@ TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive ${VTK_LIBRARIES} QVTK ${ITK
 
 # TestIsophotes
 #--------------
-# ADD_EXECUTABLE(TestIsophotes Tests/TestIsophotes.cpp
-# CandidatePairs.cpp
-# CriminisiInpainting.cpp
-# CriminisiInpaintingDebugging.cpp
-# CriminisiInpaintingInterface.cpp
-# Helpers.cpp 
-# Mask.cpp 
-# Patch.cpp
-# PatchPair.cpp
-# SelfPatchCompare.cpp)
-# TARGET_LINK_LIBRARIES(TestIsophotes ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+ADD_EXECUTABLE(TestIsophotes
+Tests/TestIsophotes.cpp
+)
+TARGET_LINK_LIBRARIES(TestIsophotes CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+
+ADD_EXECUTABLE(TestBoundaryNormals
+Tests/TestBoundaryNormals.cpp
+)
+TARGET_LINK_LIBRARIES(TestBoundaryNormals CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+
+ADD_EXECUTABLE(TestFollowIsophotesAcrossBoundary
+Tests/TestFollowIsophotesAcrossBoundary.cpp
+)
+TARGET_LINK_LIBRARIES(TestFollowIsophotesAcrossBoundary CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
 # ADD_EXECUTABLE(TestPatchDifference TestPatchDifference.cpp Helpers.cpp)
 # TARGET_LINK_LIBRARIES(TestPatchDifference ${VTK_LIBRARIES} ${ITK_LIBRARIES})
