@@ -477,16 +477,10 @@ void Form::DisplayBoundaryNormals()
       std::cout << "Writing boundary normals..." << std::endl;
     
       Helpers::WriteImage<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), "Debug/RefreshSlot.BoundaryNormals.mha");
-    
-      vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
-      writer->SetFileName("Debug/RefreshSlot.VTKBoundaryNormals.vti");
-      writer->SetInputConnection(this->BoundaryNormalsLayer.ImageData->GetProducerPort());
-      writer->Write();
-    
-      vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
-      polyDataWriter->SetFileName("Debug/RefreshSlot.VTKBoundaryNormals.vtp");
-      polyDataWriter->SetInputConnection(this->BoundaryNormalsLayer.Vectors->GetProducerPort());
-      polyDataWriter->Write();
+
+      Helpers::WriteImageData(this->BoundaryNormalsLayer.ImageData, "Debug/RefreshSlot.VTKBoundaryNormals.vti");
+
+      Helpers::WritePolyData(this->BoundaryNormalsLayer.Vectors, "Debug/RefreshSlot.VTKBoundaryNormals.vtp");
       }
 
     this->Renderer->AddViewProp(this->BoundaryNormalsLayer.Actor);

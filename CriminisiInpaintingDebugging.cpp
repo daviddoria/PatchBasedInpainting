@@ -16,11 +16,21 @@
  *
  *=========================================================================*/
 
+// Class declaration
 #include "CriminisiInpainting.h"
 
+// Custom
 #include "Helpers.h"
 
+// STL
 #include <iomanip> // setfill, setw
+
+// ITK
+#include "itkMaskImageFilter.h"
+
+// VTK
+#include <vtkSmartPointer.h>
+#include <vtkPolyData.h>
 
 void CriminisiInpainting::DebugWriteAllImages()
 {
@@ -28,13 +38,32 @@ void CriminisiInpainting::DebugWriteAllImages()
   Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->DataImage, "DataImage", this->NumberOfCompletedIterations);
   Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->PriorityImage, "PriorityImage", this->NumberOfCompletedIterations);
   
-  Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage, "IsophoteImage", this->NumberOfCompletedIterations);
+  //Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage, "IsophoteImage", this->NumberOfCompletedIterations);
+  Helpers::Write2DVectorImage(this->IsophoteImage, Helpers::GetSequentialFileName("IsophoteImage", this->NumberOfCompletedIterations, "mha"));
   
   Helpers::DebugWriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage, "BoundaryImage", this->NumberOfCompletedIterations);
-  Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals, "BoundaryNormals", this->NumberOfCompletedIterations);
+
+  // Boundary isophotes
+  typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
+  MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+  maskFilter->SetInput(this->IsophoteImage);
+  maskFilter->SetMaskImage(this->BoundaryImage);
+  maskFilter->Update();
+  //Helpers::Write2DVectorImage(maskFilter->GetOutput(), Helpers::GetSequentialFileName("BoundaryIsophotes", this->NumberOfCompletedIterations, "mha"));
+  vtkSmartPointer<vtkPolyData> boundaryIsophotes = vtkSmartPointer<vtkPolyData>::New();
+  Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), boundaryIsophotes);
+  Helpers::WritePolyData(boundaryIsophotes, Helpers::GetSequentialFileName("BoundaryIsophotes", this->NumberOfCompletedIterations, "vtp"));
+
+  // Boundary normals
+  Helpers::Write2DVectorImage(this->BoundaryNormals, Helpers::GetSequentialFileName("BoundaryNormals", this->NumberOfCompletedIterations, "mha"));
+  //Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals, "BoundaryNormals", this->NumberOfCompletedIterations);
   
   Helpers::DebugWriteSequentialImage<Mask>(this->CurrentMask, "CurrentMask", this->NumberOfCompletedIterations);
   Helpers::DebugWriteSequentialImage<FloatVectorImageType>(this->CurrentOutputImage, "CurrentImage", this->NumberOfCompletedIterations);
+
+  RGBImageType::Pointer rgbImage = RGBImageType::New();
+  Helpers::VectorImageToRGBImage(this->CurrentOutputImage, rgbImage);
+  Helpers::DebugWriteSequentialImage<RGBImageType>(rgbImage, "CurrentImage_RGB", this->NumberOfCompletedIterations);
 }
 
 void CriminisiInpainting::DebugWriteAllImages(const itk::Index<2>& pixelToFill, const itk::Index<2>& bestMatchPixel, const unsigned int iteration)

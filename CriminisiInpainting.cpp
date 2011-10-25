@@ -230,7 +230,10 @@ void CriminisiInpainting::Initialize()
     Helpers::DebugWriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/ComputeMaskedIsophotes.blurred.mha", true);
     
     ComputeMaskedIsophotes(blurredLuminance, this->CurrentMask);
-    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha", this->DebugImages);
+    if(this->DebugImages)
+      {
+      Helpers::Write2DVectorImage(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha");
+      }
     }
     
     // Blur the image incase we want to use a blurred image for pixel to pixel comparisons.
@@ -606,7 +609,11 @@ void CriminisiInpainting::ComputeMaskedIsophotes(FloatScalarImageType::Pointer i
     FloatVector2ImageType::Pointer gradient = FloatVector2ImageType::New();
     Helpers::GradientFromDerivatives<float>(xDerivative, yDerivative, gradient);
     
-    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha", this->DebugImages);
+    //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha", this->DebugImages);
+    if(this->DebugImages)
+      {
+      Helpers::Write2DVectorImage(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha");
+      }
  
     // Rotate the gradient 90 degrees to obtain isophotes from gradient
     typedef itk::UnaryFunctorImageFilter<FloatVector2ImageType, FloatVector2ImageType,
@@ -617,7 +624,11 @@ void CriminisiInpainting::ComputeMaskedIsophotes(FloatScalarImageType::Pointer i
     rotateFilter->SetInput(gradient);
     rotateFilter->Update();
 
-    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.rotatedGradient.mha", this->DebugImages);
+    //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.Isophotes.mha", this->DebugImages);
+    if(this->DebugImages)
+      {
+      Helpers::Write2DVectorImage(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.Isophotes.mha");
+      }
     
     // Store the result as a member variable.
     Helpers::DeepCopy<FloatVector2ImageType>(rotateFilter->GetOutput(), this->IsophoteImage);
@@ -784,16 +795,12 @@ void CriminisiInpainting::ComputeBoundaryNormals()
     // Only keep the normals at the boundary
     typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
     MaskFilterType::Pointer maskFilter = MaskFilterType::New();
-    //maskFilter->SetInput1(gradientFilter->GetOutput());
-    //maskFilter->SetInput2(this->BoundaryImage);
     maskFilter->SetInput(gradientFilter->GetOutput());
     maskFilter->SetMaskImage(this->BoundaryImage);
     maskFilter->Update();
 
     Helpers::DebugWriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha", this->DebugImages);
-      
-    //this->BoundaryNormals = maskFilter->GetOutput();
-    //this->BoundaryNormals->Graft(maskFilter->GetOutput());
+
     Helpers::DeepCopy<FloatVector2ImageType>(maskFilter->GetOutput(), this->BoundaryNormals);
 
     // Normalize the vectors because we just care about their direction (the Data term computation calls for the normalized boundary normal)

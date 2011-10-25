@@ -44,6 +44,12 @@ class vtkPolyData;
 namespace Helpers
 {
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
+std::string GetSequentialFileName(const std::string& filePrefix, const unsigned int iteration, const std::string& fileExtension);
+
+void WritePolyData(vtkPolyData* polyData, const std::string& fileName);
+
+void WriteImageData(vtkImageData* imageData, const std::string& fileName);
+
 void SetImageCenterPixel(vtkImageData* image, const unsigned char color[3]);
 
 void SetRegionCenterPixel(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char color[3]);
@@ -65,6 +71,7 @@ void ITKImagetoVTKMagnitudeImage(const FloatVectorImageType::Pointer image, vtkI
 
 void ITKImagetoVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, vtkImageData* outputImage);
 
+// Convert the first 3 channels of a float vector image to an unsigned char/color/rgb image.
 void VectorImageToRGBImage(const FloatVectorImageType::Pointer image, RGBImageType::Pointer rgbImage);
 
 itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region);

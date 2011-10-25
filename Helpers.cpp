@@ -33,12 +33,37 @@
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkThresholdPoints.h>
+#include <vtkXMLImageDataWriter.h>
+#include <vtkXMLPolyDataWriter.h>
 
 // Custom
 #include "itkRGBToLabColorSpacePixelAccessor.h"
 
 namespace Helpers
 {
+
+void WritePolyData(vtkPolyData* polyData, const std::string& fileName)
+{
+  vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
+  polyDataWriter->SetFileName(fileName.c_str());
+  polyDataWriter->SetInputConnection(polyData->GetProducerPort());
+  polyDataWriter->Write();
+}
+
+void WriteImageData(vtkImageData* imageData, const std::string& fileName)
+{
+  vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
+  writer->SetFileName(fileName.c_str());
+  writer->SetInputConnection(imageData->GetProducerPort());
+  writer->Write();
+}
+
+std::string GetSequentialFileName(const std::string& filePrefix, const unsigned int iteration, const std::string& fileExtension)
+{
+  std::stringstream padded;
+  padded << "Debug/" << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << "." << fileExtension;
+  return padded.str();
+}
 
 void VectorMaskedBlur(const FloatVectorImageType::Pointer inputImage, const Mask::Pointer mask, const unsigned int kernelRadius, FloatVectorImageType::Pointer output)
 {
