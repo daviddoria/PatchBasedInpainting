@@ -16,12 +16,19 @@
  *
  *=========================================================================*/
 
+// Custom
 #include "Mask.h"
 #include "Types.h"
 #include "CriminisiInpainting.h"
 
+// ITK
 #include "itkImageFileReader.h"
+#include "itkMaskImageFilter.h"
 #include "itkRGBToLuminanceImageFilter.h"
+
+// VTK
+#include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
 
 int main(int argc, char *argv[])
 {
@@ -69,40 +76,31 @@ int main(int argc, char *argv[])
 
 
   CriminisiInpainting inpainting;
-  //inpainting.SetMask(maskReader->GetOutput());
+  inpainting.SetMask(maskReader->GetOutput());
   //inpainting.SetImage(imageReader->GetOutput());
-  inpainting.ComputeMaskedIsophotes(blurredLuminance, maskReader->GetOutput());
-
-  //Helpers::WriteImage<FloatVector2ImageType>(inpainting.GetIsophoteImage(), );
-  Helpers::Write2DVectorImage(inpainting.GetIsophoteImage(), "Test/TestIsophotes.isophotes.mha");
-
-  itk::Size<2> size;
-  size.Fill(21);
-
-  // Target
-  itk::Index<2> targetIndex;
-  targetIndex[0] = 187;
-  targetIndex[1] = 118;
-  itk::ImageRegion<2> targetRegion(targetIndex, size);
-
-  // Source
-  itk::Index<2> sourceIndex;
-  sourceIndex[0] = 176;
-  sourceIndex[1] = 118;
-  itk::ImageRegion<2> sourceRegion(sourceIndex, size);
-
-  //PatchPair patchPair(Patch(sourceRegion), Patch(targetRegion));
-  //PatchPair patchPair;
-  Patch sourcePatch(sourceRegion);
-  Patch targetPatch(targetRegion);
-  PatchPair patchPair(sourcePatch, targetPatch);
 
   inpainting.FindBoundary();
 
-  // Boundary normals
-  Helpers::Write2DVectorImage(inpainting.GetBoundaryNormalsImage(), "BoundaryNormals.mha");
-  //Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals, "BoundaryNormals", this->NumberOfCompletedIterations);
+  for(unsigned int blurVariance = 0; blurVariance < 10; ++blurVariance)
+    {
+    inpainting.ComputeBoundaryNormals(blurVariance);
 
+    std::stringstream ss;
+    ss << "Test/BoundaryNormals_" << blurVariance << ".mha";
+    Helpers::Write2DVectorImage(inpainting.GetBoundaryNormalsImage(), ss.str());
+
+    typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
+    MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+    maskFilter->SetInput(inpainting.GetBoundaryNormalsImage());
+    maskFilter->SetMaskImage(inpainting.GetBoundaryImage());
+    maskFilter->Update();
+
+    vtkSmartPointer<vtkPolyData> boundaryNormals = vtkSmartPointer<vtkPolyData>::New();
+    Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), boundaryNormals);
+    std::stringstream ssPolyData;
+    ssPolyData << "Test/BoundaryNormals_" << blurVariance << ".vtp";
+    Helpers::WritePolyData(boundaryNormals, ssPolyData.str());
+    }
 
   return EXIT_SUCCESS;
 }

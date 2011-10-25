@@ -65,7 +65,7 @@ std::string GetSequentialFileName(const std::string& filePrefix, const unsigned 
   return padded.str();
 }
 
-void VectorMaskedBlur(const FloatVectorImageType::Pointer inputImage, const Mask::Pointer mask, const unsigned int kernelRadius, FloatVectorImageType::Pointer output)
+void VectorMaskedBlur(const FloatVectorImageType::Pointer inputImage, const Mask::Pointer mask, const float blurVariance, FloatVectorImageType::Pointer output)
 {
   // Disassembler
   typedef itk::VectorIndexSelectionCastImageFilter<FloatVectorImageType, FloatScalarImageType> IndexSelectionType;
@@ -84,7 +84,8 @@ void VectorMaskedBlur(const FloatVectorImageType::Pointer inputImage, const Mask
     indexSelectionFilter->Update();
   
     FloatScalarImageType::Pointer blurred = FloatScalarImageType::New();
-    DeepCopy<FloatScalarImageType>(indexSelectionFilter->GetOutput(), blurred);
+    MaskedBlur<FloatScalarImageType>(indexSelectionFilter->GetOutput(), mask, blurVariance, blurred);
+    
     filteredImages.push_back(blurred);
     imageToVectorImageFilter->SetInput(i, filteredImages[i]);
     }

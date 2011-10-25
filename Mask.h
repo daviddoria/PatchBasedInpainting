@@ -97,6 +97,9 @@ class Mask : public itk::Image< unsigned char, 2>
   
   template<typename TImage>
   void ApplyToImage(const typename TImage::Pointer image, const QColor& color);
+
+  template<typename TImage>
+  void ApplyToVectorImage(const typename TImage::Pointer image, const QColor& color);
   
   void MakeVTKImage(vtkImageData* image, const QColor& validColor, const QColor& holeColor, const bool holeTransparent, const bool validTransparent);
   

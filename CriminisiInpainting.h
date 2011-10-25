@@ -138,7 +138,10 @@ public:
   
   // Find the boundary of a region.
   void FindBoundary();
-  
+
+  // Compute the normals of the hole boundary.
+  void ComputeBoundaryNormals(const unsigned int blurVariance);
+
 private:
 
   // Compute the difference between two isophotes
@@ -241,9 +244,6 @@ private:
 
   // We store the patch radius, so we need this function to compute the actual patch size from the radius.
   itk::Size<2> GetPatchSize();
-  
-  // Compute the normals of a region boundary.
-  void ComputeBoundaryNormals();
 
   // Criminisi specific functions
   // Compute the priorities at all boundary pixels.

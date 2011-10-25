@@ -223,7 +223,7 @@ void CriminisiInpainting::Initialize()
     luminanceFilter->Update();
     
     FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
-    // Blur with a Gaussian kernel
+    // Blur with a Gaussian kernel. From TestIsophotes.cpp, we have determined that after a blurring radius of 4 the resulting isophotes are indistinguishable.
     unsigned int kernelRadius = 5;
     Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), this->CurrentMask, kernelRadius, blurredLuminance);
     
@@ -275,7 +275,9 @@ void CriminisiInpainting::Iterate()
 
   DebugMessage("Found boundary.");
 
-  ComputeBoundaryNormals();
+  // After inspecting the output of TestBoundaryNormals.cpp, it seems that actually with no blurring the boundary normals are most accurate.
+  unsigned int blurVariance = 0;
+  ComputeBoundaryNormals(blurVariance);
   Helpers::DebugWriteImageConditional<FloatVector2ImageType>(this->BoundaryNormals, "Debug/BoundaryNormals.mha", this->DebugImages);
 
   DebugMessage("Computed boundary normals.");
@@ -373,7 +375,7 @@ void CriminisiInpainting::Iterate()
   // so at the end of the iteration, the boundary image will not correspond to the boundary of the remaining hole in the image - it will be off by 1 iteration.
   // We fix this by computing the boundary and boundary normals again at the end of the iteration.
   FindBoundary();
-  ComputeBoundaryNormals();
+  ComputeBoundaryNormals(blurVariance);
   
   this->NumberOfCompletedIterations++;
 
@@ -596,25 +598,24 @@ void CriminisiInpainting::ComputeMaskedIsophotes(FloatScalarImageType::Pointer i
 {
   try
   {
-  
     Helpers::DebugWriteImageConditional<FloatScalarImageType>(image, "Debug/ComputeMaskedIsophotes.luminance.mha", this->DebugImages);
-    
+
     // Compute the gradient
     FloatScalarImageType::Pointer xDerivative = FloatScalarImageType::New();
     Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 0, xDerivative);
-    
+
     FloatScalarImageType::Pointer yDerivative = FloatScalarImageType::New();
     Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 1, yDerivative);
-    
+
     FloatVector2ImageType::Pointer gradient = FloatVector2ImageType::New();
     Helpers::GradientFromDerivatives<float>(xDerivative, yDerivative, gradient);
-    
+
     //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha", this->DebugImages);
     if(this->DebugImages)
       {
       Helpers::Write2DVectorImage(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha");
       }
- 
+
     // Rotate the gradient 90 degrees to obtain isophotes from gradient
     typedef itk::UnaryFunctorImageFilter<FloatVector2ImageType, FloatVector2ImageType,
     RotateVectors<FloatVector2ImageType::PixelType,
@@ -629,7 +630,7 @@ void CriminisiInpainting::ComputeMaskedIsophotes(FloatScalarImageType::Pointer i
       {
       Helpers::Write2DVectorImage(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.Isophotes.mha");
       }
-    
+
     // Store the result as a member variable.
     Helpers::DeepCopy<FloatVector2ImageType>(rotateFilter->GetOutput(), this->IsophoteImage);
   }
@@ -765,7 +766,7 @@ void CriminisiInpainting::UpdateMask(const itk::ImageRegion<2>& region)
   }
 }
 
-void CriminisiInpainting::ComputeBoundaryNormals()
+void CriminisiInpainting::ComputeBoundaryNormals(const unsigned int blurVariance)
 {
   DebugMessage("ComputeBoundaryNormals()");
   try
@@ -779,7 +780,7 @@ void CriminisiInpainting::ComputeBoundaryNormals()
     typedef itk::DiscreteGaussianImageFilter< Mask, FloatScalarImageType >  BlurFilterType;
     BlurFilterType::Pointer gaussianFilter = BlurFilterType::New();
     gaussianFilter->SetInput(this->CurrentMask);
-    gaussianFilter->SetVariance(2);
+    gaussianFilter->SetVariance(blurVariance);
     gaussianFilter->Update();
 
     Helpers::DebugWriteImageConditional<FloatScalarImageType>(gaussianFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMask.mha", this->DebugImages);

@@ -904,24 +904,33 @@ struct Contribution
 };
 
 template <typename TImage>
-void MaskedBlur(const typename TImage::Pointer inputImage, const Mask::Pointer mask, const unsigned int kernelRadius, typename TImage::Pointer output)
+void MaskedBlur(const typename TImage::Pointer inputImage, const Mask::Pointer mask, const float blurVariance, typename TImage::Pointer output)
 {
   // Create a Gaussian kernel
   typedef itk::GaussianOperator<float, 1> GaussianOperatorType;
   
   // Make a (2*kernelRadius+1)x1 kernel
   itk::Size<1> radius;
-  radius.Fill(kernelRadius);
+  radius.Fill(20); // Make a length 41 kernel
   
   GaussianOperatorType gaussianOperator;
   gaussianOperator.SetDirection(0); // It doesn't matter which direction we set - we will be interpreting the kernel as 1D (no direction)
+  gaussianOperator.SetVariance(blurVariance);
   gaussianOperator.CreateToRadius(radius);
+
+//   {
+//   // Debugging only
+//   std::cout << "gaussianOperator: " << gaussianOperator << std::endl;
+//   for(unsigned int i = 0; i < gaussianOperator.Size(); i++)
+//     {
+//     //std::cout << i << " : " << gaussianOperator.GetOffset(i) << std::endl;
+//     std::cout << i << " : " << gaussianOperator.GetElement(i) << std::endl;
+//     }
+//   }
   
   // Create the output image - data will be deep copied into it
   typename TImage::Pointer blurredImage = TImage::New();
-  blurredImage->SetRegions(inputImage->GetLargestPossibleRegion());
-  blurredImage->Allocate();
-  blurredImage->FillBuffer(0);
+  InitializeImage<TImage>(blurredImage, inputImage->GetLargestPossibleRegion());
   
   // Initialize
   typename TImage::Pointer operatingImage = TImage::New();
