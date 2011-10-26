@@ -66,6 +66,9 @@
             <property name="text">
              <string>Record steps</string>
             </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
@@ -370,6 +373,15 @@
           <property name="horizontalScrollBarPolicy">
            <enum>Qt::ScrollBarAlwaysOff</enum>
           </property>
+          <property name="backgroundBrush">
+           <brush brushstyle="NoBrush">
+            <color alpha="255">
+             <red>0</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </brush>
+          </property>
          </widget>
         </item>
         <item>
@@ -409,6 +421,15 @@
           <property name="horizontalScrollBarPolicy">
            <enum>Qt::ScrollBarAlwaysOff</enum>
           </property>
+          <property name="backgroundBrush">
+           <brush brushstyle="NoBrush">
+            <color alpha="255">
+             <red>0</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </brush>
+          </property>
          </widget>
         </item>
         <item>
@@ -431,6 +452,15 @@
             <width>100</width>
             <height>100</height>
            </size>
+          </property>
+          <property name="backgroundBrush">
+           <brush brushstyle="NoBrush">
+            <color alpha="255">
+             <red>0</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </brush>
           </property>
          </widget>
         </item>
@@ -543,7 +573,7 @@
            <bool>true</bool>
           </property>
           <property name="columnCount">
-           <number>7</number>
+           <number>8</number>
           </property>
           <column>
            <property name="text">
@@ -562,7 +592,12 @@
           </column>
           <column>
            <property name="text">
-            <string>Bound. Isop.</string>
+            <string>Isop. Angle</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Isop. Strength</string>
            </property>
           </column>
           <column>
@@ -622,9 +657,23 @@
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radSortByBoundaryIsophoteDifference">
+           <widget class="QRadioButton" name="radSortByBoundaryIsophoteAngleDifference">
             <property name="text">
-             <string>Boundary isop. diff.</string>
+             <string>Boundary isop. angle diff.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radSortByBoundaryIsophoteStrengthDifference">
+            <property name="text">
+             <string>Boundary isop. strength diff</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radSortByTotalScore">
+            <property name="text">
+             <string>Total score</string>
             </property>
            </widget>
           </item>

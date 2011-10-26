@@ -21,9 +21,17 @@ void Form::on_btnResort_clicked()
         {
         std::sort(candidatePairs.begin(), candidatePairs.end(), SortByBoundaryPixelDifference);
         }
-      else if(this->radSortByBoundaryIsophoteDifference->isChecked())
+      else if(this->radSortByBoundaryIsophoteAngleDifference->isChecked())
         {
-        std::sort(candidatePairs.begin(), candidatePairs.end(), SortByBoundaryIsophoteDifference);
+        std::sort(candidatePairs.begin(), candidatePairs.end(), SortByBoundaryIsophoteAngleDifference);
+        }
+      else if(this->radSortByBoundaryIsophoteStrengthDifference->isChecked())
+        {
+        std::sort(candidatePairs.begin(), candidatePairs.end(), SortByBoundaryIsophoteStrengthDifference);
+        }
+      else if(this->radSortByTotalScore->isChecked())
+        {
+        std::sort(candidatePairs.begin(), candidatePairs.end(), SortByTotalScore);
         }
       else
         {

@@ -282,6 +282,7 @@ protected:
   std::vector<InpaintingVisualizationStack> IntermediateImages;
   
   // Colors
+  void SetupColors();
   QColor UsedTargetPatchColor;
   QColor UsedSourcePatchColor;
   QColor AllForwardLookPatchColor;
@@ -291,6 +292,7 @@ protected:
   QColor CenterPixelColor;
   QColor MaskColor;
   QColor HoleColor;
+  QColor SceneBackgroundColor;
 };
 
 #include "Form.hxx"

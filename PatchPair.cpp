@@ -3,13 +3,15 @@
 void PatchPair::DefaultConstructor()
 {
   this->AverageSSD = 0.0f;
-  this->BoundaryIsophoteDifference = 0.0f;
+  this->BoundaryIsophoteAngleDifference = 0.0f;
+  this->BoundaryIsophoteStrengthDifference = 0.0f;
   this->BoundaryPixelDifference = 0.0f;
   this->TotalScore = 0.0f;
   
   this->ValidSSD = false;
   this->ValidBoundaryPixelDifference = false;
-  this->ValidBoundaryIsophoteDifference = false;
+  this->ValidBoundaryIsophoteAngleDifference = false;
+  this->ValidBoundaryIsophoteStrengthDifference = false;
 }
 
 PatchPair::PatchPair()
@@ -45,12 +47,15 @@ bool PatchPair::IsValidBoundaryPixelDifference()
   return ValidBoundaryPixelDifference;
 }
 
-bool PatchPair::IsValidBoundaryIsophoteDifference()
+bool PatchPair::IsValidBoundaryIsophoteAngleDifference()
 {
-  return ValidBoundaryIsophoteDifference;
+  return ValidBoundaryIsophoteAngleDifference;
 }
 
-  
+bool PatchPair::IsValidBoundaryIsophoteStrengthDifference()
+{
+  return ValidBoundaryIsophoteStrengthDifference;
+}
 
 bool SortByAverageSSD(const PatchPair& pair1, const PatchPair& pair2)
 {
@@ -62,9 +67,19 @@ bool SortByBoundaryPixelDifference(const PatchPair& pair1, const PatchPair& pair
   return (pair1.GetBoundaryPixelDifference() < pair2.GetBoundaryPixelDifference());
 }
 
-bool SortByBoundaryIsophoteDifference(const PatchPair& pair1, const PatchPair& pair2)
+bool SortByBoundaryIsophoteAngleDifference(const PatchPair& pair1, const PatchPair& pair2)
 {
-  return (pair1.GetBoundaryIsophoteDifference() < pair2.GetBoundaryIsophoteDifference());
+  return (pair1.GetBoundaryIsophoteAngleDifference() < pair2.GetBoundaryIsophoteAngleDifference());
+}
+
+bool SortByBoundaryIsophoteStrengthDifference(const PatchPair& pair1, const PatchPair& pair2)
+{
+  return (pair1.GetBoundaryIsophoteStrengthDifference() < pair2.GetBoundaryIsophoteStrengthDifference());
+}
+
+bool SortByTotalScore(const PatchPair& pair1, const PatchPair& pair2)
+{
+  return (pair1.GetTotalScore() < pair2.GetTotalScore());
 }
 
 void PatchPair::SetAverageSSD(const float value)
@@ -81,10 +96,17 @@ void PatchPair::SetBoundaryPixelDifference(const float value)
   ComputeTotal();
 }
 
-void PatchPair::SetBoundaryIsophoteDifference(const float value)
+void PatchPair::SetBoundaryIsophoteAngleDifference(const float value)
 {
-  this->ValidBoundaryIsophoteDifference = true;
-  this->BoundaryIsophoteDifference = value;
+  this->ValidBoundaryIsophoteAngleDifference = true;
+  this->BoundaryIsophoteAngleDifference = value;
+  ComputeTotal();
+}
+
+void PatchPair::SetBoundaryIsophoteStrengthDifference(const float value)
+{
+  this->ValidBoundaryIsophoteStrengthDifference = true;
+  this->BoundaryIsophoteStrengthDifference = value;
   ComputeTotal();
 }
 
@@ -103,12 +125,17 @@ float PatchPair::GetBoundaryPixelDifference() const
   return this->BoundaryPixelDifference;
 }
 
-float PatchPair::GetBoundaryIsophoteDifference() const
+float PatchPair::GetBoundaryIsophoteAngleDifference() const
 {
-  return this->BoundaryIsophoteDifference;
+  return this->BoundaryIsophoteAngleDifference;
+}
+
+float PatchPair::GetBoundaryIsophoteStrengthDifference() const
+{
+  return this->BoundaryIsophoteStrengthDifference;
 }
 
 void PatchPair::ComputeTotal()
 {
-  this->TotalScore = this->BoundaryIsophoteDifference + this->BoundaryPixelDifference + this->AverageSSD;
+  this->TotalScore = this->BoundaryIsophoteStrengthDifference + this->BoundaryIsophoteAngleDifference + this->BoundaryPixelDifference + this->AverageSSD;
 }

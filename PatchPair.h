@@ -14,16 +14,19 @@ struct PatchPair
   
   float GetAverageSSD() const;
   float GetBoundaryPixelDifference() const;
-  float GetBoundaryIsophoteDifference() const;
+  float GetBoundaryIsophoteAngleDifference() const;
+  float GetBoundaryIsophoteStrengthDifference() const;
   float GetTotalScore() const;
   
   void SetAverageSSD(const float value);
   void SetBoundaryPixelDifference(const float value);
-  void SetBoundaryIsophoteDifference(const float value);
+  void SetBoundaryIsophoteAngleDifference(const float value);
+  void SetBoundaryIsophoteStrengthDifference(const float value);
   
   bool IsValidSSD();
   bool IsValidBoundaryPixelDifference();
-  bool IsValidBoundaryIsophoteDifference();
+  bool IsValidBoundaryIsophoteAngleDifference();
+  bool IsValidBoundaryIsophoteStrengthDifference();
 
   itk::Offset<2> GetTargetToSourceOffset() const;
   itk::Offset<2> GetSourceToTargetOffset() const;
@@ -31,7 +34,8 @@ struct PatchPair
 private:
   float AverageSSD;
   float BoundaryPixelDifference;
-  float BoundaryIsophoteDifference;
+  float BoundaryIsophoteAngleDifference;
+  float BoundaryIsophoteStrengthDifference;
   
   float TotalScore;
   
@@ -40,11 +44,14 @@ private:
   // These are initialized to false and set to true when the corresponding SetXYZ() function is called.
   bool ValidSSD;
   bool ValidBoundaryPixelDifference;
-  bool ValidBoundaryIsophoteDifference;
+  bool ValidBoundaryIsophoteAngleDifference;
+  bool ValidBoundaryIsophoteStrengthDifference;
 };
 
 bool SortByAverageSSD(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByBoundaryIsophoteDifference(const PatchPair& pair1, const PatchPair& pair2);
+bool SortByBoundaryIsophoteAngleDifference(const PatchPair& pair1, const PatchPair& pair2);
+bool SortByBoundaryIsophoteStrengthDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByBoundaryPixelDifference(const PatchPair& pair1, const PatchPair& pair2);
+bool SortByTotalScore(const PatchPair& pair1, const PatchPair& pair2);
 
 #endif

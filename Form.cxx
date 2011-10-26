@@ -81,20 +81,44 @@ void Form::on_actionHelp_activated()
   help->show();
 }
 
+void Form::SetupColors()
+{
+  this->UsedTargetPatchColor = Qt::red;
+  this->UsedSourcePatchColor = Qt::green;
+  this->AllForwardLookPatchColor = Qt::darkCyan;
+  this->SelectedForwardLookPatchColor = Qt::cyan;
+  this->AllSourcePatchColor = Qt::darkMagenta;
+  this->SelectedSourcePatchColor = Qt::magenta;
+  this->CenterPixelColor = Qt::blue;
+  this->MaskColor = Qt::darkGray;
+  //this->HoleColor = Qt::gray;
+  this->HoleColor.setRgb(255, 153, 0); // Orange
+  this->SceneBackgroundColor.setRgb(153, 255, 0); // ?
+}
+  
 void Form::DefaultConstructor()
 {
   // This function is called by both constructors. This avoid code duplication.
   this->setupUi(this);
 
+  SetupColors();
+  
   SetCheckboxVisibility(false);
 
+  QBrush brush;
+  brush.setStyle(Qt::SolidPattern);
+  brush.setColor(this->SceneBackgroundColor);
+  
   this->TargetPatchScene = new QGraphicsScene();
+  this->TargetPatchScene->setBackgroundBrush(brush);
   this->gfxTarget->setScene(TargetPatchScene);
 
   this->SourcePatchScene = new QGraphicsScene();
+  this->SourcePatchScene->setBackgroundBrush(brush);
   this->gfxSource->setScene(SourcePatchScene);
 
   this->ResultPatchScene = new QGraphicsScene();
+  this->ResultPatchScene->setBackgroundBrush(brush);
   this->gfxResult->setScene(ResultPatchScene);
 
   this->IterationToDisplay = 0;
@@ -168,17 +192,6 @@ void Form::DefaultConstructor()
   this->progressBar->hide();
   
   this->ComputationThread.SetObject(&(this->Inpainting));
-  
-  this->UsedTargetPatchColor = Qt::red;
-  this->UsedSourcePatchColor = Qt::green;
-  this->AllForwardLookPatchColor = Qt::darkCyan;
-  this->SelectedForwardLookPatchColor = Qt::cyan;
-  this->AllSourcePatchColor = Qt::darkMagenta;
-  this->SelectedSourcePatchColor = Qt::magenta;
-  this->CenterPixelColor = Qt::blue;
-  this->MaskColor = Qt::darkGray;
-  //this->HoleColor = Qt::gray;
-  this->HoleColor.setRgb(255, 153, 0); // Orange
 
   /*
   QPalette forwardLookingPalette = forwardLookingTableWidget->palette();
@@ -1259,20 +1272,24 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
     this->topPatchesTableWidget->setItem(pairId, 2, boundaryPixelDifferenceLabel);
     
     // Display boundary isophote difference score
-    QTableWidgetItem* boundaryIsophoteDifferenceLabel = new QTableWidgetItem;
-    boundaryIsophoteDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryIsophoteDifference());
-    this->topPatchesTableWidget->setItem(pairId, 3, boundaryIsophoteDifferenceLabel);
+    QTableWidgetItem* boundaryIsophoteAngleDifferenceLabel = new QTableWidgetItem;
+    boundaryIsophoteAngleDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryIsophoteAngleDifference());
+    this->topPatchesTableWidget->setItem(pairId, 3, boundaryIsophoteAngleDifferenceLabel);
+
+    QTableWidgetItem* boundaryIsophoteStrengthDifferenceLabel = new QTableWidgetItem;
+    boundaryIsophoteStrengthDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryIsophoteStrengthDifference());
+    this->topPatchesTableWidget->setItem(pairId, 4, boundaryIsophoteStrengthDifferenceLabel);
     
     // Display total score
     QTableWidgetItem* totalScoreLabel = new QTableWidgetItem;
     totalScoreLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetTotalScore());
-    this->topPatchesTableWidget->setItem(pairId, 4, totalScoreLabel);
+    this->topPatchesTableWidget->setItem(pairId, 5, totalScoreLabel);
     
     // Store the patch/row Id. This is needed in case we sort the table using the widget header buttons.
     QTableWidgetItem* idLabel = new QTableWidgetItem;
     idLabel->setData(Qt::DisplayRole, pairId);
-    this->topPatchesTableWidget->setItem(pairId, 5, idLabel);
-    this->topPatchesTableWidget->setColumnHidden(5, true); // We don't want to display this value, just track it.
+    this->topPatchesTableWidget->setItem(pairId, 6, idLabel);
+    this->topPatchesTableWidget->setColumnHidden(6, true); // We don't want to display this value, just track it.
     
     // Display patch location
     std::stringstream ssLocation;
@@ -1280,7 +1297,7 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
 
     QTableWidgetItem* locationLabel = new QTableWidgetItem;
     locationLabel->setText(ssLocation.str().c_str());
-    this->topPatchesTableWidget->setItem(pairId, 6, locationLabel);
+    this->topPatchesTableWidget->setItem(pairId, 7, locationLabel);
     }
 
   this->topPatchesTableWidget->selectRow(0);

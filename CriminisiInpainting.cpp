@@ -1183,46 +1183,27 @@ bool CriminisiInpainting::GetAdjacentBoundaryPixel(const itk::Index<2>& targetPa
   return valid;
 }
 
-float CriminisiInpainting::ComputeAverageIsophoteDifference(const itk::Index<2>& targetRegionSourceSideBoundaryPixel,
-                                                            const itk::Index<2>& sourceRegionTargetSideBoundaryPixel,
-                                                            const PatchPair& patchPair)
+FloatVector2Type CriminisiInpainting::ComputeAverageIsophoteSourcePatch(const itk::Index<2>& sourcePatchPixel, const PatchPair& patchPair)
 {
-  //std::cout << "ComputeAverageIsophoteDifference()" << std::endl;
-  // Get the isophote on the hole side of the boundary
-  /*
-  FloatVector2Type isophote1 = this->IsophoteImage->GetPixel(targetRegionSourceSideBoundaryPixel);
-  FloatVector2Type isophote2 = this->IsophoteImage->GetPixel(sourceRegionTargetSideBoundaryPixel);
+  // This function computes the average isophote of the pixels around 'pixel' in the target side of the source patch (pixels that will end up filling the hole).
+  // The input 'pixel' is expected to be on the target side of the boundary in the source patch.
+
+  // The target patch is the only patch in which the hole/boundary is actually defined, so computations must take place in that frame.
+  itk::Index<2> targetPatchPixel = sourcePatchPixel + patchPair.GetSourceToTargetOffset();
   
-  return ComputeIsophoteDifference(isophote1, isophote2);
-*/
-
-  itk::ImageRegion<2> smallTargetPatch = Helpers::GetRegionInRadiusAroundPixel(targetRegionSourceSideBoundaryPixel, 1);
+  itk::ImageRegion<2> smallTargetPatch = Helpers::GetRegionInRadiusAroundPixel(targetPatchPixel, 1);
   smallTargetPatch.Crop(patchPair.TargetPatch.Region);
-  //itk::ImageRegion<2> smallSourcePatch = Helpers::GetRegionInRadiusAroundPixel(sourceRegionTargetSideBoundaryPixel, 1);
-
-  // Get the pixels in the valid region and in the hole of the target patch.
-  std::vector<itk::Index<2> > validTargetPixels = this->CurrentMask->GetValidPixelsInRegion(smallTargetPatch);
+  
+  // Get the pixels in the hole of the target patch.
   std::vector<itk::Index<2> > holeTargetPixels = this->CurrentMask->GetHolePixelsInRegion(smallTargetPatch);
 
   // We actually want the hole pixels in the source region, not the target region, so shift them.
   std::vector<itk::Index<2> > holeSourcePixels;
+  itk::Offset<2> shiftAmount = patchPair.GetTargetToSourceOffset();
   for(unsigned int i = 0; i < holeTargetPixels.size(); ++i)
     {
-    itk::Index<2> shiftedPixel = holeTargetPixels[i] + patchPair.GetTargetToSourceOffset();
-    
-//     if(!this->CurrentMask->GetLargestPossibleRegion().IsInside(shiftedPixel))
-//       {
-//       std::cout << "holeTargetPixels[i]: " << holeTargetPixels[i] << std::endl;
-//       std::cout << "patchPair.TargetPatch.Region: " << patchPair.TargetPatch.Region << std::endl;
-//       std::cout << "patchPair.SourcePatch.Region: " << patchPair.SourcePatch.Region << std::endl;
-//       std::cout << "targetRegionSourceSideBoundaryPixel: " << targetRegionSourceSideBoundaryPixel << std::endl;
-//       std::cout << "sourceRegionTargetSideBoundaryPixel: " << sourceRegionTargetSideBoundaryPixel << std::endl;
-//       std::cout << "patchPair.GetTargetToSourceOffset(): " << patchPair.GetTargetToSourceOffset() << std::endl;
-//       std::cout << "shiftedPixel: " << shiftedPixel << std::endl;
-//       std::cout << "this->CurrentMask->GetLargestPossibleRegion(): " << this->CurrentMask->GetLargestPossibleRegion() << std::endl;
-//       exit(-1);
-//       }
-    
+    itk::Index<2> shiftedPixel = holeTargetPixels[i] + shiftAmount;
+
     holeSourcePixels.push_back(shiftedPixel);
     }
 
@@ -1232,23 +1213,35 @@ float CriminisiInpainting::ComputeAverageIsophoteDifference(const itk::Index<2>&
     sourceIsophotes.push_back(this->IsophoteImage->GetPixel(holeSourcePixels[i]));
     }
 
+  FloatVector2Type averageSourceIsophote = Helpers::AverageVectors(sourceIsophotes);
+  return averageSourceIsophote;
+}
+
+FloatVector2Type CriminisiInpainting::ComputeAverageIsophoteTargetPatch(const itk::Index<2>& pixel, const PatchPair& patchPair)
+{
+  // This function computes the average isophote of the pixels around 'pixel' in the source side of the target patch.
+
+  itk::ImageRegion<2> smallTargetPatch = Helpers::GetRegionInRadiusAroundPixel(pixel, 1);
+  smallTargetPatch.Crop(patchPair.TargetPatch.Region);
+
+  // Get the pixels in the valid region and in the hole of the target patch.
+  std::vector<itk::Index<2> > validTargetPixels = this->CurrentMask->GetValidPixelsInRegion(smallTargetPatch);
+
   std::vector<FloatVector2Type> targetIsophotes;
   for(unsigned int i = 0; i < validTargetPixels.size(); ++i)
     {
     targetIsophotes.push_back(this->IsophoteImage->GetPixel(validTargetPixels[i]));
     }
-    
-  FloatVector2Type averageSourceIsophote = Helpers::AverageVectors(sourceIsophotes);
+
   FloatVector2Type averageTargetIsophote = Helpers::AverageVectors(targetIsophotes);
 
-  float isophoteDifference = ComputeIsophoteDifference(averageSourceIsophote, averageTargetIsophote);
-  //std::cout << "Leave ComputeAverageIsophoteDifference()" << std::endl;
-  return isophoteDifference;
+  return averageTargetIsophote;
 }
 
-float CriminisiInpainting::ComputeIsophoteDifference(const FloatVector2Type& v1, const FloatVector2Type& v2)
+
+float CriminisiInpainting::ComputeIsophoteAngleDifference(const FloatVector2Type& v1, const FloatVector2Type& v2)
 {
-  //std::cout << "ComputeIsophoteDifference()" << std::endl;
+  //std::cout << "ComputeIsophoteAngleDifference()" << std::endl;
   // Compute the isophote difference.
   float isophoteDifference = Helpers::AngleBetween(v1, v2);
   
@@ -1257,6 +1250,15 @@ float CriminisiInpainting::ComputeIsophoteDifference(const FloatVector2Type& v1,
 
   //std::cout << "Leave ComputeIsophoteDifference()" << std::endl;
   return isophoteDifferenceNormalized;
+}
+
+float CriminisiInpainting::ComputeIsophoteStrengthDifference(const FloatVector2Type& v1, const FloatVector2Type& v2)
+{
+  //std::cout << "ComputeIsophoteStrengthDifference()" << std::endl;
+  // Compute the isophote difference.
+  float isophoteDifference = fabs(v1.GetNorm() - v2.GetNorm());
+
+  return isophoteDifference;
 }
 
 float CriminisiInpainting::ComputeNormalizedSquaredPixelDifference(const itk::Index<2>& pixel1, const itk::Index<2>& pixel2)
@@ -1294,12 +1296,16 @@ void CriminisiInpainting::ComputeAllContinuationDifferences(CandidatePairs& cand
   for(unsigned int sourcePatchId = 0; sourcePatchId < candidatePairs.size(); ++sourcePatchId)
     {
     // Only compute if the values are not already computed.
-    if(candidatePairs[sourcePatchId].IsValidBoundaryIsophoteDifference() && candidatePairs[sourcePatchId].IsValidBoundaryPixelDifference())
+    if(candidatePairs[sourcePatchId].IsValidBoundaryIsophoteAngleDifference() &&
+       candidatePairs[sourcePatchId].IsValidBoundaryIsophoteStrengthDifference() &&
+       candidatePairs[sourcePatchId].IsValidBoundaryPixelDifference())
+       //candidatePairs[sourcePatchId].IsValidSSD()) // Don't check this, it is not related to the continuation difference
       {
       continue;
       }
     float totalPixelDifference = 0.0f;
-    float totalIsophoteDifference = 0.0f;
+    float totalIsophoteAngleDifference = 0.0f;
+    float totalIsophoteStrengthDifference = 0.0f;
     unsigned int numberUsed = 0;
     for(unsigned int pixelId = 0; pixelId < borderPixels.size(); ++pixelId)
       {
@@ -1312,12 +1318,21 @@ void CriminisiInpainting::ComputeAllContinuationDifferences(CandidatePairs& cand
 	}
       numberUsed++;
 
+      // Pixel difference
       float normalizedSquaredPixelDifference = ComputeNormalizedSquaredPixelDifference(targetRegionSourceSideBoundaryPixel, sourceRegionTargetSideBoundaryPixel);
       totalPixelDifference += normalizedSquaredPixelDifference;
       DebugMessage<float>("ComputeAllContinuationDifferences::normalizedSquaredPixelDifference ", normalizedSquaredPixelDifference);
 
-      float isophoteDifference = ComputeAverageIsophoteDifference(targetRegionSourceSideBoundaryPixel, sourceRegionTargetSideBoundaryPixel, candidatePairs[sourcePatchId]);
-      totalIsophoteDifference += isophoteDifference;
+      // Isophote differences
+      FloatVector2Type averageSourceIsophote = ComputeAverageIsophoteSourcePatch(sourceRegionTargetSideBoundaryPixel, candidatePairs[sourcePatchId]);
+      FloatVector2Type averageTargetIsophote = ComputeAverageIsophoteTargetPatch(targetRegionSourceSideBoundaryPixel, candidatePairs[sourcePatchId]);
+      
+      float isophoteAngleDifference = ComputeIsophoteAngleDifference(averageSourceIsophote, averageTargetIsophote);
+      totalIsophoteAngleDifference += isophoteAngleDifference;
+      
+      float isophoteStrengthDifference = ComputeIsophoteStrengthDifference(averageSourceIsophote, averageTargetIsophote);
+      totalIsophoteStrengthDifference += isophoteStrengthDifference;
+
       } // end loop over pixels
 
     DebugMessage<unsigned int>("numberUsed ", numberUsed);
@@ -1332,9 +1347,11 @@ void CriminisiInpainting::ComputeAllContinuationDifferences(CandidatePairs& cand
     float averagePixelDifference = totalPixelDifference / static_cast<float>(numberUsed);
     DebugMessage<float>("averagePixelDifference ", averagePixelDifference);
 
-    float averageIsophoteDifference = totalIsophoteDifference / static_cast<float>(numberUsed);
+    float averageIsophoteAngleDifference = totalIsophoteAngleDifference / static_cast<float>(numberUsed);
+    float averageIsophoteStrengthDifference = totalIsophoteStrengthDifference / static_cast<float>(numberUsed);
     candidatePairs[sourcePatchId].SetBoundaryPixelDifference(averagePixelDifference);
-    candidatePairs[sourcePatchId].SetBoundaryIsophoteDifference(averageIsophoteDifference);
+    candidatePairs[sourcePatchId].SetBoundaryIsophoteAngleDifference(averageIsophoteAngleDifference);
+    candidatePairs[sourcePatchId].SetBoundaryIsophoteStrengthDifference(averageIsophoteStrengthDifference);
 
     } // end loop over pairs
 

@@ -145,8 +145,11 @@ public:
 private:
 
   // Compute the difference between two isophotes
-  float ComputeIsophoteDifference(const FloatVector2Type& v1, const FloatVector2Type& v2);
-  float ComputeAverageIsophoteDifference(const itk::Index<2>& pixel1, const itk::Index<2>& pixel2, const PatchPair& patchPair);
+  float ComputeIsophoteAngleDifference(const FloatVector2Type& v1, const FloatVector2Type& v2);
+  float ComputeIsophoteStrengthDifference(const FloatVector2Type& v1, const FloatVector2Type& v2);
+  //float ComputeAverageIsophoteDifference(const itk::Index<2>& pixel1, const itk::Index<2>& pixel2, const PatchPair& patchPair);
+  FloatVector2Type ComputeAverageIsophoteSourcePatch(const itk::Index<2>& pixel, const PatchPair& patchPair);
+  FloatVector2Type ComputeAverageIsophoteTargetPatch(const itk::Index<2>& pixel, const PatchPair& patchPair);
   
   
   
