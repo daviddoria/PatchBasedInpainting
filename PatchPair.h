@@ -24,6 +24,9 @@ struct PatchPair
   bool IsValidSSD();
   bool IsValidBoundaryPixelDifference();
   bool IsValidBoundaryIsophoteDifference();
+
+  itk::Offset<2> GetTargetToSourceOffset() const;
+  itk::Offset<2> GetSourceToTargetOffset() const;
   
 private:
   float AverageSSD;

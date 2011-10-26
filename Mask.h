@@ -33,7 +33,7 @@
 
 class Mask : public itk::Image< unsigned char, 2>
 {
-  public:
+public:
   /** Standard typedefs. */
   typedef Mask                       Self;
   typedef itk::Image< unsigned char, 2> Superclass;
@@ -102,6 +102,9 @@ class Mask : public itk::Image< unsigned char, 2>
   void ApplyToVectorImage(const typename TImage::Pointer image, const QColor& color);
   
   void MakeVTKImage(vtkImageData* image, const QColor& validColor, const QColor& holeColor, const bool holeTransparent, const bool validTransparent);
+
+  std::vector<itk::Index<2> > GetValidPixelsInRegion(const itk::ImageRegion<2>& region);
+  std::vector<itk::Index<2> > GetHolePixelsInRegion(const itk::ImageRegion<2>& region);
   
 protected:
   Mask();

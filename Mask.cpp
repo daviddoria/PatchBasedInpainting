@@ -26,6 +26,48 @@ Mask::Mask()
   this->ValidValue = 0;
 }
 
+std::vector<itk::Index<2> > Mask::GetValidPixelsInRegion(const itk::ImageRegion<2>& inputRegion)
+{
+  itk::ImageRegion<2> region = inputRegion;
+  region.Crop(this->GetLargestPossibleRegion());
+  
+  std::vector<itk::Index<2> > validPixels;
+
+  typename itk::ImageRegionIterator<Mask> iterator(this, region);
+
+  while(!iterator.IsAtEnd())
+    {
+    if(this->IsValid(iterator.GetIndex()))
+      {
+      validPixels.push_back(iterator.GetIndex());
+      }
+
+    ++iterator;
+    }
+  return validPixels;
+}
+
+std::vector<itk::Index<2> > Mask::GetHolePixelsInRegion(const itk::ImageRegion<2>& inputRegion)
+{
+  itk::ImageRegion<2> region = inputRegion;
+  region.Crop(this->GetLargestPossibleRegion());
+  
+  std::vector<itk::Index<2> > holePixels;
+
+  typename itk::ImageRegionIterator<Mask> iterator(this, region);
+
+  while(!iterator.IsAtEnd())
+    {
+    if(this->IsHole(iterator.GetIndex()))
+      {
+      holePixels.push_back(iterator.GetIndex());
+      }
+
+    ++iterator;
+    }
+  return holePixels;
+}
+
 bool Mask::IsHole(const itk::Index<2>& index) const
 {
   if(this->GetPixel(index) == this->HoleValue)

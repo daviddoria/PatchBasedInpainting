@@ -136,6 +136,13 @@ void Form::DefaultConstructor()
   this->Renderer->AddViewProp(this->UsedSourcePatchLayer.ImageSlice);
   this->Renderer->AddViewProp(this->AllSourcePatchOutlinesLayer.ImageSlice);
   this->Renderer->AddViewProp(this->AllForwardLookOutlinesLayer.ImageSlice);
+
+  this->BoundaryNormalsLayer.Actor->VisibilityOff(); // If this isn't set, there is an error about "no input" to vtkHedgeHog because the boundary normals are tried to be displayed before they are necessarily populated.
+  this->Renderer->AddViewProp(this->BoundaryNormalsLayer.Actor);
+
+  this->IsophoteLayer.Actor->VisibilityOff();
+  this->Renderer->AddViewProp(this->IsophoteLayer.Actor);
+  
   this->Renderer->AddViewProp(this->SelectedForwardLookOutlineLayer.ImageSlice);// This should be added after AllForwardLookOutlinesLayer.
   this->Renderer->AddViewProp(this->SelectedSourcePatchOutlineLayer.ImageSlice);// This should be added after AllSourcePatchOutlinesLayer.
   
@@ -398,7 +405,6 @@ void Form::DisplayIsophotes()
       polyDataWriter->Write();
       }
 
-    this->Renderer->AddViewProp(this->IsophoteLayer.Actor);
     } 
   else
     {
@@ -482,8 +488,6 @@ void Form::DisplayBoundaryNormals()
 
       Helpers::WritePolyData(this->BoundaryNormalsLayer.Vectors, "Debug/RefreshSlot.VTKBoundaryNormals.vtp");
       }
-
-    this->Renderer->AddViewProp(this->BoundaryNormalsLayer.Actor);
     }  
 }
 
@@ -616,7 +620,7 @@ void Form::Initialize()
 {
   // Reset some things (this is so that if we want to run another completion it will work normally)
 
-  this->UserMaskImage->ApplyToImage<FloatVectorImageType>(this->UserImage, this->HoleColor);
+  this->UserMaskImage->ApplyToVectorImage<FloatVectorImageType>(this->UserImage, this->HoleColor);
   
   this->Inpainting.SetPatchRadius(this->txtPatchRadius->text().toUInt());
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
@@ -896,7 +900,10 @@ void Form::HighlightSourcePatches()
     {
     this->topPatchesTableWidget->selectRow(0);
     }
-  HighlightSelectedSourcePatch(this->topPatchesTableWidget->currentRow());
+
+  int idColumnId = GetColumnIdByHeader("Id");
+  unsigned int sourcePatchId = topPatchesTableWidget->item(this->topPatchesTableWidget->currentRow(), idColumnId)->data(Qt::DisplayRole).toUInt();
+  HighlightSelectedSourcePatch(sourcePatchId);
 
   this->qvtkWidget->GetRenderWindow()->Render();
 
@@ -1011,7 +1018,8 @@ void Form::CreatePotentialTargetPatchesImage()
   for(unsigned int i = 0; i < potentialCandidatePairs.size(); ++i)
     {
     Helpers::BlankAndOutlineRegion<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage,
-                                                                potentialCandidatePairs[i].TargetPatch.Region, static_cast<unsigned char>(255));
+                                                                potentialCandidatePairs[i].TargetPatch.Region, static_cast<unsigned char>(0),
+                                                                static_cast<unsigned char>(255));
     }
 
   vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
@@ -1091,7 +1099,8 @@ void Form::SetupInitialIntermediateImages()
 
 void Form::IterationComplete()
 {
-  DebugMessage("Enter IterationComplete()");
+  std::cout << "IterationComplete()" << std::endl;
+  //DebugMessage("Enter IterationComplete()");
 
   // Save the intermediate images
   
@@ -1366,6 +1375,9 @@ void Form::on_topPatchesTableWidget_cellClicked(int row, int col)
   // Here we should update the big displayed source patch
   DisplaySourcePatch(forwardLookingTableWidget->currentRow(), sourcePatchId);
   DisplayResultPatch(forwardLookingTableWidget->currentRow(), sourcePatchId);
+
+  HighlightSourcePatches();
+  HighlightSelectedSourcePatch(sourcePatchId);
 }
 
 int Form::GetColumnIdByHeader(const std::string& header)

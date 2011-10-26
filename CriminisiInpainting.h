@@ -140,13 +140,13 @@ public:
   void FindBoundary();
 
   // Compute the normals of the hole boundary.
-  void ComputeBoundaryNormals(const unsigned int blurVariance);
+  void ComputeBoundaryNormals(const float blurVariance);
 
 private:
 
   // Compute the difference between two isophotes
-  float ComputeIsophoteDifference(const FloatVector2Type v1, const FloatVector2Type v2);
-  float ComputeIsophoteDifference(const itk::Index<2>& pixel1, const itk::Index<2>& pixel2);
+  float ComputeIsophoteDifference(const FloatVector2Type& v1, const FloatVector2Type& v2);
+  float ComputeAverageIsophoteDifference(const itk::Index<2>& pixel1, const itk::Index<2>& pixel2, const PatchPair& patchPair);
   
   
   

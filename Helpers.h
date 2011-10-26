@@ -46,6 +46,8 @@ namespace Helpers
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 std::string GetSequentialFileName(const std::string& filePrefix, const unsigned int iteration, const std::string& fileExtension);
 
+FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors);
+
 void WritePolyData(vtkPolyData* polyData, const std::string& fileName);
 
 void WriteImageData(vtkImageData* imageData, const std::string& fileName);
@@ -133,6 +135,10 @@ void BlankRegion(vtkImageData* image, const itk::ImageRegion<2>& region);
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// Template function declarations (defined in Helpers.hxx) ///////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename TImage>
+void OutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value);
+
 template<typename TImage>
 void DeepCopy(const typename TImage::Pointer input, typename TImage::Pointer output);
 
@@ -198,7 +204,7 @@ void ColorToGrayscale(const typename TImage::Pointer colorImage, UnsignedCharSca
 // float PixelSquaredDifference(const TPixelType&, const TPixelType&);
 
 template<typename TImage>
-void BlankAndOutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value);
+void BlankAndOutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& blankValue, const typename TImage::PixelType& outlineValue);
 
 template<typename TImage>
 void SetRegionToConstant(typename TImage::Pointer image, const itk::ImageRegion<2>& region,const typename TImage::PixelType& constant);

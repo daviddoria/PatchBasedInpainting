@@ -69,8 +69,8 @@ int main(int argc, char *argv[])
 
 
   CriminisiInpainting inpainting;
-  //inpainting.SetMask(maskReader->GetOutput());
-  //inpainting.SetImage(imageReader->GetOutput());
+  inpainting.SetMask(maskReader->GetOutput());
+  inpainting.SetImage(imageReader->GetOutput());
   inpainting.ComputeMaskedIsophotes(blurredLuminance, maskReader->GetOutput());
 
   //Helpers::WriteImage<FloatVector2ImageType>(inpainting.GetIsophoteImage(), );
@@ -101,17 +101,89 @@ int main(int argc, char *argv[])
 
   std::vector<itk::Index<2> > borderPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(inpainting.GetBoundaryImage(), targetRegion);
 
+  itk::RGBPixel<unsigned char> black;
+  black.SetRed(0);
+  black.SetGreen(0);
+  black.SetBlue(0);
+
+  itk::RGBPixel<unsigned char> red;
+  red.SetRed(255);
+  red.SetGreen(0);
+  red.SetBlue(0);
+
+  itk::RGBPixel<unsigned char> darkRed;
+  darkRed.SetRed(100);
+  darkRed.SetGreen(0);
+  darkRed.SetBlue(0);
+
+  itk::RGBPixel<unsigned char> yellow;
+  yellow.SetRed(255);
+  yellow.SetGreen(255);
+  yellow.SetBlue(0);
+
+  itk::RGBPixel<unsigned char> green;
+  green.SetRed(0);
+  green.SetGreen(255);
+  green.SetBlue(0);
+
+  itk::RGBPixel<unsigned char> darkGreen;
+  darkGreen.SetRed(0);
+  darkGreen.SetGreen(100);
+  darkGreen.SetBlue(0);
+
+  itk::RGBPixel<unsigned char> blue;
+  blue.SetRed(0);
+  blue.SetGreen(0);
+  blue.SetBlue(255);
+  
+  RGBImageType::Pointer output = RGBImageType::New();
+  output->SetRegions(imageReader->GetOutput()->GetLargestPossibleRegion());
+  output->Allocate();
+  output->FillBuffer(black);
+
+  Helpers::BlankAndOutlineRegion<RGBImageType>(output, targetRegion, black, red);
+  Helpers::BlankAndOutlineRegion<RGBImageType>(output, sourceRegion, black, green);
+
+  RGBImageType::Pointer target = RGBImageType::New();
+  target->SetRegions(imageReader->GetOutput()->GetLargestPossibleRegion());
+  target->Allocate();
+  Helpers::BlankAndOutlineRegion<RGBImageType>(target, targetRegion, black, red);
+  
+  
+  RGBImageType::Pointer source = RGBImageType::New();
+  source->SetRegions(imageReader->GetOutput()->GetLargestPossibleRegion());
+  source->Allocate();
+  Helpers::BlankAndOutlineRegion<RGBImageType>(source, sourceRegion, black, green);
+
+  itk::Offset<2> offset = targetIndex - sourceIndex;
+  
   for(unsigned int pixelId = 0; pixelId < borderPixels.size(); ++pixelId)
     {
-    itk::Index<2> currentPixel = borderPixels[pixelId];
-    itk::Index<2> adjacentBoundaryPixel;
+    itk::Index<2> targetPatchSourceSideBoundaryPixel = borderPixels[pixelId];
+    itk::Index<2> sourcePatchTargetSideBoundaryPixel;
     //bool valid = GetAdjacentBoundaryPixel(currentPixel, candidatePairs[sourcePatchId], adjacentBoundaryPixel);
-    bool valid = inpainting.GetAdjacentBoundaryPixel(currentPixel, patchPair, adjacentBoundaryPixel);
+    bool valid = inpainting.GetAdjacentBoundaryPixel(targetPatchSourceSideBoundaryPixel, patchPair, sourcePatchTargetSideBoundaryPixel);
+
+    target->SetPixel(targetPatchSourceSideBoundaryPixel, darkRed);
+    source->SetPixel(sourcePatchTargetSideBoundaryPixel, darkGreen);
+
     if(!valid)
       {
       continue;
       }
+
+    // Bring the adjacent pixel back to the target region.
+    itk::Index<2> targetPatchTargetSideBoundaryPixel = sourcePatchTargetSideBoundaryPixel + offset;
+
+    output->SetPixel(targetPatchSourceSideBoundaryPixel, darkRed);
+
+    output->SetPixel(targetPatchTargetSideBoundaryPixel, blue);
+    output->SetPixel(sourcePatchTargetSideBoundaryPixel, darkGreen);
     }
+
+  Helpers::WriteImage<RGBImageType>(output, "Test/FollowIsophotes.Output.mha");
+  Helpers::WriteImage<RGBImageType>(target, "Test/FollowIsophotes.Target.mha");
+  Helpers::WriteImage<RGBImageType>(source, "Test/FollowIsophotes.Source.mha");
 
   return EXIT_SUCCESS;
 }

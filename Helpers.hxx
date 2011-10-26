@@ -706,44 +706,41 @@ void WritePatch(const typename TImage::Pointer image, const Patch& patch, const 
 
 
 template<typename TImage>
-void BlankAndOutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value)
+void BlankAndOutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& blankValue, const typename TImage::PixelType& outlineValue)
+{
+  SetRegionToConstant<TImage>(image, region, blankValue);
+  OutlineRegion<TImage>(image, region, outlineValue);
+
+}
+
+template<typename TImage>
+void OutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value)
 {
   itk::ImageRegionIterator<TImage> iterator(image, region);
 
-  // Blank region
-  while(!iterator.IsAtEnd())
-    {
-    iterator.Set(0);
-    ++iterator;
-    }
-    
-  // Outline region
-  iterator.GoToBegin();
-  
   for(unsigned int i = region.GetIndex()[0]; i < region.GetIndex()[0] + region.GetSize()[0]; ++i)
     {
     itk::Index<2> index;
     index[0] = i;
     index[1] = region.GetIndex()[1];
     image->SetPixel(index, value);
-  
+
     index[0] = i;
-    index[1] = region.GetIndex()[1] + region.GetSize()[1];
+    index[1] = region.GetIndex()[1] + region.GetSize()[1] - 1;
     image->SetPixel(index, value);
     }
-    
+
   for(unsigned int j = region.GetIndex()[1]; j < region.GetIndex()[1] + region.GetSize()[1]; ++j)
     {
     itk::Index<2> index;
     index[0] = region.GetIndex()[0];
     index[1] = j;
     image->SetPixel(index, value);
-  
-    index[0] = region.GetIndex()[0] + region.GetSize()[0];
+
+    index[0] = region.GetIndex()[0] + region.GetSize()[0] - 1;
     index[1] = j;
     image->SetPixel(index, value);
     }
-
 }
 
 template <typename TImage>

@@ -25,6 +25,16 @@ PatchPair::PatchPair(const Patch& sourcePatch, const Patch& targetPatch)
   this->TargetPatch = targetPatch;
 }
 
+itk::Offset<2> PatchPair::GetTargetToSourceOffset() const
+{
+  return this->SourcePatch.Region.GetIndex() - this->TargetPatch.Region.GetIndex();
+}
+
+itk::Offset<2> PatchPair::GetSourceToTargetOffset() const
+{
+  return this->TargetPatch.Region.GetIndex() - this->SourcePatch.Region.GetIndex();
+}
+  
 bool PatchPair::IsValidSSD()
 {
   return ValidSSD;

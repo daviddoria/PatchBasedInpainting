@@ -30,21 +30,23 @@ Patch.cpp
 PatchPair.cpp
 SelfPatchCompare.cpp
 )
+
 # Interactive
-# ADD_EXECUTABLE(CriminisiInpaintingInteractive
-# FileSelector.cpp
-# FileSelectionWidget.cpp
-# Form.cxx
-# FormGUIElements.cxx
-# InpaintingVisualizationStack.cpp
-# Interactive.cpp #driver (contains main())
-# InteractorStyleImageNoLevel.cxx
-# Layer.cpp
-# ProgressThread.cpp
-# VectorLayer.cpp
-# ${UISrcs} ${MOCSrcs})
-# TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive CriminisiInpainting ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
-# INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
+
+ADD_EXECUTABLE(CriminisiInpaintingInteractive
+FileSelector.cpp
+FileSelectionWidget.cpp
+Form.cxx
+FormGUIElements.cxx
+InpaintingVisualizationStack.cpp
+Interactive.cpp #driver (contains main())
+InteractorStyleImageNoLevel.cxx
+Layer.cpp
+ProgressThread.cpp
+VectorLayer.cpp
+${UISrcs} ${MOCSrcs})
+TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive CriminisiInpainting ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
+INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 
 # Non-interactive
 # ADD_EXECUTABLE(CriminisiInpainting
@@ -61,11 +63,11 @@ SelfPatchCompare.cpp
 #--------------
 # --- Tests ---
 #--------------
-ADD_EXECUTABLE(TestIsophotes Tests/TestIsophotes.cpp)
-TARGET_LINK_LIBRARIES(TestIsophotes CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-
-ADD_EXECUTABLE(TestGradient Tests/TestGradient.cpp)
-TARGET_LINK_LIBRARIES(TestGradient CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# ADD_EXECUTABLE(TestIsophotes Tests/TestIsophotes.cpp)
+# TARGET_LINK_LIBRARIES(TestIsophotes CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# 
+# ADD_EXECUTABLE(TestGradient Tests/TestGradient.cpp)
+# TARGET_LINK_LIBRARIES(TestGradient CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
 # ADD_EXECUTABLE(TestBoundaryNormals Tests/TestBoundaryNormals.cpp)
 # TARGET_LINK_LIBRARIES(TestBoundaryNormals CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})

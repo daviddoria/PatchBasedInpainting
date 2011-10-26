@@ -42,6 +42,30 @@
 namespace Helpers
 {
 
+FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors)
+{
+  FloatVector2Type totalVector;
+  totalVector.Fill(0);
+
+  if(vectors.size() == 0)
+    {
+    std::cerr << "Cannot average 0 vectors!" << std::endl;
+    return totalVector;
+    }
+
+  for(unsigned int i = 0; i < vectors.size(); ++i)
+    {
+    totalVector[0] += vectors[i][0];
+    totalVector[1] += vectors[i][1];
+    }
+
+  FloatVector2Type averageVector;
+  averageVector[0] = totalVector[0] / static_cast<float>(vectors.size());
+  averageVector[1] = totalVector[1] / static_cast<float>(vectors.size());
+
+  return averageVector;
+}
+
 void WritePolyData(vtkPolyData* polyData, const std::string& fileName)
 {
   vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
