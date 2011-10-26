@@ -177,7 +177,8 @@ void Form::DefaultConstructor()
   this->SelectedSourcePatchColor = Qt::magenta;
   this->CenterPixelColor = Qt::blue;
   this->MaskColor = Qt::darkGray;
-  this->HoleColor = Qt::gray;
+  //this->HoleColor = Qt::gray;
+  this->HoleColor.setRgb(255, 153, 0); // Orange
 
   /*
   QPalette forwardLookingPalette = forwardLookingTableWidget->palette();
@@ -1119,7 +1120,10 @@ void Form::IterationComplete()
 
   this->IntermediateImages.push_back(stack);
 
-  this->AllPotentialCandidatePairs.push_back(this->Inpainting.GetPotentialCandidatePairs());
+  if(this->chkRecordSteps->isChecked())
+    {
+    this->AllPotentialCandidatePairs.push_back(this->Inpainting.GetPotentialCandidatePairs());
+    }
   
   // After one iteration, GetNumberOfCompletedIterations will be 1. This is exactly the set of intermediate images we want to display,
   // because the 0th intermediate images are the original inputs.
@@ -1190,10 +1194,17 @@ void Form::SetupForwardLookingTable()
     QTableWidgetItem* priorityLabel = new QTableWidgetItem;
     priorityLabel->setData(Qt::DisplayRole, allCandidatePairs[forwardLookId].Priority);
     this->forwardLookingTableWidget->setItem(forwardLookId, 1, priorityLabel); // (row, col, widget)
+
+    // Display priority in the table
+    QTableWidgetItem* locationLabel = new QTableWidgetItem;
+    std::stringstream ssLocation;
+    ssLocation << "(" << currentForwardLookPatch.Region.GetIndex()[0] << ", " << currentForwardLookPatch.Region.GetIndex()[1] << ")";
+    locationLabel->setText(ssLocation.str().c_str());
+    this->forwardLookingTableWidget->setItem(forwardLookId, 2, locationLabel); // (row, col, widget)
     }
     
   //this->forwardLookingTableWidget->resizeRowsToContents();
-  //this->forwardLookingTableWidget->resizeColumnsToContents();
+  this->forwardLookingTableWidget->resizeColumnsToContents();
 
   this->forwardLookingTableWidget->selectRow(0);
   

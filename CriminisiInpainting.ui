@@ -62,6 +62,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="chkRecordSteps">
+            <property name="text">
+             <string>Record steps</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <item>
              <widget class="QLabel" name="label_6">
@@ -271,7 +278,7 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2" stretch="9,1">
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
+         <widget class="QVTKWidget" name="qvtkWidget"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -475,7 +482,7 @@
            <bool>true</bool>
           </property>
           <property name="columnCount">
-           <number>2</number>
+           <number>3</number>
           </property>
           <attribute name="horizontalHeaderStretchLastSection">
            <bool>true</bool>
@@ -494,6 +501,11 @@
           <column>
            <property name="text">
             <string>Priority</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Location</string>
            </property>
           </column>
          </widget>
@@ -637,7 +649,7 @@
      <x>0</x>
      <y>0</y>
      <width>1319</width>
-     <height>33</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLeft_Pane">
