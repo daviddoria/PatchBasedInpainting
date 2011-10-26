@@ -3,12 +3,14 @@
 void PatchPair::DefaultConstructor()
 {
   this->AverageSSD = 0.0f;
+  this->TotalAbsoluteDifference = 0.0f;
   this->BoundaryIsophoteAngleDifference = 0.0f;
   this->BoundaryIsophoteStrengthDifference = 0.0f;
   this->BoundaryPixelDifference = 0.0f;
   this->TotalScore = 0.0f;
   
   this->ValidSSD = false;
+  this->ValidTotalAbsoluteDifference = false;
   this->ValidBoundaryPixelDifference = false;
   this->ValidBoundaryIsophoteAngleDifference = false;
   this->ValidBoundaryIsophoteStrengthDifference = false;
@@ -89,6 +91,13 @@ void PatchPair::SetAverageSSD(const float value)
   ComputeTotal();
 }
 
+void PatchPair::SetTotalAbsoluteDifference(const float value)
+{
+  this->ValidTotalAbsoluteDifference = true;
+  this->TotalAbsoluteDifference = value;
+  ComputeTotal();
+}
+
 void PatchPair::SetBoundaryPixelDifference(const float value)
 {
   this->ValidBoundaryPixelDifference = true;
@@ -118,6 +127,11 @@ float PatchPair::GetTotalScore() const
 float PatchPair::GetAverageSSD() const
 {
   return this->AverageSSD;
+}
+
+float PatchPair::GetTotalAbsoluteDifference() const
+{
+  return this->TotalAbsoluteDifference;
 }
 
 float PatchPair::GetBoundaryPixelDifference() const

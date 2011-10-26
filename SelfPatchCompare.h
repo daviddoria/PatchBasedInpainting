@@ -60,12 +60,14 @@ public:
   float SlowDifference(const Patch& sourcePatch);
   float PatchDifferenceManual(const Patch& sourcePatch);
   float PatchAverageSquaredDifference(const Patch& sourcePatch);
+  float PatchTotalAbsoluteDifference(const Patch& sourcePatch);
   float PatchDifferenceBoundary(const Patch& sourcePatch);
 
   // Prepare to do some comparisons by finding all of the valid pixels in the target region
   void ComputeOffsets();
 
   virtual float PixelDifferenceSquared(const VectorType &a, const VectorType &b) = 0;
+  virtual float PixelDifference(const VectorType &a, const VectorType &b) = 0;
   float NonVirtualPixelDifferenceSquared(const VectorType &a, const VectorType &b);
   
 protected:
@@ -79,7 +81,8 @@ protected:
   // This is the target region we wish to compare. It may be partially invalid.
   //Patch TargetPatch;
 
-  // // Provide the pairs of target/source patches. All target patches are exactly the same patch. The source regions are assumed to all be fully valid.
+  // Provide the pairs of target/source patches. All target patches are exactly the same patch. The source regions are assumed to all be fully valid.
+  // These are stored as a reference so that the original data can be modified to add the computed values.
   CandidatePairs& Pairs;
   
   // This is the image from which to take the patches

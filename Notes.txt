@@ -1,0 +1,47 @@
+Target patch (193, 218) matches to (400, 7) with SSD 660.938 matches VERY poorly visually, but is the best match.
+(319, 292) seems to be a much better match...
+
+Starting: /home/doriad/build/Projects/src/InteractivePatchComparison/ExamplePatchDifference mailbox_medium_recolored_small_filled.png mask_small.png
+Reading image: mailbox_medium_recolored_small_filled.png
+Reading mask: mask_small.png
+Total Absolute Difference: 11138
+Total Squared Difference: 566532
+
+gui agree
+
+Starting: /home/doriad/build/Projects/src/InteractiveBestPatches/ExamplePatchDifference mailbox_medium_recolored_small_filled.png mask_small.png
+Reading image: mailbox_medium_recolored_small_filled.png
+Reading mask: mask_small.png
+Total Absolute Difference: 11138
+Total Squared Difference: 566532
+
+
+gui agrees
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Starting: /home/doriad/build/Projects/src/InteractivePatchComparison/ExamplePatchDifference mailbox_medium_recolored_small_filled.png mask_small.png
+Reading image: mailbox_medium_recolored_small_filled.png
+Reading mask: mask_small.png
+Total Absolute Difference: 11527
+Total Squared Difference: 594963
+GUI agrees!
+
+Starting: /home/doriad/build/Projects/src/InteractiveBestPatches/ExamplePatchDifference mailbox_medium_recolored_small_filled.png mask_small.png
+Reading image: mailbox_medium_recolored_small_filled.png
+Reading mask: mask_small.png
+Total Absolute Difference: 11527
+Total Squared Difference: 594963

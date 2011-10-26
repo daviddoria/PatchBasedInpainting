@@ -282,6 +282,55 @@ float SelfPatchCompare::PatchAverageSquaredDifference(const Patch& sourcePatch)
 }
 
 
+float SelfPatchCompare::PatchTotalAbsoluteDifference(const Patch& sourcePatch)
+{
+  // This function assumes that all pixels in the source region are unmasked.
+  try
+  {
+    //assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
+
+    float totalAbsoluteDifference = 0.0f;
+
+    FloatVectorImageType::InternalPixelType *buffptr = this->Image->GetBufferPointer();
+    unsigned int offsetDifference = (this->Image->ComputeOffset(this->Pairs.TargetPatch.Region.GetIndex())
+                                    - this->Image->ComputeOffset(sourcePatch.Region.GetIndex())) * this->NumberOfComponentsPerPixel;
+
+    float absoluteDifference = 0;
+
+    FloatVectorImageType::PixelType sourcePixel;
+    sourcePixel.SetSize(this->NumberOfComponentsPerPixel);
+
+    FloatVectorImageType::PixelType targetPixel;
+    targetPixel.SetSize(this->NumberOfComponentsPerPixel);
+
+    FloatVectorImageType::PixelType differencePixel;
+    differencePixel.SetSize(this->NumberOfComponentsPerPixel);
+
+    for(unsigned int pixelId = 0; pixelId < this->ValidOffsets.size(); ++pixelId)
+      {
+
+      for(unsigned int i = 0; i < this->NumberOfComponentsPerPixel; ++i)
+        {
+        sourcePixel[i] = buffptr[this->ValidOffsets[pixelId] + i];
+        targetPixel[i] = buffptr[this->ValidOffsets[pixelId] - offsetDifference + i];
+        }
+
+
+      absoluteDifference = PixelDifference(sourcePixel, targetPixel);
+
+      totalAbsoluteDifference += absoluteDifference;
+      }
+
+    return totalAbsoluteDifference;
+  } //end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in PatchDifference!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}
+
 float SelfPatchCompare::PatchDifferenceBoundary(const Patch& sourcePatch)
 {
   // This function assumes that all pixels in the source region are unmasked.
@@ -371,8 +420,11 @@ void SelfPatchCompare::ComputeAllDifferences()
 	  {
 	  continue;
 	  }
-	float distance = PatchAverageSquaredDifference(this->Pairs[sourcePatchId].SourcePatch);
-	this->Pairs[sourcePatchId].SetAverageSSD(distance);
+	float averageSquaredDifference = PatchAverageSquaredDifference(this->Pairs[sourcePatchId].SourcePatch);
+	this->Pairs[sourcePatchId].SetAverageSSD(averageSquaredDifference);
+
+        float totalAbsoluteDifference = PatchTotalAbsoluteDifference(this->Pairs[sourcePatchId].SourcePatch);
+        this->Pairs[sourcePatchId].SetTotalAbsoluteDifference(totalAbsoluteDifference);
 	}
       }
   }

@@ -11,6 +11,19 @@ public:
   {
     // Nothing special to do in this constructor - everything is done in SelfPatchCompare constructor.
   }
+
+  float PixelDifference(const VectorType &a, const VectorType &b)
+  {
+    float difference = 0;
+
+    float diff = 0;
+    for(unsigned int i = 0; i < this->NumberOfComponentsPerPixel; ++i)
+      {
+      diff = fabs(a[i] - b[i]);
+      difference += diff;
+      }
+    return difference;
+  }
   
   float PixelDifferenceSquared(const VectorType &a, const VectorType &b)
   {

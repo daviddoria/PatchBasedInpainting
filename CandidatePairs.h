@@ -39,6 +39,8 @@ public:
   
   void AddPairsFromPatches(const std::vector<Patch>& patches);
 
+  void AddPairFromPatch(const Patch& patch);
+
   void CopyFrom(const std::vector<PatchPair>& v);
 
   float Priority;

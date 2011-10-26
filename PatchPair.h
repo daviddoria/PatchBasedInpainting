@@ -7,18 +7,20 @@ struct PatchPair
 {
   void DefaultConstructor();
   PatchPair();
-  PatchPair(const Patch&, const Patch&);
+  PatchPair(const Patch& sourcePatch, const Patch& targetPatch);
   
   Patch SourcePatch;
   Patch TargetPatch;
   
   float GetAverageSSD() const;
+  float GetTotalAbsoluteDifference() const;
   float GetBoundaryPixelDifference() const;
   float GetBoundaryIsophoteAngleDifference() const;
   float GetBoundaryIsophoteStrengthDifference() const;
   float GetTotalScore() const;
   
   void SetAverageSSD(const float value);
+  void SetTotalAbsoluteDifference(const float value);
   void SetBoundaryPixelDifference(const float value);
   void SetBoundaryIsophoteAngleDifference(const float value);
   void SetBoundaryIsophoteStrengthDifference(const float value);
@@ -33,6 +35,7 @@ struct PatchPair
   
 private:
   float AverageSSD;
+  float TotalAbsoluteDifference;
   float BoundaryPixelDifference;
   float BoundaryIsophoteAngleDifference;
   float BoundaryIsophoteStrengthDifference;
@@ -43,6 +46,7 @@ private:
   
   // These are initialized to false and set to true when the corresponding SetXYZ() function is called.
   bool ValidSSD;
+  bool ValidTotalAbsoluteDifference;
   bool ValidBoundaryPixelDifference;
   bool ValidBoundaryIsophoteAngleDifference;
   bool ValidBoundaryIsophoteStrengthDifference;

@@ -60,6 +60,9 @@ INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DI
 # TARGET_LINK_LIBRARIES(CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 # INSTALL( TARGETS CriminisiInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 
+ADD_EXECUTABLE(ExamplePatchDifference Examples/ExamplePatchDifference.cpp)
+TARGET_LINK_LIBRARIES(ExamplePatchDifference CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+
 #--------------
 # --- Tests ---
 #--------------
