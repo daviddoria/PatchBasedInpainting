@@ -1196,7 +1196,11 @@ void Form::IterationComplete()
   
   // After one iteration, GetNumberOfCompletedIterations will be 1. This is exactly the set of intermediate images we want to display,
   // because the 0th intermediate images are the original inputs.
-  this->IterationToDisplay = this->Inpainting.GetNumberOfCompletedIterations();
+  
+  if(this->chkLive->isChecked())
+    {
+    this->IterationToDisplay = this->Inpainting.GetNumberOfCompletedIterations();
+    }
 
   ChangeDisplayedIteration();
 

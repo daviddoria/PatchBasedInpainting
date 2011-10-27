@@ -20,6 +20,13 @@ void Form::on_radCompareCIELAB_clicked()
   this->Inpainting.SetCompareToCIELAB();
 }
   
+void Form::on_chkLive_clicked()
+{
+  // When "Live" is checked, we do not want to be able to click 'next' and 'previous'
+  this->btnDisplayNextStep->setEnabled(!this->chkLive->isChecked());
+  this->btnDisplayPreviousStep->setEnabled(!this->chkLive->isChecked());
+}
+
 void Form::on_btnResort_clicked()
 {
   for(unsigned int iteration = 0; iteration < this->AllPotentialCandidatePairs.size(); iteration++)

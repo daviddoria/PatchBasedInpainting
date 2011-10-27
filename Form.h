@@ -84,6 +84,8 @@ public slots:
   
   void on_chkDebugImages_clicked();
   void on_chkDebugMessages_clicked();
+  
+  void on_chkLive_clicked();
 
   void on_forwardLookingTableWidget_cellClicked(int row, int col);
   void on_topPatchesTableWidget_cellClicked(int row, int col);
