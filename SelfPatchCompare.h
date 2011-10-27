@@ -65,6 +65,12 @@ public:
   float PatchTotalAbsoluteDifference(const Patch& sourcePatch);
   float PatchTotalSquaredDifference(const Patch& sourcePatch);
   
+  void SetPatchAllDifferences(PatchPair& patchPair);
+  void SetPatchAverageAbsoluteDifference(PatchPair& patchPair);
+  void SetPatchAverageSquaredDifference(PatchPair& patchPair);
+  void SetPatchTotalAbsoluteDifference(PatchPair& patchPair);
+  void SetPatchTotalSquaredDifference(PatchPair& patchPair);
+  
   float PatchDifferenceBoundary(const Patch& sourcePatch);
 
   // Prepare to do some comparisons by finding all of the valid pixels in the target region

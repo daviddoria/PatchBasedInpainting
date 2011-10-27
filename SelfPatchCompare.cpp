@@ -18,10 +18,17 @@
 
 #include "SelfPatchCompare.h"
 
+// Custom
 #include "Helpers.h"
 #include "Patch.h"
 #include "PatchPair.h"
 #include "Types.h"
+
+// Qt
+#include <QtConcurrentMap>
+
+// Boost
+#include <boost/bind.hpp>
 
 SelfPatchCompare::SelfPatchCompare(const unsigned int components, CandidatePairs& candidatePairs) : Pairs(candidatePairs)
 {
@@ -216,7 +223,16 @@ float SelfPatchCompare::PatchDifferenceManual(const Patch& sourcePatch)
   }
 }
 
+void SelfPatchCompare::SetPatchTotalSquaredDifference(PatchPair& patchPair)
+{
+  if(!patchPair.IsValidTotalSquaredDifference())
+    {
+    float totalSquaredDifference = PatchTotalSquaredDifference(patchPair.SourcePatch);
+    patchPair.SetTotalSquaredDifference(totalSquaredDifference);
+    }
 
+}
+	  
 float SelfPatchCompare::PatchTotalSquaredDifference(const Patch& sourcePatch)
 {
   // This function assumes that all pixels in the source region are unmasked.
@@ -277,6 +293,16 @@ float SelfPatchCompare::PatchTotalSquaredDifference(const Patch& sourcePatch)
     std::cerr << err << std::endl;
     exit(-1);
   }
+}
+
+void SelfPatchCompare::SetPatchAverageSquaredDifference(PatchPair& patchPair)
+{
+  // Only compute if the values are not already computed.
+  if(!patchPair.IsValidAverageSquaredDifference())
+    {
+    float averageSquaredDifference = PatchAverageSquaredDifference(patchPair.SourcePatch);
+    patchPair.SetAverageSquaredDifference(averageSquaredDifference);
+    }
 }
 
 float SelfPatchCompare::PatchAverageSquaredDifference(const Patch& sourcePatch)
@@ -342,6 +368,17 @@ float SelfPatchCompare::PatchAverageSquaredDifference(const Patch& sourcePatch)
   }
 }
 
+void SelfPatchCompare::SetPatchTotalAbsoluteDifference(PatchPair& patchPair)
+{
+
+  if(!patchPair.IsValidTotalAbsoluteDifference())
+    {
+    float totalAbsoluteDifference = PatchTotalAbsoluteDifference(patchPair.SourcePatch);
+    patchPair.SetTotalAbsoluteDifference(totalAbsoluteDifference);
+    }
+
+}
+
 
 float SelfPatchCompare::PatchTotalAbsoluteDifference(const Patch& sourcePatch)
 {
@@ -392,6 +429,16 @@ float SelfPatchCompare::PatchTotalAbsoluteDifference(const Patch& sourcePatch)
   }
 }
 
+void SelfPatchCompare::SetPatchAverageAbsoluteDifference(PatchPair& patchPair)
+{
+
+  if(!patchPair.IsValidAverageAbsoluteDifference())
+    {
+    float averageAbsoluteDifference = PatchAverageAbsoluteDifference(patchPair.SourcePatch);
+    patchPair.SetAverageAbsoluteDifference(averageAbsoluteDifference);
+    }
+
+}
 
 float SelfPatchCompare::PatchAverageAbsoluteDifference(const Patch& sourcePatch)
 {
@@ -442,6 +489,7 @@ float SelfPatchCompare::PatchAverageAbsoluteDifference(const Patch& sourcePatch)
     exit(-1);
   }
 }
+
 
 float SelfPatchCompare::PatchDifferenceBoundary(const Patch& sourcePatch)
 {
@@ -499,6 +547,14 @@ float SelfPatchCompare::PatchDifferenceBoundary(const Patch& sourcePatch)
   }
 }
 
+void SelfPatchCompare::SetPatchAllDifferences(PatchPair& patchPair)
+{
+  SetPatchAverageSquaredDifference(patchPair);
+  SetPatchAverageAbsoluteDifference(patchPair);
+  SetPatchTotalAbsoluteDifference(patchPair);
+  SetPatchTotalSquaredDifference(patchPair);
+}
+
 void SelfPatchCompare::ComputeAllDifferences()
 {
   // Source patches are always full and entirely valid, so there are two cases - when the target patch is fully inside the image,
@@ -526,30 +582,14 @@ void SelfPatchCompare::ComputeAllDifferences()
     else // The target patch is entirely inside the image
       {
       ComputeOffsets();
+      /*
       for(unsigned int sourcePatchId = 0; sourcePatchId < this->Pairs.size(); ++sourcePatchId)
 	{
-	// Only compute if the values are not already computed.
-	if(!this->Pairs[sourcePatchId].IsValidAverageSquaredDifference())
-	  {
-	  float averageSquaredDifference = PatchAverageSquaredDifference(this->Pairs[sourcePatchId].SourcePatch);
-	  this->Pairs[sourcePatchId].SetAverageSquaredDifference(averageSquaredDifference);
-	  }
-	if(!this->Pairs[sourcePatchId].IsValidTotalAbsoluteDifference())
-	  {
-          float totalAbsoluteDifference = PatchTotalAbsoluteDifference(this->Pairs[sourcePatchId].SourcePatch);
-	  this->Pairs[sourcePatchId].SetTotalAbsoluteDifference(totalAbsoluteDifference);
-	  }
-	if(!this->Pairs[sourcePatchId].IsValidAverageAbsoluteDifference())
-	  {
-          float averageAbsoluteDifference = PatchAverageAbsoluteDifference(this->Pairs[sourcePatchId].SourcePatch);
-	  this->Pairs[sourcePatchId].SetAverageAbsoluteDifference(averageAbsoluteDifference);
-	  }
-	if(!this->Pairs[sourcePatchId].IsValidTotalSquaredDifference())
-	  {
-          float totalSquaredDifference = PatchTotalSquaredDifference(this->Pairs[sourcePatchId].SourcePatch);
-	  this->Pairs[sourcePatchId].SetTotalSquaredDifference(totalSquaredDifference);
-	  }
+	SetPatchAllDifferences(this->Pairs[sourcePatchId]);
 	}
+      */
+      //QtConcurrent::blockingMap<std::vector<CandidatePairs> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
+      QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
       }
   }
   catch( itk::ExceptionObject & err )

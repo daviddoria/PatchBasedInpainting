@@ -368,7 +368,7 @@ void CriminisiInpainting::Iterate()
     if(usedPatchPair.TargetPatch.Region != this->PotentialCandidatePairs[candidateId].TargetPatch.Region)
       {
       this->PotentialCandidatePairs[candidateId].AddPairsFromPatches(newPatches);
-      ComputeAllContinuationDifferences(this->PotentialCandidatePairs[candidateId]);
+      //ComputeAllContinuationDifferences(this->PotentialCandidatePairs[candidateId]);
     
       SelfPatchCompare* patchCompare;
       patchCompare = new SelfPatchCompareAll(this->CompareImage->GetNumberOfComponentsPerPixel(), this->PotentialCandidatePairs[candidateId]);
@@ -475,7 +475,7 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     Patch sourcePatch = this->SourcePatches[bestMatchSourcePatchId];
     */
     
-    ComputeAllContinuationDifferences(candidatePairs);
+    //ComputeAllContinuationDifferences(candidatePairs);
 
     // Keep only the number of top patches specified.
     //patchPairsSortedByContinuation.erase(patchPairsSortedByContinuation.begin() + this->NumberOfTopPatchesToSave, patchPairsSortedByContinuation.end());

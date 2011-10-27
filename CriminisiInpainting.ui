@@ -343,6 +343,13 @@
              </widget>
             </item>
             <item>
+             <widget class="QCheckBox" name="chkLive">
+              <property name="text">
+               <string>Live</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QLabel" name="label_2">
               <property name="text">
                <string>Current iteration displayed:</string>
