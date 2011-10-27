@@ -588,8 +588,9 @@ void SelfPatchCompare::ComputeAllDifferences()
 	SetPatchAllDifferences(this->Pairs[sourcePatchId]);
 	}
       */
-      //QtConcurrent::blockingMap<std::vector<CandidatePairs> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
-      QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
+      
+      //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
+    QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchTotalAbsoluteDifference, this, _1));
       }
   }
   catch( itk::ExceptionObject & err )

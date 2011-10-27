@@ -619,7 +619,7 @@ void Form::on_btnStep_clicked()
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
   this->Inpainting.SetMaxForwardLookPatches(this->txtNumberOfForwardLook->text().toUInt());
-  this->Inpainting.SetNumberOfTopPatchesToSave(this->txtNumberOfTopPatches->text().toUInt());
+  this->Inpainting.SetNumberOfTopPatchesToSave(this->txtNumberOfTopPatchesToSave->text().toUInt());
   this->Inpainting.Iterate();
   
   IterationComplete();
@@ -660,7 +660,7 @@ void Form::on_btnInpaint_clicked()
   DebugMessage("Starting ComputationThread...");
   
   this->Inpainting.SetMaxForwardLookPatches(this->txtNumberOfForwardLook->text().toUInt());
-  this->Inpainting.SetNumberOfTopPatchesToSave(this->txtNumberOfTopPatches->text().toUInt());
+  this->Inpainting.SetNumberOfTopPatchesToSave(this->txtNumberOfTopPatchesToSave->text().toUInt());
   
   ComputationThread.start();
 }
@@ -941,7 +941,7 @@ void Form::HighlightSourcePatches()
   unsigned char centerPixelColor[3];
   Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
 
-  unsigned int numberToDisplay = std::min(candidatePairs.size(), this->txtNumberOfTopPatches->text().toUInt());
+  unsigned int numberToDisplay = std::min(candidatePairs.size(), this->txtNumberOfTopPatchesToDisplay->text().toUInt());
   for(unsigned int candidateId = 0; candidateId < numberToDisplay; ++candidateId)
     {
     //DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
@@ -1172,20 +1172,32 @@ void Form::IterationComplete()
   InpaintingVisualizationStack stack;
   
   Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), stack.Image);
-  Helpers::DeepCopy<Mask>(this->Inpainting.GetMaskImage(), stack.MaskImage);
-  Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
-  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), stack.Priority);
-  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetDataImage(), stack.Data);
-  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), stack.Confidence);
-  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceMapImage(), stack.ConfidenceMap);
-  Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), stack.BoundaryNormals);
-  Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), stack.Isophotes);
-  Helpers::DeepCopy<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage, stack.PotentialTargetPatchesImage);
+  if(!this->chkOnlySaveImage->isChecked())
+    {
+    Helpers::DeepCopy<Mask>(this->Inpainting.GetMaskImage(), stack.MaskImage);
+    Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
+    Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), stack.Priority);
+    Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetDataImage(), stack.Data);
+    Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), stack.Confidence);
+    Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceMapImage(), stack.ConfidenceMap);
+    Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), stack.BoundaryNormals);
+    Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), stack.Isophotes);
+    Helpers::DeepCopy<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage, stack.PotentialTargetPatchesImage);
+    }
 
   this->IntermediateImages.push_back(stack);
 
   if(this->chkRecordSteps->isChecked())
     {
+    // Chop to the desired length
+    
+    for(unsigned int i = 0; i < this->Inpainting.GetPotentialCandidatePairsReference().size(); ++i)
+      {
+      unsigned int numberToKeep = std::min(this->Inpainting.GetPotentialCandidatePairsReference()[i].size(), this->txtNumberOfTopPatchesToSave->text().toUInt());
+      std::cout << "numberToKeep: " << numberToKeep << std::endl;
+      this->Inpainting.GetPotentialCandidatePairsReference()[i].erase(this->Inpainting.GetPotentialCandidatePairsReference()[i].begin() + numberToKeep, this->Inpainting.GetPotentialCandidatePairsReference()[i].end());
+      }
+    
     this->AllPotentialCandidatePairs.push_back(this->Inpainting.GetPotentialCandidatePairs());
     this->Recorded.push_back(true);
     }
@@ -1322,10 +1334,10 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
   // There is a -1 offset here because the 0th patch pair to be stored is after iteration 1 (as after the 0th iteration (initial conditions) there are no used patch pairs)
   const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][forwardLookId];
 
-  unsigned int numberToDisplay = std::min(candidatePairs.size(), this->txtNumberOfTopPatches->text().toUInt());
-  if(candidatePairs.size() != this->txtNumberOfTopPatches->text().toUInt())
+  unsigned int numberToDisplay = std::min(candidatePairs.size(), this->txtNumberOfTopPatchesToDisplay->text().toUInt());
+  if(candidatePairs.size() != this->txtNumberOfTopPatchesToDisplay->text().toUInt())
     {
-    std::cerr << "Warning: Number of pairs (" << candidatePairs.size() << ") does not match requested number (" << this->txtNumberOfTopPatches->text().toUInt() << ")" << std::endl;
+    std::cerr << "Warning: Number of pairs (" << candidatePairs.size() << ") does not match requested number (" << this->txtNumberOfTopPatchesToDisplay->text().toUInt() << ")" << std::endl;
     }
   //for(unsigned int pairId = 0; pairId < candidatePairs.size(); ++pairId)
   for(unsigned int pairId = 0; pairId < numberToDisplay; ++pairId)

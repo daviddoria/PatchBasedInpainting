@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,6,1,2,5">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,6,1,2,5">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0">
         <item>
@@ -226,6 +226,24 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_9">
           <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QLabel" name="lblNumberOfTopPatchesToSave">
+              <property name="text">
+               <string>TopPatches saved:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="txtNumberOfTopPatchesToSave">
+              <property name="text">
+               <string>1000</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_8">
             <item>
              <widget class="QLabel" name="label_5">
@@ -246,22 +264,11 @@
          </layout>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_7">
-          <item>
-           <widget class="QLabel" name="label_10">
-            <property name="text">
-             <string>Top patches:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="txtNumberOfTopPatches">
-            <property name="text">
-             <string>10</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="QCheckBox" name="chkOnlySaveImage">
+          <property name="text">
+           <string>Only save image</string>
+          </property>
+         </widget>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_11">
@@ -346,6 +353,9 @@
              <widget class="QCheckBox" name="chkLive">
               <property name="text">
                <string>Live</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -598,7 +608,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_8" stretch="1,15,1,1,1">
+       <layout class="QVBoxLayout" name="verticalLayout_8" stretch="1,15,0,1,1,1">
         <item>
          <widget class="QLabel" name="label_9">
           <property name="font">
@@ -679,6 +689,24 @@
            </property>
           </column>
          </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>Num. Patches:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="txtNumberOfTopPatchesToDisplay">
+            <property name="text">
+             <string>10</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="QCheckBox" name="chkDisplaySourcePatchLocations">
