@@ -708,7 +708,19 @@ void Form::on_btnDisplayNextStep_clicked()
 
 void Form::DisplaySourcePatch(const unsigned int forwardLookId, const unsigned int topPatchId)
 {
-  //DebugMessage("DisplaySourcePatch()");
+  DebugMessage("DisplaySourcePatch()");
+  
+  if(this->IterationToDisplay < 1)
+    {
+    std::cerr << "Can only display result patch for iterations > 0." << std::endl;
+    return;
+    }
+    
+  if(!this->Recorded[this->IterationToDisplay - 1])
+    {
+    return;
+    }
+
   FloatVectorImageType::Pointer currentImage = this->IntermediateImages[this->IterationToDisplay].Image;
 
   const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][forwardLookId]; // This -1 is because the 0th iteration is the initial condition
@@ -726,6 +738,11 @@ void Form::DisplayTargetPatch(const unsigned int forwardLookId)
   if(this->IterationToDisplay < 1)
     {
     std::cerr << "Can only display target patch for iterations > 0." << std::endl;
+    return;
+    }
+
+  if(!this->Recorded[this->IterationToDisplay - 1])
+    {
     return;
     }
 
@@ -755,6 +772,11 @@ void Form::DisplayResultPatch(const unsigned int forwardLookId, const unsigned i
     return;
     }
     
+  if(!this->Recorded[this->IterationToDisplay - 1])
+    {
+    return;
+    }
+
   FloatVectorImageType::Pointer currentImage = this->IntermediateImages[this->IterationToDisplay - 1].Image;
   
   const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][forwardLookId];
@@ -844,6 +866,16 @@ void Form::HighlightForwardLookPatches()
     return;
     }
 
+  if(!this->IterationToDisplay < 1)
+    {
+    return;
+    }
+    
+  if(!this->Recorded[this->IterationToDisplay - 1])
+    {
+    return;
+    }
+    
   // Get the candidate patches and make sure we have requested a valid set.
   const std::vector<CandidatePairs>& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1];
 
@@ -886,6 +918,15 @@ void Form::HighlightSourcePatches()
     return;
     }
 
+  if(this->IterationToDisplay < 1)
+    {
+    return;
+    }
+    
+  if(!this->Recorded[this->IterationToDisplay - 1])
+    {
+    return;
+    }
 //   CandidatePairs& candidatePairs;
 //   bool valid = this->Inpainting.GetPotentialCandidatePairs(this->IterationToDisplay - 1, this->forwardLookingTableWidget->currentRow(), candidatePairs);
 //   if(!valid)
@@ -1023,6 +1064,16 @@ void Form::CreatePotentialTargetPatchesImage()
 //   ssPatchPairsFile << "Debug/PatchPairs_" << Helpers::ZeroPad(this->Inpainting.GetIteration(), 3) << ".txt";
 //   OutputPairs(potentialPatchPairs, ssPatchPairsFile.str());
 
+  if(this->IterationToDisplay < 1)
+    {
+    return;
+    }
+    
+  if(!this->Recorded[this->IterationToDisplay - 1])
+    {
+    return;
+    }
+    
   this->PotentialTargetPatchesImage->SetRegions(this->Inpainting.GetFullRegion());
   this->PotentialTargetPatchesImage->Allocate();
   this->PotentialTargetPatchesImage->FillBuffer(0);
@@ -1050,8 +1101,8 @@ void Form::OutputPairs(const std::vector<PatchPair>& patchPairs, const std::stri
   for(unsigned int i = 0; i < patchPairs.size(); ++i)
     {
     fout << "Potential patch " << i << ": " << std::endl
-	 << "target index: " << patchPairs[i].TargetPatch.Region.GetIndex() << std::endl
-	 << "ssd score: " << patchPairs[i].GetAverageSSD() << std::endl;
+	 << "target index: " << patchPairs[i].TargetPatch.Region.GetIndex() << std::endl;
+	 //<< "ssd score: " << patchPairs[i].GetAverageSSD() << std::endl;
 	 //<< "histogram score: " << patchPairs[i].HistogramDifference << std::endl;
     }
     
@@ -1136,6 +1187,11 @@ void Form::IterationComplete()
   if(this->chkRecordSteps->isChecked())
     {
     this->AllPotentialCandidatePairs.push_back(this->Inpainting.GetPotentialCandidatePairs());
+    this->Recorded.push_back(true);
+    }
+  else
+    {
+    this->Recorded.push_back(false);
     }
   
   // After one iteration, GetNumberOfCompletedIterations will be 1. This is exactly the set of intermediate images we want to display,
@@ -1158,6 +1214,18 @@ void Form::IterationCompleteSlot()
 void Form::SetupForwardLookingTable()
 {
   DebugMessage("SetupForwardLookingTable()");
+  
+  if(this->IterationToDisplay < 1)
+    {
+    std::cerr << "Can only display result patch for iterations > 0." << std::endl;
+    return;
+    }
+    
+  if(!this->Recorded[this->IterationToDisplay - 1])
+    {
+    return;
+    }
+  
   // Clear the table
   this->forwardLookingTableWidget->setRowCount(0);
 
@@ -1229,6 +1297,18 @@ void Form::SetupForwardLookingTable()
 void Form::SetupTopPatchesTable(unsigned int forwardLookId)
 {
   DebugMessage("SetupTopPatchesTable()");
+  
+  if(this->IterationToDisplay < 1)
+    {
+    std::cerr << "Can only display result patch for iterations > 0." << std::endl;
+    return;
+    }
+    
+  if(!this->Recorded[this->IterationToDisplay - 1])
+    {
+    return;
+    }
+
   // Clear the table
   this->topPatchesTableWidget->setRowCount(0);
 
@@ -1261,35 +1341,47 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
     this->topPatchesTableWidget->setCellWidget(pairId, 0, imageLabel);
 
 
-    // Display SSD score
-    QTableWidgetItem* ssdLabel = new QTableWidgetItem;
-    ssdLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetAverageSSD());
-    this->topPatchesTableWidget->setItem(pairId, 1, ssdLabel);
+    // Display patch match scores
+    QTableWidgetItem* totalAbsoluteDifferenceLabel = new QTableWidgetItem;
+    totalAbsoluteDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetTotalAbsoluteDifference());
+    this->topPatchesTableWidget->setItem(pairId, 1, totalAbsoluteDifferenceLabel);
+    
+    QTableWidgetItem* totalSquaredDifferenceLabel = new QTableWidgetItem;
+    totalSquaredDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetTotalSquaredDifference());
+    this->topPatchesTableWidget->setItem(pairId, 2, totalSquaredDifferenceLabel);
+    
+    QTableWidgetItem* averageAbsoluteDifferenceLabel = new QTableWidgetItem;
+    averageAbsoluteDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetAverageAbsoluteDifference());
+    this->topPatchesTableWidget->setItem(pairId, 3, averageAbsoluteDifferenceLabel);
+    
+    QTableWidgetItem* averageSquaredDifferenceLabel = new QTableWidgetItem;
+    averageSquaredDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetAverageSquaredDifference());
+    this->topPatchesTableWidget->setItem(pairId, 4, averageSquaredDifferenceLabel);
 
     // Display boundary pixel difference score
     QTableWidgetItem* boundaryPixelDifferenceLabel = new QTableWidgetItem;
     boundaryPixelDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryPixelDifference());
-    this->topPatchesTableWidget->setItem(pairId, 2, boundaryPixelDifferenceLabel);
+    this->topPatchesTableWidget->setItem(pairId, 5, boundaryPixelDifferenceLabel);
     
     // Display boundary isophote difference score
     QTableWidgetItem* boundaryIsophoteAngleDifferenceLabel = new QTableWidgetItem;
     boundaryIsophoteAngleDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryIsophoteAngleDifference());
-    this->topPatchesTableWidget->setItem(pairId, 3, boundaryIsophoteAngleDifferenceLabel);
+    this->topPatchesTableWidget->setItem(pairId, 6, boundaryIsophoteAngleDifferenceLabel);
 
     QTableWidgetItem* boundaryIsophoteStrengthDifferenceLabel = new QTableWidgetItem;
     boundaryIsophoteStrengthDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryIsophoteStrengthDifference());
-    this->topPatchesTableWidget->setItem(pairId, 4, boundaryIsophoteStrengthDifferenceLabel);
+    this->topPatchesTableWidget->setItem(pairId, 7, boundaryIsophoteStrengthDifferenceLabel);
     
     // Display total score
     QTableWidgetItem* totalScoreLabel = new QTableWidgetItem;
     totalScoreLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetTotalScore());
-    this->topPatchesTableWidget->setItem(pairId, 5, totalScoreLabel);
+    this->topPatchesTableWidget->setItem(pairId, 8, totalScoreLabel);
     
     // Store the patch/row Id. This is needed in case we sort the table using the widget header buttons.
     QTableWidgetItem* idLabel = new QTableWidgetItem;
     idLabel->setData(Qt::DisplayRole, pairId);
-    this->topPatchesTableWidget->setItem(pairId, 6, idLabel);
-    this->topPatchesTableWidget->setColumnHidden(6, true); // We don't want to display this value, just track it.
+    this->topPatchesTableWidget->setItem(pairId, 9, idLabel);
+    this->topPatchesTableWidget->setColumnHidden(9, true); // We don't want to display this value, just track it.
     
     // Display patch location
     std::stringstream ssLocation;
@@ -1297,7 +1389,7 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
 
     QTableWidgetItem* locationLabel = new QTableWidgetItem;
     locationLabel->setText(ssLocation.str().c_str());
-    this->topPatchesTableWidget->setItem(pairId, 7, locationLabel);
+    this->topPatchesTableWidget->setItem(pairId, 10, locationLabel);
     }
 
   this->topPatchesTableWidget->selectRow(0);
@@ -1307,9 +1399,20 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
 
 void Form::HighlightSelectedForwardLookPatch(const unsigned int id)
 {
-
   DebugMessage("HighlightSelectedForwardLookPatch()");
   // Highlight the selected forward look patch in a different color than the rest if the user has chosen to display forward look patch locations.
+  
+  if(this->IterationToDisplay < 1)
+    {
+    std::cerr << "Can only display result patch for iterations > 0." << std::endl;
+    return;
+    }
+    
+  if(!this->Recorded[this->IterationToDisplay - 1])
+    {
+    return;
+    }
+    
   if(!this->chkDisplayForwardLookPatchLocations->isChecked())
     {
     return;
@@ -1343,8 +1446,19 @@ void Form::HighlightSelectedForwardLookPatch(const unsigned int id)
 void Form::HighlightSelectedSourcePatch(const unsigned int id)
 {
   DebugMessage("HighlightSelectedSourcePatch()");
-  
   // Highlight the selected source patch in a different color than the rest if the user has chosen to display forward look patch locations.
+  
+  if(this->IterationToDisplay < 1)
+    {
+    std::cerr << "Can only display result patch for iterations > 0." << std::endl;
+    return;
+    }
+    
+  if(!this->Recorded[this->IterationToDisplay - 1])
+    {
+    return;
+    }
+
   if(!this->chkDisplaySourcePatchLocations->isChecked())
     {
     return;

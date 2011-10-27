@@ -5,6 +5,21 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 
+void Form::on_radCompareOriginal_clicked()
+{
+  this->Inpainting.SetCompareToOriginal();
+}
+
+void Form::on_radCompareBlurred_clicked()
+{
+  this->Inpainting.SetCompareToBlurred();
+}
+
+void Form::on_radCompareCIELAB_clicked()
+{
+  this->Inpainting.SetCompareToCIELAB();
+}
+  
 void Form::on_btnResort_clicked()
 {
   for(unsigned int iteration = 0; iteration < this->AllPotentialCandidatePairs.size(); iteration++)
@@ -13,9 +28,21 @@ void Form::on_btnResort_clicked()
       {
       CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[iteration][forwardLookId];
 
-      if(this->radSortBySSD->isChecked())
+      if(this->radSortByTotalAbsoluteDifference->isChecked())
         {
-        std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageSSD);
+        std::sort(candidatePairs.begin(), candidatePairs.end(), SortByTotalAbsoluteDifference);
+        }
+      else if(this->radSortByTotalSquaredDifference->isChecked())
+        {
+        std::sort(candidatePairs.begin(), candidatePairs.end(), SortByTotalSquaredDifference);
+        }
+      else if(this->radSortByAverageAbsoluteDifference->isChecked())
+        {
+        std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
+        }
+      else if(this->radSortByAverageSquaredDifference->isChecked())
+        {
+        std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageSquaredDifference);
         }
       else if(this->radSortByBoundaryPixelDifference->isChecked())
         {

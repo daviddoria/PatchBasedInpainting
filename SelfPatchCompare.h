@@ -59,8 +59,12 @@ public:
 
   float SlowDifference(const Patch& sourcePatch);
   float PatchDifferenceManual(const Patch& sourcePatch);
+  
+  float PatchAverageAbsoluteDifference(const Patch& sourcePatch);
   float PatchAverageSquaredDifference(const Patch& sourcePatch);
   float PatchTotalAbsoluteDifference(const Patch& sourcePatch);
+  float PatchTotalSquaredDifference(const Patch& sourcePatch);
+  
   float PatchDifferenceBoundary(const Patch& sourcePatch);
 
   // Prepare to do some comparisons by finding all of the valid pixels in the target region

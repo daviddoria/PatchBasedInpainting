@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1319</width>
-    <height>977</height>
+    <width>1328</width>
+    <height>1299</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,6,1,2,5">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
@@ -264,6 +264,47 @@
          </layout>
         </item>
         <item>
+         <layout class="QVBoxLayout" name="verticalLayout_11">
+          <item>
+           <widget class="QLabel" name="label_12">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Compare Image</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radCompareOriginal">
+            <property name="text">
+             <string>Original</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radCompareBlurred">
+            <property name="text">
+             <string>Blurred</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radCompareCIELAB">
+            <property name="text">
+             <string>CIELAB</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
          <spacer name="verticalSpacer_3">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -281,7 +322,7 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2" stretch="9,1">
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget"/>
+         <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -573,7 +614,7 @@
            <bool>true</bool>
           </property>
           <property name="columnCount">
-           <number>8</number>
+           <number>11</number>
           </property>
           <column>
            <property name="text">
@@ -582,7 +623,22 @@
           </column>
           <column>
            <property name="text">
-            <string>SSD</string>
+            <string>Total Abs.</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Total Sq.</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Av. Abs.</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Av. Sq.</string>
            </property>
           </column>
           <column>
@@ -640,12 +696,46 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_10">
           <item>
-           <widget class="QRadioButton" name="radSortBySSD">
+           <widget class="QLabel" name="label_13">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
-             <string>SSD</string>
+             <string>Sort by:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radSortByTotalAbsoluteDifference">
+            <property name="text">
+             <string>Total Absolute Diff.</string>
             </property>
             <property name="checked">
              <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radSortByTotalSquaredDifference">
+            <property name="text">
+             <string>Total Squared Diff.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radSortByAverageAbsoluteDifference">
+            <property name="text">
+             <string>Average Absolute Diff.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radSortByAverageSquaredDifference">
+            <property name="text">
+             <string>Average Squared Diff.</string>
             </property>
            </widget>
           </item>
@@ -697,8 +787,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1319</width>
-     <height>25</height>
+     <width>1328</width>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLeft_Pane">

@@ -129,6 +129,9 @@ public:
   // Return a pointer to all forward look sets.
   std::vector<CandidatePairs>& GetPotentialCandidatePairsReference();
   
+  void SetCompareToOriginal();
+  void SetCompareToBlurred();
+  void SetCompareToCIELAB();
   //////////// These functions should be private, but we want to do some external testing for the moment.
   
   // Compute the isophotes.
@@ -162,10 +165,7 @@ private:
   // Determine the difference along an extended isophote of the pixel that will be filled. The PatchPair is non-const because we store the score in the class.
   //float ComputeTotalContinuationDifference(PatchPair& patchPair);
   
-  // This is the original Criminisi idea of filling the highest priority first. The best patch pair is returned by reference.
-  void FindBestPatchForHighestPriority(PatchPair& bestPatchPair);
-  
-  // This is a new idea to try to fill several patches and return the best pair
+  // This is a new idea to try to fill several patches and return the best pair. Note that if the number of look ahead patches is 1, this is exactly the same as not looking ahead.
   void FindBestPatchLookAhead(PatchPair& bestPatchPair);
 
   // Image to inpaint. This should not be modified throughout the algorithm.

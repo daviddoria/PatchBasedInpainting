@@ -827,3 +827,42 @@ float CriminisiInpainting::ComputeAverageIsophoteDifference(const itk::Index<2>&
   //std::cout << "Leave ComputeAverageIsophoteDifference()" << std::endl;
   return isophoteDifference;
 }
+
+
+void CriminisiInpainting::FindBestPatchForHighestPriority(PatchPair& bestPatchPair)
+{
+  // This function implements Criminisi's idea of "find the highest priority pixel and proceed to fill it".
+  // We have replaced this idea with FindBestPatchLookAhead().
+  
+  // This function returns the best PatchPair by reference.
+#if 0
+  float highestPriority = 0;
+  itk::Index<2> pixelToFill = FindHighestValueOnBoundary(this->PriorityImage, highestPriority);
+  DebugMessage<itk::Index<2> >("Highest priority found to be ", pixelToFill);
+
+  itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
+  Patch targetPatch;
+  targetPatch.Region = targetRegion;
+  
+  DebugMessage("Finding best patch...");
+
+  CandidatePairs candidatePairs;
+  SelfPatchCompare* patchCompare;
+  patchCompare = new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel(), candidatePairs);
+  patchCompare->SetImage(this->CompareImage);
+  patchCompare->SetMask(this->CurrentMask);
+  
+  float distance = 0;
+  unsigned int bestMatchSourcePatchId = patchCompare->FindBestPatch(distance);
+  //DebugMessage<unsigned int>("Found best patch to be ", bestMatchSourcePatchId);
+  //std::cout << "Found best patch to be " << bestMatchSourcePatchId << std::endl;
+
+  //this->DebugWritePatch(this->SourcePatches[bestMatchSourcePatchId], "SourcePatch.png");
+  //this->DebugWritePatch(targetRegion, "TargetPatch.png");
+  Patch sourcePatch;
+  sourcePatch = this->SourcePatches[bestMatchSourcePatchId];
+  
+  bestPatchPair.TargetPatch = targetPatch;
+  bestPatchPair.SourcePatch = sourcePatch;
+#endif
+}

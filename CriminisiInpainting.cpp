@@ -60,7 +60,8 @@ CriminisiInpainting::CriminisiInpainting()
   
   // Set the image to use for pixel to pixel comparisons.
   //this->CompareImage = this->CIELabImage;
-  this->CompareImage = this->BlurredImage;
+  //this->CompareImage = this->BlurredImage;
+  this->CompareImage = this->CurrentOutputImage;
   
   this->ConfidenceImage = FloatScalarImageType::New();
   this->ConfidenceMapImage = FloatScalarImageType::New();
@@ -120,8 +121,9 @@ std::vector<Patch> CriminisiInpainting::AddSourcePatches(const itk::ImageRegion<
   std::vector<Patch> newPatches;
   try
   {
+    // Clearly we cannot add source patches from regions that are outside the image.
     itk::ImageRegion<2> newRegion = CropToValidRegion(region);
-    //this->SourcePatches.clear();
+
     itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->CurrentOutputImage, newRegion);
 
     while(!imageIterator.IsAtEnd())
@@ -388,45 +390,6 @@ void CriminisiInpainting::Iterate()
 
 }
 
-void CriminisiInpainting::FindBestPatchForHighestPriority(PatchPair& bestPatchPair)
-{
-  // This function implements Criminisi's idea of "find the highest priority pixel and proceed to fill it".
-  // We have replaced this idea with FindBestPatchLookAhead().
-  
-  // This function returns the best PatchPair by reference.
-#if 0
-  float highestPriority = 0;
-  itk::Index<2> pixelToFill = FindHighestValueOnBoundary(this->PriorityImage, highestPriority);
-  DebugMessage<itk::Index<2> >("Highest priority found to be ", pixelToFill);
-
-  itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
-  Patch targetPatch;
-  targetPatch.Region = targetRegion;
-  
-  DebugMessage("Finding best patch...");
-
-  CandidatePairs candidatePairs;
-  SelfPatchCompare* patchCompare;
-  patchCompare = new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel(), candidatePairs);
-  patchCompare->SetImage(this->CompareImage);
-  patchCompare->SetMask(this->CurrentMask);
-  
-  float distance = 0;
-  unsigned int bestMatchSourcePatchId = patchCompare->FindBestPatch(distance);
-  //DebugMessage<unsigned int>("Found best patch to be ", bestMatchSourcePatchId);
-  //std::cout << "Found best patch to be " << bestMatchSourcePatchId << std::endl;
-
-  //this->DebugWritePatch(this->SourcePatches[bestMatchSourcePatchId], "SourcePatch.png");
-  //this->DebugWritePatch(targetRegion, "TargetPatch.png");
-  Patch sourcePatch;
-  sourcePatch = this->SourcePatches[bestMatchSourcePatchId];
-  
-  bestPatchPair.TargetPatch = targetPatch;
-  bestPatchPair.SourcePatch = sourcePatch;
-#endif
-}
-
-
 void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 {
   DebugMessage("FindBestPatchLookAhead()");
@@ -522,7 +485,7 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     
     //std::cout << "Potential pair: Source: " << sourcePatch.Region << " Target: " << targetPatch.Region << std::endl;
     
-    std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageSSD);
+    std::sort(candidatePairs.begin(), candidatePairs.end(), SortByTotalAbsoluteDifference);
     //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByContinuationDifference());
     std::cout << "Sorted " << candidatePairs.size() << " candidatePairs." << std::endl;
     
@@ -530,7 +493,7 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     std::cout << "Finished computing new patch " << newPatchId << std::endl;
     } // end forward look loop
 
-  // Sort the forward look patches so that the highest priority sets are first in the vector.
+  // Sort the forward look patches so that the highest priority sets are first in the vector (descending order).
   std::sort(this->PotentialCandidatePairs.rbegin(), this->PotentialCandidatePairs.rend(), SortByPriority);
 
 //   std::cout << "Scores: " << std::endl;
@@ -563,9 +526,9 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   unsigned int lowestLookAhead = 0;
   for(unsigned int i = 0; i < this->PotentialCandidatePairs.size(); ++i)
     {
-    if(this->PotentialCandidatePairs[i][0].GetAverageSSD() < lowestScore)
+    if(this->PotentialCandidatePairs[i][0].GetTotalAbsoluteDifference() < lowestScore)
       {
-      lowestScore = this->PotentialCandidatePairs[i][0].GetAverageSSD();
+      lowestScore = this->PotentialCandidatePairs[i][0].GetTotalAbsoluteDifference();
       lowestLookAhead = i;
       }
     }
@@ -1362,4 +1325,19 @@ std::vector<CandidatePairs>& CriminisiInpainting::GetPotentialCandidatePairsRefe
 {
   // Return a reference to the whole set of forward look pairs.
   return PotentialCandidatePairs;
+}
+
+void CriminisiInpainting::SetCompareToOriginal()
+{
+  this->CompareImage = this->CurrentOutputImage;
+}
+  
+void CriminisiInpainting::SetCompareToBlurred()
+{
+  this->CompareImage = this->BlurredImage;
+}
+
+void CriminisiInpainting::SetCompareToCIELAB()
+{
+  this->CompareImage = this->CIELabImage;
 }

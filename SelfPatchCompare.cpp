@@ -217,6 +217,67 @@ float SelfPatchCompare::PatchDifferenceManual(const Patch& sourcePatch)
 }
 
 
+float SelfPatchCompare::PatchTotalSquaredDifference(const Patch& sourcePatch)
+{
+  // This function assumes that all pixels in the source region are unmasked.
+  try
+  {
+    //assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
+
+    float totalDifference = 0.0f;
+    
+    FloatVectorImageType::InternalPixelType *buffptr = this->Image->GetBufferPointer();
+    unsigned int offsetDifference = (this->Image->ComputeOffset(this->Pairs.TargetPatch.Region.GetIndex())
+                                    - this->Image->ComputeOffset(sourcePatch.Region.GetIndex())) * this->NumberOfComponentsPerPixel;
+
+    float squaredDifference = 0;
+    
+    FloatVectorImageType::PixelType sourcePixel;
+    sourcePixel.SetSize(this->NumberOfComponentsPerPixel);
+    
+    FloatVectorImageType::PixelType targetPixel;
+    targetPixel.SetSize(this->NumberOfComponentsPerPixel);
+    
+    FloatVectorImageType::PixelType differencePixel;
+    differencePixel.SetSize(this->NumberOfComponentsPerPixel);
+    
+    for(unsigned int pixelId = 0; pixelId < this->ValidOffsets.size(); ++pixelId)
+      {
+      
+      for(unsigned int i = 0; i < this->NumberOfComponentsPerPixel; ++i)
+        {
+	sourcePixel[i] = buffptr[this->ValidOffsets[pixelId] + i];
+        targetPixel[i] = buffptr[this->ValidOffsets[pixelId] - offsetDifference + i];
+        }
+    
+      
+      squaredDifference = PixelDifferenceSquared(sourcePixel, targetPixel);
+      //difference = NonVirtualPixelDifference(sourcePixel, targetPixel); // This call seems to make it very slow?
+      //difference = (sourcePixel-targetPixel).GetSquaredNorm(); // horribly slow
+      
+      //differencePixel = sourcePixel-targetPixel;
+      //difference = differencePixel.GetSquaredNorm();
+      
+//       difference = 0;
+//       for(unsigned int i = 0; i < componentsPerPixel; ++i)
+//         {
+// 	difference += (sourcePixel[i] - targetPixel[i]) * 
+// 		      (sourcePixel[i] - targetPixel[i]);
+// 	}
+
+      //totalDifference += difference;
+      totalDifference += squaredDifference;
+      }
+
+    return totalDifference;
+  } //end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in PatchDifference!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}
 
 float SelfPatchCompare::PatchAverageSquaredDifference(const Patch& sourcePatch)
 {
@@ -331,6 +392,57 @@ float SelfPatchCompare::PatchTotalAbsoluteDifference(const Patch& sourcePatch)
   }
 }
 
+
+float SelfPatchCompare::PatchAverageAbsoluteDifference(const Patch& sourcePatch)
+{
+  // This function assumes that all pixels in the source region are unmasked.
+  try
+  {
+    //assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
+
+    float totalAbsoluteDifference = 0.0f;
+
+    FloatVectorImageType::InternalPixelType *buffptr = this->Image->GetBufferPointer();
+    unsigned int offsetDifference = (this->Image->ComputeOffset(this->Pairs.TargetPatch.Region.GetIndex())
+                                    - this->Image->ComputeOffset(sourcePatch.Region.GetIndex())) * this->NumberOfComponentsPerPixel;
+
+    float absoluteDifference = 0;
+
+    FloatVectorImageType::PixelType sourcePixel;
+    sourcePixel.SetSize(this->NumberOfComponentsPerPixel);
+
+    FloatVectorImageType::PixelType targetPixel;
+    targetPixel.SetSize(this->NumberOfComponentsPerPixel);
+
+    FloatVectorImageType::PixelType differencePixel;
+    differencePixel.SetSize(this->NumberOfComponentsPerPixel);
+
+    for(unsigned int pixelId = 0; pixelId < this->ValidOffsets.size(); ++pixelId)
+      {
+
+      for(unsigned int i = 0; i < this->NumberOfComponentsPerPixel; ++i)
+        {
+        sourcePixel[i] = buffptr[this->ValidOffsets[pixelId] + i];
+        targetPixel[i] = buffptr[this->ValidOffsets[pixelId] - offsetDifference + i];
+        }
+
+
+      absoluteDifference = PixelDifference(sourcePixel, targetPixel);
+
+      totalAbsoluteDifference += absoluteDifference;
+      }
+  
+    float averageAbsoluteDifference = totalAbsoluteDifference / static_cast<float>(this->ValidOffsets.size());
+    return averageAbsoluteDifference;
+  } //end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in PatchDifference!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}
+
 float SelfPatchCompare::PatchDifferenceBoundary(const Patch& sourcePatch)
 {
   // This function assumes that all pixels in the source region are unmasked.
@@ -389,9 +501,12 @@ float SelfPatchCompare::PatchDifferenceBoundary(const Patch& sourcePatch)
 
 void SelfPatchCompare::ComputeAllDifferences()
 {
+  // Source patches are always full and entirely valid, so there are two cases - when the target patch is fully inside the image,
+  // and when it is not.
   try
   {
     std::cout << "ComputeAllDifferences()" << std::endl;
+    // If the target region is not fully inside the image, crop it and proceed.
     if(!this->Image->GetLargestPossibleRegion().IsInside(this->Pairs.TargetPatch.Region))
       {  
       // Force the target region to be entirely inside the image
@@ -401,13 +516,11 @@ void SelfPatchCompare::ComputeAllDifferences()
     
       for(unsigned int sourcePatchId = 0; sourcePatchId < this->Pairs.size(); ++sourcePatchId)
 	{
-	// Only compute if the values are not already computed.
-	if(this->Pairs[sourcePatchId].IsValidSSD())
-	  {
-	  continue;
-	  }
 	float distance = PatchDifferenceBoundary(this->Pairs[sourcePatchId].SourcePatch);
-	this->Pairs[sourcePatchId].SetAverageSSD(distance);
+	this->Pairs[sourcePatchId].SetAverageAbsoluteDifference(distance);
+	this->Pairs[sourcePatchId].SetAverageSquaredDifference(distance);
+	this->Pairs[sourcePatchId].SetTotalAbsoluteDifference(distance);
+	this->Pairs[sourcePatchId].SetTotalSquaredDifference(distance);
 	}
       }
     else // The target patch is entirely inside the image
@@ -416,15 +529,26 @@ void SelfPatchCompare::ComputeAllDifferences()
       for(unsigned int sourcePatchId = 0; sourcePatchId < this->Pairs.size(); ++sourcePatchId)
 	{
 	// Only compute if the values are not already computed.
-	if(this->Pairs[sourcePatchId].IsValidSSD())
+	if(!this->Pairs[sourcePatchId].IsValidAverageSquaredDifference())
 	  {
-	  continue;
+	  float averageSquaredDifference = PatchAverageSquaredDifference(this->Pairs[sourcePatchId].SourcePatch);
+	  this->Pairs[sourcePatchId].SetAverageSquaredDifference(averageSquaredDifference);
 	  }
-	float averageSquaredDifference = PatchAverageSquaredDifference(this->Pairs[sourcePatchId].SourcePatch);
-	this->Pairs[sourcePatchId].SetAverageSSD(averageSquaredDifference);
-
-        float totalAbsoluteDifference = PatchTotalAbsoluteDifference(this->Pairs[sourcePatchId].SourcePatch);
-        this->Pairs[sourcePatchId].SetTotalAbsoluteDifference(totalAbsoluteDifference);
+	if(!this->Pairs[sourcePatchId].IsValidTotalAbsoluteDifference())
+	  {
+          float totalAbsoluteDifference = PatchTotalAbsoluteDifference(this->Pairs[sourcePatchId].SourcePatch);
+	  this->Pairs[sourcePatchId].SetTotalAbsoluteDifference(totalAbsoluteDifference);
+	  }
+	if(!this->Pairs[sourcePatchId].IsValidAverageAbsoluteDifference())
+	  {
+          float averageAbsoluteDifference = PatchAverageAbsoluteDifference(this->Pairs[sourcePatchId].SourcePatch);
+	  this->Pairs[sourcePatchId].SetAverageAbsoluteDifference(averageAbsoluteDifference);
+	  }
+	if(!this->Pairs[sourcePatchId].IsValidTotalSquaredDifference())
+	  {
+          float totalSquaredDifference = PatchTotalSquaredDifference(this->Pairs[sourcePatchId].SourcePatch);
+	  this->Pairs[sourcePatchId].SetTotalSquaredDifference(totalSquaredDifference);
+	  }
 	}
       }
   }
