@@ -27,6 +27,10 @@
 // ITK
 #include "itkGaussianOperator.h"
 #include "itkImageFileWriter.h"
+#include "itkMinimumMaximumImageCalculator.h"
+#include "itkPasteImageFilter.h"
+#include "itkRegionOfInterestImageFilter.h"
+#include "itkRescaleIntensityImageFilter.h"
 #include "itkVectorMagnitudeImageFilter.h"
 
 // Qt
