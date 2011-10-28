@@ -1198,7 +1198,7 @@ void Form::ChangeDisplayedIteration()
   DebugMessage("ChangeDisplayedIteration()");
 
   std::stringstream ss;
-  ss << this->IterationToDisplay;
+  ss << this->IterationToDisplay << " out of " << this->Inpainting.GetNumberOfCompletedIterations();
   this->lblCurrentIteration->setText(ss.str().c_str());
 
   DisplayUsedPatches();
@@ -1295,11 +1295,17 @@ void Form::IterationComplete()
   if(this->chkLive->isChecked())
     {
     this->IterationToDisplay = this->Inpainting.GetNumberOfCompletedIterations();
+    
+    ChangeDisplayedIteration();
+
+    Refresh();
     }
-
-  ChangeDisplayedIteration();
-
-  Refresh();
+  else
+    {
+    std::stringstream ss;
+    ss << this->IterationToDisplay << " out of " << this->Inpainting.GetNumberOfCompletedIterations();
+    this->lblCurrentIteration->setText(ss.str().c_str());
+    }
   
   DebugMessage("Leave IterationComplete()");
 }
@@ -1585,11 +1591,12 @@ void Form::HighlightSelectedSourcePatch(const unsigned int id)
     }
 }
 
-void Form::on_forwardLookingTableWidget_cellClicked(int row, int col)
+void Form::on_forwardLookingTableWidget_currentCellChanged(int row, int col)
 {
-  //std::cout << "Clicked row " << row << std::endl;
-
-  // Setup the top source patches table for this forward look patch.
+  std::cout << "on_forwardLookingTableWidget_currentCellChanged" << std::endl;
+  //on_forwardLookingTableWidget_cellClicked(row, col);
+  
+    // Setup the top source patches table for this forward look patch.
   SetupTopPatchesTable(row);
 
   // Display the big target patch
@@ -1600,8 +1607,21 @@ void Form::on_forwardLookingTableWidget_cellClicked(int row, int col)
   HighlightSourcePatches();
 }
 
-void Form::on_topPatchesTableWidget_cellClicked(int row, int col)
+void Form::on_forwardLookingTableWidget_cellClicked(int row, int col)
 {
+  //std::cout << "Clicked row " << row << std::endl;
+
+
+}
+
+void Form::on_topPatchesTableWidget_currentCellChanged(int row, int col)
+{
+  std::cout << "on_topPatchesTableWidget_currentCellChanged row: " << row << " col: " << col << std::endl;
+  if(row < 0 || col < 0)
+    {
+    return;
+    }
+  
   // Get the column number of the "Id" column.
   int idColumnId = GetColumnIdByHeader("Id");
   if(idColumnId < 0)
@@ -1619,6 +1639,11 @@ void Form::on_topPatchesTableWidget_cellClicked(int row, int col)
 
   HighlightSourcePatches();
   HighlightSelectedSourcePatch(sourcePatchId);
+}
+
+void Form::on_topPatchesTableWidget_cellClicked(int row, int col)
+{
+
 }
 
 int Form::GetColumnIdByHeader(const std::string& header)
