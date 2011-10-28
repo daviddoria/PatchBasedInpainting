@@ -47,10 +47,10 @@ std::string GetSequentialFileName(const std::string& filePrefix, const unsigned 
 FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors);
 
 // Write a vtkPolyData to a .vtp file.
-void WritePolyData(vtkPolyData* polyData, const std::string& fileName);
+void WritePolyData(const vtkPolyData* polyData, const std::string& fileName);
 
 // Write a vtkImageData to a .vti file.
-void WriteImageData(vtkImageData* imageData, const std::string& fileName);
+void WriteImageData(const vtkImageData* imageData, const std::string& fileName);
 
 // Set the center pixel of an 'image' to the specified 'color'. The image is assumed to have odd dimensions.
 void SetImageCenterPixel(vtkImageData* image, const unsigned char color[3]);
@@ -102,33 +102,48 @@ void BlankImage(vtkImageData*);
 
 // Extract the non-zero pixels of a "vector image" and convert them to vectors in a vtkPolyData. This is useful because glyphing a vector image is too slow to use as a visualization, 
 // because it "draws" the vectors, even if they are zero length. In this code we are often interested in displaying vectors along a contour, so this is a very very small subset of a whole vector image.
-void KeepNonZeroVectors(vtkImageData* image, vtkPolyData* output); // 'image' should be const, but VTK doesn't allow it
+void KeepNonZeroVectors(const vtkImageData* image, vtkPolyData* output);
 void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType::Pointer vectorImage, vtkPolyData* output);
 
+// Convert a 'number' into a zero padded string.
+// ZeroPad(5, 4); produces "0005"
 std::string ZeroPad(const unsigned int number, const unsigned int rep);
 
-void MakePixelsTransparent(vtkImageData* inputImage, vtkImageData* outputImage, const unsigned char value); // 'inputImage' should be const, but VTK doesn't allow it
+// Make pixels where the 0th channel of inputImage matches 'value' transparent in the output image.
+void MakeValueTransparent(const vtkImageData* inputImage, vtkImageData* outputImage, const unsigned char value);
 
+// Make an entire image transparent.
 void MakeImageTransparent(vtkImageData* image);
 
+// Scale an image so that it fits in a QGraphicsView
 QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx);
 
+// "Follow" a vector from one pixel to find the next pixel it would "hit".
 itk::Index<2> GetNextPixelAlongVector(const itk::Index<2>& pixel, const FloatVector2Type& vector);
-
 itk::Offset<2> GetOffsetAlongVector(const FloatVector2Type& vector);
 
+// Make an ImageRegion centered on 'pixel' with radius 'radius'.
 itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2>& pixel, const unsigned int radius);
 
+// "Ceil()", but also for negative numbers.
+// RoundAwayFromZero(.2) = 1
+// RoundAwayFromZero(-.2) = -1
+// (Normally ceil(-.2) = 0
 float RoundAwayFromZero(const float number);
 
+// Apply the MaskedBlur function to every channel of a VectorImage separately.
 void VectorMaskedBlur(const FloatVectorImageType::Pointer inputImage, const Mask::Pointer mask, const float blurVariance, FloatVectorImageType::Pointer output);
 
+// Convert a QColor to an unsigned char[3]
 void QColorToUCharColor(const QColor& color, unsigned char outputColor[3]);
 
+// Simply calls OutlineRegion followed by BlankRegion
 void BlankAndOutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char value[3]);
 
+// Set pixels on the boundary of 'region' in 'image' to 'value'.
 void OutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char value[3]);
 
+// Set all pixels in 'region' in 'image' to black.
 void BlankRegion(vtkImageData* image, const itk::ImageRegion<2>& region);
 
 // Get the offsets of the 8 neighborhood of a pixel.
@@ -143,9 +158,6 @@ void OutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& re
 
 template<typename TImage>
 void DeepCopy(const typename TImage::Pointer input, typename TImage::Pointer output);
-
-template<typename TPixel>
-void GradientFromDerivatives(const typename itk::Image<TPixel, 2>::Pointer xDerivative, const typename itk::Image<TPixel, 2>::Pointer yDerivative, typename itk::Image<itk::CovariantVector<TPixel, 2> >::Pointer output);
 
 template<typename TImage>
 void DeepCopyVectorImage(const typename TImage::Pointer input, typename TImage::Pointer output);
@@ -246,21 +258,6 @@ QImage GetQImageMasked(const typename TImage::Pointer image, const Mask::Pointer
 
 template <typename TImage>
 void MaskedBlur(const typename TImage::Pointer inputImage, const Mask::Pointer mask, const float blurVariance, typename TImage::Pointer output);
-
-template <typename TImage>
-void MaskedDerivative(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output);
-
-template <typename TImage>
-void MaskedDerivativePrewitt(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output);
-
-template <typename TImage>
-void MaskedDerivativeSobel(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output);
-
-template <typename TImage>
-void MaskedDerivativeGaussian(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output);
-
-template <typename TImage>
-void MaskedGradient(const typename TImage::Pointer image, const Mask::Pointer mask, FloatVector2ImageType::Pointer output);
 
 template<typename TImage>
 void InitializeImage(typename TImage::Pointer image, const itk::ImageRegion<2>& region);

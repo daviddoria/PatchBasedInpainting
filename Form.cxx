@@ -412,7 +412,7 @@ void Form::DisplayConfidence()
 {
   vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
   Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Confidence, temp);  
-  Helpers::MakePixelsTransparent(temp, this->ConfidenceLayer.ImageData, 0); // Set the zero pixels to transparent
+  Helpers::MakeValueTransparent(temp, this->ConfidenceLayer.ImageData, 0); // Set the zero pixels to transparent
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
@@ -438,7 +438,7 @@ void Form::DisplayPriority()
 {
   vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
   Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Priority, temp);
-  Helpers::MakePixelsTransparent(temp, this->PriorityLayer.ImageData, 0); // Set the zero pixels to transparent
+  Helpers::MakeValueTransparent(temp, this->PriorityLayer.ImageData, 0); // Set the zero pixels to transparent
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
@@ -446,7 +446,7 @@ void Form::DisplayData()
 {
   vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
   Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Data, temp);
-  Helpers::MakePixelsTransparent(temp, this->DataLayer.ImageData, 0); // Set the zero pixels to transparent
+  Helpers::MakeValueTransparent(temp, this->DataLayer.ImageData, 0); // Set the zero pixels to transparent
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
@@ -1140,7 +1140,7 @@ void Form::CreatePotentialTargetPatchesImage()
 
   vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
   Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage, temp);
-  Helpers::MakePixelsTransparent(temp, this->PotentialPatchesLayer.ImageData, 0);
+  Helpers::MakeValueTransparent(temp, this->PotentialPatchesLayer.ImageData, 0);
 
   Refresh();
 }

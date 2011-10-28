@@ -19,6 +19,7 @@
 #include "CriminisiInpainting.h"
 
 // Custom
+#include "Derivatives.h"
 #include "Helpers.h"
 #include "RotateVectors.h"
 
@@ -633,7 +634,7 @@ void CriminisiInpainting::ComputeMaskedIsophotes(FloatScalarImageType::Pointer i
     Helpers::DebugWriteImageConditional<FloatScalarImageType>(image, "Debug/ComputeMaskedIsophotes.luminance.mha", this->DebugImages);
 
     FloatVector2ImageType::Pointer gradient = FloatVector2ImageType::New();
-    Helpers::MaskedGradient<FloatScalarImageType>(image, mask, gradient);
+    MaskedGradient<FloatScalarImageType>(image, mask, gradient);
 
     //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha", this->DebugImages);
     if(this->DebugImages)

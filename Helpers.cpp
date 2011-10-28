@@ -66,7 +66,7 @@ FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors)
   return averageVector;
 }
 
-void WritePolyData(vtkPolyData* polyData, const std::string& fileName)
+void WritePolyData(const vtkPolyData* polyData, const std::string& fileName)
 {
   std::string extension = fileName.substr(fileName.size() - 3, fileName.size());
   if(extension.compare("vtp") != 0)
@@ -77,11 +77,11 @@ void WritePolyData(vtkPolyData* polyData, const std::string& fileName)
   
   vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
   polyDataWriter->SetFileName(fileName.c_str());
-  polyDataWriter->SetInputConnection(polyData->GetProducerPort());
+  polyDataWriter->SetInputConnection(const_cast<vtkPolyData*>(polyData)->GetProducerPort());
   polyDataWriter->Write();
 }
 
-void WriteImageData(vtkImageData* imageData, const std::string& fileName)
+void WriteImageData(const vtkImageData* imageData, const std::string& fileName)
 {
   std::string extension = fileName.substr(fileName.size() - 3, fileName.size());
   if(extension.compare("vti") != 0)
@@ -92,7 +92,7 @@ void WriteImageData(vtkImageData* imageData, const std::string& fileName)
     
   vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
   writer->SetFileName(fileName.c_str());
-  writer->SetInputConnection(imageData->GetProducerPort());
+  writer->SetInputConnection(const_cast<vtkImageData*>(imageData)->GetProducerPort());
   writer->Write();
 }
 
@@ -584,17 +584,17 @@ void BlankAndOutlineImage(vtkImageData* image, const unsigned char color[3])
   image->Modified();
 }
 
-void KeepNonZeroVectors(vtkImageData* image, vtkPolyData* output)
+void KeepNonZeroVectors(const vtkImageData* image, vtkPolyData* output)
 {
   vtkSmartPointer<vtkImageMagnitude> magnitudeFilter = vtkSmartPointer<vtkImageMagnitude>::New();
-  magnitudeFilter->SetInputConnection(image->GetProducerPort());
+  magnitudeFilter->SetInputConnection(const_cast<vtkImageData*>(image)->GetProducerPort());
   magnitudeFilter->Update(); // This filter produces a vtkImageData with an array named "Magnitude"
   
-  image->GetPointData()->AddArray(magnitudeFilter->GetOutput()->GetPointData()->GetScalars());
-  image->GetPointData()->SetActiveScalars("Magnitude");
+  const_cast<vtkImageData*>(image)->GetPointData()->AddArray(magnitudeFilter->GetOutput()->GetPointData()->GetScalars());
+  const_cast<vtkImageData*>(image)->GetPointData()->SetActiveScalars("Magnitude");
   
   vtkSmartPointer<vtkThresholdPoints> thresholdPoints = vtkSmartPointer<vtkThresholdPoints>::New();
-  thresholdPoints->SetInputConnection(image->GetProducerPort());
+  thresholdPoints->SetInputConnection(const_cast<vtkImageData*>(image)->GetProducerPort());
   thresholdPoints->ThresholdByUpper(.05);
   thresholdPoints->Update();
   
@@ -658,16 +658,15 @@ void MakeImageTransparent(vtkImageData* image)
       {
       unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(i,j,0));
       pixel[3] = 0; // invisible
-      //pixel[3] = 255; // ?
       }
     }
   image->Modified();
 }
 
-void MakePixelsTransparent(vtkImageData* inputImage, vtkImageData* outputImage, const unsigned char value)
+void MakeValueTransparent(const vtkImageData* inputImage, vtkImageData* outputImage, const unsigned char value)
 {
   int dims[3];
-  inputImage->GetDimensions(dims);
+  const_cast<vtkImageData*>(inputImage)->GetDimensions(dims);
  
   outputImage->SetScalarTypeToUnsignedChar();
   outputImage->SetNumberOfScalarComponents(4);
@@ -678,12 +677,18 @@ void MakePixelsTransparent(vtkImageData* inputImage, vtkImageData* outputImage, 
     {
     for(int j = 0; j < dims[1]; ++j)
       {
-      unsigned char* inputPixel = static_cast<unsigned char*>(inputImage->GetScalarPointer(i,j,0));
+      unsigned char* inputPixel = static_cast<unsigned char*>(const_cast<vtkImageData*>(inputImage)->GetScalarPointer(i,j,0));
       unsigned char* outputPixel = static_cast<unsigned char*>(outputImage->GetScalarPointer(i,j,0));
 
+      /*
       outputPixel[0] = 0;
       outputPixel[1] = inputPixel[0];
       outputPixel[2] = 0;
+      */
+      outputPixel[0] = inputPixel[0];
+      outputPixel[1] = 0;
+      outputPixel[2] = 0;
+      
       if(inputPixel[0] == value)
 	{
 	outputPixel[3] = 0; // invisible  
