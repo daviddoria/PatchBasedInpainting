@@ -111,12 +111,23 @@ void CriminisiInpainting::ComputeMaxPixelDifference()
   std::cout << "MaxPixelDifference computed to be: " << this->MaxPixelDifferenceSquared << std::endl;
 }
 
-std::vector<Patch> CriminisiInpainting::AddSourcePatches(const itk::ImageRegion<2>& region)
+bool CriminisiInpainting::PatchExists(const itk::ImageRegion<2>& region)
 {
-  // Add all patches in 'region' that are entirely Valid to the list of source patches.
-  // TODO: This should somehow check to make sure the patch isn't already in the list before adding it.
-  
-  DebugMessage("AddSourcePatches()");
+  for(unsigned int i = 0; i < this->SourcePatches.size(); ++i)
+    {
+    if(this->SourcePatches[i].Region == region)
+      {
+      return true;
+      }
+    }
+  return false;
+}
+
+std::vector<Patch> CriminisiInpainting::AddNewSourcePatchesInRegion(const itk::ImageRegion<2>& region)
+{
+  // Add all patches in 'region' that are entirely valid and are not already in the source patch list to the list of source patches.
+  // Additionally, return the patches that were added.
+  DebugMessage("AddNewSourcePatchesInRegion()");
   
   std::vector<Patch> newPatches;
   try
@@ -135,10 +146,13 @@ std::vector<Patch> CriminisiInpainting::AddSourcePatches(const itk::ImageRegion<
 	{
 	if(this->CurrentMask->IsValid(currentPatchRegion))
 	  {
-	  //this->SourcePatches.push_back(Patch(this->OriginalImage, region));
-	  this->SourcePatches.push_back(Patch(currentPatchRegion));
-	  newPatches.push_back(Patch(currentPatchRegion));
-	  //DebugMessage("Added a source patch.");
+	  if(!PatchExists(currentPatchRegion))
+	    {
+	    //this->SourcePatches.push_back(Patch(this->OriginalImage, region));
+	    this->SourcePatches.push_back(Patch(currentPatchRegion));
+	    newPatches.push_back(Patch(currentPatchRegion));
+	    //DebugMessage("Added a source patch.");
+	    }
 	  }
 	}
     
@@ -153,6 +167,46 @@ std::vector<Patch> CriminisiInpainting::AddSourcePatches(const itk::ImageRegion<
       exit(-1);
       }
     return newPatches;
+  }// end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in ComputeSourcePatches!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+
+}
+
+void CriminisiInpainting::AddAllSourcePatchesInRegion(const itk::ImageRegion<2>& region)
+{
+  // Add all patches in 'region' that are entirely valid to the list of source patches.
+    
+  DebugMessage("AddAllSourcePatchesInRegion()");
+  
+  try
+  {
+    // Clearly we cannot add source patches from regions that are outside the image, so crop the desired region to be inside the image.
+    itk::ImageRegion<2> newRegion = CropToValidRegion(region);
+
+    itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->CurrentOutputImage, newRegion);
+
+    while(!imageIterator.IsAtEnd())
+      {
+      itk::Index<2> currentPixel = imageIterator.GetIndex();
+      itk::ImageRegion<2> currentPatchRegion = Helpers::GetRegionInRadiusAroundPixel(currentPixel, this->PatchRadius[0]);
+    
+      if(this->CurrentMask->GetLargestPossibleRegion().IsInside(currentPatchRegion))
+	{
+	if(this->CurrentMask->IsValid(currentPatchRegion))
+	  {
+	  this->SourcePatches.push_back(Patch(currentPatchRegion));
+	  }
+	}
+    
+      ++imageIterator;
+      }
+    DebugMessage<unsigned int>("Number of source patches: ", this->SourcePatches.size());
+
   }// end try
   catch( itk::ExceptionObject & err )
   {
@@ -256,7 +310,7 @@ void CriminisiInpainting::Initialize()
     Helpers::DebugWriteImageConditional<FloatScalarImageType>(this->ConfidenceMapImage, "Debug/Initialize.ConfidenceMapImage.mha", this->DebugImages);
 
     DebugMessage("Computing source patches...");
-    AddSourcePatches(this->FullImageRegion);
+    AddAllSourcePatchesInRegion(this->FullImageRegion);
     // Debugging outputs
     //WriteImage<TImage>(this->Image, "InitialImage.mhd");
     //WriteImage<UnsignedCharImageType>(this->Mask, "InitialMask.mhd");
@@ -356,7 +410,7 @@ void CriminisiInpainting::Iterate()
   std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
   std::cout << "Previously invalid region: " << previousInvalidRegion << std::endl;
   
-  std::vector<Patch> newPatches = AddSourcePatches(previousInvalidRegion);
+  std::vector<Patch> newPatches = AddNewSourcePatchesInRegion(previousInvalidRegion);
   
   // Recompute for all forward look candidates except the one that was used. Otherwise there would be an exact match!
   

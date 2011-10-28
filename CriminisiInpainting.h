@@ -268,7 +268,11 @@ private:
   void UpdateMask(const itk::ImageRegion<2>& region);
 
   // Locate all patches centered at pixels in 'region' that are completely inside of the image and completely inside of the source region and add them to the current list of source patches.
-  std::vector<Patch> AddSourcePatches(const itk::ImageRegion<2>& region);
+  void AddAllSourcePatchesInRegion(const itk::ImageRegion<2>& region);
+  
+  bool PatchExists(const itk::ImageRegion<2>& region);
+  
+  std::vector<Patch> AddNewSourcePatchesInRegion(const itk::ImageRegion<2>& region);
   
   // Store the list of source patches computed with ComputeSourcePatches()
   std::vector<Patch> SourcePatches;
