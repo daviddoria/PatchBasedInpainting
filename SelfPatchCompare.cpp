@@ -590,7 +590,8 @@ void SelfPatchCompare::ComputeAllDifferences()
       */
       
       //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
-    QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchTotalAbsoluteDifference, this, _1));
+      //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchTotalAbsoluteDifference, this, _1));
+      QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteDifference, this, _1));
       }
   }
   catch( itk::ExceptionObject & err )
@@ -601,7 +602,7 @@ void SelfPatchCompare::ComputeAllDifferences()
   }
 }
 
-float SelfPatchCompare::NonVirtualPixelDifferenceSquared(const VectorType &a, const VectorType &b)
+float SelfPatchCompare::NonVirtualPixelDifferenceSquared(const typename FloatVectorImageType::PixelType &a, const typename FloatVectorImageType::PixelType &b)
 {
   float difference = 0;
   

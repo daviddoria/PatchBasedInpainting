@@ -532,7 +532,8 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     
     //std::cout << "Potential pair: Source: " << sourcePatch.Region << " Target: " << targetPatch.Region << std::endl;
     
-    std::sort(candidatePairs.begin(), candidatePairs.end(), SortByTotalAbsoluteDifference);
+    std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
+    //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByTotalAbsoluteDifference);
     //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByContinuationDifference());
     std::cout << "Sorted " << candidatePairs.size() << " candidatePairs." << std::endl;
     
@@ -579,9 +580,17 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   unsigned int lowestLookAhead = 0;
   for(unsigned int i = 0; i < this->PotentialCandidatePairs.size(); ++i)
     {
+    /*
     if(this->PotentialCandidatePairs[i][0].GetTotalAbsoluteDifference() < lowestScore)
       {
       lowestScore = this->PotentialCandidatePairs[i][0].GetTotalAbsoluteDifference();
+      lowestLookAhead = i;
+      }
+    */
+    
+    if(this->PotentialCandidatePairs[i][0].GetAverageAbsoluteDifference() < lowestScore)
+      {
+      lowestScore = this->PotentialCandidatePairs[i][0].GetAverageAbsoluteDifference();
       lowestLookAhead = i;
       }
     }

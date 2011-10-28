@@ -1,3 +1,20 @@
+Iteration 28 is where shadow patch messes up
+
+Iteration 72,106 is where garage patch messes up
+
+-------------
+
+Conclusion: Definitely do not use total absolute difference. When the target region of the patch to fill gets very small, the total absolute difference gets very high even for good matches simply because the number of pixels being compared is much larger.
+
+-------------
+Bad patch
+
+Trying to fill (167, 383) at iteration 78 - best match is to (167, 393), but this introduces a strong color change along the border. 
+This might be because not enough forward look patches were used (3 in this case) - the other two are "stuck" on bad patches, so this one must be filled, just like in the original Criminisi.
+
+----------------
+Shadow continuation
+
 Trying to fill patch (271, 385) at iteration 32. Patch (282, 401) continues the shadow properly with score 12662, but "best match" (285, 355) has score 7508.
 
 

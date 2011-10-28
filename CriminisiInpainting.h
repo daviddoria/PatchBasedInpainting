@@ -43,7 +43,7 @@ public:
   
   void SetDifferenceType(const int);
   
-    // Specify the image to inpaint.
+  // Specify the image to inpaint.
   void SetImage(const FloatVectorImageType::Pointer image);
   
   // Specify the region to inpaint.

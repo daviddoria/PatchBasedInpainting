@@ -25,7 +25,9 @@
 #include "itkVectorImage.h"
 
 typedef itk::VectorImage<float,2> FloatVectorImageType;
-typedef itk::VariableLengthVector<float> VectorType;
+//typedef itk::VectorImage<unsigned char, 2> VectorImageType; // Potentially in the future we should switch this to be the smallest type for faster comparisons.
+
+//typedef itk::VariableLengthVector<float> VectorType;
 
 typedef itk::Image<itk::RGBPixel<unsigned char>, 2> RGBImageType;
 

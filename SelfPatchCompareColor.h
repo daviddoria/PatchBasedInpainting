@@ -17,7 +17,7 @@ public:
       }
   }
   
-  float PixelDifference(const VectorType &a, const VectorType &b)
+  float PixelDifference(const typename FloatVectorImageType::PixelType &a, const typename FloatVectorImageType::PixelType &b)
   {
     float difference = 0;
     

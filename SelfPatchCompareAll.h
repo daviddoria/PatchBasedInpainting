@@ -12,7 +12,7 @@ public:
     // Nothing special to do in this constructor - everything is done in SelfPatchCompare constructor.
   }
 
-  float PixelDifference(const VectorType &a, const VectorType &b)
+  float PixelDifference(const typename FloatVectorImageType::PixelType &a, const typename FloatVectorImageType::PixelType &b)
   {
     float difference = 0;
 
@@ -25,7 +25,7 @@ public:
     return difference;
   }
   
-  float PixelDifferenceSquared(const VectorType &a, const VectorType &b)
+  float PixelDifferenceSquared(const typename FloatVectorImageType::PixelType &a, const typename FloatVectorImageType::PixelType &b)
   {
     float difference = 0;
     
@@ -38,7 +38,7 @@ public:
     return difference;
   }
   
-  static float StaticPixelDifferenceSquared(const VectorType &a, const VectorType &b)
+  static float StaticPixelDifferenceSquared(const typename FloatVectorImageType::PixelType &a, const typename FloatVectorImageType::PixelType &b)
   {
     float difference = 0;
     
