@@ -62,14 +62,10 @@ public:
   
   float PatchAverageAbsoluteDifference(const Patch& sourcePatch);
   float PatchAverageSquaredDifference(const Patch& sourcePatch);
-  float PatchTotalAbsoluteDifference(const Patch& sourcePatch);
-  float PatchTotalSquaredDifference(const Patch& sourcePatch);
   
   void SetPatchAllDifferences(PatchPair& patchPair);
   void SetPatchAverageAbsoluteDifference(PatchPair& patchPair);
   void SetPatchAverageSquaredDifference(PatchPair& patchPair);
-  void SetPatchTotalAbsoluteDifference(PatchPair& patchPair);
-  void SetPatchTotalSquaredDifference(PatchPair& patchPair);
   
   float PatchDifferenceBoundary(const Patch& sourcePatch);
 

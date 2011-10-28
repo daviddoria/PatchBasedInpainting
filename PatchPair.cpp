@@ -2,8 +2,6 @@
 
 void PatchPair::DefaultConstructor()
 {
-  this->TotalSquaredDifference = 0.0f;
-  this->TotalAbsoluteDifference = 0.0f;
   this->AverageAbsoluteDifference = 0.0f;
   this->AverageSquaredDifference = 0.0f;
   
@@ -12,8 +10,6 @@ void PatchPair::DefaultConstructor()
   this->BoundaryPixelDifference = 0.0f;
   this->TotalScore = 0.0f;
   
-  this->ValidTotalAbsoluteDifference = false;
-  this->ValidTotalSquaredDifference = false;
   this->ValidAverageSquaredDifference = false;
   this->ValidAverageAbsoluteDifference = false;
   
@@ -44,20 +40,10 @@ itk::Offset<2> PatchPair::GetSourceToTargetOffset() const
 {
   return this->TargetPatch.Region.GetIndex() - this->SourcePatch.Region.GetIndex();
 }
-  
-bool PatchPair::IsValidTotalSquaredDifference()
-{
-  return ValidTotalSquaredDifference;
-}
 
 bool PatchPair::IsValidAverageSquaredDifference()
 {
   return ValidAverageSquaredDifference;
-}
-
-bool PatchPair::IsValidTotalAbsoluteDifference()
-{
-  return ValidTotalAbsoluteDifference;
 }
 
 bool PatchPair::IsValidAverageAbsoluteDifference()
@@ -88,16 +74,6 @@ bool SortByAverageSquaredDifference(const PatchPair& pair1, const PatchPair& pai
 bool SortByAverageAbsoluteDifference(const PatchPair& pair1, const PatchPair& pair2)
 {
   return (pair1.GetAverageAbsoluteDifference() < pair2.GetAverageAbsoluteDifference());
-}
-
-bool SortByTotalSquaredDifference(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetTotalSquaredDifference() < pair2.GetTotalSquaredDifference());
-}
-
-bool SortByTotalAbsoluteDifference(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetTotalAbsoluteDifference() < pair2.GetTotalAbsoluteDifference());
 }
 
 bool SortByBoundaryPixelDifference(const PatchPair& pair1, const PatchPair& pair2)
@@ -131,20 +107,6 @@ void PatchPair::SetAverageAbsoluteDifference(const float value)
 {
   this->ValidAverageAbsoluteDifference = true;
   this->AverageAbsoluteDifference = value;
-  ComputeTotal();
-}
-
-void PatchPair::SetTotalAbsoluteDifference(const float value)
-{
-  this->ValidTotalAbsoluteDifference = true;
-  this->TotalAbsoluteDifference = value;
-  ComputeTotal();
-}
-
-void PatchPair::SetTotalSquaredDifference(const float value)
-{
-  this->ValidTotalSquaredDifference = true;
-  this->TotalSquaredDifference = value;
   ComputeTotal();
 }
 
@@ -182,16 +144,6 @@ float PatchPair::GetAverageSquaredDifference() const
 float PatchPair::GetAverageAbsoluteDifference() const
 {
   return this->AverageAbsoluteDifference;
-}
-
-float PatchPair::GetTotalAbsoluteDifference() const
-{
-  return this->TotalAbsoluteDifference;
-}
-
-float PatchPair::GetTotalSquaredDifference() const
-{
-  return this->TotalSquaredDifference;
 }
 
 float PatchPair::GetBoundaryPixelDifference() const

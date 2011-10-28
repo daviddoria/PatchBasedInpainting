@@ -192,14 +192,6 @@ void Form::DefaultConstructor()
   this->progressBar->hide();
   
   this->ComputationThread.SetObject(&(this->Inpainting));
-
-  /*
-  QPalette forwardLookingPalette = forwardLookingTableWidget->palette();
-  forwardLookingPalette.setColor(QPalette::Inactive, QPalette::Window, forwardLookingPalette.color(QPalette::Active, QPalette::Window));
-
-  QPalette topPatchesPalette = topPatchesTableWidget->palette();
-  topPatchesPalette.setColor(QPalette::Inactive, QPalette::Window, topPatchesPalette.color(QPalette::Active, QPalette::Window));
-  */
   
   // Make the 'enabled' property of several components match the pre-specified state.
   on_chkLive_clicked();
@@ -313,18 +305,6 @@ void Form::OpenMask(const std::string& fileName, const bool inverted)
 
   this->statusBar()->showMessage("Opened mask.");
 
-  /*
-  if(this->UserImage && this->UserMaskImage && this->UserImage->GetLargestPossibleRegion() == this->UserMaskImage->GetLargestPossibleRegion())
-    {
-    SetupInitialIntermediateImages();
-    SetCheckboxVisibility(true);
-    }
-  else
-    {
-    SetCheckboxVisibility(false);
-    }
-  */
-
   this->UserMaskImage->Cleanup();
 
   if(inverted)
@@ -363,17 +343,6 @@ void Form::OpenImage(const std::string& fileName)
   this->statusBar()->showMessage("Opened image.");
   actionOpenMask->setEnabled(true);
 
-  /*
-  if(this->UserImage && this->UserMaskImage && this->UserImage->GetLargestPossibleRegion() == this->UserMaskImage->GetLargestPossibleRegion())
-    {
-    SetupInitialIntermediateImages();
-    SetCheckboxVisibility(true);
-    }
-  else
-    {
-    SetCheckboxVisibility(false);
-    }
-  */
   this->AllForwardLookOutlinesLayer.ImageData->SetDimensions(this->UserImage->GetLargestPossibleRegion().GetSize()[0],
                                                              this->UserImage->GetLargestPossibleRegion().GetSize()[1], 1);
   this->AllForwardLookOutlinesLayer.ImageData->AllocateScalars();
@@ -1445,48 +1414,39 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
     imageLabel->setScaledContents(true);
     this->topPatchesTableWidget->setCellWidget(pairId, 0, imageLabel);
 
-
     // Display patch match scores
-    QTableWidgetItem* totalAbsoluteDifferenceLabel = new QTableWidgetItem;
-    totalAbsoluteDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetTotalAbsoluteDifference());
-    this->topPatchesTableWidget->setItem(pairId, 1, totalAbsoluteDifferenceLabel);
-    
-    QTableWidgetItem* totalSquaredDifferenceLabel = new QTableWidgetItem;
-    totalSquaredDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetTotalSquaredDifference());
-    this->topPatchesTableWidget->setItem(pairId, 2, totalSquaredDifferenceLabel);
-    
     QTableWidgetItem* averageAbsoluteDifferenceLabel = new QTableWidgetItem;
     averageAbsoluteDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetAverageAbsoluteDifference());
-    this->topPatchesTableWidget->setItem(pairId, 3, averageAbsoluteDifferenceLabel);
+    this->topPatchesTableWidget->setItem(pairId, 1, averageAbsoluteDifferenceLabel);
     
     QTableWidgetItem* averageSquaredDifferenceLabel = new QTableWidgetItem;
     averageSquaredDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetAverageSquaredDifference());
-    this->topPatchesTableWidget->setItem(pairId, 4, averageSquaredDifferenceLabel);
+    this->topPatchesTableWidget->setItem(pairId, 2, averageSquaredDifferenceLabel);
 
     // Display boundary pixel difference score
     QTableWidgetItem* boundaryPixelDifferenceLabel = new QTableWidgetItem;
     boundaryPixelDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryPixelDifference());
-    this->topPatchesTableWidget->setItem(pairId, 5, boundaryPixelDifferenceLabel);
+    this->topPatchesTableWidget->setItem(pairId, 3, boundaryPixelDifferenceLabel);
     
     // Display boundary isophote difference score
     QTableWidgetItem* boundaryIsophoteAngleDifferenceLabel = new QTableWidgetItem;
     boundaryIsophoteAngleDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryIsophoteAngleDifference());
-    this->topPatchesTableWidget->setItem(pairId, 6, boundaryIsophoteAngleDifferenceLabel);
+    this->topPatchesTableWidget->setItem(pairId, 4, boundaryIsophoteAngleDifferenceLabel);
 
     QTableWidgetItem* boundaryIsophoteStrengthDifferenceLabel = new QTableWidgetItem;
     boundaryIsophoteStrengthDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryIsophoteStrengthDifference());
-    this->topPatchesTableWidget->setItem(pairId, 7, boundaryIsophoteStrengthDifferenceLabel);
+    this->topPatchesTableWidget->setItem(pairId, 5, boundaryIsophoteStrengthDifferenceLabel);
     
     // Display total score
     QTableWidgetItem* totalScoreLabel = new QTableWidgetItem;
     totalScoreLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetTotalScore());
-    this->topPatchesTableWidget->setItem(pairId, 8, totalScoreLabel);
+    this->topPatchesTableWidget->setItem(pairId, 6, totalScoreLabel);
     
     // Store the patch/row Id. This is needed in case we sort the table using the widget header buttons.
     QTableWidgetItem* idLabel = new QTableWidgetItem;
     idLabel->setData(Qt::DisplayRole, pairId);
-    this->topPatchesTableWidget->setItem(pairId, 9, idLabel);
-    this->topPatchesTableWidget->setColumnHidden(9, true); // We don't want to display this value, just track it.
+    this->topPatchesTableWidget->setItem(pairId, 7, idLabel);
+    this->topPatchesTableWidget->setColumnHidden(7, true); // We don't want to display this value, just track it.
     
     // Display patch location
     std::stringstream ssLocation;
@@ -1494,7 +1454,7 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
 
     QTableWidgetItem* locationLabel = new QTableWidgetItem;
     locationLabel->setText(ssLocation.str().c_str());
-    this->topPatchesTableWidget->setItem(pairId, 10, locationLabel);
+    this->topPatchesTableWidget->setItem(pairId, 8, locationLabel);
     }
 
   this->topPatchesTableWidget->selectRow(0);
@@ -1607,12 +1567,6 @@ void Form::on_forwardLookingTableWidget_currentCellChanged(int row, int col)
   HighlightSourcePatches();
 }
 
-void Form::on_forwardLookingTableWidget_cellClicked(int row, int col)
-{
-  //std::cout << "Clicked row " << row << std::endl;
-
-
-}
 
 void Form::on_topPatchesTableWidget_currentCellChanged(int row, int col)
 {
@@ -1641,10 +1595,6 @@ void Form::on_topPatchesTableWidget_currentCellChanged(int row, int col)
   HighlightSelectedSourcePatch(sourcePatchId);
 }
 
-void Form::on_topPatchesTableWidget_cellClicked(int row, int col)
-{
-
-}
 
 int Form::GetColumnIdByHeader(const std::string& header)
 {

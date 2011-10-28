@@ -23,18 +23,14 @@ struct PatchPair
   float GetTotalScore() const;
   
   void SetAverageSquaredDifference(const float value);
-  void SetTotalSquaredDifference(const float value);
   void SetAverageAbsoluteDifference(const float value);
-  void SetTotalAbsoluteDifference(const float value);
   
   void SetBoundaryPixelDifference(const float value);
   void SetBoundaryIsophoteAngleDifference(const float value);
   void SetBoundaryIsophoteStrengthDifference(const float value);
   
   bool IsValidAverageSquaredDifference();
-  bool IsValidTotalSquaredDifference();
   bool IsValidAverageAbsoluteDifference();
-  bool IsValidTotalAbsoluteDifference();
   
   bool IsValidBoundaryPixelDifference();
   bool IsValidBoundaryIsophoteAngleDifference();
@@ -44,9 +40,7 @@ struct PatchPair
   itk::Offset<2> GetSourceToTargetOffset() const;
   
 private:
-  float TotalSquaredDifference;
   float AverageSquaredDifference;
-  float TotalAbsoluteDifference;
   float AverageAbsoluteDifference;
   
   float BoundaryPixelDifference;
@@ -58,9 +52,7 @@ private:
   void ComputeTotal();
   
   // These are initialized to false and set to true when the corresponding SetXYZ() function is called.
-  bool ValidTotalSquaredDifference;
   bool ValidAverageSquaredDifference;
-  bool ValidTotalAbsoluteDifference;
   bool ValidAverageAbsoluteDifference;
   
   bool ValidBoundaryPixelDifference;
@@ -70,8 +62,7 @@ private:
 
 bool SortByAverageSquaredDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByAverageAbsoluteDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByTotalSquaredDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByTotalAbsoluteDifference(const PatchPair& pair1, const PatchPair& pair2);
+
 bool SortByBoundaryIsophoteAngleDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByBoundaryIsophoteStrengthDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByBoundaryPixelDifference(const PatchPair& pair1, const PatchPair& pair2);

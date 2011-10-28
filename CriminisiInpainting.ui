@@ -655,21 +655,11 @@
            <bool>true</bool>
           </property>
           <property name="columnCount">
-           <number>11</number>
+           <number>9</number>
           </property>
           <column>
            <property name="text">
             <string>Patch</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Total Abs.</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Total Sq.</string>
            </property>
           </column>
           <column>
@@ -764,23 +754,6 @@
             </property>
             <property name="text">
              <string>Sort by:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radSortByTotalAbsoluteDifference">
-            <property name="text">
-             <string>Total Absolute Diff.</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radSortByTotalSquaredDifference">
-            <property name="text">
-             <string>Total Squared Diff.</string>
             </property>
            </widget>
           </item>

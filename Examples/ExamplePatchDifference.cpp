@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
   //float totalAbsoluteDifference = patchCompare.SlowTotalAbsoluteDifference(sourceRegion);
   //float totalSquaredDifference = patchCompare.SlowTotalSquaredDifference(sourceRegion);
 
-  std::cerr << "Total Absolute Difference: " << candidatePairs[0].GetTotalAbsoluteDifference() << std::endl;
+  std::cerr << "Average Absolute Difference: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
   //std::cerr << "Total Squared Difference: " << totalSquaredDifference << std::endl;
 
   return EXIT_SUCCESS;

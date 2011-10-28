@@ -35,7 +35,7 @@ class CriminisiInpainting
 
 public:
 
-  enum DifferenceTypeEnum {DIFFERENCE_ALL, DIFFERENCE_ALL255, DIFFERENCE_DEPTH};
+  //enum DifferenceTypeEnum {DIFFERENCE_ALL, DIFFERENCE_ALL255, DIFFERENCE_DEPTH};
 
   ///////////////////////////////////////////////////////////////////////
   /////////////////// CriminisiInpaintingInterface.cpp //////////////////

@@ -89,10 +89,7 @@ public slots:
   
   void on_chkLive_clicked();
 
-  void on_forwardLookingTableWidget_cellClicked(int row, int col);
   void on_forwardLookingTableWidget_currentCellChanged(int row, int col);
-  
-  void on_topPatchesTableWidget_cellClicked(int row, int col);
   void on_topPatchesTableWidget_currentCellChanged(int row, int col);
   
   // Defined in FormGUIElements.cxx

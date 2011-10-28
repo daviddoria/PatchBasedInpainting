@@ -48,15 +48,7 @@ void Form::on_btnResort_clicked()
       {
       CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[iteration][forwardLookId];
 
-      if(this->radSortByTotalAbsoluteDifference->isChecked())
-        {
-        std::sort(candidatePairs.begin(), candidatePairs.end(), SortByTotalAbsoluteDifference);
-        }
-      else if(this->radSortByTotalSquaredDifference->isChecked())
-        {
-        std::sort(candidatePairs.begin(), candidatePairs.end(), SortByTotalSquaredDifference);
-        }
-      else if(this->radSortByAverageAbsoluteDifference->isChecked())
+      if(this->radSortByAverageAbsoluteDifference->isChecked())
         {
         std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
         }
@@ -89,7 +81,7 @@ void Form::on_btnResort_clicked()
 
   unsigned int forwardLookId = this->forwardLookingTableWidget->currentRow();
   SetupTopPatchesTable(forwardLookId);
-  on_topPatchesTableWidget_cellClicked(0, 0);
+  on_topPatchesTableWidget_currentCellChanged(0, 0);
   
   Refresh();
 }
