@@ -414,24 +414,34 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     DebugMessage<unsigned int>("Removed forward look: ", idToRemove);
     }
   
-  // We need to temporarily modify the priority image without affecting the actual priority image, so we copy it.
-  FloatScalarImageType::Pointer currentPriorityImage = FloatScalarImageType::New();
-  Helpers::DeepCopy<FloatScalarImageType>(this->PriorityImage, currentPriorityImage);
+  // We need to temporarily modify the priority image and boundary image without affecting the actual images, so we copy them.
+  FloatScalarImageType::Pointer modifiedPriorityImage = FloatScalarImageType::New();
+  Helpers::DeepCopy<FloatScalarImageType>(this->PriorityImage, modifiedPriorityImage);
+  
+  UnsignedCharScalarImageType::Pointer modifiedBoundaryImage = UnsignedCharScalarImageType::New();
+  Helpers::DeepCopy<UnsignedCharScalarImageType>(this->BoundaryImage, modifiedBoundaryImage);
 
   // Blank all regions that are already look ahead patches.
   for(unsigned int forwardLookId = 0; forwardLookId < this->PotentialCandidatePairs.size(); ++forwardLookId)
     {
-    Helpers::SetRegionToConstant<FloatScalarImageType>(currentPriorityImage, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region, 0.0f);
+    Helpers::SetRegionToConstant<FloatScalarImageType>(modifiedPriorityImage, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region, 0.0f);
+    Helpers::SetRegionToConstant<UnsignedCharScalarImageType>(modifiedBoundaryImage, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region, 0);
     }
-    
+
   // Find the remaining number of patch candidates
   unsigned int numberOfNewPatchesToFind = this->MaxForwardLookPatches - this->PotentialCandidatePairs.size();
   for(unsigned int newPatchId = 0; newPatchId < numberOfNewPatchesToFind; ++newPatchId)
     {
     std::cout << "Start computing new patch " << newPatchId << std::endl;
 
+    // If there are no boundary pixels, we can't find any more look ahead patches.
+    if(Helpers::CountNonZeroPixels<UnsignedCharScalarImageType>(modifiedBoundaryImage) == 0)
+      {
+      break;
+      }
+
     float highestPriority = 0;
-    itk::Index<2> pixelToFill = FindHighestValueOnBoundary(currentPriorityImage, highestPriority);
+    itk::Index<2> pixelToFill = FindHighestValueOnBoundary(modifiedPriorityImage, highestPriority, modifiedBoundaryImage);
 
     if(!Helpers::HasHoleNeighbor(pixelToFill, this->CurrentMask))
       {
@@ -441,12 +451,6 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
       exit(-1);
       }
 
-    // We want to do at least one comparison, but if we are near the end of the completion, there may not be more than 1 priority max
-    if(highestPriority < .0001 && newPatchId > 0)
-      {
-      std::cout << "Highest priority was only " << highestPriority << std::endl;
-      break;
-      }
     //DebugMessage<itk::Index<2> >("Highest priority found to be ", pixelToFill);
 
     itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
@@ -462,18 +466,6 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     patchCompare->SetImage(this->CompareImage);
     patchCompare->SetMask(this->CurrentMask);
     patchCompare->ComputeAllDifferences();
-    /*
-    float averageSSD = 0;
-    unsigned int bestMatchSourcePatchId = patchCompare->FindBestPatch(averageSSD);
-    patchPair.AverageSSD = averageSSD;
-    
-    //DebugMessage<unsigned int>("Found best patch to be ", bestMatchSourcePatchId);
-    //std::cout << "Found best patch to be " << bestMatchSourcePatchId << std::endl;
-
-    //this->DebugWritePatch(this->SourcePatches[bestMatchSourcePatchId], "SourcePatch.png");
-    //this->DebugWritePatch(targetRegion, "TargetPatch.png");
-    Patch sourcePatch = this->SourcePatches[bestMatchSourcePatchId];
-    */
     
     //ComputeAllContinuationDifferences(candidatePairs);
 
@@ -481,7 +473,8 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     //patchPairsSortedByContinuation.erase(patchPairsSortedByContinuation.begin() + this->NumberOfTopPatchesToSave, patchPairsSortedByContinuation.end());
     
     // Blank a region around the current potential patch to fill. This will ensure the next potential patch to fill is reasonably far away.
-    Helpers::SetRegionToConstant<FloatScalarImageType>(currentPriorityImage, targetRegion, 0.0f);
+    Helpers::SetRegionToConstant<FloatScalarImageType>(modifiedPriorityImage, targetRegion, 0.0f);
+    Helpers::SetRegionToConstant<UnsignedCharScalarImageType>(modifiedBoundaryImage, targetRegion, 0);
     
     //std::cout << "Potential pair: Source: " << sourcePatch.Region << " Target: " << targetPatch.Region << std::endl;
     
@@ -492,6 +485,12 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     this->PotentialCandidatePairs.push_back(candidatePairs);
     std::cout << "Finished computing new patch " << newPatchId << std::endl;
     } // end forward look loop
+
+  if(this->PotentialCandidatePairs.size() == 0)
+    {
+    std::cerr << "Something is wrong - there are 0 forward look candidates!" << std::endl;
+    exit(-1);
+    }
 
   // Sort the forward look patches so that the highest priority sets are first in the vector (descending order).
   std::sort(this->PotentialCandidatePairs.rbegin(), this->PotentialCandidatePairs.rend(), SortByPriority);
@@ -793,7 +792,7 @@ void CriminisiInpainting::ComputeBoundaryNormals(const float blurVariance)
   }
 }
 
-itk::Index<2> CriminisiInpainting::FindHighestValueOnBoundary(const FloatScalarImageType::Pointer image, float& maxValue)
+itk::Index<2> CriminisiInpainting::FindHighestValueOnBoundary(const FloatScalarImageType::Pointer image, float& maxValue, UnsignedCharScalarImageType::Pointer boundaryImage)
 {
   // Return the location of the highest pixel on the current boundary. Return the value of that pixel by reference.
   try
@@ -801,7 +800,7 @@ itk::Index<2> CriminisiInpainting::FindHighestValueOnBoundary(const FloatScalarI
     // Explicity find the maximum on the boundary
     maxValue = 0; // priorities are non-negative, so anything better than 0 will win
     itk::Index<2> locationOfMaxValue;
-    itk::ImageRegionConstIteratorWithIndex<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
+    itk::ImageRegionConstIteratorWithIndex<UnsignedCharScalarImageType> boundaryIterator(boundaryImage, boundaryImage->GetLargestPossibleRegion());
 
     while(!boundaryIterator.IsAtEnd())
       {

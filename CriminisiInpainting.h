@@ -261,8 +261,8 @@ private:
   // Compute the Data at a pixel.
   float ComputeDataTerm(const itk::Index<2>& queryPixel);
 
-  // Return the highest value of the specified image out of the pixels under the current BoundaryImage.
-  itk::Index<2> FindHighestValueOnBoundary(const FloatScalarImageType::Pointer image, float& maxValue);
+  // Return the highest value of the specified image out of the pixels under a specified BoundaryImage.
+  itk::Index<2> FindHighestValueOnBoundary(const FloatScalarImageType::Pointer image, float& maxValue, UnsignedCharScalarImageType::Pointer boundaryImage);
 
   // Update the mask so that the pixels in the region that was filled are marked as filled.
   void UpdateMask(const itk::ImageRegion<2>& region);

@@ -507,101 +507,110 @@ void Form::DisplayBoundaryNormals()
 
 void Form::Refresh()
 {
-  DebugMessage("Refresh()");
+  try
+  {
+    DebugMessage("Refresh()");
 
-  // The following are valid for all iterations
-  this->ImageLayer.ImageSlice->SetVisibility(this->chkImage->isChecked());
-  if(this->chkImage->isChecked())
-    {
-    DisplayImage();
-    }
-
-  this->MaskLayer.ImageSlice->SetVisibility(this->chkMask->isChecked());
-  if(this->chkMask->isChecked())
-    {
-    DisplayMask();
-    }
-
-  this->ConfidenceMapLayer.ImageSlice->SetVisibility(this->chkConfidenceMap->isChecked());
-  if(this->chkConfidenceMap->isChecked())
-    {
-    DisplayConfidenceMap();
-    }
-
-  this->ConfidenceLayer.ImageSlice->SetVisibility(this->chkConfidence->isChecked());
-  if(this->chkConfidence->isChecked())
-    {
-    DisplayConfidence();
-    }
-
-  this->PriorityLayer.ImageSlice->SetVisibility(this->chkPriority->isChecked());
-  if(this->chkPriority->isChecked())
-    {
-    DisplayPriority();
-    }
-
-  this->BoundaryLayer.ImageSlice->SetVisibility(this->chkBoundary->isChecked());
-  if(this->chkBoundary->isChecked())
-    {
-    DisplayBoundary();
-    }
-
-  this->IsophoteLayer.Actor->SetVisibility(this->chkIsophotes->isChecked());
-  if(this->chkIsophotes->isChecked())
-    {
-    DisplayIsophotes();
-    }
-
-  this->DataLayer.ImageSlice->SetVisibility(this->chkData->isChecked());
-  if(this->chkData->isChecked())
-    {
-    DisplayData();
-    }
-
-  this->BoundaryNormalsLayer.Actor->SetVisibility(this->chkBoundaryNormals->isChecked());
-  if(this->chkBoundaryNormals->isChecked())
-    {
-    DisplayBoundaryNormals();
-    }
-
-  this->PotentialPatchesLayer.ImageSlice->SetVisibility(this->chkPotentialPatches->isChecked());
-  if(this->chkPotentialPatches->isChecked())
-    {
-    //Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetDataImage(), this->VTKDataImage);
-    }
-
-  // The following are only valid for iterations after 0
-  if(this->IterationToDisplay > 0)
-    {
-    this->UsedSourcePatchLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
-    this->UsedTargetPatchLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
-
-    this->SelectedForwardLookOutlineLayer.ImageSlice->SetVisibility(this->chkDisplayForwardLookPatchLocations->isChecked());
-    this->AllForwardLookOutlinesLayer.ImageSlice->SetVisibility(this->chkDisplayForwardLookPatchLocations->isChecked());
-    if(this->chkDisplayForwardLookPatchLocations->isChecked())
+    // The following are valid for all iterations
+    this->ImageLayer.ImageSlice->SetVisibility(this->chkImage->isChecked());
+    if(this->chkImage->isChecked())
       {
-      HighlightForwardLookPatches();
+      DisplayImage();
       }
 
-    this->SelectedSourcePatchOutlineLayer.ImageSlice->SetVisibility(this->chkDisplaySourcePatchLocations->isChecked());
-    this->AllSourcePatchOutlinesLayer.ImageSlice->SetVisibility(this->chkDisplaySourcePatchLocations->isChecked());
-    if(this->chkDisplaySourcePatchLocations->isChecked())
+    this->MaskLayer.ImageSlice->SetVisibility(this->chkMask->isChecked());
+    if(this->chkMask->isChecked())
       {
-      HighlightSourcePatches();
+      DisplayMask();
       }
-    }
-  else
-    {
-    this->UsedSourcePatchLayer.ImageSlice->SetVisibility(false);
-    this->UsedTargetPatchLayer.ImageSlice->SetVisibility(false);
-    this->SelectedForwardLookOutlineLayer.ImageSlice->SetVisibility(false);
-    this->AllForwardLookOutlinesLayer.ImageSlice->SetVisibility(false);
-    this->SelectedSourcePatchOutlineLayer.ImageSlice->SetVisibility(false);
-    this->AllSourcePatchOutlinesLayer.ImageSlice->SetVisibility(false);
-    }
 
-  this->qvtkWidget->GetRenderWindow()->Render();
+    this->ConfidenceMapLayer.ImageSlice->SetVisibility(this->chkConfidenceMap->isChecked());
+    if(this->chkConfidenceMap->isChecked())
+      {
+      DisplayConfidenceMap();
+      }
 
+    this->ConfidenceLayer.ImageSlice->SetVisibility(this->chkConfidence->isChecked());
+    if(this->chkConfidence->isChecked())
+      {
+      DisplayConfidence();
+      }
+
+    this->PriorityLayer.ImageSlice->SetVisibility(this->chkPriority->isChecked());
+    if(this->chkPriority->isChecked())
+      {
+      DisplayPriority();
+      }
+
+    this->BoundaryLayer.ImageSlice->SetVisibility(this->chkBoundary->isChecked());
+    if(this->chkBoundary->isChecked())
+      {
+      DisplayBoundary();
+      }
+
+    this->IsophoteLayer.Actor->SetVisibility(this->chkIsophotes->isChecked());
+    if(this->chkIsophotes->isChecked())
+      {
+      DisplayIsophotes();
+      }
+
+    this->DataLayer.ImageSlice->SetVisibility(this->chkData->isChecked());
+    if(this->chkData->isChecked())
+      {
+      DisplayData();
+      }
+
+    this->BoundaryNormalsLayer.Actor->SetVisibility(this->chkBoundaryNormals->isChecked());
+    if(this->chkBoundaryNormals->isChecked())
+      {
+      DisplayBoundaryNormals();
+      }
+
+    this->PotentialPatchesLayer.ImageSlice->SetVisibility(this->chkPotentialPatches->isChecked());
+    if(this->chkPotentialPatches->isChecked())
+      {
+      //Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetDataImage(), this->VTKDataImage);
+      }
+
+    // The following are only valid for iterations after 0
+    if(this->IterationToDisplay > 0)
+      {
+      this->UsedSourcePatchLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
+      this->UsedTargetPatchLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
+
+      this->SelectedForwardLookOutlineLayer.ImageSlice->SetVisibility(this->chkDisplayForwardLookPatchLocations->isChecked());
+      this->AllForwardLookOutlinesLayer.ImageSlice->SetVisibility(this->chkDisplayForwardLookPatchLocations->isChecked());
+      if(this->chkDisplayForwardLookPatchLocations->isChecked())
+	{
+	HighlightForwardLookPatches();
+	}
+
+      this->SelectedSourcePatchOutlineLayer.ImageSlice->SetVisibility(this->chkDisplaySourcePatchLocations->isChecked());
+      this->AllSourcePatchOutlinesLayer.ImageSlice->SetVisibility(this->chkDisplaySourcePatchLocations->isChecked());
+      if(this->chkDisplaySourcePatchLocations->isChecked())
+	{
+	HighlightSourcePatches();
+	}
+      }
+    else
+      {
+      this->UsedSourcePatchLayer.ImageSlice->SetVisibility(false);
+      this->UsedTargetPatchLayer.ImageSlice->SetVisibility(false);
+      this->SelectedForwardLookOutlineLayer.ImageSlice->SetVisibility(false);
+      this->AllForwardLookOutlinesLayer.ImageSlice->SetVisibility(false);
+      this->SelectedSourcePatchOutlineLayer.ImageSlice->SetVisibility(false);
+      this->AllSourcePatchOutlinesLayer.ImageSlice->SetVisibility(false);
+      }
+
+    this->qvtkWidget->GetRenderWindow()->Render();
+
+    }// end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in Refresh!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
 }
 
 void Form::on_btnStop_clicked()
@@ -708,351 +717,421 @@ void Form::on_btnDisplayNextStep_clicked()
 
 void Form::DisplaySourcePatch(const unsigned int forwardLookId, const unsigned int topPatchId)
 {
-  DebugMessage("DisplaySourcePatch()");
-  
-  if(this->IterationToDisplay < 1)
-    {
-    std::cerr << "Can only display result patch for iterations > 0." << std::endl;
-    return;
-    }
+  try
+  {
+    DebugMessage("DisplaySourcePatch()");
     
-  if(!this->Recorded[this->IterationToDisplay - 1])
-    {
-    return;
-    }
+    if(this->IterationToDisplay < 1)
+      {
+      std::cerr << "Can only display result patch for iterations > 0." << std::endl;
+      return;
+      }
+      
+    if(!this->Recorded[this->IterationToDisplay - 1])
+      {
+      return;
+      }
 
-  FloatVectorImageType::Pointer currentImage = this->IntermediateImages[this->IterationToDisplay].Image;
+    FloatVectorImageType::Pointer currentImage = this->IntermediateImages[this->IterationToDisplay].Image;
 
-  const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][forwardLookId]; // This -1 is because the 0th iteration is the initial condition
-  QImage sourceImage = Helpers::GetQImageColor<FloatVectorImageType>(currentImage, candidatePairs[topPatchId].SourcePatch.Region);
-  sourceImage = Helpers::FitToGraphicsView(sourceImage, gfxTarget);
-  this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
+    const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][forwardLookId]; // This -1 is because the 0th iteration is the initial condition
+    QImage sourceImage = Helpers::GetQImageColor<FloatVectorImageType>(currentImage, candidatePairs[topPatchId].SourcePatch.Region);
+    sourceImage = Helpers::FitToGraphicsView(sourceImage, gfxTarget);
+    this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
 
-  //Refresh();
+    //Refresh();
+    }// end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in DisplaySourcePatch!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
 }
 
 void Form::DisplayTargetPatch(const unsigned int forwardLookId)
 {
-  DebugMessage("DisplayTargetPatch()");
-  
-  if(this->IterationToDisplay < 1)
-    {
-    std::cerr << "Can only display target patch for iterations > 0." << std::endl;
-    return;
-    }
+  try
+  {
+    DebugMessage("DisplayTargetPatch()");
+    
+    if(this->IterationToDisplay < 1)
+      {
+      std::cerr << "Can only display target patch for iterations > 0." << std::endl;
+      return;
+      }
 
-  if(!this->Recorded[this->IterationToDisplay - 1])
-    {
-    return;
-    }
+    if(!this->Recorded[this->IterationToDisplay - 1])
+      {
+      return;
+      }
 
-  FloatVectorImageType::Pointer currentImage = this->IntermediateImages[this->IterationToDisplay - 1].Image;
+    FloatVectorImageType::Pointer currentImage = this->IntermediateImages[this->IterationToDisplay - 1].Image;
 
-  const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][forwardLookId];
+    const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][forwardLookId];
 
-  // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration (as the current mask has been cleared where the target patch was copied).
-  Mask::Pointer currentMask = this->IntermediateImages[this->IterationToDisplay - 1].MaskImage;
+    // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration (as the current mask has been cleared where the target patch was copied).
+    Mask::Pointer currentMask = this->IntermediateImages[this->IterationToDisplay - 1].MaskImage;
 
-  // Target
-  QImage targetImage = Helpers::GetQImageColor<FloatVectorImageType>(currentImage, candidatePairs.TargetPatch.Region);
+    // Target
+    QImage targetImage = Helpers::GetQImageColor<FloatVectorImageType>(currentImage, candidatePairs.TargetPatch.Region);
 
-  targetImage = Helpers::FitToGraphicsView(targetImage, gfxTarget);
-  this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
+    targetImage = Helpers::FitToGraphicsView(targetImage, gfxTarget);
+    this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
 
-  //Refresh();
+    //Refresh();
+    }// end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in DisplayTargetPatch!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
 }
 
 void Form::DisplayResultPatch(const unsigned int forwardLookId, const unsigned int topPatchId)
 {
-  DebugMessage("DisplayResultPatch()");
-  
-  if(this->IterationToDisplay < 1)
-    {
-    std::cerr << "Can only display result patch for iterations > 0." << std::endl;
-    return;
-    }
+  try
+  {
+    DebugMessage("DisplayResultPatch()");
     
-  if(!this->Recorded[this->IterationToDisplay - 1])
-    {
-    return;
-    }
-
-  FloatVectorImageType::Pointer currentImage = this->IntermediateImages[this->IterationToDisplay - 1].Image;
-  
-  const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][forwardLookId];
-
-  const PatchPair& patchPair = candidatePairs[topPatchId];
-  
-  // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration (as the current mask has been cleared where the target patch was copied).
-  Mask::Pointer currentMask = this->IntermediateImages[this->IterationToDisplay - 1].MaskImage;
-
-  itk::Size<2> regionSize = patchPair.SourcePatch.Region.GetSize(); // this could equally as well be TargetPatch
-  
-  QImage qimage(regionSize[0], regionSize[1], QImage::Format_RGB888);
-
-  itk::ImageRegionIterator<FloatVectorImageType> sourceIterator(currentImage, patchPair.SourcePatch.Region);
-  itk::ImageRegionIterator<FloatVectorImageType> targetIterator(currentImage, patchPair.TargetPatch.Region);
-  itk::ImageRegionIterator<Mask> maskIterator(currentMask, patchPair.TargetPatch.Region);
-  
-  while(!maskIterator.IsAtEnd())
-    {
-    FloatVectorImageType::PixelType pixel;
-  
-    if(currentMask->IsHole(maskIterator.GetIndex()))
+    if(this->IterationToDisplay < 1)
       {
-      pixel = sourceIterator.Get();
+      std::cerr << "Can only display result patch for iterations > 0." << std::endl;
+      return;
       }
-    else
+      
+    if(!this->Recorded[this->IterationToDisplay - 1])
       {
-      pixel = targetIterator.Get();
+      return;
       }
+
+    FloatVectorImageType::Pointer currentImage = this->IntermediateImages[this->IterationToDisplay - 1].Image;
     
-    itk::Offset<2> offset = sourceIterator.GetIndex() - patchPair.SourcePatch.Region.GetIndex();
-    QColor pixelColor(static_cast<int>(pixel[0]), static_cast<int>(pixel[1]), static_cast<int>(pixel[2]));
-    qimage.setPixel(offset[0], offset[1], pixelColor.rgb());
+    const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][forwardLookId];
 
-    ++sourceIterator;
-    ++targetIterator;
-    ++maskIterator;
-    }
+    const PatchPair& patchPair = candidatePairs[topPatchId];
+    
+    // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration (as the current mask has been cleared where the target patch was copied).
+    Mask::Pointer currentMask = this->IntermediateImages[this->IterationToDisplay - 1].MaskImage;
 
-  qimage.setPixel(regionSize[0]/2, regionSize[1]/2, this->CenterPixelColor.rgb());
-  
-  // Flip the image
-  qimage = qimage.mirrored(false, true);
-  
-  qimage = Helpers::FitToGraphicsView(qimage, gfxResult);
-  this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
+    itk::Size<2> regionSize = patchPair.SourcePatch.Region.GetSize(); // this could equally as well be TargetPatch
+    
+    QImage qimage(regionSize[0], regionSize[1], QImage::Format_RGB888);
 
-  //Refresh();
+    itk::ImageRegionIterator<FloatVectorImageType> sourceIterator(currentImage, patchPair.SourcePatch.Region);
+    itk::ImageRegionIterator<FloatVectorImageType> targetIterator(currentImage, patchPair.TargetPatch.Region);
+    itk::ImageRegionIterator<Mask> maskIterator(currentMask, patchPair.TargetPatch.Region);
+    
+    while(!maskIterator.IsAtEnd())
+      {
+      FloatVectorImageType::PixelType pixel;
+    
+      if(currentMask->IsHole(maskIterator.GetIndex()))
+	{
+	pixel = sourceIterator.Get();
+	}
+      else
+	{
+	pixel = targetIterator.Get();
+	}
+      
+      itk::Offset<2> offset = sourceIterator.GetIndex() - patchPair.SourcePatch.Region.GetIndex();
+      QColor pixelColor(static_cast<int>(pixel[0]), static_cast<int>(pixel[1]), static_cast<int>(pixel[2]));
+      qimage.setPixel(offset[0], offset[1], pixelColor.rgb());
+
+      ++sourceIterator;
+      ++targetIterator;
+      ++maskIterator;
+      }
+
+    qimage.setPixel(regionSize[0]/2, regionSize[1]/2, this->CenterPixelColor.rgb());
+    
+    // Flip the image
+    qimage = qimage.mirrored(false, true);
+    
+    qimage = Helpers::FitToGraphicsView(qimage, gfxResult);
+    this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
+
+    //Refresh();
+    }// end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in DisplayResultPatch!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
 }
 
 void Form::DisplayUsedPatches()
 {
   DebugMessage("DisplayUsedPatches()");
 
-  // There are no patches used in the 0th iteration (initial conditions) so it doesn't make sense to display them.
-  // Instead we display blank images.
-  if(this->IterationToDisplay < 1)
-    {
-    //QImage blankImage;
-    //blankImage = Helpers::FitToGraphicsView(blankImage, gfxTarget);
+  try
+  {
+    // There are no patches used in the 0th iteration (initial conditions) so it doesn't make sense to display them.
+    // Instead we display blank images.
+    if(this->IterationToDisplay < 1)
+      {
+      this->TargetPatchScene->clear();
+      this->SourcePatchScene->clear();
 
-    //this->TargetPatchScene->addPixmap(QPixmap::fromImage(blankImage));
-    //this->SourcePatchScene->addPixmap(QPixmap::fromImage(blankImage));
-
-    this->TargetPatchScene->clear();
-    this->SourcePatchScene->clear();
-
-    return;
-    }
-    
-  DisplaySourcePatch(0, 0);
-  DisplayTargetPatch(0);
-  DisplayResultPatch(0,0);
-  Refresh();
+      return;
+      }
+      
+    DisplaySourcePatch(0, 0);
+    DisplayTargetPatch(0);
+    DisplayResultPatch(0,0);
+    Refresh();
+  }// end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in DisplayUsedPatches!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
 }
 
 void Form::HighlightForwardLookPatches()
 {
-  DebugMessage("HighlightForwardLookPatches()");
+  try
+  {
+    //DebugMessage("HighlightForwardLookPatches()");
+    std::cout << "HighlightForwardLookPatches()" << std::endl;
 
-  // Delete any current highlight patches. We want to delete these (if they exist) no matter what because then they won't be displayed if the box is not checked (they will respect the check box).
-  Helpers::BlankImage(this->AllForwardLookOutlinesLayer.ImageData);
+    // Delete any current highlight patches. We want to delete these (if they exist) no matter what because then they won't be displayed if the box is not checked (they will respect the check box).
+    Helpers::BlankImage(this->AllForwardLookOutlinesLayer.ImageData);
 
-  // If the user has not requested to display the patches, quit.
-  if(!this->chkDisplayForwardLookPatchLocations->isChecked())
-    {
-    return;
-    }
+    // If the user has not requested to display the patches, quit.
+    if(!this->chkDisplayForwardLookPatchLocations->isChecked())
+      {
+      std::cout << "HighlightForwardLookPatches: chkDisplayForwardLookPatchLocations not checked!" << std::endl;
+      return;
+      }
 
-  if(!this->IterationToDisplay < 1)
-    {
-    return;
-    }
+    if(this->IterationToDisplay < 1)
+      {
+      std::cout << "HighlightForwardLookPatches: IterationToDisplay < 1!" << std::endl;
+      return;
+      }
+      
+    if(!this->Recorded[this->IterationToDisplay - 1])
+      {
+      std::cout << "HighlightForwardLookPatches: !this->Recorded[this->IterationToDisplay - 1]!" << std::endl;
+      return;
+      }
+      
+    // Get the candidate patches and make sure we have requested a valid set.
+    const std::vector<CandidatePairs>& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1];
+
+    unsigned char borderColor[3];
+    Helpers::QColorToUCharColor(this->AllForwardLookPatchColor, borderColor);
+    unsigned char centerPixelColor[3];
+    Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
     
-  if(!this->Recorded[this->IterationToDisplay - 1])
-    {
-    return;
-    }
+    for(unsigned int candidateId = 0; candidateId < candidatePairs.size(); ++candidateId)
+      {
+      const Patch& currentPatch = candidatePairs[candidateId].TargetPatch;
+      std::cout << "Outlining " << currentPatch.Region << std::endl;
+      //DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
+      
+      Helpers::BlankAndOutlineRegion(this->AllForwardLookOutlinesLayer.ImageData, currentPatch.Region, borderColor);
+      
+      Helpers::SetRegionCenterPixel(this->AllForwardLookOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
+      }
     
-  // Get the candidate patches and make sure we have requested a valid set.
-  const std::vector<CandidatePairs>& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1];
+    std::cout << "Highlighted " << candidatePairs.size() << " forward look patches." << std::endl;
+    
+    if(this->forwardLookingTableWidget->currentRow() < 0)
+      {
+      this->forwardLookingTableWidget->selectRow(0);
+      }
+    HighlightSelectedForwardLookPatch(this->forwardLookingTableWidget->currentRow());
 
-  unsigned char borderColor[3];
-  Helpers::QColorToUCharColor(this->AllForwardLookPatchColor, borderColor);
-  unsigned char centerPixelColor[3];
-  Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
+    this->qvtkWidget->GetRenderWindow()->Render();
   
-  for(unsigned int candidateId = 0; candidateId < candidatePairs.size(); ++candidateId)
-    {
-    const Patch& currentPatch = candidatePairs[candidateId].TargetPatch;
-    std::cout << "Outlining " << currentPatch.Region << std::endl;
-    //DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
-    
-    Helpers::BlankAndOutlineRegion(this->AllForwardLookOutlinesLayer.ImageData, currentPatch.Region, borderColor);
-    
-    Helpers::SetRegionCenterPixel(this->AllForwardLookOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
-    }
-
-  if(this->forwardLookingTableWidget->currentRow() < 0)
-    {
-    this->forwardLookingTableWidget->selectRow(0);
-    }
-  HighlightSelectedForwardLookPatch(this->forwardLookingTableWidget->currentRow());
-
-  this->qvtkWidget->GetRenderWindow()->Render();
+    }// end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in HighlightForwardLookPatches!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
 }
 
 
 void Form::HighlightSourcePatches()
 {
+  try
+  {
+    DebugMessage("HighlightSourcePatches()");
 
-  DebugMessage("HighlightSourcePatches()");
+    // Delete any current highlight patches. We want to delete these (if they exist) no matter what because then they won't be displayed if the box is not checked (they will respect the check box).
+    Helpers::BlankImage(this->AllSourcePatchOutlinesLayer.ImageData);
 
-  // Delete any current highlight patches. We want to delete these (if they exist) no matter what because then they won't be displayed if the box is not checked (they will respect the check box).
-  Helpers::BlankImage(this->AllSourcePatchOutlinesLayer.ImageData);
+    if(!this->chkDisplaySourcePatchLocations->isChecked())
+      {
+      return;
+      }
 
-  if(!this->chkDisplaySourcePatchLocations->isChecked())
-    {
-    return;
-    }
+    if(this->IterationToDisplay < 1)
+      {
+      return;
+      }
+      
+    if(!this->Recorded[this->IterationToDisplay - 1])
+      {
+      return;
+      }
+  //   CandidatePairs& candidatePairs;
+  //   bool valid = this->Inpainting.GetPotentialCandidatePairs(this->IterationToDisplay - 1, this->forwardLookingTableWidget->currentRow(), candidatePairs);
+  //   if(!valid)
+  //     {
+  //     return;
+  //     }
 
-  if(this->IterationToDisplay < 1)
-    {
-    return;
-    }
-    
-  if(!this->Recorded[this->IterationToDisplay - 1])
-    {
-    return;
-    }
-//   CandidatePairs& candidatePairs;
-//   bool valid = this->Inpainting.GetPotentialCandidatePairs(this->IterationToDisplay - 1, this->forwardLookingTableWidget->currentRow(), candidatePairs);
-//   if(!valid)
-//     {
-//     return;
-//     }
+    const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->forwardLookingTableWidget->currentRow()];
 
-  const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->forwardLookingTableWidget->currentRow()];
+    unsigned char borderColor[3];
+    Helpers::QColorToUCharColor(this->AllSourcePatchColor, borderColor);
+    unsigned char centerPixelColor[3];
+    Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
 
-  unsigned char borderColor[3];
-  Helpers::QColorToUCharColor(this->AllSourcePatchColor, borderColor);
-  unsigned char centerPixelColor[3];
-  Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
+    unsigned int numberToDisplay = std::min(candidatePairs.size(), this->txtNumberOfTopPatchesToDisplay->text().toUInt());
+    for(unsigned int candidateId = 0; candidateId < numberToDisplay; ++candidateId)
+      {
+      //DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
+      const Patch& currentPatch = candidatePairs[candidateId].SourcePatch;
+      Helpers::BlankAndOutlineRegion(this->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, borderColor);
+      Helpers::SetRegionCenterPixel(this->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
+      }
 
-  unsigned int numberToDisplay = std::min(candidatePairs.size(), this->txtNumberOfTopPatchesToDisplay->text().toUInt());
-  for(unsigned int candidateId = 0; candidateId < numberToDisplay; ++candidateId)
-    {
-    //DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
-    const Patch& currentPatch = candidatePairs[candidateId].SourcePatch;
-    Helpers::BlankAndOutlineRegion(this->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, borderColor);
-    Helpers::SetRegionCenterPixel(this->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
-    }
+    //std::cout << "Selected forward look patch should be: " << this->forwardLookingTableWidget->currentRow() << std::endl;
+    if(this->topPatchesTableWidget->currentRow() < 0)
+      {
+      this->topPatchesTableWidget->selectRow(0);
+      }
 
-  //std::cout << "Selected forward look patch should be: " << this->forwardLookingTableWidget->currentRow() << std::endl;
-  if(this->topPatchesTableWidget->currentRow() < 0)
-    {
-    this->topPatchesTableWidget->selectRow(0);
-    }
+    int idColumnId = GetColumnIdByHeader("Id");
+    unsigned int sourcePatchId = topPatchesTableWidget->item(this->topPatchesTableWidget->currentRow(), idColumnId)->data(Qt::DisplayRole).toUInt();
+    HighlightSelectedSourcePatch(sourcePatchId);
 
-  int idColumnId = GetColumnIdByHeader("Id");
-  unsigned int sourcePatchId = topPatchesTableWidget->item(this->topPatchesTableWidget->currentRow(), idColumnId)->data(Qt::DisplayRole).toUInt();
-  HighlightSelectedSourcePatch(sourcePatchId);
-
-  this->qvtkWidget->GetRenderWindow()->Render();
-
+    this->qvtkWidget->GetRenderWindow()->Render();
+    }// end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in HighlightSourcePatches!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
 }
 
 void Form::HighlightUsedPatches()
 {
-  DebugMessage("HighlightUsedPatches()");
-  
-  //unsigned int patchSize = Helpers::SideLengthFromRadius(this->txtPatchRadius->text().toUInt());
-  //DebugMessage<unsigned int>("Patch size: ", patchSize);
+  try
+  {
+    DebugMessage("HighlightUsedPatches()");
+    
+    //unsigned int patchSize = Helpers::SideLengthFromRadius(this->txtPatchRadius->text().toUInt());
+    //DebugMessage<unsigned int>("Patch size: ", patchSize);
 
-  PatchPair patchPair;
-  bool pairValid = false;
-  pairValid = this->Inpainting.GetUsedPatchPair(this->IterationToDisplay - 1, patchPair);
-  if(!pairValid)
-    {
-    std::cerr << "You have requested an invalid pair!" << std::endl;
-    return;
-    }
+    PatchPair patchPair;
+    bool pairValid = false;
+    pairValid = this->Inpainting.GetUsedPatchPair(this->IterationToDisplay - 1, patchPair);
+    if(!pairValid)
+      {
+      std::cerr << "You have requested an invalid pair!" << std::endl;
+      return;
+      }
 
-  unsigned char centerPixelColor[3];
-  Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
-  
-  // Target
-  Patch targetPatch = patchPair.TargetPatch;
+    unsigned char centerPixelColor[3];
+    Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
+    
+    // Target
+    Patch targetPatch = patchPair.TargetPatch;
 
-  unsigned int patchSize = targetPatch.Region.GetSize()[0];
-  //std::cout << "Displaying used target patch " << this->CurrentUsedPatchDisplayed << " : " << targetPatch.Region << std::endl;
-  DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
-  this->UsedTargetPatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
-  unsigned char targetPatchColor[3];
-  Helpers::QColorToUCharColor(this->UsedTargetPatchColor, targetPatchColor);
-  Helpers::BlankAndOutlineImage(this->UsedTargetPatchLayer.ImageData, targetPatchColor);
-  Helpers::SetImageCenterPixel(this->UsedTargetPatchLayer.ImageData, centerPixelColor);
-  this->UsedTargetPatchLayer.ImageSlice->SetPosition(targetPatch.Region.GetIndex()[0], targetPatch.Region.GetIndex()[1], 0);
+    unsigned int patchSize = targetPatch.Region.GetSize()[0];
+    //std::cout << "Displaying used target patch " << this->CurrentUsedPatchDisplayed << " : " << targetPatch.Region << std::endl;
+    DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
+    this->UsedTargetPatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
+    unsigned char targetPatchColor[3];
+    Helpers::QColorToUCharColor(this->UsedTargetPatchColor, targetPatchColor);
+    Helpers::BlankAndOutlineImage(this->UsedTargetPatchLayer.ImageData, targetPatchColor);
+    Helpers::SetImageCenterPixel(this->UsedTargetPatchLayer.ImageData, centerPixelColor);
+    this->UsedTargetPatchLayer.ImageSlice->SetPosition(targetPatch.Region.GetIndex()[0], targetPatch.Region.GetIndex()[1], 0);
 
-  // Source
-  Patch sourcePatch = patchPair.SourcePatch;
+    // Source
+    Patch sourcePatch = patchPair.SourcePatch;
 
-  //std::cout << "Displaying used source patch " << this->CurrentUsedPatchDisplayed << " : " << sourcePatch.Region << std::endl;
-  DebugMessage<itk::ImageRegion<2> >("Source patch region: ", sourcePatch.Region);
-  this->UsedSourcePatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
-  unsigned char sourcePatchColor[3];
-  Helpers::QColorToUCharColor(this->UsedSourcePatchColor, sourcePatchColor);
-  Helpers::BlankAndOutlineImage(this->UsedSourcePatchLayer.ImageData, sourcePatchColor);
-  Helpers::SetImageCenterPixel(this->UsedSourcePatchLayer.ImageData, centerPixelColor);
-  this->UsedSourcePatchLayer.ImageSlice->SetPosition(sourcePatch.Region.GetIndex()[0], sourcePatch.Region.GetIndex()[1], 0);
+    //std::cout << "Displaying used source patch " << this->CurrentUsedPatchDisplayed << " : " << sourcePatch.Region << std::endl;
+    DebugMessage<itk::ImageRegion<2> >("Source patch region: ", sourcePatch.Region);
+    this->UsedSourcePatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
+    unsigned char sourcePatchColor[3];
+    Helpers::QColorToUCharColor(this->UsedSourcePatchColor, sourcePatchColor);
+    Helpers::BlankAndOutlineImage(this->UsedSourcePatchLayer.ImageData, sourcePatchColor);
+    Helpers::SetImageCenterPixel(this->UsedSourcePatchLayer.ImageData, centerPixelColor);
+    this->UsedSourcePatchLayer.ImageSlice->SetPosition(sourcePatch.Region.GetIndex()[0], sourcePatch.Region.GetIndex()[1], 0);
 
-  Refresh();
-
+    Refresh();
+    }// end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in HighlightUsedPatches!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
 }
 
 void Form::DisplayUsedPatchInformation()
 {
-  DebugMessage("DisplayUsedPatchInformation()");
-  
-  SetupForwardLookingTable();
-  
-  // There is a -1 offset here because the 0th used pair corresponds to the pair after iteration 1 because there are no used patches after iteration 0 (initial conditions)
-  PatchPair patchPair;
-  bool validPair = this->Inpainting.GetUsedPatchPair(this->IterationToDisplay - 1, patchPair);
-  if(!validPair)
-    {
-    std::cerr << "You have requested an invalid pair!" << std::endl;
-    return;
-    }
-  
-  // Source information
-  /*
-  std::stringstream ssSource;
-  ssSource << "(" << patchPair.SourcePatch.Region.GetIndex()[0] << ", " << patchPair.SourcePatch.Region.GetIndex()[1] << ")";
-  this->lblSourceCorner->setText(ssSource.str().c_str());
-  
-  // Target information
-  std::stringstream ssTarget;
-  ssTarget << "(" << patchPair.TargetPatch.Region.GetIndex()[0] << ", " << patchPair.TargetPatch.Region.GetIndex()[1] << ")";
-  this->lblTargetCorner->setText(ssTarget.str().c_str());
-  */
-  
-  /*
-  // Patch pair information
-  float ssd = patchPair.AverageSSD;
-  
-  std::stringstream ssSSD;
-  ssSSD << ssd;
-  this->lblAverageSSD->setText(ssSSD.str().c_str());
-  
-  std::stringstream ssHistogramDifference;
-  ssHistogramDifference << patchPair.HistogramDifference;
-  this->lblHistogramDistance->setText(ssHistogramDifference.str().c_str());
-  */
-  
-  Refresh();
+  try
+  {
+    DebugMessage("DisplayUsedPatchInformation()");
+    
+    SetupForwardLookingTable();
+    
+    // There is a -1 offset here because the 0th used pair corresponds to the pair after iteration 1 because there are no used patches after iteration 0 (initial conditions)
+    PatchPair patchPair;
+    bool validPair = this->Inpainting.GetUsedPatchPair(this->IterationToDisplay - 1, patchPair);
+    if(!validPair)
+      {
+      std::cerr << "You have requested an invalid pair!" << std::endl;
+      return;
+      }
+    
+    // Source information
+    /*
+    std::stringstream ssSource;
+    ssSource << "(" << patchPair.SourcePatch.Region.GetIndex()[0] << ", " << patchPair.SourcePatch.Region.GetIndex()[1] << ")";
+    this->lblSourceCorner->setText(ssSource.str().c_str());
+    
+    // Target information
+    std::stringstream ssTarget;
+    ssTarget << "(" << patchPair.TargetPatch.Region.GetIndex()[0] << ", " << patchPair.TargetPatch.Region.GetIndex()[1] << ")";
+    this->lblTargetCorner->setText(ssTarget.str().c_str());
+    */
+    
+    /*
+    // Patch pair information
+    float ssd = patchPair.AverageSSD;
+    
+    std::stringstream ssSSD;
+    ssSSD << ssd;
+    this->lblAverageSSD->setText(ssSSD.str().c_str());
+    
+    std::stringstream ssHistogramDifference;
+    ssHistogramDifference << patchPair.HistogramDifference;
+    this->lblHistogramDistance->setText(ssHistogramDifference.str().c_str());
+    */
+    
+    Refresh();
+    }// end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in DisplayUsedPatchInformation!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
 }
 
 void Form::CreatePotentialTargetPatchesImage()
@@ -1119,10 +1198,11 @@ void Form::ChangeDisplayedIteration()
   ss << this->IterationToDisplay;
   this->lblCurrentIteration->setText(ss.str().c_str());
 
+  DisplayUsedPatches();
+  CreatePotentialTargetPatchesImage();
+    
   if(this->IterationToDisplay > 0)
     {
-    DisplayUsedPatches();
-    CreatePotentialTargetPatchesImage();
     HighlightUsedPatches();
     DisplayUsedPatchInformation();
     }
@@ -1172,9 +1252,9 @@ void Form::IterationComplete()
   InpaintingVisualizationStack stack;
   
   Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), stack.Image);
+  Helpers::DeepCopy<Mask>(this->Inpainting.GetMaskImage(), stack.MaskImage);
   if(!this->chkOnlySaveImage->isChecked())
     {
-    Helpers::DeepCopy<Mask>(this->Inpainting.GetMaskImage(), stack.MaskImage);
     Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
     Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), stack.Priority);
     Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetDataImage(), stack.Data);
