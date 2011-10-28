@@ -200,6 +200,9 @@ void Form::DefaultConstructor()
   QPalette topPatchesPalette = topPatchesTableWidget->palette();
   topPatchesPalette.setColor(QPalette::Inactive, QPalette::Window, topPatchesPalette.color(QPalette::Active, QPalette::Window));
   */
+  
+  // Make the 'enabled' property of several components match the pre-specified state.
+  on_chkLive_clicked();
 }
 
 // Default constructor

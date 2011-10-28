@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1328</width>
+    <width>1375</width>
     <height>1299</height>
    </rect>
   </property>
@@ -375,6 +375,27 @@
                <set>Qt::AlignCenter</set>
               </property>
              </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_9">
+              <item>
+               <widget class="QLabel" name="label_14">
+                <property name="text">
+                 <string>Goto iter.:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="txtGoToIteration"/>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btnGoToIteration">
+                <property name="text">
+                 <string>Go!</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </item>
@@ -822,7 +843,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1328</width>
+     <width>1375</width>
      <height>33</height>
     </rect>
    </property>

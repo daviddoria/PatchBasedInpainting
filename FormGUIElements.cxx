@@ -25,6 +25,19 @@ void Form::on_chkLive_clicked()
   // When "Live" is checked, we do not want to be able to click 'next' and 'previous'
   this->btnDisplayNextStep->setEnabled(!this->chkLive->isChecked());
   this->btnDisplayPreviousStep->setEnabled(!this->chkLive->isChecked());
+  
+  this->btnGoToIteration->setEnabled(!this->chkLive->isChecked());
+  this->txtGoToIteration->setEnabled(!this->chkLive->isChecked());
+}
+
+void Form::on_btnGoToIteration_clicked()
+{
+  unsigned int requestedIteration = this->txtGoToIteration->text().toUInt();
+  if(requestedIteration < this->AllPotentialCandidatePairs.size() && requestedIteration >= 0)
+    {
+    this->IterationToDisplay = requestedIteration;
+    ChangeDisplayedIteration();
+    }
 }
 
 void Form::on_btnResort_clicked()

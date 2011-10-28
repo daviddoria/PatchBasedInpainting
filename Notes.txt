@@ -1,3 +1,9 @@
+Trying to fill patch (271, 385) at iteration 32. Patch (282, 401) continues the shadow properly with score 12662, but "best match" (285, 355) has score 7508.
+
+
+---------------------------------------------
+Testing solid patch (concrete) vs siding. Determination is that blurring is what was causing these to match well.
+
 Target patch (193, 218) matches to (400, 7) with SSD 660.938 matches VERY poorly visually, but is the best match.
 (319, 292) seems to be a much better match...
 
@@ -17,31 +23,3 @@ Total Squared Difference: 566532
 
 
 gui agrees
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Starting: /home/doriad/build/Projects/src/InteractivePatchComparison/ExamplePatchDifference mailbox_medium_recolored_small_filled.png mask_small.png
-Reading image: mailbox_medium_recolored_small_filled.png
-Reading mask: mask_small.png
-Total Absolute Difference: 11527
-Total Squared Difference: 594963
-GUI agrees!
-
-Starting: /home/doriad/build/Projects/src/InteractiveBestPatches/ExamplePatchDifference mailbox_medium_recolored_small_filled.png mask_small.png
-Reading image: mailbox_medium_recolored_small_filled.png
-Reading mask: mask_small.png
-Total Absolute Difference: 11527
-Total Squared Difference: 594963

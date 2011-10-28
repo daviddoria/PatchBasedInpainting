@@ -74,6 +74,8 @@ public slots:
   void on_radCompareBlurred_clicked();
   void on_radCompareCIELAB_clicked();
   
+  void on_btnGoToIteration_clicked();
+  
   void on_btnDisplayPreviousStep_clicked();
   void on_btnDisplayNextStep_clicked();
   
