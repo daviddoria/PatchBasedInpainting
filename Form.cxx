@@ -1636,7 +1636,7 @@ void Form::on_forwardLookingTableWidget_currentCellChanged(int row, int col, int
     return;
     }
   
-  if(row > this->AllPotentialCandidatePairs[this->IterationToDisplay - 1].size() - 1)
+  if(row > static_cast<int>(this->AllPotentialCandidatePairs[this->IterationToDisplay - 1].size() - 1))
     {
     std::cerr << "Requested display of forward look patch " << row << " but there are only " << this->AllPotentialCandidatePairs[this->IterationToDisplay - 1].size() - 1 << std::endl;
     }

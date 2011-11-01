@@ -187,3 +187,34 @@ void PatchPair::ComputeTotal()
 {
   //this->TotalScore = this->BoundaryIsophoteStrengthDifference + this->BoundaryIsophoteAngleDifference + this->BoundaryPixelDifference + this->AverageSSD + this->BoundaryGradientDifference;
 }
+
+void PatchPair::SetValidAverageSquaredDifference(bool value)
+{
+  this->ValidAverageSquaredDifference = value;
+}
+
+void PatchPair::SetValidAverageAbsoluteDifference(bool value)
+{
+  this->ValidAverageAbsoluteDifference = value;
+}
+
+void PatchPair::SetValidBoundaryGradientDifference(bool value)
+{
+  this->ValidBoundaryGradientDifference = value;
+}
+
+void PatchPair::SetValidBoundaryPixelDifference(bool value)
+{
+  this->ValidBoundaryPixelDifference = value;
+}
+
+void PatchPair::SetValidBoundaryIsophoteAngleDifference(bool value)
+{
+  this->ValidBoundaryIsophoteAngleDifference = value;
+}
+
+void PatchPair::SetValidBoundaryIsophoteStrengthDifference(bool value)
+{
+  this->ValidBoundaryIsophoteStrengthDifference = value;
+}
+

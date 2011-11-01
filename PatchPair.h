@@ -33,6 +33,13 @@ struct PatchPair
   bool IsValidBoundaryPixelDifference();
   bool IsValidBoundaryIsophoteAngleDifference();
   bool IsValidBoundaryIsophoteStrengthDifference();
+  
+  void SetValidAverageSquaredDifference(bool);
+  void SetValidAverageAbsoluteDifference(bool);
+  void SetValidBoundaryGradientDifference(bool);
+  void SetValidBoundaryPixelDifference(bool);
+  void SetValidBoundaryIsophoteAngleDifference(bool);
+  void SetValidBoundaryIsophoteStrengthDifference(bool);
 
   itk::Offset<2> GetTargetToSourceOffset() const;
   itk::Offset<2> GetSourceToTargetOffset() const;

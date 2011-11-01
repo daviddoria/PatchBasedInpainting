@@ -297,14 +297,19 @@ void CopyPatchIntoImage(const typename T::Pointer patch, typename T::Pointer ima
   }
 }
 
-
-
 template <class T>
-void CopySelfPatchIntoValidRegion(typename T::Pointer image, const Mask::Pointer mask,
+void CopyPatchIntoValidRegion(typename T::Pointer sourceImage, typename T::Pointer targetImage, const Mask::Pointer mask,
                                   const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput)
 {
   try
   {
+    itk::ImageRegion<2> fullImageRegion = sourceImage->GetLargestPossibleRegion();
+//     if(targetImage->GetLargestPossibleRegion() != fullImageRegion)
+//       {
+//       std::cerr << "CopyPatchIntoValidRegion::Images must be the same size!" << std::endl;
+//       exit(-1);
+//       }
+
     // We pass the regions by const reference, so copy them here before they are mutated
     itk::ImageRegion<2> sourceRegion = sourceRegionInput;
     itk::ImageRegion<2> destinationRegion = destinationRegionInput;
@@ -314,14 +319,14 @@ void CopySelfPatchIntoValidRegion(typename T::Pointer image, const Mask::Pointer
     sourceRegion.SetIndex(sourceRegion.GetIndex() + offset);
 
     // Make the destination be entirely inside the image
-    destinationRegion.Crop(image->GetLargestPossibleRegion());
-    sourceRegion.Crop(image->GetLargestPossibleRegion());
+    destinationRegion.Crop(fullImageRegion);
+    sourceRegion.Crop(fullImageRegion);
 
     // Move the source region back
     sourceRegion.SetIndex(sourceRegion.GetIndex() - offset);
 
-    itk::ImageRegionConstIterator<T> sourceIterator(image, sourceRegion);
-    itk::ImageRegionIterator<T> destinationIterator(image, destinationRegion);
+    itk::ImageRegionConstIterator<T> sourceIterator(sourceImage, sourceRegion);
+    itk::ImageRegionIterator<T> destinationIterator(targetImage, destinationRegion);
     itk::ImageRegionConstIterator<Mask> maskIterator(mask, destinationRegion);
 
     while(!sourceIterator.IsAtEnd())
@@ -342,6 +347,13 @@ void CopySelfPatchIntoValidRegion(typename T::Pointer image, const Mask::Pointer
     std::cerr << err << std::endl;
     exit(-1);
   }
+}
+
+template <class T>
+void CopySelfPatchIntoValidRegion(typename T::Pointer image, const Mask::Pointer mask,
+                                  const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput)
+{
+  CopyPatchIntoValidRegion<T>(image, image, mask, sourceRegionInput, destinationRegionInput);
 }
 
 template <class T>

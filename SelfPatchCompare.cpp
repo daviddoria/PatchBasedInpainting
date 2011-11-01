@@ -297,18 +297,39 @@ float SelfPatchCompare::PatchAverageSquaredDifference(const Patch& sourcePatch)
   }
 }
 
-void SelfPatchCompare::SetPatchAverageAbsoluteDifference(PatchPair& patchPair)
+void SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference(PatchPair& patchPair)
 {
-
   if(!patchPair.IsValidAverageAbsoluteDifference())
     {
-    float averageAbsoluteDifference = PatchAverageAbsoluteDifference(patchPair.SourcePatch);
+    float averageAbsoluteDifference = PatchAverageAbsoluteSourceDifference(patchPair.SourcePatch);
     patchPair.SetAverageAbsoluteDifference(averageAbsoluteDifference);
     }
-
 }
 
-float SelfPatchCompare::PatchAverageAbsoluteDifference(const Patch& sourcePatch)
+void SelfPatchCompare::SetPatchAverageAbsoluteFullDifference(PatchPair& patchPair)
+{
+  if(!patchPair.IsValidAverageAbsoluteDifference())
+    {
+    return;
+  }
+  itk::ImageRegionConstIterator<FloatVectorImageType> sourcePatchIterator(this->Image, patchPair.SourcePatch.Region);
+  itk::ImageRegionConstIterator<FloatVectorImageType> targetPatchIterator(this->Image, patchPair.TargetPatch.Region);
+  
+  float totalAbsoluteDifference = 0.0f;
+
+  while(!sourcePatchIterator.IsAtEnd())
+    {
+    totalAbsoluteDifference += PixelDifference(sourcePatchIterator.Get(), targetPatchIterator.Get());
+
+    ++sourcePatchIterator;
+    ++targetPatchIterator;
+    }
+    
+  float averageAbsoluteDifference = totalAbsoluteDifference / static_cast<float>(patchPair.SourcePatch.Region.GetNumberOfPixels());
+  patchPair.SetAverageAbsoluteDifference(averageAbsoluteDifference);
+}
+
+float SelfPatchCompare::PatchAverageAbsoluteSourceDifference(const Patch& sourcePatch)
 {
   // This function assumes that all pixels in the source region are unmasked.
   try
@@ -418,16 +439,39 @@ float SelfPatchCompare::PatchDifferenceBoundary(const Patch& sourcePatch)
 void SelfPatchCompare::SetPatchAllDifferences(PatchPair& patchPair)
 {
   SetPatchAverageSquaredDifference(patchPair);
-  SetPatchAverageAbsoluteDifference(patchPair);
+  SetPatchAverageAbsoluteSourceDifference(patchPair);
 }
 
-void SelfPatchCompare::ComputeAllDifferences()
+void SelfPatchCompare::ComputeAllSourceAndTargetDifferences()
+{
+  // Source patches are always full and entirely valid, so there are two cases - when the target patch is fully inside the image,
+  // and when it is not.
+  std::cout << "ComputeAllSourceAndTargetDifferences()" << std::endl;
+  try
+  {
+    // Force the target region to be entirely inside the image
+    this->Pairs.TargetPatch.Region.Crop(this->Image->GetLargestPossibleRegion());
+  
+    ComputeOffsets();
+
+    QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteFullDifference, this, _1));
+    std::cout << "Leaving ComputeAllSourceAndTargetDifferences()" << std::endl;
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in ComputeAllSourceAndTargetDifferences!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}
+
+void SelfPatchCompare::ComputeAllSourceDifferences()
 {
   // Source patches are always full and entirely valid, so there are two cases - when the target patch is fully inside the image,
   // and when it is not.
   try
   {
-    std::cout << "ComputeAllDifferences()" << std::endl;
+    std::cout << "ComputeAllSourceDifferences()" << std::endl;
     // If the target region is not fully inside the image, crop it and proceed.
     if(!this->Image->GetLargestPossibleRegion().IsInside(this->Pairs.TargetPatch.Region))
       {  
@@ -455,8 +499,9 @@ void SelfPatchCompare::ComputeAllDifferences()
       
       //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
       //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchTotalAbsoluteDifference, this, _1));
-      QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteDifference, this, _1));
+      QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference, this, _1));
       }
+    std::cout << "Leaving ComputeAllSourceDifferences()" << std::endl;
   }
   catch( itk::ExceptionObject & err )
   {

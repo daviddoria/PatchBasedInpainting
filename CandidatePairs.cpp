@@ -70,3 +70,16 @@ bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs&
 {
   return (candidatePairs1.Priority < candidatePairs2.Priority);
 }
+
+void CandidatePairs::InvalidateAll()
+{
+    for(unsigned int i = 0; i < (*this).size(); ++i)
+    {
+    (*this)[i].SetValidAverageSquaredDifference(false);
+    (*this)[i].SetValidAverageAbsoluteDifference(false);
+    (*this)[i].SetValidBoundaryGradientDifference(false);
+    (*this)[i].SetValidBoundaryPixelDifference(false);
+    (*this)[i].SetValidBoundaryIsophoteAngleDifference(false);
+    (*this)[i].SetValidBoundaryIsophoteStrengthDifference(false);
+    }
+}

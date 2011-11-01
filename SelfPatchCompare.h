@@ -49,7 +49,9 @@ public:
   //unsigned int FindBestPatch(float& minDistance);
 
   // Compute the SSD for all of the pairs. Store the values in the PatchPair objects inside of the CandidatePairs object.
-  void ComputeAllDifferences();
+  void ComputeAllSourceDifferences();
+  
+  void ComputeAllSourceAndTargetDifferences();
   
   // Provide the image to work with.
   void SetImage(const FloatVectorImageType::Pointer);
@@ -60,11 +62,12 @@ public:
   float SlowDifference(const Patch& sourcePatch);
   float PatchDifferenceManual(const Patch& sourcePatch);
   
-  float PatchAverageAbsoluteDifference(const Patch& sourcePatch);
+  float PatchAverageAbsoluteSourceDifference(const Patch& sourcePatch);
   float PatchAverageSquaredDifference(const Patch& sourcePatch);
   
   void SetPatchAllDifferences(PatchPair& patchPair);
-  void SetPatchAverageAbsoluteDifference(PatchPair& patchPair);
+  void SetPatchAverageAbsoluteSourceDifference(PatchPair& patchPair);
+  void SetPatchAverageAbsoluteFullDifference(PatchPair& patchPair);
   void SetPatchAverageSquaredDifference(PatchPair& patchPair);
   
   float PatchDifferenceBoundary(const Patch& sourcePatch);

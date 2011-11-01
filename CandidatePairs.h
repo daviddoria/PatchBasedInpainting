@@ -45,7 +45,7 @@ public:
 
   float Priority;
 
-  
+  void InvalidateAll();
 };
 
 bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2);

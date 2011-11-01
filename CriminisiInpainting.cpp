@@ -355,7 +355,8 @@ void CriminisiInpainting::Iterate()
     
   //FindBestPatchForHighestPriority(sourcePatch, targetPatch);
   
-  FindBestPatchLookAhead(usedPatchPair);
+  //FindBestPatchLookAhead(usedPatchPair);
+  FindBestPatchScaleConsistent(usedPatchPair);
 
   std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
   
@@ -401,9 +402,9 @@ void CriminisiInpainting::Iterate()
   // Get the region of pixels which were previous touching the hole which was the target region.
   
   // Shift the top left corner to a position where the same size patch would overlap only the top left pixel.
-  itk::Index<2> previouInvalidRegionIndex;
-  previouInvalidRegionIndex[0] = usedPatchPair.TargetPatch.Region.GetIndex()[0] - this->PatchRadius[0];
-  previouInvalidRegionIndex[1] = usedPatchPair.TargetPatch.Region.GetIndex()[1] - this->PatchRadius[1];
+  itk::Index<2> previousInvalidRegionIndex;
+  previousInvalidRegionIndex[0] = usedPatchPair.TargetPatch.Region.GetIndex()[0] - this->PatchRadius[0];
+  previousInvalidRegionIndex[1] = usedPatchPair.TargetPatch.Region.GetIndex()[1] - this->PatchRadius[1];
   
   // The region from which patches overlap the used target patch has a radius 2x bigger than the original patch.
   // The computation could be written as (2 * this->PatchRadius[0]) * 2 + 1, or simply this->PatchRadius[0] * 4 + 1
@@ -411,7 +412,7 @@ void CriminisiInpainting::Iterate()
   previouInvalidRegionSize[0] = this->PatchRadius[0] * 4 + 1;
   previouInvalidRegionSize[1] = this->PatchRadius[1] * 4 + 1;
   
-  itk::ImageRegion<2> previousInvalidRegion(previouInvalidRegionIndex, previouInvalidRegionSize);
+  itk::ImageRegion<2> previousInvalidRegion(previousInvalidRegionIndex, previouInvalidRegionSize);
   
   std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
   std::cout << "Previously invalid region: " << previousInvalidRegion << std::endl;
@@ -419,7 +420,7 @@ void CriminisiInpainting::Iterate()
   std::vector<Patch> newPatches = AddNewSourcePatchesInRegion(previousInvalidRegion);
   
   // Recompute for all forward look candidates except the one that was used. Otherwise there would be an exact match!
-  
+  /*
   for(unsigned int candidateId = 0; candidateId < this->PotentialCandidatePairs.size(); ++candidateId)
     {
     std::cout << "Computing everything for candidateId " << candidateId << std::endl;
@@ -437,7 +438,8 @@ void CriminisiInpainting::Iterate()
       patchCompare->ComputeAllDifferences();
       }
     }
-  
+  */
+
   // At the end of an iteration, things would be slightly out of sync. The boundary is computed at the beginning of the iteration (before the patch is filled),
   // so at the end of the iteration, the boundary image will not correspond to the boundary of the remaining hole in the image - it will be off by 1 iteration.
   // We fix this by computing the boundary and boundary normals again at the end of the iteration.
@@ -448,6 +450,51 @@ void CriminisiInpainting::Iterate()
 
   DebugMessage<unsigned int>("Completed iteration: ", this->NumberOfCompletedIterations);
 
+}
+
+void CriminisiInpainting::FindBestPatchScaleConsistent(PatchPair& bestPatchPair)
+{
+  
+  std::cout << "There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
+
+  float highestPriority = 0;
+  itk::Index<2> pixelToFill = FindHighestValueOnBoundary(this->PriorityImage, highestPriority, this->BoundaryImage);
+
+  itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
+  Patch targetPatch(targetRegion);
+
+  CandidatePairs candidatePairs(targetPatch);
+  candidatePairs.AddPairsFromPatches(this->SourcePatches);
+  candidatePairs.Priority = highestPriority;
+  
+  SelfPatchCompare* blurredPatchCompare;
+  blurredPatchCompare = new SelfPatchCompareAll(this->BlurredImage->GetNumberOfComponentsPerPixel(), candidatePairs);
+  blurredPatchCompare->SetImage(this->BlurredImage);
+  blurredPatchCompare->SetMask(this->CurrentMask);
+  blurredPatchCompare->ComputeAllSourceDifferences();
+  
+  std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
+
+  candidatePairs.InvalidateAll();
+  
+  // Fill the blurred image
+  Helpers::CopyPatchIntoValidRegion<FloatVectorImageType>(this->BlurredImage, this->CurrentOutputImage, this->CurrentMask, candidatePairs[0].SourcePatch.Region, candidatePairs[0].TargetPatch.Region);
+
+  SelfPatchCompare* detailedPatchCompare;
+  detailedPatchCompare = new SelfPatchCompareAll(this->CurrentOutputImage->GetNumberOfComponentsPerPixel(), candidatePairs);
+  detailedPatchCompare->SetImage(this->CurrentOutputImage);
+  detailedPatchCompare->SetMask(this->CurrentMask);
+  detailedPatchCompare->ComputeAllSourceAndTargetDifferences();
+  
+  std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
+    
+  // Return the result by reference.
+  bestPatchPair = candidatePairs[0];
+  
+  this->PotentialCandidatePairs.resize(1);
+  this->PotentialCandidatePairs[0] = candidatePairs;
+  
+  std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatchScaleConsistent()." << std::endl;
 }
 
 void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
@@ -525,7 +572,7 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     patchCompare = new SelfPatchCompareAll(this->CompareImage->GetNumberOfComponentsPerPixel(), candidatePairs);
     patchCompare->SetImage(this->CompareImage);
     patchCompare->SetMask(this->CurrentMask);
-    patchCompare->ComputeAllDifferences();
+    patchCompare->ComputeAllSourceDifferences();
     
     //ComputeAllContinuationDifferences(candidatePairs);
 

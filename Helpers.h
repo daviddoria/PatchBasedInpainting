@@ -197,8 +197,12 @@ template <class T>
 void CreateBlankPatch(typename T::Pointer patch, const unsigned int radius);
 
 template <class T>
-void CopySelfPatchIntoValidRegion(typename T::Pointer image, const UnsignedCharScalarImageType::Pointer mask,
-                                  const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& destinationRegion);
+void CopySelfPatchIntoValidRegion(typename T::Pointer image, const Mask::Pointer mask,
+                                  const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput);
+
+template <class T>
+void CopyPatchIntoValidRegion(typename T::Pointer sourceImage, typename T::Pointer targetImage, const Mask::Pointer mask,
+                                  const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput);
 
 template <class T>
 float MaxValue(const typename T::Pointer image);
