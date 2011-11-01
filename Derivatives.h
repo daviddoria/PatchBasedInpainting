@@ -16,6 +16,8 @@
  *
  *=========================================================================*/
 
+#ifndef DERIVATVIES_H
+#define DERIVATVIES_H
 
 template <typename TImage>
 void MaskedDerivative(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output);
@@ -37,3 +39,5 @@ template<typename TPixel>
 void GradientFromDerivatives(const typename itk::Image<TPixel, 2>::Pointer xDerivative, const typename itk::Image<TPixel, 2>::Pointer yDerivative, typename itk::Image<itk::CovariantVector<TPixel, 2> >::Pointer output);
 
 #include "Derivatives.hxx"
+
+#endif

@@ -87,6 +87,7 @@ void ITKImagetoVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, v
 
 // Convert the first 3 channels of a float vector image to an unsigned char/color/rgb image.
 void VectorImageToRGBImage(const FloatVectorImageType::Pointer image, RGBImageType::Pointer rgbImage);
+void WriteVectorImageAsRGB(const FloatVectorImageType::Pointer image, const std::string& fileName);
 
 // Get the center pixel of a region. The region is assumed to have odd dimensions.
 itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region);

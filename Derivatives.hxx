@@ -418,7 +418,7 @@ void MaskedGradient(const typename TImage::Pointer image, const Mask::Pointer ma
   //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 0, xDerivative);
   //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 0, xDerivative);
   //Helpers::MaskedDerivativeSobel<FloatScalarImageType>(image, mask, 0, xDerivative);
-  MaskedDerivativeGaussian<FloatScalarImageType>(image, mask, 0, xDerivative);
+  MaskedDerivativeGaussian<TImage>(image, mask, 0, xDerivative);
   //Helpers::DebugWriteImageConditional<FloatScalarImageType>(xDerivative, "Debug/ComputeMaskedIsophotes.xderivative.mha", this->DebugImages);
 
   // Y derivative
@@ -426,7 +426,7 @@ void MaskedGradient(const typename TImage::Pointer image, const Mask::Pointer ma
   //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 1, yDerivative);
   //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 1, yDerivative);
   //Helpers::MaskedDerivativeSobel<FloatScalarImageType>(image, mask, 1, yDerivative);
-  MaskedDerivativeGaussian<FloatScalarImageType>(image, mask, 1, yDerivative);
+  MaskedDerivativeGaussian<TImage>(image, mask, 1, yDerivative);
   //Helpers::DebugWriteImageConditional<FloatScalarImageType>(yDerivative, "Debug/ComputeMaskedIsophotes.yderivative.mha", this->DebugImages);
 
   // Combine derivatives

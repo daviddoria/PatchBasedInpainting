@@ -843,5 +843,11 @@ bool GetColumnIdByHeader(const QTableWidget* table, const std::string& header, i
   return false;
 }
 
+void WriteVectorImageAsRGB(const FloatVectorImageType::Pointer image, const std::string& fileName)
+{
+  RGBImageType::Pointer rgbImage = RGBImageType::New();
+  VectorImageToRGBImage(image, rgbImage);
+  WriteImage<RGBImageType>(rgbImage, fileName);
+}
 
 } // end namespace

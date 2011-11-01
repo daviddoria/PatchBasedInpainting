@@ -42,7 +42,8 @@
 #include "itkInvertIntensityImageFilter.h"
 #include "itkMaskImageFilter.h"
 #include "itkRGBToLuminanceImageFilter.h"
-
+#include "itkVectorImageToImageAdaptor.h"
+#include "itkVectorIndexSelectionCastImageFilter.h"
 
 CriminisiInpainting::CriminisiInpainting()
 {
@@ -601,14 +602,19 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   unsigned int bestForwardLookId = 0;
   unsigned int bestSourcePatchId = 0;
   
-  FloatScalarImageType::Pointer luminancePatch = FloatScalarImageType::New();
-  
   itk::Index<2> zeroIndex;
   zeroIndex.Fill(0);
   itk::ImageRegion<2> outputRegion(zeroIndex, this->PotentialCandidatePairs[0][0].SourcePatch.Region.GetSize());
-  luminancePatch->SetRegions(outputRegion);
-  luminancePatch->SetNumberOfComponentsPerPixel(this->CurrentOutputImage->GetNumberOfComponentsPerPixel());
-  luminancePatch->Allocate();
+  
+//   FloatScalarImageType::Pointer luminancePatch = FloatScalarImageType::New();
+//   luminancePatch->SetRegions(outputRegion);
+//   luminancePatch->SetNumberOfComponentsPerPixel(this->CurrentOutputImage->GetNumberOfComponentsPerPixel());
+//   luminancePatch->Allocate();
+  
+  FloatVectorImageType::Pointer patch = FloatVectorImageType::New();
+  patch->SetRegions(outputRegion);
+  patch->SetNumberOfComponentsPerPixel(this->CurrentOutputImage->GetNumberOfComponentsPerPixel());
+  patch->Allocate();
   
   FloatVector2ImageType::PixelType zeroVector;
   zeroVector.Fill(0);
@@ -664,32 +670,51 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     unsigned int numberOfSourcePatchesToInspect = std::min(maxNumberToInspect, this->PotentialCandidatePairs[forwardLookId].size());
     for(unsigned int sourcePatchId = 0; sourcePatchId < numberOfSourcePatchesToInspect; ++sourcePatchId)
       {
-      //Helpers::CreatePatchImage<FloatVectorImageType>(this->CurrentOutputImage, this->PotentialCandidatePairs[forwardLookId][sourcePatchId].SourcePatch.Region, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region, this->CurrentMask, patch);
-      Helpers::CreatePatchImage<FloatScalarImageType>(this->LuminanceImage, this->PotentialCandidatePairs[forwardLookId][sourcePatchId].SourcePatch.Region, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region, this->CurrentMask, luminancePatch);
-  
-      MaskedGradient<FloatScalarImageType>(luminancePatch, extractMaskFilter->GetOutput(), preFillGradient);
-      MaskedGradient<FloatScalarImageType>(luminancePatch, noMask, postFillGradient);
-      
-      float totalError = 0.0f;
-      for(unsigned int boundaryPixelId = 0; boundaryPixelId < boundaryPixels.size(); ++boundaryPixelId)
+      Helpers::CreatePatchImage<FloatVectorImageType>(this->CurrentOutputImage, this->PotentialCandidatePairs[forwardLookId][sourcePatchId].SourcePatch.Region, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region, this->CurrentMask, patch);
+    
+//       std::stringstream ssPatch;
+//       ssPatch << "Debug/Patch_" << sourcePatchId << ".mha";
+//       Helpers::WriteVectorImageAsRGB(patch, ssPatch.str());
+//     
+      float sumOfComponentErrors = 0.0f;
+      for(unsigned int component = 0; component < this->CurrentOutputImage->GetNumberOfComponentsPerPixel(); ++component)
 	{
-	std::cout << "Prefill gradient: " << preFillGradient->GetPixel(boundaryPixels[boundaryPixelId]) << std::endl;
-	std::cout << "Postfill gradient: " << postFillGradient->GetPixel(boundaryPixels[boundaryPixelId]) << std::endl;;
-	totalError += (preFillGradient->GetPixel(boundaryPixels[boundaryPixelId]) - postFillGradient->GetPixel(boundaryPixels[boundaryPixelId])).GetNorm();
-	}
+// 	typedef itk::VectorImageToImageAdaptor<float, 2> ImageAdaptorType;
+// 	ImageAdaptorType::Pointer adaptor = ImageAdaptorType::New();
+// 	adaptor->SetExtractComponentIndex(component);
+// 	adaptor->SetImage(patch);
+// 	
+        typedef itk::VectorIndexSelectionCastImageFilter<FloatVectorImageType, FloatScalarImageType> IndexSelectionType;
+	IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+	indexSelectionFilter->SetIndex(component);
+	indexSelectionFilter->SetInput(patch);
+	indexSelectionFilter->Update();
+	
+	//float averageError = ComputeAverageGradientChange<ImageAdaptorType>(adaptor, preFillGradient, postFillGradient, extractMaskFilter->GetOutput(), noMask, boundaryPixels);
+	float averageError = ComputeAverageGradientChange<FloatScalarImageType>(indexSelectionFilter->GetOutput(), preFillGradient, postFillGradient, extractMaskFilter->GetOutput(), noMask, boundaryPixels);
+	
+// 	std::stringstream ssPrefill;
+// 	ssPrefill << "Debug/Prefill_" << sourcePatchId << "_" << component << ".mha";
+// 	Helpers::Write2DVectorImage(preFillGradient, ssPrefill.str());
+// 	
+// 	std::stringstream ssPostfill;
+// 	ssPostfill << "Debug/Postfill_" << sourcePatchId << "_" << component << ".mha";
+// 	Helpers::Write2DVectorImage(postFillGradient, ssPostfill.str());
+	
+	sumOfComponentErrors += averageError;
 
-      float averageError = totalError / static_cast<float>(boundaryPixels.size());
+	} // end component loop
       
-      this->PotentialCandidatePairs[forwardLookId][sourcePatchId].SetBoundaryGradientDifference(averageError);
-
-      if(averageError < lowestScore)
+      
+      this->PotentialCandidatePairs[forwardLookId][sourcePatchId].SetBoundaryGradientDifference(sumOfComponentErrors);
+      if(sumOfComponentErrors < lowestScore)
 	{
-	lowestScore = averageError;
+	lowestScore = sumOfComponentErrors;
 	bestForwardLookId = forwardLookId;
 	bestSourcePatchId = sourcePatchId;
 	}
-      }
-    }
+      } // end source patch loop
+    } // end forward look set loop
     
   // Return the result by reference.
   bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][bestSourcePatchId];
@@ -697,6 +722,7 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   
   std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
 }
+
 
 void CriminisiInpainting::Inpaint()
 {
