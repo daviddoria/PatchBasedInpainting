@@ -161,7 +161,7 @@ std::vector<itk::Offset<2> > Get8NeighborOffsets();
 // void ApplyToAllChannels(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value);
 
 template<typename TVectorImage>
-void BlurAllChannels(const typename TVectorImage::Pointer image, typename TVectorImage::Pointer output);
+void BlurAllChannels(const typename TVectorImage::Pointer image, typename TVectorImage::Pointer output, const float sigma);
 
 template<typename TImage>
 void OutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value);
@@ -203,12 +203,12 @@ template <class T>
 void CreateBlankPatch(typename T::Pointer patch, const unsigned int radius);
 
 template <class T>
-void CopySelfPatchIntoValidRegion(typename T::Pointer image, const Mask::Pointer mask,
-                                  const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput);
+void CopySelfPatchIntoHoleOfTargetRegion(typename T::Pointer image, const Mask::Pointer mask,
+                                   const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput);
 
 template <class T>
-void CopyPatchIntoValidRegion(typename T::Pointer sourceImage, typename T::Pointer targetImage, const Mask::Pointer mask,
-                                  const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput);
+void CopySourcePatchIntoHoleOfTargetRegion(typename T::Pointer sourceImage, typename T::Pointer targetImage, const Mask::Pointer mask,
+                                           const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput);
 
 template <class T>
 float MaxValue(const typename T::Pointer image);

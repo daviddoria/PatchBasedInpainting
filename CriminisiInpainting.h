@@ -168,7 +168,7 @@ private:
   // This is a new idea to try to fill several patches and return the best pair. Note that if the number of look ahead patches is 1, this is exactly the same as not looking ahead.
   void FindBestPatchLookAhead(PatchPair& bestPatchPair);
 
-  void FindBestPatchScaleConsistent(PatchPair& bestPatchPair);
+  void FindBestPatchScaleConsistent(CandidatePairs& candidatePairs, PatchPair& bestPatchPair);
   
   // Image to inpaint. This should not be modified throughout the algorithm.
   FloatVectorImageType::Pointer OriginalImage;

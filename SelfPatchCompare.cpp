@@ -308,10 +308,11 @@ void SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference(PatchPair& patchP
 
 void SelfPatchCompare::SetPatchAverageAbsoluteFullDifference(PatchPair& patchPair)
 {
-  if(!patchPair.IsValidAverageAbsoluteDifference())
+  // Don't recompute.
+  if(patchPair.IsValidAverageAbsoluteDifference())
     {
     return;
-  }
+    }
   itk::ImageRegionConstIterator<FloatVectorImageType> sourcePatchIterator(this->Image, patchPair.SourcePatch.Region);
   itk::ImageRegionConstIterator<FloatVectorImageType> targetPatchIterator(this->Image, patchPair.TargetPatch.Region);
   

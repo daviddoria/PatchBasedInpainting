@@ -301,8 +301,8 @@ void CopyPatchIntoImage(const typename T::Pointer patch, typename T::Pointer ima
 }
 
 template <class T>
-void CopyPatchIntoValidRegion(typename T::Pointer sourceImage, typename T::Pointer targetImage, const Mask::Pointer mask,
-                                  const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput)
+void CopySourcePatchIntoHoleOfTargetRegion(typename T::Pointer sourceImage, typename T::Pointer targetImage, const Mask::Pointer mask,
+                             const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput)
 {
   try
   {
@@ -353,10 +353,10 @@ void CopyPatchIntoValidRegion(typename T::Pointer sourceImage, typename T::Point
 }
 
 template <class T>
-void CopySelfPatchIntoValidRegion(typename T::Pointer image, const Mask::Pointer mask,
+void CopySelfPatchIntoHoleOfTargetRegion(typename T::Pointer image, const Mask::Pointer mask,
                                   const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput)
 {
-  CopyPatchIntoValidRegion<T>(image, image, mask, sourceRegionInput, destinationRegionInput);
+  CopySourcePatchIntoHoleOfTargetRegion<T>(image, image, mask, sourceRegionInput, destinationRegionInput);
 }
 
 template <class T>
@@ -1056,7 +1056,7 @@ void CreatePatchImage(typename TImage::Pointer image, const itk::ImageRegion<2>&
 }
 
 template<typename TVectorImage>
-void BlurAllChannels(const typename TVectorImage::Pointer image, typename TVectorImage::Pointer output)
+void BlurAllChannels(const typename TVectorImage::Pointer image, typename TVectorImage::Pointer output, const float sigma)
 {
   typedef itk::Image<typename TVectorImage::InternalPixelType, 2> ScalarImageType;
   
@@ -1082,6 +1082,8 @@ void BlurAllChannels(const typename TVectorImage::Pointer image, typename TVecto
     typedef itk::BilateralImageFilter<ScalarImageType, ScalarImageType>  BilateralFilterType;
     typename BilateralFilterType::Pointer bilateralFilter = BilateralFilterType::New();
     bilateralFilter->SetInput(imageChannel);
+    bilateralFilter->SetDomainSigma(sigma);
+    bilateralFilter->SetRangeSigma(sigma);
     bilateralFilter->Update();
     
     typename ScalarImageType::Pointer blurred = ScalarImageType::New();
