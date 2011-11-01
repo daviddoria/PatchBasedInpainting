@@ -1006,4 +1006,32 @@ void InitializeImage(typename TImage::Pointer image, const itk::ImageRegion<2>& 
   image->FillBuffer(0);
 }
 
+template<typename TImage>
+void CreatePatchImage(typename TImage::Pointer image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion, Mask::Pointer mask, typename TImage::Pointer result)
+{
+  // The input 'result' is expected to already be sized and initialized.
+  
+  itk::ImageRegionConstIterator<TImage> sourceRegionIterator(image, sourceRegion);
+  itk::ImageRegionConstIterator<TImage> targetRegionIterator(image, targetRegion);
+  
+  itk::ImageRegionIterator<TImage> resultIterator(result, result->GetLargestPossibleRegion());
+
+  while(!sourceRegionIterator.IsAtEnd())
+    {
+    
+    if(mask->IsHole(targetRegionIterator.GetIndex()))
+      {
+      resultIterator.Set(sourceRegionIterator.Get());
+      }
+    else
+      {
+      resultIterator.Set(targetRegionIterator.Get());
+      }
+    
+    ++sourceRegionIterator;
+    ++targetRegionIterator;
+    ++resultIterator;
+    }  
+}
+
 }// end namespace

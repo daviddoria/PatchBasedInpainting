@@ -13,10 +13,8 @@ struct PatchPair
   Patch TargetPatch;
   
   float GetAverageSquaredDifference() const;
-  float GetTotalSquaredDifference() const;
-  float GetTotalAbsoluteDifference() const;
   float GetAverageAbsoluteDifference() const;
-  
+  float GetBoundaryGradientDifference() const;
   float GetBoundaryPixelDifference() const;
   float GetBoundaryIsophoteAngleDifference() const;
   float GetBoundaryIsophoteStrengthDifference() const;
@@ -24,14 +22,14 @@ struct PatchPair
   
   void SetAverageSquaredDifference(const float value);
   void SetAverageAbsoluteDifference(const float value);
-  
+  void SetBoundaryGradientDifference(const float value);
   void SetBoundaryPixelDifference(const float value);
   void SetBoundaryIsophoteAngleDifference(const float value);
   void SetBoundaryIsophoteStrengthDifference(const float value);
   
   bool IsValidAverageSquaredDifference();
   bool IsValidAverageAbsoluteDifference();
-  
+  bool IsValidBoundaryGradientDifference();
   bool IsValidBoundaryPixelDifference();
   bool IsValidBoundaryIsophoteAngleDifference();
   bool IsValidBoundaryIsophoteStrengthDifference();
@@ -42,7 +40,7 @@ struct PatchPair
 private:
   float AverageSquaredDifference;
   float AverageAbsoluteDifference;
-  
+  float BoundaryGradientDifference;
   float BoundaryPixelDifference;
   float BoundaryIsophoteAngleDifference;
   float BoundaryIsophoteStrengthDifference;
@@ -54,7 +52,7 @@ private:
   // These are initialized to false and set to true when the corresponding SetXYZ() function is called.
   bool ValidAverageSquaredDifference;
   bool ValidAverageAbsoluteDifference;
-  
+  bool ValidBoundaryGradientDifference;
   bool ValidBoundaryPixelDifference;
   bool ValidBoundaryIsophoteAngleDifference;
   bool ValidBoundaryIsophoteStrengthDifference;
@@ -62,7 +60,7 @@ private:
 
 bool SortByAverageSquaredDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByAverageAbsoluteDifference(const PatchPair& pair1, const PatchPair& pair2);
-
+bool SortByBoundaryGradientDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByBoundaryIsophoteAngleDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByBoundaryIsophoteStrengthDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByBoundaryPixelDifference(const PatchPair& pair1, const PatchPair& pair2);

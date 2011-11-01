@@ -89,8 +89,8 @@ public slots:
   
   void on_chkLive_clicked();
 
-  void on_forwardLookingTableWidget_currentCellChanged(int row, int col);
-  void on_topPatchesTableWidget_currentCellChanged(int row, int col);
+  void on_forwardLookingTableWidget_currentCellChanged(int row, int col, int prevRow, int prevCol);
+  void on_topPatchesTableWidget_currentCellChanged(int row, int col, int prevRow, int prevCol);
   
   // Defined in FormGUIElements.cxx
   void on_chkImage_clicked();
@@ -132,6 +132,9 @@ public slots:
   
 protected:
   
+  void ChangeDisplayedTopPatch();
+  void ChangeDisplayedForwardLookPatch();
+  
   // These functions display the iteration indicated by the member 'IterationToDisplay'
   void DisplayBoundary();
   void DisplayBoundaryNormals();
@@ -145,10 +148,8 @@ protected:
   void OpenImage(const std::string& filename);
   void OpenMask(const std::string& filename, const bool inverted);
   
-  int GetColumnIdByHeader(const std::string& header);
-  
   void SetupForwardLookingTable();
-  void SetupTopPatchesTable(unsigned int forwardLookId);
+  void SetupTopPatchesTable();
   
   // Initialize everything.
   void Initialize();
@@ -247,12 +248,14 @@ protected:
 
   // If IterationToDisplay == 0, then we are just displaying the initial images.
   unsigned int IterationToDisplay;
+  unsigned int ForwardLookToDisplay;
+  unsigned int SourcePatchToDisplay;
   
   // Display zoomed in versions of the patches used at the current iteration
   void DisplayUsedPatches();
-  void DisplaySourcePatch(const unsigned int forwardLookId, const unsigned int topPatchId);
-  void DisplayTargetPatch(const unsigned int forwardLookId);
-  void DisplayResultPatch(const unsigned int forwardLookId, const unsigned int topPatchId);
+  void DisplaySourcePatch();
+  void DisplayTargetPatch();
+  void DisplayResultPatch();
   
   // Display the text information (scores, etc) of the patches used at the current information
   void DisplayUsedPatchInformation();
@@ -264,13 +267,13 @@ protected:
   void HighlightForwardLookPatches();
 
   // Display the outline of the selected forward look target patch
-  void HighlightSelectedForwardLookPatch(const unsigned int id);
+  void HighlightSelectedForwardLookPatch();
   
   // Display outlines of the source patches
   void HighlightSourcePatches();
   
   // Display the outline of the selected source patch
-  void HighlightSelectedSourcePatch(const unsigned int id);
+  void HighlightSelectedSourcePatch();
   
   // Get the potential target patches from this iteration and outline them on a blank image.
   void CreatePotentialTargetPatchesImage();

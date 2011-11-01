@@ -79,9 +79,8 @@ void Form::on_btnResort_clicked()
       }
     }
 
-  unsigned int forwardLookId = this->forwardLookingTableWidget->currentRow();
-  SetupTopPatchesTable(forwardLookId);
-  on_topPatchesTableWidget_currentCellChanged(0, 0);
+  SetupTopPatchesTable();
+  //on_topPatchesTableWidget_currentCellChanged(0, 0);
   
   Refresh();
 }

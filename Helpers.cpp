@@ -39,6 +39,10 @@
 // Custom
 #include "itkRGBToLabColorSpacePixelAccessor.h"
 
+// Qt
+#include <QGraphicsView>
+#include <QTableWidget>
+
 namespace Helpers
 {
 
@@ -818,5 +822,26 @@ void BlankAndOutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& regio
   BlankRegion(image, region);
   OutlineRegion(image, region, value);
 }
+
+
+bool GetColumnIdByHeader(const QTableWidget* table, const std::string& header, int& columnId)
+{
+  //std::cout << "There are " << static_cast<unsigned int>(topPatchesTableWidget->columnCount()) << " columns" << std::endl;
+  //std::cout << "Looking for column with header = " << header << std::endl;
+  
+  for(unsigned int i = 0; i < static_cast<unsigned int>(table->columnCount()); ++i)
+    {
+    if(table->horizontalHeaderItem(i)->text().toStdString().compare(header) == 0)
+      {
+      columnId = i;
+      return true;
+      }
+    }
+    
+  std::cerr << "Requested invalid column!" << std::endl;
+
+  return false;
+}
+
 
 } // end namespace

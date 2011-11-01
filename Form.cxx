@@ -122,6 +122,8 @@ void Form::DefaultConstructor()
   this->gfxResult->setScene(ResultPatchScene);
 
   this->IterationToDisplay = 0;
+  this->ForwardLookToDisplay = 0;
+  this->SourcePatchToDisplay = 0;
 
   this->DebugImages = false;
   this->DebugMessages = false;
@@ -185,6 +187,11 @@ void Form::DefaultConstructor()
   connect(&ComputationThread, SIGNAL(IterationCompleteSignal()), this, SLOT(IterationCompleteSlot()), Qt::BlockingQueuedConnection);
   
   connect(&ComputationThread, SIGNAL(RefreshSignal()), this, SLOT(RefreshSlot()), Qt::QueuedConnection);
+  
+  //disconnect(this->topPatchesTableWidget, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_topPatchesTableWidget_currentCellChanged(int,int,int,int)), Qt::AutoConnection);
+  //this->topPatchesTableWidget->disconnect(SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_topPatchesTableWidget_currentCellChanged(int,int,int,int)));
+  //this->topPatchesTableWidget->disconnect();
+  //connect(this->topPatchesTableWidget, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_topPatchesTableWidget_currentCellChanged(int,int,int,int)), Qt::BlockingQueuedConnection);
 
   // Set the progress bar to marquee mode
   this->progressBar->setMinimum(0);
@@ -687,7 +694,7 @@ void Form::on_btnDisplayNextStep_clicked()
     }
 }
 
-void Form::DisplaySourcePatch(const unsigned int forwardLookId, const unsigned int topPatchId)
+void Form::DisplaySourcePatch()
 {
   try
   {
@@ -706,8 +713,8 @@ void Form::DisplaySourcePatch(const unsigned int forwardLookId, const unsigned i
 
     FloatVectorImageType::Pointer currentImage = this->IntermediateImages[this->IterationToDisplay].Image;
 
-    const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][forwardLookId]; // This -1 is because the 0th iteration is the initial condition
-    QImage sourceImage = Helpers::GetQImageColor<FloatVectorImageType>(currentImage, candidatePairs[topPatchId].SourcePatch.Region);
+    const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->ForwardLookToDisplay]; // This -1 is because the 0th iteration is the initial condition
+    QImage sourceImage = Helpers::GetQImageColor<FloatVectorImageType>(currentImage, candidatePairs[this->SourcePatchToDisplay].SourcePatch.Region);
     sourceImage = Helpers::FitToGraphicsView(sourceImage, gfxTarget);
     this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
 
@@ -721,7 +728,7 @@ void Form::DisplaySourcePatch(const unsigned int forwardLookId, const unsigned i
   }
 }
 
-void Form::DisplayTargetPatch(const unsigned int forwardLookId)
+void Form::DisplayTargetPatch()
 {
   try
   {
@@ -740,7 +747,7 @@ void Form::DisplayTargetPatch(const unsigned int forwardLookId)
 
     FloatVectorImageType::Pointer currentImage = this->IntermediateImages[this->IterationToDisplay - 1].Image;
 
-    const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][forwardLookId];
+    const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->ForwardLookToDisplay];
 
     // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration (as the current mask has been cleared where the target patch was copied).
     Mask::Pointer currentMask = this->IntermediateImages[this->IterationToDisplay - 1].MaskImage;
@@ -756,12 +763,13 @@ void Form::DisplayTargetPatch(const unsigned int forwardLookId)
   catch( itk::ExceptionObject & err )
   {
     std::cerr << "ExceptionObject caught in DisplayTargetPatch!" << std::endl;
+    std::cout << "Trying to display patch " << this->ForwardLookToDisplay << std::endl;
     std::cerr << err << std::endl;
     exit(-1);
   }
 }
 
-void Form::DisplayResultPatch(const unsigned int forwardLookId, const unsigned int topPatchId)
+void Form::DisplayResultPatch()
 {
   try
   {
@@ -780,9 +788,9 @@ void Form::DisplayResultPatch(const unsigned int forwardLookId, const unsigned i
 
     FloatVectorImageType::Pointer currentImage = this->IntermediateImages[this->IterationToDisplay - 1].Image;
     
-    const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][forwardLookId];
+    const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->ForwardLookToDisplay];
 
-    const PatchPair& patchPair = candidatePairs[topPatchId];
+    const PatchPair& patchPair = candidatePairs[this->SourcePatchToDisplay];
     
     // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration (as the current mask has been cleared where the target patch was copied).
     Mask::Pointer currentMask = this->IntermediateImages[this->IterationToDisplay - 1].MaskImage;
@@ -851,9 +859,9 @@ void Form::DisplayUsedPatches()
       return;
       }
       
-    DisplaySourcePatch(0, 0);
-    DisplayTargetPatch(0);
-    DisplayResultPatch(0,0);
+    DisplaySourcePatch();
+    DisplayTargetPatch();
+    DisplayResultPatch();
     Refresh();
   }// end try
   catch( itk::ExceptionObject & err )
@@ -918,7 +926,7 @@ void Form::HighlightForwardLookPatches()
       {
       this->forwardLookingTableWidget->selectRow(0);
       }
-    HighlightSelectedForwardLookPatch(this->forwardLookingTableWidget->currentRow());
+    HighlightSelectedForwardLookPatch();
 
     this->qvtkWidget->GetRenderWindow()->Render();
   
@@ -984,9 +992,7 @@ void Form::HighlightSourcePatches()
       this->topPatchesTableWidget->selectRow(0);
       }
 
-    int idColumnId = GetColumnIdByHeader("Id");
-    unsigned int sourcePatchId = topPatchesTableWidget->item(this->topPatchesTableWidget->currentRow(), idColumnId)->data(Qt::DisplayRole).toUInt();
-    HighlightSelectedSourcePatch(sourcePatchId);
+    HighlightSelectedSourcePatch();
 
     this->qvtkWidget->GetRenderWindow()->Render();
     }// end try
@@ -1060,8 +1066,15 @@ void Form::DisplayUsedPatchInformation()
   {
     DebugMessage("DisplayUsedPatchInformation()");
     
-    SetupForwardLookingTable();
+    this->ForwardLookToDisplay = 0;
+    this->SourcePatchToDisplay = 0;
     
+    SetupForwardLookingTable();
+    SetupTopPatchesTable();
+    
+    ChangeDisplayedForwardLookPatch();
+    ChangeDisplayedTopPatch();
+
     // There is a -1 offset here because the 0th used pair corresponds to the pair after iteration 1 because there are no used patches after iteration 0 (initial conditions)
     PatchPair patchPair;
     bool validPair = this->Inpainting.GetUsedPatchPair(this->IterationToDisplay - 1, patchPair);
@@ -1287,6 +1300,9 @@ void Form::IterationCompleteSlot()
 
 void Form::SetupForwardLookingTable()
 {
+  //this->forwardLookingTableWidget->disconnect();
+  this->forwardLookingTableWidget->disconnect(SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_forwardLookingTableWidget_currentCellChanged(int,int,int,int)));
+  
   DebugMessage("SetupForwardLookingTable()");
   
   if(this->IterationToDisplay < 1)
@@ -1325,6 +1341,7 @@ void Form::SetupForwardLookingTable()
   //for(unsigned int forwardLookId = 0; forwardLookId < candidatePairs.size(); ++forwardLookId)
   for(unsigned int forwardLookId = 0; forwardLookId < numberToDisplay; ++forwardLookId)
     {
+    //std::cout << "Setting up forward look table row " << forwardLookId << std::endl;
     this->forwardLookingTableWidget->insertRow(this->forwardLookingTableWidget->rowCount());
     this->forwardLookingTableWidget->setRowHeight(forwardLookId, cellSize);
   
@@ -1364,13 +1381,49 @@ void Form::SetupForwardLookingTable()
   this->forwardLookingTableWidget->selectRow(0);
   
   // Always display the corresponding source patches for the 0th forward look patch until the user clicks a different row
-  SetupTopPatchesTable(0);
-  HighlightSelectedForwardLookPatch(0);
+  //SetupTopPatchesTable();
+  this->SourcePatchToDisplay = 0;
+  HighlightSelectedForwardLookPatch();
+  
+  //connect(this->forwardLookingTableWidget, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_forwardLookingTableWidget_currentCellChanged(int,int,int,int)), Qt::AutoConnection);
+  this->connect(forwardLookingTableWidget, SIGNAL(currentCellChanged(int,int,int,int)),
+                SLOT(on_forwardLookingTableWidget_currentCellChanged(int,int,int,int)), Qt::AutoConnection);
 }
 
-void Form::SetupTopPatchesTable(unsigned int forwardLookId)
+void Form::ChangeDisplayedTopPatch()
 {
-  DebugMessage("SetupTopPatchesTable()");
+  std::cout << "ChangeDisplayedTopPatch()" << std::endl;
+  DisplaySourcePatch();
+  DisplayResultPatch();
+
+  HighlightSourcePatches();
+  HighlightSelectedSourcePatch();
+}
+
+void Form::ChangeDisplayedForwardLookPatch()
+{
+  std::cout << "ChangeDisplayedForwardLookPatch()" << std::endl;
+  // Setup the top source patches table for this forward look patch.
+  //SetupTopPatchesTable();
+
+  // Display the big target patch
+  DisplayTargetPatch();
+  DisplayResultPatch();
+
+  HighlightSelectedForwardLookPatch();
+  HighlightSourcePatches();
+}
+
+void Form::SetupTopPatchesTable()
+{
+  //DebugMessage("SetupTopPatchesTable()");
+  std::cout << "SetupTopPatchesTable()" << std::endl;
+  
+  //this->topPatchesTableWidget->disconnect();
+  this->topPatchesTableWidget->disconnect(SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_topPatchesTableWidget_currentCellChanged(int,int,int,int)));
+  
+  // For some reason if this call isn't made, if the table was previously sorted by a different column, many values in the table are missing!?
+  this->topPatchesTableWidget->sortByColumn(0, Qt::AscendingOrder);
   
   if(this->IterationToDisplay < 1)
     {
@@ -1380,6 +1433,7 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
     
   if(!this->Recorded[this->IterationToDisplay - 1])
     {
+    std::cout << "SetupTopPatchesTable: Not recorded!" << std::endl;
     return;
     }
 
@@ -1390,17 +1444,29 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
   this->topPatchesTableWidget->setColumnWidth(0, patchDisplaySize);
 
   // There is a -1 offset here because the 0th patch pair to be stored is after iteration 1 (as after the 0th iteration (initial conditions) there are no used patch pairs)
-  const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][forwardLookId];
+  const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->ForwardLookToDisplay];
 
   unsigned int numberToDisplay = std::min(candidatePairs.size(), this->txtNumberOfTopPatchesToDisplay->text().toUInt());
+  
   if(candidatePairs.size() != this->txtNumberOfTopPatchesToDisplay->text().toUInt())
     {
     std::cerr << "Warning: Number of pairs (" << candidatePairs.size() << ") does not match requested number (" << this->txtNumberOfTopPatchesToDisplay->text().toUInt() << ")" << std::endl;
     }
+
+  this->topPatchesTableWidget->setRowCount(numberToDisplay);
   //for(unsigned int pairId = 0; pairId < candidatePairs.size(); ++pairId)
   for(unsigned int pairId = 0; pairId < numberToDisplay; ++pairId)
     {
-    this->topPatchesTableWidget->insertRow(this->topPatchesTableWidget->rowCount());
+    std::cout << "Setting up top patches table row " << pairId << " " 
+    << candidatePairs[pairId].GetAverageAbsoluteDifference() << " " 
+    << candidatePairs[pairId].GetAverageSquaredDifference() << " " 
+    << candidatePairs[pairId].GetBoundaryGradientDifference() << " " 
+    << candidatePairs[pairId].GetBoundaryGradientDifference() << " " 
+    << candidatePairs[pairId].GetBoundaryIsophoteAngleDifference() << " " 
+    << candidatePairs[pairId].GetBoundaryIsophoteStrengthDifference() << " " 
+    << candidatePairs[pairId].GetTotalScore() << std::endl;
+
+    //this->topPatchesTableWidget->insertRow(this->topPatchesTableWidget->rowCount());
     this->topPatchesTableWidget->setRowHeight(pairId, patchDisplaySize);
 
     const Patch& currentSourcePatch = candidatePairs[pairId].SourcePatch;
@@ -1424,9 +1490,12 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
     this->topPatchesTableWidget->setItem(pairId, 2, averageSquaredDifferenceLabel);
 
     // Display boundary pixel difference score
-    QTableWidgetItem* boundaryPixelDifferenceLabel = new QTableWidgetItem;
-    boundaryPixelDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryPixelDifference());
-    this->topPatchesTableWidget->setItem(pairId, 3, boundaryPixelDifferenceLabel);
+//     QTableWidgetItem* boundaryPixelDifferenceLabel = new QTableWidgetItem;
+//     boundaryPixelDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryPixelDifference());
+//     this->topPatchesTableWidget->setItem(pairId, 3, boundaryPixelDifferenceLabel);
+    QTableWidgetItem* boundaryGradientDifferenceLabel = new QTableWidgetItem;
+    boundaryGradientDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryGradientDifference());
+    this->topPatchesTableWidget->setItem(pairId, 3, boundaryGradientDifferenceLabel);
     
     // Display boundary isophote difference score
     QTableWidgetItem* boundaryIsophoteAngleDifferenceLabel = new QTableWidgetItem;
@@ -1446,7 +1515,7 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
     QTableWidgetItem* idLabel = new QTableWidgetItem;
     idLabel->setData(Qt::DisplayRole, pairId);
     this->topPatchesTableWidget->setItem(pairId, 7, idLabel);
-    this->topPatchesTableWidget->setColumnHidden(7, true); // We don't want to display this value, just track it.
+    //this->topPatchesTableWidget->setColumnHidden(7, true); // We don't want to display this value, just track it.
     
     // Display patch location
     std::stringstream ssLocation;
@@ -1457,12 +1526,16 @@ void Form::SetupTopPatchesTable(unsigned int forwardLookId)
     this->topPatchesTableWidget->setItem(pairId, 8, locationLabel);
     }
 
+  std::cout << "There are " << this->topPatchesTableWidget->rowCount() << " rows." << std::endl;
   this->topPatchesTableWidget->selectRow(0);
+  
   //this->topPatchesTableWidget->horizontalHeader()->resizeColumnsToContents();
   this->topPatchesTableWidget->resizeColumnsToContents();
+  
+  connect(this->topPatchesTableWidget, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_topPatchesTableWidget_currentCellChanged(int,int,int,int)), Qt::AutoConnection);
 }
 
-void Form::HighlightSelectedForwardLookPatch(const unsigned int id)
+void Form::HighlightSelectedForwardLookPatch()
 {
   DebugMessage("HighlightSelectedForwardLookPatch()");
   // Highlight the selected forward look patch in a different color than the rest if the user has chosen to display forward look patch locations.
@@ -1499,7 +1572,7 @@ void Form::HighlightSelectedForwardLookPatch(const unsigned int id)
     // There is a -1 offset here because the 0th patch pair to be stored is after iteration 1 (as after the 0th iteration (initial conditions) there are no used patch pairs)
     std::vector<CandidatePairs>& allCandidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1];
 
-    const Patch& selectedPatch = allCandidatePairs[id].TargetPatch;
+    const Patch& selectedPatch = allCandidatePairs[this->ForwardLookToDisplay].TargetPatch;
     this->SelectedForwardLookOutlineLayer.ImageSlice->SetPosition(selectedPatch.Region.GetIndex()[0], selectedPatch.Region.GetIndex()[1], 0);
 
     this->qvtkWidget->GetRenderWindow()->Render();
@@ -1508,7 +1581,7 @@ void Form::HighlightSelectedForwardLookPatch(const unsigned int id)
 }
 
 
-void Form::HighlightSelectedSourcePatch(const unsigned int id)
+void Form::HighlightSelectedSourcePatch()
 {
   DebugMessage("HighlightSelectedSourcePatch()");
   // Highlight the selected source patch in a different color than the rest if the user has chosen to display forward look patch locations.
@@ -1538,75 +1611,99 @@ void Form::HighlightSelectedSourcePatch(const unsigned int id)
     unsigned char selectedPatchColor[3];
     Helpers::QColorToUCharColor(this->SelectedSourcePatchColor, selectedPatchColor);
     Helpers::BlankAndOutlineImage(this->SelectedSourcePatchOutlineLayer.ImageData, selectedPatchColor);
-    unsigned char centerPixelColor[3] = {122, 0, 255};
+    
+    unsigned char centerPixelColor[3];
+    Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
     Helpers::SetImageCenterPixel(this->SelectedSourcePatchOutlineLayer.ImageData, centerPixelColor);
 
     // There is a -1 offset here because the 0th patch pair to be stored is after iteration 1 (as after the 0th iteration (initial conditions) there are no used patch pairs)
-    const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->forwardLookingTableWidget->currentRow()];
+    const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->ForwardLookToDisplay];
 
-    const Patch& selectedPatch = candidatePairs[id].SourcePatch;
+    const Patch& selectedPatch = candidatePairs[this->SourcePatchToDisplay].SourcePatch;
     this->SelectedSourcePatchOutlineLayer.ImageSlice->SetPosition(selectedPatch.Region.GetIndex()[0], selectedPatch.Region.GetIndex()[1], 0);
 
     this->qvtkWidget->GetRenderWindow()->Render();
     }
 }
 
-void Form::on_forwardLookingTableWidget_currentCellChanged(int row, int col)
+void Form::on_forwardLookingTableWidget_currentCellChanged(int row, int col, int prevRow, int prevCol)
 {
   std::cout << "on_forwardLookingTableWidget_currentCellChanged" << std::endl;
-  //on_forwardLookingTableWidget_cellClicked(row, col);
   
-    // Setup the top source patches table for this forward look patch.
-  SetupTopPatchesTable(row);
-
-  // Display the big target patch
-  DisplayTargetPatch(row);
-  DisplayResultPatch(row, 0);
-
-  HighlightSelectedForwardLookPatch(row);
-  HighlightSourcePatches();
-}
-
-
-void Form::on_topPatchesTableWidget_currentCellChanged(int row, int col)
-{
-  std::cout << "on_topPatchesTableWidget_currentCellChanged row: " << row << " col: " << col << std::endl;
-  if(row < 0 || col < 0)
+  if(row < 0)
     {
+    std::cout << "on_forwardLookingTableWidget_currentCellChanged: row < 0!" << std::endl;
     return;
     }
   
-  // Get the column number of the "Id" column.
-  int idColumnId = GetColumnIdByHeader("Id");
-  if(idColumnId < 0)
+  if(row > this->AllPotentialCandidatePairs[this->IterationToDisplay - 1].size() - 1)
     {
-    std::cerr << "Requested invalid column!" << std::endl;
-    return;
+    std::cerr << "Requested display of forward look patch " << row << " but there are only " << this->AllPotentialCandidatePairs[this->IterationToDisplay - 1].size() - 1 << std::endl;
     }
 
-  //unsigned int sourcePatchId = topPatchesTableWidget->item(row, idColumnId)->text().toUInt(); // This also works
-  unsigned int sourcePatchId = topPatchesTableWidget->item(row, idColumnId)->data(Qt::DisplayRole).toUInt();
-
-  // Here we should update the big displayed source patch
-  DisplaySourcePatch(forwardLookingTableWidget->currentRow(), sourcePatchId);
-  DisplayResultPatch(forwardLookingTableWidget->currentRow(), sourcePatchId);
-
-  HighlightSourcePatches();
-  HighlightSelectedSourcePatch(sourcePatchId);
+  std::cerr << "Requested display of forward look patch " << row << std::endl;
+  
+  this->ForwardLookToDisplay = row;
+  this->SourcePatchToDisplay = 0;
+  
+  ChangeDisplayedForwardLookPatch();
+  
+  SetupTopPatchesTable();
+  ChangeDisplayedTopPatch();
+  
 }
 
 
-int Form::GetColumnIdByHeader(const std::string& header)
+void Form::on_topPatchesTableWidget_currentCellChanged(int row, int col, int prevRow, int prevCol)
 {
-  //std::cout << "There are " << static_cast<unsigned int>(topPatchesTableWidget->columnCount()) << " columns" << std::endl;
-  //std::cout << "Looking for column with header = " << header << std::endl;
-  
-  for(unsigned int i = 0; i < static_cast<unsigned int>(topPatchesTableWidget->columnCount()); ++i)
-    {
-    if(topPatchesTableWidget->horizontalHeaderItem(i)->text().toStdString().compare(header) == 0)
+  try
+  {
+    std::cout << "on_topPatchesTableWidget_currentCellChanged row: " << row << " col: " << col << "prevrow: " << prevRow << " prevcol: " << prevCol << std::endl;
+    if(row < 0)
       {
-      return i;
+      std::cout << "Selected row is < 0!" << std::endl;
+      return;
       }
-    }
-  return -1;
+      
+    if(row == prevRow)
+      {
+      std::cout << "Nothing changed!" << std::endl;
+      return;
+      }
+    
+    // Get the column number of the "Id" column.
+    int columnId = 0;
+    bool valid = Helpers::GetColumnIdByHeader(topPatchesTableWidget, "Id", columnId);
+    if(!valid)
+      {
+      std::cerr << "Invalid columnId of ID column in on_topPatchesTableWidget_currentCellChanged!";
+      return;
+      }
+    std::cout << "Got ID column id: " << columnId << std::endl;
+
+    std::cout << "There are " << topPatchesTableWidget->rowCount() << " rows." << std::endl;
+    std::cout << "Cell value: " << topPatchesTableWidget->item(row, columnId)->data(Qt::DisplayRole).toString().toStdString() << std::endl;
+    
+    unsigned int sourcePatchId = topPatchesTableWidget->item(row, columnId)->data(Qt::DisplayRole).toUInt();
+
+    // We have selected the same patch
+    if(sourcePatchId == this->SourcePatchToDisplay)
+      {
+      return;
+      }
+
+    std::cout << "Got source patch id: " << sourcePatchId << std::endl;
+    
+    this->SourcePatchToDisplay = sourcePatchId;
+    
+    ChangeDisplayedTopPatch();
+    
+  }// end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in on_topPatchesTableWidget_currentCellChanged!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
 }
+

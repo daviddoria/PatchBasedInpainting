@@ -26,7 +26,8 @@
 
 // Qt
 #include <QImage>
-#include <QGraphicsView>
+class QGraphicsView;
+class QTableWidget;
 
 // VTK
 class vtkImageData;
@@ -37,6 +38,8 @@ namespace Helpers
 //////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool GetColumnIdByHeader(const QTableWidget* table, const std::string& header, int& columnId);
 
 // Zero pad the 'iteration' and append it to the filePrefix, and add ".[fileExtension]" to the end.
 // GetSequentialFileName("test", 2, "png");
@@ -261,6 +264,9 @@ void MaskedBlur(const typename TImage::Pointer inputImage, const Mask::Pointer m
 
 template<typename TImage>
 void InitializeImage(typename TImage::Pointer image, const itk::ImageRegion<2>& region);
+
+template<typename TImage>
+void CreatePatchImage(typename TImage::Pointer image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion, Mask::Pointer mask, typename TImage::Pointer result);
 
 }// end namespace
 

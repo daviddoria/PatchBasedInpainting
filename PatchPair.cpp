@@ -4,7 +4,7 @@ void PatchPair::DefaultConstructor()
 {
   this->AverageAbsoluteDifference = 0.0f;
   this->AverageSquaredDifference = 0.0f;
-  
+  this->BoundaryGradientDifference = 0.0f;
   this->BoundaryIsophoteAngleDifference = 0.0f;
   this->BoundaryIsophoteStrengthDifference = 0.0f;
   this->BoundaryPixelDifference = 0.0f;
@@ -12,7 +12,7 @@ void PatchPair::DefaultConstructor()
   
   this->ValidAverageSquaredDifference = false;
   this->ValidAverageAbsoluteDifference = false;
-  
+  this->ValidBoundaryGradientDifference = false;
   this->ValidBoundaryPixelDifference = false;
   this->ValidBoundaryIsophoteAngleDifference = false;
   this->ValidBoundaryIsophoteStrengthDifference = false;
@@ -51,6 +51,11 @@ bool PatchPair::IsValidAverageAbsoluteDifference()
   return ValidAverageAbsoluteDifference;
 }
 
+bool PatchPair::IsValidBoundaryGradientDifference()
+{
+  return ValidBoundaryPixelDifference;
+}
+
 bool PatchPair::IsValidBoundaryPixelDifference()
 {
   return ValidBoundaryPixelDifference;
@@ -74,6 +79,11 @@ bool SortByAverageSquaredDifference(const PatchPair& pair1, const PatchPair& pai
 bool SortByAverageAbsoluteDifference(const PatchPair& pair1, const PatchPair& pair2)
 {
   return (pair1.GetAverageAbsoluteDifference() < pair2.GetAverageAbsoluteDifference());
+}
+
+bool SortByBoundaryGradientDifference(const PatchPair& pair1, const PatchPair& pair2)
+{
+  return (pair1.GetBoundaryGradientDifference() < pair2.GetBoundaryGradientDifference());
 }
 
 bool SortByBoundaryPixelDifference(const PatchPair& pair1, const PatchPair& pair2)
@@ -107,6 +117,13 @@ void PatchPair::SetAverageAbsoluteDifference(const float value)
 {
   this->ValidAverageAbsoluteDifference = true;
   this->AverageAbsoluteDifference = value;
+  ComputeTotal();
+}
+
+void PatchPair::SetBoundaryGradientDifference(const float value)
+{
+  this->ValidBoundaryGradientDifference = true;
+  this->BoundaryGradientDifference = value;
   ComputeTotal();
 }
 
@@ -146,6 +163,11 @@ float PatchPair::GetAverageAbsoluteDifference() const
   return this->AverageAbsoluteDifference;
 }
 
+float PatchPair::GetBoundaryGradientDifference() const
+{
+  return this->BoundaryGradientDifference;
+}
+
 float PatchPair::GetBoundaryPixelDifference() const
 {
   return this->BoundaryPixelDifference;
@@ -163,5 +185,5 @@ float PatchPair::GetBoundaryIsophoteStrengthDifference() const
 
 void PatchPair::ComputeTotal()
 {
-  //this->TotalScore = this->BoundaryIsophoteStrengthDifference + this->BoundaryIsophoteAngleDifference + this->BoundaryPixelDifference + this->AverageSSD;
+  //this->TotalScore = this->BoundaryIsophoteStrengthDifference + this->BoundaryIsophoteAngleDifference + this->BoundaryPixelDifference + this->AverageSSD + this->BoundaryGradientDifference;
 }

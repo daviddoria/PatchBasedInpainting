@@ -304,6 +304,8 @@ private:
   // Set the member MaxPixelDifference;
   void ComputeMaxPixelDifference();
   
+  FloatScalarImageType::Pointer LuminanceImage;
+  
   ///////////// CriminisiInpaintingDebugging.cpp /////////////
   void DebugWriteAllImages();
   void DebugWriteAllImages(const itk::Index<2>& pixelToFill, const itk::Index<2>& bestMatchPixel, const unsigned int iteration);

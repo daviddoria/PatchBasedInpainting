@@ -58,6 +58,7 @@ CriminisiInpainting::CriminisiInpainting()
   this->CurrentOutputImage = FloatVectorImageType::New();
   this->CIELabImage = FloatVectorImageType::New();
   this->BlurredImage = FloatVectorImageType::New();
+  this->LuminanceImage = FloatScalarImageType::New();
   
   // Set the image to use for pixel to pixel comparisons.
   //this->CompareImage = this->CIELabImage;
@@ -282,6 +283,8 @@ void CriminisiInpainting::Initialize()
     luminanceFilter->SetInput(rgbImage);
     luminanceFilter->Update();
     
+    Helpers::DeepCopy<FloatScalarImageType>(luminanceFilter->GetOutput(), this->LuminanceImage);
+    
     FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
     // Blur with a Gaussian kernel. From TestIsophotes.cpp, it actually seems like not blurring, but using a masked sobel operator produces the most reliable isophotes.
     unsigned int kernelRadius = 0;
@@ -377,6 +380,7 @@ void CriminisiInpainting::Iterate()
   // We also have to copy patches in the blurred image and CIELab image incase we are using those
   Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->BlurredImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
   Helpers::CopySelfPatchIntoValidRegion<FloatVectorImageType>(this->CIELabImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
+  Helpers::CopySelfPatchIntoValidRegion<FloatScalarImageType>(this->LuminanceImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
   
   float confidence = this->ConfidenceImage->GetPixel(Helpers::GetRegionCenter(usedPatchPair.TargetPatch.Region));
   // Copy the new confidences into the confidence image
@@ -576,18 +580,12 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   std::cout << "Best attempt was " << bestAttempt << std::endl;
   */
 
+  /*
   // Choose the look ahead with the lowest score to actually fill rather than simply returning the best source patch of the first look ahead target patch.
   float lowestScore = std::numeric_limits< float >::max();
   unsigned int lowestLookAhead = 0;
   for(unsigned int i = 0; i < this->PotentialCandidatePairs.size(); ++i)
     {
-    /*
-    if(this->PotentialCandidatePairs[i][0].GetTotalAbsoluteDifference() < lowestScore)
-      {
-      lowestScore = this->PotentialCandidatePairs[i][0].GetTotalAbsoluteDifference();
-      lowestLookAhead = i;
-      }
-    */
     
     if(this->PotentialCandidatePairs[i][0].GetAverageAbsoluteDifference() < lowestScore)
       {
@@ -595,9 +593,107 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
       lowestLookAhead = i;
       }
     }
+  */
+  
+  
+  // For the top N patches, compute the continuation difference by comparing the gradient at source side boundary pixels before and after filling.
+  float lowestScore = std::numeric_limits< float >::max();
+  unsigned int bestForwardLookId = 0;
+  unsigned int bestSourcePatchId = 0;
+  
+  FloatScalarImageType::Pointer luminancePatch = FloatScalarImageType::New();
+  
+  itk::Index<2> zeroIndex;
+  zeroIndex.Fill(0);
+  itk::ImageRegion<2> outputRegion(zeroIndex, this->PotentialCandidatePairs[0][0].SourcePatch.Region.GetSize());
+  luminancePatch->SetRegions(outputRegion);
+  luminancePatch->SetNumberOfComponentsPerPixel(this->CurrentOutputImage->GetNumberOfComponentsPerPixel());
+  luminancePatch->Allocate();
+  
+  FloatVector2ImageType::PixelType zeroVector;
+  zeroVector.Fill(0);
+  
+  FloatVector2ImageType::Pointer preFillGradient = FloatVector2ImageType::New();
+  preFillGradient->SetRegions(outputRegion);
+  preFillGradient->Allocate();
+  preFillGradient->FillBuffer(zeroVector);
+  
+  FloatVector2ImageType::Pointer postFillGradient = FloatVector2ImageType::New();
+  postFillGradient->SetRegions(outputRegion);
+  postFillGradient->Allocate();
+  postFillGradient->FillBuffer(zeroVector);
+  
+  // Create an entirely unmasked Mask
+  Mask::Pointer noMask = Mask::New();
+  noMask->SetRegions(outputRegion);
+  noMask->Allocate();
+  
+  itk::ImageRegionIterator<Mask> noMaskIterator(noMask, noMask->GetLargestPossibleRegion());
 
+  while(!noMaskIterator.IsAtEnd())
+    {
+    noMaskIterator.Set(noMask->GetValidValue());
+    ++noMaskIterator;
+    }
+  
+  for(unsigned int forwardLookId = 0; forwardLookId < this->PotentialCandidatePairs.size(); ++forwardLookId)
+    {
+    std::cout << "Computing boundary gradient difference for forward look set " << forwardLookId << std::endl;
+    // The boundary only need to be computed once for every forward look set
+    std::vector<itk::Index<2> > boundaryPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region);
+    if(boundaryPixels.size() < 1)
+      {
+      std::cerr << "There must be at least 1 boundary pixel!" << std::endl;
+      exit(-1);
+      }
+      
+    itk::Offset<2> patchOffset = this->CurrentMask->GetLargestPossibleRegion().GetIndex() - this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region.GetIndex();
+    for(unsigned int boundaryPixelId = 0; boundaryPixelId < boundaryPixels.size(); ++boundaryPixelId)
+      {
+      boundaryPixels[boundaryPixelId] += patchOffset;
+      }
+      
+    // Get the current mask
+    typedef itk::RegionOfInterestImageFilter<Mask,Mask> ExtractFilterType;
+    typename ExtractFilterType::Pointer extractMaskFilter = ExtractFilterType::New();
+    extractMaskFilter->SetRegionOfInterest(this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region);
+    extractMaskFilter->SetInput(this->CurrentMask);
+    extractMaskFilter->Update();
+  
+    unsigned int maxNumberToInspect = 100u;
+    unsigned int numberOfSourcePatchesToInspect = std::min(maxNumberToInspect, this->PotentialCandidatePairs[forwardLookId].size());
+    for(unsigned int sourcePatchId = 0; sourcePatchId < numberOfSourcePatchesToInspect; ++sourcePatchId)
+      {
+      //Helpers::CreatePatchImage<FloatVectorImageType>(this->CurrentOutputImage, this->PotentialCandidatePairs[forwardLookId][sourcePatchId].SourcePatch.Region, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region, this->CurrentMask, patch);
+      Helpers::CreatePatchImage<FloatScalarImageType>(this->LuminanceImage, this->PotentialCandidatePairs[forwardLookId][sourcePatchId].SourcePatch.Region, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region, this->CurrentMask, luminancePatch);
+  
+      MaskedGradient<FloatScalarImageType>(luminancePatch, extractMaskFilter->GetOutput(), preFillGradient);
+      MaskedGradient<FloatScalarImageType>(luminancePatch, noMask, postFillGradient);
+      
+      float totalError = 0.0f;
+      for(unsigned int boundaryPixelId = 0; boundaryPixelId < boundaryPixels.size(); ++boundaryPixelId)
+	{
+	std::cout << "Prefill gradient: " << preFillGradient->GetPixel(boundaryPixels[boundaryPixelId]) << std::endl;
+	std::cout << "Postfill gradient: " << postFillGradient->GetPixel(boundaryPixels[boundaryPixelId]) << std::endl;;
+	totalError += (preFillGradient->GetPixel(boundaryPixels[boundaryPixelId]) - postFillGradient->GetPixel(boundaryPixels[boundaryPixelId])).GetNorm();
+	}
+
+      float averageError = totalError / static_cast<float>(boundaryPixels.size());
+      
+      this->PotentialCandidatePairs[forwardLookId][sourcePatchId].SetBoundaryGradientDifference(averageError);
+
+      if(averageError < lowestScore)
+	{
+	lowestScore = averageError;
+	bestForwardLookId = forwardLookId;
+	bestSourcePatchId = sourcePatchId;
+	}
+      }
+    }
+    
   // Return the result by reference.
-  bestPatchPair = this->PotentialCandidatePairs[lowestLookAhead][0];
+  bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][bestSourcePatchId];
+  std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
   
   std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
 }
