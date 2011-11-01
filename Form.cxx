@@ -1457,14 +1457,14 @@ void Form::SetupTopPatchesTable()
   //for(unsigned int pairId = 0; pairId < candidatePairs.size(); ++pairId)
   for(unsigned int pairId = 0; pairId < numberToDisplay; ++pairId)
     {
-    std::cout << "Setting up top patches table row " << pairId << " " 
-    << candidatePairs[pairId].GetAverageAbsoluteDifference() << " " 
-    << candidatePairs[pairId].GetAverageSquaredDifference() << " " 
-    << candidatePairs[pairId].GetBoundaryGradientDifference() << " " 
-    << candidatePairs[pairId].GetBoundaryGradientDifference() << " " 
-    << candidatePairs[pairId].GetBoundaryIsophoteAngleDifference() << " " 
-    << candidatePairs[pairId].GetBoundaryIsophoteStrengthDifference() << " " 
-    << candidatePairs[pairId].GetTotalScore() << std::endl;
+//     std::cout << "Setting up top patches table row " << pairId << " " 
+//     << candidatePairs[pairId].GetAverageAbsoluteDifference() << " " 
+//     << candidatePairs[pairId].GetAverageSquaredDifference() << " " 
+//     << candidatePairs[pairId].GetBoundaryGradientDifference() << " " 
+//     << candidatePairs[pairId].GetBoundaryGradientDifference() << " " 
+//     << candidatePairs[pairId].GetBoundaryIsophoteAngleDifference() << " " 
+//     << candidatePairs[pairId].GetBoundaryIsophoteStrengthDifference() << " " 
+//     << candidatePairs[pairId].GetTotalScore() << std::endl;
 
     //this->topPatchesTableWidget->insertRow(this->topPatchesTableWidget->rowCount());
     this->topPatchesTableWidget->setRowHeight(pairId, patchDisplaySize);

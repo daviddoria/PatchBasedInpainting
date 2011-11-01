@@ -157,6 +157,12 @@ std::vector<itk::Offset<2> > Get8NeighborOffsets();
 ////////////////// Template function declarations (defined in Helpers.hxx) ///////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 
+// template<typename TImage>
+// void ApplyToAllChannels(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value);
+
+template<typename TVectorImage>
+void BlurAllChannels(const typename TVectorImage::Pointer image, typename TVectorImage::Pointer output);
+
 template<typename TImage>
 void OutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value);
 

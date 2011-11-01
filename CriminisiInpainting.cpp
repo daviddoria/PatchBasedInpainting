@@ -291,7 +291,7 @@ void CriminisiInpainting::Initialize()
     unsigned int kernelRadius = 0;
     Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), this->CurrentMask, kernelRadius, blurredLuminance);
     
-    Helpers::DebugWriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/ComputeMaskedIsophotes.blurred.mha", true);
+    Helpers::DebugWriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/Initialize.blurredLuminance.mha", true);
     
     ComputeMaskedIsophotes(blurredLuminance, this->CurrentMask);
     if(this->DebugImages)
@@ -301,9 +301,12 @@ void CriminisiInpainting::Initialize()
     }
     
     // Blur the image incase we want to use a blurred image for pixel to pixel comparisons.
-    unsigned int kernelRadius = 5;
-    Helpers::VectorMaskedBlur(this->OriginalImage, this->CurrentMask, kernelRadius, this->BlurredImage);
+    //unsigned int kernelRadius = 5;
+    //Helpers::VectorMaskedBlur(this->OriginalImage, this->CurrentMask, kernelRadius, this->BlurredImage);
+    
+    Helpers::BlurAllChannels<FloatVectorImageType>(this->OriginalImage, this->BlurredImage);
     Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->BlurredImage, "Debug/Initialize.BlurredImage.mha", this->DebugImages);
+    Helpers::WriteVectorImageAsRGB(this->BlurredImage, "Debug/Initialize.BlurredImageRGB.mha");
     
     Helpers::InitializeImage<FloatScalarImageType>(this->DataImage, this->FullImageRegion);
     
@@ -477,6 +480,12 @@ void CriminisiInpainting::FindBestPatchScaleConsistent(PatchPair& bestPatchPair)
 
   candidatePairs.InvalidateAll();
   
+  std::vector<float> blurredScores(candidatePairs.size());
+  for(unsigned int i = 0; i < candidatePairs.size(); ++i)
+    {
+    blurredScores[i] = candidatePairs[i].GetAverageAbsoluteDifference();
+    }
+
   // Fill the blurred image
   Helpers::CopyPatchIntoValidRegion<FloatVectorImageType>(this->BlurredImage, this->CurrentOutputImage, this->CurrentMask, candidatePairs[0].SourcePatch.Region, candidatePairs[0].TargetPatch.Region);
 
@@ -485,7 +494,12 @@ void CriminisiInpainting::FindBestPatchScaleConsistent(PatchPair& bestPatchPair)
   detailedPatchCompare->SetImage(this->CurrentOutputImage);
   detailedPatchCompare->SetMask(this->CurrentMask);
   detailedPatchCompare->ComputeAllSourceAndTargetDifferences();
-  
+
+  for(unsigned int i = 0; i < candidatePairs.size(); ++i)
+    {
+    candidatePairs[i].SetAverageAbsoluteDifference(blurredScores[i] + candidatePairs[i].GetAverageAbsoluteDifference());
+    }
+    
   std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
     
   // Return the result by reference.

@@ -25,6 +25,8 @@
 #include <vtkImageData.h>
 
 // ITK
+#include "itkBilateralImageFilter.h"
+#include "itkComposeImageFilter.h"
 #include "itkGaussianOperator.h"
 #include "itkImageFileWriter.h"
 #include "itkMinimumMaximumImageCalculator.h"
@@ -32,6 +34,7 @@
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
 #include "itkVectorMagnitudeImageFilter.h"
+#include "itkVectorIndexSelectionCastImageFilter.h"
 
 // Qt
 #include <QColor>
@@ -1050,6 +1053,47 @@ void CreatePatchImage(typename TImage::Pointer image, const itk::ImageRegion<2>&
     ++targetRegionIterator;
     ++resultIterator;
     }  
+}
+
+template<typename TVectorImage>
+void BlurAllChannels(const typename TVectorImage::Pointer image, typename TVectorImage::Pointer output)
+{
+  typedef itk::Image<typename TVectorImage::InternalPixelType, 2> ScalarImageType;
+  
+  // Disassembler
+  typedef itk::VectorIndexSelectionCastImageFilter<TVectorImage, ScalarImageType> IndexSelectionType;
+  typename IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+  indexSelectionFilter->SetInput(image);
+  
+  // Reassembler
+  typedef itk::ComposeImageFilter<ScalarImageType> ImageToVectorImageFilterType;
+  typename ImageToVectorImageFilterType::Pointer imageToVectorImageFilter = ImageToVectorImageFilterType::New();
+  
+  std::vector< typename ScalarImageType::Pointer > filteredImages;
+  
+  for(unsigned int i = 0; i < image->GetNumberOfComponentsPerPixel(); ++i)
+    {
+    indexSelectionFilter->SetIndex(i);
+    indexSelectionFilter->Update();
+  
+    typename ScalarImageType::Pointer imageChannel = ScalarImageType::New();
+    DeepCopy<ScalarImageType>(indexSelectionFilter->GetOutput(), imageChannel);
+  
+    typedef itk::BilateralImageFilter<ScalarImageType, ScalarImageType>  BilateralFilterType;
+    typename BilateralFilterType::Pointer bilateralFilter = BilateralFilterType::New();
+    bilateralFilter->SetInput(imageChannel);
+    bilateralFilter->Update();
+    
+    typename ScalarImageType::Pointer blurred = ScalarImageType::New();
+    DeepCopy<ScalarImageType>(bilateralFilter->GetOutput(), blurred);
+    
+    filteredImages.push_back(blurred);
+    imageToVectorImageFilter->SetInput(i, filteredImages[i]);
+    }
+
+  imageToVectorImageFilter->Update();
+ 
+  DeepCopyVectorImage<TVectorImage>(imageToVectorImageFilter->GetOutput(), output);
 }
 
 }// end namespace
