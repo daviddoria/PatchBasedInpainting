@@ -519,6 +519,12 @@ void SetRegionToConstant(typename TImage::Pointer image, const itk::ImageRegion<
 }
 
 template<typename TImage>
+void SetImageToConstant(typename TImage::Pointer image, const typename TImage::PixelType& constant)
+{
+  SetRegionToConstant<TImage>(image, image->GetLargestPossibleRegion(), constant);
+}
+
+template<typename TImage>
 unsigned int CountNonZeroPixels(const typename TImage::Pointer image)
 {
   typename itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());

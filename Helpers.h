@@ -228,6 +228,9 @@ template<typename TImage>
 void SetRegionToConstant(typename TImage::Pointer image, const itk::ImageRegion<2>& region,const typename TImage::PixelType& constant);
 
 template<typename TImage>
+void SetImageToConstant(typename TImage::Pointer image, const typename TImage::PixelType& constant);
+
+template<typename TImage>
 unsigned int CountNonZeroPixels(const typename TImage::Pointer image);
 
 template<typename TImage>

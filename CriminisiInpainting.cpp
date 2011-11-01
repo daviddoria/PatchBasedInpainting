@@ -595,12 +595,22 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
       }
     }
   */
+  unsigned int bestForwardLookId = 0;
+  unsigned int bestSourcePatchId = 0;
+  ComputeMinimumBoundaryGradientChange(bestForwardLookId, bestSourcePatchId);
   
+  // Return the result by reference.
+  bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][bestSourcePatchId];
+  std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
+  
+  std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
+}
+
+void CriminisiInpainting::ComputeMinimumBoundaryGradientChange(unsigned int& bestForwardLookId, unsigned int& bestSourcePatchId)
+{
   
   // For the top N patches, compute the continuation difference by comparing the gradient at source side boundary pixels before and after filling.
   float lowestScore = std::numeric_limits< float >::max();
-  unsigned int bestForwardLookId = 0;
-  unsigned int bestSourcePatchId = 0;
   
   itk::Index<2> zeroIndex;
   zeroIndex.Fill(0);
@@ -671,11 +681,7 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     for(unsigned int sourcePatchId = 0; sourcePatchId < numberOfSourcePatchesToInspect; ++sourcePatchId)
       {
       Helpers::CreatePatchImage<FloatVectorImageType>(this->CurrentOutputImage, this->PotentialCandidatePairs[forwardLookId][sourcePatchId].SourcePatch.Region, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region, this->CurrentMask, patch);
-    
-//       std::stringstream ssPatch;
-//       ssPatch << "Debug/Patch_" << sourcePatchId << ".mha";
-//       Helpers::WriteVectorImageAsRGB(patch, ssPatch.str());
-//     
+
       float sumOfComponentErrors = 0.0f;
       for(unsigned int component = 0; component < this->CurrentOutputImage->GetNumberOfComponentsPerPixel(); ++component)
 	{
@@ -690,16 +696,10 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 	indexSelectionFilter->SetInput(patch);
 	indexSelectionFilter->Update();
 	
+	Helpers::SetImageToConstant<FloatVector2ImageType>(preFillGradient, zeroVector);
+	Helpers::SetImageToConstant<FloatVector2ImageType>(postFillGradient, zeroVector);
 	//float averageError = ComputeAverageGradientChange<ImageAdaptorType>(adaptor, preFillGradient, postFillGradient, extractMaskFilter->GetOutput(), noMask, boundaryPixels);
 	float averageError = ComputeAverageGradientChange<FloatScalarImageType>(indexSelectionFilter->GetOutput(), preFillGradient, postFillGradient, extractMaskFilter->GetOutput(), noMask, boundaryPixels);
-	
-// 	std::stringstream ssPrefill;
-// 	ssPrefill << "Debug/Prefill_" << sourcePatchId << "_" << component << ".mha";
-// 	Helpers::Write2DVectorImage(preFillGradient, ssPrefill.str());
-// 	
-// 	std::stringstream ssPostfill;
-// 	ssPostfill << "Debug/Postfill_" << sourcePatchId << "_" << component << ".mha";
-// 	Helpers::Write2DVectorImage(postFillGradient, ssPostfill.str());
 	
 	sumOfComponentErrors += averageError;
 
@@ -712,17 +712,17 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 	lowestScore = sumOfComponentErrors;
 	bestForwardLookId = forwardLookId;
 	bestSourcePatchId = sourcePatchId;
+      
+	Helpers::Write2DVectorImage(preFillGradient, "Debug/BestPrefill.mha");
+	
+	Helpers::Write2DVectorImage(postFillGradient, "Debug/BestPostfill.mha");
+	
+	Helpers::WriteVectorImageAsRGB(patch, "Debug/BestPatch.mha");
 	}
       } // end source patch loop
     } // end forward look set loop
     
-  // Return the result by reference.
-  bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][bestSourcePatchId];
-  std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
-  
-  std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
 }
-
 
 void CriminisiInpainting::Inpaint()
 {

@@ -23,8 +23,8 @@ float CriminisiInpainting::ComputeAverageGradientChange(const typename TImage::P
     {
     FloatVector2ImageType::PixelType preFillGradient = preFillGradientImage->GetPixel(boundaryPixels[boundaryPixelId]);
     FloatVector2ImageType::PixelType postFillGradient = postFillGradientImage->GetPixel(boundaryPixels[boundaryPixelId]);
-    std::cout << "Prefill gradient: " << preFillGradient << std::endl;
-    std::cout << "Postfill gradient: " << postFillGradient << std::endl;
+    //std::cout << "Prefill gradient: " << preFillGradient << std::endl;
+    //std::cout << "Postfill gradient: " << postFillGradient << std::endl;
     //totalError += (preFillGradient - postFillGradient).GetNorm();
     totalError += (preFillGradient - postFillGradient).GetSquaredNorm();
     }
