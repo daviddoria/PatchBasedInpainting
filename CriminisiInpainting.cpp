@@ -555,55 +555,35 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 
   // Sort the forward look patches so that the highest priority sets are first in the vector (descending order).
   std::sort(this->PotentialCandidatePairs.rbegin(), this->PotentialCandidatePairs.rend(), SortByPriority);
-
-//   std::cout << "Scores: " << std::endl;
-//   for(unsigned int i = 0; i < ssdScores.size(); ++i)
-//     {
-//     std::cout << i << ": " << ssdScores[i] << std::endl;
-//     }
   
-  /*
-  std::sort(patchPairs.begin(), patchPairs.end(), SortByAverageSSD);
+//   unsigned int bestForwardLookId = 0;
+//   unsigned int bestSourcePatchId = 0;
+//   ComputeMinimumBoundaryGradientChange(bestForwardLookId, bestSourcePatchId);
   
-  float histogramDifferenceThreshold = .4;
-  
-  unsigned int bestAttempt = 0;
-  
-  for(unsigned int i = 0; i < patchPairs.size(); ++i)
-    {
-    if(patchPairs[i].HistogramDifference < histogramDifferenceThreshold)
-      {
-      bestAttempt = i;
-      break;
-      }
-    }
+  unsigned int bestForwardLookId = ComputeMinimumScoreLookAhead();
+  unsigned int bestSourcePatchId = 0;
     
-  std::cout << "Best attempt was " << bestAttempt << std::endl;
-  */
+  // Return the result by reference.
+  bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][bestSourcePatchId];
+  std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
+  
+  std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
+}
 
-  /*
+unsigned int CriminisiInpainting::ComputeMinimumScoreLookAhead()
+{
   // Choose the look ahead with the lowest score to actually fill rather than simply returning the best source patch of the first look ahead target patch.
   float lowestScore = std::numeric_limits< float >::max();
   unsigned int lowestLookAhead = 0;
   for(unsigned int i = 0; i < this->PotentialCandidatePairs.size(); ++i)
     {
-    
     if(this->PotentialCandidatePairs[i][0].GetAverageAbsoluteDifference() < lowestScore)
       {
       lowestScore = this->PotentialCandidatePairs[i][0].GetAverageAbsoluteDifference();
       lowestLookAhead = i;
       }
     }
-  */
-  unsigned int bestForwardLookId = 0;
-  unsigned int bestSourcePatchId = 0;
-  ComputeMinimumBoundaryGradientChange(bestForwardLookId, bestSourcePatchId);
-  
-  // Return the result by reference.
-  bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][bestSourcePatchId];
-  std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
-  
-  std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
+  return lowestLookAhead;
 }
 
 void CriminisiInpainting::ComputeMinimumBoundaryGradientChange(unsigned int& bestForwardLookId, unsigned int& bestSourcePatchId)

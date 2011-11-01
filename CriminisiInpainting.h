@@ -333,6 +333,9 @@ private:
   float ComputeAverageGradientChange(const typename TImage::Pointer patch, FloatVector2ImageType::Pointer preFillGradient, FloatVector2ImageType::Pointer postFillGradient, const Mask::Pointer mask, const Mask::Pointer noMask, const std::vector<itk::Index<2> >& boundaryPixels);
   
   void ComputeMinimumBoundaryGradientChange(unsigned int& bestForwardLookId, unsigned int& bestSourcePatchId);
+  
+  unsigned int ComputeMinimumScoreLookAhead();
+  
 };
 
 #include "CriminisiInpainting.hxx"
