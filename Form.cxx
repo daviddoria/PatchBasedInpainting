@@ -101,6 +101,17 @@ void Form::DefaultConstructor()
   // This function is called by both constructors. This avoid code duplication.
   this->setupUi(this);
 
+  this->CameraLeftToRightVector.resize(3);
+  this->CameraLeftToRightVector[0] = -1;
+  this->CameraLeftToRightVector[1] = 0;
+  this->CameraLeftToRightVector[2] = 0;
+  
+  this->CameraBottomToTopVector.resize(3);
+  this->CameraBottomToTopVector[0] = 0;
+  this->CameraBottomToTopVector[1] = 1;
+  this->CameraBottomToTopVector[2] = 0;
+  
+  
   SetupColors();
   
   SetCheckboxVisibility(false);
@@ -139,8 +150,6 @@ void Form::DefaultConstructor()
   actionSaveResult->setIcon(saveIcon);
   this->toolBar->addAction(actionSaveResult);
 
-  this->Flipped = false;
-  
   this->InteractorStyle = vtkSmartPointer<InteractorStyleImageNoLevel>::New();
     
   // An image with potential target patches outlined

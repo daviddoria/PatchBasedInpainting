@@ -828,9 +828,10 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
-    <addaction name="actionFlipImage"/>
+    <addaction name="actionFlipImageVertically"/>
     <addaction name="actionSaveResult"/>
     <addaction name="actionQuit"/>
+    <addaction name="actionFlipImageHorizontally"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -903,9 +904,9 @@
     <string>Open PointCloud</string>
    </property>
   </action>
-  <action name="actionFlipImage">
+  <action name="actionFlipImageVertically">
    <property name="text">
-    <string>Flip Image</string>
+    <string>Flip Image Vertically</string>
    </property>
   </action>
   <action name="actionFlipRightImage">
@@ -926,6 +927,11 @@
   <action name="actionOpenMaskInverted">
    <property name="text">
     <string>Open Mask Inverted</string>
+   </property>
+  </action>
+  <action name="actionFlipImageHorizontally">
+   <property name="text">
+    <string>Flip Image Horizontally</string>
    </property>
   </action>
  </widget>

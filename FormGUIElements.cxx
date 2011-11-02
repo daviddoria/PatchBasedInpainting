@@ -149,7 +149,7 @@ void Form::on_chkPotentialPatches_clicked()
 {
   Refresh();
 }
-
+/*
 void Form::SetCameraPosition1()
 {
   double leftToRight[3] = {-1,0,0};
@@ -164,9 +164,12 @@ void Form::SetCameraPosition2()
 
   SetCameraPosition(leftToRight, bottomToTop);
 }
+*/
 
-void Form::SetCameraPosition(double leftToRight[3], double bottomToTop[3])
+void Form::SetCameraPosition()
 {
+  double leftToRight[3] = {this->CameraLeftToRightVector[0], this->CameraLeftToRightVector[1], this->CameraLeftToRightVector[2]};
+  double bottomToTop[3] = {this->CameraBottomToTopVector[0], this->CameraBottomToTopVector[1], this->CameraBottomToTopVector[2]};
   this->InteractorStyle->SetImageOrientation(leftToRight, bottomToTop);
 
   this->Renderer->ResetCamera();
@@ -174,17 +177,16 @@ void Form::SetCameraPosition(double leftToRight[3], double bottomToTop[3])
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-void Form::on_actionFlipImage_activated()
+void Form::on_actionFlipImageVertically_activated()
 {
-  if(this->Flipped)
-    {
-    SetCameraPosition1();
-    }   
-  else
-    {
-    SetCameraPosition2();
-    }
-  this->Flipped = !this->Flipped;
+  this->CameraBottomToTopVector[1] *= -1;
+  SetCameraPosition();
+}
+
+void Form::on_actionFlipImageHorizontally_activated()
+{
+  this->CameraLeftToRightVector[0] *= -1;
+  SetCameraPosition();
 }
 
 void Form::SetCheckboxVisibility(const bool visible)

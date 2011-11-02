@@ -62,9 +62,10 @@ public:
   ~Form() {};
   
   // These function deal with flipping the image
-  void SetCameraPosition(double leftToRight[3], double bottomToTop[3]);
-  void SetCameraPosition1();
-  void SetCameraPosition2();
+  void SetCameraPosition();
+  //void SetCameraPosition(double leftToRight[3], double bottomToTop[3]);
+  //void SetCameraPosition1();
+  //void SetCameraPosition2();
   
   void Refresh();
   
@@ -119,7 +120,8 @@ public slots:
   void on_actionHelp_activated();
   void on_actionQuit_activated();
   
-  void on_actionFlipImage_activated();
+  void on_actionFlipImageVertically_activated();
+  void on_actionFlipImageHorizontally_activated();
   
   void StartProgressSlot();
   void StopProgressSlot();
@@ -131,6 +133,9 @@ public slots:
   void DisplayIsophotes();
   
 protected:
+  
+  std::vector<float> CameraLeftToRightVector;
+  std::vector<float> CameraBottomToTopVector;
   
   void ChangeDisplayedTopPatch();
   void ChangeDisplayedForwardLookPatch();
@@ -166,7 +171,7 @@ protected:
   vtkSmartPointer<InteractorStyleImageNoLevel> InteractorStyle;
   
   // Track if the image has been flipped
-  bool Flipped;
+  //bool Flipped;
 
   // The only renderer
   vtkSmartPointer<vtkRenderer> Renderer;

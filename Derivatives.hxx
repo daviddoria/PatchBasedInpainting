@@ -419,9 +419,11 @@ void MaskedDerivativeGaussian(const typename TImage::Pointer image, const Mask::
 template <typename TImage>
 void MaskedGradientInRegion(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, FloatVector2ImageType::Pointer output)
 {
-    // Compute the derivatives
+  // Compute the derivatives
   // X derivative
   FloatScalarImageType::Pointer xDerivative = FloatScalarImageType::New();
+  Helpers::InitializeImage<FloatScalarImageType>(xDerivative, image->GetLargestPossibleRegion());
+  
   //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 0, xDerivative);
   //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 0, xDerivative);
   //Helpers::MaskedDerivativeSobel<FloatScalarImageType>(image, mask, 0, xDerivative);
@@ -430,6 +432,8 @@ void MaskedGradientInRegion(const typename TImage::Pointer image, const Mask::Po
 
   // Y derivative
   FloatScalarImageType::Pointer yDerivative = FloatScalarImageType::New();
+  Helpers::InitializeImage<FloatScalarImageType>(yDerivative, image->GetLargestPossibleRegion());
+  
   //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 1, yDerivative);
   //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 1, yDerivative);
   //Helpers::MaskedDerivativeSobel<FloatScalarImageType>(image, mask, 1, yDerivative);

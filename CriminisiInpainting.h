@@ -153,8 +153,6 @@ private:
   FloatVector2Type ComputeAverageIsophoteSourcePatch(const itk::Index<2>& pixel, const PatchPair& patchPair);
   FloatVector2Type ComputeAverageIsophoteTargetPatch(const itk::Index<2>& pixel, const PatchPair& patchPair);
   
-  
-  
   // Compute the continuation difference for every pair. Store the values in the PatchPair objects inside of the CandidatePairs object.
   void ComputeAllContinuationDifferences(CandidatePairs& candidatePairs);
   
