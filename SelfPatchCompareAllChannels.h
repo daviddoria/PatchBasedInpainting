@@ -1,13 +1,13 @@
-#ifndef SelfPatchCompareAll_H
-#define SelfPatchCompareAll_H
+#ifndef SelfPatchCompareAllChannels_H
+#define SelfPatchCompareAllChannels_H
 
 #include "SelfPatchCompare.h"
 
-class SelfPatchCompareAll : public SelfPatchCompare
+class SelfPatchCompareAllChannels : public SelfPatchCompare
 {
 public:
   
-  SelfPatchCompareAll(const unsigned int components, CandidatePairs& candidatePairs) : SelfPatchCompare(components, candidatePairs)
+  SelfPatchCompareAllChannels(const unsigned int components, CandidatePairs& candidatePairs) : SelfPatchCompare(components, candidatePairs)
   {
     // Nothing special to do in this constructor - everything is done in SelfPatchCompare constructor.
   }

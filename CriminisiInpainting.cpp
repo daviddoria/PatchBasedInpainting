@@ -25,7 +25,7 @@
 
 #include "SelfPatchCompare.h"
 #include "SelfPatchCompareColor.h"
-#include "SelfPatchCompareAll.h"
+#include "SelfPatchCompareAllChannels.h"
 
 // STL
 #include <iostream>
@@ -109,7 +109,7 @@ void CriminisiInpainting::ComputeMaxPixelDifference()
     this->MaxPixelDifference += maxPixel[i];
     }
   */
-  this->MaxPixelDifferenceSquared = SelfPatchCompareAll::StaticPixelDifferenceSquared(maxPixel, zeroPixel);
+  this->MaxPixelDifferenceSquared = SelfPatchCompareAllChannels::StaticPixelDifferenceSquared(maxPixel, zeroPixel);
   
   std::cout << "MaxPixelDifference computed to be: " << this->MaxPixelDifferenceSquared << std::endl;
 }
@@ -461,7 +461,7 @@ void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidate
   std::cout << "There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
 
   SelfPatchCompare* blurredPatchCompare;
-  blurredPatchCompare = new SelfPatchCompareAll(this->BlurredImage->GetNumberOfComponentsPerPixel(), candidatePairs);
+  blurredPatchCompare = new SelfPatchCompareAllChannels(this->BlurredImage->GetNumberOfComponentsPerPixel(), candidatePairs);
   blurredPatchCompare->SetImage(this->BlurredImage);
   blurredPatchCompare->SetMask(this->CurrentMask);
   blurredPatchCompare->ComputeAllSourceDifferences();
@@ -483,7 +483,7 @@ void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidate
   Helpers::CopySourcePatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->BlurredImage, tempImage, this->CurrentMask, candidatePairs[0].SourcePatch.Region, candidatePairs[0].TargetPatch.Region);
 
   SelfPatchCompare* detailedPatchCompare;
-  detailedPatchCompare = new SelfPatchCompareAll(this->CurrentOutputImage->GetNumberOfComponentsPerPixel(), candidatePairs);
+  detailedPatchCompare = new SelfPatchCompareAllChannels(this->CurrentOutputImage->GetNumberOfComponentsPerPixel(), candidatePairs);
   detailedPatchCompare->SetImage(tempImage);
   detailedPatchCompare->SetMask(this->CurrentMask);
   detailedPatchCompare->ComputeAllSourceAndTargetDifferences();
@@ -1439,7 +1439,7 @@ float CriminisiInpainting::ComputeNormalizedSquaredPixelDifference(const itk::In
   DebugMessage<FloatVectorImageType::PixelType>("value1 ", value1);
   DebugMessage<FloatVectorImageType::PixelType>("value2 ", value2);
   
-  float pixelSquaredDifference = SelfPatchCompareAll::StaticPixelDifferenceSquared(this->CompareImage->GetPixel(pixel1), this->CompareImage->GetPixel(pixel2));
+  float pixelSquaredDifference = SelfPatchCompareAllChannels::StaticPixelDifferenceSquared(this->CompareImage->GetPixel(pixel1), this->CompareImage->GetPixel(pixel2));
   DebugMessage<float>("ComputePixelDifference::pixelSquaredDifference", pixelSquaredDifference);
   
   //std::cout << "pixelDifference: " << pixelDifference << std::endl;
