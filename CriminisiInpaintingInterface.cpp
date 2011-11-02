@@ -64,10 +64,10 @@ void CriminisiInpainting::SetNumberOfTopPatchesToSave(const unsigned int number)
 void CriminisiInpainting::SetImage(const FloatVectorImageType::Pointer image)
 {
   // Store the original image
-  Helpers::DeepCopyVectorImage<FloatVectorImageType>(image, this->OriginalImage);
+  Helpers::DeepCopy<FloatVectorImageType>(image, this->OriginalImage);
 
   // Initialize the result to the original image
-  Helpers::DeepCopyVectorImage<FloatVectorImageType>(image, this->CurrentOutputImage);
+  Helpers::DeepCopy<FloatVectorImageType>(image, this->CurrentOutputImage);
 
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   Helpers::VectorImageToRGBImage(this->CurrentOutputImage, rgbImage);

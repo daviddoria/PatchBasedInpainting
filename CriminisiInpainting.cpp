@@ -21,7 +21,6 @@
 // Custom
 #include "Derivatives.h"
 #include "Helpers.h"
-#include "RotateVectors.h"
 
 #include "SelfPatchCompare.h"
 #include "SelfPatchCompareColor.h"
@@ -253,7 +252,7 @@ void CriminisiInpainting::InitializeTargetImage()
 {
   DebugMessage("InitializeTargetImage()");
   // Initialize to the input
-  Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->OriginalImage, this->CurrentOutputImage);
+  Helpers::DeepCopy<FloatVectorImageType>(this->OriginalImage, this->CurrentOutputImage);
 }
 
 void CriminisiInpainting::Initialize()
@@ -293,7 +292,8 @@ void CriminisiInpainting::Initialize()
     
     Helpers::WriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/Initialize.blurredLuminance.mha", true);
     
-    ComputeMaskedIsophotes(blurredLuminance, this->CurrentMask);
+    Helpers::InitializeImage<FloatVector2ImageType>(this->IsophoteImage, this->FullImageRegion);
+    ComputeMaskedIsophotesInRegion(blurredLuminance, this->CurrentMask, this->FullImageRegion, this->IsophoteImage);
     if(this->DebugImages)
       {
       Helpers::Write2DVectorImage(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha");
@@ -386,8 +386,15 @@ PatchPair CriminisiInpainting::Iterate()
   // Copy the new confidences into the confidence image
   UpdateConfidences(usedPatchPair.TargetPatch.Region, confidence);
 
-  // The isophotes can be copied because they would (should!) only change slightly if recomputed. !!! TODO: Maybe they should actually be recomputed?
-  Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
+  // Copy the isophotes under the assumption that they would only change slightly if recomputed
+  //Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
+  
+  //FloatScalarImageType::Pointer newIsophotes = FloatScalarImageType::New();
+  //Helpers::InitializeImage<FloatScalarImageType>(newIsophotes, this->FullImageRegion);
+  //ComputeMaskedIsophotesInRegion(this->LuminanceImage, this->CurrentMask, newIsophotes);
+  //Helpers::CopyPatch(newIsophotes, this->IsophoteImage, usedPatchPair.TargetPatch.Region, usedPatchPair.TargetPatch.Region);
+
+  ComputeMaskedIsophotesInRegion(this->LuminanceImage, this->CurrentMask, usedPatchPair.TargetPatch.Region, this->IsophoteImage);
 
   // Update the mask
   this->UpdateMask(usedPatchPair.TargetPatch.Region);
@@ -478,7 +485,7 @@ void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidate
 
   // Create a temporary image to fill for now, but we might not actually end up filling this patch.
   FloatVectorImageType::Pointer tempImage = FloatVectorImageType::New();
-  Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->CurrentOutputImage, tempImage);
+  Helpers::DeepCopy<FloatVectorImageType>(this->CurrentOutputImage, tempImage);
   // Fill the detailed image hole with a part of the blurred image
   Helpers::CopySourcePatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->BlurredImage, tempImage, this->CurrentMask, candidatePairs[0].SourcePatch.Region, candidatePairs[0].TargetPatch.Region);
 
@@ -770,46 +777,6 @@ void CriminisiInpainting::Inpaint()
   }
 }
 
-void CriminisiInpainting::ComputeMaskedIsophotes(FloatScalarImageType::Pointer image, Mask::Pointer mask)
-{
-  try
-  {
-    Helpers::WriteImageConditional<FloatScalarImageType>(image, "Debug/ComputeMaskedIsophotes.luminance.mha", this->DebugImages);
-
-    FloatVector2ImageType::Pointer gradient = FloatVector2ImageType::New();
-    MaskedGradient<FloatScalarImageType>(image, mask, gradient);
-
-    //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha", this->DebugImages);
-    if(this->DebugImages)
-      {
-      Helpers::Write2DVectorImage(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha");
-      }
-
-    // Rotate the gradient 90 degrees to obtain isophotes from gradient
-    typedef itk::UnaryFunctorImageFilter<FloatVector2ImageType, FloatVector2ImageType,
-    RotateVectors<FloatVector2ImageType::PixelType,
-                  FloatVector2ImageType::PixelType> > FilterType;
-
-    FilterType::Pointer rotateFilter = FilterType::New();
-    rotateFilter->SetInput(gradient);
-    rotateFilter->Update();
-
-    //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.Isophotes.mha", this->DebugImages);
-    if(this->DebugImages)
-      {
-      Helpers::Write2DVectorImage(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.Isophotes.mha");
-      }
-
-    // Store the result as a member variable.
-    Helpers::DeepCopy<FloatVector2ImageType>(rotateFilter->GetOutput(), this->IsophoteImage);
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in ComputeMaskedIsophotes!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
 
 bool CriminisiInpainting::HasMoreToInpaint()
 {
@@ -1122,6 +1089,49 @@ float CriminisiInpainting::ComputeConfidenceTerm(const itk::Index<2>& queryPixel
 }
 
 float CriminisiInpainting::ComputeDataTerm(const itk::Index<2>& queryPixel)
+{
+  // The difference between this funciton and Criminisi's original data term computation (ComputeDataTermCriminisi)
+  // is that we claim there is no reason to penalize the priority of linear structures that don't have a perpendicular incident
+  // angle with the boundary. Of course, we don't want to continue structures that are almost parallel with the boundary, but above
+  // a threshold, the strength of the isophote should be more important than the angle of incidence.
+  try
+  {
+    FloatVector2Type isophote = this->IsophoteImage->GetPixel(queryPixel);
+    FloatVector2Type boundaryNormal = this->BoundaryNormals->GetPixel(queryPixel);
+
+    DebugMessage<FloatVector2Type>("Isophote: ", isophote);
+    DebugMessage<FloatVector2Type>("Boundary normal: ", boundaryNormal);
+    // D(p) = |dot(isophote at p, normalized normal of the front at p)|/alpha
+
+    vnl_double_2 vnlIsophote(isophote[0], isophote[1]);
+
+    vnl_double_2 vnlNormal(boundaryNormal[0], boundaryNormal[1]);
+
+    float dataTerm = 0.0f;
+
+    float angleBetween = Helpers::AngleBetween(isophote, boundaryNormal);
+    if(angleBetween < 20)
+      {
+      float projectionMagnitude = isophote.GetNorm() * cos(angleBetween);
+      
+      dataTerm = projectionMagnitude;
+      }
+    else
+    {
+      dataTerm = isophote.GetNorm();
+    }
+
+    return dataTerm;
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in ComputeDataTerm!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}
+
+float CriminisiInpainting::ComputeDataTermCriminisi(const itk::Index<2>& queryPixel)
 {
   try
   {

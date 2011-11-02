@@ -50,30 +50,21 @@ namespace Helpers
 template<typename TImage>
 void DeepCopy(const typename TImage::Pointer input, typename TImage::Pointer output)
 {
-  output->SetRegions(input->GetLargestPossibleRegion());
-  output->Allocate();
-
-  itk::ImageRegionConstIterator<TImage> inputIterator(input, input->GetLargestPossibleRegion());
-  itk::ImageRegionIterator<TImage> outputIterator(output, output->GetLargestPossibleRegion());
-
-  while(!inputIterator.IsAtEnd())
+  if(output->GetLargestPossibleRegion() != input->GetLargestPossibleRegion())
     {
-    outputIterator.Set(inputIterator.Get());
-    ++inputIterator;
-    ++outputIterator;
+    output->SetRegions(input->GetLargestPossibleRegion());
+    output->Allocate();
     }
+  DeepCopyInRegion<TImage>(input, input->GetLargestPossibleRegion(), output);
 }
 
-/** Copy the input to the output*/
 template<typename TImage>
-void DeepCopyVectorImage(const typename TImage::Pointer input, typename TImage::Pointer output)
+void DeepCopyInRegion(const typename TImage::Pointer input, const itk::ImageRegion<2>& region, typename TImage::Pointer output)
 {
-  output->SetRegions(input->GetLargestPossibleRegion());
-  output->SetNumberOfComponentsPerPixel(input->GetNumberOfComponentsPerPixel());
-  output->Allocate();
-
-  itk::ImageRegionConstIterator<TImage> inputIterator(input, input->GetLargestPossibleRegion());
-  itk::ImageRegionIterator<TImage> outputIterator(output, output->GetLargestPossibleRegion());
+  // This function assumes that the size of input and output are the same.
+  
+  itk::ImageRegionConstIterator<TImage> inputIterator(input, region);
+  itk::ImageRegionIterator<TImage> outputIterator(output, region);
 
   while(!inputIterator.IsAtEnd())
     {
@@ -81,28 +72,7 @@ void DeepCopyVectorImage(const typename TImage::Pointer input, typename TImage::
     ++inputIterator;
     ++outputIterator;
     }
-    
 }
-
-// template <typename TPixelType>
-// float PixelSquaredDifference(const TPixelType& pixel1, const TPixelType& pixel2)
-// {
-//   
-// //   std::cout << "pixel1: " << pixel1 << " pixel2: " << pixel2
-// //             << " pixel1-pixel2: " << pixel1-pixel2
-// //             << " squared norm: " << (pixel1-pixel2).GetSquaredNorm() << std::endl;
-//   
-//   //return (pixel1-pixel2).GetSquaredNorm();
-//   
-//   float difference = 0;
-//   unsigned int componentsPerPixel = pixel1.GetSize();
-//   for(unsigned int i = 0; i < componentsPerPixel; ++i)
-//     {
-//     difference += (pixel1[i] - pixel2[i]) * 
-// 		  (pixel1[i] - pixel2[i]);
-//     }
-//   return difference;
-// }
 
 template<typename T>
 void ReplaceValue(typename T::Pointer image, const typename T::PixelType queryValue, const typename T::PixelType replacementValue)
@@ -391,6 +361,27 @@ void CopyPatchIntoImage(const typename T::Pointer patch, typename T::Pointer ima
     std::cerr << err << std::endl;
     exit(-1);
   }
+}
+
+template <class TImage>
+void CopyPatch(const typename TImage::Pointer sourceImage, typename TImage::Pointer targetImage, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
+{
+  if(targetRegion.GetSize() != sourceRegion.GetSize())
+    {
+    std::cerr << "Can't copy regions that aren't the same size!" << std::endl;
+    return;
+    }
+
+  itk::ImageRegionConstIterator<TImage> sourceIterator(sourceImage, sourceRegion);
+  itk::ImageRegionIterator<TImage> targetIterator(targetImage, targetRegion);
+
+  while(!sourceIterator.IsAtEnd())
+    {
+    targetIterator.Set(sourceIterator.Get());
+
+    ++sourceIterator;
+    ++targetIterator;
+    }
 }
 
 template <class T>
@@ -1033,7 +1024,7 @@ void InitializeImage(typename TImage::Pointer image, const itk::ImageRegion<2>& 
 {
   image->SetRegions(region);
   image->Allocate();
-  image->FillBuffer(0);
+  //image->FillBuffer(0);
 }
 
 template<typename TImage>
@@ -1104,7 +1095,7 @@ void BlurAllChannels(const typename TVectorImage::Pointer image, typename TVecto
 
   imageToVectorImageFilter->Update();
  
-  DeepCopyVectorImage<TVectorImage>(imageToVectorImageFilter->GetOutput(), output);
+  DeepCopy<TVectorImage>(imageToVectorImageFilter->GetOutput(), output);
 }
 
 template<typename T>

@@ -19,6 +19,9 @@
 #ifndef DERIVATVIES_H
 #define DERIVATVIES_H
 
+#include "Mask.h"
+#include "Types.h"
+
 template <typename TImage>
 void MaskedDerivative(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output);
 
@@ -32,11 +35,21 @@ template <typename TImage>
 void MaskedDerivativeGaussian(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output);
 
 template <typename TImage>
+void MaskedDerivativeGaussianInRegion(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, const itk::ImageRegion<2>& region, FloatScalarImageType::Pointer output);
+
+template <typename TImage>
 void MaskedGradient(const typename TImage::Pointer image, const Mask::Pointer mask, FloatVector2ImageType::Pointer output);
 
+template <typename TImage>
+void MaskedGradientInRegion(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, FloatVector2ImageType::Pointer output);
 
 template<typename TPixel>
 void GradientFromDerivatives(const typename itk::Image<TPixel, 2>::Pointer xDerivative, const typename itk::Image<TPixel, 2>::Pointer yDerivative, typename itk::Image<itk::CovariantVector<TPixel, 2> >::Pointer output);
+
+template<typename TPixel>
+void GradientFromDerivativesInRegion(const typename itk::Image<TPixel, 2>::Pointer xDerivative, const typename itk::Image<TPixel, 2>::Pointer yDerivative, const itk::ImageRegion<2>& region, typename itk::Image<itk::CovariantVector<TPixel, 2> >::Pointer output);
+
+void ComputeMaskedIsophotesInRegion(FloatScalarImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region, FloatVector2ImageType::Pointer outputIsophotes);
 
 #include "Derivatives.hxx"
 

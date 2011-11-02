@@ -133,7 +133,7 @@ public:
   //////////// These functions should be private, but we want to do some external testing for the moment.
   
   // Compute the isophotes.
-  void ComputeMaskedIsophotes(FloatScalarImageType::Pointer image, Mask::Pointer mask);
+  //void ComputeMaskedIsophotesInRegion(FloatScalarImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region, FloatVector2ImageType::Pointer outputIsophotes);
 
   bool GetAdjacentBoundaryPixel(const itk::Index<2>& boundaryPixel, const PatchPair& patchPair, itk::Index<2>& adjacentBoundaryPixel);
   
@@ -261,6 +261,7 @@ private:
   
   // Compute the Data at a pixel.
   float ComputeDataTerm(const itk::Index<2>& queryPixel);
+  float ComputeDataTermCriminisi(const itk::Index<2>& queryPixel);
 
   // Return the highest value of the specified image out of the pixels under a specified BoundaryImage.
   itk::Index<2> FindHighestValueOnBoundary(const FloatScalarImageType::Pointer image, float& maxValue, UnsignedCharScalarImageType::Pointer boundaryImage);

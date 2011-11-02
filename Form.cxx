@@ -339,7 +339,8 @@ void Form::OpenImage(const std::string& fileName)
   reader->Update();
 
   //this->Image = reader->GetOutput();
-  Helpers::DeepCopyVectorImage<FloatVectorImageType>(reader->GetOutput(), this->UserImage);
+  Helpers::DeepCopy<FloatVectorImageType>(reader->GetOutput(), this->UserImage);
+  
   //std::cout << "UserImage region: " << this->UserImage->GetLargestPossibleRegion() << std::endl;
 
   Helpers::ITKVectorImagetoVTKImage(this->UserImage, this->ImageLayer.ImageData);
@@ -1209,7 +1210,7 @@ void Form::SetupInitialIntermediateImages()
   InpaintingVisualizationStack stack;
   
   //Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->UserImage, stack.Image);
-  Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), stack.Image);
+  Helpers::DeepCopy<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), stack.Image);
   Helpers::DeepCopy<Mask>(this->UserMaskImage, stack.MaskImage);
   Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
   Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), stack.Priority);
@@ -1235,7 +1236,7 @@ void Form::IterationComplete()
   
   InpaintingVisualizationStack stack;
   
-  Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), stack.Image);
+  Helpers::DeepCopy<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), stack.Image);
   Helpers::DeepCopy<Mask>(this->Inpainting.GetMaskImage(), stack.MaskImage);
   if(!this->chkOnlySaveImage->isChecked())
     {

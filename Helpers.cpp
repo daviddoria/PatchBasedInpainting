@@ -46,6 +46,32 @@
 namespace Helpers
 {
 
+// This is a specialization that ensures that the number of pixels per component also matches.
+// It must be at the top of this file to avoid "specialization after initialization.
+template<>
+void DeepCopy<FloatVectorImageType>(const FloatVectorImageType::Pointer input, FloatVectorImageType::Pointer output)
+{
+  bool changed = false;
+  if(input->GetNumberOfComponentsPerPixel() != output->GetNumberOfComponentsPerPixel())
+    {
+    output->SetNumberOfComponentsPerPixel(input->GetNumberOfComponentsPerPixel());
+    changed = true;
+    }
+    
+  if(input->GetLargestPossibleRegion() != output->GetLargestPossibleRegion())
+    {
+    output->SetRegions(input->GetLargestPossibleRegion());
+    changed = true;
+    }
+  if(changed)
+    {
+    output->Allocate();
+    }
+
+  DeepCopyInRegion<FloatVectorImageType>(input, input->GetLargestPossibleRegion(), output);
+    
+}
+
 FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors)
 {
   FloatVector2Type totalVector;
@@ -134,7 +160,7 @@ void VectorMaskedBlur(const FloatVectorImageType::Pointer inputImage, const Mask
 
   imageToVectorImageFilter->Update();
  
-  DeepCopyVectorImage<FloatVectorImageType>(imageToVectorImageFilter->GetOutput(), output);
+  DeepCopy<FloatVectorImageType>(imageToVectorImageFilter->GetOutput(), output);
 }
 
 
@@ -257,7 +283,7 @@ void RGBImageToCIELabImage(const RGBImageType::Pointer rgbImage, FloatVectorImag
   reassembler->Update();
   
   // Copy to the output
-  DeepCopyVectorImage<FloatVectorImageType>(reassembler->GetOutput(), cielabImage);
+  DeepCopy<FloatVectorImageType>(reassembler->GetOutput(), cielabImage);
 }
 
 void Write2DVectorImage(const FloatVector2ImageType::Pointer image, const std::string& filename)

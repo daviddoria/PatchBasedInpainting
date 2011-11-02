@@ -24,6 +24,7 @@ CandidatePairs.cpp
 CriminisiInpainting.cpp
 CriminisiInpaintingDebugging.cpp
 CriminisiInpaintingInterface.cpp
+Derivatives.cpp
 Helpers.cpp
 Histograms.cpp
 Mask.cpp

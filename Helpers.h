@@ -170,7 +170,7 @@ template<typename TImage>
 void DeepCopy(const typename TImage::Pointer input, typename TImage::Pointer output);
 
 template<typename TImage>
-void DeepCopyVectorImage(const typename TImage::Pointer input, typename TImage::Pointer output);
+void DeepCopyInRegion(const typename TImage::Pointer input, const itk::ImageRegion<2>& region, typename TImage::Pointer output);
 
 template <typename TImage>
 void ITKScalarImageToScaledVTKImage(const typename TImage::Pointer image, vtkImageData* outputImage);
@@ -186,6 +186,9 @@ void WriteScaledScalarImage(const typename T::Pointer image, std::string filenam
 
 template <class T>
 void CopyPatch(const typename T::Pointer sourceImage, typename T::Pointer targetImage, const itk::Index<2>& sourcePosition, const itk::Index<2>& targetPosition, const unsigned int radius);
+
+template <class T>
+void CopyPatch(const typename T::Pointer sourceImage, typename T::Pointer targetImage, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
 
 template <class T>
 void CreateConstantPatch(typename T::Pointer patch, const typename T::PixelType value, const unsigned int radius);
