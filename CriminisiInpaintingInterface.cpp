@@ -73,7 +73,7 @@ void CriminisiInpainting::SetImage(const FloatVectorImageType::Pointer image)
   Helpers::VectorImageToRGBImage(this->CurrentOutputImage, rgbImage);
 
   Helpers::RGBImageToCIELabImage(rgbImage, this->CIELabImage);
-  Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->CIELabImage, "Debug/SetImage.CIELab.mha", this->DebugImages);
+  Helpers::WriteImageConditional<FloatVectorImageType>(this->CIELabImage, "Debug/SetImage.CIELab.mha", this->DebugImages);
 
   this->FullImageRegion = image->GetLargestPossibleRegion();
   

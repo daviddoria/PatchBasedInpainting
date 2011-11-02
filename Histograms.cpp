@@ -18,6 +18,51 @@
 
 #include "Histograms.h"
 
+#include "Helpers.h"
+
+// ITK
+#include "itkRegionOfInterestImageFilter.h"
+#include "itkVectorIndexSelectionCastImageFilter.h"
+
+std::vector<float> ComputeHistogramOfGradient(const FloatVector2ImageType::Pointer gradientImage, const itk::ImageRegion<2>& region)
+{
+  // Discretize the continuum of possible angles of vectors in the right half-plane.
+  // (We flip all vectors so that they are pointing towards the right half-plane, since their orientation is not important).
+  // Add the strength/magnitude of the vector to the appropriate bin in the histogram.
+  
+  // The synatx is atan2(y,x)
+  //float radiansToDegrees = 180./3.14159;
+  float minValue = atan2(1, 0);
+  float maxValue = atan2(-1, 0);
+  
+  float range = maxValue - minValue;
+  
+  unsigned int numberOfBins = 20;
+  
+  std::vector<float> histogram(numberOfBins);
+  
+  float step = range / static_cast<float>(numberOfBins);
+  
+  itk::ImageRegionConstIterator<FloatVector2ImageType> iterator(gradientImage, region);
+  
+  while(!iterator.IsAtEnd())
+    {
+    FloatVector2ImageType::PixelType v = iterator.Get();
+    if(v[0] < 0)
+      {
+      v *= -1.0f;
+      }
+    float angle = atan2(v[1], v[0]);
+    unsigned int bin = static_cast<unsigned int>( (angle - minValue) / step );
+    histogram[bin] += iterator.Get().GetNorm();
+    ++iterator;
+    }
+    
+  // Normalize
+  Helpers::NormalizeVector<float>(histogram);
+    
+  return histogram;
+}
 
 std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region)
 {

@@ -176,10 +176,10 @@ template <typename TImage>
 void ITKScalarImageToScaledVTKImage(const typename TImage::Pointer image, vtkImageData* outputImage);
 
 template <typename TDebugImageType>
-void DebugWriteSequentialImage(const typename TDebugImageType::Pointer image, const std::string& filePrefix, const unsigned int iteration);
+void WriteSequentialImage(const typename TDebugImageType::Pointer image, const std::string& filePrefix, const unsigned int iteration);
 
 template <typename TDebugImageType>
-void DebugWriteImageConditional(const typename TDebugImageType::Pointer image, const std::string& fileName, const bool condition);
+void WriteImageConditional(const typename TDebugImageType::Pointer image, const std::string& fileName, const bool condition);
 
 template <class T>
 void WriteScaledScalarImage(const typename T::Pointer image, std::string filename);
@@ -281,6 +281,9 @@ void InitializeImage(typename TImage::Pointer image, const itk::ImageRegion<2>& 
 
 template<typename TImage>
 void CreatePatchImage(typename TImage::Pointer image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion, Mask::Pointer mask, typename TImage::Pointer result);
+
+template<typename T>
+void NormalizeVector(std::vector<T>& v);
 
 }// end namespace
 

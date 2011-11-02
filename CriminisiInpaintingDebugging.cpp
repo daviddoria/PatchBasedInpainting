@@ -34,14 +34,14 @@
 
 void CriminisiInpainting::DebugWriteAllImages()
 {
-  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->ConfidenceImage, "ConfidenceImage", this->NumberOfCompletedIterations);
-  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->DataImage, "DataImage", this->NumberOfCompletedIterations);
-  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->PriorityImage, "PriorityImage", this->NumberOfCompletedIterations);
+  Helpers::WriteSequentialImage<FloatScalarImageType>(this->ConfidenceImage, "Debug/ConfidenceImage", this->NumberOfCompletedIterations);
+  Helpers::WriteSequentialImage<FloatScalarImageType>(this->DataImage, "Debug/DataImage", this->NumberOfCompletedIterations);
+  Helpers::WriteSequentialImage<FloatScalarImageType>(this->PriorityImage, "Debug/PriorityImage", this->NumberOfCompletedIterations);
   
   //Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage, "IsophoteImage", this->NumberOfCompletedIterations);
-  Helpers::Write2DVectorImage(this->IsophoteImage, Helpers::GetSequentialFileName("IsophoteImage", this->NumberOfCompletedIterations, "mha"));
+  Helpers::Write2DVectorImage(this->IsophoteImage, Helpers::GetSequentialFileName("Debug/IsophoteImage", this->NumberOfCompletedIterations, "mha"));
   
-  Helpers::DebugWriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage, "BoundaryImage", this->NumberOfCompletedIterations);
+  Helpers::WriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage", this->NumberOfCompletedIterations);
 
   // Boundary isophotes
   typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
@@ -52,18 +52,18 @@ void CriminisiInpainting::DebugWriteAllImages()
   //Helpers::Write2DVectorImage(maskFilter->GetOutput(), Helpers::GetSequentialFileName("BoundaryIsophotes", this->NumberOfCompletedIterations, "mha"));
   vtkSmartPointer<vtkPolyData> boundaryIsophotes = vtkSmartPointer<vtkPolyData>::New();
   Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), boundaryIsophotes);
-  Helpers::WritePolyData(boundaryIsophotes, Helpers::GetSequentialFileName("BoundaryIsophotes", this->NumberOfCompletedIterations, "vtp"));
+  Helpers::WritePolyData(boundaryIsophotes, Helpers::GetSequentialFileName("Debug/BoundaryIsophotes", this->NumberOfCompletedIterations, "vtp"));
 
   // Boundary normals
-  Helpers::Write2DVectorImage(this->BoundaryNormals, Helpers::GetSequentialFileName("BoundaryNormals", this->NumberOfCompletedIterations, "mha"));
+  Helpers::Write2DVectorImage(this->BoundaryNormals, Helpers::GetSequentialFileName("Debug/BoundaryNormals", this->NumberOfCompletedIterations, "mha"));
   //Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals, "BoundaryNormals", this->NumberOfCompletedIterations);
   
-  Helpers::DebugWriteSequentialImage<Mask>(this->CurrentMask, "CurrentMask", this->NumberOfCompletedIterations);
-  Helpers::DebugWriteSequentialImage<FloatVectorImageType>(this->CurrentOutputImage, "CurrentImage", this->NumberOfCompletedIterations);
+  Helpers::WriteSequentialImage<Mask>(this->CurrentMask, "Debug/CurrentMask", this->NumberOfCompletedIterations);
+  Helpers::WriteSequentialImage<FloatVectorImageType>(this->CurrentOutputImage, "Debug/CurrentImage", this->NumberOfCompletedIterations);
 
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   Helpers::VectorImageToRGBImage(this->CurrentOutputImage, rgbImage);
-  Helpers::DebugWriteSequentialImage<RGBImageType>(rgbImage, "CurrentImage_RGB", this->NumberOfCompletedIterations);
+  Helpers::WriteSequentialImage<RGBImageType>(rgbImage, "Debug/CurrentImage_RGB", this->NumberOfCompletedIterations);
 }
 
 void CriminisiInpainting::DebugWriteAllImages(const itk::Index<2>& pixelToFill, const itk::Index<2>& bestMatchPixel, const unsigned int iteration)
@@ -79,13 +79,13 @@ void CriminisiInpainting::DebugWriteAllImages(const itk::Index<2>& pixelToFill, 
   DebugWritePixelToFill(pixelToFill, iteration);
   std::cout << "Wrote pixelToFill." << std::endl;
 
-  Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage,"Isophotes", iteration);
-  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->ConfidenceImage,"Confidence", iteration);
-  Helpers::DebugWriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage,"Boundary", iteration);
-  Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals,"BoundaryNormals", iteration);
-  Helpers::DebugWriteSequentialImage<FloatScalarImageType>(this->PriorityImage,"Priorities", iteration);
-  Helpers::DebugWriteSequentialImage<Mask>(this->CurrentMask,"Mask", iteration);
-  Helpers::DebugWriteSequentialImage<FloatVectorImageType>(this->CurrentOutputImage,"FilledImage", iteration);
+  Helpers::WriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage,"Debug/Isophotes", iteration);
+  Helpers::WriteSequentialImage<FloatScalarImageType>(this->ConfidenceImage,"Debug/Confidence", iteration);
+  Helpers::WriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage,"Debug/Boundary", iteration);
+  Helpers::WriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals,"Debug/BoundaryNormals", iteration);
+  Helpers::WriteSequentialImage<FloatScalarImageType>(this->PriorityImage,"Debug/Priorities", iteration);
+  Helpers::WriteSequentialImage<Mask>(this->CurrentMask,"Debug/Mask", iteration);
+  Helpers::WriteSequentialImage<FloatVectorImageType>(this->CurrentOutputImage,"Debug/FilledImage", iteration);
 
 }
 

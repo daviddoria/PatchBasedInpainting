@@ -270,14 +270,14 @@ void CriminisiInpainting::Initialize()
     ComputeBoundaryNormals(blurVariance);
     
     InitializeTargetImage();
-    Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
+    Helpers::WriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
   
     // Compute isophotes
     {
     RGBImageType::Pointer rgbImage = RGBImageType::New();
     Helpers::VectorImageToRGBImage(this->OriginalImage, rgbImage);
     
-    Helpers::DebugWriteImageConditional<RGBImageType>(rgbImage, "Debug/Initialize.rgb.mha", this->DebugImages);
+    Helpers::WriteImageConditional<RGBImageType>(rgbImage, "Debug/Initialize.rgb.mha", this->DebugImages);
 
     typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
     LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
@@ -291,7 +291,7 @@ void CriminisiInpainting::Initialize()
     unsigned int kernelRadius = 0;
     Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), this->CurrentMask, kernelRadius, blurredLuminance);
     
-    Helpers::DebugWriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/Initialize.blurredLuminance.mha", true);
+    Helpers::WriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/Initialize.blurredLuminance.mha", true);
     
     ComputeMaskedIsophotes(blurredLuminance, this->CurrentMask);
     if(this->DebugImages)
@@ -305,7 +305,7 @@ void CriminisiInpainting::Initialize()
     //Helpers::VectorMaskedBlur(this->OriginalImage, this->CurrentMask, kernelRadius, this->BlurredImage);
     
     Helpers::BlurAllChannels<FloatVectorImageType>(this->OriginalImage, this->BlurredImage, 10);
-    Helpers::DebugWriteImageConditional<FloatVectorImageType>(this->BlurredImage, "Debug/Initialize.BlurredImage.mha", this->DebugImages);
+    Helpers::WriteImageConditional<FloatVectorImageType>(this->BlurredImage, "Debug/Initialize.BlurredImage.mha", this->DebugImages);
     Helpers::WriteVectorImageAsRGB(this->BlurredImage, "Debug/Initialize.BlurredImageRGB.mha");
     
     Helpers::InitializeImage<FloatScalarImageType>(this->DataImage, this->FullImageRegion);
@@ -315,7 +315,7 @@ void CriminisiInpainting::Initialize()
     Helpers::InitializeImage<FloatScalarImageType>(this->ConfidenceImage, this->FullImageRegion);
         
     InitializeConfidenceMap();
-    Helpers::DebugWriteImageConditional<FloatScalarImageType>(this->ConfidenceMapImage, "Debug/Initialize.ConfidenceMapImage.mha", this->DebugImages);
+    Helpers::WriteImageConditional<FloatScalarImageType>(this->ConfidenceMapImage, "Debug/Initialize.ConfidenceMapImage.mha", this->DebugImages);
 
     DebugMessage("Computing source patches...");
     AddAllSourcePatchesInRegion(this->FullImageRegion);
@@ -338,14 +338,14 @@ void CriminisiInpainting::Iterate()
   DebugMessage("Iterate()");
   
   FindBoundary();
-  Helpers::DebugWriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage.mha", this->DebugImages);
+  Helpers::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage.mha", this->DebugImages);
 
   DebugMessage("Found boundary.");
 
   // The affect of this parameter can be inspected using the output of TestBoundaryNormals.
   unsigned int blurVariance = 2;
   ComputeBoundaryNormals(blurVariance);
-  Helpers::DebugWriteImageConditional<FloatVector2ImageType>(this->BoundaryNormals, "Debug/BoundaryNormals.mha", this->DebugImages);
+  Helpers::WriteImageConditional<FloatVector2ImageType>(this->BoundaryNormals, "Debug/BoundaryNormals.mha", this->DebugImages);
 
   DebugMessage("Computed boundary normals.");
 
@@ -358,7 +358,7 @@ void CriminisiInpainting::Iterate()
     
   FindBestPatchLookAhead(usedPatchPair);
   
-  std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
+  //std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
   
   std::stringstream ssTargetIsophotes;
   ssTargetIsophotes << "Debug/TargetIsophotes_" << this->NumberOfCompletedIterations << ".mha";
@@ -367,12 +367,12 @@ void CriminisiInpainting::Iterate()
   
   std::stringstream ssSource;
   ssSource << "Debug/source_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
-  Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.SourcePatch, ssSource.str());
+  //Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.SourcePatch, ssSource.str());
 
   std::stringstream ssTarget;
   ssTarget << "Debug/target_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
   //Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch, ssTarget.str());
-  Helpers::WriteRegionUnsignedChar<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch.Region, ssTarget.str());
+  //Helpers::WriteRegionUnsignedChar<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch.Region, ssTarget.str());
   
   this->UsedPatchPairs.push_back(usedPatchPair);
   
@@ -396,7 +396,10 @@ void CriminisiInpainting::Iterate()
   DebugMessage("Updated mask.");
 
   // Sanity check everything
-  DebugWriteAllImages();
+  if(this->DebugImages)
+    {
+    DebugWriteAllImages();
+    }
 
   // Add new source patches
   // Get the region of pixels which were previous touching the hole which was the target region.
@@ -414,8 +417,8 @@ void CriminisiInpainting::Iterate()
   
   itk::ImageRegion<2> previousInvalidRegion(previousInvalidRegionIndex, previouInvalidRegionSize);
   
-  std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
-  std::cout << "Previously invalid region: " << previousInvalidRegion << std::endl;
+  //std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
+  //std::cout << "Previously invalid region: " << previousInvalidRegion << std::endl;
   
   std::vector<Patch> newPatches = AddNewSourcePatchesInRegion(previousInvalidRegion);
   
@@ -464,7 +467,7 @@ void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidate
   blurredPatchCompare->ComputeAllSourceDifferences();
   
   std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
-  std::cout << "Blurred score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
+  //std::cout << "Blurred score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
   candidatePairs.InvalidateAll();
   
   std::vector<float> blurredScores(candidatePairs.size());
@@ -485,7 +488,7 @@ void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidate
   detailedPatchCompare->SetMask(this->CurrentMask);
   detailedPatchCompare->ComputeAllSourceAndTargetDifferences();
 
-  std::cout << "Detailed score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
+  //std::cout << "Detailed score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
   
   for(unsigned int i = 0; i < candidatePairs.size(); ++i)
     {
@@ -603,9 +606,9 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     
   // Return the result by reference.
   bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][bestSourcePatchId];
-  std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
+  //std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
   
-  std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
+  //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
 }
 
 unsigned int CriminisiInpainting::ComputeMinimumScoreLookAhead()
@@ -757,11 +760,11 @@ void CriminisiInpainting::Inpaint()
       {
       Iterate();
       }
-
+    std::cout << "Finished inpainting." << std::endl;
   }// end try
   catch( itk::ExceptionObject & err )
   {
-    std::cerr << "ExceptionObject caught in Inpaint!" << std::endl;
+    std::cerr << "ExceptionObject caught in Inpaint()!" << std::endl;
     std::cerr << err << std::endl;
     exit(-1);
   }
@@ -771,7 +774,7 @@ void CriminisiInpainting::ComputeMaskedIsophotes(FloatScalarImageType::Pointer i
 {
   try
   {
-    Helpers::DebugWriteImageConditional<FloatScalarImageType>(image, "Debug/ComputeMaskedIsophotes.luminance.mha", this->DebugImages);
+    Helpers::WriteImageConditional<FloatScalarImageType>(image, "Debug/ComputeMaskedIsophotes.luminance.mha", this->DebugImages);
 
     FloatVector2ImageType::Pointer gradient = FloatVector2ImageType::New();
     MaskedGradient<FloatScalarImageType>(image, mask, gradient);
@@ -846,8 +849,8 @@ void CriminisiInpainting::FindBoundary()
   {
     // Compute the "outer" boundary of the region to fill. That is, we want the boundary pixels to be in the source region.
 
-    Helpers::DebugWriteImageConditional<Mask>(this->CurrentMask, "Debug/FindBoundary.CurrentMask.mha", this->DebugImages);
-    Helpers::DebugWriteImageConditional<Mask>(this->CurrentMask, "Debug/FindBoundary.CurrentMask.png", this->DebugImages);
+    Helpers::WriteImageConditional<Mask>(this->CurrentMask, "Debug/FindBoundary.CurrentMask.mha", this->DebugImages);
+    Helpers::WriteImageConditional<Mask>(this->CurrentMask, "Debug/FindBoundary.CurrentMask.png", this->DebugImages);
 
     // Create a binary image (throw away the "dont use" pixels)
     Mask::Pointer holeOnly = Mask::New();
@@ -865,8 +868,8 @@ void CriminisiInpainting::FindBoundary()
       ++maskIterator;
       }
 
-    Helpers::DebugWriteImageConditional<Mask>(holeOnly, "Debug/FindBoundary.HoleOnly.mha", this->DebugImages);
-    Helpers::DebugWriteImageConditional<Mask>(holeOnly, "Debug/FindBoundary.HoleOnly.png", this->DebugImages);
+    Helpers::WriteImageConditional<Mask>(holeOnly, "Debug/FindBoundary.HoleOnly.mha", this->DebugImages);
+    Helpers::WriteImageConditional<Mask>(holeOnly, "Debug/FindBoundary.HoleOnly.png", this->DebugImages);
       
     // Since the hole is white, we want the foreground value of the contour filter to be black. This means that the boundary will
     // be detected in the black pixel region, which is on the outside edge of the hole like we want. However,
@@ -882,8 +885,8 @@ void CriminisiInpainting::FindBoundary()
     binaryContourFilter->SetBackgroundValue(holeOnly->GetHoleValue());
     binaryContourFilter->Update();
 
-    Helpers::DebugWriteImageConditional<Mask>(binaryContourFilter->GetOutput(), "Debug/FindBoundary.Boundary.mha", this->DebugImages);
-    Helpers::DebugWriteImageConditional<Mask>(binaryContourFilter->GetOutput(), "Debug/FindBoundary.Boundary.png", this->DebugImages);
+    Helpers::WriteImageConditional<Mask>(binaryContourFilter->GetOutput(), "Debug/FindBoundary.Boundary.mha", this->DebugImages);
+    Helpers::WriteImageConditional<Mask>(binaryContourFilter->GetOutput(), "Debug/FindBoundary.Boundary.png", this->DebugImages);
 
     // Since we want to interpret non-zero pixels as boundary pixels, we must invert the image.
     typedef itk::InvertIntensityImageFilter <Mask> InvertIntensityImageFilterType;
@@ -896,7 +899,7 @@ void CriminisiInpainting::FindBoundary()
     //this->BoundaryImage->Graft(binaryContourFilter->GetOutput());
     Helpers::DeepCopy<UnsignedCharScalarImageType>(invertIntensityFilter->GetOutput(), this->BoundaryImage);
 
-    Helpers::DebugWriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/FindBoundary.BoundaryImage.mha", this->DebugImages);
+    Helpers::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/FindBoundary.BoundaryImage.mha", this->DebugImages);
     
   }
   catch( itk::ExceptionObject & err )
@@ -939,8 +942,8 @@ void CriminisiInpainting::ComputeBoundaryNormals(const float blurVariance)
   {
     // Blur the mask, compute the gradient, then keep the normals only at the original mask boundary
 
-    Helpers::DebugWriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/ComputeBoundaryNormals.BoundaryImage.mha", this->DebugImages);
-    Helpers::DebugWriteImageConditional<Mask>(this->CurrentMask, "Debug/ComputeBoundaryNormals.CurrentMask.mha", this->DebugImages);
+    Helpers::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/ComputeBoundaryNormals.BoundaryImage.mha", this->DebugImages);
+    Helpers::WriteImageConditional<Mask>(this->CurrentMask, "Debug/ComputeBoundaryNormals.CurrentMask.mha", this->DebugImages);
       
     // Blur the mask
     typedef itk::DiscreteGaussianImageFilter< Mask, FloatScalarImageType >  BlurFilterType;
@@ -949,7 +952,7 @@ void CriminisiInpainting::ComputeBoundaryNormals(const float blurVariance)
     gaussianFilter->SetVariance(blurVariance);
     gaussianFilter->Update();
 
-    Helpers::DebugWriteImageConditional<FloatScalarImageType>(gaussianFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMask.mha", this->DebugImages);
+    Helpers::WriteImageConditional<FloatScalarImageType>(gaussianFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMask.mha", this->DebugImages);
 
     // Compute the gradient of the blurred mask
     typedef itk::GradientImageFilter< FloatScalarImageType, float, float>  GradientFilterType;
@@ -957,7 +960,7 @@ void CriminisiInpainting::ComputeBoundaryNormals(const float blurVariance)
     gradientFilter->SetInput(gaussianFilter->GetOutput());
     gradientFilter->Update();
 
-    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradientFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMaskGradient.mha", this->DebugImages);
+    Helpers::WriteImageConditional<FloatVector2ImageType>(gradientFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMaskGradient.mha", this->DebugImages);
 
     // Only keep the normals at the boundary
     typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
@@ -966,7 +969,7 @@ void CriminisiInpainting::ComputeBoundaryNormals(const float blurVariance)
     maskFilter->SetMaskImage(this->BoundaryImage);
     maskFilter->Update();
 
-    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha", this->DebugImages);
+    Helpers::WriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha", this->DebugImages);
 
     Helpers::DeepCopy<FloatVector2ImageType>(maskFilter->GetOutput(), this->BoundaryNormals);
 
@@ -986,7 +989,7 @@ void CriminisiInpainting::ComputeBoundaryNormals(const float blurVariance)
       ++boundaryIterator;
       }
 
-    Helpers::DebugWriteImageConditional<FloatVector2ImageType>(this->BoundaryNormals, "Debug/ComputeBoundaryNormals.BoundaryNormals.mha", this->DebugImages);
+    Helpers::WriteImageConditional<FloatVector2ImageType>(this->BoundaryNormals, "Debug/ComputeBoundaryNormals.BoundaryNormals.mha", this->DebugImages);
   }
   catch( itk::ExceptionObject & err )
   {

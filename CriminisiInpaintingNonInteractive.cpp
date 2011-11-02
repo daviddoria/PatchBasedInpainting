@@ -18,6 +18,9 @@
 
 #include "CriminisiInpainting.h"
 
+// ITK
+#include "itkImageFileReader.h"
+
 int main(int argc, char *argv[])
 {
   // Verify arguments
@@ -54,14 +57,16 @@ int main(int argc, char *argv[])
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 
-  CriminisiInpainting Inpainting;
-  Inpainting.SetPatchRadius(patchRadius);
-  //Inpainting.SetDebug(false);
-  Inpainting.SetImage(imageReader->GetOutput());
-  Inpainting.SetMask(maskReader->GetOutput());
-  Inpainting.Inpaint();
+  CriminisiInpainting inpainting;
+  inpainting.SetPatchRadius(patchRadius);
+  inpainting.SetImage(imageReader->GetOutput());
+  inpainting.SetMask(maskReader->GetOutput());
+  inpainting.SetMaxForwardLookPatches(3);
+  inpainting.Initialize();
+  inpainting.Inpaint();
 
-  Helpers::WriteImage<FloatVectorImageType>(Inpainting.GetResult(), outputFilename);
+  Helpers::WriteImage<FloatVectorImageType>(inpainting.GetCurrentOutputImage(), outputFilename + ".mha");
+  Helpers::WriteVectorImageAsRGB(inpainting.GetCurrentOutputImage(), outputFilename);
 
   return EXIT_SUCCESS;
 }

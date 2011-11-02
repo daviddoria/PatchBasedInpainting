@@ -16,6 +16,13 @@
  *
  *=========================================================================*/
 
+#ifndef HISTOGRAMS_H
+#define HISTOGRAMS_H
+
+#include <vector>
+
+#include "Mask.h"
+#include "Types.h"
 
 std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
 
@@ -32,3 +39,5 @@ float NDHistogramDifference(const HistogramType::Pointer, const HistogramType::P
 HistogramType::Pointer ComputeNDHistogramOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
 
 HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(const FloatVectorImageType::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
+
+#endif

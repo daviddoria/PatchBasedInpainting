@@ -38,6 +38,7 @@
 
 // Qt
 #include <QColor>
+#include <QDir>
 
 // Custom
 #include "Mask.h"
@@ -465,20 +466,28 @@ void ColorToGrayscale(const typename TImage::Pointer colorImage, UnsignedCharSca
 }
 
 template <typename TImageType>
-void DebugWriteSequentialImage(const typename TImageType::Pointer image, const std::string& filePrefix, const unsigned int iteration)
+void WriteSequentialImage(const typename TImageType::Pointer image, const std::string& filePrefix, const unsigned int iteration)
 {
-  std::stringstream padded;
-  padded << "Debug/" << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mha";
-  Helpers::WriteImage<TImageType>(image, padded.str());
+  std::string fileName = Helpers::GetSequentialFileName(filePrefix, iteration, "mha");
+  
+  Helpers::WriteImage<TImageType>(image, fileName);
 }
 
 template <typename TImageType>
-void DebugWriteImageConditional(const typename TImageType::Pointer image, const std::string& fileName, const bool condition)
+void WriteImageConditional(const typename TImageType::Pointer image, const std::string& fileName, const bool condition)
 {
+  try
+  {
   if(condition)
     {
     WriteImage<TImageType>(image, fileName);
     }
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    //QDir().mkdir("Debug");
+    // Do nothing, just don't write the image. Catching this exception prevents the application from crashing by producing an unhandled exception.
+  }
 }
 
 
@@ -603,8 +612,8 @@ unsigned int argmin(const typename std::vector<T>& vec)
 template<typename TImage>
 void WriteRegion(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename)
 {
-  std::cout << "WriteRegion() " << filename << std::endl;
-  std::cout << "region " << region << std::endl;
+  //std::cout << "WriteRegion() " << filename << std::endl;
+  //std::cout << "region " << region << std::endl;
   typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
 
   typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
@@ -654,7 +663,7 @@ void WriteRegionUnsignedChar(const typename TImage::Pointer image, const itk::Im
 {
   // The file that is output has Origin = (0,0) because of how VectorImageToRGBImage copies the image.
   
-  std::cout << "WriteRegionUnsignedChar() " << filename << std::endl;
+  //std::cout << "WriteRegionUnsignedChar() " << filename << std::endl;
   typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
 
   typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
@@ -662,12 +671,12 @@ void WriteRegionUnsignedChar(const typename TImage::Pointer image, const itk::Im
   regionOfInterestImageFilter->SetInput(image);
   regionOfInterestImageFilter->Update();
 
-  std::cout << "regionOfInterestImageFilter " << regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion() << std::endl;
+  //std::cout << "regionOfInterestImageFilter " << regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion() << std::endl;
   
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   VectorImageToRGBImage(regionOfInterestImageFilter->GetOutput(), rgbImage);
   
-  std::cout << "rgbImage " << rgbImage->GetLargestPossibleRegion() << std::endl;
+  //std::cout << "rgbImage " << rgbImage->GetLargestPossibleRegion() << std::endl;
   
   typename itk::ImageFileWriter<RGBImageType>::Pointer writer = itk::ImageFileWriter<RGBImageType>::New();
   writer->SetFileName(filename);
@@ -1097,5 +1106,21 @@ void BlurAllChannels(const typename TVectorImage::Pointer image, typename TVecto
  
   DeepCopyVectorImage<TVectorImage>(imageToVectorImageFilter->GetOutput(), output);
 }
+
+template<typename T>
+void NormalizeVector(std::vector<T>& v)
+{
+  T total = static_cast<T>(0);
+  for(unsigned int i = 0; i < v.size(); ++i)
+    {
+    total += v[i];
+    }
+    
+  for(unsigned int i = 0; i < v.size(); ++i)
+    {
+    v[i] /= total;
+    }
+}
+
 
 }// end namespace

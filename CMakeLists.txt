@@ -25,6 +25,7 @@ CriminisiInpainting.cpp
 CriminisiInpaintingDebugging.cpp
 CriminisiInpaintingInterface.cpp
 Helpers.cpp
+Histograms.cpp
 Mask.cpp
 Patch.cpp
 PatchPair.cpp
@@ -49,16 +50,10 @@ TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive CriminisiInpainting ${VTK_L
 INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 
 # Non-interactive
-# ADD_EXECUTABLE(CriminisiInpainting
-# CriminisiInpaintingNonInteractive.cpp
-# CriminisiInpainting.cpp
-# CriminisiInpaintingDebugging.cpp
-# Patch.cpp
-# Helpers.cpp
-# SelfPatchCompare.cpp
-# )
-# TARGET_LINK_LIBRARIES(CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-# INSTALL( TARGETS CriminisiInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+ADD_EXECUTABLE(CriminisiInpaintingNonInteractive
+CriminisiInpaintingNonInteractive.cpp)
+TARGET_LINK_LIBRARIES(CriminisiInpaintingNonInteractive CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+INSTALL( TARGETS CriminisiInpaintingNonInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 
 # ADD_EXECUTABLE(ExamplePatchDifference Examples/ExamplePatchDifference.cpp)
 # TARGET_LINK_LIBRARIES(ExamplePatchDifference CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
