@@ -42,6 +42,7 @@ class vtkPolyDataMapper;
 
 // Custom
 #include "CriminisiInpainting.h"
+#include "ForwardLookTableModel.h"
 #include "InpaintingVisualizationStack.h"
 #include "Layer.h"
 #include "ProgressThread.h"
@@ -90,7 +91,8 @@ public slots:
   
   void on_chkLive_clicked();
 
-  void on_forwardLookingTableWidget_currentCellChanged(int row, int col, int prevRow, int prevCol);
+  //void on_ForwardLookTableView_currentChanged(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
+  void on_ForwardLookTableView_clicked(const QModelIndex& currentIndex);
   void on_topPatchesTableWidget_currentCellChanged(int row, int col, int prevRow, int prevCol);
   
   // Defined in FormGUIElements.cxx
@@ -314,6 +316,8 @@ protected:
     
   // Store the pairs of patches that were actually used.
   std::vector<PatchPair> UsedPatchPairs;
+  
+  ForwardLookTableModel* ForwardLookModel;
 };
 
 #include "Form.hxx"

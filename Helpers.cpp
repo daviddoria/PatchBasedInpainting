@@ -46,32 +46,6 @@
 namespace Helpers
 {
 
-// This is a specialization that ensures that the number of pixels per component also matches.
-// It must be at the top of this file to avoid "specialization after initialization.
-template<>
-void DeepCopy<FloatVectorImageType>(const FloatVectorImageType::Pointer input, FloatVectorImageType::Pointer output)
-{
-  bool changed = false;
-  if(input->GetNumberOfComponentsPerPixel() != output->GetNumberOfComponentsPerPixel())
-    {
-    output->SetNumberOfComponentsPerPixel(input->GetNumberOfComponentsPerPixel());
-    changed = true;
-    }
-    
-  if(input->GetLargestPossibleRegion() != output->GetLargestPossibleRegion())
-    {
-    output->SetRegions(input->GetLargestPossibleRegion());
-    changed = true;
-    }
-  if(changed)
-    {
-    output->Allocate();
-    }
-
-  DeepCopyInRegion<FloatVectorImageType>(input, input->GetLargestPossibleRegion(), output);
-    
-}
-
 FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors)
 {
   FloatVector2Type totalVector;
@@ -874,6 +848,33 @@ void WriteVectorImageAsRGB(const FloatVectorImageType::Pointer image, const std:
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   VectorImageToRGBImage(image, rgbImage);
   WriteImage<RGBImageType>(rgbImage, fileName);
+}
+
+// This is a specialization that ensures that the number of pixels per component also matches.
+template<>
+void DeepCopy<FloatVectorImageType>(const FloatVectorImageType::Pointer input, FloatVectorImageType::Pointer output)
+{
+  //std::cout << "DeepCopy<FloatVectorImageType>()" << std::endl;
+  bool changed = false;
+  if(input->GetNumberOfComponentsPerPixel() != output->GetNumberOfComponentsPerPixel())
+    {
+    output->SetNumberOfComponentsPerPixel(input->GetNumberOfComponentsPerPixel());
+    //std::cout << "Set output NumberOfComponentsPerPixel to " << input->GetNumberOfComponentsPerPixel() << std::endl;
+    changed = true;
+    }
+    
+  if(input->GetLargestPossibleRegion() != output->GetLargestPossibleRegion())
+    {
+    output->SetRegions(input->GetLargestPossibleRegion());
+    changed = true;
+    }
+  if(changed)
+    {
+    output->Allocate();
+    }
+
+  DeepCopyInRegion<FloatVectorImageType>(input, input->GetLargestPossibleRegion(), output);
+    
 }
 
 } // end namespace

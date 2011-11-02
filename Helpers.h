@@ -169,6 +169,10 @@ void OutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& re
 template<typename TImage>
 void DeepCopy(const typename TImage::Pointer input, typename TImage::Pointer output);
 
+// Note: specialization declarations must appear in the header or the compiler does not know about their definition in the .cpp file!
+template<>
+void DeepCopy<FloatVectorImageType>(const FloatVectorImageType::Pointer input, FloatVectorImageType::Pointer output);
+
 template<typename TImage>
 void DeepCopyInRegion(const typename TImage::Pointer input, const itk::ImageRegion<2>& region, typename TImage::Pointer output);
 

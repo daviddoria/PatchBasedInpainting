@@ -46,6 +46,7 @@
 
 CriminisiInpainting::CriminisiInpainting()
 {
+  //std::cout << "CriminisiInpainting()" << std::endl;
   this->PatchRadius.Fill(3);
 
   this->BoundaryImage = UnsignedCharScalarImageType::New();
@@ -81,6 +82,7 @@ CriminisiInpainting::CriminisiInpainting()
 
 void CriminisiInpainting::ComputeMaxPixelDifference()
 {
+  //std::cout << "ComputeMaxPixelDifference()" << std::endl;
   // We assume all values of all channels are positive, so the max difference can be computed as max(p_i - 0) because (0,0,0,...) is the minimum pixel.
   
   itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->OriginalImage, this->OriginalImage->GetLargestPossibleRegion());

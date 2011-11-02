@@ -39,6 +39,7 @@ ADD_EXECUTABLE(CriminisiInpaintingInteractive
 FileSelector.cpp
 FileSelectionWidget.cpp
 Form.cxx
+ForwardLookTableModel.cpp
 FormGUIElements.cxx
 InpaintingVisualizationStack.cpp
 Interactive.cpp #driver (contains main())

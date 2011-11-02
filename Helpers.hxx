@@ -50,6 +50,7 @@ namespace Helpers
 template<typename TImage>
 void DeepCopy(const typename TImage::Pointer input, typename TImage::Pointer output)
 {
+  //std::cout << "DeepCopy()" << std::endl;
   if(output->GetLargestPossibleRegion() != input->GetLargestPossibleRegion())
     {
     output->SetRegions(input->GetLargestPossibleRegion());
