@@ -306,6 +306,9 @@ protected:
   QColor MaskColor;
   QColor HoleColor;
   QColor SceneBackgroundColor;
+    
+  // Store the pairs of patches that were actually used.
+  std::vector<PatchPair> UsedPatchPairs;
 };
 
 #include "Form.hxx"

@@ -98,7 +98,7 @@ public:
   CriminisiInpainting();
 
   // A single step of the algorithm. The real work is done here.
-  void Iterate();
+  PatchPair Iterate();
 
   // A loop that calls Iterate() until the inpainting is complete.
   void Inpaint();
@@ -111,8 +111,6 @@ public:
 
   // Determine whether or not the inpainting is completed by seeing if there are any pixels in the mask that still need to be filled.
   bool HasMoreToInpaint();
-  
-  bool GetUsedPatchPair(const unsigned int id, PatchPair& patchPair);
   
   CandidatePairs& GetPotentialCandidatePairReference(const unsigned int forwardLookId);
   
@@ -147,6 +145,7 @@ public:
 
 private:
 
+  PatchPair PreviousIterationUsedPatchPair;
   // Compute the difference between two isophotes
   float ComputeIsophoteAngleDifference(const FloatVector2Type& v1, const FloatVector2Type& v2);
   float ComputeIsophoteStrengthDifference(const FloatVector2Type& v1, const FloatVector2Type& v2);
@@ -284,9 +283,6 @@ private:
   
   // This is set when the image is loaded so that the region of all of the images can be addressed without referencing any specific image.
   itk::ImageRegion<2> FullImageRegion;
-  
-  // Store the pairs of patches that were actually used. These are tracked for visualization purposes only.
-  std::vector<PatchPair> UsedPatchPairs;
   
   // Store the current list of CandidatePatches.
   std::vector<CandidatePairs> PotentialCandidatePairs;

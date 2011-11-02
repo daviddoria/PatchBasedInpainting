@@ -608,7 +608,9 @@ void Form::on_btnStep_clicked()
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
   this->Inpainting.SetMaxForwardLookPatches(this->txtNumberOfForwardLook->text().toUInt());
   this->Inpainting.SetNumberOfTopPatchesToSave(this->txtNumberOfTopPatchesToSave->text().toUInt());
-  this->Inpainting.Iterate();
+  PatchPair usedPair = this->Inpainting.Iterate();
+  
+  this->UsedPatchPairs.push_back(usedPair);
   
   IterationComplete();
 }
@@ -1013,14 +1015,12 @@ void Form::HighlightUsedPatches()
     //unsigned int patchSize = Helpers::SideLengthFromRadius(this->txtPatchRadius->text().toUInt());
     //DebugMessage<unsigned int>("Patch size: ", patchSize);
 
-    PatchPair patchPair;
-    bool pairValid = false;
-    pairValid = this->Inpainting.GetUsedPatchPair(this->IterationToDisplay - 1, patchPair);
-    if(!pairValid)
-      {
-      std::cerr << "You have requested an invalid pair!" << std::endl;
-      return;
-      }
+    PatchPair patchPair = this->UsedPatchPairs[this->IterationToDisplay - 1];
+//     if(!pairValid)
+//       {
+//       std::cerr << "You have requested an invalid pair!" << std::endl;
+//       return;
+//       }
 
     unsigned char centerPixelColor[3];
     Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
@@ -1076,13 +1076,12 @@ void Form::DisplayUsedPatchInformation()
     ChangeDisplayedTopPatch();
 
     // There is a -1 offset here because the 0th used pair corresponds to the pair after iteration 1 because there are no used patches after iteration 0 (initial conditions)
-    PatchPair patchPair;
-    bool validPair = this->Inpainting.GetUsedPatchPair(this->IterationToDisplay - 1, patchPair);
-    if(!validPair)
-      {
-      std::cerr << "You have requested an invalid pair!" << std::endl;
-      return;
-      }
+    PatchPair patchPair = this->UsedPatchPairs[this->IterationToDisplay - 1];
+//     if(!validPair)
+//       {
+//       std::cerr << "You have requested an invalid pair!" << std::endl;
+//       return;
+//       }
     
     // Source information
     /*

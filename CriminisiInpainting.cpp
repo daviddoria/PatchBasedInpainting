@@ -333,7 +333,7 @@ void CriminisiInpainting::Initialize()
   }
 }
 
-void CriminisiInpainting::Iterate()
+PatchPair CriminisiInpainting::Iterate()
 {
   DebugMessage("Iterate()");
   
@@ -373,8 +373,6 @@ void CriminisiInpainting::Iterate()
   ssTarget << "Debug/target_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
   //Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch, ssTarget.str());
   //Helpers::WriteRegionUnsignedChar<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch.Region, ssTarget.str());
-  
-  this->UsedPatchPairs.push_back(usedPatchPair);
   
   // Copy the patch. This is the actual inpainting step.
   Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
@@ -453,6 +451,8 @@ void CriminisiInpainting::Iterate()
 
   DebugMessage<unsigned int>("Completed iteration: ", this->NumberOfCompletedIterations);
 
+  PreviousIterationUsedPatchPair = usedPatchPair;
+  return usedPatchPair;
 }
 
 void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidatePairs, PatchPair& bestPatchPair)
@@ -494,10 +494,10 @@ void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidate
     {
     candidatePairs[i].SetAverageAbsoluteDifference(blurredScores[i] + candidatePairs[i].GetAverageAbsoluteDifference());
     }
-    
+
   std::cout << "Total score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
   std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
-    
+
   // Return the result by reference.
   bestPatchPair = candidatePairs[0];
   
@@ -518,7 +518,7 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     unsigned int idToRemove = 0;
     for(unsigned int forwardLookId = 0; forwardLookId < this->PotentialCandidatePairs.size(); ++forwardLookId)
       {
-      if(this->UsedPatchPairs[this->NumberOfCompletedIterations - 1].TargetPatch.Region == this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region)
+      if(PreviousIterationUsedPatchPair.TargetPatch.Region == this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region)
 	{
 	idToRemove = forwardLookId;
 	break;
@@ -1289,16 +1289,6 @@ CandidatePairs& CriminisiInpainting::GetPotentialCandidatePairReference(const un
 std::vector<CandidatePairs> CriminisiInpainting::GetPotentialCandidatePairs()
 {
   return this->PotentialCandidatePairs;
-}
-
-bool CriminisiInpainting::GetUsedPatchPair(const unsigned int id, PatchPair& patchPair)
-{
-  if(id < this->UsedPatchPairs.size())
-    {
-    patchPair = this->UsedPatchPairs[id]; 
-    return true;
-    }
-  return false;
 }
   
 unsigned int CriminisiInpainting::GetNumberOfCompletedIterations()
