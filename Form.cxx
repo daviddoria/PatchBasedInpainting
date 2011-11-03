@@ -65,6 +65,7 @@
 #include "Helpers.h"
 #include "InteractorStyleImageNoLevel.h"
 #include "Mask.h"
+#include "PixmapDelegate.h"
 #include "Types.h"
 
 void Form::on_actionHelp_activated()
@@ -215,6 +216,11 @@ void Form::DefaultConstructor()
   
   this->ForwardLookModel = new ForwardLookTableModel(this->AllPotentialCandidatePairs);
   this->ForwardLookTableView->setModel(this->ForwardLookModel);
+  
+  PixmapDelegate* pixmapDelegate = new PixmapDelegate;
+  this->ForwardLookTableView->setItemDelegateForColumn(0, pixmapDelegate);
+  
+  this->connect(this->ForwardLookTableView->selectionModel(), SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )), SLOT(slot_ForwardLookTableView_changed(const QModelIndex & , const QModelIndex & )));
 }
 
 // Default constructor
@@ -1573,8 +1579,7 @@ void Form::HighlightSelectedSourcePatch()
     }
 }
 
-//void Form::on_ForwardLookTableView_currentChanged(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
-void Form::on_ForwardLookTableView_clicked(const QModelIndex& currentIndex)
+void Form::slot_ForwardLookTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
 {
   std::cout << "on_ForwardLookTableView_currentCellChanged" << std::endl;
   

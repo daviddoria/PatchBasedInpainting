@@ -92,7 +92,7 @@ public slots:
   void on_chkLive_clicked();
 
   //void on_ForwardLookTableView_currentChanged(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
-  void on_ForwardLookTableView_clicked(const QModelIndex& currentIndex);
+  void slot_ForwardLookTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
   void on_topPatchesTableWidget_currentCellChanged(int row, int col, int prevRow, int prevCol);
   
   // Defined in FormGUIElements.cxx

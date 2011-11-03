@@ -11,7 +11,7 @@ FIND_PACKAGE(Qt4 REQUIRED)
 INCLUDE(${QT_USE_FILE})
 
 QT4_WRAP_UI(UISrcs CriminisiInpainting.ui FileSelector.ui FileSelectionWidget.ui)
-QT4_WRAP_CPP(MOCSrcs Form.h ProgressThread.h FileSelector.h FileSelectionWidget.h)
+QT4_WRAP_CPP(MOCSrcs Form.h ProgressThread.h FileSelector.h FileSelectionWidget.h PixmapDelegate.h)
 
 FIND_PACKAGE(VTK REQUIRED)
 INCLUDE(${VTK_USE_FILE})
@@ -45,6 +45,7 @@ InpaintingVisualizationStack.cpp
 Interactive.cpp #driver (contains main())
 InteractorStyleImageNoLevel.cxx
 Layer.cpp
+PixmapDelegate.cpp
 ProgressThread.cpp
 VectorLayer.cpp
 ${UISrcs} ${MOCSrcs})

@@ -574,7 +574,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QTableView" name="ForwardLookTableView"/>
+         <widget class="QTableView" name="ForwardLookTableView">
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="chkDisplayForwardLookPatchLocations">
@@ -783,9 +787,9 @@
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionFlipImageVertically"/>
+    <addaction name="actionFlipImageHorizontally"/>
     <addaction name="actionSaveResult"/>
     <addaction name="actionQuit"/>
-    <addaction name="actionFlipImageHorizontally"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
