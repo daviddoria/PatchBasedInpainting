@@ -47,6 +47,7 @@ InteractorStyleImageNoLevel.cxx
 Layer.cpp
 PixmapDelegate.cpp
 ProgressThread.cpp
+TopPatchesTableModel.cpp
 VectorLayer.cpp
 ${UISrcs} ${MOCSrcs})
 TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive CriminisiInpainting ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})

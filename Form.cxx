@@ -214,13 +214,25 @@ void Form::DefaultConstructor()
   // Make the 'enabled' property of several components match the pre-specified state.
   on_chkLive_clicked();
   
+  // Setup forwardLook table
   this->ForwardLookModel = new ForwardLookTableModel(this->AllPotentialCandidatePairs);
   this->ForwardLookTableView->setModel(this->ForwardLookModel);
+  this->ForwardLookTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
   
-  PixmapDelegate* pixmapDelegate = new PixmapDelegate;
-  this->ForwardLookTableView->setItemDelegateForColumn(0, pixmapDelegate);
+  PixmapDelegate* forwardLookPixmapDelegate = new PixmapDelegate;
+  this->ForwardLookTableView->setItemDelegateForColumn(0, forwardLookPixmapDelegate);
   
   this->connect(this->ForwardLookTableView->selectionModel(), SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )), SLOT(slot_ForwardLookTableView_changed(const QModelIndex & , const QModelIndex & )));
+  
+  // Setup top patches table
+  this->TopPatchesModel = new TopPatchesTableModel(this->AllPotentialCandidatePairs);
+  this->TopPatchesTableView->setModel(this->TopPatchesModel);
+  this->TopPatchesTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+  
+  PixmapDelegate* topPatchesPixmapDelegate = new PixmapDelegate;
+  this->TopPatchesTableView->setItemDelegateForColumn(0, topPatchesPixmapDelegate);
+  
+  this->connect(this->TopPatchesTableView->selectionModel(), SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )), SLOT(slot_TopPatchesTableView_changed(const QModelIndex & , const QModelIndex & )));
 }
 
 // Default constructor
@@ -1216,7 +1228,7 @@ void Form::ChangeDisplayedIteration()
   else
     {
     //this->forwardLookingTableWidget->setRowCount(0);
-    this->topPatchesTableWidget->setRowCount(0);
+    //this->topPatchesTableWidget->setRowCount(0);
     this->TargetPatchScene->clear();
     this->SourcePatchScene->clear();
     this->ResultPatchScene->clear();
@@ -1372,12 +1384,6 @@ void Form::SetupTopPatchesTable()
   //DebugMessage("SetupTopPatchesTable()");
   std::cout << "SetupTopPatchesTable()" << std::endl;
   
-  //this->topPatchesTableWidget->disconnect();
-  this->topPatchesTableWidget->disconnect(SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_topPatchesTableWidget_currentCellChanged(int,int,int,int)));
-  
-  // For some reason if this call isn't made, if the table was previously sorted by a different column, many values in the table are missing!?
-  this->topPatchesTableWidget->sortByColumn(0, Qt::AscendingOrder);
-  
   if(this->IterationToDisplay < 1)
     {
     std::cerr << "Can only display result patch for iterations > 0." << std::endl;
@@ -1389,103 +1395,18 @@ void Form::SetupTopPatchesTable()
     std::cout << "SetupTopPatchesTable: Not recorded!" << std::endl;
     return;
     }
-
-  // Clear the table
-  this->topPatchesTableWidget->setRowCount(0);
-
-  unsigned int patchDisplaySize = 100;
-  this->topPatchesTableWidget->setColumnWidth(0, patchDisplaySize);
-
-  // There is a -1 offset here because the 0th patch pair to be stored is after iteration 1 (as after the 0th iteration (initial conditions) there are no used patch pairs)
-  const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->ForwardLookToDisplay];
-
-  unsigned int numberToDisplay = std::min(candidatePairs.size(), this->txtNumberOfTopPatchesToDisplay->text().toUInt());
   
-  if(candidatePairs.size() != this->txtNumberOfTopPatchesToDisplay->text().toUInt())
-    {
-    //std::cerr << "Warning: Number of pairs (" << candidatePairs.size() << ") does not match requested number (" << this->txtNumberOfTopPatchesToDisplay->text().toUInt() << ")" << std::endl;
-    }
+  this->TopPatchesModel->SetImage(this->IntermediateImages[this->IterationToDisplay - 1].Image);
+  this->TopPatchesModel->SetIterationToDisplay(this->IterationToDisplay - 1);
+  this->TopPatchesModel->SetForwardLookToDisplay(this->ForwardLookToDisplay);
+  this->TopPatchesModel->Refresh();
 
-  this->topPatchesTableWidget->setRowCount(numberToDisplay);
-  //for(unsigned int pairId = 0; pairId < candidatePairs.size(); ++pairId)
-  for(unsigned int pairId = 0; pairId < numberToDisplay; ++pairId)
-    {
-//     std::cout << "Setting up top patches table row " << pairId << " " 
-//     << candidatePairs[pairId].GetAverageAbsoluteDifference() << " " 
-//     << candidatePairs[pairId].GetAverageSquaredDifference() << " " 
-//     << candidatePairs[pairId].GetBoundaryGradientDifference() << " " 
-//     << candidatePairs[pairId].GetBoundaryGradientDifference() << " " 
-//     << candidatePairs[pairId].GetBoundaryIsophoteAngleDifference() << " " 
-//     << candidatePairs[pairId].GetBoundaryIsophoteStrengthDifference() << " " 
-//     << candidatePairs[pairId].GetTotalScore() << std::endl;
-
-    //this->topPatchesTableWidget->insertRow(this->topPatchesTableWidget->rowCount());
-    this->topPatchesTableWidget->setRowHeight(pairId, patchDisplaySize);
-
-    const Patch& currentSourcePatch = candidatePairs[pairId].SourcePatch;
-
-    QImage sourceImage = Helpers::GetQImageColor<FloatVectorImageType>(this->IntermediateImages[this->IterationToDisplay].Image, currentSourcePatch.Region);
-    sourceImage = sourceImage.scaledToHeight(patchDisplaySize);
-
-    // Create a label with the image as the way to display an image in the table.
-    QLabel* imageLabel = new QLabel;
-    imageLabel->setPixmap(QPixmap::fromImage(sourceImage));
-    imageLabel->setScaledContents(true);
-    this->topPatchesTableWidget->setCellWidget(pairId, 0, imageLabel);
-
-    // Display patch match scores
-    QTableWidgetItem* averageAbsoluteDifferenceLabel = new QTableWidgetItem;
-    averageAbsoluteDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetAverageAbsoluteDifference());
-    this->topPatchesTableWidget->setItem(pairId, 1, averageAbsoluteDifferenceLabel);
-    
-    QTableWidgetItem* averageSquaredDifferenceLabel = new QTableWidgetItem;
-    averageSquaredDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetAverageSquaredDifference());
-    this->topPatchesTableWidget->setItem(pairId, 2, averageSquaredDifferenceLabel);
-
-    // Display boundary pixel difference score
-//     QTableWidgetItem* boundaryPixelDifferenceLabel = new QTableWidgetItem;
-//     boundaryPixelDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryPixelDifference());
-//     this->topPatchesTableWidget->setItem(pairId, 3, boundaryPixelDifferenceLabel);
-    QTableWidgetItem* boundaryGradientDifferenceLabel = new QTableWidgetItem;
-    boundaryGradientDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryGradientDifference());
-    this->topPatchesTableWidget->setItem(pairId, 3, boundaryGradientDifferenceLabel);
-    
-    // Display boundary isophote difference score
-    QTableWidgetItem* boundaryIsophoteAngleDifferenceLabel = new QTableWidgetItem;
-    boundaryIsophoteAngleDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryIsophoteAngleDifference());
-    this->topPatchesTableWidget->setItem(pairId, 4, boundaryIsophoteAngleDifferenceLabel);
-
-    QTableWidgetItem* boundaryIsophoteStrengthDifferenceLabel = new QTableWidgetItem;
-    boundaryIsophoteStrengthDifferenceLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetBoundaryIsophoteStrengthDifference());
-    this->topPatchesTableWidget->setItem(pairId, 5, boundaryIsophoteStrengthDifferenceLabel);
-    
-    // Display total score
-    QTableWidgetItem* totalScoreLabel = new QTableWidgetItem;
-    totalScoreLabel->setData(Qt::DisplayRole, candidatePairs[pairId].GetTotalScore());
-    this->topPatchesTableWidget->setItem(pairId, 6, totalScoreLabel);
-    
-    // Store the patch/row Id. This is needed in case we sort the table using the widget header buttons.
-    QTableWidgetItem* idLabel = new QTableWidgetItem;
-    idLabel->setData(Qt::DisplayRole, pairId);
-    this->topPatchesTableWidget->setItem(pairId, 7, idLabel);
-    //this->topPatchesTableWidget->setColumnHidden(7, true); // We don't want to display this value, just track it.
-    
-    // Display patch location
-    std::stringstream ssLocation;
-    ssLocation << "( " << currentSourcePatch.Region.GetIndex()[0] << ", " << currentSourcePatch.Region.GetIndex()[1] << ")";
-
-    QTableWidgetItem* locationLabel = new QTableWidgetItem;
-    locationLabel->setText(ssLocation.str().c_str());
-    this->topPatchesTableWidget->setItem(pairId, 8, locationLabel);
-    }
-
-  //std::cout << "There are " << this->topPatchesTableWidget->rowCount() << " rows." << std::endl;
-  this->topPatchesTableWidget->selectRow(0);
+  this->SourcePatchToDisplay = 0;
+  HighlightSelectedSourcePatch();
   
   //this->topPatchesTableWidget->horizontalHeader()->resizeColumnsToContents();
-  this->topPatchesTableWidget->resizeColumnsToContents();
+  this->TopPatchesTableView->resizeColumnsToContents();
   
-  connect(this->topPatchesTableWidget, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_topPatchesTableWidget_currentCellChanged(int,int,int,int)), Qt::AutoConnection);
 }
 
 void Form::HighlightSelectedForwardLookPatch()
@@ -1607,48 +1528,23 @@ void Form::slot_ForwardLookTableView_changed(const QModelIndex& currentIndex, co
 }
 
 
-void Form::on_topPatchesTableWidget_currentCellChanged(int row, int col, int prevRow, int prevCol)
+void Form::slot_TopPatchesTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
 {
   try
   {
-    std::cout << "on_topPatchesTableWidget_currentCellChanged row: " << row << " col: " << col << "prevrow: " << prevRow << " prevcol: " << prevCol << std::endl;
-    if(row < 0)
+    if(currentIndex.row() < 0)
       {
       std::cout << "Selected row is < 0!" << std::endl;
       return;
       }
       
-    if(row == prevRow)
+    if(currentIndex.row() == previousIndex.row())
       {
       std::cout << "Nothing changed!" << std::endl;
       return;
       }
     
-    // Get the column number of the "Id" column.
-    int columnId = 0;
-    bool valid = Helpers::GetColumnIdByHeader(topPatchesTableWidget, "Id", columnId);
-    if(!valid)
-      {
-      std::cerr << "Invalid columnId of ID column in on_topPatchesTableWidget_currentCellChanged!";
-      return;
-      }
-    std::cout << "Got ID column id: " << columnId << std::endl;
-
-    std::cout << "There are " << topPatchesTableWidget->rowCount() << " rows." << std::endl;
-    std::cout << "Cell value: " << topPatchesTableWidget->item(row, columnId)->data(Qt::DisplayRole).toString().toStdString() << std::endl;
-    
-    unsigned int sourcePatchId = topPatchesTableWidget->item(row, columnId)->data(Qt::DisplayRole).toUInt();
-
-    // We have selected the same patch
-    if(sourcePatchId == this->SourcePatchToDisplay)
-      {
-      return;
-      }
-
-    std::cout << "Got source patch id: " << sourcePatchId << std::endl;
-    
-    this->SourcePatchToDisplay = sourcePatchId;
-    
+    this->SourcePatchToDisplay = currentIndex.row();
     ChangeDisplayedTopPatch();
     
   }// end try

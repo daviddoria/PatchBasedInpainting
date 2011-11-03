@@ -46,6 +46,7 @@ class vtkPolyDataMapper;
 #include "InpaintingVisualizationStack.h"
 #include "Layer.h"
 #include "ProgressThread.h"
+#include "TopPatchesTableModel.h"
 #include "Types.h"
 #include "VectorLayer.h"
 
@@ -93,7 +94,7 @@ public slots:
 
   //void on_ForwardLookTableView_currentChanged(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
   void slot_ForwardLookTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
-  void on_topPatchesTableWidget_currentCellChanged(int row, int col, int prevRow, int prevCol);
+  void slot_TopPatchesTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
   
   // Defined in FormGUIElements.cxx
   void on_chkImage_clicked();
@@ -318,6 +319,7 @@ protected:
   std::vector<PatchPair> UsedPatchPairs;
   
   ForwardLookTableModel* ForwardLookModel;
+  TopPatchesTableModel* TopPatchesModel;
 };
 
 #include "Form.hxx"

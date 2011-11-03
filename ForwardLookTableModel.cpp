@@ -111,12 +111,12 @@ QVariant ForwardLookTableModel::headerData(int section, Qt::Orientation orientat
 
 void ForwardLookTableModel::Refresh()
 {
-  std::cout << "dLookTableModel::Refresh(): Displaying iteration: " << this->IterationToDisplay << std::endl;
+  std::cout << "ForwardLookTableModel::Refresh(): Displaying iteration: " << this->IterationToDisplay << std::endl;
   beginResetModel();
   endResetModel();
 }
 
 void ForwardLookTableModel::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
-  std::cout << "selectionChanged()" << std::endl;
+  std::cout << "ForwardLookTableModel::selectionChanged()" << std::endl;
 }
