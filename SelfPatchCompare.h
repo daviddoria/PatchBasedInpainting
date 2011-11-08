@@ -43,11 +43,8 @@ class SelfPatchCompare
 {
   
 public:
-  SelfPatchCompare(const unsigned int numberOfComponentsPerPixel, CandidatePairs& candidatePairs);
+  SelfPatchCompare();
   
-  // This function returns the Id of the best source patch, as well as returns the minDistance by reference
-  //unsigned int FindBestPatch(float& minDistance);
-
   // Compute the SSD for all of the pairs. Store the values in the PatchPair objects inside of the CandidatePairs object.
   void ComputeAllSourceDifferences();
   
@@ -77,6 +74,10 @@ public:
   // Prepare to do some comparisons by finding all of the valid pixels in the target region
   void ComputeOffsets();
   
+  void SetPairs(CandidatePairs* pairs);
+  
+  void SetNumberOfComponentsPerPixel(const unsigned int numberOfComponentsPerPixel);
+  
 protected:
   // If a channel of one pixel was white (255) and the corresponding channel of the other pixel
   // was black (0), the difference would be 255, so the difference squared would be 255*255
@@ -89,8 +90,8 @@ protected:
   //Patch TargetPatch;
 
   // Provide the pairs of target/source patches. All target patches are exactly the same patch. The source regions are assumed to all be fully valid.
-  // These are stored as a reference so that the original data can be modified to add the computed values.
-  CandidatePairs& Pairs;
+  // We modify the original data directory to add the computed values.
+  CandidatePairs* Pairs;
   
   // This is the image from which to take the patches
   FloatVectorImageType::Pointer Image;

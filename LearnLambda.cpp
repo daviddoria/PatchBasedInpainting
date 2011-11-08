@@ -91,8 +91,7 @@ int main(int argc, char *argv[])
     }
 
   // We have to create an empty CandidatePairs object to create the SelfPatchCompare object.
-  CandidatePairs candidatePairs;
-  SelfPatchCompare* patchCompare = new SelfPatchCompare(scaledImage->GetNumberOfComponentsPerPixel(), candidatePairs);
+  SelfPatchCompare* patchCompare = new SelfPatchCompare;
   
   std::ofstream fout("scores.txt");
    
@@ -104,6 +103,7 @@ int main(int argc, char *argv[])
     PatchPair::DepthColorLambda = lambdas[lambdaId];
   
     CriminisiInpainting inpainting;
+    inpainting.SetDebugFunctionEnterLeave(true);
     inpainting.SetPatchRadius(patchRadius);
     inpainting.SetImage(scaledImage);
     inpainting.SetMask(finalMask);

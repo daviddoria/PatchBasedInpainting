@@ -151,6 +151,7 @@ public:
   
   boost::function<bool (const PatchPair& , const PatchPair& )> PatchSortFunction;
   
+  void SetDebugFunctionEnterLeave(const bool value);
 private:
   
   void BlurImage();

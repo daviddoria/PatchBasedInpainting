@@ -77,10 +77,11 @@ CriminisiInpainting::CriminisiInpainting()
   
   this->MaxPixelDifferenceSquared = 0.0f;
   
-  this->DebugFunctionEnterLeave = true;
+  this->DebugFunctionEnterLeave = false;
   
   this->PatchSortFunction = &SortByAverageAbsoluteDifference;
 
+  this->PatchCompare = new SelfPatchCompare;
 }
 
 void CriminisiInpainting::ComputeMaxPixelDifference()
@@ -343,6 +344,8 @@ void CriminisiInpainting::Initialize()
       exit(-1);
       }
       
+    this->PatchCompare->SetNumberOfComponentsPerPixel(this->CompareImage->GetNumberOfComponentsPerPixel());
+    
     LeaveFunction("Initialize()");
   }
   catch( itk::ExceptionObject & err )
@@ -447,6 +450,7 @@ PatchPair CriminisiInpainting::Iterate()
   
   std::vector<Patch> newPatches = AddNewSourcePatchesInRegion(previousInvalidRegion);
   
+  
   // Recompute for all forward look candidates except the one that was used. Otherwise there would be an exact match!
   for(unsigned int candidateId = 0; candidateId < this->PotentialCandidatePairs.size(); ++candidateId)
     {
@@ -457,7 +461,8 @@ PatchPair CriminisiInpainting::Iterate()
       {
       this->PotentialCandidatePairs[candidateId].AddPairsFromPatches(newPatches);
       //ComputeAllContinuationDifferences(this->PotentialCandidatePairs[candidateId]);
-      this->PatchCompare = new SelfPatchCompare(this->CompareImage->GetNumberOfComponentsPerPixel(), this->PotentialCandidatePairs[candidateId]);
+    
+      this->PatchCompare->SetPairs(&(this->PotentialCandidatePairs[candidateId]));
       this->PatchCompare->SetImage(this->CompareImage);
       this->PatchCompare->SetMask(this->CurrentMask);
       this->PatchCompare->ComputeAllSourceDifferences();
@@ -485,11 +490,10 @@ void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidate
   //std::cout << "FindBestPatchScaleConsistent: There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
   EnterFunction("FindBestPatchScaleConsistent()");
   
-  SelfPatchCompare* blurredPatchCompare;
-  blurredPatchCompare = new SelfPatchCompare(this->BlurredImage->GetNumberOfComponentsPerPixel(), candidatePairs);
-  blurredPatchCompare->SetImage(this->BlurredImage);
-  blurredPatchCompare->SetMask(this->CurrentMask);
-  blurredPatchCompare->ComputeAllSourceDifferences();
+  this->PatchCompare->SetPairs(&candidatePairs);
+  this->PatchCompare->SetImage(this->BlurredImage);
+  this->PatchCompare->SetMask(this->CurrentMask);
+  this->PatchCompare->ComputeAllSourceDifferences();
   
   std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
   //std::cout << "Blurred score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
@@ -507,11 +511,10 @@ void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidate
   // Fill the detailed image hole with a part of the blurred image
   Helpers::CopySourcePatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->BlurredImage, tempImage, this->CurrentMask, candidatePairs[0].SourcePatch.Region, candidatePairs[0].TargetPatch.Region);
 
-  SelfPatchCompare* detailedPatchCompare;
-  detailedPatchCompare = new SelfPatchCompare(this->CurrentOutputImage->GetNumberOfComponentsPerPixel(), candidatePairs);
-  detailedPatchCompare->SetImage(tempImage);
-  detailedPatchCompare->SetMask(this->CurrentMask);
-  detailedPatchCompare->ComputeAllSourceAndTargetDifferences();
+  this->PatchCompare->SetPairs(&candidatePairs);
+  this->PatchCompare->SetImage(tempImage);
+  this->PatchCompare->SetMask(this->CurrentMask);
+  this->PatchCompare->ComputeAllSourceAndTargetDifferences();
 
   //std::cout << "Detailed score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
   
@@ -536,10 +539,7 @@ void CriminisiInpainting::FindBestPatch(CandidatePairs& candidatePairs, PatchPai
   EnterFunction("FindBestPatch()");
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
 
-  //SelfPatchCompare* selfPatchCompare;
-  //selfPatchCompare = new SelfPatchCompare(this->BlurredImage->GetNumberOfComponentsPerPixel(), candidatePairs);
-  this->PatchCompare = new SelfPatchCompare(this->CompareImage->GetNumberOfComponentsPerPixel(), candidatePairs);
-  this->PatchCompare->SetPairs(candidatePairs);
+  this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(this->CompareImage);
   this->PatchCompare->SetMask(this->CurrentMask);
   this->PatchCompare->ComputeAllSourceDifferences();
@@ -550,7 +550,7 @@ void CriminisiInpainting::FindBestPatch(CandidatePairs& candidatePairs, PatchPai
   //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDepthAndColor);
   std::sort(candidatePairs.begin(), candidatePairs.end(), PatchSortFunction);
   
-  std::cout << "Finished sorting." << std::endl;
+  std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
   
   // Return the result by reference.
   bestPatchPair = candidatePairs[0];
@@ -1616,6 +1616,7 @@ void CriminisiInpainting::SetCompareToCIELAB()
 
 void CriminisiInpainting::SetPatchCompare(SelfPatchCompare* patchCompare)
 {
+  delete this->PatchCompare;
   this->PatchCompare = patchCompare;
 }
 
@@ -1626,4 +1627,9 @@ void CriminisiInpainting::BlurImage()
   Helpers::WriteImageConditional<FloatVectorImageType>(this->BlurredImage, "Debug/Initialize.BlurredImage.mha", this->DebugImages);
   Helpers::WriteVectorImageAsRGB(this->BlurredImage, "Debug/Initialize.BlurredImageRGB.mha");
   LeaveFunction("BlurImage()");
+}
+
+void CriminisiInpainting::SetDebugFunctionEnterLeave(const bool value)
+{
+  this->DebugFunctionEnterLeave = value;
 }
