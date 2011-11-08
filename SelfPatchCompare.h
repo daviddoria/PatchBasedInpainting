@@ -69,15 +69,13 @@ public:
   void SetPatchAverageAbsoluteSourceDifference(PatchPair& patchPair);
   void SetPatchAverageAbsoluteFullDifference(PatchPair& patchPair);
   void SetPatchAverageSquaredDifference(PatchPair& patchPair);
+  void SetPatchDepthDifference(PatchPair& patchPair);
+  void SetPatchColorDifference(PatchPair& patchPair);
   
   float PatchDifferenceBoundary(const Patch& sourcePatch);
 
   // Prepare to do some comparisons by finding all of the valid pixels in the target region
   void ComputeOffsets();
-
-  virtual float PixelDifferenceSquared(const typename FloatVectorImageType::PixelType &a, const FloatVectorImageType::PixelType &b) = 0;
-  virtual float PixelDifference(const FloatVectorImageType::PixelType &a, const FloatVectorImageType::PixelType &b) = 0;
-  float NonVirtualPixelDifferenceSquared(const FloatVectorImageType::PixelType &a, const FloatVectorImageType::PixelType &b);
   
 protected:
   // If a channel of one pixel was white (255) and the corresponding channel of the other pixel
@@ -101,7 +99,14 @@ protected:
   Mask::Pointer MaskImage;
 
   unsigned int NumberOfComponentsPerPixel;
+    
+  // This function takes a template paramter of a class which has a Difference(pixel, pixel) function.
+  template<typename TDifferenceFunction>
+  float PatchAverageDifference(const Patch& sourcePatch);
 
 };
+
+#include "SelfPatchCompare.hxx"
+
 
 #endif

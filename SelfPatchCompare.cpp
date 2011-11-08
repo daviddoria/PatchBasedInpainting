@@ -22,6 +22,7 @@
 #include "Helpers.h"
 #include "Patch.h"
 #include "PatchPair.h"
+#include "PixelDifference.h"
 #include "Types.h"
 
 // Qt
@@ -52,13 +53,14 @@ void SelfPatchCompare::ComputeOffsets()
     // Iterate over the target region of the mask. Add the linear offset of valid pixels to the offsets to be used later in the comparison.
     itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, this->Pairs.TargetPatch.Region);
 
-    unsigned int componentsPerPixel = this->Image->GetNumberOfComponentsPerPixel();
+    //unsigned int componentsPerPixel = this->Image->GetNumberOfComponentsPerPixel();
     
     while(!maskIterator.IsAtEnd())
       {
       if(this->MaskImage->IsValid(maskIterator.GetIndex()))
 	{
-	FloatVectorImageType::OffsetValueType offset = this->Image->ComputeOffset(maskIterator.GetIndex()) * componentsPerPixel;
+	//FloatVectorImageType::OffsetValueType offset = this->Image->ComputeOffset(maskIterator.GetIndex()) * componentsPerPixel;
+      FloatVectorImageType::OffsetValueType offset = this->Image->ComputeOffset(maskIterator.GetIndex()) * this->NumberOfComponentsPerPixel;
 	//std::cout << "Using offset: " << offset << std::endl;
 	this->ValidOffsets.push_back(offset); // We have to multiply the linear offset by the number of components per pixel for the VectorImage type
 	}
@@ -117,6 +119,8 @@ float SelfPatchCompare::SlowDifference(const Patch& sourcePatch)
     float sum = 0;
     unsigned int validPixelCounter = 0;
     //unsigned int componentsPerPixel = this->Image->GetNumberOfComponentsPerPixel();
+    FullSquaredPixelDifference differenceFunction(this->Image->GetNumberOfComponentsPerPixel());
+    
     while(!sourcePatchIterator.IsAtEnd())
       {
       itk::Index<2> currentPixel = maskIterator.GetIndex();
@@ -127,7 +131,7 @@ float SelfPatchCompare::SlowDifference(const Patch& sourcePatch)
         FloatVectorImageType::PixelType targetPixel = targetPatchIterator.Get();
         //std::cout << "Source pixel: " << sourcePixel << " target pixel: " << targetPixel << std::endl;
         //float difference = Helpers::PixelSquaredDifference(sourcePixel, targetPixel);
-	float difference = PixelDifferenceSquared(sourcePixel, targetPixel);
+	float difference = differenceFunction.Difference(sourcePixel, targetPixel);
         sum +=  difference;
         validPixelCounter++;
         }
@@ -234,6 +238,18 @@ void SelfPatchCompare::SetPatchAverageSquaredDifference(PatchPair& patchPair)
     }
 }
 
+void SelfPatchCompare::SetPatchColorDifference(PatchPair& patchPair)
+{
+  float colorDifference = PatchAverageDifference<ColorPixelDifference>(patchPair.SourcePatch);
+  patchPair.SetColorDifference(colorDifference);
+}
+
+void SelfPatchCompare::SetPatchDepthDifference(PatchPair& patchPair)
+{
+  float depthDifference = PatchAverageDifference<DepthPixelDifference>(patchPair.SourcePatch);
+  patchPair.SetDepthDifference(depthDifference);
+}
+
 float SelfPatchCompare::PatchAverageSquaredDifference(const Patch& sourcePatch)
 {
   // This function assumes that all pixels in the source region are unmasked.
@@ -258,6 +274,8 @@ float SelfPatchCompare::PatchAverageSquaredDifference(const Patch& sourcePatch)
     FloatVectorImageType::PixelType differencePixel;
     differencePixel.SetSize(this->NumberOfComponentsPerPixel);
     
+    FullSquaredPixelDifference differenceFunction(sourcePixel);
+    
     for(unsigned int pixelId = 0; pixelId < this->ValidOffsets.size(); ++pixelId)
       {
       
@@ -268,7 +286,7 @@ float SelfPatchCompare::PatchAverageSquaredDifference(const Patch& sourcePatch)
         }
     
       
-      squaredDifference = PixelDifferenceSquared(sourcePixel, targetPixel);
+      squaredDifference = differenceFunction.Difference(sourcePixel, targetPixel);
       //difference = NonVirtualPixelDifference(sourcePixel, targetPixel); // This call seems to make it very slow?
       //difference = (sourcePixel-targetPixel).GetSquaredNorm(); // horribly slow
       
@@ -318,9 +336,10 @@ void SelfPatchCompare::SetPatchAverageAbsoluteFullDifference(PatchPair& patchPai
   
   float totalAbsoluteDifference = 0.0f;
 
+  FullPixelDifference differenceFunction(this->Image->GetNumberOfComponentsPerPixel());
   while(!sourcePatchIterator.IsAtEnd())
     {
-    totalAbsoluteDifference += PixelDifference(sourcePatchIterator.Get(), targetPatchIterator.Get());
+    totalAbsoluteDifference += differenceFunction.Difference(sourcePatchIterator.Get(), targetPatchIterator.Get());
 
     ++sourcePatchIterator;
     ++targetPatchIterator;
@@ -354,6 +373,7 @@ float SelfPatchCompare::PatchAverageAbsoluteSourceDifference(const Patch& source
     FloatVectorImageType::PixelType differencePixel;
     differencePixel.SetSize(this->NumberOfComponentsPerPixel);
 
+    FullPixelDifference differenceFunction(this->NumberOfComponentsPerPixel);
     for(unsigned int pixelId = 0; pixelId < this->ValidOffsets.size(); ++pixelId)
       {
 
@@ -364,7 +384,7 @@ float SelfPatchCompare::PatchAverageAbsoluteSourceDifference(const Patch& source
         }
 
 
-      absoluteDifference = PixelDifference(sourcePixel, targetPixel);
+      absoluteDifference = differenceFunction.Difference(sourcePixel, targetPixel);
 
       totalAbsoluteDifference += absoluteDifference;
       }
@@ -441,13 +461,15 @@ void SelfPatchCompare::SetPatchAllDifferences(PatchPair& patchPair)
 {
   SetPatchAverageSquaredDifference(patchPair);
   SetPatchAverageAbsoluteSourceDifference(patchPair);
+  SetPatchColorDifference(patchPair);
+  SetPatchDepthDifference(patchPair);
 }
 
 void SelfPatchCompare::ComputeAllSourceAndTargetDifferences()
 {
   // Source patches are always full and entirely valid, so there are two cases - when the target patch is fully inside the image,
   // and when it is not.
-  std::cout << "ComputeAllSourceAndTargetDifferences()" << std::endl;
+  //std::cout << "ComputeAllSourceAndTargetDifferences()" << std::endl;
   try
   {
     // Force the target region to be entirely inside the image
@@ -456,7 +478,7 @@ void SelfPatchCompare::ComputeAllSourceAndTargetDifferences()
     ComputeOffsets();
 
     QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteFullDifference, this, _1));
-    std::cout << "Leaving ComputeAllSourceAndTargetDifferences()" << std::endl;
+    //std::cout << "Leaving ComputeAllSourceAndTargetDifferences()" << std::endl;
   }
   catch( itk::ExceptionObject & err )
   {
@@ -472,7 +494,7 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
   // and when it is not.
   try
   {
-    std::cout << "ComputeAllSourceDifferences()" << std::endl;
+    //std::cout << "ComputeAllSourceDifferences()" << std::endl;
     // If the target region is not fully inside the image, crop it and proceed.
     if(!this->Image->GetLargestPossibleRegion().IsInside(this->Pairs.TargetPatch.Region))
       {  
@@ -498,11 +520,11 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
 	}
       */
       
-      //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
+      QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
       //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchTotalAbsoluteDifference, this, _1));
-      QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference, this, _1));
+      //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference, this, _1));
       }
-    std::cout << "Leaving ComputeAllSourceDifferences()" << std::endl;
+    //std::cout << "Leaving ComputeAllSourceDifferences()" << std::endl;
   }
   catch( itk::ExceptionObject & err )
   {
@@ -512,27 +534,7 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
   }
 }
 
-float SelfPatchCompare::NonVirtualPixelDifferenceSquared(const typename FloatVectorImageType::PixelType &a, const typename FloatVectorImageType::PixelType &b)
+void SelfPatchCompare::SetPairs(CandidatePairs& pairs)
 {
-  float difference = 0;
-  
-  float diff = 0;
-  // Compute the squared norm of the difference of the color channels
-  for(unsigned int i = 0; i < 3; ++i)
-    {
-    diff = a[i] - b[i];
-    difference += diff * diff;
-    }
-  
-  //std::cout << "difference was: " << difference << std::endl;
-  
-  float depthDifference = fabs(a[3] - b[3]);
-  //std::cout << "depthDifference : " << depthDifference << std::endl;
-      
-  
-  difference += this->MaxColorDifference * (1-exp(-depthDifference));
-  
-  //std::cout << "difference is now: " << difference << std::endl;
-  
-  return difference;
+  this->Pairs = pairs;
 }

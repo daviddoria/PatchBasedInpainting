@@ -1353,6 +1353,10 @@ void Form::SetupForwardLookingTable()
   this->SourcePatchToDisplay = 0;
   HighlightSelectedForwardLookPatch();
 
+  this->ForwardLookTableView->setColumnWidth(0, 100);
+  //this->ForwardLookTableView->setRowHeight(row, height);
+  //this->ForwardLookTableView->resizeColumnsToContents();
+  //this->ForwardLookTableView->resizeRowsToContents();
 }
 
 void Form::ChangeDisplayedTopPatch()
@@ -1406,6 +1410,7 @@ void Form::SetupTopPatchesTable()
   
   //this->topPatchesTableWidget->horizontalHeader()->resizeColumnsToContents();
   this->TopPatchesTableView->resizeColumnsToContents();
+  this->TopPatchesTableView->resizeRowsToContents();
   
 }
 

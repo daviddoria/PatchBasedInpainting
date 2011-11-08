@@ -26,6 +26,8 @@
 
 // ITK
 #include "itkBilateralImageFilter.h"
+#include "itkBinaryBallStructuringElement.h"
+#include "itkBinaryDilateImageFilter.h"
 #include "itkComposeImageFilter.h"
 #include "itkGaussianOperator.h"
 #include "itkImageFileWriter.h"
@@ -561,7 +563,7 @@ unsigned int CountNonZeroPixels(const typename TImage::Pointer image)
 template<typename TImage>
 std::vector<itk::Index<2> > GetNonZeroPixels(const typename TImage::Pointer image)
 {
-  return GetNonZeroPixels(image, image->GetLargestPossibleRegion());
+  return GetNonZeroPixels<TImage>(image, image->GetLargestPossibleRegion());
 }
 
 template<typename TImage>
@@ -1114,5 +1116,82 @@ void NormalizeVector(std::vector<T>& v)
     }
 }
 
+template<typename TImage>
+void DilateImage(const typename TImage::Pointer image, typename TImage::Pointer dilatedImage, const unsigned int radius)
+{
+  typedef itk::BinaryBallStructuringElement<typename TImage::PixelType, 2> StructuringElementType;
+  StructuringElementType structuringElement;
+  structuringElement.SetRadius(radius);
+  structuringElement.CreateStructuringElement();
+ 
+  typedef itk::BinaryDilateImageFilter <TImage, TImage, StructuringElementType> BinaryDilateImageFilterType;
+ 
+  typename BinaryDilateImageFilterType::Pointer dilateFilter = BinaryDilateImageFilterType::New();
+  dilateFilter->SetInput(image);
+  dilateFilter->SetKernel(structuringElement);
+  dilateFilter->Update();
+  
+  DeepCopy<TImage>(dilateFilter->GetOutput(), dilatedImage);
+    
+}
+
+template<typename TImage>
+void ChangeValue(const typename TImage::Pointer image, const typename TImage::PixelType& oldValue, const typename TImage::PixelType& newValue)
+{
+  itk::ImageRegionIterator<TImage> iterator(image, image->GetLargestPossibleRegion());
+
+  while(!iterator.IsAtEnd())
+    {
+    if(iterator.Get() == oldValue)
+      {
+      iterator.Set(newValue);
+      }
+    ++iterator;
+    }  
+}
+
+template<typename TPixel>
+void ScaleChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, const TPixel channelMax, typename itk::VectorImage<TPixel, 2>::Pointer output)
+{
+  typedef itk::Image<TPixel, 2> ScalarImageType;
+  
+  typedef itk::VectorIndexSelectionCastImageFilter<itk::VectorImage<TPixel, 2>, ScalarImageType > IndexSelectionType;
+  typename IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+  indexSelectionFilter->SetIndex(channel);
+  indexSelectionFilter->SetInput(image);
+  indexSelectionFilter->Update();
+  
+  typedef itk::RescaleIntensityImageFilter< ScalarImageType, ScalarImageType > RescaleFilterType;
+  typename RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
+  rescaleFilter->SetInput(indexSelectionFilter->GetOutput());
+  rescaleFilter->SetOutputMinimum(0);
+  rescaleFilter->SetOutputMaximum(channelMax);
+  rescaleFilter->Update();
+  
+  DeepCopy<itk::VectorImage<TPixel, 2> >(image, output);
+  ReplaceChannel<TPixel>(output, channel, rescaleFilter->GetOutput(), output);
+}
+
+template<typename TPixel>
+void ReplaceChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, typename itk::Image<TPixel, 2>::Pointer replacement, typename itk::VectorImage<TPixel, 2>::Pointer output)
+{
+  if(image->GetLargestPossibleRegion() != replacement->GetLargestPossibleRegion())
+    {
+    std::cerr << "Cannot replace channel!" << std::endl;
+    exit(-1);
+    }
+
+  DeepCopy<typename itk::VectorImage<TPixel, 2> >(image, output);
+  
+  itk::ImageRegionConstIterator<itk::VectorImage<TPixel, 2> > iterator(image, image->GetLargestPossibleRegion());
+  
+  while(!iterator.IsAtEnd())
+    {
+    typename itk::VectorImage<TPixel, 2>::PixelType pixel = iterator.Get();
+    pixel[channel] = replacement->GetPixel(iterator.GetIndex());
+    output->SetPixel(iterator.GetIndex(), pixel);
+    ++iterator;
+    }
+}
 
 }// end namespace

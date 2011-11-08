@@ -34,30 +34,40 @@ SelfPatchCompare.cpp
 )
 
 # Interactive
-
-ADD_EXECUTABLE(CriminisiInpaintingInteractive
-FileSelector.cpp
-FileSelectionWidget.cpp
-Form.cxx
-ForwardLookTableModel.cpp
-FormGUIElements.cxx
-InpaintingVisualizationStack.cpp
-Interactive.cpp #driver (contains main())
-InteractorStyleImageNoLevel.cxx
-Layer.cpp
-PixmapDelegate.cpp
-ProgressThread.cpp
-TopPatchesTableModel.cpp
-VectorLayer.cpp
-${UISrcs} ${MOCSrcs})
-TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive CriminisiInpainting ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
-INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
+SET(BuildInteractive ON CACHE BOOL "Build the interactive version.")
+if(BuildInteractive)
+  ADD_EXECUTABLE(CriminisiInpaintingInteractive
+  FileSelector.cpp
+  FileSelectionWidget.cpp
+  Form.cxx
+  ForwardLookTableModel.cpp
+  FormGUIElements.cxx
+  InpaintingVisualizationStack.cpp
+  Interactive.cpp #driver (contains main())
+  InteractorStyleImageNoLevel.cxx
+  Layer.cpp
+  PixmapDelegate.cpp
+  ProgressThread.cpp
+  TopPatchesTableModel.cpp
+  VectorLayer.cpp
+  ${UISrcs} ${MOCSrcs})
+  TARGET_LINK_LIBRARIES(CriminisiInpaintingInteractive CriminisiInpainting ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
+  INSTALL( TARGETS CriminisiInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
 
 # Non-interactive
-ADD_EXECUTABLE(CriminisiInpaintingNonInteractive
-CriminisiInpaintingNonInteractive.cpp)
-TARGET_LINK_LIBRARIES(CriminisiInpaintingNonInteractive CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-INSTALL( TARGETS CriminisiInpaintingNonInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
+SET(BuildNonInteractive ON CACHE BOOL "Build the non-interactive version.")
+if(BuildNonInteractive)
+  ADD_EXECUTABLE(CriminisiInpaintingNonInteractive
+  CriminisiInpaintingNonInteractive.cpp)
+  TARGET_LINK_LIBRARIES(CriminisiInpaintingNonInteractive CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+  INSTALL( TARGETS CriminisiInpaintingNonInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
+
+ADD_EXECUTABLE(LearnLambda LearnLambda.cpp)
+TARGET_LINK_LIBRARIES(LearnLambda CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+
 
 # ADD_EXECUTABLE(ExamplePatchDifference Examples/ExamplePatchDifference.cpp)
 # TARGET_LINK_LIBRARIES(ExamplePatchDifference CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})

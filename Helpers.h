@@ -39,6 +39,8 @@ namespace Helpers
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+std::string ReplaceFileExtension(const std::string& fileName, const std::string& newExtension);
+
 bool GetColumnIdByHeader(const QTableWidget* table, const std::string& header, int& columnId);
 
 // Zero pad the 'iteration' and append it to the filePrefix, and add ".[fileExtension]" to the end.
@@ -291,6 +293,18 @@ void CreatePatchImage(typename TImage::Pointer image, const itk::ImageRegion<2>&
 
 template<typename T>
 void NormalizeVector(std::vector<T>& v);
+
+template<typename TImage>
+void DilateImage(const typename TImage::Pointer image, typename TImage::Pointer dilatedImage, const unsigned int radius);
+
+template<typename TImage>
+void ChangeValue(const typename TImage::Pointer image, const typename TImage::PixelType& oldValue, const typename TImage::PixelType& newValue);
+
+template<typename TPixel>
+void ScaleChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, const TPixel channelMax, typename itk::VectorImage<TPixel, 2>::Pointer output);
+
+template<typename TPixel>
+void ReplaceChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, typename itk::Image<TPixel, 2>::Pointer replacement, typename itk::VectorImage<TPixel, 2>::Pointer output);
 
 }// end namespace
 

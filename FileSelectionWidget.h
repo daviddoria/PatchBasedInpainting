@@ -24,6 +24,7 @@ public:
 public slots:
   void on_listView_doubleClicked(const QModelIndex & index);
   void on_listView_clicked(const QModelIndex & index);
+  void on_btnUp_clicked();
 
 signals:
   void selectionChanged();

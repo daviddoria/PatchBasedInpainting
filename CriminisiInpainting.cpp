@@ -21,10 +21,8 @@
 // Custom
 #include "Derivatives.h"
 #include "Helpers.h"
-
+#include "PixelDifference.h"
 #include "SelfPatchCompare.h"
-#include "SelfPatchCompareColor.h"
-#include "SelfPatchCompareAllChannels.h"
 
 // STL
 #include <iostream>
@@ -78,11 +76,16 @@ CriminisiInpainting::CriminisiInpainting()
   this->MaxForwardLookPatches = 10;
   
   this->MaxPixelDifferenceSquared = 0.0f;
+  
+  this->DebugFunctionEnterLeave = true;
+  
+  this->PatchSortFunction = &SortByAverageAbsoluteDifference;
+
 }
 
 void CriminisiInpainting::ComputeMaxPixelDifference()
 {
-  //std::cout << "ComputeMaxPixelDifference()" << std::endl;
+  EnterFunction("ComputeMaxPixelDifference()");
   // We assume all values of all channels are positive, so the max difference can be computed as max(p_i - 0) because (0,0,0,...) is the minimum pixel.
   
   itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->OriginalImage, this->OriginalImage->GetLargestPossibleRegion());
@@ -110,9 +113,10 @@ void CriminisiInpainting::ComputeMaxPixelDifference()
     this->MaxPixelDifference += maxPixel[i];
     }
   */
-  this->MaxPixelDifferenceSquared = SelfPatchCompareAllChannels::StaticPixelDifferenceSquared(maxPixel, zeroPixel);
+  this->MaxPixelDifferenceSquared = FullPixelDifference::Difference(maxPixel, zeroPixel, zeroPixel.GetNumberOfElements());
   
   std::cout << "MaxPixelDifference computed to be: " << this->MaxPixelDifferenceSquared << std::endl;
+  LeaveFunction("ComputeMaxPixelDifference()");
 }
 
 bool CriminisiInpainting::PatchExists(const itk::ImageRegion<2>& region)
@@ -131,7 +135,7 @@ std::vector<Patch> CriminisiInpainting::AddNewSourcePatchesInRegion(const itk::I
 {
   // Add all patches in 'region' that are entirely valid and are not already in the source patch list to the list of source patches.
   // Additionally, return the patches that were added.
-  DebugMessage("AddNewSourcePatchesInRegion()");
+  EnterFunction("AddNewSourcePatchesInRegion()");
   
   std::vector<Patch> newPatches;
   try
@@ -170,6 +174,8 @@ std::vector<Patch> CriminisiInpainting::AddNewSourcePatchesInRegion(const itk::I
       std::cerr << "There must be at least 1 source patch!" << std::endl;
       exit(-1);
       }
+      
+    LeaveFunction("AddNewSourcePatchesInRegion()");
     return newPatches;
   }// end try
   catch( itk::ExceptionObject & err )
@@ -185,7 +191,7 @@ void CriminisiInpainting::AddAllSourcePatchesInRegion(const itk::ImageRegion<2>&
 {
   // Add all patches in 'region' that are entirely valid to the list of source patches.
     
-  DebugMessage("AddAllSourcePatchesInRegion()");
+  EnterFunction("AddAllSourcePatchesInRegion()");
   
   try
   {
@@ -210,11 +216,11 @@ void CriminisiInpainting::AddAllSourcePatchesInRegion(const itk::ImageRegion<2>&
       ++imageIterator;
       }
     DebugMessage<unsigned int>("Number of source patches: ", this->SourcePatches.size());
-
+    LeaveFunction("AddAllSourcePatchesInRegion()");
   }// end try
   catch( itk::ExceptionObject & err )
   {
-    std::cerr << "ExceptionObject caught in ComputeSourcePatches!" << std::endl;
+    std::cerr << "ExceptionObject caught in AddAllSourcePatchesInRegion!" << std::endl;
     std::cerr << err << std::endl;
     exit(-1);
   }
@@ -223,7 +229,7 @@ void CriminisiInpainting::AddAllSourcePatchesInRegion(const itk::ImageRegion<2>&
 
 void CriminisiInpainting::InitializeConfidenceMap()
 {
-  DebugMessage("InitializeConfidenceMap()");
+  EnterFunction("InitializeConfidenceMap()");
   // Clone the mask - we need to invert the mask to actually perform the masking, but we don't want to disturb the original mask
   Mask::Pointer maskClone = Mask::New();
   //Helpers::DeepCopy<Mask>(this->CurrentMask, maskClone);
@@ -247,19 +253,51 @@ void CriminisiInpainting::InitializeConfidenceMap()
   rescaleFilter->Update();
 
   Helpers::DeepCopy<FloatScalarImageType>(rescaleFilter->GetOutput(), this->ConfidenceMapImage);
-
+  LeaveFunction("InitializeConfidenceMap()");
 }
 
 void CriminisiInpainting::InitializeTargetImage()
 {
-  DebugMessage("InitializeTargetImage()");
+  EnterFunction("InitializeTargetImage()");
   // Initialize to the input
   Helpers::DeepCopy<FloatVectorImageType>(this->OriginalImage, this->CurrentOutputImage);
+  LeaveFunction("InitializeTargetImage()");
+}
+
+void CriminisiInpainting::ComputeIsophotes()
+{
+  EnterFunction("ComputeIsophotes()");
+  RGBImageType::Pointer rgbImage = RGBImageType::New();
+  Helpers::VectorImageToRGBImage(this->OriginalImage, rgbImage);
+  
+  Helpers::WriteImageConditional<RGBImageType>(rgbImage, "Debug/Initialize.rgb.mha", this->DebugImages);
+
+  typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
+  LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
+  luminanceFilter->SetInput(rgbImage);
+  luminanceFilter->Update();
+  
+  Helpers::DeepCopy<FloatScalarImageType>(luminanceFilter->GetOutput(), this->LuminanceImage);
+  
+  FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
+  // Blur with a Gaussian kernel. From TestIsophotes.cpp, it actually seems like not blurring, but using a masked sobel operator produces the most reliable isophotes.
+  unsigned int kernelRadius = 0;
+  Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), this->CurrentMask, kernelRadius, blurredLuminance);
+  
+  Helpers::WriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/Initialize.blurredLuminance.mha", true);
+  
+  Helpers::InitializeImage<FloatVector2ImageType>(this->IsophoteImage, this->FullImageRegion);
+  ComputeMaskedIsophotesInRegion(blurredLuminance, this->CurrentMask, this->FullImageRegion, this->IsophoteImage);
+  if(this->DebugImages)
+    {
+    Helpers::Write2DVectorImage(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha");
+    }
+  LeaveFunction("ComputeIsophotes()");
 }
 
 void CriminisiInpainting::Initialize()
 {
-  DebugMessage("Initialize()");
+  EnterFunction("Initialize()");
   try
   {
     this->NumberOfCompletedIterations = 0;
@@ -273,47 +311,17 @@ void CriminisiInpainting::Initialize()
     InitializeTargetImage();
     Helpers::WriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
   
-    // Compute isophotes
-    {
-    RGBImageType::Pointer rgbImage = RGBImageType::New();
-    Helpers::VectorImageToRGBImage(this->OriginalImage, rgbImage);
-    
-    Helpers::WriteImageConditional<RGBImageType>(rgbImage, "Debug/Initialize.rgb.mha", this->DebugImages);
-
-    typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
-    LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
-    luminanceFilter->SetInput(rgbImage);
-    luminanceFilter->Update();
-    
-    Helpers::DeepCopy<FloatScalarImageType>(luminanceFilter->GetOutput(), this->LuminanceImage);
-    
-    FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
-    // Blur with a Gaussian kernel. From TestIsophotes.cpp, it actually seems like not blurring, but using a masked sobel operator produces the most reliable isophotes.
-    unsigned int kernelRadius = 0;
-    Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), this->CurrentMask, kernelRadius, blurredLuminance);
-    
-    Helpers::WriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/Initialize.blurredLuminance.mha", true);
-    
-    Helpers::InitializeImage<FloatVector2ImageType>(this->IsophoteImage, this->FullImageRegion);
-    ComputeMaskedIsophotesInRegion(blurredLuminance, this->CurrentMask, this->FullImageRegion, this->IsophoteImage);
-    if(this->DebugImages)
-      {
-      Helpers::Write2DVectorImage(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha");
-      }
-    }
+    ComputeIsophotes();
     
     // Blur the image incase we want to use a blurred image for pixel to pixel comparisons.
     //unsigned int kernelRadius = 5;
     //Helpers::VectorMaskedBlur(this->OriginalImage, this->CurrentMask, kernelRadius, this->BlurredImage);
     
-    Helpers::BlurAllChannels<FloatVectorImageType>(this->OriginalImage, this->BlurredImage, 10);
-    Helpers::WriteImageConditional<FloatVectorImageType>(this->BlurredImage, "Debug/Initialize.BlurredImage.mha", this->DebugImages);
-    Helpers::WriteVectorImageAsRGB(this->BlurredImage, "Debug/Initialize.BlurredImageRGB.mha");
-    
+    // BlurImage();
+
+    // Initialize internal images
     Helpers::InitializeImage<FloatScalarImageType>(this->DataImage, this->FullImageRegion);
-    
     Helpers::InitializeImage<FloatScalarImageType>(this->PriorityImage, this->FullImageRegion);
-    
     Helpers::InitializeImage<FloatScalarImageType>(this->ConfidenceImage, this->FullImageRegion);
         
     InitializeConfidenceMap();
@@ -326,6 +334,16 @@ void CriminisiInpainting::Initialize()
     //WriteImage<UnsignedCharImageType>(this->Mask, "InitialMask.mhd");
     //WriteImage<FloatImageType>(this->ConfidenceImage, "InitialConfidence.mhd");
     //WriteImage<VectorImageType>(this->IsophoteImage, "InitialIsophotes.mhd");
+    
+    if(this->OriginalMask->GetLargestPossibleRegion() != this->OriginalImage->GetLargestPossibleRegion())
+      {
+      std::cerr << "Original mask size does not match original image size!" << std::endl;
+      std::cerr << "Original mask size: " << this->OriginalMask->GetLargestPossibleRegion() << std::endl;
+      std::cerr << "Original image size: " << this->OriginalImage->GetLargestPossibleRegion() << std::endl;
+      exit(-1);
+      }
+      
+    LeaveFunction("Initialize()");
   }
   catch( itk::ExceptionObject & err )
   {
@@ -337,7 +355,7 @@ void CriminisiInpainting::Initialize()
 
 PatchPair CriminisiInpainting::Iterate()
 {
-  DebugMessage("Iterate()");
+  EnterFunction("Iterate()");
   
   FindBoundary();
   Helpers::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage.mha", this->DebugImages);
@@ -380,7 +398,7 @@ PatchPair CriminisiInpainting::Iterate()
   Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
   
   // We also have to copy patches in the blurred image and CIELab image incase we are using those
-  Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->BlurredImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
+  //Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->BlurredImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
   Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->CIELabImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
   Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatScalarImageType>(this->LuminanceImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
   
@@ -430,25 +448,21 @@ PatchPair CriminisiInpainting::Iterate()
   std::vector<Patch> newPatches = AddNewSourcePatchesInRegion(previousInvalidRegion);
   
   // Recompute for all forward look candidates except the one that was used. Otherwise there would be an exact match!
-  /*
   for(unsigned int candidateId = 0; candidateId < this->PotentialCandidatePairs.size(); ++candidateId)
     {
-    std::cout << "Computing everything for candidateId " << candidateId << std::endl;
+    //std::cout << "Computing everything for candidateId " << candidateId << std::endl;
   
     // Don't recompute for the target patch that was used.
     if(usedPatchPair.TargetPatch.Region != this->PotentialCandidatePairs[candidateId].TargetPatch.Region)
       {
       this->PotentialCandidatePairs[candidateId].AddPairsFromPatches(newPatches);
       //ComputeAllContinuationDifferences(this->PotentialCandidatePairs[candidateId]);
-    
-      SelfPatchCompare* patchCompare;
-      patchCompare = new SelfPatchCompareAll(this->CompareImage->GetNumberOfComponentsPerPixel(), this->PotentialCandidatePairs[candidateId]);
-      patchCompare->SetImage(this->CompareImage);
-      patchCompare->SetMask(this->CurrentMask);
-      patchCompare->ComputeAllDifferences();
+      this->PatchCompare = new SelfPatchCompare(this->CompareImage->GetNumberOfComponentsPerPixel(), this->PotentialCandidatePairs[candidateId]);
+      this->PatchCompare->SetImage(this->CompareImage);
+      this->PatchCompare->SetMask(this->CurrentMask);
+      this->PatchCompare->ComputeAllSourceDifferences();
       }
     }
-  */
 
   // At the end of an iteration, things would be slightly out of sync. The boundary is computed at the beginning of the iteration (before the patch is filled),
   // so at the end of the iteration, the boundary image will not correspond to the boundary of the remaining hole in the image - it will be off by 1 iteration.
@@ -461,16 +475,18 @@ PatchPair CriminisiInpainting::Iterate()
   DebugMessage<unsigned int>("Completed iteration: ", this->NumberOfCompletedIterations);
 
   PreviousIterationUsedPatchPair = usedPatchPair;
+  
+  LeaveFunction("Iterate()");
   return usedPatchPair;
 }
 
 void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidatePairs, PatchPair& bestPatchPair)
 {
+  //std::cout << "FindBestPatchScaleConsistent: There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
+  EnterFunction("FindBestPatchScaleConsistent()");
   
-  std::cout << "There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
-
   SelfPatchCompare* blurredPatchCompare;
-  blurredPatchCompare = new SelfPatchCompareAllChannels(this->BlurredImage->GetNumberOfComponentsPerPixel(), candidatePairs);
+  blurredPatchCompare = new SelfPatchCompare(this->BlurredImage->GetNumberOfComponentsPerPixel(), candidatePairs);
   blurredPatchCompare->SetImage(this->BlurredImage);
   blurredPatchCompare->SetMask(this->CurrentMask);
   blurredPatchCompare->ComputeAllSourceDifferences();
@@ -492,7 +508,7 @@ void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidate
   Helpers::CopySourcePatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->BlurredImage, tempImage, this->CurrentMask, candidatePairs[0].SourcePatch.Region, candidatePairs[0].TargetPatch.Region);
 
   SelfPatchCompare* detailedPatchCompare;
-  detailedPatchCompare = new SelfPatchCompareAllChannels(this->CurrentOutputImage->GetNumberOfComponentsPerPixel(), candidatePairs);
+  detailedPatchCompare = new SelfPatchCompare(this->CurrentOutputImage->GetNumberOfComponentsPerPixel(), candidatePairs);
   detailedPatchCompare->SetImage(tempImage);
   detailedPatchCompare->SetMask(this->CurrentMask);
   detailedPatchCompare->ComputeAllSourceAndTargetDifferences();
@@ -510,15 +526,45 @@ void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidate
   // Return the result by reference.
   bestPatchPair = candidatePairs[0];
   
-  std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatchScaleConsistent()." << std::endl;
+  //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatchScaleConsistent()." << std::endl;
+  LeaveFunction("FindBestPatchScaleConsistent()");
+}
+
+
+void CriminisiInpainting::FindBestPatch(CandidatePairs& candidatePairs, PatchPair& bestPatchPair)
+{
+  EnterFunction("FindBestPatch()");
+  //std::cout << "There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
+
+  //SelfPatchCompare* selfPatchCompare;
+  //selfPatchCompare = new SelfPatchCompare(this->BlurredImage->GetNumberOfComponentsPerPixel(), candidatePairs);
+  this->PatchCompare = new SelfPatchCompare(this->CompareImage->GetNumberOfComponentsPerPixel(), candidatePairs);
+  this->PatchCompare->SetPairs(candidatePairs);
+  this->PatchCompare->SetImage(this->CompareImage);
+  this->PatchCompare->SetMask(this->CurrentMask);
+  this->PatchCompare->ComputeAllSourceDifferences();
+  
+  std::cout << "FindBestPatch: Finished ComputeAllSourceDifferences()" << std::endl;
+  
+  //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
+  //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDepthAndColor);
+  std::sort(candidatePairs.begin(), candidatePairs.end(), PatchSortFunction);
+  
+  std::cout << "Finished sorting." << std::endl;
+  
+  // Return the result by reference.
+  bestPatchPair = candidatePairs[0];
+  
+  //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatch()." << std::endl;
+  LeaveFunction("FindBestPatch()");
 }
 
 void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 {
-  DebugMessage("FindBestPatchLookAhead()");
+  EnterFunction("FindBestPatchLookAhead()");
   // This function returns the best PatchPair by reference
   
-  std::cout << "There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
+  //std::cout << "FindBestPatchLookAhead: There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
   
   // If this is not the first iteration, get the potential forward look patch candidates from the previous step
   if(this->NumberOfCompletedIterations > 0)
@@ -555,11 +601,12 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   unsigned int numberOfNewPatchesToFind = this->MaxForwardLookPatches - this->PotentialCandidatePairs.size();
   for(unsigned int newPatchId = 0; newPatchId < numberOfNewPatchesToFind; ++newPatchId)
     {
-    std::cout << "Start computing new patch " << newPatchId << std::endl;
+    //std::cout << "FindBestPatchLookAhead: Start computing new patch " << newPatchId << std::endl;
 
     // If there are no boundary pixels, we can't find any more look ahead patches.
     if(Helpers::CountNonZeroPixels<UnsignedCharScalarImageType>(modifiedBoundaryImage) == 0)
       {
+      std::cerr << "There are no boundary pixels!" << std::endl;
       break;
       }
 
@@ -582,7 +629,8 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     candidatePairs.Priority = highestPriority;
     
     PatchPair currentLookAheadBestPatchPair;
-    FindBestPatchScaleConsistent(candidatePairs, currentLookAheadBestPatchPair);
+    //FindBestPatchScaleConsistent(candidatePairs, currentLookAheadBestPatchPair);
+    FindBestPatch(candidatePairs, currentLookAheadBestPatchPair);
     
     // Keep only the number of top patches specified.
     //patchPairsSortedByContinuation.erase(patchPairsSortedByContinuation.begin() + this->NumberOfTopPatchesToSave, patchPairsSortedByContinuation.end());
@@ -591,10 +639,10 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     Helpers::SetRegionToConstant<FloatScalarImageType>(modifiedPriorityImage, targetRegion, 0.0f);
     Helpers::SetRegionToConstant<UnsignedCharScalarImageType>(modifiedBoundaryImage, targetRegion, 0);
     
-    std::cout << "Sorted " << candidatePairs.size() << " candidatePairs." << std::endl;
+    //std::cout << "Sorted " << candidatePairs.size() << " candidatePairs." << std::endl;
     
     this->PotentialCandidatePairs.push_back(candidatePairs);
-    std::cout << "Finished computing new patch " << newPatchId << std::endl;
+    //std::cout << "FindBestPatchLookAhead: Finished computing new patch " << newPatchId << std::endl;
     } // end forward look loop
 
   if(this->PotentialCandidatePairs.size() == 0)
@@ -618,10 +666,12 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   //std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
   
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
+  LeaveFunction("FindBestPatchLookAhead()");
 }
 
 unsigned int CriminisiInpainting::ComputeMinimumScoreLookAhead()
 {
+  EnterFunction("ComputeMinimumScoreLookAhead()");
   // Choose the look ahead with the lowest score to actually fill rather than simply returning the best source patch of the first look ahead target patch.
   float lowestScore = std::numeric_limits< float >::max();
   unsigned int lowestLookAhead = 0;
@@ -633,12 +683,13 @@ unsigned int CriminisiInpainting::ComputeMinimumScoreLookAhead()
       lowestLookAhead = i;
       }
     }
+  LeaveFunction("ComputeMinimumScoreLookAhead()");
   return lowestLookAhead;
 }
 
 void CriminisiInpainting::ComputeMinimumBoundaryGradientChange(unsigned int& bestForwardLookId, unsigned int& bestSourcePatchId)
 {
-  
+  EnterFunction("ComputeMinimumBoundaryGradientChange()");
   // For the top N patches, compute the continuation difference by comparing the gradient at source side boundary pixels before and after filling.
   float lowestScore = std::numeric_limits< float >::max();
   
@@ -751,17 +802,17 @@ void CriminisiInpainting::ComputeMinimumBoundaryGradientChange(unsigned int& bes
 	}
       } // end source patch loop
     } // end forward look set loop
-    
+  LeaveFunction("ComputeMinimumBoundaryGradientChange()");
 }
 
 void CriminisiInpainting::Inpaint()
 {
+  EnterFunction("Inpaint()");
   // This function is intended to be used by the command line version. It will do the complete inpainting without updating any UI or the ability to stop before it is complete.
   //std::cout << "CriminisiInpainting::Inpaint()" << std::endl;
   try
   {
     // Start the procedure
-    //DebugMessage("Initializing...");
     //Initialize();
 
     this->NumberOfCompletedIterations = 0;
@@ -769,7 +820,8 @@ void CriminisiInpainting::Inpaint()
       {
       Iterate();
       }
-    std::cout << "Finished inpainting." << std::endl;
+    //std::cout << "Finished inpainting." << std::endl;
+    LeaveFunction("Inpaint()");
   }// end try
   catch( itk::ExceptionObject & err )
   {
@@ -782,13 +834,12 @@ void CriminisiInpainting::Inpaint()
 
 bool CriminisiInpainting::HasMoreToInpaint()
 {
+  EnterFunction("HasMoreToInpaint()");
   try
   {
-    if(this->DebugImages)
-      {
-      Helpers::WriteImage<Mask>(this->CurrentMask, "Debug/HasMoreToInpaint.input.png");
-      }
-      
+    
+    Helpers::WriteImageConditional<Mask>(this->CurrentMask, "Debug/HasMoreToInpaint.input.png", this->DebugImages);
+    
     itk::ImageRegionIterator<Mask> maskIterator(this->CurrentMask, this->CurrentMask->GetLargestPossibleRegion());
 
     while(!maskIterator.IsAtEnd())
@@ -801,6 +852,7 @@ bool CriminisiInpainting::HasMoreToInpaint()
       ++maskIterator;
       }
 
+    LeaveFunction("HasMoreToInpaint()");
     // If no pixels were holes, then we don't have any more to inpaint.
     return false;
   }
@@ -814,6 +866,7 @@ bool CriminisiInpainting::HasMoreToInpaint()
 
 void CriminisiInpainting::FindBoundary()
 {
+  EnterFunction("FindBoundary()");
   try
   {
     // Compute the "outer" boundary of the region to fill. That is, we want the boundary pixels to be in the source region.
@@ -869,7 +922,7 @@ void CriminisiInpainting::FindBoundary()
     Helpers::DeepCopy<UnsignedCharScalarImageType>(invertIntensityFilter->GetOutput(), this->BoundaryImage);
 
     Helpers::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/FindBoundary.BoundaryImage.mha", this->DebugImages);
-    
+    LeaveFunction("FindBoundary()");
   }
   catch( itk::ExceptionObject & err )
   {
@@ -881,7 +934,7 @@ void CriminisiInpainting::FindBoundary()
 
 void CriminisiInpainting::UpdateMask(const itk::ImageRegion<2>& region)
 {
-  DebugMessage("UpdateMask()");
+  EnterFunction("UpdateMask()");
   try
   {
     itk::ImageRegionIterator<Mask> maskIterator(this->CurrentMask, region);
@@ -895,6 +948,7 @@ void CriminisiInpainting::UpdateMask(const itk::ImageRegion<2>& region)
   
       ++maskIterator;
       }
+    LeaveFunction("UpdateMask()");
   }
   catch( itk::ExceptionObject & err )
   {
@@ -906,7 +960,7 @@ void CriminisiInpainting::UpdateMask(const itk::ImageRegion<2>& region)
 
 void CriminisiInpainting::ComputeBoundaryNormals(const float blurVariance)
 {
-  DebugMessage("ComputeBoundaryNormals()");
+  EnterFunction("ComputeBoundaryNormals()");
   try
   {
     // Blur the mask, compute the gradient, then keep the normals only at the original mask boundary
@@ -959,6 +1013,7 @@ void CriminisiInpainting::ComputeBoundaryNormals(const float blurVariance)
       }
 
     Helpers::WriteImageConditional<FloatVector2ImageType>(this->BoundaryNormals, "Debug/ComputeBoundaryNormals.BoundaryNormals.mha", this->DebugImages);
+    LeaveFunction("ComputeBoundaryNormals()");
   }
   catch( itk::ExceptionObject & err )
   {
@@ -970,27 +1025,33 @@ void CriminisiInpainting::ComputeBoundaryNormals(const float blurVariance)
 
 itk::Index<2> CriminisiInpainting::FindHighestValueOnBoundary(const FloatScalarImageType::Pointer image, float& maxValue, UnsignedCharScalarImageType::Pointer boundaryImage)
 {
-  // Return the location of the highest pixel on the current boundary. Return the value of that pixel by reference.
+  EnterFunction("FindHighestValueOnBoundary()");
+  // Return the location of the highest pixel in 'image' out of the non-zero pixels in 'boundaryImage'. Return the value of that pixel by reference.
   try
   {
     // Explicity find the maximum on the boundary
-    maxValue = 0; // priorities are non-negative, so anything better than 0 will win
-    itk::Index<2> locationOfMaxValue;
-    itk::ImageRegionConstIteratorWithIndex<UnsignedCharScalarImageType> boundaryIterator(boundaryImage, boundaryImage->GetLargestPossibleRegion());
-
-    while(!boundaryIterator.IsAtEnd())
+    maxValue = 0.0f; // priorities are non-negative, so anything better than 0 will win
+    
+    std::vector<itk::Index<2> > boundaryPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(boundaryImage);
+    
+    if(boundaryPixels.size() <= 0)
       {
-      if(boundaryIterator.Get())
+      std::cerr << "FindHighestValueOnBoundary(): No boundary pixels!" << std::endl;
+      exit(-1);
+      }
+
+    itk::Index<2> locationOfMaxValue = boundaryPixels[0];
+    
+    for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
+      {
+      if(image->GetPixel(boundaryPixels[i]) > maxValue)
 	{
-	if(image->GetPixel(boundaryIterator.GetIndex()) > maxValue)
-	  {
-	  maxValue = image->GetPixel(boundaryIterator.GetIndex());
-	  locationOfMaxValue = boundaryIterator.GetIndex();
-	  }
+	maxValue = image->GetPixel(boundaryPixels[i]);
+	locationOfMaxValue = boundaryPixels[i];
 	}
-      ++boundaryIterator;
       }
     DebugMessage<float>("Highest value: ", maxValue);
+    LeaveFunction("FindHighestValueOnBoundary()");
     return locationOfMaxValue;
   }
   catch( itk::ExceptionObject & err )
@@ -1003,6 +1064,7 @@ itk::Index<2> CriminisiInpainting::FindHighestValueOnBoundary(const FloatScalarI
 
 void CriminisiInpainting::ComputeAllPriorities()
 {
+  EnterFunction("ComputeAllPriorities()");
   try
   {
     // Only compute priorities for pixels on the boundary
@@ -1025,6 +1087,7 @@ void CriminisiInpainting::ComputeAllPriorities()
       ++boundaryIterator;
       }
     DebugMessage<unsigned int>("Number of boundary pixels: ", boundaryPixelCounter);
+    LeaveFunction("ComputeAllPriorities()");
   }
   catch( itk::ExceptionObject & err )
   {
@@ -1441,7 +1504,7 @@ float CriminisiInpainting::ComputeNormalizedSquaredPixelDifference(const itk::In
   DebugMessage<FloatVectorImageType::PixelType>("value1 ", value1);
   DebugMessage<FloatVectorImageType::PixelType>("value2 ", value2);
   
-  float pixelSquaredDifference = SelfPatchCompareAllChannels::StaticPixelDifferenceSquared(this->CompareImage->GetPixel(pixel1), this->CompareImage->GetPixel(pixel2));
+  float pixelSquaredDifference = FullSquaredPixelDifference::Difference(this->CompareImage->GetPixel(pixel1), this->CompareImage->GetPixel(pixel2), this->CompareImage->GetNumberOfComponentsPerPixel());
   DebugMessage<float>("ComputePixelDifference::pixelSquaredDifference", pixelSquaredDifference);
   
   //std::cout << "pixelDifference: " << pixelDifference << std::endl;
@@ -1456,7 +1519,8 @@ float CriminisiInpainting::ComputeNormalizedSquaredPixelDifference(const itk::In
 
 void CriminisiInpainting::ComputeAllContinuationDifferences(CandidatePairs& candidatePairs)
 {
-  std::cout << "ComputeAllContinuationDifferences()" << std::endl;
+  EnterFunction("ComputeAllContinuationDifferences()");
+  
   // Naively, we could just call ComputeTotalContinuationDifference on each patch pair for a forward looking set. However, this
   // would recalculate the boundary for every pair. This is a lot of extra work because the boundary does not change from source patch to source patch.
   
@@ -1526,7 +1590,7 @@ void CriminisiInpainting::ComputeAllContinuationDifferences(CandidatePairs& cand
 
     } // end loop over pairs
 
-  std::cout << "Leave ComputeAllContinuationDifferences()" << std::endl;
+  LeaveFunction("ComputeAllContinuationDifferences()");
 }
 
 std::vector<CandidatePairs>& CriminisiInpainting::GetPotentialCandidatePairsReference()
@@ -1548,4 +1612,18 @@ void CriminisiInpainting::SetCompareToBlurred()
 void CriminisiInpainting::SetCompareToCIELAB()
 {
   this->CompareImage = this->CIELabImage;
+}
+
+void CriminisiInpainting::SetPatchCompare(SelfPatchCompare* patchCompare)
+{
+  this->PatchCompare = patchCompare;
+}
+
+void CriminisiInpainting::BlurImage()
+{
+  EnterFunction("BlurImage()");
+  Helpers::BlurAllChannels<FloatVectorImageType>(this->OriginalImage, this->BlurredImage, 10);
+  Helpers::WriteImageConditional<FloatVectorImageType>(this->BlurredImage, "Debug/Initialize.BlurredImage.mha", this->DebugImages);
+  Helpers::WriteVectorImageAsRGB(this->BlurredImage, "Debug/Initialize.BlurredImageRGB.mha");
+  LeaveFunction("BlurImage()");
 }

@@ -12,37 +12,58 @@ struct PatchPair
   Patch SourcePatch;
   Patch TargetPatch;
   
+  // All of these different scores must use accessors/mutators because we might want to recompute other scores if one of the scores changes.
+  // Also, we can avoid recomputation if a container of PatchPairs is asked to compute everything - we would only compute each difference
+  // if it is invalid (i.e. not already computed).
+  
+  // Difference accessors
   float GetAverageSquaredDifference() const;
   float GetAverageAbsoluteDifference() const;
   float GetBoundaryGradientDifference() const;
   float GetBoundaryPixelDifference() const;
   float GetBoundaryIsophoteAngleDifference() const;
   float GetBoundaryIsophoteStrengthDifference() const;
+  float GetColorDifference() const;
+  float GetDepthDifference() const;
   float GetTotalScore() const;
+
+  float GetDepthAndColorDifference() const;
   
+  // Difference mutators
   void SetAverageSquaredDifference(const float value);
   void SetAverageAbsoluteDifference(const float value);
   void SetBoundaryGradientDifference(const float value);
   void SetBoundaryPixelDifference(const float value);
   void SetBoundaryIsophoteAngleDifference(const float value);
   void SetBoundaryIsophoteStrengthDifference(const float value);
+  void SetColorDifference(const float value);
+  void SetDepthDifference(const float value);
   
-  bool IsValidAverageSquaredDifference();
-  bool IsValidAverageAbsoluteDifference();
-  bool IsValidBoundaryGradientDifference();
-  bool IsValidBoundaryPixelDifference();
-  bool IsValidBoundaryIsophoteAngleDifference();
-  bool IsValidBoundaryIsophoteStrengthDifference();
+  // Valid accessors
+  bool IsValidAverageSquaredDifference() const;
+  bool IsValidAverageAbsoluteDifference() const;
+  bool IsValidBoundaryGradientDifference() const;
+  bool IsValidBoundaryPixelDifference() const;
+  bool IsValidBoundaryIsophoteAngleDifference() const;
+  bool IsValidBoundaryIsophoteStrengthDifference() const;
+  bool IsValidColorDifference() const;
+  bool IsValidDepthDifference() const;
+  bool IsValidDepthAndColorDifference() const;
   
-  void SetValidAverageSquaredDifference(bool);
-  void SetValidAverageAbsoluteDifference(bool);
-  void SetValidBoundaryGradientDifference(bool);
-  void SetValidBoundaryPixelDifference(bool);
-  void SetValidBoundaryIsophoteAngleDifference(bool);
-  void SetValidBoundaryIsophoteStrengthDifference(bool);
+  // Valid mutators
+  void SetValidAverageSquaredDifference(const bool);
+  void SetValidAverageAbsoluteDifference(const bool);
+  void SetValidBoundaryGradientDifference(const bool);
+  void SetValidBoundaryPixelDifference(const bool);
+  void SetValidBoundaryIsophoteAngleDifference(const bool);
+  void SetValidBoundaryIsophoteStrengthDifference(const bool);
+  void SetValidColorDifference(const bool);
+  void SetValidDepthDifference(const bool);
 
   itk::Offset<2> GetTargetToSourceOffset() const;
   itk::Offset<2> GetSourceToTargetOffset() const;
+  
+  static float DepthColorLambda;
   
 private:
   float AverageSquaredDifference;
@@ -51,10 +72,14 @@ private:
   float BoundaryPixelDifference;
   float BoundaryIsophoteAngleDifference;
   float BoundaryIsophoteStrengthDifference;
+  float DepthDifference;
+  float ColorDifference;
+  float DepthAndColorDifference;
   
   float TotalScore;
   
   void ComputeTotal();
+  void ComputeDepthAndColorDifference();
   
   // These are initialized to false and set to true when the corresponding SetXYZ() function is called.
   bool ValidAverageSquaredDifference;
@@ -63,8 +88,13 @@ private:
   bool ValidBoundaryPixelDifference;
   bool ValidBoundaryIsophoteAngleDifference;
   bool ValidBoundaryIsophoteStrengthDifference;
+  bool ValidColorDifference;
+  bool ValidDepthDifference;
+  
+  //static float DepthColorLambda;
 };
 
+// Sorting functions
 bool SortByAverageSquaredDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByAverageAbsoluteDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByBoundaryGradientDifference(const PatchPair& pair1, const PatchPair& pair2);
@@ -72,5 +102,6 @@ bool SortByBoundaryIsophoteAngleDifference(const PatchPair& pair1, const PatchPa
 bool SortByBoundaryIsophoteStrengthDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByBoundaryPixelDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByTotalScore(const PatchPair& pair1, const PatchPair& pair2);
+bool SortByDepthAndColor(const PatchPair& pair1, const PatchPair& pair2);
 
 #endif

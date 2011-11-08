@@ -71,13 +71,21 @@ void FileSelectionWidget::on_listView_clicked(const QModelIndex & index)
   if(!this->model->isDir(this->listView->currentIndex()))
     {
     this->Valid = true;
+    
+    // Emit the signal
+    emit selectionChanged();
     }
   else
     {
     this->Valid = false;
     }
 
+}
 
-  // Emit the signal
-  emit selectionChanged();
+void FileSelectionWidget::on_btnUp_clicked()
+{
+
+  this->listView->setRootIndex(model->index(listView->currentIndex().parent().data(QFileSystemModel::FilePathRole).toString()));
+
+  this->lblPath->setText(listView->currentIndex().data(QFileSystemModel::FilePathRole).toString());
 }

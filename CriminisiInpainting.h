@@ -24,12 +24,16 @@
 #include "Helpers.h"
 #include "Patch.h"
 #include "PatchPair.h"
+#include "SelfPatchCompare.h"
 #include "Types.h"
 
 // ITK
 #include "itkCovariantVector.h"
 #include "itkImage.h"
-  
+
+// Boost
+#include <boost/function.hpp>
+
 class CriminisiInpainting
 {
 
@@ -143,8 +147,15 @@ public:
   // Compute the normals of the hole boundary.
   void ComputeBoundaryNormals(const float blurVariance);
 
+  void SetPatchCompare(SelfPatchCompare* PatchCompare);
+  
+  boost::function<bool (const PatchPair& , const PatchPair& )> PatchSortFunction;
+  
 private:
-
+  
+  void BlurImage();
+  void ComputeIsophotes();
+  
   PatchPair PreviousIterationUsedPatchPair;
   // Compute the difference between two isophotes
   float ComputeIsophoteAngleDifference(const FloatVector2Type& v1, const FloatVector2Type& v2);
@@ -166,6 +177,7 @@ private:
   void FindBestPatchLookAhead(PatchPair& bestPatchPair);
 
   void FindBestPatchScaleConsistent(CandidatePairs& candidatePairs, PatchPair& bestPatchPair);
+  void FindBestPatch(CandidatePairs& candidatePairs, PatchPair& bestPatchPair);
   
   // Image to inpaint. This should not be modified throughout the algorithm.
   FloatVectorImageType::Pointer OriginalImage;
@@ -332,7 +344,12 @@ private:
   void ComputeMinimumBoundaryGradientChange(unsigned int& bestForwardLookId, unsigned int& bestSourcePatchId);
   
   unsigned int ComputeMinimumScoreLookAhead();
+
+  SelfPatchCompare* PatchCompare;
   
+  bool DebugFunctionEnterLeave;
+  void EnterFunction(const std::string&);
+  void LeaveFunction(const std::string&);
 };
 
 #include "CriminisiInpainting.hxx"

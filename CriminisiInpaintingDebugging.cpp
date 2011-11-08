@@ -219,3 +219,20 @@ void CriminisiInpainting::DebugMessage(const std::string& message)
     std::cout << message << std::endl;
     }
 }
+
+void CriminisiInpainting::EnterFunction(const std::string& functionName)
+{
+  if(this->DebugFunctionEnterLeave)
+    {
+    std::cout << "Enter " << functionName << std::endl;
+    }
+}
+
+void CriminisiInpainting::LeaveFunction(const std::string& functionName)
+{
+  if(this->DebugFunctionEnterLeave)
+    {
+    std::cout << "Leave " << functionName << std::endl;
+    }
+}
+

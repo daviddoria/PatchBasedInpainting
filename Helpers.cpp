@@ -362,8 +362,8 @@ itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region)
 // Convert a vector ITK image to a VTK image for display
 void ITKVectorImagetoVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
 {
-  //std::cout << "ITKImagetoVTKImage()" << std::endl;
-  if(image->GetNumberOfComponentsPerPixel() >= 3)
+  // If the image has 3 channels, assume it is RGB.
+  if(image->GetNumberOfComponentsPerPixel() == 3)
     {
     ITKImagetoVTKRGBImage(image, outputImage);
     }
@@ -875,6 +875,18 @@ void DeepCopy<FloatVectorImageType>(const FloatVectorImageType::Pointer input, F
 
   DeepCopyInRegion<FloatVectorImageType>(input, input->GetLargestPossibleRegion(), output);
     
+}
+
+std::string ReplaceFileExtension(const std::string& fileName, const std::string& newExtension)
+{
+  // This should be called like:
+  // std::string newFilenName = ReplaceFileExtension("oldfile.png", "jpg");
+  // To produce "oldfile.jpg"
+
+  std::string newFileName = fileName;
+  //newFileName.replace(newFileName.end() - 3, 3, newExtension);
+  newFileName.replace(newFileName.size() - 3, 3, newExtension);
+  return newFileName;
 }
 
 } // end namespace
