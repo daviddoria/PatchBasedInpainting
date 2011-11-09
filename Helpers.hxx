@@ -175,6 +175,27 @@ void CreateConstantPatch(typename T::Pointer patch, const typename T::PixelType 
 }
 
 template <class T>
+std::vector<T> MaxValuesVectorImage(const typename itk::VectorImage<T, 2>::Pointer image)
+{
+  typedef itk::VectorImage<T, 2> VectorImageType;
+  typedef itk::Image<T, 2> ScalarImageType;
+  
+  typedef itk::VectorIndexSelectionCastImageFilter<VectorImageType, ScalarImageType > IndexSelectionType;
+  typename IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+  indexSelectionFilter->SetInput(image);
+
+  std::vector<T> maxValues;
+  for(unsigned int channel = 0; channel < image->GetNumberOfComponentsPerPixel(); ++channel)
+    {
+    indexSelectionFilter->SetIndex(channel);
+    indexSelectionFilter->Update();
+    maxValues.push_back(MaxValue<ScalarImageType>(indexSelectionFilter->GetOutput()));
+    }
+  return maxValues;
+}
+
+
+template <class T>
 float MaxValue(const typename T::Pointer image)
 {
   typedef typename itk::MinimumMaximumImageCalculator<T>
@@ -1160,9 +1181,10 @@ void ChangeValue(const typename TImage::Pointer image, const typename TImage::Pi
 template<typename TPixel>
 void ScaleChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, const TPixel channelMax, typename itk::VectorImage<TPixel, 2>::Pointer output)
 {
+  typedef itk::VectorImage<TPixel, 2> VectorImageType;
   typedef itk::Image<TPixel, 2> ScalarImageType;
   
-  typedef itk::VectorIndexSelectionCastImageFilter<itk::VectorImage<TPixel, 2>, ScalarImageType > IndexSelectionType;
+  typedef itk::VectorIndexSelectionCastImageFilter<VectorImageType, ScalarImageType > IndexSelectionType;
   typename IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
   indexSelectionFilter->SetIndex(channel);
   indexSelectionFilter->SetInput(image);
@@ -1176,6 +1198,7 @@ void ScaleChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, con
   rescaleFilter->Update();
   
   DeepCopy<itk::VectorImage<TPixel, 2> >(image, output);
+  
   ReplaceChannel<TPixel>(output, channel, rescaleFilter->GetOutput(), output);
 }
 

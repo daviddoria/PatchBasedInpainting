@@ -482,7 +482,7 @@ void CriminisiInpainting::RecomputeScoresWithNewPatches(std::vector<Patch>& newP
   
   if(newPatches.size() <= 0)
     {
-    std::cout << "There were 0 new patches to recompute!" << std::endl;
+    //std::cout << "There were 0 new patches to recompute!" << std::endl;
     return;
     }
   // Recompute for all forward look candidates except the one that was used. Otherwise there would be an exact match!
@@ -625,10 +625,10 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     {
     //std::cout << "FindBestPatchLookAhead: Start computing new patch " << newPatchId << std::endl;
 
-    // If there are no boundary pixels, we can't find any more look ahead patches.
+    // If there are no boundary pixels, we can't find any more look ahead patches. This is not an error - near the end of the inpainting this will most likely occur. It is ok - we just don't have to compute as many forward look patches.
     if(Helpers::CountNonZeroPixels<UnsignedCharScalarImageType>(modifiedBoundaryImage) == 0)
       {
-      std::cerr << "There are no boundary pixels!" << std::endl;
+      //std::cout << "FindBestPatchLookAhead: There are no more boundary pixels!" << std::endl;
       break;
       }
 

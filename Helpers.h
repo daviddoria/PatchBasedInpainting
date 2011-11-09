@@ -223,6 +223,9 @@ template <class T>
 float MaxValue(const typename T::Pointer image);
 
 template <class T>
+std::vector<T> MaxValuesVectorImage(const typename itk::VectorImage<T, 2>::Pointer image);
+
+template <class T>
 float MaxValueLocation(const typename T::Pointer image);
 
 template <class T>

@@ -34,7 +34,7 @@ SelfPatchCompare.cpp
 )
 
 # Interactive
-SET(BuildInteractive ON CACHE BOOL "Build the interactive version.")
+SET(BuildInteractive CACHE BOOL "Build the interactive version.")
 if(BuildInteractive)
   ADD_EXECUTABLE(CriminisiInpaintingInteractive
   FileSelector.cpp
@@ -56,7 +56,7 @@ if(BuildInteractive)
 endif()
 
 # Non-interactive
-SET(BuildNonInteractive ON CACHE BOOL "Build the non-interactive version.")
+SET(BuildNonInteractive CACHE BOOL "Build the non-interactive version.")
 if(BuildNonInteractive)
   ADD_EXECUTABLE(CriminisiInpaintingNonInteractive
   CriminisiInpaintingNonInteractive.cpp)

@@ -65,6 +65,12 @@ int main(int argc, char *argv[])
   imageReader->Update();
   
   FloatVectorImageType::Pointer scaledImage = FloatVectorImageType::New();
+  // Initialize
+  Helpers::DeepCopy<FloatVectorImageType>(imageReader->GetOutput(), scaledImage);
+  
+  std::vector<float> maxValues = Helpers::MaxValuesVectorImage<float>(imageReader->GetOutput());
+  
+  // Scale all channels the same
 //   for(unsigned int channel = 0; channel < imageReader->GetOutput()->GetNumberOfComponentsPerPixel(); ++channel)
 //     {
 //     Helpers::ScaleChannel<float>(imageReader->GetOutput(), channel, 1.0f, scaledImage);
@@ -73,11 +79,13 @@ int main(int argc, char *argv[])
   // Scale color channels
   for(unsigned int channel = 0; channel < 3; ++channel)
     {
-    Helpers::ScaleChannel<float>(imageReader->GetOutput(), channel, 0.33f, scaledImage);
+    Helpers::ScaleChannel<float>(scaledImage, channel, 0.33f, scaledImage);
     }
 
   // Scale depth channel
-  Helpers::ScaleChannel<float>(imageReader->GetOutput(), 3, 1.0f, scaledImage);
+  Helpers::ScaleChannel<float>(scaledImage, 3, 1.0f, scaledImage);
+  
+  Helpers::WriteImage<FloatVectorImageType>(scaledImage, "scaled.mha");
   
   typedef  itk::ImageFileReader< Mask > MaskReaderType;
   MaskReaderType::Pointer maskReader = MaskReaderType::New();
@@ -87,6 +95,8 @@ int main(int argc, char *argv[])
   Mask::Pointer finalMask = Mask::New();
   ModifyMask(maskReader->GetOutput(), patchRadius, finalMask);
 
+  cout.setf(ios::showpoint);
+  
   std::vector<float> lambdas;
   for(unsigned int i = 0; i <= 10; ++i)
     {
@@ -97,12 +107,13 @@ int main(int argc, char *argv[])
   // We have to create an empty CandidatePairs object to create the SelfPatchCompare object.
   SelfPatchCompare* patchCompare = new SelfPatchCompare;
   patchCompare->SetNumberOfComponentsPerPixel(imageReader->GetOutput()->GetNumberOfComponentsPerPixel());
-  patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
+  //patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
   patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchColorDifference,patchCompare,_1));
   patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,patchCompare,_1));
     
   std::ofstream fout("scores.txt");
-   
+  
+  fout.setf(ios::showpoint);
   for(unsigned int lambdaId = 0; lambdaId < lambdas.size(); ++lambdaId)
     {
     // Inpaint
@@ -118,9 +129,12 @@ int main(int argc, char *argv[])
     inpainting.SetMaxForwardLookPatches(3);
     inpainting.SetPatchCompare(patchCompare);
     
-    //inpainting.PatchSortFunction = &SortByDepthAndColor;
-    inpainting.PatchSortFunction = &SortByAverageAbsoluteDifference;
+    inpainting.PatchSortFunction = &SortByDepthAndColor;
+    //inpainting.PatchSortFunction = &SortByAverageAbsoluteDifference;
     
+    //DepthAndColorDifference = ColorDifference * Lambda + (1.0 - Lambda) * DepthDifference;
+    // When lambda = 0, only the depth is used
+    // When lambda = 1, only the color is used
     
     inpainting.Initialize();
     inpainting.Inpaint();
@@ -143,12 +157,20 @@ int main(int argc, char *argv[])
     std::cout << "depthError: " << depthError << std::endl;
     
     fout << colorError << " " << depthError << std::endl;
-    
+  
+    // Unscale all channels
+    for(unsigned int channel = 0; channel < imageReader->GetOutput()->GetNumberOfComponentsPerPixel(); ++channel)
+      {
+      Helpers::ScaleChannel<float>(inpainting.GetCurrentOutputImage(), channel, maxValues[channel], inpainting.GetCurrentOutputImage());
+      }
+
     std::stringstream ssFloat;
+    ssFloat.setf(ios::showpoint);
     ssFloat << outputPrefix << "_float_lambda_" << lambdas[lambdaId] << ".mha";
     Helpers::WriteImage<FloatVectorImageType>(inpainting.GetCurrentOutputImage(), ssFloat.str());
     
     std::stringstream ssRGB;
+    ssRGB.setf(ios::showpoint);
     ssRGB << outputPrefix << "_RGB_lambda_" << lambdas[lambdaId] << ".mha";
     Helpers::WriteVectorImageAsRGB(inpainting.GetCurrentOutputImage(), ssRGB.str());
     //Helpers::WriteVectorImageAsRGB(inpainting.GetCurrentOutputImage(), Helpers::ReplaceFileExtension(ss.str(), "png"));
