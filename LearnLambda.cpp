@@ -18,6 +18,7 @@
 
 #include "CriminisiInpainting.h"
 
+// Custom
 #include "PatchPair.h"
 #include "PixelDifference.h"
 #include "SelfPatchCompare.h"
@@ -26,6 +27,9 @@
 #include "itkAddImageFilter.h"
 #include "itkImageFileReader.h"
 #include "itkXorImageFilter.h"
+
+// Boost
+#include <boost/bind.hpp>
 
 void ModifyMask(const Mask::Pointer inputMask, const unsigned int radius, Mask::Pointer outputMask);
 
@@ -93,7 +97,10 @@ int main(int argc, char *argv[])
   // We have to create an empty CandidatePairs object to create the SelfPatchCompare object.
   SelfPatchCompare* patchCompare = new SelfPatchCompare;
   patchCompare->SetNumberOfComponentsPerPixel(imageReader->GetOutput()->GetNumberOfComponentsPerPixel());
-  
+  patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
+  patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchColorDifference,patchCompare,_1));
+  patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,patchCompare,_1));
+    
   std::ofstream fout("scores.txt");
    
   for(unsigned int lambdaId = 0; lambdaId < lambdas.size(); ++lambdaId)
@@ -109,7 +116,7 @@ int main(int argc, char *argv[])
     inpainting.SetImage(scaledImage);
     inpainting.SetMask(finalMask);
     inpainting.SetMaxForwardLookPatches(3);
-    //inpainting.SetPatchCompare(patchCompare);
+    inpainting.SetPatchCompare(patchCompare);
     
     //inpainting.PatchSortFunction = &SortByDepthAndColor;
     inpainting.PatchSortFunction = &SortByAverageAbsoluteDifference;

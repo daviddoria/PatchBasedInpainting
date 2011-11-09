@@ -24,6 +24,7 @@ struct FullPixelDifference
   FullPixelDifference(typename FloatVectorImageType::PixelType& examplePixel)
   {
     this->NumberOfComponentsPerPixel = examplePixel.GetNumberOfElements();
+    std::cout << "Set NumberOfComponentsPerPixel to " << this->NumberOfComponentsPerPixel << std::endl;
   }
   
   FullPixelDifference(const unsigned int numberOfComponents)
@@ -103,6 +104,15 @@ struct FullSquaredPixelDifference
 
 struct ColorPixelDifference
 {
+  ColorPixelDifference(const unsigned int numberOfComponents)
+  {
+    if(numberOfComponents < 3)
+      {
+      std::cerr << "Can't call ColorPixelDifference on an image with " << numberOfComponents << " components!" << std::endl;
+      exit(-1);
+      }
+  }
+  
   static float Difference(const typename FloatVectorImageType::PixelType &a, const FloatVectorImageType::PixelType &b)
   {
     float difference = 0;
@@ -121,6 +131,15 @@ struct ColorPixelDifference
  
 struct DepthPixelDifference
 {
+  DepthPixelDifference(const unsigned int numberOfComponents)
+  {
+    if(numberOfComponents < 4)
+      {
+      std::cerr << "Can't call DepthPixelDifference on an image with " << numberOfComponents << " components!" << std::endl;
+      exit(-1);
+      }
+  }
+  
   static float Difference(const typename FloatVectorImageType::PixelType &a, const FloatVectorImageType::PixelType &b)
   {
     return fabs(a[3] - b[3]);

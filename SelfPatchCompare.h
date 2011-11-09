@@ -39,6 +39,9 @@
 // STL
 #include <vector>
 
+// Boost
+#include <boost/function.hpp>
+
 class SelfPatchCompare
 {
   
@@ -60,16 +63,19 @@ public:
   float PatchDifferenceManual(const Patch& sourcePatch);
   
   float PatchAverageAbsoluteSourceDifference(const Patch& sourcePatch);
-  float PatchAverageSquaredDifference(const Patch& sourcePatch);
+  //float PatchAverageSquaredDifference(const Patch& sourcePatch);
   
+  // This function loops through FunctionsToCompute and calls them all.
   void SetPatchAllDifferences(PatchPair& patchPair);
+  
+  // This is the potential list of FunctionsToCompute
   void SetPatchAverageAbsoluteSourceDifference(PatchPair& patchPair);
   void SetPatchAverageAbsoluteFullDifference(PatchPair& patchPair);
-  void SetPatchAverageSquaredDifference(PatchPair& patchPair);
+  //void SetPatchAverageSquaredDifference(PatchPair& patchPair);
   void SetPatchDepthDifference(PatchPair& patchPair);
   void SetPatchColorDifference(PatchPair& patchPair);
   
-  float PatchDifferenceBoundary(const Patch& sourcePatch);
+  float PatchSourceDifferenceBoundary(const Patch& sourcePatch);
 
   // Prepare to do some comparisons by finding all of the valid pixels in the target region
   void ComputeOffsets();
@@ -77,6 +83,8 @@ public:
   void SetPairs(CandidatePairs* pairs);
   
   void SetNumberOfComponentsPerPixel(const unsigned int numberOfComponentsPerPixel);
+  
+  std::vector<boost::function< void(PatchPair&) > > FunctionsToCompute;
   
 protected:
   // If a channel of one pixel was white (255) and the corresponding channel of the other pixel
@@ -103,7 +111,7 @@ protected:
     
   // This function takes a template paramter of a class which has a Difference(pixel, pixel) function.
   template<typename TDifferenceFunction>
-  float PatchAverageDifference(const Patch& sourcePatch);
+  float PatchAverageSourceDifference(const Patch& sourcePatch);
 
 };
 

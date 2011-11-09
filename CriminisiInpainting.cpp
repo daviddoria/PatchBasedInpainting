@@ -383,19 +383,25 @@ PatchPair CriminisiInpainting::Iterate()
   
   //std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
   
-  std::stringstream ssTargetIsophotes;
-  ssTargetIsophotes << "Debug/TargetIsophotes_" << this->NumberOfCompletedIterations << ".mha";
-  //Helpers::WriteRegion<FloatVector2ImageType>(this->IsophoteImage, usedPatchPair.TargetPatch.Region, ssTargetIsophotes.str());
-  Helpers::Write2DVectorRegion(this->IsophoteImage, usedPatchPair.TargetPatch.Region, ssTargetIsophotes.str());
-  
-  std::stringstream ssSource;
-  ssSource << "Debug/source_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
-  //Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.SourcePatch, ssSource.str());
+  if(this->DebugImages)
+    {
+    std::stringstream ssTargetIsophotes;
+    ssTargetIsophotes << "Debug/TargetIsophotes_" << this->NumberOfCompletedIterations << ".mha";
+    Helpers::Write2DVectorRegion(this->IsophoteImage, usedPatchPair.TargetPatch.Region, ssTargetIsophotes.str());
+      
+    
+    std::stringstream ssSource;
+    ssSource << "Debug/source_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
+    Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.SourcePatch, ssSource.str());
 
-  std::stringstream ssTarget;
-  ssTarget << "Debug/target_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
-  //Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch, ssTarget.str());
-  //Helpers::WriteRegionUnsignedChar<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch.Region, ssTarget.str());
+    std::stringstream ssTargetMHA;
+    ssTargetMHA << "Debug/target_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
+    Helpers::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch, ssTargetMHA.str());
+    
+    std::stringstream ssTargetPNG;
+    ssTargetPNG << "Debug/target_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".png";
+    Helpers::WriteRegionUnsignedChar<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch.Region, ssTargetPNG.str());
+    }
   
   // Copy the patch. This is the actual inpainting step.
   Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);

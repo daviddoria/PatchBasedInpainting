@@ -1,14 +1,12 @@
 template<typename TDifferenceFunction>
-float SelfPatchCompare::PatchAverageDifference(const Patch& sourcePatch)
+float SelfPatchCompare::PatchAverageSourceDifference(const Patch& sourcePatch)
 {
   float totalDifference = 0.0f;
   
   FloatVectorImageType::InternalPixelType *buffptr = this->Image->GetBufferPointer();
   unsigned int offsetDifference = (this->Image->ComputeOffset(this->Pairs->TargetPatch.Region.GetIndex())
-				  - this->Image->ComputeOffset(sourcePatch.Region.GetIndex())) * this->NumberOfComponentsPerPixel;
+                                   - this->Image->ComputeOffset(sourcePatch.Region.GetIndex())) * this->NumberOfComponentsPerPixel;
 
-  float squaredDifference = 0;
-  
   FloatVectorImageType::PixelType sourcePixel;
   sourcePixel.SetSize(this->NumberOfComponentsPerPixel);
   
@@ -19,8 +17,8 @@ float SelfPatchCompare::PatchAverageDifference(const Patch& sourcePatch)
   differencePixel.SetSize(this->NumberOfComponentsPerPixel);
   
   //TDifferenceFunction differenceFunction(sourcePixel);
-  TDifferenceFunction differenceFunction;
-  
+  TDifferenceFunction differenceFunction(this->NumberOfComponentsPerPixel);
+  float difference = 0;
   for(unsigned int pixelId = 0; pixelId < this->ValidOffsets.size(); ++pixelId)
     {
     
@@ -30,9 +28,9 @@ float SelfPatchCompare::PatchAverageDifference(const Patch& sourcePatch)
       targetPixel[i] = buffptr[this->ValidOffsets[pixelId] - offsetDifference + i];
       }
   
-    squaredDifference = differenceFunction.Difference(sourcePixel, targetPixel);
+    difference = differenceFunction.Difference(sourcePixel, targetPixel);
 
-    totalDifference += squaredDifference;
+    totalDifference += difference;
     }
 
   float averageDifference = totalDifference/static_cast<float>(this->ValidOffsets.size());

@@ -789,7 +789,14 @@ QImage GetQImageColor(const typename TImage::Pointer image, const itk::ImageRegi
     typename TImage::PixelType pixel = imageIterator.Get();
 
     itk::Index<2> index = imageIterator.GetIndex();
-    QColor pixelColor(static_cast<int>(pixel[0]), static_cast<int>(pixel[1]), static_cast<int>(pixel[2]));
+    int r = static_cast<int>(pixel[0]);
+    int g = static_cast<int>(pixel[1]);
+    int b = static_cast<int>(pixel[2]);
+    QColor pixelColor(r,g,b);
+    if(r > 255 || r < 0 || g > 255 || g < 0 || b > 255 || b < 0)
+      {
+      std::cout << "Can't set r,g,b to " << r << " " << g << " " << b << std::endl;
+      }
     qimage.setPixel(index[0], index[1], pixelColor.rgb());
 
     ++imageIterator;

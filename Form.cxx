@@ -60,6 +60,9 @@
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLImageDataWriter.h> // For debugging only
 
+// Boost
+#include <boost/bind.hpp>
+
 // Custom
 #include "FileSelector.h"
 #include "Helpers.h"
@@ -666,6 +669,14 @@ void Form::Initialize()
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
   this->Inpainting.SetMask(this->UserMaskImage);
   this->Inpainting.SetImage(this->UserImage);
+  
+  SelfPatchCompare* patchCompare = new SelfPatchCompare;
+  patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
+  patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
+  
+  this->Inpainting.SetPatchCompare(patchCompare);
+  
+  this->Inpainting.PatchSortFunction = &SortByAverageAbsoluteDifference;
   this->Inpainting.Initialize();
   
   SetupInitialIntermediateImages();
