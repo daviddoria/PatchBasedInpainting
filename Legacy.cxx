@@ -1085,3 +1085,52 @@ float SelfPatchCompare::PatchAverageSquaredDifference(const Patch& sourcePatch)
     exit(-1);
   }
 }
+
+
+
+float SelfPatchCompare::PatchAverageAbsoluteSourceDifference(const Patch& sourcePatch)
+{
+  // This function assumes that all pixels in the source region are unmasked/valid.
+  try
+  {
+    //assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
+
+    float totalAbsoluteDifference = 0.0f;
+
+    FloatVectorImageType::InternalPixelType *buffptr = this->Image->GetBufferPointer();
+    
+    // This is the vector from the target patch to the source patch.
+    int targetToSourceOffsetPixels = this->Image->ComputeOffset(sourcePatch.Region.GetIndex()) - this->Image->ComputeOffset(this->Pairs->TargetPatch.Region.GetIndex());
+    int targetToSourceOffset = targetToSourceOffsetPixels * this->NumberOfComponentsPerPixel;
+
+    float absoluteDifference = 0.0f;
+
+    FloatVectorImageType::PixelType sourcePixel(this->NumberOfComponentsPerPixel);
+
+    FloatVectorImageType::PixelType targetPixel(this->NumberOfComponentsPerPixel);
+
+    FullPixelDifference differenceFunction(this->NumberOfComponentsPerPixel);
+    for(unsigned int pixelId = 0; pixelId < this->ValidTargetPatchOffsets.size(); ++pixelId)
+      {
+
+      for(unsigned int component = 0; component < this->NumberOfComponentsPerPixel; ++component)
+        {
+        sourcePixel[component] = buffptr[this->ValidTargetPatchOffsets[pixelId] + targetToSourceOffset + component];
+        targetPixel[component] = buffptr[this->ValidTargetPatchOffsets[pixelId] + component];
+        }
+
+      absoluteDifference = differenceFunction.Difference(sourcePixel, targetPixel);
+
+      totalAbsoluteDifference += absoluteDifference;
+      }
+  
+    float averageAbsoluteDifference = totalAbsoluteDifference / static_cast<float>(this->ValidTargetPatchOffsets.size());
+    return averageAbsoluteDifference;
+  } //end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in PatchDifference!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}

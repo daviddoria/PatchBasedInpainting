@@ -479,6 +479,12 @@ PatchPair CriminisiInpainting::Iterate()
 void CriminisiInpainting::RecomputeScoresWithNewPatches(std::vector<Patch>& newPatches, PatchPair& usedPatchPair)
 {
   EnterFunction("RecomputeScoresWithNewPatches()");
+  
+  if(newPatches.size() <= 0)
+    {
+    std::cout << "There were 0 new patches to recompute!" << std::endl;
+    return;
+    }
   // Recompute for all forward look candidates except the one that was used. Otherwise there would be an exact match!
   for(unsigned int candidateId = 0; candidateId < this->PotentialCandidatePairs.size(); ++candidateId)
     {
@@ -554,19 +560,19 @@ void CriminisiInpainting::FindBestPatch(CandidatePairs& candidatePairs, PatchPai
 {
   EnterFunction("FindBestPatch()");
 
-  std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
+  //std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
   this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(this->CompareImage);
   this->PatchCompare->SetMask(this->CurrentMask);
   this->PatchCompare->ComputeAllSourceDifferences();
   
-  std::cout << "FindBestPatch: Finished ComputeAllSourceDifferences()" << std::endl;
+  //std::cout << "FindBestPatch: Finished ComputeAllSourceDifferences()" << std::endl;
   
   //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
   //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDepthAndColor);
   std::sort(candidatePairs.begin(), candidatePairs.end(), PatchSortFunction);
   
-  std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
+  //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
   
   // Return the result by reference.
   bestPatchPair = candidatePairs[0];

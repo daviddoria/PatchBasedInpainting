@@ -24,12 +24,13 @@ struct FullPixelDifference
   FullPixelDifference(typename FloatVectorImageType::PixelType& examplePixel)
   {
     this->NumberOfComponentsPerPixel = examplePixel.GetNumberOfElements();
-    std::cout << "Set NumberOfComponentsPerPixel to " << this->NumberOfComponentsPerPixel << std::endl;
+    //std::cout << "FullPixelDifference set NumberOfComponentsPerPixel to " << this->NumberOfComponentsPerPixel << std::endl;
   }
   
   FullPixelDifference(const unsigned int numberOfComponents)
   {
     this->NumberOfComponentsPerPixel = numberOfComponents;
+    //std::cout << "FullPixelDifference set NumberOfComponentsPerPixel to " << this->NumberOfComponentsPerPixel << std::endl;
   }
   
   float Difference(const typename FloatVectorImageType::PixelType &a, const typename FloatVectorImageType::PixelType &b)
@@ -71,6 +72,7 @@ struct FullSquaredPixelDifference
   FullSquaredPixelDifference(const unsigned int numberOfComponents)
   {
     this->NumberOfComponentsPerPixel = numberOfComponents;
+    //std::cout << "FullSquaredPixelDifference set NumberOfComponentsPerPixel to " << this->NumberOfComponentsPerPixel << std::endl;
   }
   
   float Difference(const typename FloatVectorImageType::PixelType &a, const typename FloatVectorImageType::PixelType &b)
@@ -108,7 +110,7 @@ struct ColorPixelDifference
   {
     if(numberOfComponents < 3)
       {
-      std::cerr << "Can't call ColorPixelDifference on an image with " << numberOfComponents << " components!" << std::endl;
+      std::cerr << "ColorPixelDifference can't call ColorPixelDifference on an image with " << numberOfComponents << " components!" << std::endl;
       exit(-1);
       }
   }
@@ -135,7 +137,7 @@ struct DepthPixelDifference
   {
     if(numberOfComponents < 4)
       {
-      std::cerr << "Can't call DepthPixelDifference on an image with " << numberOfComponents << " components!" << std::endl;
+      std::cerr << "DepthPixelDifference can't call DepthPixelDifference on an image with " << numberOfComponents << " components!" << std::endl;
       exit(-1);
       }
   }

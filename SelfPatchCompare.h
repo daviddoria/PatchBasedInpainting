@@ -92,7 +92,7 @@ protected:
   static const float MaxColorDifference = 255*255;
   
   // These are the offsets of the target region which we with to compare
-  std::vector<FloatVectorImageType::OffsetValueType> ValidOffsets;
+  std::vector<FloatVectorImageType::OffsetValueType> ValidTargetPatchOffsets;
 
   // This is the target region we wish to compare. It may be partially invalid.
   //Patch TargetPatch;
