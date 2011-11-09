@@ -10,6 +10,13 @@
 ForwardLookTableModel::ForwardLookTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs) : QAbstractTableModel(), AllCandidatePairs(allCandidatePairs)
 {
   this->IterationToDisplay = 0;
+  
+  this->PatchDisplaySize = 100;
+}
+
+void ForwardLookTableModel::SetPatchDisplaySize(const unsigned int value)
+{
+  this->PatchDisplaySize = value;
 }
 
 Qt::ItemFlags ForwardLookTableModel::flags(const QModelIndex& index) const
@@ -58,8 +65,8 @@ QVariant ForwardLookTableModel::data(const QModelIndex& index, int role) const
 	{
 	// Display the target patch in the table
 	QImage patchImage = Helpers::GetQImageColor<FloatVectorImageType>(this->Image, currentForwardLookPatch.Region);
-	unsigned int patchDisplaySize = 200;
-	patchImage = patchImage.scaledToHeight(patchDisplaySize);
+	
+	patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
     
 	returnValue = QPixmap::fromImage(patchImage);
 	break;
@@ -111,12 +118,12 @@ QVariant ForwardLookTableModel::headerData(int section, Qt::Orientation orientat
 
 void ForwardLookTableModel::Refresh()
 {
-  std::cout << "ForwardLookTableModel::Refresh(): Displaying iteration: " << this->IterationToDisplay << std::endl;
+  //std::cout << "ForwardLookTableModel::Refresh(): Displaying iteration: " << this->IterationToDisplay << std::endl;
   beginResetModel();
   endResetModel();
 }
 
 void ForwardLookTableModel::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
-  std::cout << "ForwardLookTableModel::selectionChanged()" << std::endl;
+  //std::cout << "ForwardLookTableModel::selectionChanged()" << std::endl;
 }

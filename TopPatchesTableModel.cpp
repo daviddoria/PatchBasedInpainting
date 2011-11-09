@@ -11,6 +11,13 @@ TopPatchesTableModel::TopPatchesTableModel(std::vector<std::vector<CandidatePair
 {
   this->IterationToDisplay = 0;
   this->ForwardLookToDisplay = 0;
+  
+  this->PatchDisplaySize = 100;
+}
+
+void TopPatchesTableModel::SetPatchDisplaySize(const unsigned int value)
+{
+  this->PatchDisplaySize = value;
 }
 
 Qt::ItemFlags TopPatchesTableModel::flags(const QModelIndex& index) const
@@ -64,8 +71,8 @@ QVariant TopPatchesTableModel::data(const QModelIndex& index, int role) const
       case 0:
 	{
 	QImage patchImage = Helpers::GetQImageColor<FloatVectorImageType>(this->Image, currentCandidateSet[index.row()].SourcePatch.Region);
-	unsigned int patchDisplaySize = 100;
-	patchImage = patchImage.scaledToHeight(patchDisplaySize);
+	
+	patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
     
 	returnValue = QPixmap::fromImage(patchImage);
 	break;
@@ -123,12 +130,12 @@ QVariant TopPatchesTableModel::headerData(int section, Qt::Orientation orientati
 
 void TopPatchesTableModel::Refresh()
 {
-  std::cout << "TopPatchesTableModel::Refresh(): Displaying iteration: " << this->IterationToDisplay << std::endl;
+  //std::cout << "TopPatchesTableModel::Refresh(): Displaying iteration: " << this->IterationToDisplay << std::endl;
   beginResetModel();
   endResetModel();
 }
 
 void TopPatchesTableModel::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
-  std::cout << "TopPatchesTableModel::selectionChanged()" << std::endl;
+  //std::cout << "TopPatchesTableModel::selectionChanged()" << std::endl;
 }

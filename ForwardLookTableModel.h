@@ -28,12 +28,16 @@ public:
   
   void Refresh();
   
+  void SetPatchDisplaySize(const unsigned int value);
+  
 protected:
   
   std::vector<std::vector<CandidatePairs> >& AllCandidatePairs;
   
   FloatVectorImageType::Pointer Image;
   unsigned int IterationToDisplay;
+  
+  unsigned int PatchDisplaySize;
 };
 
 #endif

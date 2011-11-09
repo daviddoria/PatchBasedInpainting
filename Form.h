@@ -320,6 +320,8 @@ protected:
   
   ForwardLookTableModel* ForwardLookModel;
   TopPatchesTableModel* TopPatchesModel;
+  
+  unsigned int PatchDisplaySize;
 };
 
 #include "Form.hxx"

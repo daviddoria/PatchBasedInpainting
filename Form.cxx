@@ -85,21 +85,6 @@ void Form::on_actionHelp_activated()
   help->show();
 }
 
-void Form::SetupColors()
-{
-  this->UsedTargetPatchColor = Qt::red;
-  this->UsedSourcePatchColor = Qt::green;
-  this->AllForwardLookPatchColor = Qt::darkCyan;
-  this->SelectedForwardLookPatchColor = Qt::cyan;
-  this->AllSourcePatchColor = Qt::darkMagenta;
-  this->SelectedSourcePatchColor = Qt::magenta;
-  this->CenterPixelColor = Qt::blue;
-  this->MaskColor = Qt::darkGray;
-  //this->HoleColor = Qt::gray;
-  this->HoleColor.setRgb(255, 153, 0); // Orange
-  this->SceneBackgroundColor.setRgb(153, 255, 0); // ?
-}
-  
 void Form::DefaultConstructor()
 {
   //std::cout << "DefaultConstructor()" << std::endl;
@@ -116,6 +101,7 @@ void Form::DefaultConstructor()
   this->CameraBottomToTopVector[1] = 1;
   this->CameraBottomToTopVector[2] = 0;
   
+  this->PatchDisplaySize = 100;
   
   SetupColors();
   
@@ -251,6 +237,21 @@ Form::Form(const std::string& imageFileName, const std::string& maskFileName)
   OpenImage(imageFileName);
   OpenMask(maskFileName, false);
   Initialize();
+}
+
+void Form::SetupColors()
+{
+  this->UsedTargetPatchColor = Qt::red;
+  this->UsedSourcePatchColor = Qt::green;
+  this->AllForwardLookPatchColor = Qt::darkCyan;
+  this->SelectedForwardLookPatchColor = Qt::cyan;
+  this->AllSourcePatchColor = Qt::darkMagenta;
+  this->SelectedSourcePatchColor = Qt::magenta;
+  this->CenterPixelColor = Qt::blue;
+  this->MaskColor = Qt::darkGray;
+  //this->HoleColor = Qt::gray;
+  this->HoleColor.setRgb(255, 153, 0); // Orange
+  this->SceneBackgroundColor.setRgb(153, 255, 0); // ?
 }
 
 void Form::on_chkDebugImages_clicked()
@@ -1011,38 +1012,30 @@ void Form::HighlightSourcePatches()
       {
       return;
       }
-  //   CandidatePairs& candidatePairs;
-  //   bool valid = this->Inpainting.GetPotentialCandidatePairs(this->IterationToDisplay - 1, this->forwardLookingTableWidget->currentRow(), candidatePairs);
-  //   if(!valid)
-  //     {
-  //     return;
-  //     }
+  
+    const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->ForwardLookToDisplay];
 
-//     const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->forwardLookingTableWidget->currentRow()];
-// 
-//     unsigned char borderColor[3];
-//     Helpers::QColorToUCharColor(this->AllSourcePatchColor, borderColor);
-//     unsigned char centerPixelColor[3];
-//     Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
-// 
-//     unsigned int numberToDisplay = std::min(candidatePairs.size(), this->txtNumberOfTopPatchesToDisplay->text().toUInt());
-//     for(unsigned int candidateId = 0; candidateId < numberToDisplay; ++candidateId)
-//       {
-//       //DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
-//       const Patch& currentPatch = candidatePairs[candidateId].SourcePatch;
-//       Helpers::BlankAndOutlineRegion(this->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, borderColor);
-//       Helpers::SetRegionCenterPixel(this->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
-//       }
-// 
-//     //std::cout << "Selected forward look patch should be: " << this->forwardLookingTableWidget->currentRow() << std::endl;
+    unsigned char borderColor[3];
+    Helpers::QColorToUCharColor(this->AllSourcePatchColor, borderColor);
+    unsigned char centerPixelColor[3];
+    Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
+
+    unsigned int numberToDisplay = std::min(candidatePairs.size(), this->txtNumberOfTopPatchesToDisplay->text().toUInt());
+    for(unsigned int candidateId = 0; candidateId < numberToDisplay; ++candidateId)
+      {
+      //DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
+      const Patch& currentPatch = candidatePairs[candidateId].SourcePatch;
+      Helpers::BlankAndOutlineRegion(this->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, borderColor);
+      Helpers::SetRegionCenterPixel(this->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
+      }
+
+    //std::cout << "Selected forward look patch should be: " << this->forwardLookingTableWidget->currentRow() << std::endl;
 //     if(this->topPatchesTableWidget->currentRow() < 0)
 //       {
 //       this->topPatchesTableWidget->selectRow(0);
 //       }
-// 
-//     HighlightSelectedSourcePatch();
-// 
-//     this->qvtkWidget->GetRenderWindow()->Render();
+    
+    this->qvtkWidget->GetRenderWindow()->Render();
     }// end try
   catch( itk::ExceptionObject & err )
   {
@@ -1359,15 +1352,16 @@ void Form::SetupForwardLookingTable()
   
   this->ForwardLookModel->SetImage(this->IntermediateImages[this->IterationToDisplay - 1].Image);
   this->ForwardLookModel->SetIterationToDisplay(this->IterationToDisplay - 1);
+  this->ForwardLookModel->SetPatchDisplaySize(this->PatchDisplaySize);
   this->ForwardLookModel->Refresh();
 
   this->SourcePatchToDisplay = 0;
   HighlightSelectedForwardLookPatch();
 
-  this->ForwardLookTableView->setColumnWidth(0, 100);
-  //this->ForwardLookTableView->setRowHeight(row, height);
-  //this->ForwardLookTableView->resizeColumnsToContents();
-  //this->ForwardLookTableView->resizeRowsToContents();
+  this->ForwardLookTableView->setColumnWidth(0, this->PatchDisplaySize);
+  this->ForwardLookTableView->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+  this->ForwardLookTableView->verticalHeader()->setDefaultSectionSize(this->PatchDisplaySize);
+
 }
 
 void Form::ChangeDisplayedTopPatch()
@@ -1382,7 +1376,7 @@ void Form::ChangeDisplayedTopPatch()
 
 void Form::ChangeDisplayedForwardLookPatch()
 {
-  std::cout << "ChangeDisplayedForwardLookPatch()" << std::endl;
+  DebugMessage("ChangeDisplayedForwardLookPatch()");
   // Setup the top source patches table for this forward look patch.
   //SetupTopPatchesTable();
 
@@ -1396,8 +1390,7 @@ void Form::ChangeDisplayedForwardLookPatch()
 
 void Form::SetupTopPatchesTable()
 {
-  //DebugMessage("SetupTopPatchesTable()");
-  std::cout << "SetupTopPatchesTable()" << std::endl;
+  DebugMessage("SetupTopPatchesTable()");
   
   if(this->IterationToDisplay < 1)
     {
@@ -1414,14 +1407,20 @@ void Form::SetupTopPatchesTable()
   this->TopPatchesModel->SetImage(this->IntermediateImages[this->IterationToDisplay - 1].Image);
   this->TopPatchesModel->SetIterationToDisplay(this->IterationToDisplay - 1);
   this->TopPatchesModel->SetForwardLookToDisplay(this->ForwardLookToDisplay);
+  this->TopPatchesModel->SetPatchDisplaySize(this->PatchDisplaySize);
   this->TopPatchesModel->Refresh();
 
   this->SourcePatchToDisplay = 0;
   HighlightSelectedSourcePatch();
   
   //this->topPatchesTableWidget->horizontalHeader()->resizeColumnsToContents();
-  this->TopPatchesTableView->resizeColumnsToContents();
-  this->TopPatchesTableView->resizeRowsToContents();
+  //this->TopPatchesTableView->resizeColumnsToContents();
+  //this->TopPatchesTableView->resizeRowsToContents();
+  
+  this->TopPatchesTableView->setColumnWidth(0, this->PatchDisplaySize);
+  this->TopPatchesTableView->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+  this->TopPatchesTableView->verticalHeader()->setDefaultSectionSize(this->PatchDisplaySize);
+
   
 }
 
