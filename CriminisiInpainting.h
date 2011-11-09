@@ -154,6 +154,8 @@ public:
   void SetDebugFunctionEnterLeave(const bool value);
 private:
   
+  void RecomputeScoresWithNewPatches(std::vector<Patch>& newPatches, PatchPair& usedPatchPair);
+  
   void BlurImage();
   void ComputeIsophotes();
   

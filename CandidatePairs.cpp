@@ -83,3 +83,16 @@ void CandidatePairs::InvalidateAll()
     (*this)[i].SetValidBoundaryIsophoteStrengthDifference(false);
     }
 }
+
+void CandidatePairs::Combine(CandidatePairs& pairs)
+{
+  if(pairs.TargetPatch.Region != this->TargetPatch.Region)
+    {
+    std::cerr << "Cannot combine CandidatePairs that are not of the same TargetPatch!" << std::endl;
+    exit(-1);
+    }
+  for(unsigned int i = 0; i < pairs.size(); ++i)
+    {
+    this->push_back(pairs[i]);
+    }
+}

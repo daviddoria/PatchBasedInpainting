@@ -451,23 +451,8 @@ PatchPair CriminisiInpainting::Iterate()
   std::vector<Patch> newPatches = AddNewSourcePatchesInRegion(previousInvalidRegion);
   
   
-  // Recompute for all forward look candidates except the one that was used. Otherwise there would be an exact match!
-  for(unsigned int candidateId = 0; candidateId < this->PotentialCandidatePairs.size(); ++candidateId)
-    {
-    //std::cout << "Computing everything for candidateId " << candidateId << std::endl;
-  
-    // Don't recompute for the target patch that was used.
-    if(usedPatchPair.TargetPatch.Region != this->PotentialCandidatePairs[candidateId].TargetPatch.Region)
-      {
-      this->PotentialCandidatePairs[candidateId].AddPairsFromPatches(newPatches);
-      //ComputeAllContinuationDifferences(this->PotentialCandidatePairs[candidateId]);
-    
-      this->PatchCompare->SetPairs(&(this->PotentialCandidatePairs[candidateId]));
-      this->PatchCompare->SetImage(this->CompareImage);
-      this->PatchCompare->SetMask(this->CurrentMask);
-      this->PatchCompare->ComputeAllSourceDifferences();
-      }
-    }
+  RecomputeScoresWithNewPatches(newPatches, usedPatchPair);
+
 
   // At the end of an iteration, things would be slightly out of sync. The boundary is computed at the beginning of the iteration (before the patch is filled),
   // so at the end of the iteration, the boundary image will not correspond to the boundary of the remaining hole in the image - it will be off by 1 iteration.
@@ -483,6 +468,31 @@ PatchPair CriminisiInpainting::Iterate()
   
   LeaveFunction("Iterate()");
   return usedPatchPair;
+}
+
+void CriminisiInpainting::RecomputeScoresWithNewPatches(std::vector<Patch>& newPatches, PatchPair& usedPatchPair)
+{
+  EnterFunction("RecomputeScoresWithNewPatches()");
+  // Recompute for all forward look candidates except the one that was used. Otherwise there would be an exact match!
+  for(unsigned int candidateId = 0; candidateId < this->PotentialCandidatePairs.size(); ++candidateId)
+    {
+    // Don't bother recomputing for the target patch that was used - it will not be used again.
+    if(usedPatchPair.TargetPatch.Region == this->PotentialCandidatePairs[candidateId].TargetPatch.Region)
+      {
+      continue;
+      }
+    CandidatePairs newPairs(this->PotentialCandidatePairs[candidateId].TargetPatch);
+    newPairs.AddPairsFromPatches(newPatches);
+  
+    this->PatchCompare->SetPairs(&newPairs);
+    this->PatchCompare->SetImage(this->CompareImage);
+    this->PatchCompare->SetMask(this->CurrentMask);
+    this->PatchCompare->ComputeAllSourceDifferences();
+    
+    this->PotentialCandidatePairs[candidateId].Combine(newPairs);
+    }
+    
+  LeaveFunction("RecomputeScoresWithNewPatches()");
 }
 
 void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidatePairs, PatchPair& bestPatchPair)
@@ -537,8 +547,8 @@ void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidate
 void CriminisiInpainting::FindBestPatch(CandidatePairs& candidatePairs, PatchPair& bestPatchPair)
 {
   EnterFunction("FindBestPatch()");
-  //std::cout << "There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
 
+  std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
   this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(this->CompareImage);
   this->PatchCompare->SetMask(this->CurrentMask);

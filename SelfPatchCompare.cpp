@@ -38,13 +38,17 @@ SelfPatchCompare::SelfPatchCompare()
 
 void SelfPatchCompare::SetImage(const FloatVectorImageType::Pointer image)
 {
+  std::cout << "Enter SelfPatchCompare::SetImage()" << std::endl;
   this->Image = image;
   this->NumberOfComponentsPerPixel = image->GetNumberOfComponentsPerPixel();
+  std::cout << "Leave SelfPatchCompare::SetImage()" << std::endl;
 }
 
 void SelfPatchCompare::SetMask(const Mask::Pointer mask)
 {
+  std::cout << "Enter SelfPatchCompare::SetMask()" << std::endl;
   this->MaskImage = mask;
+  std::cout << "Leave SelfPatchCompare::SetMask()" << std::endl;
 }
 
 void SelfPatchCompare::ComputeOffsets()
@@ -468,6 +472,7 @@ void SelfPatchCompare::SetPatchAllDifferences(PatchPair& patchPair)
 
 void SelfPatchCompare::ComputeAllSourceAndTargetDifferences()
 {
+  std::cout << "Enter SelfPatchCompare::ComputeAllSourceAndTargetDifferences()" << std::endl;
   // Source patches are always full and entirely valid, so there are two cases - when the target patch is fully inside the image,
   // and when it is not.
   //std::cout << "ComputeAllSourceAndTargetDifferences()" << std::endl;
@@ -479,7 +484,7 @@ void SelfPatchCompare::ComputeAllSourceAndTargetDifferences()
     ComputeOffsets();
 
     QtConcurrent::blockingMap<std::vector<PatchPair> >(*(this->Pairs), boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteFullDifference, this, _1));
-    //std::cout << "Leaving ComputeAllSourceAndTargetDifferences()" << std::endl;
+    std::cout << "Leave SelfPatchCompare::ComputeAllSourceAndTargetDifferences()" << std::endl;
   }
   catch( itk::ExceptionObject & err )
   {
@@ -491,6 +496,7 @@ void SelfPatchCompare::ComputeAllSourceAndTargetDifferences()
 
 void SelfPatchCompare::ComputeAllSourceDifferences()
 {
+  std::cout << "Enter SelfPatchCompare::ComputeAllSourceDifferences()" << std::endl;
   // Source patches are always full and entirely valid, so there are two cases - when the target patch is fully inside the image,
   // and when it is not.
   try
@@ -525,7 +531,7 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
       //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchTotalAbsoluteDifference, this, _1));
       //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs, boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference, this, _1));
       }
-    //std::cout << "Leaving ComputeAllSourceDifferences()" << std::endl;
+    std::cout << "Leave SelfPatchCompare::ComputeAllSourceDifferences()" << std::endl;
   }
   catch( itk::ExceptionObject & err )
   {
@@ -537,7 +543,9 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
 
 void SelfPatchCompare::SetPairs(CandidatePairs* pairs)
 {
+  std::cout << "Enter SelfPatchCompare::SetPairs()" << std::endl;
   this->Pairs = pairs;
+  std::cout << "Leave SelfPatchCompare::SetPairs()" << std::endl;
 }
 
 void SelfPatchCompare::SetNumberOfComponentsPerPixel(const unsigned int numberOfComponentsPerPixel)
