@@ -104,7 +104,6 @@ int main(int argc, char *argv[])
     std::cout << "Using lambda " << lambdas[i] << std::endl;
     }
 
-  // We have to create an empty CandidatePairs object to create the SelfPatchCompare object.
   SelfPatchCompare* patchCompare = new SelfPatchCompare;
   patchCompare->SetNumberOfComponentsPerPixel(imageReader->GetOutput()->GetNumberOfComponentsPerPixel());
   //patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));

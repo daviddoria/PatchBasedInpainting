@@ -65,8 +65,11 @@ if(BuildNonInteractive)
 endif()
 
 
-ADD_EXECUTABLE(LearnLambda LearnLambda.cpp)
-TARGET_LINK_LIBRARIES(LearnLambda CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# ADD_EXECUTABLE(LearnLambda LearnLambda.cpp)
+# TARGET_LINK_LIBRARIES(LearnLambda CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+
+ADD_EXECUTABLE(TestColorImageByScore Tests/TestColorImageByScore.cpp)
+TARGET_LINK_LIBRARIES(TestColorImageByScore CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
 
 # ADD_EXECUTABLE(ExamplePatchDifference Examples/ExamplePatchDifference.cpp)

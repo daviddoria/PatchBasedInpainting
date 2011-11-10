@@ -101,6 +101,7 @@ bool SortByBoundaryGradientDifference(const PatchPair& pair1, const PatchPair& p
 bool SortByBoundaryIsophoteAngleDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByBoundaryIsophoteStrengthDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByBoundaryPixelDifference(const PatchPair& pair1, const PatchPair& pair2);
+bool SortByDepthDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByTotalScore(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByDepthAndColor(const PatchPair& pair1, const PatchPair& pair2);
 

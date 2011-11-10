@@ -102,6 +102,11 @@ bool PatchPair::IsValidBoundaryIsophoteStrengthDifference() const
 //////////////////////////////////////////
 /////// Sorting functions //////////////
 //////////////////////////////////////////
+bool SortByDepthDifference(const PatchPair& pair1, const PatchPair& pair2)
+{
+  return (pair1.GetDepthDifference() < pair2.GetDepthDifference());
+}
+
 bool SortByDepthAndColor(const PatchPair& pair1, const PatchPair& pair2)
 {
   return (pair1.GetDepthAndColorDifference() < pair2.GetDepthAndColorDifference());
@@ -210,6 +215,11 @@ void PatchPair::SetDepthDifference(const float value)
 float PatchPair::GetTotalScore() const
 {
   return this->TotalScore;
+}
+
+float PatchPair::GetDepthDifference() const
+{
+  return this->DepthDifference;
 }
 
 float PatchPair::GetAverageSquaredDifference() const
