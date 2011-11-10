@@ -2,6 +2,23 @@
 
 #include "HelpersOutput.h"
 
+#include <boost/bind.hpp>
+
+void CriminisiInpainting::SetPatchSearchFunctionToScaleConsistent()
+{
+  this->PatchSearchFunction = boost::bind(&CriminisiInpainting::FindBestPatchScaleConsistent,this,_1,_2);
+}
+
+void CriminisiInpainting::SetPatchSearchFunctionToNormal()
+{
+  this->PatchSearchFunction = boost::bind(&CriminisiInpainting::FindBestPatchNormal,this,_1,_2);
+}
+
+void CriminisiInpainting::SetPatchSearchFunctionToTwoStepDepth()
+{
+  this->PatchSearchFunction = boost::bind(&CriminisiInpainting::FindBestPatchTwoStepDepth,this,_1,_2);
+}
+
 FloatVectorImageType::Pointer CriminisiInpainting::GetCurrentOutputImage()
 {
   return this->CurrentOutputImage;

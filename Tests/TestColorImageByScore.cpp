@@ -62,7 +62,6 @@ int main(int argc, char *argv[])
   //patchCompare->SetMask(maskReader->GetOutput());
   
   CriminisiInpainting inpainting;
-  inpainting.SetDebugImages(true);
   inpainting.SetMask(maskReader->GetOutput());
   inpainting.SetImage(imageReader->GetOutput());
   inpainting.PatchSortFunction = &SortByDepthDifference;
@@ -75,7 +74,12 @@ int main(int argc, char *argv[])
   //patchCompare->ComputeAllSourceDifferences();
   
   // Write an image of the target patch
-  
+  FloatScalarImageType::Pointer targetPatchImage = FloatScalarImageType::New();
+  Helpers::InitializeImage<FloatScalarImageType>(targetPatchImage, imageReader->GetOutput()->GetLargestPossibleRegion());
+  Helpers::SetImageToConstant<FloatScalarImageType>(targetPatchImage, 0.0f);
+  Helpers::SetRegionToConstant<FloatScalarImageType>(targetPatchImage, candidatePairs.TargetPatch.Region, 255.0f);
+  HelpersOutput::WriteImage<FloatScalarImageType>(targetPatchImage, "ScoreImage_TargetPatch.mha");
+
   // Create the score-colored image
   FloatScalarImageType::Pointer scoreColoredImage = FloatScalarImageType::New();
   Helpers::InitializeImage<FloatScalarImageType>(scoreColoredImage, imageReader->GetOutput()->GetLargestPossibleRegion());

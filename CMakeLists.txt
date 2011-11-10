@@ -73,6 +73,8 @@ endif()
 ADD_EXECUTABLE(TestColorImageByScore Tests/TestColorImageByScore.cpp)
 TARGET_LINK_LIBRARIES(TestColorImageByScore CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
+ADD_EXECUTABLE(TestPatchSearchFunction Tests/TestPatchSearchFunction.cpp)
+TARGET_LINK_LIBRARIES(TestPatchSearchFunction CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
 # ADD_EXECUTABLE(ExamplePatchDifference Examples/ExamplePatchDifference.cpp)
 # TARGET_LINK_LIBRARIES(ExamplePatchDifference CriminisiInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})

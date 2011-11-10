@@ -28,6 +28,9 @@
 // STL
 #include <iostream>
 
+// Boost
+#include <boost/bind.hpp>
+
 // VXL
 #include <vnl/vnl_double_2.h>
 
@@ -82,8 +85,12 @@ CriminisiInpainting::CriminisiInpainting()
   
   this->PatchSortFunction = &SortByAverageAbsoluteDifference;
 
+  //this->PatchSearchFunction = &FindBestPatch;
+  this->PatchSearchFunction = boost::bind(&CriminisiInpainting::FindBestPatchNormal,this,_1,_2);
+  
   this->PatchCompare = new SelfPatchCompare;
 }
+
 
 void CriminisiInpainting::ComputeMaxPixelDifference()
 {
@@ -557,9 +564,9 @@ void CriminisiInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidate
 }
 
 
-void CriminisiInpainting::FindBestPatch(CandidatePairs& candidatePairs, PatchPair& bestPatchPair)
+void CriminisiInpainting::FindBestPatchNormal(CandidatePairs& candidatePairs, PatchPair& bestPatchPair)
 {
-  EnterFunction("FindBestPatch()");
+  EnterFunction("FindBestPatchNormal()");
 
   //std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
   this->PatchCompare->SetPairs(&candidatePairs);
@@ -579,7 +586,32 @@ void CriminisiInpainting::FindBestPatch(CandidatePairs& candidatePairs, PatchPai
   bestPatchPair = candidatePairs[0];
   
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatch()." << std::endl;
-  LeaveFunction("FindBestPatch()");
+  LeaveFunction("FindBestPatchNormal()");
+}
+
+void CriminisiInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePairs, PatchPair& bestPatchPair)
+{
+  EnterFunction("FindBestPatchTwoStepDepth()");
+
+  //std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
+  this->PatchCompare->SetPairs(&candidatePairs);
+  this->PatchCompare->SetImage(this->CompareImage);
+  this->PatchCompare->SetMask(this->CurrentMask);
+  this->PatchCompare->ComputeAllSourceDifferences();
+  
+  //std::cout << "FindBestPatch: Finished ComputeAllSourceDifferences()" << std::endl;
+  
+  //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
+  //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDepthAndColor);
+  std::sort(candidatePairs.begin(), candidatePairs.end(), PatchSortFunction);
+  
+  //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
+  
+  // Return the result by reference.
+  bestPatchPair = candidatePairs[0];
+  
+  //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatch()." << std::endl;
+  LeaveFunction("FindBestPatchTwoStepDepth()");
 }
 
 void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
@@ -652,8 +684,9 @@ void CriminisiInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     candidatePairs.Priority = highestPriority;
     
     PatchPair currentLookAheadBestPatchPair;
+    this->PatchSearchFunction(candidatePairs, currentLookAheadBestPatchPair);
     //FindBestPatchScaleConsistent(candidatePairs, currentLookAheadBestPatchPair);
-    FindBestPatch(candidatePairs, currentLookAheadBestPatchPair);
+    //FindBestPatch(candidatePairs, currentLookAheadBestPatchPair);
     
     // Keep only the number of top patches specified.
     //patchPairsSortedByContinuation.erase(patchPairsSortedByContinuation.begin() + this->NumberOfTopPatchesToSave, patchPairsSortedByContinuation.end());
