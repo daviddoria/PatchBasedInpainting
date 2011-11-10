@@ -24,11 +24,6 @@
 #include "Patch.h"
 #include "Types.h"
 
-// Qt
-#include <QImage>
-class QGraphicsView;
-class QTableWidget;
-
 // VTK
 class vtkImageData;
 class vtkPolyData;
@@ -40,8 +35,6 @@ namespace Helpers
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 std::string ReplaceFileExtension(const std::string& fileName, const std::string& newExtension);
-
-bool GetColumnIdByHeader(const QTableWidget* table, const std::string& header, int& columnId);
 
 // Zero pad the 'iteration' and append it to the filePrefix, and add ".[fileExtension]" to the end.
 // GetSequentialFileName("test", 2, "png");
@@ -121,9 +114,6 @@ void MakeValueTransparent(const vtkImageData* inputImage, vtkImageData* outputIm
 // Make an entire image transparent.
 void MakeImageTransparent(vtkImageData* image);
 
-// Scale an image so that it fits in a QGraphicsView
-QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx);
-
 // "Follow" a vector from one pixel to find the next pixel it would "hit".
 itk::Index<2> GetNextPixelAlongVector(const itk::Index<2>& pixel, const FloatVector2Type& vector);
 itk::Offset<2> GetOffsetAlongVector(const FloatVector2Type& vector);
@@ -139,9 +129,6 @@ float RoundAwayFromZero(const float number);
 
 // Apply the MaskedBlur function to every channel of a VectorImage separately.
 void VectorMaskedBlur(const FloatVectorImageType::Pointer inputImage, const Mask::Pointer mask, const float blurVariance, FloatVectorImageType::Pointer output);
-
-// Convert a QColor to an unsigned char[3]
-void QColorToUCharColor(const QColor& color, unsigned char outputColor[3]);
 
 // Simply calls OutlineRegion followed by BlankRegion
 void BlankAndOutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char value[3]);
@@ -272,18 +259,6 @@ void WriteMaskedRegion(const typename TImage::Pointer image, const Mask::Pointer
 
 template<typename TImage>
 void WriteRegion(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename);
-
-template <typename TImage>
-QImage GetQImageColor(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
-
-template <typename TImage>
-QImage GetQImageMagnitude(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
-
-template <typename TImage>
-QImage GetQImageScalar(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
-
-template <typename TImage>
-QImage GetQImageMasked(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region);
 
 template <typename TImage>
 void MaskedBlur(const typename TImage::Pointer inputImage, const Mask::Pointer mask, const float blurVariance, typename TImage::Pointer output);

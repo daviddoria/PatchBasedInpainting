@@ -22,6 +22,7 @@
 #include "FileSelector.h"
 #include "FileSelectionWidget.h"
 #include "Helpers.h"
+#include "HelpersQt.h"
 #include "Mask.h"
 #include "Types.h"
 
@@ -78,8 +79,8 @@ void FileSelector::LoadAndDisplayImage()
 
   this->Image = reader->GetOutput();
   
-  QImage image = Helpers::GetQImageColor<FloatVectorImageType>(this->Image, this->Image->GetLargestPossibleRegion());
-  image = Helpers::FitToGraphicsView(image, this->graphicsViewImage);
+  QImage image = HelpersQt::GetQImageColor<FloatVectorImageType>(this->Image, this->Image->GetLargestPossibleRegion());
+  image = HelpersQt::FitToGraphicsView(image, this->graphicsViewImage);
   
   this->ImageGraphicsScene->clear();
   this->ImageGraphicsScene->addPixmap(QPixmap::fromImage(image));
@@ -98,8 +99,8 @@ void FileSelector::LoadAndDisplayMask()
 
   this->ImageMask = reader->GetOutput();
   
-  QImage mask = Helpers::GetQImageScalar<Mask>(this->ImageMask, this->ImageMask->GetLargestPossibleRegion());
-  mask = Helpers::FitToGraphicsView(mask, this->graphicsViewMask);
+  QImage mask = HelpersQt::GetQImageScalar<Mask>(this->ImageMask, this->ImageMask->GetLargestPossibleRegion());
+  mask = HelpersQt::FitToGraphicsView(mask, this->graphicsViewMask);
 
   this->MaskGraphicsScene->clear();
   this->MaskGraphicsScene->addPixmap(QPixmap::fromImage(mask));

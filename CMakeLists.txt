@@ -42,6 +42,7 @@ if(BuildInteractive)
   Form.cxx
   ForwardLookTableModel.cpp
   FormGUIElements.cxx
+  HelpersQt.cpp
   InpaintingVisualizationStack.cpp
   Interactive.cpp #driver (contains main())
   InteractorStyleImageNoLevel.cxx

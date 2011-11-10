@@ -705,22 +705,6 @@ void MakeValueTransparent(const vtkImageData* inputImage, vtkImageData* outputIm
     }
 }
 
-
-QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx)
-{
-  // The fudge factors so that the scroll bars do not appear
-  
-  unsigned int fudge = 6;
-  if(gfx->height() < gfx->width())
-    {
-    return qimage.scaledToHeight(gfx->height() - fudge);
-    }
-  else
-    {
-    return qimage.scaledToWidth(gfx->width() - fudge);
-    }
-}
-
 itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned int dimension)
 {
   // Manually construct a 2D offset with 0 in all dimensions except the specified dimension
@@ -729,13 +713,6 @@ itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned
   offset[dimension] = offset1D[0];
   
   return offset;
-}
-
-void QColorToUCharColor(const QColor& color, unsigned char outputColor[3])
-{
-  outputColor[0] = color.red();
-  outputColor[1] = color.green();
-  outputColor[2] = color.blue();
 }
 
 void BlankRegion(vtkImageData* image, const itk::ImageRegion<2>& region)
@@ -824,24 +801,6 @@ void BlankAndOutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& regio
 }
 
 
-bool GetColumnIdByHeader(const QTableWidget* table, const std::string& header, int& columnId)
-{
-  //std::cout << "There are " << static_cast<unsigned int>(topPatchesTableWidget->columnCount()) << " columns" << std::endl;
-  //std::cout << "Looking for column with header = " << header << std::endl;
-  
-  for(unsigned int i = 0; i < static_cast<unsigned int>(table->columnCount()); ++i)
-    {
-    if(table->horizontalHeaderItem(i)->text().toStdString().compare(header) == 0)
-      {
-      columnId = i;
-      return true;
-      }
-    }
-    
-  std::cerr << "Requested invalid column!" << std::endl;
-
-  return false;
-}
 
 void WriteVectorImageAsRGB(const FloatVectorImageType::Pointer image, const std::string& fileName)
 {

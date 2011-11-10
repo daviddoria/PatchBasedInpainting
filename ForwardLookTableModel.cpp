@@ -6,6 +6,7 @@
 
 // Custom
 #include "Helpers.h"
+#include "HelpersQt.h"
 
 ForwardLookTableModel::ForwardLookTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs) : QAbstractTableModel(), AllCandidatePairs(allCandidatePairs)
 {
@@ -64,7 +65,7 @@ QVariant ForwardLookTableModel::data(const QModelIndex& index, int role) const
       case 0:
 	{
 	// Display the target patch in the table
-	QImage patchImage = Helpers::GetQImageColor<FloatVectorImageType>(this->Image, currentForwardLookPatch.Region);
+	QImage patchImage = HelpersQt::GetQImageColor<FloatVectorImageType>(this->Image, currentForwardLookPatch.Region);
 	
 	patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
     

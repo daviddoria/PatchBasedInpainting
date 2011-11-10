@@ -6,6 +6,7 @@
 
 // Custom
 #include "Helpers.h"
+#include "HelpersQt.h"
 
 TopPatchesTableModel::TopPatchesTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs) : QAbstractTableModel(), AllCandidatePairs(allCandidatePairs)
 {
@@ -70,7 +71,7 @@ QVariant TopPatchesTableModel::data(const QModelIndex& index, int role) const
       {
       case 0:
 	{
-	QImage patchImage = Helpers::GetQImageColor<FloatVectorImageType>(this->Image, currentCandidateSet[index.row()].SourcePatch.Region);
+	QImage patchImage = HelpersQt::GetQImageColor<FloatVectorImageType>(this->Image, currentCandidateSet[index.row()].SourcePatch.Region);
 	
 	patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
     

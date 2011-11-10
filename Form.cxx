@@ -66,6 +66,7 @@
 // Custom
 #include "FileSelector.h"
 #include "Helpers.h"
+#include "HelpersQt.h"
 #include "InteractorStyleImageNoLevel.h"
 #include "Mask.h"
 #include "PixmapDelegate.h"
@@ -763,8 +764,8 @@ void Form::DisplaySourcePatch()
     FloatVectorImageType::Pointer currentImage = this->IntermediateImages[this->IterationToDisplay].Image;
 
     const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->ForwardLookToDisplay]; // This -1 is because the 0th iteration is the initial condition
-    QImage sourceImage = Helpers::GetQImageColor<FloatVectorImageType>(currentImage, candidatePairs[this->SourcePatchToDisplay].SourcePatch.Region);
-    sourceImage = Helpers::FitToGraphicsView(sourceImage, gfxTarget);
+    QImage sourceImage = HelpersQt::GetQImageColor<FloatVectorImageType>(currentImage, candidatePairs[this->SourcePatchToDisplay].SourcePatch.Region);
+    sourceImage = HelpersQt::FitToGraphicsView(sourceImage, gfxTarget);
     this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
 
     //Refresh();
@@ -802,9 +803,9 @@ void Form::DisplayTargetPatch()
     Mask::Pointer currentMask = this->IntermediateImages[this->IterationToDisplay - 1].MaskImage;
 
     // Target
-    QImage targetImage = Helpers::GetQImageColor<FloatVectorImageType>(currentImage, candidatePairs.TargetPatch.Region);
+    QImage targetImage = HelpersQt::GetQImageColor<FloatVectorImageType>(currentImage, candidatePairs.TargetPatch.Region);
 
-    targetImage = Helpers::FitToGraphicsView(targetImage, gfxTarget);
+    targetImage = HelpersQt::FitToGraphicsView(targetImage, gfxTarget);
     this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
 
     //Refresh();
@@ -879,7 +880,7 @@ void Form::DisplayResultPatch()
     // Flip the image
     qimage = qimage.mirrored(false, true);
     
-    qimage = Helpers::FitToGraphicsView(qimage, gfxResult);
+    qimage = HelpersQt::FitToGraphicsView(qimage, gfxResult);
     this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
 
     //Refresh();
@@ -954,9 +955,9 @@ void Form::HighlightForwardLookPatches()
     const std::vector<CandidatePairs>& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1];
 
     unsigned char borderColor[3];
-    Helpers::QColorToUCharColor(this->AllForwardLookPatchColor, borderColor);
+    HelpersQt::QColorToUCharColor(this->AllForwardLookPatchColor, borderColor);
     unsigned char centerPixelColor[3];
-    Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
+    HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
     
     for(unsigned int candidateId = 0; candidateId < candidatePairs.size(); ++candidateId)
       {
@@ -1016,9 +1017,9 @@ void Form::HighlightSourcePatches()
     const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->ForwardLookToDisplay];
 
     unsigned char borderColor[3];
-    Helpers::QColorToUCharColor(this->AllSourcePatchColor, borderColor);
+    HelpersQt::QColorToUCharColor(this->AllSourcePatchColor, borderColor);
     unsigned char centerPixelColor[3];
-    Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
+    HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
 
     unsigned int numberToDisplay = std::min(candidatePairs.size(), this->txtNumberOfTopPatchesToDisplay->text().toUInt());
     for(unsigned int candidateId = 0; candidateId < numberToDisplay; ++candidateId)
@@ -1062,7 +1063,7 @@ void Form::HighlightUsedPatches()
 //       }
 
     unsigned char centerPixelColor[3];
-    Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
+    HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
     
     // Target
     Patch targetPatch = patchPair.TargetPatch;
@@ -1072,7 +1073,7 @@ void Form::HighlightUsedPatches()
     DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
     this->UsedTargetPatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
     unsigned char targetPatchColor[3];
-    Helpers::QColorToUCharColor(this->UsedTargetPatchColor, targetPatchColor);
+    HelpersQt::QColorToUCharColor(this->UsedTargetPatchColor, targetPatchColor);
     Helpers::BlankAndOutlineImage(this->UsedTargetPatchLayer.ImageData, targetPatchColor);
     Helpers::SetImageCenterPixel(this->UsedTargetPatchLayer.ImageData, centerPixelColor);
     this->UsedTargetPatchLayer.ImageSlice->SetPosition(targetPatch.Region.GetIndex()[0], targetPatch.Region.GetIndex()[1], 0);
@@ -1084,7 +1085,7 @@ void Form::HighlightUsedPatches()
     DebugMessage<itk::ImageRegion<2> >("Source patch region: ", sourcePatch.Region);
     this->UsedSourcePatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
     unsigned char sourcePatchColor[3];
-    Helpers::QColorToUCharColor(this->UsedSourcePatchColor, sourcePatchColor);
+    HelpersQt::QColorToUCharColor(this->UsedSourcePatchColor, sourcePatchColor);
     Helpers::BlankAndOutlineImage(this->UsedSourcePatchLayer.ImageData, sourcePatchColor);
     Helpers::SetImageCenterPixel(this->UsedSourcePatchLayer.ImageData, centerPixelColor);
     this->UsedSourcePatchLayer.ImageSlice->SetPosition(sourcePatch.Region.GetIndex()[0], sourcePatch.Region.GetIndex()[1], 0);
@@ -1452,10 +1453,10 @@ void Form::HighlightSelectedForwardLookPatch()
     this->SelectedForwardLookOutlineLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
     this->SelectedForwardLookOutlineLayer.ImageData->AllocateScalars();
     unsigned char selectedPatchColor[3];
-    Helpers::QColorToUCharColor(this->SelectedForwardLookPatchColor, selectedPatchColor);
+    HelpersQt::QColorToUCharColor(this->SelectedForwardLookPatchColor, selectedPatchColor);
     Helpers::BlankAndOutlineImage(this->SelectedForwardLookOutlineLayer.ImageData, selectedPatchColor);
     unsigned char centerPixelColor[3];
-    Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
+    HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
     Helpers::SetImageCenterPixel(this->SelectedForwardLookOutlineLayer.ImageData, centerPixelColor);
 
     // There is a -1 offset here because the 0th patch pair to be stored is after iteration 1 (as after the 0th iteration (initial conditions) there are no used patch pairs)
@@ -1498,11 +1499,11 @@ void Form::HighlightSelectedSourcePatch()
     this->SelectedSourcePatchOutlineLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
     this->SelectedSourcePatchOutlineLayer.ImageData->AllocateScalars();
     unsigned char selectedPatchColor[3];
-    Helpers::QColorToUCharColor(this->SelectedSourcePatchColor, selectedPatchColor);
+    HelpersQt::QColorToUCharColor(this->SelectedSourcePatchColor, selectedPatchColor);
     Helpers::BlankAndOutlineImage(this->SelectedSourcePatchOutlineLayer.ImageData, selectedPatchColor);
     
     unsigned char centerPixelColor[3];
-    Helpers::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
+    HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
     Helpers::SetImageCenterPixel(this->SelectedSourcePatchOutlineLayer.ImageData, centerPixelColor);
 
     // There is a -1 offset here because the 0th patch pair to be stored is after iteration 1 (as after the 0th iteration (initial conditions) there are no used patch pairs)
