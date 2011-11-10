@@ -25,6 +25,23 @@ CandidatePairs::CandidatePairs(const Patch& targetPatch)
   this->Priority = 0.0f;
 }
 
+void CandidatePairs::CopyFrom(const CandidatePairs& pairs)
+{
+  this->TargetPatch = pairs.TargetPatch;
+  this->Priority = pairs.Priority;
+  this->clear();
+  for(unsigned int i = 0; i < pairs.size(); ++i)
+    {
+    this->push_back(pairs[i]);
+    }
+}
+
+void CandidatePairs::CopyMetaOnly(const CandidatePairs& pairs)
+{
+  this->TargetPatch = pairs.TargetPatch;
+  this->Priority = pairs.Priority;
+}
+
 void CandidatePairs::AddCandidatePair(const PatchPair& patchPair)
 {
   if(patchPair.TargetPatch.Region == this->TargetPatch.Region)

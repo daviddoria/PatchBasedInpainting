@@ -48,6 +48,9 @@ public:
   void InvalidateAll();
   
   void Combine(CandidatePairs& pairs);
+  
+  void CopyFrom(const CandidatePairs& pairs);
+  void CopyMetaOnly(const CandidatePairs& pairs);
 };
 
 bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2);

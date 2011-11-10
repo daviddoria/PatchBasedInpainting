@@ -597,13 +597,24 @@ void CriminisiInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePai
   this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(this->CompareImage);
   this->PatchCompare->SetMask(this->CurrentMask);
+  this->PatchCompare->SetPairs(&candidatePairs);
+  
+  this->PatchCompare->FunctionsToCompute.clear();
+  this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,this->PatchCompare,_1));
   this->PatchCompare->ComputeAllSourceDifferences();
   
   //std::cout << "FindBestPatch: Finished ComputeAllSourceDifferences()" << std::endl;
   
-  //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
-  //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDepthAndColor);
   std::sort(candidatePairs.begin(), candidatePairs.end(), PatchSortFunction);
+  
+  CandidatePairs goodDepthCandidatePairs;
+  goodDepthCandidatePairs.CopyMetaOnly(candidatePairs);
+  goodDepthCandidatePairs.insert(goodDepthCandidatePairs.end(), candidatePairs.begin(), candidatePairs.begin() + 1000);
+  this->PatchCompare->SetPairs(&goodDepthCandidatePairs);
+  
+  this->PatchCompare->FunctionsToCompute.clear();
+  this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,this->PatchCompare,_1));
+  this->PatchCompare->ComputeAllSourceDifferences();
   
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
   
