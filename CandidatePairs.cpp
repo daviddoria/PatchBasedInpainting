@@ -18,6 +18,8 @@
 
 #include "CandidatePairs.h"
 
+#include <fstream>
+
 CandidatePairs::CandidatePairs(const Patch& targetPatch)
 {
   this->TargetPatch = targetPatch;
@@ -90,7 +92,7 @@ bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs&
 
 void CandidatePairs::InvalidateAll()
 {
-    for(unsigned int i = 0; i < (*this).size(); ++i)
+  for(unsigned int i = 0; i < (*this).size(); ++i)
     {
     (*this)[i].SetValidAverageSquaredDifference(false);
     (*this)[i].SetValidAverageAbsoluteDifference(false);
@@ -112,4 +114,15 @@ void CandidatePairs::Combine(CandidatePairs& pairs)
     {
     this->push_back(pairs[i]);
     }
+}
+
+void CandidatePairs::WriteDepthScoresToFile(const std::string& fileName)
+{
+  std::ofstream fout(fileName.c_str());
+  for(unsigned int i = 0; i < this->size(); ++i)
+    {
+    fout << (*this)[i].GetDepthDifference() << std::endl;
+    }
+    
+  fout.close();
 }

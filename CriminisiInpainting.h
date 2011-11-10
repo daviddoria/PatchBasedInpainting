@@ -21,6 +21,7 @@
 
 // Custom
 #include "CandidatePairs.h"
+#include "DebugOutputs.h"
 #include "Helpers.h"
 #include "Patch.h"
 #include "PatchPair.h"
@@ -34,13 +35,10 @@
 // Boost
 #include <boost/function.hpp>
 
-class CriminisiInpainting
+class CriminisiInpainting : public DebugOutputs
 {
 
 public:
-
-  //enum DifferenceTypeEnum {DIFFERENCE_ALL, DIFFERENCE_ALL255, DIFFERENCE_DEPTH};
-
   ///////////////////////////////////////////////////////////////////////
   /////////////////// CriminisiInpaintingInterface.cpp //////////////////
   ///////////////////////////////////////////////////////////////////////
@@ -55,12 +53,6 @@ public:
   
   // Specify the size of the patches to copy.
   void SetPatchRadius(const unsigned int);
-
-  // Specify if you want to write debuging images.
-  void SetDebugImages(const bool);
-  
-  // Specify if you want to see debugging messages.
-  void SetDebugMessages(const bool);
   
   // Specify the maximum number of top candidate patches to consider. Near the end of the inpainting there may not be this many viable patches, that is why we set the max instead of the absolute number of patches.
   void SetMaxForwardLookPatches(const unsigned int);
@@ -152,8 +144,6 @@ public:
   boost::function<bool (const PatchPair& , const PatchPair& )> PatchSortFunction;
   
   boost::function<void (CandidatePairs& candidatePairs, PatchPair& bestPatchPair )> PatchSearchFunction;
-  
-  void SetDebugFunctionEnterLeave(const bool value);
   
   void SetPatchSearchFunctionToScaleConsistent();
   void SetPatchSearchFunctionToNormal();
@@ -339,19 +329,6 @@ private:
   void DebugWritePixelToFill(const itk::Index<2>& pixelToFill, const unsigned int iteration);
   void DebugWritePatchToFillLocation(const itk::Index<2>& pixelToFill, const unsigned int iteration);
 
-  // Should we output images at every iteration?
-  bool DebugImages;
-  
-  // Should we output verbose information about what is happenening at every iteration?
-  bool DebugMessages;
-  
-  // Output a message if DebugMessages is set to true.
-  void DebugMessage(const std::string&);
-  
-  // Output a message and a value if DebugMessages is set to true.
-  template <typename T>
-  void DebugMessage(const std::string& message, const T value);
-
   template <typename TImage>
   float ComputeAverageGradientChange(const typename TImage::Pointer patch, FloatVector2ImageType::Pointer preFillGradient, FloatVector2ImageType::Pointer postFillGradient, const Mask::Pointer mask, const Mask::Pointer noMask, const std::vector<itk::Index<2> >& boundaryPixels);
   
@@ -361,9 +338,6 @@ private:
 
   SelfPatchCompare* PatchCompare;
   
-  bool DebugFunctionEnterLeave;
-  void EnterFunction(const std::string&);
-  void LeaveFunction(const std::string&);
 };
 
 #include "CriminisiInpainting.hxx"

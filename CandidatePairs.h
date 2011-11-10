@@ -51,6 +51,8 @@ public:
   
   void CopyFrom(const CandidatePairs& pairs);
   void CopyMetaOnly(const CandidatePairs& pairs);
+  
+  void WriteDepthScoresToFile(const std::string& fileName);
 };
 
 bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2);

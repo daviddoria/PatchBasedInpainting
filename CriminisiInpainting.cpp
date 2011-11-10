@@ -605,21 +605,27 @@ void CriminisiInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePai
   
   //std::cout << "FindBestPatch: Finished ComputeAllSourceDifferences()" << std::endl;
   
-  std::sort(candidatePairs.begin(), candidatePairs.end(), PatchSortFunction);
+  std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDepthDifference);
+  
+  //candidatePairs.WriteDepthScoresToFile("candidateScores.txt");
   
   CandidatePairs goodDepthCandidatePairs;
   goodDepthCandidatePairs.CopyMetaOnly(candidatePairs);
   goodDepthCandidatePairs.insert(goodDepthCandidatePairs.end(), candidatePairs.begin(), candidatePairs.begin() + 1000);
   this->PatchCompare->SetPairs(&goodDepthCandidatePairs);
   
+  //goodDepthCandidatePairs.WriteDepthScoresToFile("depthScores.txt");
+  
   this->PatchCompare->FunctionsToCompute.clear();
   this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,this->PatchCompare,_1));
   this->PatchCompare->ComputeAllSourceDifferences();
   
+  std::sort(goodDepthCandidatePairs.begin(), goodDepthCandidatePairs.end(), SortByAverageAbsoluteDifference);
+  
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
   
   // Return the result by reference.
-  bestPatchPair = candidatePairs[0];
+  bestPatchPair = goodDepthCandidatePairs[0];
   
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatch()." << std::endl;
   LeaveFunction("FindBestPatchTwoStepDepth()");
@@ -1660,33 +1666,6 @@ void CriminisiInpainting::ComputeAllContinuationDifferences(CandidatePairs& cand
   LeaveFunction("ComputeAllContinuationDifferences()");
 }
 
-std::vector<CandidatePairs>& CriminisiInpainting::GetPotentialCandidatePairsReference()
-{
-  // Return a reference to the whole set of forward look pairs.
-  return PotentialCandidatePairs;
-}
-
-void CriminisiInpainting::SetCompareToOriginal()
-{
-  this->CompareImage = this->CurrentOutputImage;
-}
-  
-void CriminisiInpainting::SetCompareToBlurred()
-{
-  this->CompareImage = this->BlurredImage;
-}
-
-void CriminisiInpainting::SetCompareToCIELAB()
-{
-  this->CompareImage = this->CIELabImage;
-}
-
-void CriminisiInpainting::SetPatchCompare(SelfPatchCompare* patchCompare)
-{
-  delete this->PatchCompare;
-  this->PatchCompare = patchCompare;
-}
-
 void CriminisiInpainting::BlurImage()
 {
   EnterFunction("BlurImage()");
@@ -1694,9 +1673,4 @@ void CriminisiInpainting::BlurImage()
   HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->BlurredImage, "Debug/Initialize.BlurredImage.mha", this->DebugImages);
   HelpersOutput::WriteVectorImageAsRGB(this->BlurredImage, "Debug/Initialize.BlurredImageRGB.mha");
   LeaveFunction("BlurImage()");
-}
-
-void CriminisiInpainting::SetDebugFunctionEnterLeave(const bool value)
-{
-  this->DebugFunctionEnterLeave = value;
 }

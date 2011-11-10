@@ -132,6 +132,8 @@ void Form::DefaultConstructor()
   this->DebugImages = false;
   this->DebugMessages = false;
 
+  this->DebugFunctionEnterLeave = true;
+  
   // Setup icons
   QIcon openIcon = QIcon::fromTheme("document-open");
   QIcon saveIcon = QIcon::fromTheme("document-save");
@@ -179,6 +181,9 @@ void Form::DefaultConstructor()
   
   this->UserImage = FloatVectorImageType::New();
   this->UserMaskImage = Mask::New();
+  
+  this->Inpainting.SetPatchSearchFunctionToTwoStepDepth();
+  this->Inpainting.SetDebugFunctionEnterLeave(true);
   
   connect(&ComputationThread, SIGNAL(StartProgressSignal()), this, SLOT(StartProgressSlot()), Qt::QueuedConnection);
   connect(&ComputationThread, SIGNAL(StopProgressSignal()), this, SLOT(StopProgressSlot()), Qt::QueuedConnection);
@@ -1270,8 +1275,7 @@ void Form::SetupInitialIntermediateImages()
 
 void Form::IterationComplete()
 {
-  //std::cout << "IterationComplete()" << std::endl;
-  //DebugMessage("Enter IterationComplete()");
+  EnterFunction("IterationComplete()");
 
   // Save the intermediate images
   
@@ -1330,7 +1334,7 @@ void Form::IterationComplete()
     this->lblCurrentIteration->setText(ss.str().c_str());
     }
   
-  DebugMessage("Leave IterationComplete()");
+  LeaveFunction("Leave IterationComplete()");
 }
 
 void Form::IterationCompleteSlot()
@@ -1572,4 +1576,3 @@ void Form::slot_TopPatchesTableView_changed(const QModelIndex& currentIndex, con
     exit(-1);
   }
 }
-

@@ -110,17 +110,35 @@ void CriminisiInpainting::SetMask(const Mask::Pointer mask)
   this->OriginalMask->DeepCopyFrom(mask);
 }
 
-void CriminisiInpainting::SetDebugMessages(const bool flag)
-{
-  this->DebugMessages = flag;
-}
-
-void CriminisiInpainting::SetDebugImages(const bool flag)
-{
-  this->DebugImages = flag;
-}
 
 itk::ImageRegion<2> CriminisiInpainting::GetFullRegion()
 {
   return this->FullImageRegion;
+}
+
+std::vector<CandidatePairs>& CriminisiInpainting::GetPotentialCandidatePairsReference()
+{
+  // Return a reference to the whole set of forward look pairs.
+  return PotentialCandidatePairs;
+}
+
+void CriminisiInpainting::SetCompareToOriginal()
+{
+  this->CompareImage = this->CurrentOutputImage;
+}
+  
+void CriminisiInpainting::SetCompareToBlurred()
+{
+  this->CompareImage = this->BlurredImage;
+}
+
+void CriminisiInpainting::SetCompareToCIELAB()
+{
+  this->CompareImage = this->CIELabImage;
+}
+
+void CriminisiInpainting::SetPatchCompare(SelfPatchCompare* patchCompare)
+{
+  delete this->PatchCompare;
+  this->PatchCompare = patchCompare;
 }

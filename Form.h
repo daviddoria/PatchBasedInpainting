@@ -42,6 +42,7 @@ class vtkPolyDataMapper;
 
 // Custom
 #include "CriminisiInpainting.h"
+#include "DebugOutputs.h"
 #include "ForwardLookTableModel.h"
 #include "InpaintingVisualizationStack.h"
 #include "Layer.h"
@@ -52,7 +53,7 @@ class vtkPolyDataMapper;
 
 class InteractorStyleImageNoLevel;
 
-class Form : public QMainWindow, public Ui::CriminisiInpaintingMainWindow
+class Form : public QMainWindow, public Ui::CriminisiInpaintingMainWindow, public DebugOutputs
 {
   Q_OBJECT
 public:
@@ -322,6 +323,7 @@ protected:
   TopPatchesTableModel* TopPatchesModel;
   
   unsigned int PatchDisplaySize;
+  
 };
 
 #include "Form.hxx"

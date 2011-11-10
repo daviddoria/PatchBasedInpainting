@@ -24,6 +24,7 @@ CandidatePairs.cpp
 CriminisiInpainting.cpp
 CriminisiInpaintingDebugging.cpp
 CriminisiInpaintingInterface.cpp
+DebugOutputs.cpp
 Derivatives.cpp
 Helpers.cpp
 HelpersOutput.cpp
