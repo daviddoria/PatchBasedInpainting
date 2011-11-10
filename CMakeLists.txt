@@ -26,6 +26,7 @@ CriminisiInpaintingDebugging.cpp
 CriminisiInpaintingInterface.cpp
 Derivatives.cpp
 Helpers.cpp
+HelpersOutput.cpp
 Histograms.cpp
 Mask.cpp
 Patch.cpp

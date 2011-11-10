@@ -44,21 +44,11 @@ std::string GetSequentialFileName(const std::string& filePrefix, const unsigned 
 // Average each component of a list of vectors then construct and return a new vector composed of these averaged components.
 FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors);
 
-// Write a vtkPolyData to a .vtp file.
-void WritePolyData(const vtkPolyData* polyData, const std::string& fileName);
-
-// Write a vtkImageData to a .vti file.
-void WriteImageData(const vtkImageData* imageData, const std::string& fileName);
-
 // Set the center pixel of an 'image' to the specified 'color'. The image is assumed to have odd dimensions.
 void SetImageCenterPixel(vtkImageData* image, const unsigned char color[3]);
 
 // Set the center pixel of a 'region' in an 'image' to the specified 'color'. The region is assumed to have odd dimensions.
 void SetRegionCenterPixel(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char color[3]);
-
-// Paraview requires 3D vectors to display glyphs, even if the vectors are really 2D. These functions appends a 0 to each vectors of a 2D vector image so that it can be easily visualized with Paraview.
-void Write2DVectorRegion(const FloatVector2ImageType::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename);
-void Write2DVectorImage(const FloatVector2ImageType::Pointer image, const std::string& filename);
 
 // This function creates an Offset<2> by setting the 'dimension' index of the Offset<2> to the value of the Offset<1>, and filling the other position with a 0.
 itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned int dimension);
@@ -82,7 +72,6 @@ void ITKImagetoVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, v
 
 // Convert the first 3 channels of a float vector image to an unsigned char/color/rgb image.
 void VectorImageToRGBImage(const FloatVectorImageType::Pointer image, RGBImageType::Pointer rgbImage);
-void WriteVectorImageAsRGB(const FloatVectorImageType::Pointer image, const std::string& fileName);
 
 // Get the center pixel of a region. The region is assumed to have odd dimensions.
 itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region);
@@ -168,15 +157,6 @@ void DeepCopyInRegion(const typename TImage::Pointer input, const itk::ImageRegi
 template <typename TImage>
 void ITKScalarImageToScaledVTKImage(const typename TImage::Pointer image, vtkImageData* outputImage);
 
-template <typename TDebugImageType>
-void WriteSequentialImage(const typename TDebugImageType::Pointer image, const std::string& filePrefix, const unsigned int iteration);
-
-template <typename TDebugImageType>
-void WriteImageConditional(const typename TDebugImageType::Pointer image, const std::string& fileName, const bool condition);
-
-template <class T>
-void WriteScaledScalarImage(const typename T::Pointer image, std::string filename);
-
 template <class T>
 void CopyPatch(const typename T::Pointer sourceImage, typename T::Pointer targetImage, const itk::Index<2>& sourcePosition, const itk::Index<2>& targetPosition, const unsigned int radius);
 
@@ -188,9 +168,6 @@ void CreateConstantPatch(typename T::Pointer patch, const typename T::PixelType 
 
 template<typename T>
 void ReplaceValue(typename T::Pointer image, const typename T::PixelType queryValue, const typename T::PixelType replacementValue);
-
-template<typename T>
-void WriteImage(const typename T::Pointer image, const std::string& filename);
 
 template <class T>
 void CopyPatchIntoImage(const typename T::Pointer patch, typename T::Pointer image, const itk::Index<2>& position);
@@ -247,18 +224,6 @@ std::vector<itk::Index<2> > GetNonZeroPixels(const typename TImage::Pointer imag
 
 template<typename TImage>
 std::vector<itk::Index<2> > GetNonZeroPixels(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
-
-template<typename TImage>
-void WritePatch(const typename TImage::Pointer image, const Patch& patch, const std::string& filename);
-
-template<typename TImage>
-void WriteMaskedPatch(const typename TImage::Pointer image, const Mask::Pointer mask, const Patch& patch, const std::string& filename);
-
-template<typename TImage>
-void WriteMaskedRegion(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, const std::string& filename);
-
-template<typename TImage>
-void WriteRegion(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename);
 
 template <typename TImage>
 void MaskedBlur(const typename TImage::Pointer inputImage, const Mask::Pointer mask, const float blurVariance, typename TImage::Pointer output);

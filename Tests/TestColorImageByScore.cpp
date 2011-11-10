@@ -17,12 +17,13 @@
  *=========================================================================*/
 
 // Custom
-#include "Mask.h"
-#include "Types.h"
 #include "CriminisiInpainting.h"
+#include "HelpersOutput.h"
+#include "Mask.h"
 #include "PatchPair.h"
 #include "PixelDifference.h"
 #include "SelfPatchCompare.h"
+#include "Types.h"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -94,7 +95,7 @@ int main(int argc, char *argv[])
     scoreColoredImage->SetPixel(candidatePairs[i].SourcePatch.Region.GetIndex(), candidatePairs[i].GetDepthDifference());
     }
 
-  Helpers::WriteImage<FloatScalarImageType>(scoreColoredImage, "ScoreImage.mha");
+  HelpersOutput::WriteImage<FloatScalarImageType>(scoreColoredImage, "ScoreImage.mha");
   
   return EXIT_SUCCESS;
 }

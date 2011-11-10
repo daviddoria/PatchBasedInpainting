@@ -70,35 +70,9 @@ FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors)
   return averageVector;
 }
 
-void WritePolyData(const vtkPolyData* polyData, const std::string& fileName)
-{
-  std::string extension = fileName.substr(fileName.size() - 3, fileName.size());
-  if(extension.compare("vtp") != 0)
-    {
-    std::cerr << "Cannot write a vtkPolyData to a non .vtp file!" << std::endl;
-    return;
-    }
-  
-  vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
-  polyDataWriter->SetFileName(fileName.c_str());
-  polyDataWriter->SetInputConnection(const_cast<vtkPolyData*>(polyData)->GetProducerPort());
-  polyDataWriter->Write();
-}
 
-void WriteImageData(const vtkImageData* imageData, const std::string& fileName)
-{
-  std::string extension = fileName.substr(fileName.size() - 3, fileName.size());
-  if(extension.compare("vti") != 0)
-    {
-    std::cerr << "Cannot write a vtkImageData to a non .vti file!" << std::endl;
-    return;
-    }
-    
-  vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
-  writer->SetFileName(fileName.c_str());
-  writer->SetInputConnection(const_cast<vtkImageData*>(imageData)->GetProducerPort());
-  writer->Write();
-}
+
+
 
 std::string GetSequentialFileName(const std::string& filePrefix, const unsigned int iteration, const std::string& fileExtension)
 {
@@ -258,52 +232,6 @@ void RGBImageToCIELabImage(const RGBImageType::Pointer rgbImage, FloatVectorImag
   
   // Copy to the output
   DeepCopy<FloatVectorImageType>(reassembler->GetOutput(), cielabImage);
-}
-
-void Write2DVectorImage(const FloatVector2ImageType::Pointer image, const std::string& filename)
-{
-  Write2DVectorRegion(image, image->GetLargestPossibleRegion(), filename);
-}
-
-void Write2DVectorRegion(const FloatVector2ImageType::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename)
-{
-  // This is a separate function than WriteRegion because Paraview requires vectors to b 3D to glyph them.
-  
-  typedef itk::RegionOfInterestImageFilter<FloatVector2ImageType, FloatVector2ImageType> RegionOfInterestImageFilterType;
-
-  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
-  regionOfInterestImageFilter->SetRegionOfInterest(region);
-  regionOfInterestImageFilter->SetInput(image);
-  regionOfInterestImageFilter->Update();
-  
-  itk::Point<float, 2> origin;
-  origin.Fill(0);
-  regionOfInterestImageFilter->GetOutput()->SetOrigin(origin);
-
-  FloatVector3ImageType::Pointer vectors3D = FloatVector3ImageType::New();
-  vectors3D->SetRegions(regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
-  vectors3D->Allocate();
-  
-  itk::ImageRegionConstIterator<FloatVector2ImageType> iterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
-  
-  while(!iterator.IsAtEnd())
-    {
-    FloatVector2Type vec2d = iterator.Get();
-    FloatVector3Type vec3d;
-    vec3d[0] = vec2d[0];
-    vec3d[1] = vec2d[1];
-    vec3d[2] = 0;
- 
-    vectors3D->SetPixel(iterator.GetIndex(), vec3d);
-    ++iterator;
-    }
-    
-  //std::cout << "regionOfInterestImageFilter " << regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion() << std::endl;
-  
-  itk::ImageFileWriter<FloatVector3ImageType>::Pointer writer = itk::ImageFileWriter<FloatVector3ImageType>::New();
-  writer->SetFileName(filename);
-  writer->SetInput(vectors3D);
-  writer->Update();
 }
 
 void VectorImageToRGBImage(const FloatVectorImageType::Pointer image, RGBImageType::Pointer rgbImage)
@@ -802,12 +730,6 @@ void BlankAndOutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& regio
 
 
 
-void WriteVectorImageAsRGB(const FloatVectorImageType::Pointer image, const std::string& fileName)
-{
-  RGBImageType::Pointer rgbImage = RGBImageType::New();
-  VectorImageToRGBImage(image, rgbImage);
-  WriteImage<RGBImageType>(rgbImage, fileName);
-}
 
 // This is a specialization that ensures that the number of pixels per component also matches.
 template<>

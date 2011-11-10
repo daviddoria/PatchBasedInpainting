@@ -1,5 +1,7 @@
 #include "CriminisiInpainting.h"
 
+#include "HelpersOutput.h"
+
 FloatVectorImageType::Pointer CriminisiInpainting::GetCurrentOutputImage()
 {
   return this->CurrentOutputImage;
@@ -73,7 +75,7 @@ void CriminisiInpainting::SetImage(const FloatVectorImageType::Pointer image)
   Helpers::VectorImageToRGBImage(this->CurrentOutputImage, rgbImage);
 
   Helpers::RGBImageToCIELabImage(rgbImage, this->CIELabImage);
-  Helpers::WriteImageConditional<FloatVectorImageType>(this->CIELabImage, "Debug/SetImage.CIELab.mha", this->DebugImages);
+  HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CIELabImage, "Debug/SetImage.CIELab.mha", this->DebugImages);
 
   this->FullImageRegion = image->GetLargestPossibleRegion();
   

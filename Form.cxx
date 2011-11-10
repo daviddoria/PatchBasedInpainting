@@ -66,6 +66,7 @@
 // Custom
 #include "FileSelector.h"
 #include "Helpers.h"
+#include "HelpersOutput.h"
 #include "HelpersQt.h"
 #include "InteractorStyleImageNoLevel.h"
 #include "Mask.h"
@@ -289,7 +290,7 @@ void Form::on_actionSaveResult_activated()
     return;
     }
     
-  Helpers::WriteImage<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), fileName.toStdString());
+  HelpersOutput::WriteImage<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), fileName.toStdString());
   
   this->statusBar()->showMessage("Saved result.");
 }
@@ -420,8 +421,8 @@ void Form::DisplayIsophotes()
     maskFilter->SetOutsideValue(zero);
     maskFilter->Update();
   
-    Helpers::WriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ShowIsophotes.BoundaryIsophotes.mha", this->DebugImages);
-    Helpers::WriteImageConditional<UnsignedCharScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Boundary, "Debug/ShowIsophotes.Boundary.mha", this->DebugImages);
+    HelpersOutput::WriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ShowIsophotes.BoundaryIsophotes.mha", this->DebugImages);
+    HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Boundary, "Debug/ShowIsophotes.Boundary.mha", this->DebugImages);
     
     Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), this->IsophoteLayer.Vectors);
     
@@ -515,11 +516,11 @@ void Form::DisplayBoundaryNormals()
       {
       std::cout << "Writing boundary normals..." << std::endl;
     
-      Helpers::WriteImage<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), "Debug/RefreshSlot.BoundaryNormals.mha");
+      HelpersOutput::WriteImage<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), "Debug/RefreshSlot.BoundaryNormals.mha");
 
-      Helpers::WriteImageData(this->BoundaryNormalsLayer.ImageData, "Debug/RefreshSlot.VTKBoundaryNormals.vti");
+      HelpersOutput::WriteImageData(this->BoundaryNormalsLayer.ImageData, "Debug/RefreshSlot.VTKBoundaryNormals.vti");
 
-      Helpers::WritePolyData(this->BoundaryNormalsLayer.Vectors, "Debug/RefreshSlot.VTKBoundaryNormals.vtp");
+      HelpersOutput::WritePolyData(this->BoundaryNormalsLayer.Vectors, "Debug/RefreshSlot.VTKBoundaryNormals.vtp");
       }
     }  
 }
