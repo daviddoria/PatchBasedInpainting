@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef CriminisiInpainting_h
-#define CriminisiInpainting_h
+#ifndef PatchBasedInpainting_h
+#define PatchBasedInpainting_h
 
 // Custom
 #include "CandidatePairs.h"
@@ -35,7 +35,7 @@
 // Boost
 #include <boost/function.hpp>
 
-class CriminisiInpainting : public DebugOutputs
+class PatchBasedInpainting : public DebugOutputs
 {
 
 public:
@@ -58,16 +58,7 @@ public:
   void SetMaxForwardLookPatches(const unsigned int);
 
   void SetNumberOfTopPatchesToSave(const unsigned int);
-    
-  // Get the current confidence image (confidences computed on the current boundary)
-  FloatScalarImageType::Pointer GetConfidenceImage();
 
-  // Get the current confidence map image
-  FloatScalarImageType::Pointer GetConfidenceMapImage();
-  
-  // Get the current confidence image
-  FloatScalarImageType::Pointer GetPriorityImage();
-  
   // Get the current boundary image
   UnsignedCharScalarImageType::Pointer GetBoundaryImage();
 
@@ -76,9 +67,6 @@ public:
   
   // Get the current isophote image
   FloatVector2ImageType::Pointer GetIsophoteImage();
-
-  // Get the current data image
-  FloatScalarImageType::Pointer GetDataImage();
 
   // Get the result/output of the inpainting so far. When the algorithm is complete, this will be the final output.
   FloatVectorImageType::Pointer GetCurrentOutputImage();
@@ -91,16 +79,13 @@ public:
   //////////////////////////////////////////////////////////////
   
   // Constructor
-  CriminisiInpainting();
+  PatchBasedInpainting();
 
   // A single step of the algorithm. The real work is done here.
   PatchPair Iterate();
 
   // A loop that calls Iterate() until the inpainting is complete.
   void Inpaint();
-  
-  // Compute the confidence values for pixels that were just inpainted.
-  void UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value);
   
   // Initialize everything.
   void Initialize();
@@ -203,16 +188,7 @@ private:
   
   // This mask is updated as patches are copied.
   Mask::Pointer CurrentMask;
-  
-  // Keep track of the confidence of each pixel
-  FloatScalarImageType::Pointer ConfidenceMapImage;
-  
-  // Store the computed confidences on the boundary
-  FloatScalarImageType::Pointer ConfidenceImage;
 
-  // Keep track of the data term of each pixel
-  FloatScalarImageType::Pointer DataImage;
-  
   // The patch radius.
   itk::Size<2> PatchRadius;
 
@@ -225,23 +201,12 @@ private:
   // Store the computed boundary normals.
   FloatVector2ImageType::Pointer BoundaryNormals;
 
-  // Keep track of the priority of each pixel.
-  FloatScalarImageType::Pointer PriorityImage;
-
-  // Compute the data term at each pixel on the curren boundary.
-  void ComputeAllDataTerms();
-  
-  // Compute the confidence term at each pixel on the curren boundary.
-  void ComputeAllConfidenceTerms();
   
   // Set the region to the full region and allocate an image
   template<typename TImage>
   void InitializeImage(typename TImage::Pointer);
   
   // Initialization functions
-  
-  // The initial confidence is 0 in the hole and 1 elsewhere.
-  void InitializeConfidenceMap();
   
   // The target image is colored bright green inside the hole. This is helpful when watching the inpainting proceed.
   void InitializeTargetImage();
@@ -262,20 +227,6 @@ private:
 
   // We store the patch radius, so we need this function to compute the actual patch size from the radius.
   itk::Size<2> GetPatchSize();
-
-  // Criminisi specific functions
-  // Compute the priorities at all boundary pixels.
-  void ComputeAllPriorities();
-  
-  // Compute the priority of a specific pixel.
-  float ComputePriority(const itk::Index<2>& queryPixel);
-  
-  // Compute the Confidence at a pixel.
-  float ComputeConfidenceTerm(const itk::Index<2>& queryPixel);
-  
-  // Compute the Data at a pixel.
-  float ComputeDataTerm(const itk::Index<2>& queryPixel);
-  float ComputeDataTermCriminisi(const itk::Index<2>& queryPixel);
 
   // Return the highest value of the specified image out of the pixels under a specified BoundaryImage.
   itk::Index<2> FindHighestValueOnBoundary(const FloatScalarImageType::Pointer image, float& maxValue, UnsignedCharScalarImageType::Pointer boundaryImage);
@@ -340,6 +291,8 @@ private:
   
 };
 
-#include "CriminisiInpainting.hxx"
+#include "PatchBasedInpainting.hxx"
+
+void WriteImageOfScores(const CandidatePairs& pairs, const itk::ImageRegion<2>& imageRegion, const std::string& fileName);
 
 #endif

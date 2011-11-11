@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QThread>
 
-#include "CriminisiInpainting.h"
+#include "PatchBasedInpainting.h"
 
 class ProgressThreadObject : public QThread
 {
@@ -58,12 +58,12 @@ public:
 
   void StopInpainting();
 
-  void SetObject(CriminisiInpainting*);
-  CriminisiInpainting* GetObject();
+  void SetObject(PatchBasedInpainting*);
+  PatchBasedInpainting* GetObject();
   
 private:
   // We need a pointer to this object so we can perform the computations in this thread
-  CriminisiInpainting* Inpainting;
+  PatchBasedInpainting* Inpainting;
   bool Stop;
 };
 

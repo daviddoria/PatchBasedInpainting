@@ -59,6 +59,8 @@ struct PatchPair
   void SetValidBoundaryIsophoteStrengthDifference(const bool);
   void SetValidColorDifference(const bool);
   void SetValidDepthDifference(const bool);
+  
+  //float GetSortValue();
 
   itk::Offset<2> GetTargetToSourceOffset() const;
   itk::Offset<2> GetSourceToTargetOffset() const;
@@ -93,6 +95,16 @@ private:
   
   //static float DepthColorLambda;
 };
+
+// struct SortFunctor
+// {
+//   bool operator()(const Test &T1, const Test &T2)
+//   {
+//     return(T1.a < T2.a);
+//   }
+//   
+//   boost::function<bool (const PatchPair& , const PatchPair& )> PatchSortFunction;
+// };
 
 // Sorting functions
 bool SortByAverageSquaredDifference(const PatchPair& pair1, const PatchPair& pair2);

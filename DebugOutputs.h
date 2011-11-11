@@ -24,6 +24,9 @@
 class DebugOutputs
 {
 public:
+  
+  DebugOutputs();
+  
   // Specify if you want to output the parts of the call stack that you have specified.
   void SetDebugFunctionEnterLeave(const bool value);
   

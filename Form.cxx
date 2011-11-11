@@ -133,6 +133,7 @@ void Form::DefaultConstructor()
   this->DebugMessages = false;
 
   this->DebugFunctionEnterLeave = true;
+  this->DebugMessages = true;
   
   // Setup icons
   QIcon openIcon = QIcon::fromTheme("document-open");
@@ -534,7 +535,7 @@ void Form::Refresh()
 {
   try
   {
-    DebugMessage("Refresh()");
+    EnterFunction("Refresh()");
 
     // The following are valid for all iterations
     this->ImageLayer.ImageSlice->SetVisibility(this->chkImage->isChecked());
@@ -628,7 +629,7 @@ void Form::Refresh()
       }
 
     this->qvtkWidget->GetRenderWindow()->Render();
-
+    LeaveFunction("Refresh()");
     }// end try
   catch( itk::ExceptionObject & err )
   {
@@ -1056,22 +1057,19 @@ void Form::HighlightUsedPatches()
 {
   try
   {
-    DebugMessage("HighlightUsedPatches()");
-    
-    //unsigned int patchSize = Helpers::SideLengthFromRadius(this->txtPatchRadius->text().toUInt());
-    //DebugMessage<unsigned int>("Patch size: ", patchSize);
-
+    EnterFunction("HighlightUsedPatches()");
+    if(this->UsedPatchPairs.size() < 2)
+      {
+      std::cerr << "HighlightUsedPatches: this->UsedPatchPairs.size(): " << this->UsedPatchPairs.size() << std::endl;
+      return;
+      }
     PatchPair patchPair = this->UsedPatchPairs[this->IterationToDisplay - 1];
-//     if(!pairValid)
-//       {
-//       std::cerr << "You have requested an invalid pair!" << std::endl;
-//       return;
-//       }
 
     unsigned char centerPixelColor[3];
     HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
     
     // Target
+    DebugMessage("Target...");
     Patch targetPatch = patchPair.TargetPatch;
 
     unsigned int patchSize = targetPatch.Region.GetSize()[0];
@@ -1085,6 +1083,7 @@ void Form::HighlightUsedPatches()
     this->UsedTargetPatchLayer.ImageSlice->SetPosition(targetPatch.Region.GetIndex()[0], targetPatch.Region.GetIndex()[1], 0);
 
     // Source
+    DebugMessage("Source...");
     Patch sourcePatch = patchPair.SourcePatch;
 
     //std::cout << "Displaying used source patch " << this->CurrentUsedPatchDisplayed << " : " << sourcePatch.Region << std::endl;
@@ -1097,6 +1096,7 @@ void Form::HighlightUsedPatches()
     this->UsedSourcePatchLayer.ImageSlice->SetPosition(sourcePatch.Region.GetIndex()[0], sourcePatch.Region.GetIndex()[1], 0);
 
     Refresh();
+    LeaveFunction("HighlightUsedPatches()");
     }// end try
   catch( itk::ExceptionObject & err )
   {
@@ -1259,10 +1259,10 @@ void Form::SetupInitialIntermediateImages()
   Helpers::DeepCopy<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), stack.Image);
   Helpers::DeepCopy<Mask>(this->UserMaskImage, stack.MaskImage);
   Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
-  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), stack.Priority);
-  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetDataImage(), stack.Data);
-  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), stack.Confidence);
-  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceMapImage(), stack.ConfidenceMap);
+  //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), stack.Priority);
+  //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetDataImage(), stack.Data);
+  //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), stack.Confidence);
+  //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceMapImage(), stack.ConfidenceMap);
   Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), stack.BoundaryNormals);
   Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), stack.Isophotes);
   //Helpers::DeepCopy<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage, stack.PotentialTargetPatchesImage);
@@ -1278,7 +1278,7 @@ void Form::IterationComplete()
   EnterFunction("IterationComplete()");
 
   // Save the intermediate images
-  
+  DebugMessage("Saving intermediate images...");
   InpaintingVisualizationStack stack;
   
   Helpers::DeepCopy<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), stack.Image);
@@ -1286,10 +1286,10 @@ void Form::IterationComplete()
   if(!this->chkOnlySaveImage->isChecked())
     {
     Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
-    Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), stack.Priority);
-    Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetDataImage(), stack.Data);
-    Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), stack.Confidence);
-    Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceMapImage(), stack.ConfidenceMap);
+    //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), stack.Priority);
+    //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetDataImage(), stack.Data);
+    //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), stack.Confidence);
+    //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceMapImage(), stack.ConfidenceMap);
     Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), stack.BoundaryNormals);
     Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), stack.Isophotes);
     Helpers::DeepCopy<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage, stack.PotentialTargetPatchesImage);
@@ -1297,6 +1297,7 @@ void Form::IterationComplete()
 
   this->IntermediateImages.push_back(stack);
 
+  DebugMessage("Recording data...");
   if(this->chkRecordSteps->isChecked())
     {
     // Chop to the desired length
@@ -1318,7 +1319,7 @@ void Form::IterationComplete()
   
   // After one iteration, GetNumberOfCompletedIterations will be 1. This is exactly the set of intermediate images we want to display,
   // because the 0th intermediate images are the original inputs.
-  
+  DebugMessage("Display everything...");
   if(this->chkLive->isChecked())
     {
     this->IterationToDisplay = this->Inpainting.GetNumberOfCompletedIterations();

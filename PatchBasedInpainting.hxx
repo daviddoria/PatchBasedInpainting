@@ -1,7 +1,7 @@
 #include "Derivatives.h"
 
 template <typename TImage>
-float CriminisiInpainting::ComputeAverageGradientChange(const typename TImage::Pointer patch, FloatVector2ImageType::Pointer preFillGradientImage, FloatVector2ImageType::Pointer postFillGradientImage, 
+float PatchBasedInpainting::ComputeAverageGradientChange(const typename TImage::Pointer patch, FloatVector2ImageType::Pointer preFillGradientImage, FloatVector2ImageType::Pointer postFillGradientImage, 
 							const Mask::Pointer mask, const Mask::Pointer noMask, const std::vector<itk::Index<2> >& boundaryPixels)
 {
   MaskedGradient<TImage>(patch, mask, preFillGradientImage);

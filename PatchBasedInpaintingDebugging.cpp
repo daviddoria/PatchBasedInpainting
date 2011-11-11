@@ -17,7 +17,7 @@
  *=========================================================================*/
 
 // Class declaration
-#include "CriminisiInpainting.h"
+#include "PatchBasedInpainting.h"
 
 // Custom
 #include "Helpers.h"
@@ -33,11 +33,11 @@
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
 
-void CriminisiInpainting::DebugWriteAllImages()
+void PatchBasedInpainting::DebugWriteAllImages()
 {
-  HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->ConfidenceImage, "Debug/ConfidenceImage", this->NumberOfCompletedIterations);
-  HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->DataImage, "Debug/DataImage", this->NumberOfCompletedIterations);
-  HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->PriorityImage, "Debug/PriorityImage", this->NumberOfCompletedIterations);
+  //HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->ConfidenceImage, "Debug/ConfidenceImage", this->NumberOfCompletedIterations);
+  //HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->DataImage, "Debug/DataImage", this->NumberOfCompletedIterations);
+  //HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->PriorityImage, "Debug/PriorityImage", this->NumberOfCompletedIterations);
   
   //Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage, "IsophoteImage", this->NumberOfCompletedIterations);
   HelpersOutput::Write2DVectorImage(this->IsophoteImage, Helpers::GetSequentialFileName("Debug/IsophoteImage", this->NumberOfCompletedIterations, "mha"));
@@ -67,7 +67,7 @@ void CriminisiInpainting::DebugWriteAllImages()
   HelpersOutput::WriteSequentialImage<RGBImageType>(rgbImage, "Debug/CurrentImage_RGB", this->NumberOfCompletedIterations);
 }
 
-void CriminisiInpainting::DebugWriteAllImages(const itk::Index<2>& pixelToFill, const itk::Index<2>& bestMatchPixel, const unsigned int iteration)
+void PatchBasedInpainting::DebugWriteAllImages(const itk::Index<2>& pixelToFill, const itk::Index<2>& bestMatchPixel, const unsigned int iteration)
 {
   std::cout << "Writing debug images for iteration " << iteration << std::endl;
 
@@ -81,23 +81,23 @@ void CriminisiInpainting::DebugWriteAllImages(const itk::Index<2>& pixelToFill, 
   std::cout << "Wrote pixelToFill." << std::endl;
 
   HelpersOutput::WriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage,"Debug/Isophotes", iteration);
-  HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->ConfidenceImage,"Debug/Confidence", iteration);
+  //HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->ConfidenceImage,"Debug/Confidence", iteration);
   HelpersOutput::WriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage,"Debug/Boundary", iteration);
   HelpersOutput::WriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals,"Debug/BoundaryNormals", iteration);
-  HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->PriorityImage,"Debug/Priorities", iteration);
+  //HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->PriorityImage,"Debug/Priorities", iteration);
   HelpersOutput::WriteSequentialImage<Mask>(this->CurrentMask,"Debug/Mask", iteration);
   HelpersOutput::WriteSequentialImage<FloatVectorImageType>(this->CurrentOutputImage,"Debug/FilledImage", iteration);
 
 }
 
-void CriminisiInpainting::DebugWritePatch(const itk::Index<2>& pixel, const std::string& filePrefix, const unsigned int iteration)
+void PatchBasedInpainting::DebugWritePatch(const itk::Index<2>& pixel, const std::string& filePrefix, const unsigned int iteration)
 {
   std::stringstream padded;
   padded << filePrefix << "_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
   DebugWritePatch(pixel, padded.str());
 }
 
-void CriminisiInpainting::DebugWritePatch(const itk::ImageRegion<2>& inputRegion, const std::string& filename)
+void PatchBasedInpainting::DebugWritePatch(const itk::ImageRegion<2>& inputRegion, const std::string& filename)
 {
   if(!this->DebugImages)
     {
@@ -133,7 +133,7 @@ void CriminisiInpainting::DebugWritePatch(const itk::ImageRegion<2>& inputRegion
   }
 }
 
-void CriminisiInpainting::DebugWritePatch(const itk::Index<2>& pixel, const std::string& filename)
+void PatchBasedInpainting::DebugWritePatch(const itk::Index<2>& pixel, const std::string& filename)
 {
   try
   {
@@ -158,7 +158,7 @@ void CriminisiInpainting::DebugWritePatch(const itk::Index<2>& pixel, const std:
   }
 }
 
-void CriminisiInpainting::DebugWritePixelToFill(const itk::Index<2>& pixelToFill, const unsigned int iteration)
+void PatchBasedInpainting::DebugWritePixelToFill(const itk::Index<2>& pixelToFill, const unsigned int iteration)
 {
   // Create a blank image with the pixel to fill colored white
   UnsignedCharScalarImageType::Pointer pixelImage = UnsignedCharScalarImageType::New();
@@ -187,7 +187,7 @@ void CriminisiInpainting::DebugWritePixelToFill(const itk::Index<2>& pixelToFill
   HelpersOutput::WriteImage<UnsignedCharScalarImageType>(pixelImage, padded.str());
 }
 
-void CriminisiInpainting::DebugWritePatchToFillLocation(const itk::Index<2>& pixelToFill, const unsigned int iteration)
+void PatchBasedInpainting::DebugWritePatchToFillLocation(const itk::Index<2>& pixelToFill, const unsigned int iteration)
 {
   // Create a blank image with the patch that has been filled colored white
   UnsignedCharScalarImageType::Pointer patchImage = UnsignedCharScalarImageType::New();
@@ -212,3 +212,28 @@ void CriminisiInpainting::DebugWritePatchToFillLocation(const itk::Index<2>& pix
   HelpersOutput::WriteImage<UnsignedCharScalarImageType>(patchImage, padded.str());
 }
 
+void WriteImageOfScores(const CandidatePairs& candidatePairs, const itk::ImageRegion<2>& imageRegion, const std::string& fileName)
+{
+  // Create the score-colored image
+  FloatScalarImageType::Pointer scoreColoredImage = FloatScalarImageType::New();
+  Helpers::InitializeImage<FloatScalarImageType>(scoreColoredImage, imageRegion);
+  
+  // Find max value (worst score)
+  float worstScore = 0.0f;
+  for(unsigned int i = 0; i < candidatePairs.size(); ++i)
+    {
+    if(candidatePairs[i].GetDepthDifference() > worstScore)
+      {
+      worstScore = candidatePairs[i].GetDepthDifference();
+      }
+    }
+  Helpers::SetImageToConstant<FloatScalarImageType>(scoreColoredImage, worstScore);
+  Helpers::SetRegionToConstant<FloatScalarImageType>(scoreColoredImage, candidatePairs.TargetPatch.Region, 0.0f);
+
+  for(unsigned int i = 0; i < candidatePairs.size(); ++i)
+    {
+    scoreColoredImage->SetPixel(Helpers::GetRegionCenter(candidatePairs[i].SourcePatch.Region), candidatePairs[i].GetDepthDifference());
+    }
+
+  HelpersOutput::WriteImage<FloatScalarImageType>(scoreColoredImage, fileName);
+}

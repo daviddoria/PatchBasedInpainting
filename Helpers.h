@@ -249,6 +249,9 @@ void ScaleChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, con
 template<typename TPixel>
 void ReplaceChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, typename itk::Image<TPixel, 2>::Pointer replacement, typename itk::VectorImage<TPixel, 2>::Pointer output);
 
+template<typename TImage>
+typename TImage::TPixel ComputeMaxPixelDifference(const typename TImage::Pointer image);
+
 }// end namespace
 
 #include "Helpers.hxx"

@@ -5,7 +5,7 @@ ProgressThread::ProgressThread()
   this->Stop = false;
 }
 
-CriminisiInpainting* ProgressThread::GetObject()
+PatchBasedInpainting* ProgressThread::GetObject()
 {
   return this->Inpainting;
 }
@@ -44,7 +44,7 @@ void ProgressThread::exit()
   emit StopProgressSignal();
 }
 
-void ProgressThread::SetObject(CriminisiInpainting* inpainting)
+void ProgressThread::SetObject(PatchBasedInpainting* inpainting)
 {
   this->Inpainting = inpainting;
 }

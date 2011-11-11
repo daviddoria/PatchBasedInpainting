@@ -18,6 +18,12 @@
 
 #include "DebugOutputs.h"
 
+DebugOutputs::DebugOutputs()
+{
+  this->DebugFunctionEnterLeave = false;
+  this->DebugMessages = false;
+  this->DebugImages = false;
+}
 
 void DebugOutputs::SetDebugFunctionEnterLeave(const bool value)
 {

@@ -41,7 +41,7 @@ class vtkPolyDataMapper;
 #include <QMainWindow>
 
 // Custom
-#include "CriminisiInpainting.h"
+#include "PatchBasedInpainting.h"
 #include "DebugOutputs.h"
 #include "ForwardLookTableModel.h"
 #include "InpaintingVisualizationStack.h"
@@ -237,7 +237,7 @@ protected:
   Mask::Pointer UserMaskImage;
   
   // The class that does all the work.
-  CriminisiInpainting Inpainting;
+  PatchBasedInpainting Inpainting;
   
   // Perform the long inpainting operation in this thread so that the UI remains active.
   ProgressThread ComputationThread;
