@@ -19,17 +19,17 @@
 #ifndef PRIORITY_H
 #define PRIORITY_H
 
-class Priority
+#include "DebugOutputs.h"
+#include "Types.h"
+
+class Priority : public DebugOutputs
 {
 public:
-  
+  // Compute the priority of a specific pixel.
   virtual float ComputePriority(const itk::Index<2>& queryPixel) = 0;
   
   // Compute the priorities at all boundary pixels.
-  void ComputeAllPriorities();
-  
-  // Compute the priority of a specific pixel.
-  float ComputePriority(const itk::Index<2>& queryPixel);
+  void ComputeAllPriorities(const UnsignedCharScalarImageType::Pointer boundaryImage);
   
   // Get the current priority image
   FloatScalarImageType::Pointer GetPriorityImage();

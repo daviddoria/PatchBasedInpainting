@@ -32,6 +32,7 @@ Histograms.cpp
 Mask.cpp
 Patch.cpp
 PatchPair.cpp
+Priority.cpp
 SelfPatchCompare.cpp
 )
 

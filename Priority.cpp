@@ -18,7 +18,9 @@
 
 #include "Priority.h"
 
-void CriminisiInpainting::ComputeAllPriorities()
+#include "Helpers.h"
+/*
+void Priority::ComputeAllPriorities()
 {
   EnterFunction("ComputeAllPriorities()");
   try
@@ -51,4 +53,14 @@ void CriminisiInpainting::ComputeAllPriorities()
     std::cerr << err << std::endl;
     exit(-1);
   }
+}*/
+
+void Priority::ComputeAllPriorities(const UnsignedCharScalarImageType::Pointer boundaryImage)
+{
+  std::vector<itk::Index<2> > boundaryPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(boundaryImage);
+  
+  for(unsigned int pixelId = 0; pixelId < boundaryPixels.size(); ++pixelId)
+    {
+    ComputePriority(boundaryPixels[pixelId]);
+    }
 }
