@@ -25,6 +25,7 @@
 #include "Helpers.h"
 #include "Patch.h"
 #include "PatchPair.h"
+#include "Priority.h"
 #include "SelfPatchCompare.h"
 #include "Types.h"
 
@@ -288,6 +289,8 @@ private:
   unsigned int ComputeMinimumScoreLookAhead();
 
   SelfPatchCompare* PatchCompare;
+  
+  Priority* PriorityFunction;
   
 };
 

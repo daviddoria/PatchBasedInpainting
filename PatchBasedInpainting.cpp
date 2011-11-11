@@ -23,6 +23,7 @@
 #include "Helpers.h"
 #include "HelpersOutput.h"
 #include "PixelDifference.h"
+#include "PriorityRandom.h"
 #include "SelfPatchCompare.h"
 
 // STL
@@ -48,6 +49,8 @@
 
 PatchBasedInpainting::PatchBasedInpainting()
 {
+  this->PriorityFunction = new PriorityRandom;
+  
   //std::cout << "CriminisiInpainting()" << std::endl;
   this->PatchRadius.Fill(3);
 

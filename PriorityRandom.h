@@ -19,10 +19,12 @@
 #ifndef PRIORITYRANDOM_H
 #define PRIORITYRANDOM_H
 
-class PriorityRandom
+#include "Priority.h"
+
+class PriorityRandom : public Priority
 {
 public:
-  
+  float ComputePriority(const itk::Index<2>& queryPixel);
 };
 
 #endif

@@ -16,15 +16,9 @@
  *
  *=========================================================================*/
 
-#ifndef PRIORITYDEPTH_H
-#define PRIORITYDEPTH_H
+#include "PriorityRandom.h"
 
-#include "Priority.h"
-
-class PriorityDepth : public Priority
+float PriorityRandom::ComputePriority(const itk::Index<2>& queryPixel)
 {
-public:
-  
-};
-
-#endif
+  return drand48();
+}

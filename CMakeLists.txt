@@ -33,6 +33,9 @@ Mask.cpp
 Patch.cpp
 PatchPair.cpp
 Priority.cpp
+PriorityCriminisi.cpp
+PriorityDepth.cpp
+PriorityRandom.cpp
 SelfPatchCompare.cpp
 )
 

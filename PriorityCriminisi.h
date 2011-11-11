@@ -19,9 +19,22 @@
 #ifndef PRIORITYCRIMINISI_H
 #define PRIORITYCRIMINISI_H
 
-class PriorityCriminisi
+#include "Priority.h"
+#include "Types.h"
+
+class PriorityCriminisi : public Priority
 {
 public:
+  
+  ///////////////////////////////////////////
+  // Functions reimplemented from Priority //
+  ///////////////////////////////////////////
+  float ComputePriority(const itk::Index<2>& queryPixel);
+  
+  ///////////////////////////////////////////
+  //////////////// New functions   //////////
+  ///////////////////////////////////////////
+  PriorityCriminisi();
   
   // Get the current confidence image (confidences computed on the current boundary)
   FloatScalarImageType::Pointer GetConfidenceImage();
