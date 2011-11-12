@@ -23,7 +23,13 @@
 Priority::Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) :
                     Image(image), MaskImage(maskImage), PatchRadius(patchRadius)
 {
+  this->PriorityImage = FloatScalarImageType::New();
+  this->BoundaryImage = UnsignedCharScalarImageType::New();
+}
 
+float Priority::GetPriority(const itk::Index<2>& queryPixel)
+{
+  return this->PriorityImage->GetPixel(queryPixel);
 }
 
 /*
@@ -62,11 +68,11 @@ void Priority::ComputeAllPriorities()
   }
 }*/
 
-void Priority::ComputeAllPriorities(const UnsignedCharScalarImageType::Pointer boundaryImage)
+void Priority::ComputeAllPriorities()
 {
-  this->BoundaryImage = boundaryImage;
+  this->MaskImage->FindBoundary(this->BoundaryImage);
 
-  std::vector<itk::Index<2> > boundaryPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(boundaryImage);
+  std::vector<itk::Index<2> > boundaryPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage);
 
   for(unsigned int pixelId = 0; pixelId < boundaryPixels.size(); ++pixelId)
     {

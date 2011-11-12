@@ -25,43 +25,43 @@
 class PriorityCriminisi : public Priority
 {
 public:
-  
+
   ///////////////////////////////////////////
   // Functions reimplemented from Priority //
   ///////////////////////////////////////////
 
   PriorityCriminisi(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius);
+
   float ComputePriority(const itk::Index<2>& queryPixel);
-  
+
+  void ComputeAllPriorities();
   ///////////////////////////////////////////
   //////////////// New functions   //////////
   ///////////////////////////////////////////
-  
-  
+
   // Get the current confidence image (confidences computed on the current boundary)
   FloatScalarImageType::Pointer GetConfidenceImage();
 
   // Get the current confidence map image
   FloatScalarImageType::Pointer GetConfidenceMapImage();
-  
-  
+
+  // Get the current data image
+  FloatScalarImageType::Pointer GetDataImage();
+
+protected:
+
   // Compute the confidence values for pixels that were just inpainted.
   void UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value);
-  
-protected:
-  
-  
+
   // Compute the Confidence at a pixel.
   float ComputeConfidenceTerm(const itk::Index<2>& queryPixel);
-  
+
   // Compute the Data at a pixel.
   float ComputeDataTerm(const itk::Index<2>& queryPixel);
-  float ComputeDataTermCriminisi(const itk::Index<2>& queryPixel);
 
-  
   // Keep track of the confidence of each pixel
   FloatScalarImageType::Pointer ConfidenceMapImage;
-  
+
   // Store the computed confidences on the boundary
   FloatScalarImageType::Pointer ConfidenceImage;
 
@@ -73,20 +73,10 @@ protected:
 
   // Boundary normals.
   FloatVector2ImageType::Pointer BoundaryNormalsImage;
-  
-  // Compute the data term at each pixel on the curren boundary.
-  void ComputeAllDataTerms();
-  
-  // Compute the confidence term at each pixel on the curren boundary.
-  void ComputeAllConfidenceTerms();
-  
-  
+
   // The initial confidence is 0 in the hole and 1 elsewhere.
   void InitializeConfidenceMap();
-  
-  
-  // Get the current data image
-  FloatScalarImageType::Pointer GetDataImage();
+
 };
 
 #endif

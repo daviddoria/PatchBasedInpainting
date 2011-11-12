@@ -32,22 +32,30 @@ PriorityCriminisi::PriorityCriminisi(FloatVectorImageType::Pointer image, Mask::
   this->ConfidenceImage = FloatScalarImageType::New();
   this->ConfidenceMapImage = FloatScalarImageType::New();
   this->DataImage = FloatScalarImageType::New();
+
+  InitializeConfidenceMap();
 }
-  
+
+void PriorityCriminisi::ComputeAllPriorities()
+{
+  Priority::ComputeAllPriorities();
+
+  this->ConfidenceImage->FillBuffer(0);
+  this->ConfidenceMapImage->FillBuffer(0);
+  this->DataImage->FillBuffer(0);
+}
+
 float PriorityCriminisi::ComputePriority(const itk::Index<2>& queryPixel)
 {
-  //double confidence = ComputeConfidenceTerm(queryPixel);
-  //double data = ComputeDataTerm(queryPixel);
+  float confidenceTerm = ComputeConfidenceTerm(queryPixel);
+  float dataTerm = ComputeDataTerm(queryPixel);
 
-  float confidence = this->ConfidenceImage->GetPixel(queryPixel);
-  float data = this->DataImage->GetPixel(queryPixel);
-
-  float priority = confidence * data;
+  float priority = confidenceTerm * dataTerm;
 
   return priority;
 }
 
-
+/*
 float PriorityCriminisi::ComputeDataTerm(const itk::Index<2>& queryPixel)
 {
   // The difference between this funciton and Criminisi's original data term computation (ComputeDataTermCriminisi)
@@ -73,7 +81,7 @@ float PriorityCriminisi::ComputeDataTerm(const itk::Index<2>& queryPixel)
     if(angleBetween < 20)
       {
       float projectionMagnitude = isophote.GetNorm() * cos(angleBetween);
-      
+
       dataTerm = projectionMagnitude;
       }
     else
@@ -90,8 +98,9 @@ float PriorityCriminisi::ComputeDataTerm(const itk::Index<2>& queryPixel)
     exit(-1);
   }
 }
+*/
 
-float PriorityCriminisi::ComputeDataTermCriminisi(const itk::Index<2>& queryPixel)
+float PriorityCriminisi::ComputeDataTerm(const itk::Index<2>& queryPixel)
 {
   try
   {
@@ -120,68 +129,6 @@ float PriorityCriminisi::ComputeDataTermCriminisi(const itk::Index<2>& queryPixe
     exit(-1);
   }
 }
-
-
-void PriorityCriminisi::ComputeAllDataTerms()
-{
-  try
-  {
-    itk::ImageRegionConstIteratorWithIndex<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
-
-    // Blank the data term image
-    this->DataImage->FillBuffer(0);
-
-    while(!boundaryIterator.IsAtEnd())
-      {
-      if(boundaryIterator.Get() != 0) // This is a pixel on the current boundary
-	{
-	itk::Index<2> currentPixel = boundaryIterator.GetIndex();
-	float dataTerm = ComputeDataTerm(currentPixel);
-	this->DataImage->SetPixel(currentPixel, dataTerm);
-	//DebugMessage<float>("Set DataTerm to ", dataTerm);
-	}
-
-      ++boundaryIterator;
-      }
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in ComputeAllDataTerms!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
-
-
-void PriorityCriminisi::ComputeAllConfidenceTerms()
-{
-  try
-  {
-    itk::ImageRegionConstIteratorWithIndex<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
-
-    // Blank the data term image
-    this->ConfidenceImage->FillBuffer(0);
-
-    while(!boundaryIterator.IsAtEnd())
-      {
-      if(boundaryIterator.Get() != 0) // This is a pixel on the current boundary
-	{
-	itk::Index<2> currentPixel = boundaryIterator.GetIndex();
-	float confidenceTerm = ComputeConfidenceTerm(currentPixel);
-	this->ConfidenceImage->SetPixel(currentPixel, confidenceTerm);
-	}
-
-      ++boundaryIterator;
-      }
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in ComputeAllConfidenceTerms!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
-
 
 void PriorityCriminisi::UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value)
 {

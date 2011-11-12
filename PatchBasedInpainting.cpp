@@ -297,11 +297,8 @@ void PatchBasedInpainting::Initialize()
 PatchPair PatchBasedInpainting::Iterate()
 {
   EnterFunction("Iterate()");
-  
-  //FindBoundary();
-  HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage.mha", this->DebugImages);
 
-  DebugMessage("Found boundary.");
+  PriorityFunction->ComputeAllPriorities();
 
   // The affect of this parameter can be inspected using the output of TestBoundaryNormals.
   unsigned int blurVariance = 2;
@@ -316,11 +313,11 @@ PatchPair PatchBasedInpainting::Iterate()
   DebugMessage("Computed priorities.");
 
   PatchPair usedPatchPair;
-    
+
   FindBestPatchLookAhead(usedPatchPair);
-  
+
   //std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
-  
+
   if(this->DebugImages)
     {
     std::stringstream ssTargetIsophotes;

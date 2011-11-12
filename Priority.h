@@ -28,18 +28,19 @@ class Priority : public DebugOutputs
 public:
   Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius);
 
-  // Compute the priority of a specific pixel.
-  virtual float ComputePriority(const itk::Index<2>& queryPixel) = 0;
-
   // Compute the priorities at all boundary pixels.
-  void ComputeAllPriorities(const UnsignedCharScalarImageType::Pointer boundaryImage);
+  virtual void ComputeAllPriorities();
 
   // Get the current priority image
   FloatScalarImageType::Pointer GetPriorityImage();
 
-  //void SetImage(FloatVectorImageType::Pointer image);
+  float GetPriority(const itk::Index<2>& queryPixel);
 
 protected:
+
+  // Compute the priority of a specific pixel.
+  virtual float ComputePriority(const itk::Index<2>& queryPixel) = 0;
+
   // Keep track of the priority of each pixel.
   FloatScalarImageType::Pointer PriorityImage;
 
