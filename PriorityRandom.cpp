@@ -18,6 +18,11 @@
 
 #include "PriorityRandom.h"
 
+PriorityRandom::PriorityRandom(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) : Priority(image, maskImage, patchRadius)
+{
+
+}
+
 float PriorityRandom::ComputePriority(const itk::Index<2>& queryPixel)
 {
   return drand48();

@@ -18,8 +18,16 @@
 
 #include "PriorityCriminisi.h"
 
+// Custom
+#include "Helpers.h"
 
-PriorityCriminisi::PriorityCriminisi()
+// VXL
+#include <vnl/vnl_double_2.h>
+
+// ITK
+#include "itkInvertIntensityImageFilter.h"
+
+PriorityCriminisi::PriorityCriminisi(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) : Priority(image, maskImage, patchRadius)
 {
   this->ConfidenceImage = FloatScalarImageType::New();
   this->ConfidenceMapImage = FloatScalarImageType::New();
@@ -49,7 +57,7 @@ float PriorityCriminisi::ComputeDataTerm(const itk::Index<2>& queryPixel)
   try
   {
     FloatVector2Type isophote = this->IsophoteImage->GetPixel(queryPixel);
-    FloatVector2Type boundaryNormal = this->BoundaryNormals->GetPixel(queryPixel);
+    FloatVector2Type boundaryNormal = this->BoundaryNormalsImage->GetPixel(queryPixel);
 
     DebugMessage<FloatVector2Type>("Isophote: ", isophote);
     DebugMessage<FloatVector2Type>("Boundary normal: ", boundaryNormal);
@@ -88,7 +96,7 @@ float PriorityCriminisi::ComputeDataTermCriminisi(const itk::Index<2>& queryPixe
   try
   {
     FloatVector2Type isophote = this->IsophoteImage->GetPixel(queryPixel);
-    FloatVector2Type boundaryNormal = this->BoundaryNormals->GetPixel(queryPixel);
+    FloatVector2Type boundaryNormal = this->BoundaryNormalsImage->GetPixel(queryPixel);
 
     DebugMessage<FloatVector2Type>("Isophote: ", isophote);
     DebugMessage<FloatVector2Type>("Boundary normal: ", boundaryNormal);
@@ -181,16 +189,16 @@ void PriorityCriminisi::UpdateConfidences(const itk::ImageRegion<2>& targetRegio
   try
   {
     // Force the region to update to be entirely inside the image
-    itk::ImageRegion<2> region = CropToValidRegion(targetRegion);
+    itk::ImageRegion<2> region = Helpers::CropToRegion(targetRegion, this->Image->GetLargestPossibleRegion());
     
     // Use an iterator to find masked pixels. Compute their new value, and save it in a vector of pixels and their new values.
     // Do not update the pixels until after all new values have been computed, because we want to use the old values in all of
     // the computations.
-    itk::ImageRegionConstIterator<Mask> maskIterator(this->CurrentMask, region);
+    itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, region);
 
     while(!maskIterator.IsAtEnd())
       {
-      if(this->CurrentMask->IsHole(maskIterator.GetIndex()))
+      if(this->MaskImage->IsHole(maskIterator.GetIndex()))
 	{
 	itk::Index<2> currentPixel = maskIterator.GetIndex();
 	this->ConfidenceMapImage->SetPixel(currentPixel, value);
@@ -215,11 +223,10 @@ void PriorityCriminisi::InitializeConfidenceMap()
   // Clone the mask - we need to invert the mask to actually perform the masking, but we don't want to disturb the original mask
   Mask::Pointer maskClone = Mask::New();
   //Helpers::DeepCopy<Mask>(this->CurrentMask, maskClone);
-  maskClone->DeepCopyFrom(this->CurrentMask);
+  maskClone->DeepCopyFrom(this->MaskImage);
   
   // Invert the mask
   typedef itk::InvertIntensityImageFilter <Mask> InvertIntensityImageFilterType;
-
   InvertIntensityImageFilterType::Pointer invertIntensityFilter = InvertIntensityImageFilterType::New();
   invertIntensityFilter->SetInput(maskClone);
   //invertIntensityFilter->InPlaceOn();
@@ -248,10 +255,10 @@ float PriorityCriminisi::ComputeConfidenceTerm(const itk::Index<2>& queryPixel)
 
     //itk::ImageRegion<2> region = this->CurrentMask->GetLargestPossibleRegion();
     //region.Crop(Helpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius[0]));
-    itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius[0]);
-    itk::ImageRegion<2> region = CropToValidRegion(targetRegion);
+    itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius);
+    itk::ImageRegion<2> region = Helpers::CropToRegion(targetRegion, this->Image->GetLargestPossibleRegion());
     
-    itk::ImageRegionConstIterator<Mask> maskIterator(this->CurrentMask, region);
+    itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, region);
 
     // The confidence is computed as the sum of the confidences of patch pixels in the source region / area of the patch
 
@@ -259,14 +266,14 @@ float PriorityCriminisi::ComputeConfidenceTerm(const itk::Index<2>& queryPixel)
 
     while(!maskIterator.IsAtEnd())
       {
-      if(this->CurrentMask->IsValid(maskIterator.GetIndex()))
+      if(this->MaskImage->IsValid(maskIterator.GetIndex()))
         {
         sum += this->ConfidenceMapImage->GetPixel(maskIterator.GetIndex());
         }
       ++maskIterator;
       }
 
-    unsigned int numberOfPixels = GetNumberOfPixelsInPatch();
+    unsigned int numberOfPixels = region.GetNumberOfPixels();
     float areaOfPatch = static_cast<float>(numberOfPixels);
     
     float confidence = sum/areaOfPatch;

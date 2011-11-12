@@ -116,11 +116,9 @@ public:
   
   // Compute the isophotes.
   //void ComputeMaskedIsophotesInRegion(FloatScalarImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region, FloatVector2ImageType::Pointer outputIsophotes);
-
-  bool GetAdjacentBoundaryPixel(const itk::Index<2>& boundaryPixel, const PatchPair& patchPair, itk::Index<2>& adjacentBoundaryPixel);
   
   // Find the boundary of a region.
-  void FindBoundary();
+  //void FindBoundary();
 
   // Compute the normals of the hole boundary.
   void ComputeBoundaryNormals(const float blurVariance);
@@ -143,19 +141,7 @@ private:
   void ComputeIsophotes();
   
   PatchPair PreviousIterationUsedPatchPair;
-  // Compute the difference between two isophotes
-  float ComputeIsophoteAngleDifference(const FloatVector2Type& v1, const FloatVector2Type& v2);
-  float ComputeIsophoteStrengthDifference(const FloatVector2Type& v1, const FloatVector2Type& v2);
-  //float ComputeAverageIsophoteDifference(const itk::Index<2>& pixel1, const itk::Index<2>& pixel2, const PatchPair& patchPair);
-  FloatVector2Type ComputeAverageIsophoteSourcePatch(const itk::Index<2>& pixel, const PatchPair& patchPair);
-  FloatVector2Type ComputeAverageIsophoteTargetPatch(const itk::Index<2>& pixel, const PatchPair& patchPair);
-  
-  // Compute the continuation difference for every pair. Store the values in the PatchPair objects inside of the CandidatePairs object.
-  void ComputeAllContinuationDifferences(CandidatePairs& candidatePairs);
-  
-  
-  float ComputeNormalizedSquaredPixelDifference(const itk::Index<2>& pixel1, const itk::Index<2>& pixel2);
-  
+
   // Determine the difference along an extended isophote of the pixel that will be filled. The PatchPair is non-const because we store the score in the class.
   //float ComputeTotalContinuationDifference(PatchPair& patchPair);
   
@@ -221,7 +207,7 @@ private:
   bool IsValidRegion(const itk::ImageRegion<2>& region);
   
   // Crop 'region' to be entirely inside the full region of the images we are operating on.
-  itk::ImageRegion<2> CropToValidRegion(const itk::ImageRegion<2>& region);
+  //itk::ImageRegion<2> CropToValidRegion(const itk::ImageRegion<2>& region);
 
   // Compute the number of pixels in a patch of the specified size.
   unsigned int GetNumberOfPixelsInPatch();

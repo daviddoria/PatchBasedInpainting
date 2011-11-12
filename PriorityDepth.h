@@ -24,7 +24,8 @@
 class PriorityDepth : public Priority
 {
 public:
-  
+  PriorityDepth(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius);
+  float ComputePriority(const itk::Index<2>& queryPixel);
 };
 
 #endif

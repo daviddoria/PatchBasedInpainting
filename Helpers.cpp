@@ -770,4 +770,16 @@ std::string ReplaceFileExtension(const std::string& fileName, const std::string&
   return newFileName;
 }
 
+
+itk::ImageRegion<2> CropToRegion(const itk::ImageRegion<2>& inputRegion, const itk::ImageRegion<2>& targetRegion)
+{
+  // Returns the overlap of the inputRegion with the targetRegion.
+  
+  //itk::ImageRegion<2> region = this->FullImageRegion;
+  itk::ImageRegion<2> region = targetRegion;
+  region.Crop(inputRegion);
+
+  return region;
+}
+
 } // end namespace

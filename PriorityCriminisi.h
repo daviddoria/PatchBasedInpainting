@@ -29,12 +29,14 @@ public:
   ///////////////////////////////////////////
   // Functions reimplemented from Priority //
   ///////////////////////////////////////////
+
+  PriorityCriminisi(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius);
   float ComputePriority(const itk::Index<2>& queryPixel);
   
   ///////////////////////////////////////////
   //////////////// New functions   //////////
   ///////////////////////////////////////////
-  PriorityCriminisi();
+  
   
   // Get the current confidence image (confidences computed on the current boundary)
   FloatScalarImageType::Pointer GetConfidenceImage();
@@ -65,7 +67,12 @@ protected:
 
   // Keep track of the data term of each pixel
   FloatScalarImageType::Pointer DataImage;
-  
+
+  // Isophotes of the image.
+  FloatVector2ImageType::Pointer IsophoteImage;
+
+  // Boundary normals.
+  FloatVector2ImageType::Pointer BoundaryNormalsImage;
   
   // Compute the data term at each pixel on the curren boundary.
   void ComputeAllDataTerms();

@@ -18,6 +18,11 @@
 
 #include "PriorityDepth.h"
 
+PriorityDepth::PriorityDepth(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) : Priority(image, maskImage, patchRadius)
+{
+
+}
+
 float PriorityDepth::ComputePriority(const itk::Index<2>& queryPixel)
 {
   

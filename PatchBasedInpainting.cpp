@@ -32,9 +32,6 @@
 // Boost
 #include <boost/bind.hpp>
 
-// VXL
-#include <vnl/vnl_double_2.h>
-
 // ITK
 #include "itkBinaryContourImageFilter.h"
 #include "itkBinaryDilateImageFilter.h"
@@ -49,7 +46,7 @@
 
 PatchBasedInpainting::PatchBasedInpainting()
 {
-  this->PriorityFunction = new PriorityRandom;
+  this->PriorityFunction = new PriorityRandom(this->CurrentOutputImage, this->CurrentMask, this->PatchRadius[0]);
   
   //std::cout << "CriminisiInpainting()" << std::endl;
   this->PatchRadius.Fill(3);
@@ -112,7 +109,7 @@ std::vector<Patch> PatchBasedInpainting::AddNewSourcePatchesInRegion(const itk::
   try
   {
     // Clearly we cannot add source patches from regions that are outside the image.
-    itk::ImageRegion<2> newRegion = CropToValidRegion(region);
+    itk::ImageRegion<2> newRegion = Helpers::CropToRegion(region, this->FullImageRegion);
 
     itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->CurrentOutputImage, newRegion);
 
@@ -167,7 +164,7 @@ void PatchBasedInpainting::AddAllSourcePatchesInRegion(const itk::ImageRegion<2>
   try
   {
     // Clearly we cannot add source patches from regions that are outside the image, so crop the desired region to be inside the image.
-    itk::ImageRegion<2> newRegion = CropToValidRegion(region);
+    itk::ImageRegion<2> newRegion = Helpers::CropToRegion(region, this->FullImageRegion);
 
     itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->CurrentOutputImage, newRegion);
 
@@ -245,7 +242,7 @@ void PatchBasedInpainting::Initialize()
     this->NumberOfCompletedIterations = 0;
   
     // We find the boundary of the mask and its normals at every iteration (in Iterate()), but we do this here so that everything is initialized and valid if we are observing this class for display.
-    FindBoundary();
+    //FindBoundary();
     
     unsigned int blurVariance = 2;
     ComputeBoundaryNormals(blurVariance);
@@ -301,7 +298,7 @@ PatchPair PatchBasedInpainting::Iterate()
 {
   EnterFunction("Iterate()");
   
-  FindBoundary();
+  //FindBoundary();
   HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage.mha", this->DebugImages);
 
   DebugMessage("Found boundary.");
@@ -404,7 +401,7 @@ PatchPair PatchBasedInpainting::Iterate()
   // At the end of an iteration, things would be slightly out of sync. The boundary is computed at the beginning of the iteration (before the patch is filled),
   // so at the end of the iteration, the boundary image will not correspond to the boundary of the remaining hole in the image - it will be off by 1 iteration.
   // We fix this by computing the boundary and boundary normals again at the end of the iteration.
-  FindBoundary();
+  //FindBoundary();
   ComputeBoundaryNormals(blurVariance);
   
   this->NumberOfCompletedIterations++;
@@ -871,73 +868,6 @@ bool PatchBasedInpainting::HasMoreToInpaint()
   }
 }
 
-void PatchBasedInpainting::FindBoundary()
-{
-  EnterFunction("FindBoundary()");
-  try
-  {
-    // Compute the "outer" boundary of the region to fill. That is, we want the boundary pixels to be in the source region.
-
-    HelpersOutput::WriteImageConditional<Mask>(this->CurrentMask, "Debug/FindBoundary.CurrentMask.mha", this->DebugImages);
-    HelpersOutput::WriteImageConditional<Mask>(this->CurrentMask, "Debug/FindBoundary.CurrentMask.png", this->DebugImages);
-
-    // Create a binary image (throw away the "dont use" pixels)
-    Mask::Pointer holeOnly = Mask::New();
-    holeOnly->DeepCopyFrom(this->CurrentMask);
-    
-    itk::ImageRegionIterator<Mask> maskIterator(holeOnly, holeOnly->GetLargestPossibleRegion());
-    // This should result in a white hole on a black background
-    while(!maskIterator.IsAtEnd())
-      {
-      itk::Index<2> currentPixel = maskIterator.GetIndex();
-      if(!holeOnly->IsHole(currentPixel))
-	{
-	holeOnly->SetPixel(currentPixel, holeOnly->GetValidValue());
-	}
-      ++maskIterator;
-      }
-
-    HelpersOutput::WriteImageConditional<Mask>(holeOnly, "Debug/FindBoundary.HoleOnly.mha", this->DebugImages);
-    HelpersOutput::WriteImageConditional<Mask>(holeOnly, "Debug/FindBoundary.HoleOnly.png", this->DebugImages);
-      
-    // Since the hole is white, we want the foreground value of the contour filter to be black. This means that the boundary will
-    // be detected in the black pixel region, which is on the outside edge of the hole like we want. However,
-    // The BinaryContourImageFilter will change all non-boundary pixels to the background color, so the resulting output will be inverted -
-    // the boundary pixels will be black and the non-boundary pixels will be white.
-    
-    // Find the boundary
-    typedef itk::BinaryContourImageFilter <Mask, Mask> binaryContourImageFilterType;
-    binaryContourImageFilterType::Pointer binaryContourFilter = binaryContourImageFilterType::New();
-    binaryContourFilter->SetInput(holeOnly);
-    binaryContourFilter->SetFullyConnected(true);
-    binaryContourFilter->SetForegroundValue(holeOnly->GetValidValue());
-    binaryContourFilter->SetBackgroundValue(holeOnly->GetHoleValue());
-    binaryContourFilter->Update();
-
-    HelpersOutput::WriteImageConditional<Mask>(binaryContourFilter->GetOutput(), "Debug/FindBoundary.Boundary.mha", this->DebugImages);
-    HelpersOutput::WriteImageConditional<Mask>(binaryContourFilter->GetOutput(), "Debug/FindBoundary.Boundary.png", this->DebugImages);
-
-    // Since we want to interpret non-zero pixels as boundary pixels, we must invert the image.
-    typedef itk::InvertIntensityImageFilter <Mask> InvertIntensityImageFilterType;
-    InvertIntensityImageFilterType::Pointer invertIntensityFilter = InvertIntensityImageFilterType::New();
-    invertIntensityFilter->SetInput(binaryContourFilter->GetOutput());
-    invertIntensityFilter->SetMaximum(255);
-    invertIntensityFilter->Update();
-    
-    //this->BoundaryImage = binaryContourFilter->GetOutput();
-    //this->BoundaryImage->Graft(binaryContourFilter->GetOutput());
-    Helpers::DeepCopy<UnsignedCharScalarImageType>(invertIntensityFilter->GetOutput(), this->BoundaryImage);
-
-    HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/FindBoundary.BoundaryImage.mha", this->DebugImages);
-    LeaveFunction("FindBoundary()");
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in FindBoundary!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
 
 void PatchBasedInpainting::UpdateMask(const itk::ImageRegion<2>& region)
 {
@@ -1098,14 +1028,6 @@ itk::Size<2> PatchBasedInpainting::GetPatchSize()
   return patchSize;
 }
 
-itk::ImageRegion<2> PatchBasedInpainting::CropToValidRegion(const itk::ImageRegion<2>& inputRegion)
-{
-  itk::ImageRegion<2> region = this->FullImageRegion;
-  region.Crop(inputRegion);
-  
-  return region;
-}
-
 CandidatePairs& PatchBasedInpainting::GetPotentialCandidatePairReference(const unsigned int forwardLookId)
 {
   return this->PotentialCandidatePairs[forwardLookId];
@@ -1119,228 +1041,6 @@ std::vector<CandidatePairs> PatchBasedInpainting::GetPotentialCandidatePairs()
 unsigned int PatchBasedInpainting::GetNumberOfCompletedIterations()
 {
   return this->NumberOfCompletedIterations;
-}
-
-bool PatchBasedInpainting::GetAdjacentBoundaryPixel(const itk::Index<2>& targetPatchSourceSideBoundaryPixel, const PatchPair& patchPair,
-                                                   itk::Index<2>& sourcePatchTargetSideBoundaryPixel)
-{
-  if(this->CurrentMask->IsHole(targetPatchSourceSideBoundaryPixel) || !patchPair.TargetPatch.Region.IsInside(targetPatchSourceSideBoundaryPixel))
-    {
-    std::cerr << "Error: The input boundary pixel must be on the valid side of the boundary (not in the hole)!" << std::endl;
-    exit(-1);
-    }
-  
-  FloatVector2Type sourceSideIsophote = this->IsophoteImage->GetPixel(targetPatchSourceSideBoundaryPixel);
-    
-  itk::Index<2> pixelAcrossBoundary = Helpers::GetNextPixelAlongVector(targetPatchSourceSideBoundaryPixel, sourceSideIsophote);
-  
-  // Some pixels might not have a valid pixel on the other side of the boundary.
-  bool valid = false;
-  
-  // If the next pixel along the isophote is in bounds and in the hole region of the patch, procede.
-  if(patchPair.TargetPatch.Region.IsInside(pixelAcrossBoundary) && this->CurrentMask->IsHole(pixelAcrossBoundary))
-    {
-    valid = true;
-    }
-  else
-    {
-    // There is no requirement for the isophote to be pointing a particular orientation, so try to step along the negative isophote.
-    sourceSideIsophote *= -1.0;
-    pixelAcrossBoundary = Helpers::GetNextPixelAlongVector(targetPatchSourceSideBoundaryPixel, sourceSideIsophote);
-    if(patchPair.TargetPatch.Region.IsInside(pixelAcrossBoundary) && this->CurrentMask->IsHole(pixelAcrossBoundary))
-      {
-      valid = true;
-      }
-    }
-    
-  if(!valid)
-    {
-    return valid;
-    }
-
-  // Determine the position of the pixel relative to the patch corner.
-  itk::Offset<2> intraPatchOffset = pixelAcrossBoundary - patchPair.TargetPatch.Region.GetIndex();
-
-  // Determine the position of the corresponding pixel in the source patch and return by reference.
-  sourcePatchTargetSideBoundaryPixel = patchPair.SourcePatch.Region.GetIndex() + intraPatchOffset;
-
-  return valid;
-}
-
-FloatVector2Type PatchBasedInpainting::ComputeAverageIsophoteSourcePatch(const itk::Index<2>& sourcePatchPixel, const PatchPair& patchPair)
-{
-  // This function computes the average isophote of the pixels around 'pixel' in the target side of the source patch (pixels that will end up filling the hole).
-  // The input 'pixel' is expected to be on the target side of the boundary in the source patch.
-
-  // The target patch is the only patch in which the hole/boundary is actually defined, so computations must take place in that frame.
-  itk::Index<2> targetPatchPixel = sourcePatchPixel + patchPair.GetSourceToTargetOffset();
-  
-  itk::ImageRegion<2> smallTargetPatch = Helpers::GetRegionInRadiusAroundPixel(targetPatchPixel, 1);
-  smallTargetPatch.Crop(patchPair.TargetPatch.Region);
-  
-  // Get the pixels in the hole of the target patch.
-  std::vector<itk::Index<2> > holeTargetPixels = this->CurrentMask->GetHolePixelsInRegion(smallTargetPatch);
-
-  // We actually want the hole pixels in the source region, not the target region, so shift them.
-  std::vector<itk::Index<2> > holeSourcePixels;
-  itk::Offset<2> shiftAmount = patchPair.GetTargetToSourceOffset();
-  for(unsigned int i = 0; i < holeTargetPixels.size(); ++i)
-    {
-    itk::Index<2> shiftedPixel = holeTargetPixels[i] + shiftAmount;
-
-    holeSourcePixels.push_back(shiftedPixel);
-    }
-
-  std::vector<FloatVector2Type> sourceIsophotes;
-  for(unsigned int i = 0; i < holeSourcePixels.size(); ++i)
-    {
-    sourceIsophotes.push_back(this->IsophoteImage->GetPixel(holeSourcePixels[i]));
-    }
-
-  FloatVector2Type averageSourceIsophote = Helpers::AverageVectors(sourceIsophotes);
-  return averageSourceIsophote;
-}
-
-FloatVector2Type PatchBasedInpainting::ComputeAverageIsophoteTargetPatch(const itk::Index<2>& pixel, const PatchPair& patchPair)
-{
-  // This function computes the average isophote of the pixels around 'pixel' in the source side of the target patch.
-
-  itk::ImageRegion<2> smallTargetPatch = Helpers::GetRegionInRadiusAroundPixel(pixel, 1);
-  smallTargetPatch.Crop(patchPair.TargetPatch.Region);
-
-  // Get the pixels in the valid region and in the hole of the target patch.
-  std::vector<itk::Index<2> > validTargetPixels = this->CurrentMask->GetValidPixelsInRegion(smallTargetPatch);
-
-  std::vector<FloatVector2Type> targetIsophotes;
-  for(unsigned int i = 0; i < validTargetPixels.size(); ++i)
-    {
-    targetIsophotes.push_back(this->IsophoteImage->GetPixel(validTargetPixels[i]));
-    }
-
-  FloatVector2Type averageTargetIsophote = Helpers::AverageVectors(targetIsophotes);
-
-  return averageTargetIsophote;
-}
-
-
-float PatchBasedInpainting::ComputeIsophoteAngleDifference(const FloatVector2Type& v1, const FloatVector2Type& v2)
-{
-  //std::cout << "ComputeIsophoteAngleDifference()" << std::endl;
-  // Compute the isophote difference.
-  float isophoteDifference = Helpers::AngleBetween(v1, v2);
-  
-  float isophoteDifferenceNormalized = isophoteDifference/3.14159; // The maximum angle between vectors is pi, so this produces a score between 0 and 1.
-  DebugMessage<float>("isophoteDifferenceNormalized: ", isophoteDifferenceNormalized);
-
-  //std::cout << "Leave ComputeIsophoteDifference()" << std::endl;
-  return isophoteDifferenceNormalized;
-}
-
-float PatchBasedInpainting::ComputeIsophoteStrengthDifference(const FloatVector2Type& v1, const FloatVector2Type& v2)
-{
-  //std::cout << "ComputeIsophoteStrengthDifference()" << std::endl;
-  // Compute the isophote difference.
-  float isophoteDifference = fabs(v1.GetNorm() - v2.GetNorm());
-
-  return isophoteDifference;
-}
-
-float PatchBasedInpainting::ComputeNormalizedSquaredPixelDifference(const itk::Index<2>& pixel1, const itk::Index<2>& pixel2)
-{
-  // Compute the pixel difference.
-      
-  FloatVectorImageType::PixelType value1 = this->CompareImage->GetPixel(pixel1);
-  FloatVectorImageType::PixelType value2 = this->CompareImage->GetPixel(pixel2);
-  DebugMessage<FloatVectorImageType::PixelType>("value1 ", value1);
-  DebugMessage<FloatVectorImageType::PixelType>("value2 ", value2);
-  
-  float pixelSquaredDifference = FullSquaredPixelDifference::Difference(this->CompareImage->GetPixel(pixel1), this->CompareImage->GetPixel(pixel2), this->CompareImage->GetNumberOfComponentsPerPixel());
-  DebugMessage<float>("ComputePixelDifference::pixelSquaredDifference", pixelSquaredDifference);
-  
-  //std::cout << "pixelDifference: " << pixelDifference << std::endl;
-  //float pixelDifferenceNormalized = pixelDifference / MaxPixelDifference; // This produces a score between 0 and 1.
-  DebugMessage<float>("ComputePixelDifference::normFactor ", MaxPixelDifferenceSquared);
-  float pixelSquaredDifferenceNormalized = pixelSquaredDifference / MaxPixelDifferenceSquared; // This produces a score between 0 and 1.
-  //DebugMessage<float>("pixelDifferenceNormalized: ", pixelDifferenceNormalized);
-  
-  return pixelSquaredDifferenceNormalized;
-}
-
-
-void PatchBasedInpainting::ComputeAllContinuationDifferences(CandidatePairs& candidatePairs)
-{
-  EnterFunction("ComputeAllContinuationDifferences()");
-  
-  // Naively, we could just call ComputeTotalContinuationDifference on each patch pair for a forward looking set. However, this
-  // would recalculate the boundary for every pair. This is a lot of extra work because the boundary does not change from source patch to source patch.
-  
-  // Identify border pixels on the source side of the boundary.
-  std::vector<itk::Index<2> > borderPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage, candidatePairs.TargetPatch.Region);
-  
-  //for(unsigned int sourcePatchId = 0; sourcePatchId < this->SourcePatches.size(); ++sourcePatchId)
-  for(unsigned int sourcePatchId = 0; sourcePatchId < candidatePairs.size(); ++sourcePatchId)
-    {
-    // Only compute if the values are not already computed.
-    if(candidatePairs[sourcePatchId].IsValidBoundaryIsophoteAngleDifference() &&
-       candidatePairs[sourcePatchId].IsValidBoundaryIsophoteStrengthDifference() &&
-       candidatePairs[sourcePatchId].IsValidBoundaryPixelDifference())
-       //candidatePairs[sourcePatchId].IsValidSSD()) // Don't check this, it is not related to the continuation difference
-      {
-      continue;
-      }
-    float totalPixelDifference = 0.0f;
-    float totalIsophoteAngleDifference = 0.0f;
-    float totalIsophoteStrengthDifference = 0.0f;
-    unsigned int numberUsed = 0;
-    for(unsigned int pixelId = 0; pixelId < borderPixels.size(); ++pixelId)
-      {
-      itk::Index<2> targetRegionSourceSideBoundaryPixel = borderPixels[pixelId];
-      itk::Index<2> sourceRegionTargetSideBoundaryPixel;
-      bool valid = GetAdjacentBoundaryPixel(targetRegionSourceSideBoundaryPixel, candidatePairs[sourcePatchId], sourceRegionTargetSideBoundaryPixel);
-      if(!valid)
-	{
-	continue;
-	}
-      numberUsed++;
-
-      // Pixel difference
-      float normalizedSquaredPixelDifference = ComputeNormalizedSquaredPixelDifference(targetRegionSourceSideBoundaryPixel, sourceRegionTargetSideBoundaryPixel);
-      totalPixelDifference += normalizedSquaredPixelDifference;
-      DebugMessage<float>("ComputeAllContinuationDifferences::normalizedSquaredPixelDifference ", normalizedSquaredPixelDifference);
-
-      // Isophote differences
-      FloatVector2Type averageSourceIsophote = ComputeAverageIsophoteSourcePatch(sourceRegionTargetSideBoundaryPixel, candidatePairs[sourcePatchId]);
-      FloatVector2Type averageTargetIsophote = ComputeAverageIsophoteTargetPatch(targetRegionSourceSideBoundaryPixel, candidatePairs[sourcePatchId]);
-      
-      float isophoteAngleDifference = ComputeIsophoteAngleDifference(averageSourceIsophote, averageTargetIsophote);
-      totalIsophoteAngleDifference += isophoteAngleDifference;
-      
-      float isophoteStrengthDifference = ComputeIsophoteStrengthDifference(averageSourceIsophote, averageTargetIsophote);
-      totalIsophoteStrengthDifference += isophoteStrengthDifference;
-
-      } // end loop over pixels
-
-    DebugMessage<unsigned int>("numberUsed ", numberUsed);
-    DebugMessage<unsigned int>("Out of ", borderPixels.size());
-
-    if(numberUsed == 0)
-      {
-      std::cout << "Warning: no pixels were used in ComputeAllContinuationDifferences()" << std::endl;
-      numberUsed = 1; // Set this to 1 to avoid divide by zero.
-      }
-
-    float averagePixelDifference = totalPixelDifference / static_cast<float>(numberUsed);
-    DebugMessage<float>("averagePixelDifference ", averagePixelDifference);
-
-    float averageIsophoteAngleDifference = totalIsophoteAngleDifference / static_cast<float>(numberUsed);
-    float averageIsophoteStrengthDifference = totalIsophoteStrengthDifference / static_cast<float>(numberUsed);
-    candidatePairs[sourcePatchId].SetBoundaryPixelDifference(averagePixelDifference);
-    candidatePairs[sourcePatchId].SetBoundaryIsophoteAngleDifference(averageIsophoteAngleDifference);
-    candidatePairs[sourcePatchId].SetBoundaryIsophoteStrengthDifference(averageIsophoteStrengthDifference);
-
-    } // end loop over pairs
-
-  LeaveFunction("ComputeAllContinuationDifferences()");
 }
 
 void PatchBasedInpainting::BlurImage()

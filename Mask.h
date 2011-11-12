@@ -24,12 +24,18 @@
 #ifndef MASK_H
 #define MASK_H
 
+// ITK
 #include "itkImage.h"
 #include "itkImageRegionIterator.h"
 
+// Qt
 #include <QColor>
 
+// VTK
 #include <vtkImageData.h>
+
+// Custom
+#include "Types.h"
 
 class Mask : public itk::Image< unsigned char, 2>
 {
@@ -70,48 +76,50 @@ public:
    * neighborhood iterators. */
   const NeighborhoodAccessorFunctorType GetNeighborhoodAccessor() const
   { return NeighborhoodAccessorFunctorType(); }
-  
+
   bool IsHole(const itk::Index<2>& index) const;
-    
+
   bool IsValid(const itk::ImageRegion<2>& region) const;
 
   bool IsValid(const itk::Index<2>& index) const;
-  
+
   void Invert();
 
   void Cleanup();
-  
+
   void ExpandHole();
-  
+
   void SetHoleValue(const unsigned char value);
 
   void SetValidValue(const unsigned char value);
 
   unsigned char GetHoleValue() const;
-  
+
   unsigned char GetValidValue() const;
-  
+
   void OutputMembers() const;
-  
+
   void DeepCopyFrom(const Mask::Pointer inputMask);
-  
+
+  void FindBoundary(UnsignedCharScalarImageType::Pointer boundary);
+
   template<typename TImage>
   void ApplyToImage(const typename TImage::Pointer image, const QColor& color);
 
   template<typename TImage>
   void ApplyToVectorImage(const typename TImage::Pointer image, const QColor& color);
-  
+
   void MakeVTKImage(vtkImageData* image, const QColor& validColor, const QColor& holeColor, const bool holeTransparent, const bool validTransparent);
 
   std::vector<itk::Index<2> > GetValidPixelsInRegion(const itk::ImageRegion<2>& region);
   std::vector<itk::Index<2> > GetHolePixelsInRegion(const itk::ImageRegion<2>& region);
-  
+
 protected:
   Mask();
-  
+
   unsigned char HoleValue; // Pixels with this value will be filled.
   unsigned char ValidValue; // Pixels with this value will not be filled - they are the source region.
-  
+
 private:
 
   Mask(const Self &);    //purposely not implemented

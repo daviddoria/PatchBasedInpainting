@@ -24,6 +24,8 @@
 class PriorityRandom : public Priority
 {
 public:
+  PriorityRandom(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius);
+  
   float ComputePriority(const itk::Index<2>& queryPixel);
 };
 

@@ -34,6 +34,8 @@ namespace Helpers
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+itk::ImageRegion<2> CropToRegion(const itk::ImageRegion<2>& inputRegion, const itk::ImageRegion<2>& targetRegion);
+
 std::string ReplaceFileExtension(const std::string& fileName, const std::string& newExtension);
 
 // Zero pad the 'iteration' and append it to the filePrefix, and add ".[fileExtension]" to the end.

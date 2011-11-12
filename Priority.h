@@ -20,23 +20,37 @@
 #define PRIORITY_H
 
 #include "DebugOutputs.h"
+#include "Mask.h"
 #include "Types.h"
 
 class Priority : public DebugOutputs
 {
 public:
+  Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius);
+
   // Compute the priority of a specific pixel.
   virtual float ComputePriority(const itk::Index<2>& queryPixel) = 0;
-  
+
   // Compute the priorities at all boundary pixels.
   void ComputeAllPriorities(const UnsignedCharScalarImageType::Pointer boundaryImage);
-  
+
   // Get the current priority image
   FloatScalarImageType::Pointer GetPriorityImage();
-  
+
+  //void SetImage(FloatVectorImageType::Pointer image);
+
 protected:
   // Keep track of the priority of each pixel.
   FloatScalarImageType::Pointer PriorityImage;
+
+  // In most subclasses, the image and mask are needed to compute the priority.
+  FloatVectorImageType::Pointer Image;
+  Mask::Pointer MaskImage;
+
+  // In most subclasses, the boundary image is needed to know where to compute the priority.
+  UnsignedCharScalarImageType::Pointer BoundaryImage;
+
+  unsigned int PatchRadius;
 };
 
 #endif

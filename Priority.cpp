@@ -19,6 +19,13 @@
 #include "Priority.h"
 
 #include "Helpers.h"
+
+Priority::Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) :
+                    Image(image), MaskImage(maskImage), PatchRadius(patchRadius)
+{
+
+}
+
 /*
 void Priority::ComputeAllPriorities()
 {
@@ -57,10 +64,17 @@ void Priority::ComputeAllPriorities()
 
 void Priority::ComputeAllPriorities(const UnsignedCharScalarImageType::Pointer boundaryImage)
 {
+  this->BoundaryImage = boundaryImage;
+
   std::vector<itk::Index<2> > boundaryPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(boundaryImage);
-  
+
   for(unsigned int pixelId = 0; pixelId < boundaryPixels.size(); ++pixelId)
     {
     ComputePriority(boundaryPixels[pixelId]);
     }
 }
+/*
+void Priority::SetImage(FloatVectorImageType::Pointer image)
+{
+  this->Image = image;
+}*/
