@@ -22,6 +22,7 @@
 #include "itkComposeImageFilter.h"
 #include "itkImageAdaptor.h"
 #include "itkImageToVectorImageFilter.h"
+#include "itkRGBToLuminanceImageFilter.h"
 #include "itkVectorMagnitudeImageFilter.h"
 #include "itkVectorIndexSelectionCastImageFilter.h"
 
@@ -38,6 +39,7 @@
 
 // Custom
 #include "itkRGBToLabColorSpacePixelAccessor.h"
+#include "Derivatives.h"
 
 // Qt
 #include <QGraphicsView>
@@ -780,6 +782,80 @@ itk::ImageRegion<2> CropToRegion(const itk::ImageRegion<2>& inputRegion, const i
   region.Crop(inputRegion);
 
   return region;
+}
+
+
+itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType::Pointer image, float& maxValue, UnsignedCharScalarImageType::Pointer maskImage)
+{
+  //EnterFunction("FindHighestValueOnBoundary()");
+  // Return the location of the highest pixel in 'image' out of the non-zero pixels in 'boundaryImage'. Return the value of that pixel by reference.
+  try
+  {
+    // Explicity find the maximum on the boundary
+    maxValue = 0.0f; // priorities are non-negative, so anything better than 0 will win
+
+    std::vector<itk::Index<2> > boundaryPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(maskImage);
+
+    if(boundaryPixels.size() <= 0)
+      {
+      std::cerr << "FindHighestValueOnBoundary(): No boundary pixels!" << std::endl;
+      exit(-1);
+      }
+
+    itk::Index<2> locationOfMaxValue = boundaryPixels[0];
+
+    for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
+      {
+      if(image->GetPixel(boundaryPixels[i]) > maxValue)
+        {
+        maxValue = image->GetPixel(boundaryPixels[i]);
+        locationOfMaxValue = boundaryPixels[i];
+        }
+      }
+    //DebugMessage<float>("Highest value: ", maxValue);
+    //LeaveFunction("FindHighestValueOnBoundary()");
+    return locationOfMaxValue;
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in FindHighestValueOnBoundary!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}
+
+
+void ComputeColorIsophotesInRegion(const FloatVectorImageType::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region , FloatVector2ImageType::Pointer isophotes)
+{
+  //EnterFunction("ComputeIsophotes()");
+  RGBImageType::Pointer rgbImage = RGBImageType::New();
+  Helpers::VectorImageToRGBImage(image, rgbImage);
+
+  //HelpersOutput::WriteImageConditional<RGBImageType>(rgbImage, "Debug/Initialize.rgb.mha", this->DebugImages);
+
+  typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
+  LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
+  luminanceFilter->SetInput(rgbImage);
+  luminanceFilter->Update();
+
+  FloatScalarImageType::Pointer luminanceImage = FloatScalarImageType::New();
+  Helpers::DeepCopy<FloatScalarImageType>(luminanceFilter->GetOutput(), luminanceImage);
+
+  FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
+  // Blur with a Gaussian kernel. From TestIsophotes.cpp, it actually seems like not blurring, but using a masked sobel operator produces the most reliable isophotes.
+  unsigned int kernelRadius = 0;
+  Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), mask, kernelRadius, blurredLuminance);
+
+  //HelpersOutput::WriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/Initialize.blurredLuminance.mha", true);
+
+  Helpers::InitializeImage<FloatVector2ImageType>(isophotes, image->GetLargestPossibleRegion());
+  Derivatives::ComputeMaskedIsophotesInRegion(blurredLuminance, mask, region, isophotes);
+  
+//   if(this->DebugImages)
+//     {
+//     HelpersOutput::Write2DVectorImage(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha");
+//     }
+  //LeaveFunction("ComputeIsophotes()");
 }
 
 } // end namespace

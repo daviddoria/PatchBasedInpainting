@@ -2,6 +2,9 @@
 
 #include "RotateVectors.h"
 
+namespace Derivatives
+{
+
 void ComputeMaskedIsophotesInRegion(FloatScalarImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region, FloatVector2ImageType::Pointer outputIsophotes)
 {
   try
@@ -36,3 +39,5 @@ void ComputeMaskedIsophotesInRegion(FloatScalarImageType::Pointer image, Mask::P
     exit(-1);
   }
 }
+
+} // end namespace

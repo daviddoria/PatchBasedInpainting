@@ -22,6 +22,9 @@
 #include "Mask.h"
 #include "Types.h"
 
+namespace Derivatives
+{
+
 template <typename TImage>
 void MaskedDerivative(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output);
 
@@ -50,6 +53,8 @@ template<typename TPixel>
 void GradientFromDerivativesInRegion(const typename itk::Image<TPixel, 2>::Pointer xDerivative, const typename itk::Image<TPixel, 2>::Pointer yDerivative, const itk::ImageRegion<2>& region, typename itk::Image<itk::CovariantVector<TPixel, 2> >::Pointer output);
 
 void ComputeMaskedIsophotesInRegion(FloatScalarImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region, FloatVector2ImageType::Pointer outputIsophotes);
+
+} // end namespace
 
 #include "Derivatives.hxx"
 

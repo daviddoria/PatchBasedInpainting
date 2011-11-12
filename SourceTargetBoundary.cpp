@@ -237,4 +237,155 @@ float PatchBasedInpainting::ComputeNormalizedSquaredPixelDifference(const itk::I
 
 
   float ComputeNormalizedSquaredPixelDifference(const itk::Index<2>& pixel1, const itk::Index<2>& pixel2);
-  
+
+
+
+void PatchBasedInpainting::ComputeMinimumBoundaryGradientChange(unsigned int& bestForwardLookId, unsigned int& bestSourcePatchId)
+{
+  EnterFunction("ComputeMinimumBoundaryGradientChange()");
+  // For the top N patches, compute the continuation difference by comparing the gradient at source side boundary pixels before and after filling.
+  float lowestScore = std::numeric_limits< float >::max();
+
+  itk::Index<2> zeroIndex;
+  zeroIndex.Fill(0);
+  itk::ImageRegion<2> outputRegion(zeroIndex, this->PotentialCandidatePairs[0][0].SourcePatch.Region.GetSize());
+
+//   FloatScalarImageType::Pointer luminancePatch = FloatScalarImageType::New();
+//   luminancePatch->SetRegions(outputRegion);
+//   luminancePatch->SetNumberOfComponentsPerPixel(this->CurrentOutputImage->GetNumberOfComponentsPerPixel());
+//   luminancePatch->Allocate();
+
+  FloatVectorImageType::Pointer patch = FloatVectorImageType::New();
+  patch->SetRegions(outputRegion);
+  patch->SetNumberOfComponentsPerPixel(this->CurrentOutputImage->GetNumberOfComponentsPerPixel());
+  patch->Allocate();
+
+  FloatVector2ImageType::PixelType zeroVector;
+  zeroVector.Fill(0);
+
+  FloatVector2ImageType::Pointer preFillGradient = FloatVector2ImageType::New();
+  preFillGradient->SetRegions(outputRegion);
+  preFillGradient->Allocate();
+  preFillGradient->FillBuffer(zeroVector);
+
+  FloatVector2ImageType::Pointer postFillGradient = FloatVector2ImageType::New();
+  postFillGradient->SetRegions(outputRegion);
+  postFillGradient->Allocate();
+  postFillGradient->FillBuffer(zeroVector);
+
+  // Create an entirely unmasked Mask
+  Mask::Pointer noMask = Mask::New();
+  noMask->SetRegions(outputRegion);
+  noMask->Allocate();
+
+  itk::ImageRegionIterator<Mask> noMaskIterator(noMask, noMask->GetLargestPossibleRegion());
+
+  while(!noMaskIterator.IsAtEnd())
+    {
+    noMaskIterator.Set(noMask->GetValidValue());
+    ++noMaskIterator;
+    }
+
+  for(unsigned int forwardLookId = 0; forwardLookId < this->PotentialCandidatePairs.size(); ++forwardLookId)
+    {
+    std::cout << "Computing boundary gradient difference for forward look set " << forwardLookId << std::endl;
+    // The boundary only need to be computed once for every forward look set
+    std::vector<itk::Index<2> > boundaryPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage,
+                                                                                                        this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region);
+    if(boundaryPixels.size() < 1)
+      {
+      std::cerr << "There must be at least 1 boundary pixel!" << std::endl;
+      exit(-1);
+      }
+
+    itk::Offset<2> patchOffset = this->CurrentMask->GetLargestPossibleRegion().GetIndex() - this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region.GetIndex();
+    for(unsigned int boundaryPixelId = 0; boundaryPixelId < boundaryPixels.size(); ++boundaryPixelId)
+      {
+      boundaryPixels[boundaryPixelId] += patchOffset;
+      }
+
+    // Get the current mask
+    typedef itk::RegionOfInterestImageFilter<Mask,Mask> ExtractFilterType;
+    typename ExtractFilterType::Pointer extractMaskFilter = ExtractFilterType::New();
+    extractMaskFilter->SetRegionOfInterest(this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region);
+    extractMaskFilter->SetInput(this->CurrentMask);
+    extractMaskFilter->Update();
+
+    unsigned int maxNumberToInspect = 100u;
+    unsigned int numberOfSourcePatchesToInspect = std::min(maxNumberToInspect, this->PotentialCandidatePairs[forwardLookId].size());
+    for(unsigned int sourcePatchId = 0; sourcePatchId < numberOfSourcePatchesToInspect; ++sourcePatchId)
+      {
+      Helpers::CreatePatchImage<FloatVectorImageType>(this->CurrentOutputImage, this->PotentialCandidatePairs[forwardLookId][sourcePatchId].SourcePatch.Region, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region, this->CurrentMask, patch);
+
+      float sumOfComponentErrors = 0.0f;
+      for(unsigned int component = 0; component < this->CurrentOutputImage->GetNumberOfComponentsPerPixel(); ++component)
+        {
+//      typedef itk::VectorImageToImageAdaptor<float, 2> ImageAdaptorType;
+//      ImageAdaptorType::Pointer adaptor = ImageAdaptorType::New();
+//      adaptor->SetExtractComponentIndex(component);
+//      adaptor->SetImage(patch);
+//
+        typedef itk::VectorIndexSelectionCastImageFilter<FloatVectorImageType, FloatScalarImageType> IndexSelectionType;
+        IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+        indexSelectionFilter->SetIndex(component);
+        indexSelectionFilter->SetInput(patch);
+        indexSelectionFilter->Update();
+
+        Helpers::SetImageToConstant<FloatVector2ImageType>(preFillGradient, zeroVector);
+        Helpers::SetImageToConstant<FloatVector2ImageType>(postFillGradient, zeroVector);
+        //float averageError = ComputeAverageGradientChange<ImageAdaptorType>(adaptor, preFillGradient, postFillGradient, extractMaskFilter->GetOutput(), noMask, boundaryPixels);
+        float averageError = ComputeAverageGradientChange<FloatScalarImageType>(indexSelectionFilter->GetOutput(), preFillGradient, postFillGradient, extractMaskFilter->GetOutput(), noMask, boundaryPixels);
+
+        sumOfComponentErrors += averageError;
+
+        } // end component loop
+
+      this->PotentialCandidatePairs[forwardLookId][sourcePatchId].SetBoundaryGradientDifference(sumOfComponentErrors);
+      if(sumOfComponentErrors < lowestScore)
+        {
+        lowestScore = sumOfComponentErrors;
+        bestForwardLookId = forwardLookId;
+        bestSourcePatchId = sourcePatchId;
+
+        HelpersOutput::Write2DVectorImage(preFillGradient, "Debug/BestPrefill.mha");
+
+        HelpersOutput::Write2DVectorImage(postFillGradient, "Debug/BestPostfill.mha");
+
+        HelpersOutput::WriteVectorImageAsRGB(patch, "Debug/BestPatch.mha");
+        }
+      } // end source patch loop
+    } // end forward look set loop
+  LeaveFunction("ComputeMinimumBoundaryGradientChange()");
+}
+
+
+  template <typename TImage>
+  float ComputeAverageGradientChange(const typename TImage::Pointer patch, FloatVector2ImageType::Pointer preFillGradient, FloatVector2ImageType::Pointer postFillGradient,
+                                     const Mask::Pointer mask, const Mask::Pointer noMask, const std::vector<itk::Index<2> >& boundaryPixels);
+
+
+template <typename TImage>
+float PatchBasedInpainting::ComputeAverageGradientChange(const typename TImage::Pointer patch, FloatVector2ImageType::Pointer preFillGradientImage,
+                                                         FloatVector2ImageType::Pointer postFillGradientImage,
+                                                         const Mask::Pointer mask, const Mask::Pointer noMask, const std::vector<itk::Index<2> >& boundaryPixels)
+{
+  Derivatives::MaskedGradient<TImage>(patch, mask, preFillGradientImage);
+  Derivatives::MaskedGradient<TImage>(patch, noMask, postFillGradientImage);
+
+  float totalError = 0.0f;
+  for(unsigned int boundaryPixelId = 0; boundaryPixelId < boundaryPixels.size(); ++boundaryPixelId)
+    {
+    FloatVector2ImageType::PixelType preFillGradient = preFillGradientImage->GetPixel(boundaryPixels[boundaryPixelId]);
+    FloatVector2ImageType::PixelType postFillGradient = postFillGradientImage->GetPixel(boundaryPixels[boundaryPixelId]);
+    //std::cout << "Prefill gradient: " << preFillGradient << std::endl;
+    //std::cout << "Postfill gradient: " << postFillGradient << std::endl;
+    //totalError += (preFillGradient - postFillGradient).GetNorm();
+    totalError += (preFillGradient - postFillGradient).GetSquaredNorm();
+    }
+
+  float averageError = totalError / static_cast<float>(boundaryPixels.size());
+
+  return averageError;
+}
+
+  void ComputeMinimumBoundaryGradientChange(unsigned int& bestForwardLookId, unsigned int& bestSourcePatchId);

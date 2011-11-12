@@ -20,11 +20,15 @@
 
 // Custom
 #include "Helpers.h"
+#include "HelpersOutput.h"
 
 // VXL
 #include <vnl/vnl_double_2.h>
 
 // ITK
+#include "itkDiscreteGaussianImageFilter.h"
+#include "itkGradientImageFilter.h"
+#include "itkMaskImageFilter.h"
 #include "itkInvertIntensityImageFilter.h"
 
 PriorityCriminisi::PriorityCriminisi(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) :
@@ -39,9 +43,22 @@ PriorityCriminisi::PriorityCriminisi(FloatVectorImageType::Pointer image, Mask::
 
 void PriorityCriminisi::ComputeAllPriorities()
 {
-  PriorityOnionPeel::ComputeAllPriorities();
+  unsigned int blurVariance = 2;
+  ComputeBoundaryNormals(blurVariance);
+
+  //Helpers::ComputeColorIsophotes(this->Image, this->MaskImage, this->IsophoteImage);
+
+  //FloatScalarImageType::Pointer newIsophotes = FloatScalarImageType::New();
+  //Helpers::InitializeImage<FloatScalarImageType>(newIsophotes, this->FullImageRegion);
+  //ComputeMaskedIsophotesInRegion(this->LuminanceImage, this->CurrentMask, newIsophotes);
+  //Helpers::CopyPatch(newIsophotes, this->IsophoteImage, usedPatchPair.TargetPatch.Region, usedPatchPair.TargetPatch.Region);
+
+  //Helpers::ComputeColorIsophotesInRegion(this->LuminanceImage, this->MaskImage, usedPatchPair.TargetPatch.Region, this->IsophoteImage);
+
 
   this->DataImage->FillBuffer(0);
+
+  PriorityOnionPeel::ComputeAllPriorities();
 }
 
 float PriorityCriminisi::ComputePriority(const itk::Index<2>& queryPixel)
@@ -124,6 +141,72 @@ float PriorityCriminisi::ComputeDataTerm(const itk::Index<2>& queryPixel)
   catch( itk::ExceptionObject & err )
   {
     std::cerr << "ExceptionObject caught in ComputeDataTerm!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}
+
+
+void PriorityCriminisi::ComputeBoundaryNormals(const float blurVariance)
+{
+  EnterFunction("ComputeBoundaryNormals()");
+  try
+  {
+    // Blur the mask, compute the gradient, then keep the normals only at the original mask boundary
+
+    HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/ComputeBoundaryNormals.BoundaryImage.mha", this->DebugImages);
+    HelpersOutput::WriteImageConditional<Mask>(this->MaskImage, "Debug/ComputeBoundaryNormals.CurrentMask.mha", this->DebugImages);
+
+    // Blur the mask
+    typedef itk::DiscreteGaussianImageFilter< Mask, FloatScalarImageType >  BlurFilterType;
+    BlurFilterType::Pointer gaussianFilter = BlurFilterType::New();
+    gaussianFilter->SetInput(this->MaskImage);
+    gaussianFilter->SetVariance(blurVariance);
+    gaussianFilter->Update();
+
+    HelpersOutput::WriteImageConditional<FloatScalarImageType>(gaussianFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMask.mha", this->DebugImages);
+
+    // Compute the gradient of the blurred mask
+    typedef itk::GradientImageFilter< FloatScalarImageType, float, float>  GradientFilterType;
+    GradientFilterType::Pointer gradientFilter = GradientFilterType::New();
+    gradientFilter->SetInput(gaussianFilter->GetOutput());
+    gradientFilter->Update();
+
+    HelpersOutput::WriteImageConditional<FloatVector2ImageType>(gradientFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMaskGradient.mha", this->DebugImages);
+
+    // Only keep the normals at the boundary
+    typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
+    MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+    maskFilter->SetInput(gradientFilter->GetOutput());
+    maskFilter->SetMaskImage(this->BoundaryImage);
+    maskFilter->Update();
+
+    HelpersOutput::WriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha", this->DebugImages);
+
+    Helpers::DeepCopy<FloatVector2ImageType>(maskFilter->GetOutput(), this->BoundaryNormalsImage);
+
+    // Normalize the vectors because we just care about their direction (the Data term computation calls for the normalized boundary normal)
+    itk::ImageRegionIterator<FloatVector2ImageType> boundaryNormalsIterator(this->BoundaryNormalsImage, this->BoundaryNormalsImage->GetLargestPossibleRegion());
+    itk::ImageRegionConstIterator<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
+
+    while(!boundaryNormalsIterator.IsAtEnd())
+      {
+      if(boundaryIterator.Get()) // The pixel is on the boundary
+        {
+        FloatVector2ImageType::PixelType p = boundaryNormalsIterator.Get();
+        p.Normalize();
+        boundaryNormalsIterator.Set(p);
+        }
+      ++boundaryNormalsIterator;
+      ++boundaryIterator;
+      }
+
+    HelpersOutput::WriteImageConditional<FloatVector2ImageType>(this->BoundaryNormalsImage, "Debug/ComputeBoundaryNormals.BoundaryNormals.mha", this->DebugImages);
+    LeaveFunction("ComputeBoundaryNormals()");
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in ComputeBoundaryNormals!" << std::endl;
     std::cerr << err << std::endl;
     exit(-1);
   }

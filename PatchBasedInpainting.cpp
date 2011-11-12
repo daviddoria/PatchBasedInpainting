@@ -46,17 +46,12 @@
 
 PatchBasedInpainting::PatchBasedInpainting()
 {
-  this->PriorityFunction = new PriorityRandom(this->CurrentOutputImage, this->CurrentMask, this->PatchRadius[0]);
+  this->PriorityFunction = new PriorityRandom(this->CurrentOutputImage, this->MaskImage, this->PatchRadius[0]);
   
   //std::cout << "CriminisiInpainting()" << std::endl;
   this->PatchRadius.Fill(3);
 
-  this->BoundaryImage = UnsignedCharScalarImageType::New();
-  this->BoundaryNormals = FloatVector2ImageType::New();
-  this->IsophoteImage = FloatVector2ImageType::New();
-  //this->PriorityImage = FloatScalarImageType::New();
-  this->OriginalMask = Mask::New();
-  this->CurrentMask = Mask::New();
+  this->MaskImage = Mask::New();
   this->OriginalImage = FloatVectorImageType::New();
   this->CurrentOutputImage = FloatVectorImageType::New();
   this->CIELabImage = FloatVectorImageType::New();
@@ -118,9 +113,9 @@ std::vector<Patch> PatchBasedInpainting::AddNewSourcePatchesInRegion(const itk::
       itk::Index<2> currentPixel = imageIterator.GetIndex();
       itk::ImageRegion<2> currentPatchRegion = Helpers::GetRegionInRadiusAroundPixel(currentPixel, this->PatchRadius[0]);
     
-      if(this->CurrentMask->GetLargestPossibleRegion().IsInside(currentPatchRegion))
+      if(this->MaskImage->GetLargestPossibleRegion().IsInside(currentPatchRegion))
 	{
-	if(this->CurrentMask->IsValid(currentPatchRegion))
+	if(this->MaskImage->IsValid(currentPatchRegion))
 	  {
 	  if(!PatchExists(currentPatchRegion))
 	    {
@@ -173,9 +168,9 @@ void PatchBasedInpainting::AddAllSourcePatchesInRegion(const itk::ImageRegion<2>
       itk::Index<2> currentPixel = imageIterator.GetIndex();
       itk::ImageRegion<2> currentPatchRegion = Helpers::GetRegionInRadiusAroundPixel(currentPixel, this->PatchRadius[0]);
     
-      if(this->CurrentMask->GetLargestPossibleRegion().IsInside(currentPatchRegion))
+      if(this->MaskImage->GetLargestPossibleRegion().IsInside(currentPatchRegion))
 	{
-	if(this->CurrentMask->IsValid(currentPatchRegion))
+	if(this->MaskImage->IsValid(currentPatchRegion))
 	  {
 	  this->SourcePatches.push_back(Patch(currentPatchRegion));
 	  }
@@ -203,55 +198,16 @@ void PatchBasedInpainting::InitializeTargetImage()
   LeaveFunction("InitializeTargetImage()");
 }
 
-void PatchBasedInpainting::ComputeIsophotes()
-{
-  EnterFunction("ComputeIsophotes()");
-  RGBImageType::Pointer rgbImage = RGBImageType::New();
-  Helpers::VectorImageToRGBImage(this->OriginalImage, rgbImage);
-  
-  HelpersOutput::WriteImageConditional<RGBImageType>(rgbImage, "Debug/Initialize.rgb.mha", this->DebugImages);
-
-  typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
-  LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
-  luminanceFilter->SetInput(rgbImage);
-  luminanceFilter->Update();
-  
-  Helpers::DeepCopy<FloatScalarImageType>(luminanceFilter->GetOutput(), this->LuminanceImage);
-  
-  FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
-  // Blur with a Gaussian kernel. From TestIsophotes.cpp, it actually seems like not blurring, but using a masked sobel operator produces the most reliable isophotes.
-  unsigned int kernelRadius = 0;
-  Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), this->CurrentMask, kernelRadius, blurredLuminance);
-  
-  HelpersOutput::WriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/Initialize.blurredLuminance.mha", true);
-  
-  Helpers::InitializeImage<FloatVector2ImageType>(this->IsophoteImage, this->FullImageRegion);
-  ComputeMaskedIsophotesInRegion(blurredLuminance, this->CurrentMask, this->FullImageRegion, this->IsophoteImage);
-  if(this->DebugImages)
-    {
-    HelpersOutput::Write2DVectorImage(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha");
-    }
-  LeaveFunction("ComputeIsophotes()");
-}
-
 void PatchBasedInpainting::Initialize()
 {
   EnterFunction("Initialize()");
   try
   {
     this->NumberOfCompletedIterations = 0;
-  
-    // We find the boundary of the mask and its normals at every iteration (in Iterate()), but we do this here so that everything is initialized and valid if we are observing this class for display.
-    //FindBoundary();
-    
-    unsigned int blurVariance = 2;
-    ComputeBoundaryNormals(blurVariance);
-    
+
     InitializeTargetImage();
     HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
-  
-    ComputeIsophotes();
-    
+
     // Blur the image incase we want to use a blurred image for pixel to pixel comparisons.
     //unsigned int kernelRadius = 5;
     //Helpers::VectorMaskedBlur(this->OriginalImage, this->CurrentMask, kernelRadius, this->BlurredImage);
@@ -274,10 +230,10 @@ void PatchBasedInpainting::Initialize()
     //WriteImage<FloatImageType>(this->ConfidenceImage, "InitialConfidence.mhd");
     //WriteImage<VectorImageType>(this->IsophoteImage, "InitialIsophotes.mhd");
     
-    if(this->OriginalMask->GetLargestPossibleRegion() != this->OriginalImage->GetLargestPossibleRegion())
+    if(this->MaskImage->GetLargestPossibleRegion() != this->OriginalImage->GetLargestPossibleRegion())
       {
       std::cerr << "Original mask size does not match original image size!" << std::endl;
-      std::cerr << "Original mask size: " << this->OriginalMask->GetLargestPossibleRegion() << std::endl;
+      std::cerr << "Original mask size: " << this->MaskImage->GetLargestPossibleRegion() << std::endl;
       std::cerr << "Original image size: " << this->OriginalImage->GetLargestPossibleRegion() << std::endl;
       exit(-1);
       }
@@ -300,65 +256,45 @@ PatchPair PatchBasedInpainting::Iterate()
 
   PriorityFunction->ComputeAllPriorities();
 
-  // The affect of this parameter can be inspected using the output of TestBoundaryNormals.
-  unsigned int blurVariance = 2;
-  ComputeBoundaryNormals(blurVariance);
-  HelpersOutput::WriteImageConditional<FloatVector2ImageType>(this->BoundaryNormals, "Debug/BoundaryNormals.mha", this->DebugImages);
-
-  DebugMessage("Computed boundary normals.");
-
-  //ComputeAllDataTerms();
-  //ComputeAllConfidenceTerms();
-  //ComputeAllPriorities();
-  DebugMessage("Computed priorities.");
-
   PatchPair usedPatchPair;
 
   FindBestPatchLookAhead(usedPatchPair);
 
   //std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
 
-  if(this->DebugImages)
-    {
-    std::stringstream ssTargetIsophotes;
-    ssTargetIsophotes << "Debug/TargetIsophotes_" << this->NumberOfCompletedIterations << ".mha";
-    HelpersOutput::Write2DVectorRegion(this->IsophoteImage, usedPatchPair.TargetPatch.Region, ssTargetIsophotes.str());
-      
-    
-    std::stringstream ssSource;
-    ssSource << "Debug/source_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
-    HelpersOutput::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.SourcePatch, ssSource.str());
+//   if(this->DebugImages)
+//     {
+//     std::stringstream ssTargetIsophotes;
+//     ssTargetIsophotes << "Debug/TargetIsophotes_" << this->NumberOfCompletedIterations << ".mha";
+//     HelpersOutput::Write2DVectorRegion(this->IsophoteImage, usedPatchPair.TargetPatch.Region, ssTargetIsophotes.str());
+// 
+//     std::stringstream ssSource;
+//     ssSource << "Debug/source_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
+//     HelpersOutput::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.SourcePatch, ssSource.str());
+// 
+//     std::stringstream ssTargetMHA;
+//     ssTargetMHA << "Debug/target_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
+//     HelpersOutput::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch, ssTargetMHA.str());
+// 
+//     std::stringstream ssTargetPNG;
+//     ssTargetPNG << "Debug/target_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".png";
+//     Helpers::WriteRegionUnsignedChar<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch.Region, ssTargetPNG.str());
+//     }
 
-    std::stringstream ssTargetMHA;
-    ssTargetMHA << "Debug/target_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
-    HelpersOutput::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch, ssTargetMHA.str());
-    
-    std::stringstream ssTargetPNG;
-    ssTargetPNG << "Debug/target_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".png";
-    Helpers::WriteRegionUnsignedChar<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch.Region, ssTargetPNG.str());
-    }
-  
   // Copy the patch. This is the actual inpainting step.
-  Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->CurrentOutputImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
-  
+  Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->CurrentOutputImage, this->MaskImage, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
+
   // We also have to copy patches in the blurred image and CIELab image incase we are using those
   //Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->BlurredImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
-  Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->CIELabImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
-  Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatScalarImageType>(this->LuminanceImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
-  
+  Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->CIELabImage, this->MaskImage, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
+  Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatScalarImageType>(this->LuminanceImage, this->MaskImage, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
+
   //float confidence = this->ConfidenceImage->GetPixel(Helpers::GetRegionCenter(usedPatchPair.TargetPatch.Region));
   // Copy the new confidences into the confidence image
   //UpdateConfidences(usedPatchPair.TargetPatch.Region, confidence);
 
   // Copy the isophotes under the assumption that they would only change slightly if recomputed
   //Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVector2ImageType>(this->IsophoteImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
-  
-  //FloatScalarImageType::Pointer newIsophotes = FloatScalarImageType::New();
-  //Helpers::InitializeImage<FloatScalarImageType>(newIsophotes, this->FullImageRegion);
-  //ComputeMaskedIsophotesInRegion(this->LuminanceImage, this->CurrentMask, newIsophotes);
-  //Helpers::CopyPatch(newIsophotes, this->IsophoteImage, usedPatchPair.TargetPatch.Region, usedPatchPair.TargetPatch.Region);
-
-  ComputeMaskedIsophotesInRegion(this->LuminanceImage, this->CurrentMask, usedPatchPair.TargetPatch.Region, this->IsophoteImage);
 
   // Update the mask
   this->UpdateMask(usedPatchPair.TargetPatch.Region);
@@ -372,41 +308,39 @@ PatchPair PatchBasedInpainting::Iterate()
 
   // Add new source patches
   // Get the region of pixels which were previous touching the hole which was the target region.
-  
+
   // Shift the top left corner to a position where the same size patch would overlap only the top left pixel.
   itk::Index<2> previousInvalidRegionIndex;
   previousInvalidRegionIndex[0] = usedPatchPair.TargetPatch.Region.GetIndex()[0] - this->PatchRadius[0];
   previousInvalidRegionIndex[1] = usedPatchPair.TargetPatch.Region.GetIndex()[1] - this->PatchRadius[1];
-  
+
   // The region from which patches overlap the used target patch has a radius 2x bigger than the original patch.
   // The computation could be written as (2 * this->PatchRadius[0]) * 2 + 1, or simply this->PatchRadius[0] * 4 + 1
-  itk::Size<2> previouInvalidRegionSize;
-  previouInvalidRegionSize[0] = this->PatchRadius[0] * 4 + 1;
-  previouInvalidRegionSize[1] = this->PatchRadius[1] * 4 + 1;
-  
-  itk::ImageRegion<2> previousInvalidRegion(previousInvalidRegionIndex, previouInvalidRegionSize);
-  
+  itk::Size<2> previousInvalidRegionSize;
+  previousInvalidRegionSize[0] = this->PatchRadius[0] * 4 + 1;
+  previousInvalidRegionSize[1] = this->PatchRadius[1] * 4 + 1;
+
+  itk::ImageRegion<2> previousInvalidRegion(previousInvalidRegionIndex, previousInvalidRegionSize);
+
   //std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
   //std::cout << "Previously invalid region: " << previousInvalidRegion << std::endl;
-  
-  std::vector<Patch> newPatches = AddNewSourcePatchesInRegion(previousInvalidRegion);
-  
-  
-  RecomputeScoresWithNewPatches(newPatches, usedPatchPair);
 
+  std::vector<Patch> newPatches = AddNewSourcePatchesInRegion(previousInvalidRegion);
+
+  RecomputeScoresWithNewPatches(newPatches, usedPatchPair);
 
   // At the end of an iteration, things would be slightly out of sync. The boundary is computed at the beginning of the iteration (before the patch is filled),
   // so at the end of the iteration, the boundary image will not correspond to the boundary of the remaining hole in the image - it will be off by 1 iteration.
   // We fix this by computing the boundary and boundary normals again at the end of the iteration.
   //FindBoundary();
-  ComputeBoundaryNormals(blurVariance);
-  
+  //ComputeBoundaryNormals(blurVariance);
+
   this->NumberOfCompletedIterations++;
 
   DebugMessage<unsigned int>("Completed iteration: ", this->NumberOfCompletedIterations);
 
   PreviousIterationUsedPatchPair = usedPatchPair;
-  
+
   LeaveFunction("Iterate()");
   return usedPatchPair;
 }
@@ -433,7 +367,7 @@ void PatchBasedInpainting::RecomputeScoresWithNewPatches(std::vector<Patch>& new
   
     this->PatchCompare->SetPairs(&newPairs);
     this->PatchCompare->SetImage(this->CompareImage);
-    this->PatchCompare->SetMask(this->CurrentMask);
+    this->PatchCompare->SetMask(this->MaskImage);
     this->PatchCompare->ComputeAllSourceDifferences();
     
     this->PotentialCandidatePairs[candidateId].Combine(newPairs);
@@ -449,7 +383,7 @@ void PatchBasedInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidat
   
   this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(this->BlurredImage);
-  this->PatchCompare->SetMask(this->CurrentMask);
+  this->PatchCompare->SetMask(this->MaskImage);
   this->PatchCompare->ComputeAllSourceDifferences();
   
   std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
@@ -466,11 +400,11 @@ void PatchBasedInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidat
   FloatVectorImageType::Pointer tempImage = FloatVectorImageType::New();
   Helpers::DeepCopy<FloatVectorImageType>(this->CurrentOutputImage, tempImage);
   // Fill the detailed image hole with a part of the blurred image
-  Helpers::CopySourcePatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->BlurredImage, tempImage, this->CurrentMask, candidatePairs[0].SourcePatch.Region, candidatePairs[0].TargetPatch.Region);
+  Helpers::CopySourcePatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->BlurredImage, tempImage, this->MaskImage, candidatePairs[0].SourcePatch.Region, candidatePairs[0].TargetPatch.Region);
 
   this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(tempImage);
-  this->PatchCompare->SetMask(this->CurrentMask);
+  this->PatchCompare->SetMask(this->MaskImage);
   this->PatchCompare->ComputeAllSourceAndTargetDifferences();
 
   //std::cout << "Detailed score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
@@ -498,20 +432,20 @@ void PatchBasedInpainting::FindBestPatchNormal(CandidatePairs& candidatePairs, P
   //std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
   this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(this->CompareImage);
-  this->PatchCompare->SetMask(this->CurrentMask);
+  this->PatchCompare->SetMask(this->MaskImage);
   this->PatchCompare->ComputeAllSourceDifferences();
-  
+
   //std::cout << "FindBestPatch: Finished ComputeAllSourceDifferences()" << std::endl;
-  
+
   //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
   //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDepthAndColor);
   std::sort(candidatePairs.begin(), candidatePairs.end(), PatchSortFunction);
-  
+
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
-  
+
   // Return the result by reference.
   bestPatchPair = candidatePairs[0];
-  
+
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatch()." << std::endl;
   LeaveFunction("FindBestPatchNormal()");
 }
@@ -523,7 +457,7 @@ void PatchBasedInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePa
   //std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
   this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(this->CompareImage);
-  this->PatchCompare->SetMask(this->CurrentMask);
+  this->PatchCompare->SetMask(this->MaskImage);
   this->PatchCompare->SetPairs(&candidatePairs);
   
   this->PatchCompare->FunctionsToCompute.clear();
@@ -563,9 +497,9 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 {
   EnterFunction("FindBestPatchLookAhead()");
   // This function returns the best PatchPair by reference
-  
+
   //std::cout << "FindBestPatchLookAhead: There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
-  
+
   // If this is not the first iteration, get the potential forward look patch candidates from the previous step
   if(this->NumberOfCompletedIterations > 0)
     {
@@ -585,10 +519,10 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   
   // We need to temporarily modify the priority image and boundary image without affecting the actual images, so we copy them.
   FloatScalarImageType::Pointer modifiedPriorityImage = FloatScalarImageType::New();
-  //Helpers::DeepCopy<FloatScalarImageType>(this->PriorityImage, modifiedPriorityImage);
+  Helpers::DeepCopy<FloatScalarImageType>(this->PriorityFunction->GetPriorityImage(), modifiedPriorityImage);
   
   UnsignedCharScalarImageType::Pointer modifiedBoundaryImage = UnsignedCharScalarImageType::New();
-  Helpers::DeepCopy<UnsignedCharScalarImageType>(this->BoundaryImage, modifiedBoundaryImage);
+  //Helpers::DeepCopy<UnsignedCharScalarImageType>(this->BoundaryImage, modifiedBoundaryImage);
 
   // Blank all regions that are already look ahead patches.
   for(unsigned int forwardLookId = 0; forwardLookId < this->PotentialCandidatePairs.size(); ++forwardLookId)
@@ -611,13 +545,13 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
       }
 
     float highestPriority = 0;
-    itk::Index<2> pixelToFill = FindHighestValueOnBoundary(modifiedPriorityImage, highestPriority, modifiedBoundaryImage);
+    itk::Index<2> pixelToFill = Helpers::FindHighestValueInMaskedRegion(modifiedPriorityImage, highestPriority, modifiedBoundaryImage);
 
-    if(!Helpers::HasHoleNeighbor(pixelToFill, this->CurrentMask))
+    if(!Helpers::HasHoleNeighbor(pixelToFill, this->MaskImage))
       {
       std::cerr << "pixelToFill " << pixelToFill << " does not have a hole neighbor - something is wrong!" << std::endl;
-      std::cerr << "Mask value " << static_cast<unsigned int>(this->CurrentMask->GetPixel(pixelToFill)) << std::endl;
-      std::cerr << "Boundary value " << static_cast<unsigned int>(this->BoundaryImage->GetPixel(pixelToFill)) << std::endl;
+      std::cerr << "Mask value " << static_cast<unsigned int>(this->MaskImage->GetPixel(pixelToFill)) << std::endl;
+      //std::cerr << "Boundary value " << static_cast<unsigned int>(this->BoundaryImage->GetPixel(pixelToFill)) << std::endl;
       exit(-1);
       }
 
@@ -627,21 +561,19 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     CandidatePairs candidatePairs(targetPatch);
     candidatePairs.AddPairsFromPatches(this->SourcePatches);
     candidatePairs.Priority = highestPriority;
-    
+
     PatchPair currentLookAheadBestPatchPair;
     this->PatchSearchFunction(candidatePairs, currentLookAheadBestPatchPair);
-    //FindBestPatchScaleConsistent(candidatePairs, currentLookAheadBestPatchPair);
-    //FindBestPatch(candidatePairs, currentLookAheadBestPatchPair);
-    
+
     // Keep only the number of top patches specified.
     //patchPairsSortedByContinuation.erase(patchPairsSortedByContinuation.begin() + this->NumberOfTopPatchesToSave, patchPairsSortedByContinuation.end());
-    
+
     // Blank a region around the current potential patch to fill. This will ensure the next potential patch to fill is reasonably far away.
     Helpers::SetRegionToConstant<FloatScalarImageType>(modifiedPriorityImage, targetRegion, 0.0f);
     Helpers::SetRegionToConstant<UnsignedCharScalarImageType>(modifiedBoundaryImage, targetRegion, 0);
-    
+
     //std::cout << "Sorted " << candidatePairs.size() << " candidatePairs." << std::endl;
-    
+
     this->PotentialCandidatePairs.push_back(candidatePairs);
     //std::cout << "FindBestPatchLookAhead: Finished computing new patch " << newPatchId << std::endl;
     } // end forward look loop
@@ -654,18 +586,14 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 
   // Sort the forward look patches so that the highest priority sets are first in the vector (descending order).
   std::sort(this->PotentialCandidatePairs.rbegin(), this->PotentialCandidatePairs.rend(), SortByPriority);
-  
-//   unsigned int bestForwardLookId = 0;
-//   unsigned int bestSourcePatchId = 0;
-//   ComputeMinimumBoundaryGradientChange(bestForwardLookId, bestSourcePatchId);
-  
+
   unsigned int bestForwardLookId = ComputeMinimumScoreLookAhead();
   unsigned int bestSourcePatchId = 0;
-    
+
   // Return the result by reference.
   bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][bestSourcePatchId];
   //std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
-  
+
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
   LeaveFunction("FindBestPatchLookAhead()");
 }
@@ -686,124 +614,6 @@ unsigned int PatchBasedInpainting::ComputeMinimumScoreLookAhead()
     }
   LeaveFunction("ComputeMinimumScoreLookAhead()");
   return lowestLookAhead;
-}
-
-void PatchBasedInpainting::ComputeMinimumBoundaryGradientChange(unsigned int& bestForwardLookId, unsigned int& bestSourcePatchId)
-{
-  EnterFunction("ComputeMinimumBoundaryGradientChange()");
-  // For the top N patches, compute the continuation difference by comparing the gradient at source side boundary pixels before and after filling.
-  float lowestScore = std::numeric_limits< float >::max();
-  
-  itk::Index<2> zeroIndex;
-  zeroIndex.Fill(0);
-  itk::ImageRegion<2> outputRegion(zeroIndex, this->PotentialCandidatePairs[0][0].SourcePatch.Region.GetSize());
-  
-//   FloatScalarImageType::Pointer luminancePatch = FloatScalarImageType::New();
-//   luminancePatch->SetRegions(outputRegion);
-//   luminancePatch->SetNumberOfComponentsPerPixel(this->CurrentOutputImage->GetNumberOfComponentsPerPixel());
-//   luminancePatch->Allocate();
-  
-  FloatVectorImageType::Pointer patch = FloatVectorImageType::New();
-  patch->SetRegions(outputRegion);
-  patch->SetNumberOfComponentsPerPixel(this->CurrentOutputImage->GetNumberOfComponentsPerPixel());
-  patch->Allocate();
-  
-  FloatVector2ImageType::PixelType zeroVector;
-  zeroVector.Fill(0);
-  
-  FloatVector2ImageType::Pointer preFillGradient = FloatVector2ImageType::New();
-  preFillGradient->SetRegions(outputRegion);
-  preFillGradient->Allocate();
-  preFillGradient->FillBuffer(zeroVector);
-  
-  FloatVector2ImageType::Pointer postFillGradient = FloatVector2ImageType::New();
-  postFillGradient->SetRegions(outputRegion);
-  postFillGradient->Allocate();
-  postFillGradient->FillBuffer(zeroVector);
-  
-  // Create an entirely unmasked Mask
-  Mask::Pointer noMask = Mask::New();
-  noMask->SetRegions(outputRegion);
-  noMask->Allocate();
-  
-  itk::ImageRegionIterator<Mask> noMaskIterator(noMask, noMask->GetLargestPossibleRegion());
-
-  while(!noMaskIterator.IsAtEnd())
-    {
-    noMaskIterator.Set(noMask->GetValidValue());
-    ++noMaskIterator;
-    }
-  
-  for(unsigned int forwardLookId = 0; forwardLookId < this->PotentialCandidatePairs.size(); ++forwardLookId)
-    {
-    std::cout << "Computing boundary gradient difference for forward look set " << forwardLookId << std::endl;
-    // The boundary only need to be computed once for every forward look set
-    std::vector<itk::Index<2> > boundaryPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region);
-    if(boundaryPixels.size() < 1)
-      {
-      std::cerr << "There must be at least 1 boundary pixel!" << std::endl;
-      exit(-1);
-      }
-      
-    itk::Offset<2> patchOffset = this->CurrentMask->GetLargestPossibleRegion().GetIndex() - this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region.GetIndex();
-    for(unsigned int boundaryPixelId = 0; boundaryPixelId < boundaryPixels.size(); ++boundaryPixelId)
-      {
-      boundaryPixels[boundaryPixelId] += patchOffset;
-      }
-      
-    // Get the current mask
-    typedef itk::RegionOfInterestImageFilter<Mask,Mask> ExtractFilterType;
-    typename ExtractFilterType::Pointer extractMaskFilter = ExtractFilterType::New();
-    extractMaskFilter->SetRegionOfInterest(this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region);
-    extractMaskFilter->SetInput(this->CurrentMask);
-    extractMaskFilter->Update();
-  
-    unsigned int maxNumberToInspect = 100u;
-    unsigned int numberOfSourcePatchesToInspect = std::min(maxNumberToInspect, this->PotentialCandidatePairs[forwardLookId].size());
-    for(unsigned int sourcePatchId = 0; sourcePatchId < numberOfSourcePatchesToInspect; ++sourcePatchId)
-      {
-      Helpers::CreatePatchImage<FloatVectorImageType>(this->CurrentOutputImage, this->PotentialCandidatePairs[forwardLookId][sourcePatchId].SourcePatch.Region, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region, this->CurrentMask, patch);
-
-      float sumOfComponentErrors = 0.0f;
-      for(unsigned int component = 0; component < this->CurrentOutputImage->GetNumberOfComponentsPerPixel(); ++component)
-	{
-// 	typedef itk::VectorImageToImageAdaptor<float, 2> ImageAdaptorType;
-// 	ImageAdaptorType::Pointer adaptor = ImageAdaptorType::New();
-// 	adaptor->SetExtractComponentIndex(component);
-// 	adaptor->SetImage(patch);
-// 	
-        typedef itk::VectorIndexSelectionCastImageFilter<FloatVectorImageType, FloatScalarImageType> IndexSelectionType;
-	IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
-	indexSelectionFilter->SetIndex(component);
-	indexSelectionFilter->SetInput(patch);
-	indexSelectionFilter->Update();
-	
-	Helpers::SetImageToConstant<FloatVector2ImageType>(preFillGradient, zeroVector);
-	Helpers::SetImageToConstant<FloatVector2ImageType>(postFillGradient, zeroVector);
-	//float averageError = ComputeAverageGradientChange<ImageAdaptorType>(adaptor, preFillGradient, postFillGradient, extractMaskFilter->GetOutput(), noMask, boundaryPixels);
-	float averageError = ComputeAverageGradientChange<FloatScalarImageType>(indexSelectionFilter->GetOutput(), preFillGradient, postFillGradient, extractMaskFilter->GetOutput(), noMask, boundaryPixels);
-	
-	sumOfComponentErrors += averageError;
-
-	} // end component loop
-      
-      
-      this->PotentialCandidatePairs[forwardLookId][sourcePatchId].SetBoundaryGradientDifference(sumOfComponentErrors);
-      if(sumOfComponentErrors < lowestScore)
-	{
-	lowestScore = sumOfComponentErrors;
-	bestForwardLookId = forwardLookId;
-	bestSourcePatchId = sourcePatchId;
-      
-	HelpersOutput::Write2DVectorImage(preFillGradient, "Debug/BestPrefill.mha");
-	
-	HelpersOutput::Write2DVectorImage(postFillGradient, "Debug/BestPostfill.mha");
-	
-	HelpersOutput::WriteVectorImageAsRGB(patch, "Debug/BestPatch.mha");
-	}
-      } // end source patch loop
-    } // end forward look set loop
-  LeaveFunction("ComputeMinimumBoundaryGradientChange()");
 }
 
 void PatchBasedInpainting::Inpaint()
@@ -839,13 +649,13 @@ bool PatchBasedInpainting::HasMoreToInpaint()
   try
   {
     
-    HelpersOutput::WriteImageConditional<Mask>(this->CurrentMask, "Debug/HasMoreToInpaint.input.png", this->DebugImages);
+    HelpersOutput::WriteImageConditional<Mask>(this->MaskImage, "Debug/HasMoreToInpaint.input.png", this->DebugImages);
     
-    itk::ImageRegionIterator<Mask> maskIterator(this->CurrentMask, this->CurrentMask->GetLargestPossibleRegion());
+    itk::ImageRegionIterator<Mask> maskIterator(this->MaskImage, this->MaskImage->GetLargestPossibleRegion());
 
     while(!maskIterator.IsAtEnd())
       {
-      if(this->CurrentMask->IsHole(maskIterator.GetIndex()))
+      if(this->MaskImage->IsHole(maskIterator.GetIndex()))
 	{
 	return true;
 	}
@@ -871,13 +681,13 @@ void PatchBasedInpainting::UpdateMask(const itk::ImageRegion<2>& region)
   EnterFunction("UpdateMask()");
   try
   {
-    itk::ImageRegionIterator<Mask> maskIterator(this->CurrentMask, region);
+    itk::ImageRegionIterator<Mask> maskIterator(this->MaskImage, region);
   
     while(!maskIterator.IsAtEnd())
       {
-      if(this->CurrentMask->IsHole(maskIterator.GetIndex()))
+      if(this->MaskImage->IsHole(maskIterator.GetIndex()))
 	{
-	maskIterator.Set(this->CurrentMask->GetValidValue());
+	maskIterator.Set(this->MaskImage->GetValidValue());
 	}
   
       ++maskIterator;
@@ -887,110 +697,6 @@ void PatchBasedInpainting::UpdateMask(const itk::ImageRegion<2>& region)
   catch( itk::ExceptionObject & err )
   {
     std::cerr << "ExceptionObject caught in UpdateMask!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
-
-void PatchBasedInpainting::ComputeBoundaryNormals(const float blurVariance)
-{
-  EnterFunction("ComputeBoundaryNormals()");
-  try
-  {
-    // Blur the mask, compute the gradient, then keep the normals only at the original mask boundary
-
-    HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/ComputeBoundaryNormals.BoundaryImage.mha", this->DebugImages);
-    HelpersOutput::WriteImageConditional<Mask>(this->CurrentMask, "Debug/ComputeBoundaryNormals.CurrentMask.mha", this->DebugImages);
-      
-    // Blur the mask
-    typedef itk::DiscreteGaussianImageFilter< Mask, FloatScalarImageType >  BlurFilterType;
-    BlurFilterType::Pointer gaussianFilter = BlurFilterType::New();
-    gaussianFilter->SetInput(this->CurrentMask);
-    gaussianFilter->SetVariance(blurVariance);
-    gaussianFilter->Update();
-
-    HelpersOutput::WriteImageConditional<FloatScalarImageType>(gaussianFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMask.mha", this->DebugImages);
-
-    // Compute the gradient of the blurred mask
-    typedef itk::GradientImageFilter< FloatScalarImageType, float, float>  GradientFilterType;
-    GradientFilterType::Pointer gradientFilter = GradientFilterType::New();
-    gradientFilter->SetInput(gaussianFilter->GetOutput());
-    gradientFilter->Update();
-
-    HelpersOutput::WriteImageConditional<FloatVector2ImageType>(gradientFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMaskGradient.mha", this->DebugImages);
-
-    // Only keep the normals at the boundary
-    typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
-    MaskFilterType::Pointer maskFilter = MaskFilterType::New();
-    maskFilter->SetInput(gradientFilter->GetOutput());
-    maskFilter->SetMaskImage(this->BoundaryImage);
-    maskFilter->Update();
-
-    HelpersOutput::WriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha", this->DebugImages);
-
-    Helpers::DeepCopy<FloatVector2ImageType>(maskFilter->GetOutput(), this->BoundaryNormals);
-
-    // Normalize the vectors because we just care about their direction (the Data term computation calls for the normalized boundary normal)
-    itk::ImageRegionIterator<FloatVector2ImageType> boundaryNormalsIterator(this->BoundaryNormals, this->BoundaryNormals->GetLargestPossibleRegion());
-    itk::ImageRegionConstIterator<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
-
-    while(!boundaryNormalsIterator.IsAtEnd())
-      {
-      if(boundaryIterator.Get()) // The pixel is on the boundary
-        {
-        FloatVector2ImageType::PixelType p = boundaryNormalsIterator.Get();
-        p.Normalize();
-        boundaryNormalsIterator.Set(p);
-        }
-      ++boundaryNormalsIterator;
-      ++boundaryIterator;
-      }
-
-    HelpersOutput::WriteImageConditional<FloatVector2ImageType>(this->BoundaryNormals, "Debug/ComputeBoundaryNormals.BoundaryNormals.mha", this->DebugImages);
-    LeaveFunction("ComputeBoundaryNormals()");
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in ComputeBoundaryNormals!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
-
-itk::Index<2> PatchBasedInpainting::FindHighestValueOnBoundary(const FloatScalarImageType::Pointer image, float& maxValue, UnsignedCharScalarImageType::Pointer boundaryImage)
-{
-  EnterFunction("FindHighestValueOnBoundary()");
-  // Return the location of the highest pixel in 'image' out of the non-zero pixels in 'boundaryImage'. Return the value of that pixel by reference.
-  try
-  {
-    // Explicity find the maximum on the boundary
-    maxValue = 0.0f; // priorities are non-negative, so anything better than 0 will win
-    
-    std::vector<itk::Index<2> > boundaryPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(boundaryImage);
-    
-    if(boundaryPixels.size() <= 0)
-      {
-      std::cerr << "FindHighestValueOnBoundary(): No boundary pixels!" << std::endl;
-      exit(-1);
-      }
-
-    itk::Index<2> locationOfMaxValue = boundaryPixels[0];
-    
-    for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
-      {
-      if(image->GetPixel(boundaryPixels[i]) > maxValue)
-	{
-	maxValue = image->GetPixel(boundaryPixels[i]);
-	locationOfMaxValue = boundaryPixels[i];
-	}
-      }
-    DebugMessage<float>("Highest value: ", maxValue);
-    LeaveFunction("FindHighestValueOnBoundary()");
-    return locationOfMaxValue;
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in FindHighestValueOnBoundary!" << std::endl;
     std::cerr << err << std::endl;
     exit(-1);
   }
@@ -1007,7 +713,7 @@ bool PatchBasedInpainting::IsValidPatch(const itk::Index<2>& queryPixel, const u
 
 bool PatchBasedInpainting::IsValidRegion(const itk::ImageRegion<2>& region)
 {
-  return this->CurrentMask->IsValid(region);
+  return this->MaskImage->IsValid(region);
 }
 
 unsigned int PatchBasedInpainting::GetNumberOfPixelsInPatch()

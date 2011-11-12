@@ -39,25 +39,26 @@ FloatScalarImageType::Pointer PatchBasedInpainting::GetConfidenceMapImage()
   return this->ConfidenceMapImage;
 }*/
 
-UnsignedCharScalarImageType::Pointer PatchBasedInpainting::GetBoundaryImage()
-{
-  return this->BoundaryImage;
-}
+// UnsignedCharScalarImageType::Pointer PatchBasedInpainting::GetBoundaryImage()
+// {
+//   return this->BoundaryImage;
+// }
 
 Mask::Pointer PatchBasedInpainting::GetMaskImage()
 {
-  return this->CurrentMask;
+  return this->MaskImage;
 }
 
-FloatVector2ImageType::Pointer PatchBasedInpainting::GetBoundaryNormalsImage()
-{
-  return this->BoundaryNormals;
-}
+// FloatVector2ImageType::Pointer PatchBasedInpainting::GetBoundaryNormalsImage()
+// {
+//   return this->BoundaryNormals;
+// }
+// 
+// FloatVector2ImageType::Pointer PatchBasedInpainting::GetIsophoteImage()
+// {
+//   return this->IsophoteImage;
+// }
 
-FloatVector2ImageType::Pointer PatchBasedInpainting::GetIsophoteImage()
-{
-  return this->IsophoteImage;
-}
 /*
 FloatScalarImageType::Pointer PatchBasedInpainting::GetDataImage()
 {
@@ -102,14 +103,8 @@ void PatchBasedInpainting::SetImage(const FloatVectorImageType::Pointer image)
 void PatchBasedInpainting::SetMask(const Mask::Pointer mask)
 {
   // Initialize the CurrentMask to the OriginalMask
-  //Helpers::DeepCopy<Mask>(mask, this->CurrentMask);
-  this->CurrentMask->DeepCopyFrom(mask);
-
-  // Save the OriginalMask.
-  //Helpers::DeepCopy<Mask>(mask, this->OriginalMask);
-  this->OriginalMask->DeepCopyFrom(mask);
+  this->MaskImage->DeepCopyFrom(mask);
 }
-
 
 itk::ImageRegion<2> PatchBasedInpainting::GetFullRegion()
 {

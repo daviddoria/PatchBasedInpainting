@@ -61,14 +61,14 @@ public:
 
   void SetNumberOfTopPatchesToSave(const unsigned int);
 
-  // Get the current boundary image
-  UnsignedCharScalarImageType::Pointer GetBoundaryImage();
-
-  // Get the current boundary image
-  FloatVector2ImageType::Pointer GetBoundaryNormalsImage();
-  
-  // Get the current isophote image
-  FloatVector2ImageType::Pointer GetIsophoteImage();
+//   // Get the current boundary image
+//   UnsignedCharScalarImageType::Pointer GetBoundaryImage();
+// 
+//   // Get the current boundary image
+//   FloatVector2ImageType::Pointer GetBoundaryNormalsImage();
+//   
+//   // Get the current isophote image
+//   FloatVector2ImageType::Pointer GetIsophoteImage();
 
   // Get the result/output of the inpainting so far. When the algorithm is complete, this will be the final output.
   FloatVectorImageType::Pointer GetCurrentOutputImage();
@@ -114,9 +114,6 @@ public:
   void SetCompareToBlurred();
   void SetCompareToCIELAB();
 
-  // Compute the normals of the hole boundary.
-  void ComputeBoundaryNormals(const float blurVariance);
-
   void SetPatchCompare(SelfPatchCompare* PatchCompare);
 
   boost::function<bool (const PatchPair& , const PatchPair& )> PatchSortFunction;
@@ -132,7 +129,6 @@ private:
   void RecomputeScoresWithNewPatches(std::vector<Patch>& newPatches, PatchPair& usedPatchPair);
 
   void BlurImage();
-  void ComputeIsophotes();
 
   PatchPair PreviousIterationUsedPatchPair;
 
@@ -162,27 +158,15 @@ private:
   // This image will be used for all patch to patch comparisons. It should point at either OriginalImage or CIELabImage.
   FloatVectorImageType::Pointer CompareImage;
 
-  // The mask specifying the region to inpaint. This does not change throughout the algorithm - it is the original mask.
-  Mask::Pointer OriginalMask;
-
-  // This mask is updated as patches are copied.
-  Mask::Pointer CurrentMask;
+  // The mask specifying the region to inpaint. It is updated as patches are copied.
+  Mask::Pointer MaskImage;
 
   // The patch radius.
   itk::Size<2> PatchRadius;
 
-  // Store the computed isophotes.
-  FloatVector2ImageType::Pointer IsophoteImage;
-
-  // Keep track of the edge of the region to inpaint.
-  UnsignedCharScalarImageType::Pointer BoundaryImage;
-
-  // Store the computed boundary normals.
-  FloatVector2ImageType::Pointer BoundaryNormals;
-
-  // Set the region to the full region and allocate an image
-  template<typename TImage>
-  void InitializeImage(typename TImage::Pointer);
+  // Set the region to the fill region and allocate an image
+//   template<typename TImage>
+//   void InitializeImage(typename TImage::Pointer);
 
   // Initialization functions
 
@@ -205,9 +189,6 @@ private:
 
   // We store the patch radius, so we need this function to compute the actual patch size from the radius.
   itk::Size<2> GetPatchSize();
-
-  // Return the highest value of the specified image out of the pixels under a specified BoundaryImage.
-  itk::Index<2> FindHighestValueOnBoundary(const FloatScalarImageType::Pointer image, float& maxValue, UnsignedCharScalarImageType::Pointer boundaryImage);
 
   // Update the mask so that the pixels in the region that was filled are marked as filled.
   void UpdateMask(const itk::ImageRegion<2>& region);
@@ -259,12 +240,6 @@ private:
   void DebugWritePatch(const itk::Index<2>& pixel, const std::string& filename);
   void DebugWritePixelToFill(const itk::Index<2>& pixelToFill, const unsigned int iteration);
   void DebugWritePatchToFillLocation(const itk::Index<2>& pixelToFill, const unsigned int iteration);
-
-  template <typename TImage>
-  float ComputeAverageGradientChange(const typename TImage::Pointer patch, FloatVector2ImageType::Pointer preFillGradient, FloatVector2ImageType::Pointer postFillGradient,
-                                     const Mask::Pointer mask, const Mask::Pointer noMask, const std::vector<itk::Index<2> >& boundaryPixels);
-
-  void ComputeMinimumBoundaryGradientChange(unsigned int& bestForwardLookId, unsigned int& bestSourcePatchId);
 
   unsigned int ComputeMinimumScoreLookAhead();
 

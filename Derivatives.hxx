@@ -18,6 +18,9 @@
 
 #include "Helpers.h"
 
+namespace Derivatives
+{
+
 template <typename TImage>
 void MaskedDerivative(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output)
 {
@@ -480,3 +483,5 @@ void GradientFromDerivatives(const typename itk::Image<TPixel, 2>::Pointer xDeri
 {
   GradientFromDerivativesInRegion<TPixel>(xDerivative, yDerivative, xDerivative->GetLargestPossibleRegion(), output);
 }
+
+} // end namespace

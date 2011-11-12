@@ -47,6 +47,9 @@ protected:
   // Compute the Data at a pixel.
   float ComputeDataTerm(const itk::Index<2>& queryPixel);
 
+  // Compute the normals of the hole boundary.
+  void ComputeBoundaryNormals(const float blurVariance);
+
   // Keep track of the data term of each pixel
   FloatScalarImageType::Pointer DataImage;
 

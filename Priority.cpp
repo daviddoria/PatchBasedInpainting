@@ -27,6 +27,11 @@ Priority::Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage,
   this->BoundaryImage = UnsignedCharScalarImageType::New();
 }
 
+FloatScalarImageType::Pointer Priority::GetPriorityImage()
+{
+  return this->PriorityImage;
+}
+
 float Priority::GetPriority(const itk::Index<2>& queryPixel)
 {
   return this->PriorityImage->GetPixel(queryPixel);
@@ -76,11 +81,6 @@ void Priority::ComputeAllPriorities()
 
   for(unsigned int pixelId = 0; pixelId < boundaryPixels.size(); ++pixelId)
     {
-    ComputePriority(boundaryPixels[pixelId]);
+    this->PriorityImage->SetPixel(boundaryPixels[pixelId], ComputePriority(boundaryPixels[pixelId]));
     }
 }
-/*
-void Priority::SetImage(FloatVectorImageType::Pointer image)
-{
-  this->Image = image;
-}*/

@@ -40,11 +40,12 @@ void PatchBasedInpainting::DebugWriteAllImages()
   //HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->PriorityImage, "Debug/PriorityImage", this->NumberOfCompletedIterations);
   
   //Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage, "IsophoteImage", this->NumberOfCompletedIterations);
-  HelpersOutput::Write2DVectorImage(this->IsophoteImage, Helpers::GetSequentialFileName("Debug/IsophoteImage", this->NumberOfCompletedIterations, "mha"));
+  //HelpersOutput::Write2DVectorImage(this->IsophoteImage, Helpers::GetSequentialFileName("Debug/IsophoteImage", this->NumberOfCompletedIterations, "mha"));
   
-  HelpersOutput::WriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage", this->NumberOfCompletedIterations);
+  //HelpersOutput::WriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage", this->NumberOfCompletedIterations);
 
   // Boundary isophotes
+  /*
   typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
   MaskFilterType::Pointer maskFilter = MaskFilterType::New();
   maskFilter->SetInput(this->IsophoteImage);
@@ -54,12 +55,13 @@ void PatchBasedInpainting::DebugWriteAllImages()
   vtkSmartPointer<vtkPolyData> boundaryIsophotes = vtkSmartPointer<vtkPolyData>::New();
   Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), boundaryIsophotes);
   HelpersOutput::WritePolyData(boundaryIsophotes, Helpers::GetSequentialFileName("Debug/BoundaryIsophotes", this->NumberOfCompletedIterations, "vtp"));
+  */
 
   // Boundary normals
-  HelpersOutput::Write2DVectorImage(this->BoundaryNormals, Helpers::GetSequentialFileName("Debug/BoundaryNormals", this->NumberOfCompletedIterations, "mha"));
+  //HelpersOutput::Write2DVectorImage(this->BoundaryNormals, Helpers::GetSequentialFileName("Debug/BoundaryNormals", this->NumberOfCompletedIterations, "mha"));
   //Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals, "BoundaryNormals", this->NumberOfCompletedIterations);
-  
-  HelpersOutput::WriteSequentialImage<Mask>(this->CurrentMask, "Debug/CurrentMask", this->NumberOfCompletedIterations);
+
+  HelpersOutput::WriteSequentialImage<Mask>(this->MaskImage, "Debug/MaskImage", this->NumberOfCompletedIterations);
   HelpersOutput::WriteSequentialImage<FloatVectorImageType>(this->CurrentOutputImage, "Debug/CurrentImage", this->NumberOfCompletedIterations);
 
   RGBImageType::Pointer rgbImage = RGBImageType::New();
@@ -80,12 +82,12 @@ void PatchBasedInpainting::DebugWriteAllImages(const itk::Index<2>& pixelToFill,
   DebugWritePixelToFill(pixelToFill, iteration);
   std::cout << "Wrote pixelToFill." << std::endl;
 
-  HelpersOutput::WriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage,"Debug/Isophotes", iteration);
+  //HelpersOutput::WriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage,"Debug/Isophotes", iteration);
   //HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->ConfidenceImage,"Debug/Confidence", iteration);
-  HelpersOutput::WriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage,"Debug/Boundary", iteration);
-  HelpersOutput::WriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals,"Debug/BoundaryNormals", iteration);
+  //HelpersOutput::WriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage,"Debug/Boundary", iteration);
+  //HelpersOutput::WriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals,"Debug/BoundaryNormals", iteration);
   //HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->PriorityImage,"Debug/Priorities", iteration);
-  HelpersOutput::WriteSequentialImage<Mask>(this->CurrentMask,"Debug/Mask", iteration);
+  HelpersOutput::WriteSequentialImage<Mask>(this->MaskImage,"Debug/Mask", iteration);
   HelpersOutput::WriteSequentialImage<FloatVectorImageType>(this->CurrentOutputImage,"Debug/FilledImage", iteration);
 
 }
@@ -162,7 +164,7 @@ void PatchBasedInpainting::DebugWritePixelToFill(const itk::Index<2>& pixelToFil
 {
   // Create a blank image with the pixel to fill colored white
   UnsignedCharScalarImageType::Pointer pixelImage = UnsignedCharScalarImageType::New();
-  pixelImage->SetRegions(this->CurrentMask->GetLargestPossibleRegion());
+  pixelImage->SetRegions(this->MaskImage->GetLargestPossibleRegion());
   pixelImage->Allocate();
 
   itk::ImageRegionIterator<UnsignedCharScalarImageType> iterator(pixelImage, pixelImage->GetLargestPossibleRegion());
@@ -191,7 +193,7 @@ void PatchBasedInpainting::DebugWritePatchToFillLocation(const itk::Index<2>& pi
 {
   // Create a blank image with the patch that has been filled colored white
   UnsignedCharScalarImageType::Pointer patchImage = UnsignedCharScalarImageType::New();
-  patchImage->SetRegions(this->CurrentMask->GetLargestPossibleRegion());
+  patchImage->SetRegions(this->MaskImage->GetLargestPossibleRegion());
   patchImage->Allocate();
   // Make image black
   itk::ImageRegionIterator<UnsignedCharScalarImageType> blackIterator(patchImage, patchImage->GetLargestPossibleRegion());
