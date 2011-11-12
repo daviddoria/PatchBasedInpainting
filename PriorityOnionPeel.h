@@ -16,13 +16,13 @@
  *
  *=========================================================================*/
 
-#ifndef PRIORITYCRIMINISI_H
-#define PRIORITYCRIMINISI_H
+#ifndef PRIORITYONIONPEEL_H
+#define PRIORITYONIONPEEL_H
 
-#include "PriorityOnionPeel.h"
+#include "Priority.h"
 #include "Types.h"
 
-class PriorityCriminisi : public PriorityOnionPeel
+class PriorityOnionPeel : public Priority
 {
 public:
 
@@ -30,7 +30,7 @@ public:
   // Functions reimplemented from Priority //
   ///////////////////////////////////////////
 
-  PriorityCriminisi(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius);
+  PriorityOnionPeel(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius);
 
   float ComputePriority(const itk::Index<2>& queryPixel);
 
@@ -39,22 +39,28 @@ public:
   //////////////// New functions   //////////
   ///////////////////////////////////////////
 
-  // Get the current data image
-  FloatScalarImageType::Pointer GetDataImage();
+  // Get the current confidence image (confidences computed on the current boundary)
+  FloatScalarImageType::Pointer GetConfidenceImage();
+
+  // Get the current confidence map image
+  FloatScalarImageType::Pointer GetConfidenceMapImage();
 
 protected:
 
-  // Compute the Data at a pixel.
-  float ComputeDataTerm(const itk::Index<2>& queryPixel);
+  // Compute the confidence values for pixels that were just inpainted.
+  void UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value);
 
-  // Keep track of the data term of each pixel
-  FloatScalarImageType::Pointer DataImage;
+  // Compute the Confidence at a pixel.
+  float ComputeConfidenceTerm(const itk::Index<2>& queryPixel);
 
-  // Isophotes of the image.
-  FloatVector2ImageType::Pointer IsophoteImage;
+  // Keep track of the confidence of each pixel
+  FloatScalarImageType::Pointer ConfidenceMapImage;
 
-  // Boundary normals.
-  FloatVector2ImageType::Pointer BoundaryNormalsImage;
+  // Store the computed confidences on the boundary
+  FloatScalarImageType::Pointer ConfidenceImage;
+
+  // The initial confidence is 0 in the hole and 1 elsewhere.
+  void InitializeConfidenceMap();
 
 };
 

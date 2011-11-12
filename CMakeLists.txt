@@ -35,6 +35,7 @@ PatchPair.cpp
 Priority.cpp
 PriorityCriminisi.cpp
 PriorityDepth.cpp
+PriorityOnionPeel.cpp
 PriorityRandom.cpp
 SelfPatchCompare.cpp
 )
