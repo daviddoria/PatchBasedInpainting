@@ -809,8 +809,8 @@ itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType::Pointer
   }
 }
 
-
-void ComputeColorIsophotesInRegion(const FloatVectorImageType::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region , FloatVector2ImageType::Pointer isophotes)
+void ComputeColorIsophotesInRegion(const FloatVectorImageType::Pointer image, const Mask::Pointer mask,
+                                   const itk::ImageRegion<2>& region , FloatVector2ImageType::Pointer isophotes)
 {
   //EnterFunction("ComputeIsophotes()");
   RGBImageType::Pointer rgbImage = RGBImageType::New();

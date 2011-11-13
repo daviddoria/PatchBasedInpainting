@@ -18,12 +18,35 @@
 
 #include "PriorityDepth.h"
 
+#include "Derivatives.h"
+
 PriorityDepth::PriorityDepth(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) : Priority(image, maskImage, patchRadius)
 {
+  this->DepthIsophoteImage = FloatVector2ImageType::New();
+  Helpers::InitializeImage<FloatVector2ImageType>(this->DepthIsophoteImage, image->GetLargestPossibleRegion());
 
+  typedef itk::VectorIndexSelectionCastImageFilter<FloatVectorImageType, FloatScalarImageType> IndexSelectionType;
+  IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+  indexSelectionFilter->SetIndex(3);
+  indexSelectionFilter->SetInput(image);
+  indexSelectionFilter->Update();
+
+  Derivatives::ComputeMaskedIsophotesInRegion(indexSelectionFilter->GetOutput(), maskImage, image->GetLargestPossibleRegion(), this->DepthIsophoteImage);
 }
 
 float PriorityDepth::ComputePriority(const itk::Index<2>& queryPixel)
 {
-  
+  float priority = this->DepthIsophoteImage->GetPixel(queryPixel).GetNorm();
+  return priority;
+}
+
+void PriorityDepth::Update(const itk::ImageRegion<2>& filledRegion)
+{
+  typedef itk::VectorIndexSelectionCastImageFilter<FloatVectorImageType, FloatScalarImageType> IndexSelectionType;
+  IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+  indexSelectionFilter->SetIndex(3);
+  indexSelectionFilter->SetInput(this->Image);
+  indexSelectionFilter->Update();
+
+  Derivatives::ComputeMaskedIsophotesInRegion(indexSelectionFilter->GetOutput(), this->MaskImage, filledRegion, this->DepthIsophoteImage);
 }

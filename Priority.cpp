@@ -20,12 +20,12 @@
 
 #include "Helpers.h"
 
-Priority::Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius)
-                    //Image(image), MaskImage(maskImage), PatchRadius(patchRadius)
+Priority::Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) :
+                   Image(image), MaskImage(maskImage), PatchRadius(patchRadius)
 {
-  this->Image = image;
-  this->MaskImage = maskImage;
-  this->PatchRadius = patchRadius;
+//   this->Image = image;
+//   this->MaskImage = maskImage;
+//   this->PatchRadius = patchRadius;
 
   this->DebugFunctionEnterLeave = true;
   EnterFunction("Priority()");
@@ -60,42 +60,6 @@ float Priority::GetPriority(const itk::Index<2>& queryPixel)
 {
   return this->PriorityImage->GetPixel(queryPixel);
 }
-
-/*
-void Priority::ComputeAllPriorities()
-{
-  EnterFunction("ComputeAllPriorities()");
-  try
-  {
-    // Only compute priorities for pixels on the boundary
-    itk::ImageRegionConstIterator<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
-
-    // Blank the priority image.
-    this->PriorityImage->FillBuffer(0);
-
-    // The main loop is over the boundary image. We only want to compute priorities at boundary pixels.
-    unsigned int boundaryPixelCounter = 0;
-    while(!boundaryIterator.IsAtEnd())
-      {
-      if(boundaryIterator.Get() != 0) // Pixel is on the boundary
-	{
-	float priority = ComputePriority(boundaryIterator.GetIndex());
-	//DebugMessage<float>("Priority: ", priority);
-	this->PriorityImage->SetPixel(boundaryIterator.GetIndex(), priority);
-	boundaryPixelCounter++;
-	}    
-      ++boundaryIterator;
-      }
-    DebugMessage<unsigned int>("Number of boundary pixels: ", boundaryPixelCounter);
-    LeaveFunction("ComputeAllPriorities()");
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in ComputeAllPriorities!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}*/
 
 void Priority::UpdateBoundary()
 {

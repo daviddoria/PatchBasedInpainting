@@ -24,8 +24,16 @@
 class PriorityDepth : public Priority
 {
 public:
+  // Reimplemented from Priority
   PriorityDepth(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius);
+
   float ComputePriority(const itk::Index<2>& queryPixel);
+
+  void Update(const itk::ImageRegion<2>& filledRegion);
+
+protected:
+  // Isophotes of the depth channel.
+  FloatVector2ImageType::Pointer DepthIsophoteImage;
 };
 
 #endif

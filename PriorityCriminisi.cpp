@@ -41,6 +41,7 @@ PriorityCriminisi::PriorityCriminisi(FloatVectorImageType::Pointer image, Mask::
   ComputeBoundaryNormals(blurVariance);
 
   this->IsophoteImage = FloatVector2ImageType::New();
+  Helpers::InitializeImage<FloatVector2ImageType>(this->IsophoteImage, image->GetLargestPossibleRegion());
   Helpers::ComputeColorIsophotesInRegion(image, maskImage, image->GetLargestPossibleRegion(), this->IsophoteImage);
 
 }
