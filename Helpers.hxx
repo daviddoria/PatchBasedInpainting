@@ -742,7 +742,6 @@ void InitializeImage(typename TImage::Pointer image, const itk::ImageRegion<2>& 
 {
   image->SetRegions(region);
   image->Allocate();
-  //image->FillBuffer(0);
 }
 
 template<typename TImage>

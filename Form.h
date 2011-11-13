@@ -63,40 +63,37 @@ public:
   Form();
   Form(const std::string& imageFileName, const std::string& maskFileName);
   ~Form() {};
-  
-  // These function deal with flipping the image
+
+  // Change the camera position to produce the effect of flipping the image.
   void SetCameraPosition();
-  //void SetCameraPosition(double leftToRight[3], double bottomToTop[3]);
-  //void SetCameraPosition1();
-  //void SetCameraPosition2();
-  
+
   void Refresh();
-  
+
 public slots:
-  
+
   void on_radCompareOriginal_clicked();
   void on_radCompareBlurred_clicked();
   void on_radCompareCIELAB_clicked();
-  
+
   void on_btnGoToIteration_clicked();
-  
+
   void on_btnDisplayPreviousStep_clicked();
   void on_btnDisplayNextStep_clicked();
-  
+
   void on_actionOpen_activated();
   void on_actionSaveResult_activated();
-  
+
   void on_chkHighlightUsedPatches_clicked();
-  
+
   void on_chkDebugImages_clicked();
   void on_chkDebugMessages_clicked();
-  
+
   void on_chkLive_clicked();
 
   //void on_ForwardLookTableView_currentChanged(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
   void slot_ForwardLookTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
   void slot_TopPatchesTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
-  
+
   // Defined in FormGUIElements.cxx
   void on_chkImage_clicked();
   void on_chkMask_clicked();
@@ -110,40 +107,40 @@ public slots:
   void on_chkPotentialPatches_clicked();
   void on_chkDisplayForwardLookPatchLocations_clicked();
   void on_chkDisplaySourcePatchLocations_clicked();
-  
+
   void SetCheckboxVisibility(const bool visible);
-  
+
   void on_btnInpaint_clicked();
   void on_btnStep_clicked();
   void on_btnInitialize_clicked();
   void on_btnStop_clicked();
   void on_btnReset_clicked();
-  
+
   void on_btnResort_clicked();
-  
+
   void on_actionHelp_activated();
   void on_actionQuit_activated();
-  
+
   void on_actionFlipImageVertically_activated();
   void on_actionFlipImageHorizontally_activated();
-  
+
   void StartProgressSlot();
   void StopProgressSlot();
-  
+
   void RefreshSlot();
-  
+
   void IterationCompleteSlot();
-  
+
   void DisplayIsophotes();
-  
+
 protected:
-  
+
   std::vector<float> CameraLeftToRightVector;
   std::vector<float> CameraBottomToTopVector;
-  
+
   void ChangeDisplayedTopPatch();
   void ChangeDisplayedForwardLookPatch();
-  
+
   // These functions display the iteration indicated by the member 'IterationToDisplay'
   void DisplayBoundary();
   void DisplayBoundaryNormals();
@@ -156,33 +153,33 @@ protected:
 
   void OpenImage(const std::string& filename);
   void OpenMask(const std::string& filename, const bool inverted);
-  
+
   void SetupForwardLookingTable();
   void SetupTopPatchesTable();
-  
+
   // Initialize everything.
   void Initialize();
-  
+
   void SetupInitialIntermediateImages();
-  
+
   // Save everything at the end of an iteration.
   void IterationComplete();
-  
+
   // This function is called when the "Previous" or "Next" buttons are pressed, and at the end of IterationComplete().
   void ChangeDisplayedIteration();
-  
+
   // The interactor to allow us to zoom and pan the image
   vtkSmartPointer<InteractorStyleImageNoLevel> InteractorStyle;
-  
+
   // Track if the image has been flipped
   //bool Flipped;
 
   // The only renderer
   vtkSmartPointer<vtkRenderer> Renderer;
-  
+
   // Source patch outline display
   Layer UsedSourcePatchLayer;
-  
+
   // Target patch outline display
   Layer UsedTargetPatchLayer;
 

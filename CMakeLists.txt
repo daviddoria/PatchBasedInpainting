@@ -76,11 +76,11 @@ endif()
 # ADD_EXECUTABLE(LearnLambda LearnLambda.cpp)
 # TARGET_LINK_LIBRARIES(LearnLambda PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
-ADD_EXECUTABLE(TestColorImageByScore Tests/TestColorImageByScore.cpp)
-TARGET_LINK_LIBRARIES(TestColorImageByScore PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-
-ADD_EXECUTABLE(TestPatchSearchFunction Tests/TestPatchSearchFunction.cpp)
-TARGET_LINK_LIBRARIES(TestPatchSearchFunction PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# ADD_EXECUTABLE(TestColorImageByScore Tests/TestColorImageByScore.cpp)
+# TARGET_LINK_LIBRARIES(TestColorImageByScore PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# 
+# ADD_EXECUTABLE(TestPatchSearchFunction Tests/TestPatchSearchFunction.cpp)
+# TARGET_LINK_LIBRARIES(TestPatchSearchFunction PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
 # ADD_EXECUTABLE(ExamplePatchDifference Examples/ExamplePatchDifference.cpp)
 # TARGET_LINK_LIBRARIES(ExamplePatchDifference PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})

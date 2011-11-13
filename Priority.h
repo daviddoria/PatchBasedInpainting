@@ -31,10 +31,18 @@ public:
   // Compute the priorities at all boundary pixels.
   virtual void ComputeAllPriorities();
 
+  // At the end of an iteration, update anything that needs to be updated.
+  virtual void Update(const itk::ImageRegion<2>& filledRegion);
+
   // Get the current priority image
   FloatScalarImageType::Pointer GetPriorityImage();
 
+  // Get the current boundary image
+  UnsignedCharScalarImageType::Pointer GetBoundaryImage();
+
   float GetPriority(const itk::Index<2>& queryPixel);
+
+  void UpdateBoundary();
 
 protected:
 

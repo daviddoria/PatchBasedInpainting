@@ -34,7 +34,8 @@ namespace Helpers
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ComputeColorIsophotesInRegion(const FloatVectorImageType::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region , FloatVector2ImageType::Pointer isophotes);
+void ComputeColorIsophotesInRegion(const FloatVectorImageType::Pointer image, const Mask::Pointer mask,
+                                   const itk::ImageRegion<2>& region , FloatVector2ImageType::Pointer isophotes);
 
 // Return the highest value of the specified image out of the pixels under a specified BoundaryImage.
 itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType::Pointer image, float& maxValue, UnsignedCharScalarImageType::Pointer maskImage);

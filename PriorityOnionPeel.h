@@ -34,32 +34,27 @@ public:
 
   float ComputePriority(const itk::Index<2>& queryPixel);
 
-  void ComputeAllPriorities();
+  void Update(const itk::ImageRegion<2>& filledRegion);
+
   ///////////////////////////////////////////
   //////////////// New functions   //////////
   ///////////////////////////////////////////
-
-  // Get the current confidence image (confidences computed on the current boundary)
-  FloatScalarImageType::Pointer GetConfidenceImage();
 
   // Get the current confidence map image
   FloatScalarImageType::Pointer GetConfidenceMapImage();
 
 protected:
 
-  // Compute the confidence values for pixels that were just inpainted.
+  // Compute the Confidence values for pixels that were just inpainted.
   void UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value);
 
   // Compute the Confidence at a pixel.
   float ComputeConfidenceTerm(const itk::Index<2>& queryPixel);
 
-  // Keep track of the confidence of each pixel
+  // Keep track of the Confidence of each pixel
   FloatScalarImageType::Pointer ConfidenceMapImage;
 
-  // Store the computed confidences on the boundary
-  FloatScalarImageType::Pointer ConfidenceImage;
-
-  // The initial confidence is 0 in the hole and 1 elsewhere.
+  // The initial confidence is 0 in the hole and 1 outside the hole.
   void InitializeConfidenceMap();
 
 };

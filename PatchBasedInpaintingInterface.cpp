@@ -71,6 +71,11 @@ void PatchBasedInpainting::SetPatchRadius(const unsigned int radius)
   this->PatchRadius.Fill(radius);
 }
 
+unsigned int PatchBasedInpainting::GetPatchRadius()
+{
+  return this->PatchRadius[0];
+}
+
 void PatchBasedInpainting::SetMaxForwardLookPatches(const unsigned int numberOfPatches)
 {
   this->MaxForwardLookPatches = numberOfPatches;

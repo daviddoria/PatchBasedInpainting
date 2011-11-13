@@ -35,9 +35,10 @@
 #include <vtkImageData.h>
 
 // Custom
+#include "DebugOutputs.h"
 #include "Types.h"
 
-class Mask : public itk::Image< unsigned char, 2>
+class Mask : public itk::Image< unsigned char, 2>, public DebugOutputs
 {
 public:
   /** Standard typedefs. */
@@ -82,6 +83,8 @@ public:
   bool IsValid(const itk::ImageRegion<2>& region) const;
 
   bool IsValid(const itk::Index<2>& index) const;
+
+  bool HasHoleNeighbor(const itk::Index<2>& pixel);
 
   void Invert();
 

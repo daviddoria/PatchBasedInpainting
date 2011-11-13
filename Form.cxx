@@ -71,12 +71,14 @@
 #include "InteractorStyleImageNoLevel.h"
 #include "Mask.h"
 #include "PixmapDelegate.h"
+#include "PriorityOnionPeel.h"
+#include "PriorityCriminisi.h"
 #include "Types.h"
 
 void Form::on_actionHelp_activated()
 {
   QTextEdit* help=new QTextEdit();
-  
+
   help->setReadOnly(true);
   help->append("<h1>Criminisi Inpainting</h1>\
   Load an image and a mask. <br/>\
@@ -97,22 +99,22 @@ void Form::DefaultConstructor()
   this->CameraLeftToRightVector[0] = -1;
   this->CameraLeftToRightVector[1] = 0;
   this->CameraLeftToRightVector[2] = 0;
-  
+
   this->CameraBottomToTopVector.resize(3);
   this->CameraBottomToTopVector[0] = 0;
   this->CameraBottomToTopVector[1] = 1;
   this->CameraBottomToTopVector[2] = 0;
-  
+
   this->PatchDisplaySize = 100;
-  
+
   SetupColors();
-  
+
   SetCheckboxVisibility(false);
 
   QBrush brush;
   brush.setStyle(Qt::SolidPattern);
   brush.setColor(this->SceneBackgroundColor);
-  
+
   this->TargetPatchScene = new QGraphicsScene();
   this->TargetPatchScene->setBackgroundBrush(brush);
   this->gfxTarget->setScene(TargetPatchScene);
@@ -134,11 +136,11 @@ void Form::DefaultConstructor()
 
   this->DebugFunctionEnterLeave = true;
   this->DebugMessages = true;
-  
+
   // Setup icons
   QIcon openIcon = QIcon::fromTheme("document-open");
   QIcon saveIcon = QIcon::fromTheme("document-save");
-  
+
   // Setup toolbar
   actionOpen->setIcon(openIcon);
   this->toolBar->addAction(actionOpen);
@@ -147,14 +149,14 @@ void Form::DefaultConstructor()
   this->toolBar->addAction(actionSaveResult);
 
   this->InteractorStyle = vtkSmartPointer<InteractorStyleImageNoLevel>::New();
-    
+
   // An image with potential target patches outlined
   this->PotentialTargetPatchesImage = UnsignedCharScalarImageType::New();
-    
+
   // Add objects to the renderer
   this->Renderer = vtkSmartPointer<vtkRenderer>::New();
   this->qvtkWidget->GetRenderWindow()->AddRenderer(this->Renderer);
-  
+
   this->Renderer->AddViewProp(this->ImageLayer.ImageSlice);
   this->Renderer->AddViewProp(this->ConfidenceLayer.ImageSlice);
   this->Renderer->AddViewProp(this->ConfidenceMapLayer.ImageSlice);
@@ -173,29 +175,30 @@ void Form::DefaultConstructor()
 
   this->IsophoteLayer.Actor->VisibilityOff();
   this->Renderer->AddViewProp(this->IsophoteLayer.Actor);
-  
+
   this->Renderer->AddViewProp(this->SelectedForwardLookOutlineLayer.ImageSlice);// This should be added after AllForwardLookOutlinesLayer.
   this->Renderer->AddViewProp(this->SelectedSourcePatchOutlineLayer.ImageSlice);// This should be added after AllSourcePatchOutlinesLayer.
-  
+
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
-  
+
   this->UserImage = FloatVectorImageType::New();
   this->UserMaskImage = Mask::New();
-  
+
   this->Inpainting.SetPatchSearchFunctionToTwoStepDepth();
   this->Inpainting.SetDebugFunctionEnterLeave(true);
-  
+
   connect(&ComputationThread, SIGNAL(StartProgressSignal()), this, SLOT(StartProgressSlot()), Qt::QueuedConnection);
   connect(&ComputationThread, SIGNAL(StopProgressSignal()), this, SLOT(StopProgressSlot()), Qt::QueuedConnection);
-  
-  // Using a blocking connection allows everything (computation and drawing) to be performed sequentially which is helpful for debugging, but makes the interface very very choppy.
+
+  // Using a blocking connection allows everything (computation and drawing) to be performed sequentially which is helpful for debugging,
+  // but makes the interface very very choppy.
   // We are assuming that the computation takes longer than the drawing.
   //connect(&ComputationThread, SIGNAL(IterationCompleteSignal()), this, SLOT(IterationCompleteSlot()), Qt::QueuedConnection);
   connect(&ComputationThread, SIGNAL(IterationCompleteSignal()), this, SLOT(IterationCompleteSlot()), Qt::BlockingQueuedConnection);
-  
+
   connect(&ComputationThread, SIGNAL(RefreshSignal()), this, SLOT(RefreshSlot()), Qt::QueuedConnection);
-  
+
   //disconnect(this->topPatchesTableWidget, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_topPatchesTableWidget_currentCellChanged(int,int,int,int)), Qt::AutoConnection);
   //this->topPatchesTableWidget->disconnect(SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_topPatchesTableWidget_currentCellChanged(int,int,int,int)));
   //this->topPatchesTableWidget->disconnect();
@@ -205,30 +208,31 @@ void Form::DefaultConstructor()
   this->progressBar->setMinimum(0);
   this->progressBar->setMaximum(0);
   this->progressBar->hide();
-  
+
   this->ComputationThread.SetObject(&(this->Inpainting));
-  
+
   // Make the 'enabled' property of several components match the pre-specified state.
   on_chkLive_clicked();
-  
+
   // Setup forwardLook table
   this->ForwardLookModel = new ForwardLookTableModel(this->AllPotentialCandidatePairs);
   this->ForwardLookTableView->setModel(this->ForwardLookModel);
   this->ForwardLookTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-  
+
   PixmapDelegate* forwardLookPixmapDelegate = new PixmapDelegate;
   this->ForwardLookTableView->setItemDelegateForColumn(0, forwardLookPixmapDelegate);
-  
-  this->connect(this->ForwardLookTableView->selectionModel(), SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )), SLOT(slot_ForwardLookTableView_changed(const QModelIndex & , const QModelIndex & )));
-  
+
+  this->connect(this->ForwardLookTableView->selectionModel(), SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
+                SLOT(slot_ForwardLookTableView_changed(const QModelIndex & , const QModelIndex & )));
+
   // Setup top patches table
   this->TopPatchesModel = new TopPatchesTableModel(this->AllPotentialCandidatePairs);
   this->TopPatchesTableView->setModel(this->TopPatchesModel);
   this->TopPatchesTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-  
+
   PixmapDelegate* topPatchesPixmapDelegate = new PixmapDelegate;
   this->TopPatchesTableView->setItemDelegateForColumn(0, topPatchesPixmapDelegate);
-  
+
   this->connect(this->TopPatchesTableView->selectionModel(), SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )), SLOT(slot_TopPatchesTableView_changed(const QModelIndex & , const QModelIndex & )));
 }
 
@@ -241,7 +245,7 @@ Form::Form()
 Form::Form(const std::string& imageFileName, const std::string& maskFileName)
 {
   DefaultConstructor();
-  
+
   OpenImage(imageFileName);
   OpenMask(maskFileName, false);
   Initialize();
@@ -266,10 +270,10 @@ void Form::on_chkDebugImages_clicked()
 {
   QDir directoryMaker;
   directoryMaker.mkdir("Debug");
-  
+
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->DebugImages = this->chkDebugImages->isChecked();
-  
+
   DebugMessage<bool>("DebugImages: ", this->DebugImages);
 }
 
@@ -295,9 +299,9 @@ void Form::on_actionSaveResult_activated()
     std::cout << "Filename was empty." << std::endl;
     return;
     }
-    
+
   HelpersOutput::WriteImage<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), fileName.toStdString());
-  
+
   this->statusBar()->showMessage("Saved result.");
 }
 
@@ -513,22 +517,22 @@ void Form::RefreshSlot()
 
 void Form::DisplayBoundaryNormals()
 {
-  if(this->Inpainting.GetBoundaryNormalsImage()->GetLargestPossibleRegion().GetSize()[0] != 0)
-    {
-    Helpers::ConvertNonZeroPixelsToVectors(this->IntermediateImages[this->IterationToDisplay].BoundaryNormals, this->BoundaryNormalsLayer.Vectors);
-    this->qvtkWidget->GetRenderWindow()->Render();
-  
-    if(this->DebugImages)
-      {
-      std::cout << "Writing boundary normals..." << std::endl;
-    
-      HelpersOutput::WriteImage<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), "Debug/RefreshSlot.BoundaryNormals.mha");
-
-      HelpersOutput::WriteImageData(this->BoundaryNormalsLayer.ImageData, "Debug/RefreshSlot.VTKBoundaryNormals.vti");
-
-      HelpersOutput::WritePolyData(this->BoundaryNormalsLayer.Vectors, "Debug/RefreshSlot.VTKBoundaryNormals.vtp");
-      }
-    }  
+//   if(this->Inpainting.GetBoundaryNormalsImage()->GetLargestPossibleRegion().GetSize()[0] != 0)
+//     {
+//     Helpers::ConvertNonZeroPixelsToVectors(this->IntermediateImages[this->IterationToDisplay].BoundaryNormals, this->BoundaryNormalsLayer.Vectors);
+//     this->qvtkWidget->GetRenderWindow()->Render();
+// 
+//     if(this->DebugImages)
+//       {
+//       std::cout << "Writing boundary normals..." << std::endl;
+// 
+//       HelpersOutput::WriteImage<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), "Debug/RefreshSlot.BoundaryNormals.mha");
+// 
+//       HelpersOutput::WriteImageData(this->BoundaryNormalsLayer.ImageData, "Debug/RefreshSlot.VTKBoundaryNormals.vti");
+// 
+//       HelpersOutput::WritePolyData(this->BoundaryNormalsLayer.Vectors, "Debug/RefreshSlot.VTKBoundaryNormals.vtp");
+//       }
+//     }
 }
 
 void Form::Refresh()
@@ -672,25 +676,28 @@ void Form::Initialize()
   // Reset some things (this is so that if we want to run another completion it will work normally)
 
   this->UserMaskImage->ApplyToVectorImage<FloatVectorImageType>(this->UserImage, this->HoleColor);
-  
+
   this->Inpainting.SetPatchRadius(this->txtPatchRadius->text().toUInt());
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
   this->Inpainting.SetMask(this->UserMaskImage);
   this->Inpainting.SetImage(this->UserImage);
-  
+
+  //this->Inpainting.SetPriorityFunction<PriorityOnionPeel>();
+  this->Inpainting.SetPriorityFunction<PriorityCriminisi>();
+
   SelfPatchCompare* patchCompare = new SelfPatchCompare;
   patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
   patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
-  
+
   this->Inpainting.SetPatchCompare(patchCompare);
-  
+
   this->Inpainting.PatchSortFunction = &SortByAverageAbsoluteDifference;
   this->Inpainting.Initialize();
-  
+
   SetupInitialIntermediateImages();
   SetCheckboxVisibility(true);
-  
+
   Refresh();
 }
 
@@ -1250,27 +1257,30 @@ void Form::ChangeDisplayedIteration()
 
 void Form::SetupInitialIntermediateImages()
 {
-  std::cout << "SetupInitialIntermediateImages()" << std::endl;
-  //DebugMessage("SetupInitialIntermediateImages()");
-  
+  EnterFunction("SetupInitialIntermediateImages()");
+
   InpaintingVisualizationStack stack;
-  
+
   //Helpers::DeepCopyVectorImage<FloatVectorImageType>(this->UserImage, stack.Image);
+  std::cout << "Setting stack.Image..." << std::endl;
   Helpers::DeepCopy<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), stack.Image);
+  std::cout << "Setting stack.MaskImage..." << std::endl;
   Helpers::DeepCopy<Mask>(this->UserMaskImage, stack.MaskImage);
-  Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
-  //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), stack.Priority);
+  //Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
+  std::cout << "Setting stack.Priority..." << std::endl;
+  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityFunction()->GetPriorityImage(), stack.Priority);
   //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetDataImage(), stack.Data);
   //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), stack.Confidence);
   //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceMapImage(), stack.ConfidenceMap);
-  Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), stack.BoundaryNormals);
-  Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), stack.Isophotes);
+  //Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), stack.BoundaryNormals);
+  //Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), stack.Isophotes);
   //Helpers::DeepCopy<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage, stack.PotentialTargetPatchesImage);
-
+  std::cout << "Finished setting stack." << std::endl;
   this->IntermediateImages.clear();
   this->IntermediateImages.push_back(stack);
-  
+
   this->qvtkWidget->GetRenderWindow()->Render();
+  LeaveFunction("SetupInitialIntermediateImages()");
 }
 
 void Form::IterationComplete()
@@ -1285,13 +1295,13 @@ void Form::IterationComplete()
   Helpers::DeepCopy<Mask>(this->Inpainting.GetMaskImage(), stack.MaskImage);
   if(!this->chkOnlySaveImage->isChecked())
     {
-    Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
-    //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityImage(), stack.Priority);
+    //Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
+    Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityFunction()->GetPriorityImage(), stack.Priority);
     //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetDataImage(), stack.Data);
     //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceImage(), stack.Confidence);
     //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetConfidenceMapImage(), stack.ConfidenceMap);
-    Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), stack.BoundaryNormals);
-    Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), stack.Isophotes);
+    //Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), stack.BoundaryNormals);
+    //Helpers::DeepCopy<FloatVector2ImageType>(this->Inpainting.GetIsophoteImage(), stack.Isophotes);
     Helpers::DeepCopy<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage, stack.PotentialTargetPatchesImage);
     }
 

@@ -34,7 +34,8 @@ public:
 
   float ComputePriority(const itk::Index<2>& queryPixel);
 
-  void ComputeAllPriorities();
+  void Update(const itk::ImageRegion<2>& filledRegion);
+
   ///////////////////////////////////////////
   //////////////// New functions   //////////
   ///////////////////////////////////////////
@@ -49,9 +50,6 @@ protected:
 
   // Compute the normals of the hole boundary.
   void ComputeBoundaryNormals(const float blurVariance);
-
-  // Keep track of the data term of each pixel
-  FloatScalarImageType::Pointer DataImage;
 
   // Isophotes of the image.
   FloatVector2ImageType::Pointer IsophoteImage;

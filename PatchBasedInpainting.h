@@ -54,21 +54,13 @@ public:
 
   // Specify the size of the patches to copy.
   void SetPatchRadius(const unsigned int);
+  unsigned int GetPatchRadius();
 
   // Specify the maximum number of top candidate patches to consider. Near the end of the inpainting there may not be this many viable patches,
   // that is why we set the max instead of the absolute number of patches.
   void SetMaxForwardLookPatches(const unsigned int);
 
   void SetNumberOfTopPatchesToSave(const unsigned int);
-
-//   // Get the current boundary image
-//   UnsignedCharScalarImageType::Pointer GetBoundaryImage();
-// 
-//   // Get the current boundary image
-//   FloatVector2ImageType::Pointer GetBoundaryNormalsImage();
-//   
-//   // Get the current isophote image
-//   FloatVector2ImageType::Pointer GetIsophoteImage();
 
   // Get the result/output of the inpainting so far. When the algorithm is complete, this will be the final output.
   FloatVectorImageType::Pointer GetCurrentOutputImage();
@@ -124,6 +116,10 @@ public:
   void SetPatchSearchFunctionToNormal();
   void SetPatchSearchFunctionToTwoStepDepth();
 
+  template <typename T>
+  void SetPriorityFunction();
+  Priority* GetPriorityFunction();
+
 private:
 
   void RecomputeScoresWithNewPatches(std::vector<Patch>& newPatches, PatchPair& usedPatchPair);
@@ -132,10 +128,8 @@ private:
 
   PatchPair PreviousIterationUsedPatchPair;
 
-  // Determine the difference along an extended isophote of the pixel that will be filled. The PatchPair is non-const because we store the score in the class.
-  //float ComputeTotalContinuationDifference(PatchPair& patchPair);
-
-  // This is a new idea to try to fill several patches and return the best pair. Note that if the number of look ahead patches is 1, this is exactly the same as not looking ahead.
+  // This is a new idea to try to fill several patches and return the best pair.
+  // Note that if the number of look ahead patches is 1, this is exactly the same as not looking ahead.
   void FindBestPatchLookAhead(PatchPair& bestPatchPair);
 
   // One of these functions is called multiple times from FindBestPatchLookAhead (based on the value of PatchSearchFunction)
@@ -164,25 +158,14 @@ private:
   // The patch radius.
   itk::Size<2> PatchRadius;
 
-  // Set the region to the fill region and allocate an image
-//   template<typename TImage>
-//   void InitializeImage(typename TImage::Pointer);
-
-  // Initialization functions
-
   // The target image is colored bright green inside the hole. This is helpful when watching the inpainting proceed.
   void InitializeTargetImage();
-
-  //itk::CovariantVector<float, 2> GetAverageIsophote(const itk::Index<2>& queryPixel);
 
   // Determine if a patch is completely valid (no hole pixels).
   bool IsValidPatch(const itk::Index<2>& queryPixel, const unsigned int radius);
 
   // Determine if a region is completely valid (no hole pixels).
   bool IsValidRegion(const itk::ImageRegion<2>& region);
-
-  // Crop 'region' to be entirely inside the full region of the images we are operating on.
-  //itk::ImageRegion<2> CropToValidRegion(const itk::ImageRegion<2>& region);
 
   // Compute the number of pixels in a patch of the specified size.
   unsigned int GetNumberOfPixelsInPatch();

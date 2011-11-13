@@ -170,9 +170,9 @@ std::vector<itk::Offset<2> > Get8NeighborOffsets()
     for(int j = -1; j <= 1; ++j)
       {
       if(i == 0 && j == 0)
-	{
-	continue;
-	}
+        {
+        continue;
+        }
       itk::Offset<2> offset;
       offset[0] = i;
       offset[1] = j;
@@ -180,21 +180,6 @@ std::vector<itk::Offset<2> > Get8NeighborOffsets()
       }
     }
   return offsets;
-}
-
-bool HasHoleNeighbor(const itk::Index<2>& pixel, const Mask::Pointer mask)
-{
-  std::vector<itk::Offset<2> > offsets = Get8NeighborOffsets();
-  
-  for(unsigned int i = 0; i < offsets.size(); ++i)
-    {
-    if(mask->IsHole(pixel + offsets[i]))
-      {
-      return true;
-      }
-    }
-
-  return false;
 }
 
 unsigned int SideLengthFromRadius(const unsigned int radius)

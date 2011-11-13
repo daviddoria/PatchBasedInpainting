@@ -20,16 +20,40 @@
 
 #include "Helpers.h"
 
-Priority::Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) :
-                    Image(image), MaskImage(maskImage), PatchRadius(patchRadius)
+Priority::Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius)
+                    //Image(image), MaskImage(maskImage), PatchRadius(patchRadius)
 {
+  this->Image = image;
+  this->MaskImage = maskImage;
+  this->PatchRadius = patchRadius;
+
+  this->DebugFunctionEnterLeave = true;
+  EnterFunction("Priority()");
   this->PriorityImage = FloatScalarImageType::New();
+  Helpers::InitializeImage<FloatScalarImageType>(this->PriorityImage, image->GetLargestPossibleRegion());
+  Helpers::SetImageToConstant<FloatScalarImageType>(this->PriorityImage, 0.0f);
+
   this->BoundaryImage = UnsignedCharScalarImageType::New();
+  Helpers::InitializeImage<UnsignedCharScalarImageType>(this->BoundaryImage, image->GetLargestPossibleRegion());
+  Helpers::SetImageToConstant<UnsignedCharScalarImageType>(this->BoundaryImage, 0u);
+  LeaveFunction("Priority()");
+
+  std::cout << "In Priority class, mask pointer is: " << this->MaskImage << std::endl;
+}
+
+void Priority::Update(const itk::ImageRegion<2>& filledRegion)
+{
+  // Do nothing in the default implementation.
 }
 
 FloatScalarImageType::Pointer Priority::GetPriorityImage()
 {
   return this->PriorityImage;
+}
+
+UnsignedCharScalarImageType::Pointer Priority::GetBoundaryImage()
+{
+  return this->BoundaryImage;
 }
 
 float Priority::GetPriority(const itk::Index<2>& queryPixel)
@@ -73,9 +97,19 @@ void Priority::ComputeAllPriorities()
   }
 }*/
 
+void Priority::UpdateBoundary()
+{
+  EnterFunction("UpdateBoundary()");
+  this->MaskImage->FindBoundary(this->BoundaryImage);
+  LeaveFunction("UpdateBoundary()");
+}
+
 void Priority::ComputeAllPriorities()
 {
+  EnterFunction("ComputeAllPriorities()");
   this->MaskImage->FindBoundary(this->BoundaryImage);
+
+  Helpers::SetImageToConstant<FloatScalarImageType>(this->PriorityImage, 0.0f);
 
   std::vector<itk::Index<2> > boundaryPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage);
 
@@ -83,4 +117,5 @@ void Priority::ComputeAllPriorities()
     {
     this->PriorityImage->SetPixel(boundaryPixels[pixelId], ComputePriority(boundaryPixels[pixelId]));
     }
+  LeaveFunction("ComputeAllPriorities()");
 }

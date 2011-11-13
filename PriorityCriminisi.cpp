@@ -34,31 +34,25 @@
 PriorityCriminisi::PriorityCriminisi(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) :
                                      PriorityOnionPeel(image, maskImage, patchRadius)
 {
-  this->ConfidenceImage = FloatScalarImageType::New();
-  this->ConfidenceMapImage = FloatScalarImageType::New();
-  this->DataImage = FloatScalarImageType::New();
+  this->BoundaryNormalsImage = FloatVector2ImageType::New();
+  Helpers::InitializeImage<FloatVector2ImageType>(this->BoundaryNormalsImage, image->GetLargestPossibleRegion());
 
-  InitializeConfidenceMap();
-}
-
-void PriorityCriminisi::ComputeAllPriorities()
-{
   unsigned int blurVariance = 2;
   ComputeBoundaryNormals(blurVariance);
 
-  //Helpers::ComputeColorIsophotes(this->Image, this->MaskImage, this->IsophoteImage);
+  this->IsophoteImage = FloatVector2ImageType::New();
+  Helpers::ComputeColorIsophotesInRegion(image, maskImage, image->GetLargestPossibleRegion(), this->IsophoteImage);
 
-  //FloatScalarImageType::Pointer newIsophotes = FloatScalarImageType::New();
-  //Helpers::InitializeImage<FloatScalarImageType>(newIsophotes, this->FullImageRegion);
-  //ComputeMaskedIsophotesInRegion(this->LuminanceImage, this->CurrentMask, newIsophotes);
-  //Helpers::CopyPatch(newIsophotes, this->IsophoteImage, usedPatchPair.TargetPatch.Region, usedPatchPair.TargetPatch.Region);
+}
 
-  //Helpers::ComputeColorIsophotesInRegion(this->LuminanceImage, this->MaskImage, usedPatchPair.TargetPatch.Region, this->IsophoteImage);
+void PriorityCriminisi::Update(const itk::ImageRegion<2>& filledRegion)
+{
+  PriorityOnionPeel::Update(filledRegion);
 
+  Helpers::ComputeColorIsophotesInRegion(this->Image, this->MaskImage, filledRegion, this->IsophoteImage);
 
-  this->DataImage->FillBuffer(0);
-
-  PriorityOnionPeel::ComputeAllPriorities();
+  unsigned int blurVariance = 2;
+  ComputeBoundaryNormals(blurVariance);
 }
 
 float PriorityCriminisi::ComputePriority(const itk::Index<2>& queryPixel)
@@ -154,8 +148,8 @@ void PriorityCriminisi::ComputeBoundaryNormals(const float blurVariance)
   {
     // Blur the mask, compute the gradient, then keep the normals only at the original mask boundary
 
-    HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/ComputeBoundaryNormals.BoundaryImage.mha", this->DebugImages);
-    HelpersOutput::WriteImageConditional<Mask>(this->MaskImage, "Debug/ComputeBoundaryNormals.CurrentMask.mha", this->DebugImages);
+    //HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/ComputeBoundaryNormals.BoundaryImage.mha", this->DebugImages);
+    //HelpersOutput::WriteImageConditional<Mask>(this->MaskImage, "Debug/ComputeBoundaryNormals.CurrentMask.mha", this->DebugImages);
 
     // Blur the mask
     typedef itk::DiscreteGaussianImageFilter< Mask, FloatScalarImageType >  BlurFilterType;
@@ -164,7 +158,7 @@ void PriorityCriminisi::ComputeBoundaryNormals(const float blurVariance)
     gaussianFilter->SetVariance(blurVariance);
     gaussianFilter->Update();
 
-    HelpersOutput::WriteImageConditional<FloatScalarImageType>(gaussianFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMask.mha", this->DebugImages);
+    //HelpersOutput::WriteImageConditional<FloatScalarImageType>(gaussianFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMask.mha", this->DebugImages);
 
     // Compute the gradient of the blurred mask
     typedef itk::GradientImageFilter< FloatScalarImageType, float, float>  GradientFilterType;
@@ -172,7 +166,7 @@ void PriorityCriminisi::ComputeBoundaryNormals(const float blurVariance)
     gradientFilter->SetInput(gaussianFilter->GetOutput());
     gradientFilter->Update();
 
-    HelpersOutput::WriteImageConditional<FloatVector2ImageType>(gradientFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMaskGradient.mha", this->DebugImages);
+    //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(gradientFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMaskGradient.mha", this->DebugImages);
 
     // Only keep the normals at the boundary
     typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
@@ -181,7 +175,8 @@ void PriorityCriminisi::ComputeBoundaryNormals(const float blurVariance)
     maskFilter->SetMaskImage(this->BoundaryImage);
     maskFilter->Update();
 
-    HelpersOutput::WriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha", this->DebugImages);
+    HelpersOutput::WriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(),
+                                                                "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha", this->DebugImages);
 
     Helpers::DeepCopy<FloatVector2ImageType>(maskFilter->GetOutput(), this->BoundaryNormalsImage);
 

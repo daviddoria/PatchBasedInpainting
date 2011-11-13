@@ -246,35 +246,35 @@ void Mask::MakeVTKImage(vtkImageData* image, const QColor& validColor, const QCo
       index[0] = i;
       index[1] = j;
       if(this->IsValid(index))
-	{
-	pixel[0] = validColor.red();
-	pixel[1] = validColor.green();
-	pixel[2] = validColor.blue();
-      
-	if(validTransparent)
-	  {
-	  pixel[3] = 0; // invisible  
-	  }
-	else
-	  {
-	  pixel[3] = 255; // visible
-	  }
-	}
+        {
+        pixel[0] = validColor.red();
+        pixel[1] = validColor.green();
+        pixel[2] = validColor.blue();
+
+        if(validTransparent)
+          {
+          pixel[3] = 0; // invisible
+          }
+        else
+          {
+          pixel[3] = 255; // visible
+          }
+        }
       else // Pixel is a hole
-	{
-	pixel[0] = holeColor.red();
-	pixel[1] = holeColor.green();
-	pixel[2] = holeColor.blue();
-      
-	if(holeTransparent)
-	  {
-	  pixel[3] = 0; // invisible  
-	  }
-	else
-	  {
-	  pixel[3] = 255; // visible
-	  }
-	}
+        {
+        pixel[0] = holeColor.red();
+        pixel[1] = holeColor.green();
+        pixel[2] = holeColor.blue();
+
+        if(holeTransparent)
+          {
+          pixel[3] = 0; // invisible
+          }
+        else
+          {
+          pixel[3] = 255; // visible
+          }
+        }
 
       }
     }
@@ -283,7 +283,7 @@ void Mask::MakeVTKImage(vtkImageData* image, const QColor& validColor, const QCo
 
 void Mask::FindBoundary(UnsignedCharScalarImageType::Pointer boundaryImage)
 {
-  //EnterFunction("FindBoundary()");
+  EnterFunction("Mask::FindBoundary()");
   try
   {
     // Compute the "outer" boundary of the region to fill. That is, we want the boundary pixels to be in the source region.
@@ -347,4 +347,19 @@ void Mask::FindBoundary(UnsignedCharScalarImageType::Pointer boundaryImage)
     std::cerr << err << std::endl;
     exit(-1);
   }
+}
+
+bool Mask::HasHoleNeighbor(const itk::Index<2>& pixel)
+{
+  std::vector<itk::Offset<2> > offsets = Helpers::Get8NeighborOffsets();
+
+  for(unsigned int i = 0; i < offsets.size(); ++i)
+    {
+    if(this->IsHole(pixel + offsets[i]))
+      {
+      return true;
+      }
+    }
+
+  return false;
 }

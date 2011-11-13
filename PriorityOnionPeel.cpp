@@ -29,18 +29,21 @@
 
 PriorityOnionPeel::PriorityOnionPeel(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) : Priority(image, maskImage, patchRadius)
 {
-  this->ConfidenceImage = FloatScalarImageType::New();
   this->ConfidenceMapImage = FloatScalarImageType::New();
-
   InitializeConfidenceMap();
 }
 
-void PriorityOnionPeel::ComputeAllPriorities()
+void PriorityOnionPeel::Update(const itk::ImageRegion<2>& filledRegion)
 {
-  Priority::ComputeAllPriorities();
+  EnterFunction("Update()");
+  // Get the center pixel (the pixel around which the region was filled)
+  itk::Index<2> centerPixel = Helpers::GetRegionCenter(filledRegion);
+  float value = ComputeConfidenceTerm(centerPixel);
+  UpdateConfidences(filledRegion, value);
 
-  this->ConfidenceImage->FillBuffer(0);
-  this->ConfidenceMapImage->FillBuffer(0);
+  this->MaskImage->FindBoundary(this->BoundaryImage);
+
+  LeaveFunction("Update()");
 }
 
 float PriorityOnionPeel::ComputePriority(const itk::Index<2>& queryPixel)
@@ -52,7 +55,8 @@ float PriorityOnionPeel::ComputePriority(const itk::Index<2>& queryPixel)
 
 void PriorityOnionPeel::UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value)
 {
-  DebugMessage("UpdateConfidences()");
+  EnterFunction("UpdateConfidences()");
+  std::cout << "Updating confidences with value " << value << std::endl;
   try
   {
     // Force the region to update to be entirely inside the image
@@ -73,7 +77,7 @@ void PriorityOnionPeel::UpdateConfidences(const itk::ImageRegion<2>& targetRegio
 
       ++maskIterator;
       } // end while looop with iterator
-
+    LeaveFunction("UpdateConfidences()");
   } // end try
   catch( itk::ExceptionObject & err )
   {
