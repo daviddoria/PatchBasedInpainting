@@ -46,7 +46,7 @@ class vtkPolyDataMapper;
 #include "ForwardLookTableModel.h"
 #include "InpaintingVisualizationStack.h"
 #include "Layer.h"
-#include "ProgressThread.h"
+#include "ComputationThread.h"
 #include "TopPatchesTableModel.h"
 #include "Types.h"
 #include "VectorLayer.h"
@@ -237,7 +237,7 @@ protected:
   PatchBasedInpainting Inpainting;
   
   // Perform the long inpainting operation in this thread so that the UI remains active.
-  ProgressThread ComputationThread;
+  ComputationThreadClass ComputationThread;
 
   // A flag that determines if intermediate images should be output to files.
   bool DebugImages;

@@ -16,9 +16,9 @@
  *
  *=========================================================================*/
 
-#include "ProgressThread.h"
+#include "ComputationThread.h"
 
-ProgressThread::ProgressThread()
+ComputationThreadClass::ComputationThreadClass()
 {
   this->Stop = false;
 }
@@ -28,12 +28,12 @@ ProgressThread::ProgressThread()
 //   return this->Inpainting;
 // }
 
-void ProgressThread::StopInpainting()
+void ComputationThreadClass::StopInpainting()
 {
   this->Stop = true;
 }
 
-void ProgressThread::run()
+void ComputationThreadClass::run()
 {
   //std::cout << "ProgressThread::run()" << std::endl;
   // When the thread is started, emit the signal to start the marquee progress bar
@@ -56,13 +56,13 @@ void ProgressThread::run()
   exit();
 }
 
-void ProgressThread::exit()
+void ComputationThreadClass::exit()
 {
   // When the thread is stopped, emit the signal to stop the marquee progress bar
   emit StopProgressSignal();
 }
 
-void ProgressThread::SetObject(PatchBasedInpainting* inpainting)
+void ComputationThreadClass::SetObject(PatchBasedInpainting* inpainting)
 {
   this->Inpainting = inpainting;
 }

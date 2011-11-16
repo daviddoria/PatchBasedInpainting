@@ -20,14 +20,16 @@
  * separate thread so that the GUI can remain responsive during the computation.
 */
 
-#ifndef PROGRESSTHREAD_H
-#define PROGRESSTHREAD_H
+#ifndef COMPUTATIONTHREAD_H
+#define COMPUTATIONTHREAD_H
 
 #include <QThread>
 
 #include "PatchBasedInpainting.h"
 
-class ProgressThread : public QThread
+// This class is named 'ComputationThreadClass' instead of just 'ComputationThread'
+// because we often want to name a member variable 'ComputationThread'
+class ComputationThreadClass : public QThread
 {
 Q_OBJECT
 
@@ -43,7 +45,7 @@ signals:
   void IterationCompleteSignal();
   
 public:
-  ProgressThread();
+  ComputationThreadClass();
   
   // This function is called when the thread is started.
   void run();

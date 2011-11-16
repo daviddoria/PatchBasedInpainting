@@ -42,7 +42,7 @@ if(BuildInteractive)
   INCLUDE(${QT_USE_FILE})
 
   QT4_WRAP_UI(UISrcs PatchBasedInpainting.ui FileSelector.ui FileSelectionWidget.ui)
-  QT4_WRAP_CPP(MOCSrcs PatchBasedInpaintingGUI.h ProgressThread.h FileSelector.h FileSelectionWidget.h PixmapDelegate.h)
+  QT4_WRAP_CPP(MOCSrcs PatchBasedInpaintingGUI.h ComputationThread.h FileSelector.h FileSelectionWidget.h PixmapDelegate.h)
 
   ADD_EXECUTABLE(PatchBasedInpaintingInteractive
   FileSelector.cpp
@@ -56,7 +56,7 @@ if(BuildInteractive)
   InteractorStyleImageNoLevel.cxx
   Layer.cpp
   PixmapDelegate.cpp
-  ProgressThread.cpp
+  ComputationThread.cpp
   TopPatchesTableModel.cpp
   VectorLayer.cpp
   ${UISrcs} ${MOCSrcs})
