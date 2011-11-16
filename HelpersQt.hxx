@@ -24,6 +24,9 @@
 // Custom
 #include "Types.h"
 
+// Qt
+#include <QColor>
+
 namespace HelpersQt
 {
   

@@ -16,9 +16,11 @@
  *
  *=========================================================================*/
 
-template<typename TImage>
-void Mask::ApplyToVectorImage(const typename TImage::Pointer image, const QColor& color)
+template<typename TImage, typename TColor>
+void Mask::ApplyToVectorImage(const typename TImage::Pointer image, const TColor& color)
 {
+  // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
+  // to be used to specify the color.
   if(image->GetLargestPossibleRegion() != this->GetLargestPossibleRegion())
     {
     std::cerr << "Image and mask must be the same size!" << std::endl
@@ -51,9 +53,12 @@ void Mask::ApplyToVectorImage(const typename TImage::Pointer image, const QColor
     }
 }
 
-template<typename TImage>
-void Mask::ApplyToImage(const typename TImage::Pointer image, const QColor& color)
+template<typename TImage, typename TColor>
+void Mask::ApplyToImage(const typename TImage::Pointer image, const TColor& color)
 {
+  // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
+  // to be used to specify the color.
+  
   if(image->GetLargestPossibleRegion() != this->GetLargestPossibleRegion())
     {
     std::cerr << "Image and mask must be the same size!" << std::endl
@@ -82,5 +87,62 @@ void Mask::ApplyToImage(const typename TImage::Pointer image, const QColor& colo
       }
 
     ++maskIterator;
+    }
+}
+
+template <typename TColor>
+void Mask::MakeVTKImage(vtkImageData* image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent)
+{
+  int dims[3];
+  dims[0] = this->GetLargestPossibleRegion().GetSize()[0];
+  dims[1] = this->GetLargestPossibleRegion().GetSize()[1];
+  dims[2] = 1;
+ 
+  image->SetScalarTypeToUnsignedChar();
+  image->SetNumberOfScalarComponents(4);
+  image->SetDimensions(dims);
+  image->AllocateScalars();
+  
+  for(int i = 0; i < dims[0]; ++i)
+    {
+    for(int j = 0; j < dims[1]; ++j)
+      {
+      // Get a pointer to the pixel so we can modify it.
+      unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(i,j,0));
+      itk::Index<2> index;
+      index[0] = i;
+      index[1] = j;
+      if(this->IsValid(index))
+        {
+        pixel[0] = validColor.red();
+        pixel[1] = validColor.green();
+        pixel[2] = validColor.blue();
+
+        if(validTransparent)
+          {
+          pixel[3] = 0; // invisible
+          }
+        else
+          {
+          pixel[3] = 255; // visible
+          }
+        }
+      else // Pixel is a hole
+        {
+        pixel[0] = holeColor.red();
+        pixel[1] = holeColor.green();
+        pixel[2] = holeColor.blue();
+
+        if(holeTransparent)
+          {
+          pixel[3] = 0; // invisible
+          }
+        else
+          {
+          pixel[3] = 255; // visible
+          }
+        }
+
+      }
     }
 }
