@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CriminisiInpaintingMainWindow</class>
- <widget class="QMainWindow" name="CriminisiInpaintingMainWindow">
+ <class>PatchBasedInpaintingGUI</class>
+ <widget class="QMainWindow" name="PatchBasedInpaintingGUI">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Criminisi Inpainting</string>
+   <string>Patch Based Inpainting</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">

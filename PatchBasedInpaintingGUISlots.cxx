@@ -1,26 +1,26 @@
-#include "Form.h"
+#include "PatchBasedInpaintingGUI.h"
 
 #include "InteractorStyleImageNoLevel.h"
 
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 
-void Form::on_radCompareOriginal_clicked()
+void PatchBasedInpaintingGUI::on_radCompareOriginal_clicked()
 {
   this->Inpainting.SetCompareToOriginal();
 }
 
-void Form::on_radCompareBlurred_clicked()
+void PatchBasedInpaintingGUI::on_radCompareBlurred_clicked()
 {
   this->Inpainting.SetCompareToBlurred();
 }
 
-void Form::on_radCompareCIELAB_clicked()
+void PatchBasedInpaintingGUI::on_radCompareCIELAB_clicked()
 {
   this->Inpainting.SetCompareToCIELAB();
 }
   
-void Form::on_chkLive_clicked()
+void PatchBasedInpaintingGUI::on_chkLive_clicked()
 {
   // When "Live" is checked, we do not want to be able to click 'next' and 'previous'
   this->btnDisplayNextStep->setEnabled(!this->chkLive->isChecked());
@@ -30,7 +30,7 @@ void Form::on_chkLive_clicked()
   this->txtGoToIteration->setEnabled(!this->chkLive->isChecked());
 }
 
-void Form::on_btnGoToIteration_clicked()
+void PatchBasedInpaintingGUI::on_btnGoToIteration_clicked()
 {
   unsigned int requestedIteration = this->txtGoToIteration->text().toUInt();
   if(requestedIteration < this->AllPotentialCandidatePairs.size() && requestedIteration >= 0)
@@ -40,7 +40,7 @@ void Form::on_btnGoToIteration_clicked()
     }
 }
 
-void Form::on_btnResort_clicked()
+void PatchBasedInpaintingGUI::on_btnResort_clicked()
 {
   for(unsigned int iteration = 0; iteration < this->AllPotentialCandidatePairs.size(); iteration++)
     {
@@ -85,67 +85,67 @@ void Form::on_btnResort_clicked()
   Refresh();
 }
 
-void Form::on_chkHighlightUsedPatches_clicked()
+void PatchBasedInpaintingGUI::on_chkHighlightUsedPatches_clicked()
 {
   Refresh();
 }
 
-void Form::on_chkImage_clicked()
+void PatchBasedInpaintingGUI::on_chkImage_clicked()
 {
   Refresh();
 }
 
-void Form::on_chkMask_clicked()
+void PatchBasedInpaintingGUI::on_chkMask_clicked()
 {
   Refresh();
 }
 
-void Form::on_chkPriority_clicked()
+void PatchBasedInpaintingGUI::on_chkPriority_clicked()
 {
   Refresh();
 }
 
-void Form::on_chkDisplayForwardLookPatchLocations_clicked()
+void PatchBasedInpaintingGUI::on_chkDisplayForwardLookPatchLocations_clicked()
 {
   Refresh();
 }
 
-void Form::on_chkDisplaySourcePatchLocations_clicked()
+void PatchBasedInpaintingGUI::on_chkDisplaySourcePatchLocations_clicked()
 {
   Refresh();
 }
 
-void Form::on_chkConfidence_clicked()
+void PatchBasedInpaintingGUI::on_chkConfidence_clicked()
 {
   Refresh();
 }
 
-void Form::on_chkConfidenceMap_clicked()
+void PatchBasedInpaintingGUI::on_chkConfidenceMap_clicked()
 {
   Refresh();
 }
 
-void Form::on_chkBoundary_clicked()
+void PatchBasedInpaintingGUI::on_chkBoundary_clicked()
 {
   Refresh();
 }
 
-void Form::on_chkIsophotes_clicked()
+void PatchBasedInpaintingGUI::on_chkIsophotes_clicked()
 {
   Refresh();
 }
 
-void Form::on_chkData_clicked()
+void PatchBasedInpaintingGUI::on_chkData_clicked()
 {
   Refresh();
 }
 
-void Form::on_chkBoundaryNormals_clicked()
+void PatchBasedInpaintingGUI::on_chkBoundaryNormals_clicked()
 {
   Refresh();
 }
 
-void Form::on_chkPotentialPatches_clicked()
+void PatchBasedInpaintingGUI::on_chkPotentialPatches_clicked()
 {
   Refresh();
 }
@@ -166,7 +166,7 @@ void Form::SetCameraPosition2()
 }
 */
 
-void Form::SetCameraPosition()
+void PatchBasedInpaintingGUI::SetCameraPosition()
 {
   double leftToRight[3] = {this->CameraLeftToRightVector[0], this->CameraLeftToRightVector[1], this->CameraLeftToRightVector[2]};
   double bottomToTop[3] = {this->CameraBottomToTopVector[0], this->CameraBottomToTopVector[1], this->CameraBottomToTopVector[2]};
@@ -177,19 +177,19 @@ void Form::SetCameraPosition()
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-void Form::on_actionFlipImageVertically_activated()
+void PatchBasedInpaintingGUI::on_actionFlipImageVertically_activated()
 {
   this->CameraBottomToTopVector[1] *= -1;
   SetCameraPosition();
 }
 
-void Form::on_actionFlipImageHorizontally_activated()
+void PatchBasedInpaintingGUI::on_actionFlipImageHorizontally_activated()
 {
   this->CameraLeftToRightVector[0] *= -1;
   SetCameraPosition();
 }
 
-void Form::SetCheckboxVisibility(const bool visible)
+void PatchBasedInpaintingGUI::SetCheckboxVisibility(const bool visible)
 {
   chkImage->setEnabled(visible);
   chkPriority->setEnabled(visible);

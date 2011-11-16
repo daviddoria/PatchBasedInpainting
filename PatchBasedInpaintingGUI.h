@@ -16,10 +16,10 @@
  *
  *=========================================================================*/
 
-#ifndef FORM_H
-#define FORM_H
+#ifndef PatchBasedInpaintingGUI_H
+#define PatchBasedInpaintingGUI_H
 
-#include "ui_CriminisiInpainting.h"
+#include "ui_PatchBasedInpainting.h"
 
 // VTK
 #include <vtkSmartPointer.h>
@@ -53,16 +53,16 @@ class vtkPolyDataMapper;
 
 class InteractorStyleImageNoLevel;
 
-class Form : public QMainWindow, public Ui::CriminisiInpaintingMainWindow, public DebugOutputs
+class PatchBasedInpaintingGUI : public QMainWindow, public Ui::PatchBasedInpaintingGUI, public DebugOutputs
 {
   Q_OBJECT
 public:
 
   // Constructor/Destructor
   void DefaultConstructor();
-  Form();
-  Form(const std::string& imageFileName, const std::string& maskFileName);
-  ~Form() {};
+  PatchBasedInpaintingGUI();
+  PatchBasedInpaintingGUI(const std::string& imageFileName, const std::string& maskFileName);
+  ~PatchBasedInpaintingGUI() {};
 
   // Change the camera position to produce the effect of flipping the image.
   void SetCameraPosition();
@@ -323,6 +323,6 @@ protected:
   
 };
 
-#include "Form.hxx"
+#include "PatchBasedInpaintingGUI.hxx"
 
-#endif // Form_H
+#endif // PatchBasedInpaintingGUI_H

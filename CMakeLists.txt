@@ -1,11 +1,15 @@
 cmake_minimum_required(VERSION 2.6)
-PROJECT(CriminisiInpainting)
+PROJECT(PatchBasedInpainting)
 
 # Where to copy executables when 'make install' is run
 SET(INSTALL_DIR ${CMAKE_INSTALL_PREFIX} )
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) #fix the dynamic linking error (RPATH) that would occur without this
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+
+# Qt is required by Mask class as well as Interactive executable.
+FIND_PACKAGE(Qt4 REQUIRED)
+INCLUDE(${QT_USE_FILE})
 
 FIND_PACKAGE(VTK REQUIRED)
 INCLUDE(${VTK_USE_FILE})
@@ -37,18 +41,16 @@ SelfPatchCompare.cpp
 # Interactive
 SET(BuildInteractive CACHE BOOL "Build the interactive version.")
 if(BuildInteractive)
-  FIND_PACKAGE(Qt4 REQUIRED)
-  INCLUDE(${QT_USE_FILE})
 
   QT4_WRAP_UI(UISrcs PatchBasedInpainting.ui FileSelector.ui FileSelectionWidget.ui)
-  QT4_WRAP_CPP(MOCSrcs Form.h ProgressThread.h FileSelector.h FileSelectionWidget.h PixmapDelegate.h)
+  QT4_WRAP_CPP(MOCSrcs PatchBasedInpaintingGUI.h ProgressThread.h FileSelector.h FileSelectionWidget.h PixmapDelegate.h)
 
   ADD_EXECUTABLE(PatchBasedInpaintingInteractive
   FileSelector.cpp
   FileSelectionWidget.cpp
-  Form.cxx
+  PatchBasedInpaintingGUI.cxx
   ForwardLookTableModel.cpp
-  FormGUIElements.cxx
+  PatchBasedInpaintingGUISlots.cxx
   HelpersQt.cpp
   InpaintingVisualizationStack.cpp
   Interactive.cpp #driver (contains main())

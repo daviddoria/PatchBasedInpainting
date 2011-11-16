@@ -16,7 +16,9 @@
  *
  *=========================================================================*/
 
-#include "CriminisiInpainting.h"
+// Custom
+#include "HelpersOutput.h"
+#include "PatchBasedInpainting.h"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -57,7 +59,7 @@ int main(int argc, char *argv[])
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 
-  CriminisiInpainting inpainting;
+  PatchBasedInpainting inpainting;
   inpainting.SetPatchRadius(patchRadius);
   inpainting.SetImage(imageReader->GetOutput());
   inpainting.SetMask(maskReader->GetOutput());
@@ -65,8 +67,8 @@ int main(int argc, char *argv[])
   inpainting.Initialize();
   inpainting.Inpaint();
 
-  Helpers::WriteImage<FloatVectorImageType>(inpainting.GetCurrentOutputImage(), outputFilename + ".mha");
-  Helpers::WriteVectorImageAsRGB(inpainting.GetCurrentOutputImage(), outputFilename);
+  HelpersOutput::WriteImage<FloatVectorImageType>(inpainting.GetCurrentOutputImage(), outputFilename + ".mha");
+  HelpersOutput::WriteVectorImageAsRGB(inpainting.GetCurrentOutputImage(), outputFilename);
 
   return EXIT_SUCCESS;
 }

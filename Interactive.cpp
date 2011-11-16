@@ -19,7 +19,7 @@
 #include <QApplication>
 #include <QCleanlooksStyle>
 
-#include "Form.h"
+#include "PatchBasedInpaintingGUI.h"
 
 int main( int argc, char** argv )
 {
@@ -27,19 +27,19 @@ int main( int argc, char** argv )
 
   QApplication::setStyle(new QCleanlooksStyle);
 
-  Form* myForm;
+  PatchBasedInpaintingGUI* patchBasedInpaintingGUI;
   if(argc == 3)
     {
     //std::cout << "Using filename arguments." << std::endl;
-    myForm = new Form(argv[1], argv[2]);
+    patchBasedInpaintingGUI = new PatchBasedInpaintingGUI(argv[1], argv[2]);
     }
   else
     {
     //std::cout << "Not using filename arguments." << std::endl;
-    myForm = new Form;
+    patchBasedInpaintingGUI = new PatchBasedInpaintingGUI;
     }
-  //myForm.show();
-  myForm->showMaximized();
+  
+  patchBasedInpaintingGUI->showMaximized();
 
   return app.exec();
 }

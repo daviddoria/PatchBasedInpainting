@@ -16,8 +16,7 @@
  *
  *=========================================================================*/
 
-#include "ui_CriminisiInpainting.h"
-#include "Form.h"
+#include "PatchBasedInpaintingGUI.h"
 
 // ITK
 #include "itkCastImageFilter.h"
@@ -76,12 +75,12 @@
 #include "PriorityOnionPeel.h"
 #include "Types.h"
 
-void Form::on_actionHelp_activated()
+void PatchBasedInpaintingGUI::on_actionHelp_activated()
 {
   QTextEdit* help=new QTextEdit();
 
   help->setReadOnly(true);
-  help->append("<h1>Criminisi Inpainting</h1>\
+  help->append("<h1>Patch Based Inpainting</h1>\
   Load an image and a mask. <br/>\
   Set the settings such as patch size. <br/>\
   To do the complete inpainting, click 'Inpaint'.<br/>\
@@ -90,7 +89,7 @@ void Form::on_actionHelp_activated()
   help->show();
 }
 
-void Form::DefaultConstructor()
+void PatchBasedInpaintingGUI::DefaultConstructor()
 {
   //std::cout << "DefaultConstructor()" << std::endl;
   // This function is called by both constructors. This avoid code duplication.
@@ -238,12 +237,12 @@ void Form::DefaultConstructor()
 }
 
 // Default constructor
-Form::Form()
+PatchBasedInpaintingGUI::PatchBasedInpaintingGUI()
 {
   DefaultConstructor();
 };
 
-Form::Form(const std::string& imageFileName, const std::string& maskFileName)
+PatchBasedInpaintingGUI::PatchBasedInpaintingGUI(const std::string& imageFileName, const std::string& maskFileName)
 {
   DefaultConstructor();
 
@@ -252,7 +251,7 @@ Form::Form(const std::string& imageFileName, const std::string& maskFileName)
   Initialize();
 }
 
-void Form::SetupColors()
+void PatchBasedInpaintingGUI::SetupColors()
 {
   this->UsedTargetPatchColor = Qt::red;
   this->UsedSourcePatchColor = Qt::green;
@@ -267,7 +266,7 @@ void Form::SetupColors()
   this->SceneBackgroundColor.setRgb(153, 255, 0); // ?
 }
 
-void Form::on_chkDebugImages_clicked()
+void PatchBasedInpaintingGUI::on_chkDebugImages_clicked()
 {
   QDir directoryMaker;
   directoryMaker.mkdir("Debug");
@@ -278,18 +277,18 @@ void Form::on_chkDebugImages_clicked()
   DebugMessage<bool>("DebugImages: ", this->DebugImages);
 }
 
-void Form::on_chkDebugMessages_clicked()
+void PatchBasedInpaintingGUI::on_chkDebugMessages_clicked()
 {
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
   this->DebugMessages = this->chkDebugMessages->isChecked();
 }
 
-void Form::on_actionQuit_activated()
+void PatchBasedInpaintingGUI::on_actionQuit_activated()
 {
   exit(0);
 }
 
-void Form::on_actionSaveResult_activated()
+void PatchBasedInpaintingGUI::on_actionSaveResult_activated()
 {
   // Get a filename to save
   QString fileName = QFileDialog::getSaveFileName(this, "Save File", ".", "Image Files (*.jpg *.jpeg *.bmp *.png *.mha)");
@@ -306,14 +305,14 @@ void Form::on_actionSaveResult_activated()
   this->statusBar()->showMessage("Saved result.");
 }
 
-void Form::StartProgressSlot()
+void PatchBasedInpaintingGUI::StartProgressSlot()
 {
   //std::cout << "Form::StartProgressSlot()" << std::endl;
   // Connected to the StartProgressSignal of the ProgressThread member
   this->progressBar->show();
 }
 
-void Form::StopProgressSlot()
+void PatchBasedInpaintingGUI::StopProgressSlot()
 {
   //std::cout << "Form::StopProgressSlot()" << std::endl;
   // When the ProgressThread emits the StopProgressSignal, we need to display the result of the segmentation
@@ -321,7 +320,7 @@ void Form::StopProgressSlot()
   this->progressBar->hide();
 }
 
-void Form::on_actionOpen_activated()
+void PatchBasedInpaintingGUI::on_actionOpen_activated()
 {
   FileSelector* fileSelector(new FileSelector);
   fileSelector->exec();
@@ -342,7 +341,7 @@ void Form::on_actionOpen_activated()
 }
 
 
-void Form::OpenMask(const std::string& fileName, const bool inverted)
+void PatchBasedInpaintingGUI::OpenMask(const std::string& fileName, const bool inverted)
 {
   //std::cout << "OpenMask()" << std::endl;
   typedef itk::ImageFileReader<Mask> ReaderType;
@@ -372,7 +371,7 @@ void Form::OpenMask(const std::string& fileName, const bool inverted)
 }
 
 
-void Form::OpenImage(const std::string& fileName)
+void PatchBasedInpaintingGUI::OpenImage(const std::string& fileName)
 {
   //std::cout << "OpenImage()" << std::endl;
   /*
@@ -411,9 +410,7 @@ void Form::OpenImage(const std::string& fileName)
 
 }
 
-
-
-void Form::DisplayIsophotes()
+void PatchBasedInpaintingGUI::DisplayIsophotes()
 {
   if(this->IntermediateImages[this->IterationToDisplay].Isophotes->GetLargestPossibleRegion().GetSize()[0] != 0)
     {
@@ -457,7 +454,7 @@ void Form::DisplayIsophotes()
     }
 }
 
-void Form::DisplayMask()
+void PatchBasedInpaintingGUI::DisplayMask()
 {
   //vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
   //Helpers::ITKScalarImageToScaledVTKImage<Mask>(this->IntermediateImages[this->IterationToDisplay].MaskImage, temp);  
@@ -467,7 +464,7 @@ void Form::DisplayMask()
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-void Form::DisplayConfidence()
+void PatchBasedInpaintingGUI::DisplayConfidence()
 {
   vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
   Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Confidence, temp);  
@@ -475,25 +472,25 @@ void Form::DisplayConfidence()
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-void Form::DisplayConfidenceMap()
+void PatchBasedInpaintingGUI::DisplayConfidenceMap()
 {
   Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->IterationToDisplay].ConfidenceMap, this->ConfidenceMapLayer.ImageData);
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-void Form::DisplayImage()
+void PatchBasedInpaintingGUI::DisplayImage()
 {
   Helpers::ITKVectorImagetoVTKImage(this->IntermediateImages[this->IterationToDisplay].Image, this->ImageLayer.ImageData);
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-void Form::DisplayBoundary()
+void PatchBasedInpaintingGUI::DisplayBoundary()
 {
   Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Boundary, this->BoundaryLayer.ImageData);
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-void Form::DisplayPriority()
+void PatchBasedInpaintingGUI::DisplayPriority()
 {
   vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
   Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Priority, temp);
@@ -501,7 +498,7 @@ void Form::DisplayPriority()
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-void Form::DisplayData()
+void PatchBasedInpaintingGUI::DisplayData()
 {
   vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
   Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Data, temp);
@@ -509,14 +506,14 @@ void Form::DisplayData()
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-void Form::RefreshSlot()
+void PatchBasedInpaintingGUI::RefreshSlot()
 {
   DebugMessage("RefreshSlot()");
 
   Refresh();
 }
 
-void Form::DisplayBoundaryNormals()
+void PatchBasedInpaintingGUI::DisplayBoundaryNormals()
 {
 //   if(this->Inpainting.GetBoundaryNormalsImage()->GetLargestPossibleRegion().GetSize()[0] != 0)
 //     {
@@ -536,7 +533,7 @@ void Form::DisplayBoundaryNormals()
 //     }
 }
 
-void Form::Refresh()
+void PatchBasedInpaintingGUI::Refresh()
 {
   try
   {
@@ -644,17 +641,17 @@ void Form::Refresh()
   }
 }
 
-void Form::on_btnStop_clicked()
+void PatchBasedInpaintingGUI::on_btnStop_clicked()
 {
   this->ComputationThread.StopInpainting();
 }
 
-void Form::on_btnReset_clicked()
+void PatchBasedInpaintingGUI::on_btnReset_clicked()
 {
   RefreshSlot();
 }
   
-void Form::on_btnStep_clicked()
+void PatchBasedInpaintingGUI::on_btnStep_clicked()
 {
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
@@ -667,12 +664,12 @@ void Form::on_btnStep_clicked()
   IterationComplete();
 }
 
-void Form::on_btnInitialize_clicked()
+void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
 {
   Initialize();
 }
 
-void Form::Initialize()
+void PatchBasedInpaintingGUI::Initialize()
 {
   // Reset some things (this is so that if we want to run another completion it will work normally)
 
@@ -703,7 +700,7 @@ void Form::Initialize()
   Refresh();
 }
 
-void Form::on_btnInpaint_clicked()
+void PatchBasedInpaintingGUI::on_btnInpaint_clicked()
 {
   DebugMessage("on_btnInpaint_clicked()");
   
@@ -720,7 +717,7 @@ void Form::on_btnInpaint_clicked()
 }
 
 
-void Form::DebugMessage(const std::string& message)
+void PatchBasedInpaintingGUI::DebugMessage(const std::string& message)
 {
   if(this->DebugMessages)
     {
@@ -728,7 +725,7 @@ void Form::DebugMessage(const std::string& message)
     }
 }
 
-void Form::on_btnDisplayPreviousStep_clicked()
+void PatchBasedInpaintingGUI::on_btnDisplayPreviousStep_clicked()
 {
   if(this->IterationToDisplay > 0)
     {
@@ -742,7 +739,7 @@ void Form::on_btnDisplayPreviousStep_clicked()
     }
 }
 
-void Form::on_btnDisplayNextStep_clicked()
+void PatchBasedInpaintingGUI::on_btnDisplayNextStep_clicked()
 {
   //std::cout << "IterationToDisplay: " << this->IterationToDisplay
     //        << " Inpainting iteration: " <<  static_cast<int>(this->Inpainting.GetIteration()) << std::endl;
@@ -760,7 +757,7 @@ void Form::on_btnDisplayNextStep_clicked()
     }
 }
 
-void Form::DisplaySourcePatch()
+void PatchBasedInpaintingGUI::DisplaySourcePatch()
 {
   try
   {
@@ -794,7 +791,7 @@ void Form::DisplaySourcePatch()
   }
 }
 
-void Form::DisplayTargetPatch()
+void PatchBasedInpaintingGUI::DisplayTargetPatch()
 {
   try
   {
@@ -835,7 +832,7 @@ void Form::DisplayTargetPatch()
   }
 }
 
-void Form::DisplayResultPatch()
+void PatchBasedInpaintingGUI::DisplayResultPatch()
 {
   try
   {
@@ -909,7 +906,7 @@ void Form::DisplayResultPatch()
   }
 }
 
-void Form::DisplayUsedPatches()
+void PatchBasedInpaintingGUI::DisplayUsedPatches()
 {
   DebugMessage("DisplayUsedPatches()");
 
@@ -938,7 +935,7 @@ void Form::DisplayUsedPatches()
   }
 }
 
-void Form::HighlightForwardLookPatches()
+void PatchBasedInpaintingGUI::HighlightForwardLookPatches()
 {
   try
   {
@@ -1006,7 +1003,7 @@ void Form::HighlightForwardLookPatches()
 }
 
 
-void Form::HighlightSourcePatches()
+void PatchBasedInpaintingGUI::HighlightSourcePatches()
 {
   try
   {
@@ -1062,7 +1059,7 @@ void Form::HighlightSourcePatches()
   }
 }
 
-void Form::HighlightUsedPatches()
+void PatchBasedInpaintingGUI::HighlightUsedPatches()
 {
   try
   {
@@ -1115,7 +1112,7 @@ void Form::HighlightUsedPatches()
   }
 }
 
-void Form::DisplayUsedPatchInformation()
+void PatchBasedInpaintingGUI::DisplayUsedPatchInformation()
 {
   try
   {
@@ -1173,7 +1170,7 @@ void Form::DisplayUsedPatchInformation()
   }
 }
 
-void Form::CreatePotentialTargetPatchesImage()
+void PatchBasedInpaintingGUI::CreatePotentialTargetPatchesImage()
 {
   DebugMessage("CreatePotentialTargetPatchesImage()");
   // Draw potential patch pairs
@@ -1212,7 +1209,7 @@ void Form::CreatePotentialTargetPatchesImage()
   Refresh();
 }
 
-void Form::OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename)
+void PatchBasedInpaintingGUI::OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename)
 {
   std::ofstream fout(filename.c_str());
   
@@ -1227,7 +1224,7 @@ void Form::OutputPairs(const std::vector<PatchPair>& patchPairs, const std::stri
   fout.close();
 }
 
-void Form::ChangeDisplayedIteration()
+void PatchBasedInpaintingGUI::ChangeDisplayedIteration()
 {
   // This should be called only when the iteration actually changed.
   
@@ -1257,7 +1254,7 @@ void Form::ChangeDisplayedIteration()
   Refresh();
 }
 
-void Form::SetupInitialIntermediateImages()
+void PatchBasedInpaintingGUI::SetupInitialIntermediateImages()
 {
   EnterFunction("SetupInitialIntermediateImages()");
 
@@ -1285,7 +1282,7 @@ void Form::SetupInitialIntermediateImages()
   LeaveFunction("SetupInitialIntermediateImages()");
 }
 
-void Form::IterationComplete()
+void PatchBasedInpaintingGUI::IterationComplete()
 {
   EnterFunction("IterationComplete()");
 
@@ -1350,13 +1347,13 @@ void Form::IterationComplete()
   LeaveFunction("Leave IterationComplete()");
 }
 
-void Form::IterationCompleteSlot()
+void PatchBasedInpaintingGUI::IterationCompleteSlot()
 {
   DebugMessage("IterationCompleteSlot()");
   IterationComplete();
 }
 
-void Form::SetupForwardLookingTable()
+void PatchBasedInpaintingGUI::SetupForwardLookingTable()
 {
   if(this->IterationToDisplay < 1)
     {
@@ -1383,7 +1380,7 @@ void Form::SetupForwardLookingTable()
 
 }
 
-void Form::ChangeDisplayedTopPatch()
+void PatchBasedInpaintingGUI::ChangeDisplayedTopPatch()
 {
   std::cout << "ChangeDisplayedTopPatch()" << std::endl;
   DisplaySourcePatch();
@@ -1393,7 +1390,7 @@ void Form::ChangeDisplayedTopPatch()
   HighlightSelectedSourcePatch();
 }
 
-void Form::ChangeDisplayedForwardLookPatch()
+void PatchBasedInpaintingGUI::ChangeDisplayedForwardLookPatch()
 {
   DebugMessage("ChangeDisplayedForwardLookPatch()");
   // Setup the top source patches table for this forward look patch.
@@ -1407,7 +1404,7 @@ void Form::ChangeDisplayedForwardLookPatch()
   HighlightSourcePatches();
 }
 
-void Form::SetupTopPatchesTable()
+void PatchBasedInpaintingGUI::SetupTopPatchesTable()
 {
   DebugMessage("SetupTopPatchesTable()");
   
@@ -1443,7 +1440,7 @@ void Form::SetupTopPatchesTable()
   
 }
 
-void Form::HighlightSelectedForwardLookPatch()
+void PatchBasedInpaintingGUI::HighlightSelectedForwardLookPatch()
 {
   DebugMessage("HighlightSelectedForwardLookPatch()");
   // Highlight the selected forward look patch in a different color than the rest if the user has chosen to display forward look patch locations.
@@ -1489,7 +1486,7 @@ void Form::HighlightSelectedForwardLookPatch()
 }
 
 
-void Form::HighlightSelectedSourcePatch()
+void PatchBasedInpaintingGUI::HighlightSelectedSourcePatch()
 {
   DebugMessage("HighlightSelectedSourcePatch()");
   // Highlight the selected source patch in a different color than the rest if the user has chosen to display forward look patch locations.
@@ -1534,7 +1531,7 @@ void Form::HighlightSelectedSourcePatch()
     }
 }
 
-void Form::slot_ForwardLookTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
+void PatchBasedInpaintingGUI::slot_ForwardLookTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
 {
   std::cout << "on_ForwardLookTableView_currentCellChanged" << std::endl;
   
@@ -1562,7 +1559,7 @@ void Form::slot_ForwardLookTableView_changed(const QModelIndex& currentIndex, co
 }
 
 
-void Form::slot_TopPatchesTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
+void PatchBasedInpaintingGUI::slot_TopPatchesTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
 {
   try
   {
