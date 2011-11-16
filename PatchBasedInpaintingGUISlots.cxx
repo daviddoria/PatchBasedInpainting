@@ -18,10 +18,18 @@
 
 #include "PatchBasedInpaintingGUI.h"
 
+// Custom
 #include "InteractorStyleImageNoLevel.h"
+#include "FileSelector.h"
+#include "HelpersOutput.h"
 
+// VTK
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+
+// QT
+#include <QFileDialog>
+#include <QTextEdit>
 
 void PatchBasedInpaintingGUI::on_radCompareOriginal_clicked()
 {
@@ -219,4 +227,249 @@ void PatchBasedInpaintingGUI::SetCheckboxVisibility(const bool visible)
   chkBoundaryNormals->setEnabled(visible);
   chkMask->setEnabled(visible);
   chkPotentialPatches->setEnabled(visible);
+}
+
+void PatchBasedInpaintingGUI::on_btnDisplayPreviousStep_clicked()
+{
+  if(this->IterationToDisplay > 0)
+    {
+    this->IterationToDisplay--;
+    DebugMessage<unsigned int>("Displaying iteration: ", this->IterationToDisplay);
+    ChangeDisplayedIteration();
+    }
+  else
+    {
+    DebugMessage("Iteration not changed.");
+    }
+}
+
+
+void PatchBasedInpaintingGUI::on_btnDisplayNextStep_clicked()
+{
+  //std::cout << "IterationToDisplay: " << this->IterationToDisplay
+    //        << " Inpainting iteration: " <<  static_cast<int>(this->Inpainting.GetIteration()) << std::endl;
+  
+  //if(this->IterationToDisplay < this->Inpainting.GetNumberOfCompletedIterations() - 1)
+  if(this->IterationToDisplay < this->IntermediateImages.size() - 1)
+    {
+    this->IterationToDisplay++;
+    DebugMessage<unsigned int>("Displaying iteration: ", this->IterationToDisplay);
+    ChangeDisplayedIteration();
+    }
+  else
+    {
+    DebugMessage("Iteration not changed.");
+    }
+}
+
+
+void PatchBasedInpaintingGUI::on_actionOpen_activated()
+{
+  FileSelector* fileSelector(new FileSelector);
+  fileSelector->exec();
+
+  int result = fileSelector->result();
+  if(result) // The user clicked 'ok'
+    {
+    std::cout << "User clicked ok." << std::endl;
+    OpenImage(fileSelector->GetImageFileName());
+    OpenMask(fileSelector->GetMaskFileName(), fileSelector->IsMaskInverted());
+    Initialize();
+    }
+  else
+    {
+    std::cout << "User clicked cancel." << std::endl;
+    // The user clicked 'cancel' or closed the dialog, do nothing.
+    }
+}
+
+
+void PatchBasedInpaintingGUI::on_actionSaveResult_activated()
+{
+  // Get a filename to save
+  QString fileName = QFileDialog::getSaveFileName(this, "Save File", ".", "Image Files (*.jpg *.jpeg *.bmp *.png *.mha)");
+
+  DebugMessage<std::string>("Got filename: ", fileName.toStdString());
+  if(fileName.toStdString().empty())
+    {
+    std::cout << "Filename was empty." << std::endl;
+    return;
+    }
+
+  HelpersOutput::WriteImage<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), fileName.toStdString());
+
+  this->statusBar()->showMessage("Saved result.");
+}
+
+
+void PatchBasedInpaintingGUI::on_chkDebugImages_clicked()
+{
+  QDir directoryMaker;
+  directoryMaker.mkdir("Debug");
+
+  this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
+  this->DebugImages = this->chkDebugImages->isChecked();
+
+  DebugMessage<bool>("DebugImages: ", this->DebugImages);
+}
+
+void PatchBasedInpaintingGUI::on_chkDebugMessages_clicked()
+{
+  this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
+  this->DebugMessages = this->chkDebugMessages->isChecked();
+}
+
+void PatchBasedInpaintingGUI::on_actionQuit_activated()
+{
+  exit(0);
+}
+
+
+void PatchBasedInpaintingGUI::slot_ForwardLookTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
+{
+  std::cout << "on_ForwardLookTableView_currentCellChanged" << std::endl;
+  
+  if(currentIndex.row() < 0)
+    {
+    std::cout << "on_ForwardLookTableView_currentCellChanged: row < 0!" << std::endl;
+    return;
+    }
+  
+  if(currentIndex.row() > static_cast<int>(this->AllPotentialCandidatePairs[this->IterationToDisplay - 1].size() - 1))
+    {
+    std::cerr << "Requested display of forward look patch " << currentIndex.row() << " but there are only " << this->AllPotentialCandidatePairs[this->IterationToDisplay - 1].size() - 1 << std::endl;
+    }
+
+  std::cerr << "Requested display of forward look patch " << currentIndex.row() << std::endl;
+  
+  this->ForwardLookToDisplay = currentIndex.row();
+  this->SourcePatchToDisplay = 0;
+  
+  ChangeDisplayedForwardLookPatch();
+  
+  SetupTopPatchesTable();
+  ChangeDisplayedTopPatch();
+  
+}
+
+
+void PatchBasedInpaintingGUI::slot_TopPatchesTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
+{
+  try
+  {
+    if(currentIndex.row() < 0)
+      {
+      std::cout << "Selected row is < 0!" << std::endl;
+      return;
+      }
+      
+    if(currentIndex.row() == previousIndex.row())
+      {
+      std::cout << "Nothing changed!" << std::endl;
+      return;
+      }
+    
+    this->SourcePatchToDisplay = currentIndex.row();
+    ChangeDisplayedTopPatch();
+    
+  }// end try
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "ExceptionObject caught in on_topPatchesTableWidget_currentCellChanged!" << std::endl;
+    std::cerr << err << std::endl;
+    exit(-1);
+  }
+}
+
+
+void PatchBasedInpaintingGUI::on_btnInpaint_clicked()
+{
+  DebugMessage("on_btnInpaint_clicked()");
+  
+  //Initialize();
+  
+  Refresh();
+  
+  DebugMessage("Starting ComputationThread...");
+  
+  this->Inpainting.SetMaxForwardLookPatches(this->txtNumberOfForwardLook->text().toUInt());
+  this->Inpainting.SetNumberOfTopPatchesToSave(this->txtNumberOfTopPatchesToSave->text().toUInt());
+  
+  ComputationThread.start();
+}
+
+
+void PatchBasedInpaintingGUI::on_btnStep_clicked()
+{
+  this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
+  this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
+  this->Inpainting.SetMaxForwardLookPatches(this->txtNumberOfForwardLook->text().toUInt());
+  this->Inpainting.SetNumberOfTopPatchesToSave(this->txtNumberOfTopPatchesToSave->text().toUInt());
+  PatchPair usedPair = this->Inpainting.Iterate();
+  
+  this->UsedPatchPairs.push_back(usedPair);
+  
+  IterationComplete();
+}
+
+
+void PatchBasedInpaintingGUI::on_btnStop_clicked()
+{
+  this->ComputationThread.StopInpainting();
+}
+
+void PatchBasedInpaintingGUI::on_btnReset_clicked()
+{
+  RefreshSlot();
+}
+  
+
+void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
+{
+  Initialize();
+}
+
+
+void PatchBasedInpaintingGUI::on_actionHelp_activated()
+{
+  QTextEdit* help=new QTextEdit();
+
+  help->setReadOnly(true);
+  help->append("<h1>Patch Based Inpainting</h1>\
+  Load an image and a mask. <br/>\
+  Set the settings such as patch size. <br/>\
+  To do the complete inpainting, click 'Inpaint'.<br/>\
+  To do one step of the inpainting, click 'Step'. This will allow you to inspect forward look candidates and each of their top matches.<br/>\
+  <p/>");
+  help->show();
+}
+
+
+void PatchBasedInpaintingGUI::StartProgressSlot()
+{
+  //std::cout << "Form::StartProgressSlot()" << std::endl;
+  // Connected to the StartProgressSignal of the ProgressThread member
+  this->progressBar->show();
+}
+
+void PatchBasedInpaintingGUI::StopProgressSlot()
+{
+  //std::cout << "Form::StopProgressSlot()" << std::endl;
+  // When the ProgressThread emits the StopProgressSignal, we need to display the result of the segmentation
+
+  this->progressBar->hide();
+}
+
+void PatchBasedInpaintingGUI::RefreshSlot()
+{
+  DebugMessage("RefreshSlot()");
+
+  Refresh();
+}
+
+
+void PatchBasedInpaintingGUI::IterationCompleteSlot()
+{
+  DebugMessage("IterationCompleteSlot()");
+  IterationComplete();
 }
