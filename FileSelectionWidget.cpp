@@ -10,18 +10,21 @@ FileSelectionWidget::FileSelectionWidget(QWidget *parent)
     : QWidget(parent)
 {
   std::cout << "Current path: " << QDir::currentPath().toStdString() << std::endl;
+  std::cout << "Root path: " << QDir::rootPath().toStdString() << std::endl;
   setupUi(this); // Otherwise 'listView' seems to be undefined
     
   this->model = new QFileSystemModel;
-  this->model->setRootPath(QDir::currentPath());
-  //this->model->setCurrentIndex(imageModel->index(QDir::currentPath()));
+  this->model->setRootPath(QDir::rootPath());
+  
   
   this->listView->setModel(model);
   this->listView->setRootIndex(model->index(QDir::currentPath()));
-
+  
   this->lblPath->setText(QDir::currentPath());
   this->lblFile->setText(listView->currentIndex().data(QFileSystemModel::FilePathRole).toString());
-  this->listView->setCurrentIndex(model->index(QDir::currentPath()));
+  //this->listView->setCurrentIndex(model->index(QDir::currentPath()));
+  //this->listView->setCurrentIndex(model->index(QDir::currentPath()));
+  this->listView->setCurrentIndex(this->listView->rootIndex());
 
   this->Valid = false;
 }
@@ -84,8 +87,8 @@ void FileSelectionWidget::on_listView_clicked(const QModelIndex & index)
 
 void FileSelectionWidget::on_btnUp_clicked()
 {
-
-  this->listView->setRootIndex(model->index(listView->currentIndex().parent().data(QFileSystemModel::FilePathRole).toString()));
-
+  this->listView->setRootIndex(model->index(listView->rootIndex().parent().data(QFileSystemModel::FilePathRole).toString()));
+  this->listView->setCurrentIndex(this->listView->rootIndex());
+  
   this->lblPath->setText(listView->currentIndex().data(QFileSystemModel::FilePathRole).toString());
 }
