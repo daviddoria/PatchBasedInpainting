@@ -185,7 +185,8 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->UserImage = FloatVectorImageType::New();
   this->UserMaskImage = Mask::New();
 
-  this->Inpainting.SetPatchSearchFunctionToTwoStepDepth();
+  //this->Inpainting.SetPatchSearchFunctionToTwoStepDepth();
+  this->Inpainting.SetPatchSearchFunctionToNormal();
   this->Inpainting.SetDebugFunctionEnterLeave(true);
 
   connect(&ComputationThread, SIGNAL(StartProgressSignal()), this, SLOT(StartProgressSlot()), Qt::QueuedConnection);
@@ -683,7 +684,7 @@ void PatchBasedInpaintingGUI::Initialize()
 
   //this->Inpainting.SetPriorityFunction<PriorityOnionPeel>();
   //this->Inpainting.SetPriorityFunction<PriorityCriminisi>();
-  this->Inpainting.SetPriorityFunction<PriorityDepth>();
+  //this->Inpainting.SetPriorityFunction<PriorityDepth>();
 
   SelfPatchCompare* patchCompare = new SelfPatchCompare;
   patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
