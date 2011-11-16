@@ -52,6 +52,7 @@ public:
   void SetPatchDisplaySize(const unsigned int value);
 protected:
   
+  // The outer vector is the iteration, and the inner vector is the look ahead patch.
   std::vector<std::vector<CandidatePairs> >& AllCandidatePairs;
   
   FloatVectorImageType::Pointer Image;

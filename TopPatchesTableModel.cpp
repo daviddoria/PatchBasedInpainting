@@ -70,7 +70,7 @@ int TopPatchesTableModel::rowCount(const QModelIndex& parent) const
     {
     return 0;
     }
-  return this->AllCandidatePairs[this->IterationToDisplay].size();
+  return this->AllCandidatePairs[this->IterationToDisplay][this->ForwardLookToDisplay].size();
 }
 
 int TopPatchesTableModel::columnCount(const QModelIndex& parent) const
