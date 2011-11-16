@@ -23,10 +23,10 @@ ProgressThread::ProgressThread()
   this->Stop = false;
 }
 
-PatchBasedInpainting* ProgressThread::GetObject()
-{
-  return this->Inpainting;
-}
+// PatchBasedInpainting* ProgressThread::GetObject()
+// {
+//   return this->Inpainting;
+// }
 
 void ProgressThread::StopInpainting()
 {

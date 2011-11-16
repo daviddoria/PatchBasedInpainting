@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-/* The purpose of this class is simply to run the core algorithm
- * separate thread so that the progress bar can run during the computation.
+/* The purpose of this class is simply to run the core algorithm in a
+ * separate thread so that the GUI can remain responsive during the computation.
 */
 
 #ifndef PROGRESSTHREAD_H
@@ -27,10 +27,9 @@
 
 #include "PatchBasedInpainting.h"
 
-class ProgressThreadObject : public QThread
+class ProgressThread : public QThread
 {
 Q_OBJECT
-public:
 
 signals:
   // This signal is emitted to start the progress bar
@@ -42,29 +41,26 @@ signals:
   void RefreshSignal();
   
   void IterationCompleteSignal();
-
-};
-
-class ProgressThread : public ProgressThreadObject
-{
+  
 public:
-
   ProgressThread();
   
-  // This function is called when the thread is started
+  // This function is called when the thread is started.
   void run();
 
-  // This function is called when the thread is stopped
+  // This function is called when the thread is stopped.
   void exit();
 
   void StopInpainting();
 
+  // Provide the object with which to do the computation.
   void SetObject(PatchBasedInpainting*);
-  PatchBasedInpainting* GetObject();
   
 private:
   // We need a pointer to this object so we can perform the computations in this thread
   PatchBasedInpainting* Inpainting;
+  
+  // This flag can be set from another thread (by calling StopInpainting()) to indicate that we want to stop the computation at the next possible opportunity.
   bool Stop;
 };
 

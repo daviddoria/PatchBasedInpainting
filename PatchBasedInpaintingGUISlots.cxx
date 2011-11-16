@@ -384,13 +384,11 @@ void PatchBasedInpaintingGUI::slot_TopPatchesTableView_changed(const QModelIndex
 
 void PatchBasedInpaintingGUI::on_btnInpaint_clicked()
 {
-  DebugMessage("on_btnInpaint_clicked()");
+  EnterFunction("on_btnInpaint_clicked()");
   
   //Initialize();
   
-  Refresh();
-  
-  DebugMessage("Starting ComputationThread...");
+  //Refresh();
   
   this->Inpainting.SetMaxForwardLookPatches(this->txtNumberOfForwardLook->text().toUInt());
   this->Inpainting.SetNumberOfTopPatchesToSave(this->txtNumberOfTopPatchesToSave->text().toUInt());
