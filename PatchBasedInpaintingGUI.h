@@ -122,12 +122,12 @@ public slots:
   void on_actionFlipImageVertically_activated();
   void on_actionFlipImageHorizontally_activated();
 
-  void StartProgressSlot();
-  void StopProgressSlot();
+  void slot_StartProgress();
+  void slot_StopProgress();
 
-  void RefreshSlot();
+  void slot_Refresh();
 
-  void IterationCompleteSlot();
+  void slot_IterationComplete();
 
 protected:
 

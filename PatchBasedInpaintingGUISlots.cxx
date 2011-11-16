@@ -420,7 +420,7 @@ void PatchBasedInpaintingGUI::on_btnStop_clicked()
 
 void PatchBasedInpaintingGUI::on_btnReset_clicked()
 {
-  RefreshSlot();
+  slot_Refresh();
 }
   
 
@@ -445,14 +445,14 @@ void PatchBasedInpaintingGUI::on_actionHelp_activated()
 }
 
 
-void PatchBasedInpaintingGUI::StartProgressSlot()
+void PatchBasedInpaintingGUI::slot_StartProgress()
 {
   //std::cout << "Form::StartProgressSlot()" << std::endl;
   // Connected to the StartProgressSignal of the ProgressThread member
   this->progressBar->show();
 }
 
-void PatchBasedInpaintingGUI::StopProgressSlot()
+void PatchBasedInpaintingGUI::slot_StopProgress()
 {
   //std::cout << "Form::StopProgressSlot()" << std::endl;
   // When the ProgressThread emits the StopProgressSignal, we need to display the result of the segmentation
@@ -460,7 +460,7 @@ void PatchBasedInpaintingGUI::StopProgressSlot()
   this->progressBar->hide();
 }
 
-void PatchBasedInpaintingGUI::RefreshSlot()
+void PatchBasedInpaintingGUI::slot_Refresh()
 {
   DebugMessage("RefreshSlot()");
 
@@ -468,7 +468,7 @@ void PatchBasedInpaintingGUI::RefreshSlot()
 }
 
 
-void PatchBasedInpaintingGUI::IterationCompleteSlot()
+void PatchBasedInpaintingGUI::slot_IterationComplete()
 {
   DebugMessage("IterationCompleteSlot()");
   IterationComplete();
