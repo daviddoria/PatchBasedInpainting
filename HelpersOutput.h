@@ -40,8 +40,11 @@ void WriteImageData(const vtkImageData* imageData, const std::string& fileName);
 
 // Paraview requires 3D vectors to display glyphs, even if the vectors are really 2D. These functions appends a 0 to each vectors of a 2D vector image so that it can be easily visualized with Paraview.
 void Write2DVectorRegion(const FloatVector2ImageType::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename);
+
+// Calls Write2DVectorRegion on a full image.
 void Write2DVectorImage(const FloatVector2ImageType::Pointer image, const std::string& filename);
 
+// Write the first 3 channels of a FloatVectorImageType as an unsigned char (RGB) image.
 void WriteVectorImageAsRGB(const FloatVectorImageType::Pointer image, const std::string& fileName);
 
 ////////////////////////////////////
@@ -60,10 +63,8 @@ void WriteImageConditional(const typename TDebugImageType::Pointer image, const 
 template <class T>
 void WriteScaledScalarImage(const typename T::Pointer image, std::string filename);
 
-
 template<typename T>
 void WriteImage(const typename T::Pointer image, const std::string& filename);
-
 
 template<typename TImage>
 void WritePatch(const typename TImage::Pointer image, const Patch& patch, const std::string& filename);
@@ -76,7 +77,6 @@ void WriteMaskedRegion(const typename TImage::Pointer image, const Mask::Pointer
 
 template<typename TImage>
 void WriteRegion(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename);
-
 
 } // end namespace
 

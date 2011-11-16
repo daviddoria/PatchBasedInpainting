@@ -40,7 +40,7 @@ std::vector<itk::Index<2> > Mask::GetValidPixelsInRegion(const itk::ImageRegion<
   
   std::vector<itk::Index<2> > validPixels;
 
-  typename itk::ImageRegionIterator<Mask> iterator(this, region);
+  itk::ImageRegionIterator<Mask> iterator(this, region);
 
   while(!iterator.IsAtEnd())
     {
@@ -362,4 +362,44 @@ bool Mask::HasHoleNeighbor(const itk::Index<2>& pixel)
     }
 
   return false;
+}
+
+itk::Index<2> Mask::FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVector2Type inputDirection)
+{
+  if(!this->IsValid(queryPixel))
+    {
+    std::cerr << "Can only follow valid pixel+vector across a hole." << std::endl;
+    exit(-1);
+    }
+
+  // Determine if 'direction' is pointing inside or outside the hole
+  
+  FloatVector2Type direction = inputDirection;
+
+  itk::Index<2> nextPixelAlongVector = Helpers::GetNextPixelAlongVector(queryPixel, direction);
+
+  // If the next pixel along the isophote is in bounds and in the hole region of the patch, procede.
+  if(this->GetLargestPossibleRegion().IsInside(nextPixelAlongVector) && this->IsHole(nextPixelAlongVector))
+    {
+    // do nothing
+    }
+  else
+    {
+    // There is no requirement for the isophote to be pointing a particular orientation, so try to step along the negative isophote.
+    direction *= -1.0;
+    nextPixelAlongVector = Helpers::GetNextPixelAlongVector(queryPixel, direction);
+    }
+  
+  // Trace across the hole
+  while(this->IsHole(nextPixelAlongVector))
+    {
+    nextPixelAlongVector = Helpers::GetNextPixelAlongVector(nextPixelAlongVector, direction);
+    if(!this->GetLargestPossibleRegion().IsInside(nextPixelAlongVector))
+      {
+      std::cerr << "Mask::FindPixelAcrossHole could not find a valid neighbor!" << std::endl;
+      exit(-1);
+      }
+    }
+  
+  return nextPixelAlongVector;
 }

@@ -86,6 +86,8 @@ public:
 
   bool HasHoleNeighbor(const itk::Index<2>& pixel);
 
+  itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVector2Type direction);
+  
   void Invert();
 
   void Cleanup();

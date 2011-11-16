@@ -301,7 +301,7 @@ PatchPair PatchBasedInpainting::Iterate()
   this->PriorityFunction->Update(usedPatchPair.TargetPatch.Region);
 
   // Update the mask
-  std::cout << "In PatchBasedInpainting class, mask pointer is: " << this->MaskImage << std::endl;
+
   HelpersOutput::WriteImage<Mask>(this->MaskImage, "Debug/MaskImageBeforeUpdate.mha");
   this->UpdateMask(usedPatchPair.TargetPatch.Region);
   HelpersOutput::WriteImage<Mask>(this->MaskImage, "Debug/MaskImageAfterUpdate.mha");

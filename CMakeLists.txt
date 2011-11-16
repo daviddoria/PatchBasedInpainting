@@ -73,6 +73,13 @@ if(BuildNonInteractive)
 endif()
 
 
+ADD_EXECUTABLE(TestDerivatives Tests/TestDerivatives.cpp)
+TARGET_LINK_LIBRARIES(TestDerivatives PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+
+ADD_EXECUTABLE(TestFindPixelAcrossHole Tests/TestFindPixelAcrossHole.cpp)
+TARGET_LINK_LIBRARIES(TestFindPixelAcrossHole PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+
+
 # ADD_EXECUTABLE(LearnLambda LearnLambda.cpp)
 # TARGET_LINK_LIBRARIES(LearnLambda PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 

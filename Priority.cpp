@@ -19,14 +19,11 @@
 #include "Priority.h"
 
 #include "Helpers.h"
+#include "HelpersOutput.h"
 
 Priority::Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) :
                    Image(image), MaskImage(maskImage), PatchRadius(patchRadius)
 {
-//   this->Image = image;
-//   this->MaskImage = maskImage;
-//   this->PatchRadius = patchRadius;
-
   this->DebugFunctionEnterLeave = true;
   EnterFunction("Priority()");
   this->PriorityImage = FloatScalarImageType::New();
@@ -37,8 +34,6 @@ Priority::Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage,
   Helpers::InitializeImage<UnsignedCharScalarImageType>(this->BoundaryImage, image->GetLargestPossibleRegion());
   Helpers::SetImageToConstant<UnsignedCharScalarImageType>(this->BoundaryImage, 0u);
   LeaveFunction("Priority()");
-
-  std::cout << "In Priority class, mask pointer is: " << this->MaskImage << std::endl;
 }
 
 void Priority::Update(const itk::ImageRegion<2>& filledRegion)
@@ -81,5 +76,8 @@ void Priority::ComputeAllPriorities()
     {
     this->PriorityImage->SetPixel(boundaryPixels[pixelId], ComputePriority(boundaryPixels[pixelId]));
     }
+    
+  HelpersOutput::WriteImage<FloatScalarImageType>(this->PriorityImage, "Debug/Priority.mha");
+  
   LeaveFunction("ComputeAllPriorities()");
 }

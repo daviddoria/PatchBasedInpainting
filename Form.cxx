@@ -71,8 +71,9 @@
 #include "InteractorStyleImageNoLevel.h"
 #include "Mask.h"
 #include "PixmapDelegate.h"
-#include "PriorityOnionPeel.h"
 #include "PriorityCriminisi.h"
+#include "PriorityDepth.h"
+#include "PriorityOnionPeel.h"
 #include "Types.h"
 
 void Form::on_actionHelp_activated()
@@ -684,7 +685,8 @@ void Form::Initialize()
   this->Inpainting.SetImage(this->UserImage);
 
   //this->Inpainting.SetPriorityFunction<PriorityOnionPeel>();
-  this->Inpainting.SetPriorityFunction<PriorityCriminisi>();
+  //this->Inpainting.SetPriorityFunction<PriorityCriminisi>();
+  this->Inpainting.SetPriorityFunction<PriorityDepth>();
 
   SelfPatchCompare* patchCompare = new SelfPatchCompare;
   patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
