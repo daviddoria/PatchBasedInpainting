@@ -553,14 +553,21 @@ void PatchBasedInpaintingGUI::Initialize()
 {
   // Reset some things (this is so that if we want to run another completion it will work normally)
 
+  // Color the pixels inside the hole in the image so we will notice if they are erroneously being copied/used.
   this->UserMaskImage->ApplyToVectorImage<FloatVectorImageType>(this->UserImage, this->HoleColor);
 
+  // Provide required data.
   this->Inpainting.SetPatchRadius(this->txtPatchRadius->text().toUInt());
-  this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
-  this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
   this->Inpainting.SetMask(this->UserMaskImage);
   this->Inpainting.SetImage(this->UserImage);
 
+  // Setup verbosity.
+  this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
+  this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
+  this->Inpainting.SetDebugFunctionEnterLeave(false);
+  
+  // Setup the priority function
+  
   //this->Inpainting.SetPriorityFunction<PriorityOnionPeel>();
   //this->Inpainting.SetPriorityFunction<PriorityCriminisi>();
   //this->Inpainting.SetPriorityFunction<PriorityDepth>();
@@ -573,13 +580,17 @@ void PatchBasedInpaintingGUI::Initialize()
   reinterpret_cast<PriorityManual*>(this->Inpainting.GetPriorityFunction())->SetManualPriorityImage(manualPriorityImage);
   this->Inpainting.GetPriorityFunction()->SetDebugFunctionEnterLeave(true);
   
+  // Setup the patch comparison function
   SelfPatchCompare* patchCompare = new SelfPatchCompare;
   patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
   patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
 
   this->Inpainting.SetPatchCompare(patchCompare);
 
+  // Setup the sorting function
   this->Inpainting.PatchSortFunction = &SortByAverageAbsoluteDifference;
+  
+  // Finish initializing
   this->Inpainting.Initialize();
 
   SetupInitialIntermediateImages();

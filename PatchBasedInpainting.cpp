@@ -47,6 +47,7 @@
 PatchBasedInpainting::PatchBasedInpainting()
 {
   EnterFunction("CriminisiInpainting()");
+  
   this->PatchRadius.Fill(3);
 
   this->MaskImage = Mask::New();
@@ -60,17 +61,13 @@ PatchBasedInpainting::PatchBasedInpainting()
   //this->CompareImage = this->CIELabImage;
   //this->CompareImage = this->BlurredImage;
   this->CompareImage = this->CurrentOutputImage;
-  
-  this->DebugImages = false;
-  this->DebugMessages = false;
+
   this->NumberOfCompletedIterations = 0;
   
   this->HistogramBinsPerDimension = 10;
   this->MaxForwardLookPatches = 10;
   
   this->MaxPixelDifferenceSquared = 0.0f;
-  
-  this->DebugFunctionEnterLeave = false;
   
   this->PatchSortFunction = &SortByAverageAbsoluteDifference;
 

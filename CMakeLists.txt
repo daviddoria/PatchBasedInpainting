@@ -53,7 +53,7 @@ if(BuildInteractive)
   PatchBasedInpaintingGUISlots.cxx
   HelpersQt.cpp
   InpaintingVisualizationStack.cpp
-  Interactive.cpp #driver (contains main())
+  PatchBasedInpaintingInteractive.cpp #driver (contains main())
   InteractorStyleImageNoLevel.cxx
   Layer.cpp
   PixmapDelegate.cpp

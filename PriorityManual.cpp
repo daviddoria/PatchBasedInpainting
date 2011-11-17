@@ -29,7 +29,19 @@ PriorityManual::PriorityManual(FloatVectorImageType::Pointer image, Mask::Pointe
 float PriorityManual::ComputePriority(const itk::Index<2>& queryPixel)
 {
   //std::cout << static_cast<float>(this->ManualPriorityImage->GetPixel(queryPixel)) << std::endl;
-  return this->ManualPriorityImage->GetPixel(queryPixel);
+  
+  float priority = 0.0f;
+  float manualPriority = this->ManualPriorityImage->GetPixel(queryPixel);
+  if(manualPriority > 0)
+    {
+    priority = manualPriority;
+    }
+  else
+    {
+    priority = PriorityOnionPeel::ComputePriority(queryPixel);
+    }
+  
+  return priority;
 }
 
 void PriorityManual::SetManualPriorityImage(UnsignedCharScalarImageType::Pointer image)
