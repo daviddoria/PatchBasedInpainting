@@ -19,5 +19,7 @@
 template <typename T>
 void PatchBasedInpainting::SetPriorityFunction()
 {
+  // This must be done internal to PatchBasedInpainting because we want to make sure it is initialized with all of
+  // the correct properties.
   this->PriorityFunction = new T(this->CurrentOutputImage, this->MaskImage, this->PatchRadius[0]);
 }

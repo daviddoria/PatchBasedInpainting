@@ -16,31 +16,26 @@
  *
  *=========================================================================*/
 
-#include <QApplication>
-#include <QCleanlooksStyle>
+#ifndef PRIORITYMANUAL_H
+#define PRIORITYMANUAL_H
 
-#include "PatchBasedInpaintingGUI.h"
+//#include "Priority.h"
+#include "PriorityOnionPeel.h"
 
-int main( int argc, char** argv )
+//class PriorityManual : public Priority
+class PriorityManual : public PriorityOnionPeel
 {
-  QApplication app( argc, argv );
-
-  QApplication::setStyle(new QCleanlooksStyle);
-
-  PatchBasedInpaintingGUI* patchBasedInpaintingGUI;
-  if(argc == 3)
-    {
-    //std::cout << "Using filename arguments." << std::endl;
-    patchBasedInpaintingGUI = new PatchBasedInpaintingGUI(argv[1], argv[2]);
-    }
-  else
-    {
-    //std::cout << "Not using filename arguments." << std::endl;
-    patchBasedInpaintingGUI = new PatchBasedInpaintingGUI;
-    }
+public:
+  // Reimplemented from Priority
+  PriorityManual(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius);
   
-  patchBasedInpaintingGUI->SetDebugFunctionEnterLeave(false);
-  patchBasedInpaintingGUI->showMaximized();
+  float ComputePriority(const itk::Index<2>& queryPixel);
+  
+  // New functions
+  void SetManualPriorityImage(UnsignedCharScalarImageType::Pointer);
+  
+protected:
+  UnsignedCharScalarImageType::Pointer ManualPriorityImage;
+};
 
-  return app.exec();
-}
+#endif

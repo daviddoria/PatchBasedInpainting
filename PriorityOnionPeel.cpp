@@ -133,7 +133,7 @@ float PriorityOnionPeel::ComputeConfidenceTerm(const itk::Index<2>& queryPixel)
 
     // The confidence is computed as the sum of the confidences of patch pixels in the source region / area of the patch
 
-    float sum = 0;
+    float sum = 0.0f;
 
     while(!maskIterator.IsAtEnd())
       {

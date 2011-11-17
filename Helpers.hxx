@@ -30,6 +30,7 @@
 #include "itkBinaryDilateImageFilter.h"
 #include "itkComposeImageFilter.h"
 #include "itkGaussianOperator.h"
+#include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkMinimumMaximumImageCalculator.h"
 #include "itkPasteImageFilter.h"
@@ -946,5 +947,17 @@ typename TImage::TPixel ComputeMaxPixelDifference(const typename TImage::Pointer
 //   std::cout << "MaxPixelDifference computed to be: " << this->MaxPixelDifferenceSquared << std::endl;
 //   
 }
+
+template<typename TImage>
+void ReadImage(const std::string& fileName, typename TImage::Pointer image)
+{
+  typedef itk::ImageFileReader<Mask> ReaderType;
+  ReaderType::Pointer reader = ReaderType::New();
+  reader->SetFileName(fileName);
+  reader->Update();
+
+  Helpers::DeepCopy<TImage>(reader->GetOutput(), image);
+}
+
 
 }// end namespace

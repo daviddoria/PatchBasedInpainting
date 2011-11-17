@@ -29,6 +29,7 @@ PatchPair.cpp
 Priority.cpp
 PriorityCriminisi.cpp
 PriorityDepth.cpp
+PriorityManual.cpp
 PriorityOnionPeel.cpp
 PriorityRandom.cpp
 SelfPatchCompare.cpp

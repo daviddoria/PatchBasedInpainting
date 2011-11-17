@@ -559,9 +559,9 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
       break;
       }
 
-    float highestPriority = 0;
+    float highestPriority = 0.0f;
     itk::Index<2> pixelToFill = Helpers::FindHighestValueInMaskedRegion(modifiedPriorityImage, highestPriority, modifiedBoundaryImage);
-
+    std::cout << "Highest priority: " << highestPriority << std::endl;
     if(!this->MaskImage->HasHoleNeighbor(pixelToFill))
       {
       std::cerr << "pixelToFill " << pixelToFill << " does not have a hole neighbor - something is wrong!" << std::endl;

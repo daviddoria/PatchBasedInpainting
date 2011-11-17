@@ -118,6 +118,7 @@ public:
 
   template <typename T>
   void SetPriorityFunction();
+  
   Priority* GetPriorityFunction();
 
 private:

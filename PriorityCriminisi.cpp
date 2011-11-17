@@ -58,6 +58,7 @@ void PriorityCriminisi::Update(const itk::ImageRegion<2>& filledRegion)
 
 float PriorityCriminisi::ComputePriority(const itk::Index<2>& queryPixel)
 {
+  //std::cout << "PriorityCriminisi::ComputePriority()" << std::endl;
   float confidenceTerm = ComputeConfidenceTerm(queryPixel);
   float dataTerm = ComputeDataTerm(queryPixel);
 

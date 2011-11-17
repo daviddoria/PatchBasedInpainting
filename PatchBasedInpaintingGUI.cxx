@@ -72,6 +72,7 @@
 #include "PixmapDelegate.h"
 #include "PriorityCriminisi.h"
 #include "PriorityDepth.h"
+#include "PriorityManual.h"
 #include "PriorityOnionPeel.h"
 #include "Types.h"
 
@@ -117,12 +118,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->IterationToDisplay = 0;
   this->ForwardLookToDisplay = 0;
   this->SourcePatchToDisplay = 0;
-
-  this->DebugImages = false;
-  this->DebugMessages = false;
-
-  this->DebugFunctionEnterLeave = true;
-  this->DebugMessages = true;
 
   // Setup icons
   QIcon openIcon = QIcon::fromTheme("document-open");
@@ -569,7 +564,15 @@ void PatchBasedInpaintingGUI::Initialize()
   //this->Inpainting.SetPriorityFunction<PriorityOnionPeel>();
   //this->Inpainting.SetPriorityFunction<PriorityCriminisi>();
   //this->Inpainting.SetPriorityFunction<PriorityDepth>();
-
+  this->Inpainting.SetPriorityFunction<PriorityManual>();
+  
+  UnsignedCharScalarImageType::Pointer manualPriorityImage = UnsignedCharScalarImageType::New();
+  std::string manualPriorityImageFileName = "/media/portable/Data/LidarImageCompletion/PaperDataSets/trashcan/trashcan_medium/trashcan_manualPriority.png";
+  Helpers::ReadImage<UnsignedCharScalarImageType>(manualPriorityImageFileName, manualPriorityImage);
+  
+  reinterpret_cast<PriorityManual*>(this->Inpainting.GetPriorityFunction())->SetManualPriorityImage(manualPriorityImage);
+  this->Inpainting.GetPriorityFunction()->SetDebugFunctionEnterLeave(true);
+  
   SelfPatchCompare* patchCompare = new SelfPatchCompare;
   patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
   patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));

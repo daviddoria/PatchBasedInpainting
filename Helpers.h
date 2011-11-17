@@ -260,6 +260,9 @@ void ReplaceChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, c
 template<typename TImage>
 typename TImage::TPixel ComputeMaxPixelDifference(const typename TImage::Pointer image);
 
+template<typename TImage>
+void ReadImage(const std::string&, typename TImage::Pointer);
+
 }// end namespace
 
 #include "Helpers.hxx"
