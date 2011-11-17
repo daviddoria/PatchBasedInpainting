@@ -74,6 +74,9 @@ public slots:
   void on_radCompareOriginal_clicked();
   void on_radCompareBlurred_clicked();
   void on_radCompareCIELAB_clicked();
+  
+  void on_radDisplayColorImage_clicked();
+  void on_radDisplayMagnitudeImage_clicked();
 
   void on_btnGoToIteration_clicked();
 
@@ -98,13 +101,7 @@ public slots:
   void on_chkImage_clicked();
   void on_chkMask_clicked();
   void on_chkPriority_clicked();
-  void on_chkConfidence_clicked();
-  void on_chkConfidenceMap_clicked();
   void on_chkBoundary_clicked();
-  void on_chkIsophotes_clicked();
-  void on_chkData_clicked();
-  void on_chkBoundaryNormals_clicked();
-  void on_chkPotentialPatches_clicked();
   void on_chkDisplayForwardLookPatchLocations_clicked();
   void on_chkDisplaySourcePatchLocations_clicked();
 

@@ -164,20 +164,6 @@
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="chkConfidence">
-              <property name="text">
-               <string>Confidence</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="chkConfidenceMap">
-              <property name="text">
-               <string>Confidence map</string>
-              </property>
-             </widget>
-            </item>
-            <item>
              <widget class="QCheckBox" name="chkBoundary">
               <property name="text">
                <string>Boundary</string>
@@ -185,37 +171,9 @@
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="chkIsophotes">
-              <property name="text">
-               <string>Isophotes</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="chkData">
-              <property name="text">
-               <string>Data</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="chkBoundaryNormals">
-              <property name="text">
-               <string>Boundary normals</string>
-              </property>
-             </widget>
-            </item>
-            <item>
              <widget class="QCheckBox" name="chkMask">
               <property name="text">
                <string>Mask</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="chkPotentialPatches">
-              <property name="text">
-               <string>Potential patches</string>
               </property>
              </widget>
             </item>
@@ -327,7 +285,25 @@
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="9,1">
+       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,9,1">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_10">
+          <item>
+           <widget class="QRadioButton" name="radDisplayColorImage">
+            <property name="text">
+             <string>Color</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radDisplayMagnitudeImage">
+            <property name="text">
+             <string>Magnitude</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
         <item>
          <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
         </item>

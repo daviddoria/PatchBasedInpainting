@@ -31,6 +31,16 @@
 #include <QFileDialog>
 #include <QTextEdit>
 
+void PatchBasedInpaintingGUI::on_radDisplayColorImage_clicked()
+{
+  
+}
+
+void PatchBasedInpaintingGUI::on_radDisplayMagnitudeImage_clicked()
+{
+  
+}
+
 void PatchBasedInpaintingGUI::on_radCompareOriginal_clicked()
 {
   this->Inpainting.SetCompareToOriginal();
@@ -141,56 +151,11 @@ void PatchBasedInpaintingGUI::on_chkDisplaySourcePatchLocations_clicked()
   Refresh();
 }
 
-void PatchBasedInpaintingGUI::on_chkConfidence_clicked()
-{
-  Refresh();
-}
-
-void PatchBasedInpaintingGUI::on_chkConfidenceMap_clicked()
-{
-  Refresh();
-}
 
 void PatchBasedInpaintingGUI::on_chkBoundary_clicked()
 {
   Refresh();
 }
-
-void PatchBasedInpaintingGUI::on_chkIsophotes_clicked()
-{
-  Refresh();
-}
-
-void PatchBasedInpaintingGUI::on_chkData_clicked()
-{
-  Refresh();
-}
-
-void PatchBasedInpaintingGUI::on_chkBoundaryNormals_clicked()
-{
-  Refresh();
-}
-
-void PatchBasedInpaintingGUI::on_chkPotentialPatches_clicked()
-{
-  Refresh();
-}
-/*
-void Form::SetCameraPosition1()
-{
-  double leftToRight[3] = {-1,0,0};
-  double bottomToTop[3] = {0,1,0};
-  SetCameraPosition(leftToRight, bottomToTop);
-}
-
-void Form::SetCameraPosition2()
-{
-  double leftToRight[3] = {-1,0,0};
-  double bottomToTop[3] = {0,-1,0};
-
-  SetCameraPosition(leftToRight, bottomToTop);
-}
-*/
 
 void PatchBasedInpaintingGUI::SetCameraPosition()
 {
@@ -219,14 +184,8 @@ void PatchBasedInpaintingGUI::SetCheckboxVisibility(const bool visible)
 {
   chkImage->setEnabled(visible);
   chkPriority->setEnabled(visible);
-  chkConfidence->setEnabled(visible);
-  chkConfidenceMap->setEnabled(visible);
   chkBoundary->setEnabled(visible);
-  chkIsophotes->setEnabled(visible);
-  chkData->setEnabled(visible);
-  chkBoundaryNormals->setEnabled(visible);
   chkMask->setEnabled(visible);
-  chkPotentialPatches->setEnabled(visible);
 }
 
 void PatchBasedInpaintingGUI::on_btnDisplayPreviousStep_clicked()

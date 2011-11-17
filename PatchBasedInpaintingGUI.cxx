@@ -459,18 +459,6 @@ void PatchBasedInpaintingGUI::Refresh()
       DisplayMask();
       }
 
-    this->ConfidenceMapLayer.ImageSlice->SetVisibility(this->chkConfidenceMap->isChecked());
-    if(this->chkConfidenceMap->isChecked())
-      {
-      DisplayConfidenceMap();
-      }
-
-    this->ConfidenceLayer.ImageSlice->SetVisibility(this->chkConfidence->isChecked());
-    if(this->chkConfidence->isChecked())
-      {
-      DisplayConfidence();
-      }
-
     this->PriorityLayer.ImageSlice->SetVisibility(this->chkPriority->isChecked());
     if(this->chkPriority->isChecked())
       {
@@ -481,30 +469,6 @@ void PatchBasedInpaintingGUI::Refresh()
     if(this->chkBoundary->isChecked())
       {
       DisplayBoundary();
-      }
-
-    this->IsophoteLayer.Actor->SetVisibility(this->chkIsophotes->isChecked());
-    if(this->chkIsophotes->isChecked())
-      {
-      DisplayIsophotes();
-      }
-
-    this->DataLayer.ImageSlice->SetVisibility(this->chkData->isChecked());
-    if(this->chkData->isChecked())
-      {
-      DisplayData();
-      }
-
-    this->BoundaryNormalsLayer.Actor->SetVisibility(this->chkBoundaryNormals->isChecked());
-    if(this->chkBoundaryNormals->isChecked())
-      {
-      DisplayBoundaryNormals();
-      }
-
-    this->PotentialPatchesLayer.ImageSlice->SetVisibility(this->chkPotentialPatches->isChecked());
-    if(this->chkPotentialPatches->isChecked())
-      {
-      //Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->Inpainting.GetDataImage(), this->VTKDataImage);
       }
 
     // The following are only valid for iterations after 0
