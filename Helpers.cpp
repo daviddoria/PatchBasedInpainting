@@ -275,16 +275,16 @@ itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region)
 
 
 // Convert a vector ITK image to a VTK image for display
-void ITKVectorImagetoVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
+void ITKVectorImageToVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
 {
   // If the image has 3 channels, assume it is RGB.
   if(image->GetNumberOfComponentsPerPixel() == 3)
     {
-    ITKImagetoVTKRGBImage(image, outputImage);
+    ITKImageToVTKRGBImage(image, outputImage);
     }
   else
     {
-    ITKImagetoVTKMagnitudeImage(image, outputImage);
+    ITKImageToVTKMagnitudeImage(image, outputImage);
     }
     
   outputImage->Modified();
@@ -303,7 +303,7 @@ void NormalizeVectorImage(FloatVector2ImageType::Pointer image)
     }
 }
 
-void ITKImagetoVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, vtkImageData* outputImage)
+void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, vtkImageData* outputImage)
 {
   //std::cout << "ITKImagetoVTKVectorFieldImage()" << std::endl;
 
@@ -336,8 +336,15 @@ void ITKImagetoVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, v
   outputImage->Modified();
 }
 
+void ITKImageChannelToVTKImage(const FloatVectorImageType::Pointer image, const unsigned int channel, vtkImageData* outputImage)
+{
+  FloatScalarImageType::Pointer channelImage = FloatScalarImageType::New();
+  ExtractChannel<float>(image, channel, channelImage);
+  ITKScalarImageToScaledVTKImage<FloatScalarImageType>(channelImage, outputImage);
+}
+
 // Convert a vector ITK image to a VTK image for display
-void ITKImagetoVTKRGBImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
+void ITKImageToVTKRGBImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
 {
   // This function assumes an ND (with N>3) image has the first 3 channels as RGB and extra information in the remaining channels.
   
@@ -378,7 +385,7 @@ void ITKImagetoVTKRGBImage(const FloatVectorImageType::Pointer image, vtkImageDa
 
 
 // Convert a vector ITK image to a VTK image for display
-void ITKImagetoVTKMagnitudeImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
+void ITKImageToVTKMagnitudeImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
 {
   //std::cout << "ITKImagetoVTKMagnitudeImage()" << std::endl;
   // Compute the magnitude of the ITK image

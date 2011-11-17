@@ -293,6 +293,9 @@
             <property name="text">
              <string>Color</string>
             </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
@@ -301,6 +304,16 @@
              <string>Magnitude</string>
             </property>
            </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radDisplayChannel">
+            <property name="text">
+             <string>Channel</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinChannelToDisplay"/>
           </item>
          </layout>
         </item>

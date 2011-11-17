@@ -30,14 +30,7 @@ public:
   FloatVectorImageType::Pointer Image;
   Mask::Pointer MaskImage;
   UnsignedCharScalarImageType::Pointer Boundary;
-  FloatVector2ImageType::Pointer BoundaryNormals;
-  FloatVector2ImageType::Pointer Isophotes;
-  FloatScalarImageType::Pointer Confidence;
-  FloatScalarImageType::Pointer ConfidenceMap;
   FloatScalarImageType::Pointer Priority;
-  FloatScalarImageType::Pointer Data;
-  UnsignedCharScalarImageType::Pointer PotentialTargetPatchesImage;
-  
 };
 
 #endif

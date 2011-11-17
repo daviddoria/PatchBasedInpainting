@@ -77,6 +77,8 @@ public slots:
   
   void on_radDisplayColorImage_clicked();
   void on_radDisplayMagnitudeImage_clicked();
+  void on_radDisplayChannel_clicked();
+  void on_spinChannelToDisplay_valueChanged(int unused);
 
   void on_btnGoToIteration_clicked();
 

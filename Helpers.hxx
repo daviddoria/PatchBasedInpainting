@@ -866,6 +866,21 @@ void ChangeValue(const typename TImage::Pointer image, const typename TImage::Pi
 }
 
 template<typename TPixel>
+void ExtractChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, typename itk::Image<TPixel, 2>::Pointer output)
+{
+  typedef itk::VectorImage<TPixel, 2> VectorImageType;
+  typedef itk::Image<TPixel, 2> ScalarImageType;
+  
+  typedef itk::VectorIndexSelectionCastImageFilter<VectorImageType, ScalarImageType > IndexSelectionType;
+  typename IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+  indexSelectionFilter->SetIndex(channel);
+  indexSelectionFilter->SetInput(image);
+  indexSelectionFilter->Update();
+  
+  DeepCopy<ScalarImageType>(indexSelectionFilter->GetOutput(), output);
+}
+
+template<typename TPixel>
 void ScaleChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, const TPixel channelMax, typename itk::VectorImage<TPixel, 2>::Pointer output)
 {
   typedef itk::VectorImage<TPixel, 2> VectorImageType;

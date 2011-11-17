@@ -33,12 +33,22 @@
 
 void PatchBasedInpaintingGUI::on_radDisplayColorImage_clicked()
 {
-  
+  Refresh();
 }
 
 void PatchBasedInpaintingGUI::on_radDisplayMagnitudeImage_clicked()
 {
-  
+  Refresh();
+}
+
+void PatchBasedInpaintingGUI::on_radDisplayChannel_clicked()
+{
+  Refresh();
+}
+
+void PatchBasedInpaintingGUI::on_spinChannelToDisplay_valueChanged(int unused)
+{
+  Refresh();
 }
 
 void PatchBasedInpaintingGUI::on_radCompareOriginal_clicked()

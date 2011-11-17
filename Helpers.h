@@ -71,12 +71,13 @@ void NormalizeVectorImage(FloatVector2ImageType::Pointer image);
 float AngleBetween(const FloatVector2Type v1, const FloatVector2Type v2);
 
 // These functions create a VTK image from a multidimensional ITK image.
-void ITKVectorImagetoVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage); // This function simply drives ITKImagetoVTKRGBImage or ITKImagetoVTKMagnitudeImage based on the number of components of the input.
-void ITKImagetoVTKRGBImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage);
-void ITKImagetoVTKMagnitudeImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage);
+void ITKVectorImageToVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage); // This function simply drives ITKImagetoVTKRGBImage or ITKImagetoVTKMagnitudeImage based on the number of components of the input.
+void ITKImageToVTKRGBImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage);
+void ITKImageToVTKMagnitudeImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage);
+void ITKImageChannelToVTKImage(const FloatVectorImageType::Pointer image, const unsigned int channel, vtkImageData* outputImage);
 
 // Create a VTK image filled with values representing vectors. (There is no concept of a "vector image" in VTK).
-void ITKImagetoVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, vtkImageData* outputImage);
+void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, vtkImageData* outputImage);
 
 // Convert the first 3 channels of a float vector image to an unsigned char/color/rgb image.
 void VectorImageToRGBImage(const FloatVectorImageType::Pointer image, RGBImageType::Pointer rgbImage);
@@ -250,6 +251,9 @@ void DilateImage(const typename TImage::Pointer image, typename TImage::Pointer 
 
 template<typename TImage>
 void ChangeValue(const typename TImage::Pointer image, const typename TImage::PixelType& oldValue, const typename TImage::PixelType& newValue);
+
+template<typename TPixel>
+void ExtractChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, typename itk::Image<TPixel, 2>::Pointer output);
 
 template<typename TPixel>
 void ScaleChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, const TPixel channelMax, typename itk::VectorImage<TPixel, 2>::Pointer output);

@@ -1134,3 +1134,95 @@ float SelfPatchCompare::PatchAverageAbsoluteSourceDifference(const Patch& source
     exit(-1);
   }
 }
+
+
+void PatchBasedInpaintingGUI::DisplayIsophotes()
+{
+  if(this->IntermediateImages[this->IterationToDisplay].Isophotes->GetLargestPossibleRegion().GetSize()[0] != 0)
+    {
+    // Mask the isophotes image with the current boundary, because we only want to display the isophotes we are interested in.
+    //FloatVector2ImageType::Pointer normalizedIsophotes = FloatVector2ImageType::New();
+    //Helpers::DeepCopy<FloatVector2ImageType>(this->IntermediateImages[this->IterationToDisplay].Isophotes, normalizedIsophotes);
+    //Helpers::NormalizeVectorImage(normalizedIsophotes);
+
+    typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType> MaskFilterType;
+    typename MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+    //maskFilter->SetInput(normalizedIsophotes);
+    maskFilter->SetInput(this->IntermediateImages[this->IterationToDisplay].Isophotes);
+    maskFilter->SetMaskImage(this->IntermediateImages[this->IterationToDisplay].Boundary);
+    FloatVector2ImageType::PixelType zero;
+    zero.Fill(0);
+    maskFilter->SetOutsideValue(zero);
+    maskFilter->Update();
+  
+    HelpersOutput::WriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ShowIsophotes.BoundaryIsophotes.mha", this->DebugImages);
+    HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Boundary, "Debug/ShowIsophotes.Boundary.mha", this->DebugImages);
+    
+    Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), this->IsophoteLayer.Vectors);
+    
+    if(this->DebugImages)
+      {
+      vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
+      writer->SetFileName("Debug/VTKIsophotes.vti");
+      writer->SetInputConnection(this->IsophoteLayer.ImageData->GetProducerPort());
+      writer->Write();
+    
+      vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
+      polyDataWriter->SetFileName("Debug/VTKIsophotes.vtp");
+      polyDataWriter->SetInputConnection(this->IsophoteLayer.Vectors->GetProducerPort());
+      polyDataWriter->Write();
+      }
+
+    } 
+  else
+    {
+    std::cerr << "Isophotes are not defined!" << std::endl;
+    }
+}
+
+
+void PatchBasedInpaintingGUI::DisplayData()
+{
+  vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
+  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Data, temp);
+  Helpers::MakeValueTransparent(temp, this->DataLayer.ImageData, 0); // Set the zero pixels to transparent
+  this->qvtkWidget->GetRenderWindow()->Render();
+}
+
+
+
+void PatchBasedInpaintingGUI::DisplayBoundaryNormals()
+{
+//   if(this->Inpainting.GetBoundaryNormalsImage()->GetLargestPossibleRegion().GetSize()[0] != 0)
+//     {
+//     Helpers::ConvertNonZeroPixelsToVectors(this->IntermediateImages[this->IterationToDisplay].BoundaryNormals, this->BoundaryNormalsLayer.Vectors);
+//     this->qvtkWidget->GetRenderWindow()->Render();
+// 
+//     if(this->DebugImages)
+//       {
+//       std::cout << "Writing boundary normals..." << std::endl;
+// 
+//       HelpersOutput::WriteImage<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), "Debug/RefreshSlot.BoundaryNormals.mha");
+// 
+//       HelpersOutput::WriteImageData(this->BoundaryNormalsLayer.ImageData, "Debug/RefreshSlot.VTKBoundaryNormals.vti");
+// 
+//       HelpersOutput::WritePolyData(this->BoundaryNormalsLayer.Vectors, "Debug/RefreshSlot.VTKBoundaryNormals.vtp");
+//       }
+//     }
+}
+
+
+
+void PatchBasedInpaintingGUI::DisplayConfidence()
+{
+  vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
+  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Confidence, temp);  
+  Helpers::MakeValueTransparent(temp, this->ConfidenceLayer.ImageData, 0); // Set the zero pixels to transparent
+  this->qvtkWidget->GetRenderWindow()->Render();
+}
+
+void PatchBasedInpaintingGUI::DisplayConfidenceMap()
+{
+  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->IterationToDisplay].ConfidenceMap, this->ConfidenceMapLayer.ImageData);
+  this->qvtkWidget->GetRenderWindow()->Render();
+}
