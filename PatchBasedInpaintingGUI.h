@@ -197,17 +197,6 @@ protected:
   // Image display
   Layer ImageLayer;
   
-  // Confidence on the boundary
-  Layer ConfidenceLayer;
-  
-  // Confidence map display
-  Layer ConfidenceMapLayer;
-  
-  // Potential patch image display
-  UnsignedCharScalarImageType::Pointer PotentialTargetPatchesImage;
-  
-  Layer PotentialPatchesLayer;
-  
   // Priority image display
   Layer PriorityLayer;
   
@@ -216,15 +205,6 @@ protected:
 
   // Mask image display
   Layer MaskLayer;
-  
-  // Data image display (this is the "Data" term that is later combined with the Confidence to compute the Priority)
-  Layer DataLayer;
-  
-  // Isophote display
-  VectorLayer IsophoteLayer;
-
-  // Boundary normals display
-  VectorLayer BoundaryNormalsLayer;
   
   // The image that the user loads
   FloatVectorImageType::Pointer UserImage;
@@ -280,9 +260,6 @@ protected:
   // Display the outline of the selected source patch
   void HighlightSelectedSourcePatch();
   
-  // Get the potential target patches from this iteration and outline them on a blank image.
-  void CreatePotentialTargetPatchesImage();
-
   QGraphicsScene* SourcePatchScene;
   QGraphicsScene* TargetPatchScene;
   QGraphicsScene* ResultPatchScene;

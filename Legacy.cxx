@@ -1226,3 +1226,43 @@ void PatchBasedInpaintingGUI::DisplayConfidenceMap()
   Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->IterationToDisplay].ConfidenceMap, this->ConfidenceMapLayer.ImageData);
   this->qvtkWidget->GetRenderWindow()->Render();
 }
+
+
+void PatchBasedInpaintingGUI::CreatePotentialTargetPatchesImage()
+{
+  DebugMessage("CreatePotentialTargetPatchesImage()");
+  // Draw potential patch pairs
+  
+//   std::stringstream ssPatchPairsFile;
+//   ssPatchPairsFile << "Debug/PatchPairs_" << Helpers::ZeroPad(this->Inpainting.GetIteration(), 3) << ".txt";
+//   OutputPairs(potentialPatchPairs, ssPatchPairsFile.str());
+
+  if(this->IterationToDisplay < 1)
+    {
+    return;
+    }
+    
+  if(!this->Recorded[this->IterationToDisplay - 1])
+    {
+    return;
+    }
+    
+  this->PotentialTargetPatchesImage->SetRegions(this->Inpainting.GetFullRegion());
+  this->PotentialTargetPatchesImage->Allocate();
+  this->PotentialTargetPatchesImage->FillBuffer(0);
+
+  const std::vector<CandidatePairs>& potentialCandidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1];
+  
+  for(unsigned int i = 0; i < potentialCandidatePairs.size(); ++i)
+    {
+    Helpers::BlankAndOutlineRegion<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage,
+                                                                potentialCandidatePairs[i].TargetPatch.Region, static_cast<unsigned char>(0),
+                                                                static_cast<unsigned char>(255));
+    }
+
+  vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
+  Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage, temp);
+  Helpers::MakeValueTransparent(temp, this->PotentialPatchesLayer.ImageData, 0);
+
+  Refresh();
+}

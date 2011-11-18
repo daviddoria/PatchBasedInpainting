@@ -132,31 +132,18 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   this->InteractorStyle = vtkSmartPointer<InteractorStyleImageNoLevel>::New();
 
-  // An image with potential target patches outlined
-  this->PotentialTargetPatchesImage = UnsignedCharScalarImageType::New();
-
   // Add objects to the renderer
   this->Renderer = vtkSmartPointer<vtkRenderer>::New();
   this->qvtkWidget->GetRenderWindow()->AddRenderer(this->Renderer);
 
   this->Renderer->AddViewProp(this->ImageLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->ConfidenceLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->ConfidenceMapLayer.ImageSlice);
   this->Renderer->AddViewProp(this->BoundaryLayer.ImageSlice);
   this->Renderer->AddViewProp(this->PriorityLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->DataLayer.ImageSlice);
   this->Renderer->AddViewProp(this->MaskLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->PotentialPatchesLayer.ImageSlice);
   this->Renderer->AddViewProp(this->UsedTargetPatchLayer.ImageSlice);
   this->Renderer->AddViewProp(this->UsedSourcePatchLayer.ImageSlice);
   this->Renderer->AddViewProp(this->AllSourcePatchOutlinesLayer.ImageSlice);
   this->Renderer->AddViewProp(this->AllForwardLookOutlinesLayer.ImageSlice);
-
-  this->BoundaryNormalsLayer.Actor->VisibilityOff(); // If this isn't set, there is an error about "no input" to vtkHedgeHog because the boundary normals are tried to be displayed before they are necessarily populated.
-  this->Renderer->AddViewProp(this->BoundaryNormalsLayer.Actor);
-
-  this->IsophoteLayer.Actor->VisibilityOff();
-  this->Renderer->AddViewProp(this->IsophoteLayer.Actor);
 
   this->Renderer->AddViewProp(this->SelectedForwardLookOutlineLayer.ImageSlice);// This should be added after AllForwardLookOutlinesLayer.
   this->Renderer->AddViewProp(this->SelectedSourcePatchOutlineLayer.ImageSlice);// This should be added after AllSourcePatchOutlinesLayer.
@@ -930,45 +917,6 @@ void PatchBasedInpaintingGUI::DisplayUsedPatchInformation()
   }
 }
 
-void PatchBasedInpaintingGUI::CreatePotentialTargetPatchesImage()
-{
-  DebugMessage("CreatePotentialTargetPatchesImage()");
-  // Draw potential patch pairs
-  
-//   std::stringstream ssPatchPairsFile;
-//   ssPatchPairsFile << "Debug/PatchPairs_" << Helpers::ZeroPad(this->Inpainting.GetIteration(), 3) << ".txt";
-//   OutputPairs(potentialPatchPairs, ssPatchPairsFile.str());
-
-  if(this->IterationToDisplay < 1)
-    {
-    return;
-    }
-    
-  if(!this->Recorded[this->IterationToDisplay - 1])
-    {
-    return;
-    }
-    
-  this->PotentialTargetPatchesImage->SetRegions(this->Inpainting.GetFullRegion());
-  this->PotentialTargetPatchesImage->Allocate();
-  this->PotentialTargetPatchesImage->FillBuffer(0);
-
-  const std::vector<CandidatePairs>& potentialCandidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1];
-  
-  for(unsigned int i = 0; i < potentialCandidatePairs.size(); ++i)
-    {
-    Helpers::BlankAndOutlineRegion<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage,
-                                                                potentialCandidatePairs[i].TargetPatch.Region, static_cast<unsigned char>(0),
-                                                                static_cast<unsigned char>(255));
-    }
-
-  vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
-  Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage, temp);
-  Helpers::MakeValueTransparent(temp, this->PotentialPatchesLayer.ImageData, 0);
-
-  Refresh();
-}
-
 void PatchBasedInpaintingGUI::OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename)
 {
   std::ofstream fout(filename.c_str());
@@ -976,9 +924,9 @@ void PatchBasedInpaintingGUI::OutputPairs(const std::vector<PatchPair>& patchPai
   for(unsigned int i = 0; i < patchPairs.size(); ++i)
     {
     fout << "Potential patch " << i << ": " << std::endl
-	 << "target index: " << patchPairs[i].TargetPatch.Region.GetIndex() << std::endl;
-	 //<< "ssd score: " << patchPairs[i].GetAverageSSD() << std::endl;
-	 //<< "histogram score: " << patchPairs[i].HistogramDifference << std::endl;
+	<< "target index: " << patchPairs[i].TargetPatch.Region.GetIndex() << std::endl;
+	//<< "ssd score: " << patchPairs[i].GetAverageSSD() << std::endl;
+	//<< "histogram score: " << patchPairs[i].HistogramDifference << std::endl;
     }
     
   fout.close();
@@ -995,7 +943,6 @@ void PatchBasedInpaintingGUI::ChangeDisplayedIteration()
   this->lblCurrentIteration->setText(ss.str().c_str());
 
   DisplayUsedPatches();
-  CreatePotentialTargetPatchesImage();
     
   if(this->IterationToDisplay > 0)
     {
