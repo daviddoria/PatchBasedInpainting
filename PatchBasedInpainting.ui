@@ -545,6 +545,37 @@
           </property>
          </spacer>
         </item>
+        <item>
+         <widget class="QCheckBox" name="chkDisplayUserPatch">
+          <property name="text">
+           <string>User patch</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGraphicsView" name="gfxUserPatch">
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_15">
+          <property name="text">
+           <string>Error:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblUserPatchError">
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item>

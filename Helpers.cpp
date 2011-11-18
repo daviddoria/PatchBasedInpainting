@@ -187,6 +187,14 @@ unsigned int SideLengthFromRadius(const unsigned int radius)
   return radius*2 + 1;
 }
 
+itk::Size<2> SizeFromRadius(const unsigned int radius)
+{
+  itk::Size<2> size;
+  size.Fill(SideLengthFromRadius(radius));
+  
+  return size;
+}
+
 void RGBImageToCIELabImage(const RGBImageType::Pointer rgbImage, FloatVectorImageType::Pointer cielabImage)
 {
   // Convert RGB image to Lab color space
@@ -848,6 +856,18 @@ void ComputeColorIsophotesInRegion(const FloatVectorImageType::Pointer image, co
 //     HelpersOutput::Write2DVectorImage(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha");
 //     }
   //LeaveFunction("ComputeIsophotes()");
+}
+
+
+void CreatePatchVTKImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, vtkImageData* outputImage)
+{
+  typedef itk::RegionOfInterestImageFilter<FloatVectorImageType,FloatVectorImageType> ExtractFilterType;
+  typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+  extractFilter->SetRegionOfInterest(region);
+  extractFilter->SetInput(image);
+  extractFilter->Update();
+  
+  ITKVectorImageToVTKImage(extractFilter->GetOutput(), outputImage);
 }
 
 } // end namespace

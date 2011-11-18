@@ -19,7 +19,7 @@
 #include "PatchBasedInpaintingGUI.h"
 
 // Custom
-#include "InteractorStyleImageNoLevel.h"
+#include "InteractorStyleImageWithDrag.h"
 #include "FileSelector.h"
 #include "HelpersOutput.h"
 
@@ -30,6 +30,11 @@
 // QT
 #include <QFileDialog>
 #include <QTextEdit>
+
+void PatchBasedInpaintingGUI::on_chkDisplayUserPatch_clicked()
+{
+  Refresh();
+}
 
 void PatchBasedInpaintingGUI::on_radDisplayColorImage_clicked()
 {

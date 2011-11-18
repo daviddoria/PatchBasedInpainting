@@ -76,6 +76,9 @@ void ITKImageToVTKRGBImage(const FloatVectorImageType::Pointer image, vtkImageDa
 void ITKImageToVTKMagnitudeImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage);
 void ITKImageChannelToVTKImage(const FloatVectorImageType::Pointer image, const unsigned int channel, vtkImageData* outputImage);
 
+// Create a VTK image of a patch of an image.
+void CreatePatchVTKImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, vtkImageData* outputImage);
+
 // Create a VTK image filled with values representing vectors. (There is no concept of a "vector image" in VTK).
 void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, vtkImageData* outputImage);
 
@@ -87,6 +90,8 @@ itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region);
 
 // Patch sizes are specified by radius so they always have an odd side length. The side length is (2*radius)+1
 unsigned int SideLengthFromRadius(const unsigned int radius);
+
+itk::Size<2> SizeFromRadius(const unsigned int radius);
 
 // Determine if any of a pixels 8 neighbors is a hole pixel.
 bool HasHoleNeighbor(const itk::Index<2>& pixel, const Mask::Pointer mask);

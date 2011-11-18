@@ -51,7 +51,8 @@ class vtkPolyDataMapper;
 #include "Types.h"
 #include "VectorLayer.h"
 
-class InteractorStyleImageNoLevel;
+//class InteractorStyleImageNoLevel;
+class InteractorStyleImageWithDrag;
 
 class PatchBasedInpaintingGUI : public QMainWindow, public Ui::PatchBasedInpaintingGUI, public DebugOutputs
 {
@@ -71,6 +72,8 @@ public:
 
 public slots:
 
+  void on_chkDisplayUserPatch_clicked();
+  
   void on_radCompareOriginal_clicked();
   void on_radCompareBlurred_clicked();
   void on_radCompareCIELAB_clicked();
@@ -149,6 +152,7 @@ protected:
   void DisplayPriority();
   void DisplayData();
   void DisplayImage();
+  void DisplayUserPatch();
 
   void OpenImage(const std::string& filename);
   void OpenMask(const std::string& filename, const bool inverted);
@@ -167,8 +171,8 @@ protected:
   // This function is called when the "Previous" or "Next" buttons are pressed, and at the end of IterationComplete().
   void ChangeDisplayedIteration();
 
-  // The interactor to allow us to zoom and pan the image
-  vtkSmartPointer<InteractorStyleImageNoLevel> InteractorStyle;
+  // The interactor to allow us to zoom and pan the image while still moving images with Pickable=true
+  vtkSmartPointer<InteractorStyleImageWithDrag> InteractorStyle;
 
   // Track if the image has been flipped
   //bool Flipped;
@@ -176,6 +180,9 @@ protected:
   // The only renderer
   vtkSmartPointer<vtkRenderer> Renderer;
 
+  // A patch that the user can move around freely.
+  Layer UserPatchLayer;
+  
   // Source patch outline display
   Layer UsedSourcePatchLayer;
 
@@ -295,8 +302,14 @@ protected:
   ForwardLookTableModel* ForwardLookModel;
   TopPatchesTableModel* TopPatchesModel;
   
+  // The size to display the patches.
   unsigned int PatchDisplaySize;
   
+  // The radius of the patches.
+  unsigned int PatchRadius;
+
+  // The position of the freely movable patch.
+  itk::ImageRegion<2> UserPatchRegion;
 };
 
 #include "PatchBasedInpaintingGUI.hxx"

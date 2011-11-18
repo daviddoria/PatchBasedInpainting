@@ -67,7 +67,8 @@
 #include "Helpers.h"
 #include "HelpersOutput.h"
 #include "HelpersQt.h"
-#include "InteractorStyleImageNoLevel.h"
+//#include "InteractorStyleImageNoLevel.h"
+#include "InteractorStyleImageWithDrag.h"
 #include "Mask.h"
 #include "PixmapDelegate.h"
 #include "PriorityCriminisi.h"
@@ -130,12 +131,27 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   actionSaveResult->setIcon(saveIcon);
   this->toolBar->addAction(actionSaveResult);
 
-  this->InteractorStyle = vtkSmartPointer<InteractorStyleImageNoLevel>::New();
+  //this->InteractorStyle = vtkSmartPointer<InteractorStyleImageNoLevel>::New();
+  this->InteractorStyle = vtkSmartPointer<InteractorStyleImageWithDrag>::New();
 
   // Add objects to the renderer
   this->Renderer = vtkSmartPointer<vtkRenderer>::New();
   this->qvtkWidget->GetRenderWindow()->AddRenderer(this->Renderer);
 
+  this->UserPatchLayer.ImageSlice->SetPickable(true);
+  
+  this->ImageLayer.ImageSlice->SetPickable(false);
+  this->BoundaryLayer.ImageSlice->SetPickable(false);
+  this->PriorityLayer.ImageSlice->SetPickable(false);
+  this->MaskLayer.ImageSlice->SetPickable(false);
+  this->UsedTargetPatchLayer.ImageSlice->SetPickable(false);
+  this->UsedSourcePatchLayer.ImageSlice->SetPickable(false);
+  this->AllSourcePatchOutlinesLayer.ImageSlice->SetPickable(false);
+  this->AllForwardLookOutlinesLayer.ImageSlice->SetPickable(false);
+  this->SelectedForwardLookOutlineLayer.ImageSlice->SetPickable(false);
+  this->SelectedSourcePatchOutlineLayer.ImageSlice->SetPickable(false);
+  
+  this->Renderer->AddViewProp(this->UserPatchLayer.ImageSlice);
   this->Renderer->AddViewProp(this->ImageLayer.ImageSlice);
   this->Renderer->AddViewProp(this->BoundaryLayer.ImageSlice);
   this->Renderer->AddViewProp(this->PriorityLayer.ImageSlice);
@@ -150,7 +166,8 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
-
+  this->InteractorStyle->Init();
+  
   this->UserImage = FloatVectorImageType::New();
   this->UserMaskImage = Mask::New();
 
@@ -204,6 +221,11 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->TopPatchesTableView->setItemDelegateForColumn(0, topPatchesPixmapDelegate);
 
   this->connect(this->TopPatchesTableView->selectionModel(), SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )), SLOT(slot_TopPatchesTableView_changed(const QModelIndex & , const QModelIndex & )));
+  
+  this->PatchRadius = 10;
+  
+  itk::Size<2> patchSize = Helpers::SizeFromRadius(this->PatchRadius);
+  this->UserPatchRegion.SetSize(patchSize);
 }
 
 // Default constructor
@@ -327,6 +349,19 @@ void PatchBasedInpaintingGUI::DisplayMask()
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
+void PatchBasedInpaintingGUI::DisplayUserPatch()
+{
+  // Get the location of the user patch
+  double position[3];
+  this->UserPatchLayer.ImageSlice->GetPosition(position);
+  itk::Index<2> positionIndex;
+  positionIndex[0] = position[0];
+  positionIndex[1] = position[1];
+  this->UserPatchRegion.SetIndex(positionIndex);
+  
+  Helpers::CreatePatchVTKImage(this->IntermediateImages[this->IterationToDisplay].Image, this->UserPatchRegion, this->UserPatchLayer.ImageData);
+}
+
 void PatchBasedInpaintingGUI::DisplayImage()
 {
   if(this->radDisplayColorImage->isChecked())
@@ -375,6 +410,13 @@ void PatchBasedInpaintingGUI::Refresh()
     EnterFunction("Refresh()");
 
     // The following are valid for all iterations
+    
+    this->UserPatchLayer.ImageSlice->SetVisibility(this->chkDisplayUserPatch->isChecked());
+    if(this->chkDisplayUserPatch->isChecked())
+      {
+      DisplayUserPatch();
+      }
+      
     this->ImageLayer.ImageSlice->SetVisibility(this->chkImage->isChecked());
     if(this->chkImage->isChecked())
       {
