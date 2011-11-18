@@ -48,13 +48,14 @@ if(BuildInteractive)
   ADD_EXECUTABLE(PatchBasedInpaintingInteractive
   FileSelector.cpp
   FileSelectionWidget.cpp
-  PatchBasedInpaintingGUI.cxx
+  PatchBasedInpaintingGUI.cpp
   ForwardLookTableModel.cpp
-  PatchBasedInpaintingGUISlots.cxx
+  PatchBasedInpaintingGUISlots.cpp
   HelpersQt.cpp
   InpaintingVisualizationStack.cpp
   PatchBasedInpaintingInteractive.cpp #driver (contains main())
-  InteractorStyleImageNoLevel.cxx
+  InteractorStyleImageNoLevel.cpp
+  InteractorStyleImageWithDrag.cpp
   Layer.cpp
   PixmapDelegate.cpp
   ComputationThread.cpp
