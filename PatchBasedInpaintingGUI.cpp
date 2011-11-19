@@ -546,19 +546,6 @@ void PatchBasedInpaintingGUI::Initialize()
   Refresh();
 }
 
-
-
-void PatchBasedInpaintingGUI::DebugMessage(const std::string& message)
-{
-  if(this->DebugMessages)
-    {
-    std::cout << message << std::endl;
-    }
-}
-
-
-
-
 void PatchBasedInpaintingGUI::DisplaySourcePatch()
 {
   try

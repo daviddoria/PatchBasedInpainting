@@ -231,13 +231,6 @@ protected:
   // A flag that determines if debugging messages should be output.
   bool DebugMessages;
 
-  // Output the message only if the Debug member is set to true
-  void DebugMessage(const std::string&);
-
-  // Output the message and value only if the Debug member is set to true
-  template <typename T>
-  void DebugMessage(const std::string& message, const T value);
-
   // If IterationToDisplay == 0, then we are just displaying the initial images.
   unsigned int IterationToDisplay;
   unsigned int ForwardLookToDisplay;
