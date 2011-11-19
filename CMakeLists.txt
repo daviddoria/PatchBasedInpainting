@@ -13,6 +13,16 @@ INCLUDE(${VTK_USE_FILE})
 FIND_PACKAGE(ITK REQUIRED)
 INCLUDE(${ITK_USE_FILE})
 
+# Check for Qt4. If it is available, build the PatchBasedInpainting library using it so that SelfPatchCompare can use QtConcurrent.
+FIND_PACKAGE(Qt4)
+if(QT4_FOUND)
+  message ( "QT4 found successfully." )
+  INCLUDE(${QT_USE_FILE})
+  list(APPEND compileflags "USE_QT_PARALLEL")
+else ( QT4_FOUND )
+  message ( "QT4 NOT found successfully." )
+endif ( QT4_FOUND )
+
 add_library(PatchBasedInpainting
 CandidatePairs.cpp
 PatchBasedInpainting.cpp
@@ -34,15 +44,16 @@ PriorityOnionPeel.cpp
 PriorityRandom.cpp
 SelfPatchCompare.cpp
 )
-
-FIND_PACKAGE(Qt4 REQUIRED)
-INCLUDE(${QT_USE_FILE})
+set_target_properties(PatchBasedInpainting PROPERTIES COMPILE_DEFINITIONS "${compileflags}")
 
 # Interactive
 SET(BuildInteractive CACHE BOOL "Build the interactive version.")
 if(BuildInteractive)
-
-
+  # If we did not build the PatchBasedInpainting library with Qt, then find Qt now, it is definitely required for the interactive executable.
+  if(NOT QT4_FOUND)
+    FIND_PACKAGE(Qt4 REQUIRED)
+    INCLUDE(${QT_USE_FILE})
+  endif(NOT QT4_FOUND)
 
   QT4_WRAP_UI(UISrcs PatchBasedInpainting.ui FileSelector.ui FileSelectionWidget.ui)
   QT4_WRAP_CPP(MOCSrcs PatchBasedInpaintingGUI.h ComputationThread.h FileSelector.h FileSelectionWidget.h PixmapDelegate.h)

@@ -26,7 +26,9 @@
 #include "Types.h"
 
 // Qt
-#include <QtConcurrentMap>
+#ifdef USE_QT_PARALLEL
+  #include <QtConcurrentMap>
+#endif
 
 // Boost
 #include <boost/bind.hpp>
@@ -247,9 +249,17 @@ void SelfPatchCompare::ComputeAllSourceAndTargetDifferences()
     this->Pairs->TargetPatch.Region.Crop(this->Image->GetLargestPossibleRegion());
   
     ComputeOffsets();
-
-    QtConcurrent::blockingMap<std::vector<PatchPair> >(*(this->Pairs), boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteFullDifference, this, _1));
-    //std::cout << "Leave SelfPatchCompare::ComputeAllSourceAndTargetDifferences()" << std::endl;
+    #ifdef USE_QT_PARALLEL
+      #pragma message("Using QtConcurrent!")
+      QtConcurrent::blockingMap<std::vector<PatchPair> >(*(this->Pairs), boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteFullDifference, this, _1));
+    #else
+      #pragma message("NOT using QtConcurrent!")
+      for(unsigned int i = 0; i < this->Pairs->size(); ++i)
+        {
+        SetPatchAverageAbsoluteFullDifference((*this->Pairs)[i]);
+        }
+    #endif
+    //LeaveFunction("SelfPatchCompare::ComputeAllSourceAndTargetDifferences()");
   }
   catch( itk::ExceptionObject & err )
   {
@@ -261,7 +271,7 @@ void SelfPatchCompare::ComputeAllSourceAndTargetDifferences()
 
 void SelfPatchCompare::ComputeAllSourceDifferences()
 {
-  //std::cout << "Enter SelfPatchCompare::ComputeAllSourceDifferences()" << std::endl;
+  // EnterFunction("SelfPatchCompare::ComputeAllSourceDifferences()");
   // Source patches are always full and entirely valid, so there are two cases - when the target patch is fully inside the image,
   // and when it is not.
   try
