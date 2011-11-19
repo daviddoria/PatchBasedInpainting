@@ -328,6 +328,8 @@ protected:
   void on_txtNumberOfTopPatchesToDisplay_textEdited ( const QString & text );
 
   DisplayStyle ImageDisplayStyle;
+
+  void UserPatchMoved();
 };
 
 #include "PatchBasedInpaintingGUI.hxx"

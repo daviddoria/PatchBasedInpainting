@@ -69,7 +69,6 @@
 #include "HelpersDisplay.h"
 #include "HelpersOutput.h"
 #include "HelpersQt.h"
-//#include "InteractorStyleImageNoLevel.h"
 #include "InteractorStyleImageWithDrag.h"
 #include "Mask.h"
 #include "PixmapDelegate.h"
@@ -143,8 +142,8 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   actionSaveResult->setIcon(saveIcon);
   this->toolBar->addAction(actionSaveResult);
 
-  //this->InteractorStyle = vtkSmartPointer<InteractorStyleImageNoLevel>::New();
   this->InteractorStyle = vtkSmartPointer<InteractorStyleImageWithDrag>::New();
+  this->InteractorStyle->TrackballStyle->AddObserver(CustomTrackballStyle::PatchesMovedEvent, this, &PatchBasedInpaintingGUI::UserPatchMoved);
 
   // Add objects to the renderer
   this->Renderer = vtkSmartPointer<vtkRenderer>::New();
@@ -247,6 +246,11 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->txtNumberOfForwardLook->setValidator(this->IntValidator);
   this->txtGoToIteration->setValidator(this->IntValidator);
   this->txtNumberOfTopPatchesToDisplay->setValidator(this->IntValidator);
+}
+
+void PatchBasedInpaintingGUI::UserPatchMoved()
+{
+  DisplayUserPatch();
 }
 
 // Default constructor
