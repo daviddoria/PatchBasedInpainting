@@ -24,6 +24,7 @@
 #include "HelpersOutput.h"
 
 // VTK
+#include <vtkImageSlice.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 
@@ -33,6 +34,7 @@
 
 void PatchBasedInpaintingGUI::on_chkDisplayUserPatch_clicked()
 {
+  this->UserPatchLayer.ImageSlice->SetVisibility(this->chkDisplayUserPatch->isChecked());
   Refresh();
 }
 
@@ -91,10 +93,9 @@ void PatchBasedInpaintingGUI::on_chkLive_clicked()
 
 void PatchBasedInpaintingGUI::on_btnGoToIteration_clicked()
 {
-  unsigned int requestedIteration = this->GoToIteration;
-  if(requestedIteration < this->AllPotentialCandidatePairs.size() && requestedIteration >= 0)
+  if(this->GoToIteration < this->AllPotentialCandidatePairs.size() && this->GoToIteration >= 0)
     {
-    this->IterationToDisplay = requestedIteration;
+    this->IterationToDisplay = this->GoToIteration;
     ChangeDisplayedIteration();
     }
 }
@@ -146,38 +147,42 @@ void PatchBasedInpaintingGUI::on_btnResort_clicked()
 
 void PatchBasedInpaintingGUI::on_chkHighlightUsedPatches_clicked()
 {
-  Refresh();
+  RefreshVTK();
 }
 
 void PatchBasedInpaintingGUI::on_chkImage_clicked()
 {
-  Refresh();
+  this->ImageLayer.ImageSlice->SetVisibility(this->chkImage->isChecked());
+  RefreshVTK();
 }
 
 void PatchBasedInpaintingGUI::on_chkMask_clicked()
 {
-  Refresh();
+  this->MaskLayer.ImageSlice->SetVisibility(this->chkMask->isChecked());
+  RefreshVTK();
 }
 
 void PatchBasedInpaintingGUI::on_chkPriority_clicked()
 {
-  Refresh();
+  this->PriorityLayer.ImageSlice->SetVisibility(this->chkPriority->isChecked());
+  RefreshVTK();
 }
 
 void PatchBasedInpaintingGUI::on_chkDisplayForwardLookPatchLocations_clicked()
 {
-  Refresh();
+  RefreshVTK();
 }
 
 void PatchBasedInpaintingGUI::on_chkDisplaySourcePatchLocations_clicked()
 {
-  Refresh();
+  RefreshVTK();
 }
 
 
 void PatchBasedInpaintingGUI::on_chkBoundary_clicked()
 {
-  Refresh();
+  this->BoundaryLayer.ImageSlice->SetVisibility(this->chkBoundary->isChecked());
+  RefreshVTK();
 }
 
 void PatchBasedInpaintingGUI::SetCameraPosition()

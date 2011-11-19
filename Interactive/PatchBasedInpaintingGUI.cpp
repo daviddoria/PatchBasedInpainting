@@ -86,7 +86,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   // This function is called by both constructors. This avoid code duplication.
   this->setupUi(this);
 
-  this->PatchRadius = 0;
+  this->PatchRadius = 10;
   this->NumberOfTopPatchesToSave = 0;
   this->NumberOfForwardLook = 0;
   this->GoToIteration = 0;
@@ -124,6 +124,10 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->ResultPatchScene->setBackgroundBrush(brush);
   this->gfxResult->setScene(ResultPatchScene);
 
+  this->UserPatchScene = new QGraphicsScene();
+  this->UserPatchScene->setBackgroundBrush(brush);
+  this->gfxUserPatch->setScene(UserPatchScene);
+
   this->IterationToDisplay = 0;
   this->ForwardLookToDisplay = 0;
   this->SourcePatchToDisplay = 0;
@@ -159,7 +163,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->SelectedForwardLookOutlineLayer.ImageSlice->SetPickable(false);
   this->SelectedSourcePatchOutlineLayer.ImageSlice->SetPickable(false);
   
-  this->Renderer->AddViewProp(this->UserPatchLayer.ImageSlice);
   this->Renderer->AddViewProp(this->ImageLayer.ImageSlice);
   this->Renderer->AddViewProp(this->BoundaryLayer.ImageSlice);
   this->Renderer->AddViewProp(this->PriorityLayer.ImageSlice);
@@ -171,7 +174,8 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   this->Renderer->AddViewProp(this->SelectedForwardLookOutlineLayer.ImageSlice);// This should be added after AllForwardLookOutlinesLayer.
   this->Renderer->AddViewProp(this->SelectedSourcePatchOutlineLayer.ImageSlice);// This should be added after AllSourcePatchOutlinesLayer.
-
+  this->Renderer->AddViewProp(this->UserPatchLayer.ImageSlice);
+  
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
   this->InteractorStyle->Init();
@@ -228,9 +232,12 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->TopPatchesTableView->setItemDelegateForColumn(0, topPatchesPixmapDelegate);
 
   this->connect(this->TopPatchesTableView->selectionModel(), SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )), SLOT(slot_TopPatchesTableView_changed(const QModelIndex & , const QModelIndex & )));
-  
-  this->PatchRadius = 10;
-  
+
+  Helpers::CreateTransparentVTKImage(Helpers::SizeFromRadius(this->PatchRadius), this->UserPatchLayer.ImageData);
+  unsigned char userPatchColor[3];
+  HelpersQt::QColorToUCharColor(this->UserPatchColor, userPatchColor);
+  Helpers::BlankAndOutlineImage(this->UserPatchLayer.ImageData, userPatchColor);
+
   itk::Size<2> patchSize = Helpers::SizeFromRadius(this->PatchRadius);
   this->UserPatchRegion.SetSize(patchSize);
 
@@ -267,14 +274,11 @@ void PatchBasedInpaintingGUI::SetupColors()
   this->SelectedSourcePatchColor = Qt::magenta;
   this->CenterPixelColor = Qt::blue;
   this->MaskColor = Qt::darkGray;
+  this->UserPatchColor = Qt::darkYellow;
   //this->HoleColor = Qt::gray;
   this->HoleColor.setRgb(255, 153, 0); // Orange
   this->SceneBackgroundColor.setRgb(153, 255, 0); // ?
 }
-
-
-
-
 
 void PatchBasedInpaintingGUI::OpenMask(const std::string& fileName, const bool inverted)
 {
@@ -365,6 +369,7 @@ void PatchBasedInpaintingGUI::DisplayMask()
 
 void PatchBasedInpaintingGUI::DisplayUserPatch()
 {
+  EnterFunction("DisplayUserPatch");
   // Get the location of the user patch
   double position[3];
   this->UserPatchLayer.ImageSlice->GetPosition(position);
@@ -372,8 +377,14 @@ void PatchBasedInpaintingGUI::DisplayUserPatch()
   positionIndex[0] = position[0];
   positionIndex[1] = position[1];
   this->UserPatchRegion.SetIndex(positionIndex);
-  
-  Helpers::CreatePatchVTKImage(this->IntermediateImages[this->IterationToDisplay].Image, this->UserPatchRegion, this->UserPatchLayer.ImageData);
+
+  itk::Size<2> patchSize = Helpers::SizeFromRadius(this->PatchRadius);
+  this->UserPatchRegion.SetSize(patchSize);
+
+  QImage userPatch = HelpersQt::GetQImage<FloatVectorImageType>(this->IntermediateImages[this->IterationToDisplay].Image,
+                                                                this->UserPatchRegion, this->ImageDisplayStyle);
+  userPatch = HelpersQt::FitToGraphicsView(userPatch, gfxTarget);
+  this->UserPatchScene->addPixmap(QPixmap::fromImage(userPatch));
 }
 
 void PatchBasedInpaintingGUI::DisplayImage()
@@ -404,32 +415,26 @@ void PatchBasedInpaintingGUI::RefreshVTK()
     EnterFunction("Refresh()");
 
     // The following are valid for all iterations
-
-    this->UserPatchLayer.ImageSlice->SetVisibility(this->chkDisplayUserPatch->isChecked());
     if(this->chkDisplayUserPatch->isChecked())
       {
       DisplayUserPatch();
       }
 
-    this->ImageLayer.ImageSlice->SetVisibility(this->chkImage->isChecked());
     if(this->chkImage->isChecked())
       {
       DisplayImage();
       }
 
-    this->MaskLayer.ImageSlice->SetVisibility(this->chkMask->isChecked());
     if(this->chkMask->isChecked())
       {
       DisplayMask();
       }
 
-    this->PriorityLayer.ImageSlice->SetVisibility(this->chkPriority->isChecked());
     if(this->chkPriority->isChecked())
       {
       DisplayPriority();
       }
 
-    this->BoundaryLayer.ImageSlice->SetVisibility(this->chkBoundary->isChecked());
     if(this->chkBoundary->isChecked())
       {
       DisplayBoundary();

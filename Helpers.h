@@ -81,6 +81,8 @@ void ITKImageChannelToVTKImage(const FloatVectorImageType::Pointer image, const 
 // Create a VTK image of a patch of an image.
 void CreatePatchVTKImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, vtkImageData* outputImage);
 
+void CreateTransparentVTKImage(const itk::Size<2>& size, vtkImageData* outputImage);
+
 // Create a VTK image filled with values representing vectors. (There is no concept of a "vector image" in VTK).
 void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, vtkImageData* outputImage);
 

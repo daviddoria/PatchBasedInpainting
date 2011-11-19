@@ -268,6 +268,7 @@ protected:
   QGraphicsScene* SourcePatchScene;
   QGraphicsScene* TargetPatchScene;
   QGraphicsScene* ResultPatchScene;
+  QGraphicsScene* UserPatchScene;
   
   void OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename);
 
@@ -293,6 +294,7 @@ protected:
   QColor MaskColor;
   QColor HoleColor;
   QColor SceneBackgroundColor;
+  QColor UserPatchColor;
     
   // Store the pairs of patches that were actually used.
   std::vector<PatchPair> UsedPatchPairs;

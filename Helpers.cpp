@@ -865,4 +865,25 @@ void CreatePatchVTKImage(const FloatVectorImageType::Pointer image, const itk::I
   Helpers::ITKVectorImageToVTKImageFromDimension(extractFilter->GetOutput(), outputImage);
 }
 
+void CreateTransparentVTKImage(const itk::Size<2>& size, vtkImageData* outputImage)
+{
+  outputImage->SetNumberOfScalarComponents(4);
+  outputImage->SetScalarTypeToUnsignedChar();
+  outputImage->SetDimensions(size[0], size[1], 1);
+  outputImage->AllocateScalars();
+
+  for(unsigned int i = 0; i < size[0]; ++i)
+    {
+    for(unsigned int j = 0; j < size[0]; ++j)
+      {
+      unsigned char* pixel = static_cast<unsigned char*>(outputImage->GetScalarPointer(i, j ,0));
+      pixel[0] = 0;
+      pixel[1] = 0;
+      pixel[2] = 0;
+      pixel[3] = 0; // transparent
+      }
+    }
+  outputImage->Modified();
+}
+
 } // end namespace
