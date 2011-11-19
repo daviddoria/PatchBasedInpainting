@@ -639,7 +639,8 @@ void PatchBasedInpaintingGUI::DisplayResultPatch()
 
     const PatchPair& patchPair = candidatePairs[this->SourcePatchToDisplay];
     
-    // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration (as the current mask has been cleared where the target patch was copied).
+    // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration
+    // (as the current mask has been cleared where the target patch was copied).
     Mask::Pointer currentMask = this->IntermediateImages[this->IterationToDisplay - 1].MaskImage;
 
     itk::Size<2> regionSize = patchPair.SourcePatch.Region.GetSize(); // this could equally as well be TargetPatch
@@ -649,6 +650,14 @@ void PatchBasedInpaintingGUI::DisplayResultPatch()
     itk::ImageRegionIterator<FloatVectorImageType> sourceIterator(currentImage, patchPair.SourcePatch.Region);
     itk::ImageRegionIterator<FloatVectorImageType> targetIterator(currentImage, patchPair.TargetPatch.Region);
     itk::ImageRegionIterator<Mask> maskIterator(currentMask, patchPair.TargetPatch.Region);
+
+    FloatVectorImageType::Pointer resultPatch = FloatVectorImageType::New();
+    resultPatch->SetNumberOfComponentsPerPixel(currentImage->GetNumberOfComponentsPerPixel());
+    itk::Size<2> patchSize = Helpers::SizeFromRadius(this->PatchRadius);
+    itk::ImageRegion<2> region;
+    region.SetSize(patchSize);
+    resultPatch->SetRegions(region);
+    resultPatch->Allocate();
     
     while(!maskIterator.IsAtEnd())
       {
@@ -664,16 +673,20 @@ void PatchBasedInpaintingGUI::DisplayResultPatch()
 	}
       
       itk::Offset<2> offset = sourceIterator.GetIndex() - patchPair.SourcePatch.Region.GetIndex();
-      QColor pixelColor(static_cast<int>(pixel[0]), static_cast<int>(pixel[1]), static_cast<int>(pixel[2]));
-      qimage.setPixel(offset[0], offset[1], pixelColor.rgb());
+      itk::Index<2> offsetIndex;
+      offsetIndex[0] = offset[0];
+      offsetIndex[1] = offset[1];
+      resultPatch->SetPixel(offsetIndex, pixel);
 
       ++sourceIterator;
       ++targetIterator;
       ++maskIterator;
       }
 
-    qimage.setPixel(regionSize[0]/2, regionSize[1]/2, this->CenterPixelColor.rgb());
-    
+    // Color the center pixel
+    //qimage.setPixel(regionSize[0]/2, regionSize[1]/2, this->CenterPixelColor.rgb());
+
+    qimage = HelpersQt::GetQImage<FloatVectorImageType>(resultPatch, resultPatch->GetLargestPossibleRegion(), this->ImageDisplayStyle);
     // Flip the image
     qimage = qimage.mirrored(false, true);
     

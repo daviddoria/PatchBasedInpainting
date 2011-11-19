@@ -81,7 +81,7 @@ QVariant ForwardLookTableModel::data(const QModelIndex& index, int role) const
       case 0:
 	{
 	// Display the target patch in the table
-	QImage patchImage = HelpersQt::GetQImageColor<FloatVectorImageType>(this->Image, currentForwardLookPatch.Region);
+	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(this->Image, currentForwardLookPatch.Region, this->ImageDisplayStyle);
 	
 	patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
     
