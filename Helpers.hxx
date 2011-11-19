@@ -39,10 +39,6 @@
 #include "itkVectorMagnitudeImageFilter.h"
 #include "itkVectorIndexSelectionCastImageFilter.h"
 
-// Qt
-#include <QColor>
-#include <QDir>
-
 // Custom
 #include "Mask.h"
 

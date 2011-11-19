@@ -35,12 +35,14 @@ PriorityRandom.cpp
 SelfPatchCompare.cpp
 )
 
+FIND_PACKAGE(Qt4 REQUIRED)
+INCLUDE(${QT_USE_FILE})
+
 # Interactive
 SET(BuildInteractive CACHE BOOL "Build the interactive version.")
 if(BuildInteractive)
 
-  FIND_PACKAGE(Qt4 REQUIRED)
-  INCLUDE(${QT_USE_FILE})
+
 
   QT4_WRAP_UI(UISrcs PatchBasedInpainting.ui FileSelector.ui FileSelectionWidget.ui)
   QT4_WRAP_CPP(MOCSrcs PatchBasedInpaintingGUI.h ComputationThread.h FileSelector.h FileSelectionWidget.h PixmapDelegate.h)

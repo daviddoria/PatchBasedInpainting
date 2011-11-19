@@ -30,6 +30,7 @@
 #include <QFileDialog>
 #include <QIcon>
 #include <QTextEdit>
+#include <QIntValidator>
 
 // VTK
 #include <vtkActor.h>
@@ -226,6 +227,13 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   
   itk::Size<2> patchSize = Helpers::SizeFromRadius(this->PatchRadius);
   this->UserPatchRegion.SetSize(patchSize);
+
+  this->IntValidator = new QIntValidator(0, 10000, this);
+  this->txtPatchRadius->setValidator(validator);
+  this->txtNumberOfTopPatchesToSave->setValidator(validator);
+  this->txtNumberOfForwardLook->setValidator(validator);
+  this->txtGoToIteration->setValidator(validator);
+  this->txtNumberOfTopPatchesToDisplay->setValidator(validator);
 }
 
 // Default constructor

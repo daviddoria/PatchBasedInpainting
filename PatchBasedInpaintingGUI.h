@@ -310,6 +310,8 @@ protected:
 
   // The position of the freely movable patch.
   itk::ImageRegion<2> UserPatchRegion;
+
+  QIntValidator* IntValidator;
 };
 
 #include "PatchBasedInpaintingGUI.hxx"

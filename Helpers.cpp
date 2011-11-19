@@ -41,10 +41,6 @@
 #include "itkRGBToLabColorSpacePixelAccessor.h"
 #include "Derivatives.h"
 
-// Qt
-#include <QGraphicsView>
-#include <QTableWidget>
-
 namespace Helpers
 {
 
