@@ -28,11 +28,12 @@
 
 // Custom
 #include "CandidatePairs.h"
+#include "DisplayStyle.h"
 
 class ForwardLookTableModel : public QAbstractTableModel
 {
 public:
-  ForwardLookTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs);
+  ForwardLookTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs, DisplayStyle& style);
   
   int rowCount(const QModelIndex& parent) const;
   int columnCount(const QModelIndex& parent) const;
@@ -56,6 +57,8 @@ protected:
   unsigned int IterationToDisplay;
   
   unsigned int PatchDisplaySize;
+
+  DisplayStyle& ImageDisplayStyle;
 };
 
 #endif

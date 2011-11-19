@@ -70,8 +70,10 @@ void NormalizeVectorImage(FloatVector2ImageType::Pointer image);
 // Compute the angle between two vectors.
 float AngleBetween(const FloatVector2Type v1, const FloatVector2Type v2);
 
+// This function simply drives ITKImagetoVTKRGBImage or ITKImagetoVTKMagnitudeImage based on the number of components of the input.
+void ITKVectorImageToVTKImageFromDimension(const FloatVectorImageType::Pointer image, vtkImageData* outputImage);
+
 // These functions create a VTK image from a multidimensional ITK image.
-void ITKVectorImageToVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage); // This function simply drives ITKImagetoVTKRGBImage or ITKImagetoVTKMagnitudeImage based on the number of components of the input.
 void ITKImageToVTKRGBImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage);
 void ITKImageToVTKMagnitudeImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage);
 void ITKImageChannelToVTKImage(const FloatVectorImageType::Pointer image, const unsigned int channel, vtkImageData* outputImage);

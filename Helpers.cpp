@@ -277,23 +277,6 @@ itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region)
   return center;
 }
 
-
-// Convert a vector ITK image to a VTK image for display
-void ITKVectorImageToVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
-{
-  // If the image has 3 channels, assume it is RGB.
-  if(image->GetNumberOfComponentsPerPixel() == 3)
-    {
-    ITKImageToVTKRGBImage(image, outputImage);
-    }
-  else
-    {
-    ITKImageToVTKMagnitudeImage(image, outputImage);
-    }
-    
-  outputImage->Modified();
-}
-
 void NormalizeVectorImage(FloatVector2ImageType::Pointer image)
 {
   itk::ImageRegionIterator<FloatVector2ImageType> imageIterator(image, image->GetLargestPossibleRegion());
@@ -345,6 +328,22 @@ void ITKImageChannelToVTKImage(const FloatVectorImageType::Pointer image, const 
   FloatScalarImageType::Pointer channelImage = FloatScalarImageType::New();
   ExtractChannel<float>(image, channel, channelImage);
   ITKScalarImageToScaledVTKImage<FloatScalarImageType>(channelImage, outputImage);
+}
+
+// Convert a vector ITK image to a VTK image for display
+void ITKVectorImageToVTKImageFromDimension(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
+{
+  // If the image has 3 channels, assume it is RGB.
+  if(image->GetNumberOfComponentsPerPixel() == 3)
+    {
+    ITKImageToVTKRGBImage(image, outputImage);
+    }
+  else
+    {
+    ITKImageToVTKMagnitudeImage(image, outputImage);
+    }
+
+  outputImage->Modified();
 }
 
 // Convert a vector ITK image to a VTK image for display
@@ -863,7 +862,7 @@ void CreatePatchVTKImage(const FloatVectorImageType::Pointer image, const itk::I
   extractFilter->SetInput(image);
   extractFilter->Update();
   
-  ITKVectorImageToVTKImage(extractFilter->GetOutput(), outputImage);
+  Helpers::ITKVectorImageToVTKImageFromDimension(extractFilter->GetOutput(), outputImage);
 }
 
 } // end namespace

@@ -28,6 +28,7 @@ class QTableWidget;
 #include "itkImageRegion.h"
 
 // Custom
+#include "DisplayStyle.h"
 #include "Mask.h"
 
 namespace HelpersQt
@@ -44,6 +45,9 @@ QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx);
 ////////////////////////////////////
 ///////// Function templates (defined in HelpersQt.hxx) /////////
 ////////////////////////////////////
+template <typename TImage>
+QImage GetQImage(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const DisplayStyle& style);
+
 template <typename TImage>
 QImage GetQImageColor(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
 

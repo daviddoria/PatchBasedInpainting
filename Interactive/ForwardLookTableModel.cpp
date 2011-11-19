@@ -26,11 +26,9 @@
 #include "Helpers.h"
 #include "HelpersQt.h"
 
-ForwardLookTableModel::ForwardLookTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs) : QAbstractTableModel(), AllCandidatePairs(allCandidatePairs)
+ForwardLookTableModel::ForwardLookTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs, DisplayStyle& style) :
+    QAbstractTableModel(), AllCandidatePairs(allCandidatePairs), ImageDisplayStyle(style), IterationToDisplay(0), PatchDisplaySize(100)
 {
-  this->IterationToDisplay = 0;
-  
-  this->PatchDisplaySize = 100;
 }
 
 void ForwardLookTableModel::SetPatchDisplaySize(const unsigned int value)

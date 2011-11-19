@@ -22,6 +22,7 @@
 #include "itkRescaleIntensityImageFilter.h"
 
 // Custom
+#include "Helpers.h"
 #include "Types.h"
 
 // Qt
@@ -29,7 +30,33 @@
 
 namespace HelpersQt
 {
-  
+
+template <typename TImage>
+QImage GetQImage(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const DisplayStyle& style)
+{
+  // Expects an itk::VectorImage
+  switch(style.Style)
+  {
+    case DisplayStyle::COLOR:
+      return GetQImageColor<TImage>(image, region);
+      break;
+    case DisplayStyle::MAGNITUDE:
+      return GetQImageMagnitude<TImage>(image, region);
+      break;
+    case DisplayStyle::CHANNEL:
+      {
+      typedef itk::Image<typename TImage::InternalPixelType, 2> ScalarImageType;
+      typename ScalarImageType::Pointer channelImage = ScalarImageType::New();
+      Helpers::ExtractChannel<typename TImage::InternalPixelType>(image, style.Channel, channelImage);
+      return GetQImageScalar<ScalarImageType>(channelImage, region);
+      break;
+      }
+    default:
+      std::cerr << "No valid style specified." << std::endl;
+      return QImage();
+  }
+}
+
 template <typename TImage>
 QImage GetQImageColor(const typename TImage::Pointer image, const itk::ImageRegion<2>& region)
 {
@@ -73,13 +100,14 @@ QImage GetQImageMagnitude(const typename TImage::Pointer image, const itk::Image
 {
   QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888);
 
-  typedef itk::VectorMagnitudeImageFilter<TImage, FloatScalarImageType>  VectorMagnitudeFilterType;
+  typedef itk::Image<typename TImage::InternalPixelType, 2> ScalarImageType;
+  typedef itk::VectorMagnitudeImageFilter<TImage, ScalarImageType>  VectorMagnitudeFilterType;
   typename VectorMagnitudeFilterType::Pointer magnitudeFilter = VectorMagnitudeFilterType::New();
   magnitudeFilter->SetInput(image);
   magnitudeFilter->Update();
 
-  typedef itk::RescaleIntensityImageFilter<FloatScalarImageType, UnsignedCharScalarImageType> RescaleFilterType;
-  RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
+  typedef itk::RescaleIntensityImageFilter<ScalarImageType, UnsignedCharScalarImageType> RescaleFilterType;
+  typename RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
   rescaleFilter->SetOutputMinimum(0);
   rescaleFilter->SetOutputMaximum(255);
   rescaleFilter->SetInput( magnitudeFilter->GetOutput() );
@@ -91,7 +119,8 @@ QImage GetQImageMagnitude(const typename TImage::Pointer image, const itk::Image
   regionOfInterestImageFilter->SetInput(rescaleFilter->GetOutput());
   regionOfInterestImageFilter->Update();
 
-  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<UnsignedCharScalarImageType> imageIterator(regionOfInterestImageFilter->GetOutput(),
+                                                                      regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
     {

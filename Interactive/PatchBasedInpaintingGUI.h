@@ -41,17 +41,17 @@ class vtkPolyDataMapper;
 #include <QMainWindow>
 
 // Custom
-#include "PatchBasedInpainting.h"
+#include "ComputationThread.h"
 #include "DebugOutputs.h"
+#include "DisplayStyle.h"
 #include "ForwardLookTableModel.h"
 #include "InpaintingVisualizationStack.h"
 #include "Layer.h"
-#include "ComputationThread.h"
+#include "PatchBasedInpainting.h"
 #include "TopPatchesTableModel.h"
 #include "Types.h"
 #include "VectorLayer.h"
 
-//class InteractorStyleImageNoLevel;
 class InteractorStyleImageWithDrag;
 
 class PatchBasedInpaintingGUI : public QMainWindow, public Ui::PatchBasedInpaintingGUI, public DebugOutputs
@@ -68,6 +68,8 @@ public:
   // Change the camera position to produce the effect of flipping the image.
   void SetCameraPosition();
 
+  void RefreshQt();
+  void RefreshVTK();
   void Refresh();
 
 public slots:
@@ -323,6 +325,7 @@ protected:
   unsigned int NumberOfTopPatchesToDisplay;
   void on_txtNumberOfTopPatchesToDisplay_textEdited ( const QString & text );
 
+  DisplayStyle ImageDisplayStyle;
 };
 
 #include "PatchBasedInpaintingGUI.hxx"

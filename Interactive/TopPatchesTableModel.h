@@ -28,11 +28,12 @@
 
 // Custom
 #include "CandidatePairs.h"
+#include "DisplayStyle.h"
 
 class TopPatchesTableModel : public QAbstractTableModel
 {
 public:
-  TopPatchesTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs);
+  TopPatchesTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs, DisplayStyle& displayStyle);
   
   int rowCount(const QModelIndex& parent) const;
   int columnCount(const QModelIndex& parent) const;
@@ -60,6 +61,8 @@ protected:
   unsigned int ForwardLookToDisplay;
   
   unsigned int PatchDisplaySize;
+
+  DisplayStyle& ImageDisplayStyle;
 };
 
 #endif

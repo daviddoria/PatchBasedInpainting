@@ -66,6 +66,7 @@
 // Custom
 #include "FileSelector.h"
 #include "Helpers.h"
+#include "HelpersDisplay.h"
 #include "HelpersOutput.h"
 #include "HelpersQt.h"
 //#include "InteractorStyleImageNoLevel.h"
@@ -208,7 +209,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   InitializeGUIElements();
 
   // Setup forwardLook table
-  this->ForwardLookModel = new ForwardLookTableModel(this->AllPotentialCandidatePairs);
+  this->ForwardLookModel = new ForwardLookTableModel(this->AllPotentialCandidatePairs, this->ImageDisplayStyle);
   this->ForwardLookTableView->setModel(this->ForwardLookModel);
   this->ForwardLookTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 
@@ -219,7 +220,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
                 SLOT(slot_ForwardLookTableView_changed(const QModelIndex & , const QModelIndex & )));
 
   // Setup top patches table
-  this->TopPatchesModel = new TopPatchesTableModel(this->AllPotentialCandidatePairs);
+  this->TopPatchesModel = new TopPatchesTableModel(this->AllPotentialCandidatePairs, this->ImageDisplayStyle);
   this->TopPatchesTableView->setModel(this->TopPatchesModel);
   this->TopPatchesTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 
@@ -334,7 +335,7 @@ void PatchBasedInpaintingGUI::OpenImage(const std::string& fileName)
   
   //std::cout << "UserImage region: " << this->UserImage->GetLargestPossibleRegion() << std::endl;
 
-  Helpers::ITKVectorImageToVTKImage(this->UserImage, this->ImageLayer.ImageData);
+  HelpersDisplay::ITKVectorImageToVTKImage(this->UserImage, this->ImageLayer.ImageData, this->ImageDisplayStyle);
 
   this->Renderer->ResetCamera();
   this->qvtkWidget->GetRenderWindow()->Render();
@@ -377,26 +378,7 @@ void PatchBasedInpaintingGUI::DisplayUserPatch()
 
 void PatchBasedInpaintingGUI::DisplayImage()
 {
-  if(this->radDisplayColorImage->isChecked())
-    {
-    Helpers::ITKImageToVTKRGBImage(this->IntermediateImages[this->IterationToDisplay].Image, this->ImageLayer.ImageData);
-    }
-  else if(this->radDisplayMagnitudeImage->isChecked())
-    {
-    Helpers::ITKImageToVTKMagnitudeImage(this->IntermediateImages[this->IterationToDisplay].Image, this->ImageLayer.ImageData);
-    }
-  else if(this->radDisplayChannel->isChecked())
-    {
-    Helpers::ITKImageChannelToVTKImage(this->IntermediateImages[this->IterationToDisplay].Image, this->spinChannelToDisplay->value(), this->ImageLayer.ImageData);
-    }
-  else
-    {
-    std::cerr << "Something is wrong, one of the two image display radio buttons must be checked!" << std::endl;
-    exit(-1);
-    }
-    
-  // This would determine the image to display (color or magnitude) automatically based on the pixel length.
-  // Helpers::ITKVectorImagetoVTKImage(this->IntermediateImages[this->IterationToDisplay].Image, this->ImageLayer.ImageData);
+  HelpersDisplay::ITKVectorImageToVTKImage(this->IntermediateImages[this->IterationToDisplay].Image, this->ImageLayer.ImageData, this->ImageDisplayStyle);
 
   this->qvtkWidget->GetRenderWindow()->Render();
 }
@@ -415,21 +397,20 @@ void PatchBasedInpaintingGUI::DisplayPriority()
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-
-void PatchBasedInpaintingGUI::Refresh()
+void PatchBasedInpaintingGUI::RefreshVTK()
 {
   try
   {
     EnterFunction("Refresh()");
 
     // The following are valid for all iterations
-    
+
     this->UserPatchLayer.ImageSlice->SetVisibility(this->chkDisplayUserPatch->isChecked());
     if(this->chkDisplayUserPatch->isChecked())
       {
       DisplayUserPatch();
       }
-      
+
     this->ImageLayer.ImageSlice->SetVisibility(this->chkImage->isChecked());
     if(this->chkImage->isChecked())
       {
@@ -463,16 +444,16 @@ void PatchBasedInpaintingGUI::Refresh()
       this->SelectedForwardLookOutlineLayer.ImageSlice->SetVisibility(this->chkDisplayForwardLookPatchLocations->isChecked());
       this->AllForwardLookOutlinesLayer.ImageSlice->SetVisibility(this->chkDisplayForwardLookPatchLocations->isChecked());
       if(this->chkDisplayForwardLookPatchLocations->isChecked())
-	{
-	HighlightForwardLookPatches();
-	}
+        {
+        HighlightForwardLookPatches();
+        }
 
       this->SelectedSourcePatchOutlineLayer.ImageSlice->SetVisibility(this->chkDisplaySourcePatchLocations->isChecked());
       this->AllSourcePatchOutlinesLayer.ImageSlice->SetVisibility(this->chkDisplaySourcePatchLocations->isChecked());
       if(this->chkDisplaySourcePatchLocations->isChecked())
-	{
-	HighlightSourcePatches();
-	}
+        {
+        HighlightSourcePatches();
+        }
       }
     else
       {
@@ -493,6 +474,20 @@ void PatchBasedInpaintingGUI::Refresh()
     std::cerr << err << std::endl;
     exit(-1);
   }
+}
+
+void PatchBasedInpaintingGUI::RefreshQt()
+{
+  ChangeDisplayedTopPatch();
+  ChangeDisplayedForwardLookPatch();
+  SetupForwardLookingTable();
+  SetupTopPatchesTable();
+}
+
+void PatchBasedInpaintingGUI::Refresh()
+{
+  RefreshVTK();
+  RefreshQt();
 }
 
 
@@ -566,7 +561,7 @@ void PatchBasedInpaintingGUI::DisplaySourcePatch()
     FloatVectorImageType::Pointer currentImage = this->IntermediateImages[this->IterationToDisplay].Image;
 
     const CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->ForwardLookToDisplay]; // This -1 is because the 0th iteration is the initial condition
-    QImage sourceImage = HelpersQt::GetQImageColor<FloatVectorImageType>(currentImage, candidatePairs[this->SourcePatchToDisplay].SourcePatch.Region);
+    QImage sourceImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, candidatePairs[this->SourcePatchToDisplay].SourcePatch.Region, this->ImageDisplayStyle);
     sourceImage = HelpersQt::FitToGraphicsView(sourceImage, gfxTarget);
     this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
 
@@ -605,7 +600,7 @@ void PatchBasedInpaintingGUI::DisplayTargetPatch()
     Mask::Pointer currentMask = this->IntermediateImages[this->IterationToDisplay - 1].MaskImage;
 
     // Target
-    QImage targetImage = HelpersQt::GetQImageColor<FloatVectorImageType>(currentImage, candidatePairs.TargetPatch.Region);
+    QImage targetImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, candidatePairs.TargetPatch.Region, this->ImageDisplayStyle);
 
     targetImage = HelpersQt::FitToGraphicsView(targetImage, gfxTarget);
     this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));

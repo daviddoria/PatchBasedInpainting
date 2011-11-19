@@ -26,12 +26,10 @@
 #include "Helpers.h"
 #include "HelpersQt.h"
 
-TopPatchesTableModel::TopPatchesTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs) : QAbstractTableModel(), AllCandidatePairs(allCandidatePairs)
+TopPatchesTableModel::TopPatchesTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs, DisplayStyle& displayStyle) :
+    QAbstractTableModel(), AllCandidatePairs(allCandidatePairs), ImageDisplayStyle(displayStyle), IterationToDisplay(0),
+    ForwardLookToDisplay(0), PatchDisplaySize(100)
 {
-  this->IterationToDisplay = 0;
-  this->ForwardLookToDisplay = 0;
-  
-  this->PatchDisplaySize = 100;
 }
 
 void TopPatchesTableModel::SetPatchDisplaySize(const unsigned int value)
@@ -89,7 +87,7 @@ QVariant TopPatchesTableModel::data(const QModelIndex& index, int role) const
       {
       case 0:
 	{
-	QImage patchImage = HelpersQt::GetQImageColor<FloatVectorImageType>(this->Image, currentCandidateSet[index.row()].SourcePatch.Region);
+	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(this->Image, currentCandidateSet[index.row()].SourcePatch.Region, this->ImageDisplayStyle);
 	
 	patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
     

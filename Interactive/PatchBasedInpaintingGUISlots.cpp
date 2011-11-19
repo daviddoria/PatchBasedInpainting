@@ -38,21 +38,29 @@ void PatchBasedInpaintingGUI::on_chkDisplayUserPatch_clicked()
 
 void PatchBasedInpaintingGUI::on_radDisplayColorImage_clicked()
 {
+  this->spinChannelToDisplay->setEnabled(false);
+  this->ImageDisplayStyle.Style = DisplayStyle::COLOR;
   Refresh();
 }
 
 void PatchBasedInpaintingGUI::on_radDisplayMagnitudeImage_clicked()
 {
+  this->spinChannelToDisplay->setEnabled(false);
+  this->ImageDisplayStyle.Style = DisplayStyle::MAGNITUDE;
   Refresh();
 }
 
 void PatchBasedInpaintingGUI::on_radDisplayChannel_clicked()
 {
+  this->spinChannelToDisplay->setEnabled(true);
+  this->ImageDisplayStyle.Style = DisplayStyle::CHANNEL;
+  this->ImageDisplayStyle.Channel = this->spinChannelToDisplay->value();
   Refresh();
 }
 
 void PatchBasedInpaintingGUI::on_spinChannelToDisplay_valueChanged(int unused)
 {
+  this->ImageDisplayStyle.Channel = this->spinChannelToDisplay->value();
   Refresh();
 }
 
