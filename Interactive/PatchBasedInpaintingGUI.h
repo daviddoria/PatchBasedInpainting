@@ -330,6 +330,7 @@ protected:
   DisplayStyle ImageDisplayStyle;
 
   void UserPatchMoved();
+  void ComputeUserPatchRegion();
 };
 
 #include "PatchBasedInpaintingGUI.hxx"

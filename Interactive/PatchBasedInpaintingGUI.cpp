@@ -250,7 +250,37 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
 void PatchBasedInpaintingGUI::UserPatchMoved()
 {
+  // Snap user patch to integer pixels
+  double position[3];
+  this->UserPatchLayer.ImageSlice->GetPosition(position);
+  position[0] = round(position[0]);
+  position[1] = round(position[1]);
+  this->UserPatchLayer.ImageSlice->SetPosition(position);
+  this->qvtkWidget->GetRenderWindow()->Render();
+
+  ComputeUserPatchRegion();
+
   DisplayUserPatch();
+
+  if(this->IterationToDisplay < 1)
+    {
+    return;
+    }
+
+  SelfPatchCompare* patchCompare = new SelfPatchCompare;
+  patchCompare->SetImage(this->IntermediateImages[this->IterationToDisplay].Image);
+  patchCompare->SetMask(this->IntermediateImages[this->IterationToDisplay].MaskImage);
+  patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
+  patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
+  CandidatePairs candidatePairs(this->AllPotentialCandidatePairs[this->IterationToDisplay - 1][this->ForwardLookToDisplay].TargetPatch);
+  Patch userPatch(this->UserPatchRegion);
+  candidatePairs.AddPairFromPatch(userPatch);
+  patchCompare->SetPairs(&candidatePairs);
+  patchCompare->ComputeAllSourceDifferences();
+
+  std::stringstream ss;
+  ss << candidatePairs[0].GetAverageAbsoluteDifference();
+  lblUserPatchError->setText(ss.str().c_str());
 }
 
 // Default constructor
@@ -371,10 +401,8 @@ void PatchBasedInpaintingGUI::DisplayMask()
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-void PatchBasedInpaintingGUI::DisplayUserPatch()
+void PatchBasedInpaintingGUI::ComputeUserPatchRegion()
 {
-  EnterFunction("DisplayUserPatch");
-  // Get the location of the user patch
   double position[3];
   this->UserPatchLayer.ImageSlice->GetPosition(position);
   itk::Index<2> positionIndex;
@@ -384,7 +412,13 @@ void PatchBasedInpaintingGUI::DisplayUserPatch()
 
   itk::Size<2> patchSize = Helpers::SizeFromRadius(this->PatchRadius);
   this->UserPatchRegion.SetSize(patchSize);
+}
 
+void PatchBasedInpaintingGUI::DisplayUserPatch()
+{
+  EnterFunction("DisplayUserPatch");
+
+  ComputeUserPatchRegion();
   QImage userPatch = HelpersQt::GetQImage<FloatVectorImageType>(this->IntermediateImages[this->IterationToDisplay].Image,
                                                                 this->UserPatchRegion, this->ImageDisplayStyle);
   userPatch = HelpersQt::FitToGraphicsView(userPatch, gfxTarget);
@@ -1298,4 +1332,6 @@ void PatchBasedInpaintingGUI::InitializeGUIElements()
   this->GoToIteration = this->txtGoToIteration->text().toUInt();
 
   this->NumberOfTopPatchesToDisplay = this->txtNumberOfTopPatchesToDisplay->text().toUInt();
+
+  this->UserPatchLayer.ImageSlice->SetVisibility(this->chkDisplayUserPatch->isChecked());
 }

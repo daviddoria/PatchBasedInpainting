@@ -90,7 +90,7 @@ protected:
   // If a channel of one pixel was white (255) and the corresponding channel of the other pixel
   // was black (0), the difference would be 255, so the difference squared would be 255*255
   static const float MaxColorDifference = 255*255;
-  
+
   // These are the offsets of the target region which we with to compare
   std::vector<FloatVectorImageType::OffsetValueType> ValidTargetPatchOffsets;
 
@@ -100,7 +100,7 @@ protected:
   // Provide the pairs of target/source patches. All target patches are exactly the same patch. The source regions are assumed to all be fully valid.
   // We modify the original data directory to add the computed values.
   CandidatePairs* Pairs;
-  
+
   // This is the image from which to take the patches
   FloatVectorImageType::Pointer Image;
 
@@ -108,7 +108,7 @@ protected:
   Mask::Pointer MaskImage;
 
   unsigned int NumberOfComponentsPerPixel;
-    
+
   // This function takes a template paramter of a class which has a Difference(pixel, pixel) function.
   template<typename TDifferenceFunction>
   float PatchAverageSourceDifference(const Patch& sourcePatch);
@@ -116,6 +116,5 @@ protected:
 };
 
 #include "SelfPatchCompare.hxx"
-
 
 #endif
