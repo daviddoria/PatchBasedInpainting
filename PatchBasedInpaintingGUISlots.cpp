@@ -83,7 +83,7 @@ void PatchBasedInpaintingGUI::on_chkLive_clicked()
 
 void PatchBasedInpaintingGUI::on_btnGoToIteration_clicked()
 {
-  unsigned int requestedIteration = this->txtGoToIteration->text().toUInt();
+  unsigned int requestedIteration = this->GoToIteration;
   if(requestedIteration < this->AllPotentialCandidatePairs.size() && requestedIteration >= 0)
     {
     this->IterationToDisplay = requestedIteration;
@@ -364,8 +364,8 @@ void PatchBasedInpaintingGUI::on_btnInpaint_clicked()
   
   //Refresh();
   
-  this->Inpainting.SetMaxForwardLookPatches(this->txtNumberOfForwardLook->text().toUInt());
-  this->Inpainting.SetNumberOfTopPatchesToSave(this->txtNumberOfTopPatchesToSave->text().toUInt());
+  this->Inpainting.SetMaxForwardLookPatches(this->NumberOfForwardLook);
+  this->Inpainting.SetNumberOfTopPatchesToSave(this->NumberOfTopPatchesToSave);
   
   ComputationThread.start();
 }
@@ -375,8 +375,8 @@ void PatchBasedInpaintingGUI::on_btnStep_clicked()
 {
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
-  this->Inpainting.SetMaxForwardLookPatches(this->txtNumberOfForwardLook->text().toUInt());
-  this->Inpainting.SetNumberOfTopPatchesToSave(this->txtNumberOfTopPatchesToSave->text().toUInt());
+  this->Inpainting.SetMaxForwardLookPatches(this->NumberOfForwardLook);
+  this->Inpainting.SetNumberOfTopPatchesToSave(this->NumberOfTopPatchesToSave);
   PatchPair usedPair = this->Inpainting.Iterate();
   
   this->UsedPatchPairs.push_back(usedPair);
@@ -444,4 +444,29 @@ void PatchBasedInpaintingGUI::slot_IterationComplete()
 {
   DebugMessage("IterationCompleteSlot()");
   IterationComplete();
+}
+
+void PatchBasedInpaintingGUI::on_txtPatchRadius_textEdited ( const QString & text )
+{
+  this->PatchRadius = text.toUInt();
+}
+
+void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToSave_textEdited ( const QString & text )
+{
+  this->NumberOfTopPatchesToSave = text.toUInt();
+}
+
+void PatchBasedInpaintingGUI::on_txtNumberOfForwardLook_textEdited ( const QString & text )
+{
+  this->NumberOfForwardLook = text.toUInt();
+}
+
+void PatchBasedInpaintingGUI::on_txtGoToIteration_textEdited ( const QString & text )
+{
+  this->GoToIteration = text.toUInt();
+}
+
+void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToDisplay_textEdited ( const QString & text )
+{
+  this->NumberOfTopPatchesToDisplay = text.toUInt();
 }

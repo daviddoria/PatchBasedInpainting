@@ -85,6 +85,12 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   // This function is called by both constructors. This avoid code duplication.
   this->setupUi(this);
 
+  this->PatchRadius = 0;
+  this->NumberOfTopPatchesToSave = 0;
+  this->NumberOfForwardLook = 0;
+  this->GoToIteration = 0;
+  this->NumberOfTopPatchesToDisplay = 0;
+
   this->CameraLeftToRightVector.resize(3);
   this->CameraLeftToRightVector[0] = -1;
   this->CameraLeftToRightVector[1] = 0;
@@ -199,8 +205,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   this->ComputationThread.SetObject(&(this->Inpainting));
 
-  // Make the 'enabled' property of several components match the pre-specified state.
-  on_chkLive_clicked();
+  InitializeGUIElements();
 
   // Setup forwardLook table
   this->ForwardLookModel = new ForwardLookTableModel(this->AllPotentialCandidatePairs);
@@ -229,11 +234,11 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->UserPatchRegion.SetSize(patchSize);
 
   this->IntValidator = new QIntValidator(0, 10000, this);
-  this->txtPatchRadius->setValidator(validator);
-  this->txtNumberOfTopPatchesToSave->setValidator(validator);
-  this->txtNumberOfForwardLook->setValidator(validator);
-  this->txtGoToIteration->setValidator(validator);
-  this->txtNumberOfTopPatchesToDisplay->setValidator(validator);
+  this->txtPatchRadius->setValidator(this->IntValidator);
+  this->txtNumberOfTopPatchesToSave->setValidator(this->IntValidator);
+  this->txtNumberOfForwardLook->setValidator(this->IntValidator);
+  this->txtGoToIteration->setValidator(this->IntValidator);
+  this->txtNumberOfTopPatchesToDisplay->setValidator(this->IntValidator);
 }
 
 // Default constructor
@@ -499,7 +504,7 @@ void PatchBasedInpaintingGUI::Initialize()
   this->UserMaskImage->ApplyToVectorImage<FloatVectorImageType>(this->UserImage, this->HoleColor);
 
   // Provide required data.
-  this->Inpainting.SetPatchRadius(this->txtPatchRadius->text().toUInt());
+  this->Inpainting.SetPatchRadius(this->PatchRadius);
   this->Inpainting.SetMask(this->UserMaskImage);
   this->Inpainting.SetImage(this->UserImage);
 
@@ -831,7 +836,7 @@ void PatchBasedInpaintingGUI::HighlightSourcePatches()
     unsigned char centerPixelColor[3];
     HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
 
-    unsigned int numberToDisplay = std::min(candidatePairs.size(), this->txtNumberOfTopPatchesToDisplay->text().toUInt());
+    unsigned int numberToDisplay = std::min(candidatePairs.size(), NumberOfTopPatchesToDisplay);
     for(unsigned int candidateId = 0; candidateId < numberToDisplay; ++candidateId)
       {
       //DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
@@ -1064,7 +1069,7 @@ void PatchBasedInpaintingGUI::IterationComplete()
     
     for(unsigned int i = 0; i < this->Inpainting.GetPotentialCandidatePairsReference().size(); ++i)
       {
-      unsigned int numberToKeep = std::min(this->Inpainting.GetPotentialCandidatePairsReference()[i].size(), this->txtNumberOfTopPatchesToSave->text().toUInt());
+      unsigned int numberToKeep = std::min(this->Inpainting.GetPotentialCandidatePairsReference()[i].size(), this->NumberOfTopPatchesToSave);
       //std::cout << "numberToKeep: " << numberToKeep << std::endl;
       this->Inpainting.GetPotentialCandidatePairsReference()[i].erase(this->Inpainting.GetPotentialCandidatePairsReference()[i].begin() + numberToKeep, this->Inpainting.GetPotentialCandidatePairsReference()[i].end());
       }
@@ -1207,7 +1212,7 @@ void PatchBasedInpaintingGUI::HighlightSelectedForwardLookPatch()
     }
   else
     {
-    unsigned int patchRadius = this->txtPatchRadius->text().toUInt();
+    unsigned int patchRadius = this->PatchRadius;
     unsigned int patchSize = Helpers::SideLengthFromRadius(patchRadius);
 
     this->SelectedForwardLookOutlineLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
@@ -1253,7 +1258,7 @@ void PatchBasedInpaintingGUI::HighlightSelectedSourcePatch()
     }
   else
     {
-    unsigned int patchRadius = this->txtPatchRadius->text().toUInt();
+    unsigned int patchRadius = this->PatchRadius;
     unsigned int patchSize = Helpers::SideLengthFromRadius(patchRadius);
 
     this->SelectedSourcePatchOutlineLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
@@ -1274,4 +1279,19 @@ void PatchBasedInpaintingGUI::HighlightSelectedSourcePatch()
 
     this->qvtkWidget->GetRenderWindow()->Render();
     }
+}
+
+void PatchBasedInpaintingGUI::InitializeGUIElements()
+{
+  on_chkLive_clicked();
+
+  this->PatchRadius = this->txtPatchRadius->text().toUInt();
+
+  this->NumberOfTopPatchesToSave = this->txtNumberOfTopPatchesToSave->text().toUInt();
+
+  this->NumberOfForwardLook = this->txtNumberOfForwardLook->text().toUInt();
+
+  this->GoToIteration = this->txtGoToIteration->text().toUInt();
+
+  this->NumberOfTopPatchesToDisplay = this->txtNumberOfTopPatchesToDisplay->text().toUInt();
 }

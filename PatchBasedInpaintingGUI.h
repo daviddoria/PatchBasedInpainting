@@ -248,6 +248,9 @@ protected:
   void DisplaySourcePatch();
   void DisplayTargetPatch();
   void DisplayResultPatch();
+
+  // Make sure internal variables and the state of the GUI elements matches.
+  void InitializeGUIElements();
   
   // Display the text information (scores, etc) of the patches used at the current information
   void DisplayUsedPatchInformation();
@@ -305,13 +308,28 @@ protected:
   // The size to display the patches.
   unsigned int PatchDisplaySize;
   
-  // The radius of the patches.
-  unsigned int PatchRadius;
-
   // The position of the freely movable patch.
   itk::ImageRegion<2> UserPatchRegion;
 
+  // A Validator to make sure only positive integers can be typed into the text boxes.
   QIntValidator* IntValidator;
+
+  // The radius of the patches.
+  unsigned int PatchRadius;
+  void on_txtPatchRadius_textEdited ( const QString & text );
+  
+  unsigned int NumberOfTopPatchesToSave;
+  void on_txtNumberOfTopPatchesToSave_textEdited ( const QString & text );
+
+  unsigned int NumberOfForwardLook;
+  void on_txtNumberOfForwardLook_textEdited ( const QString & text );
+
+  unsigned int GoToIteration;
+  void on_txtGoToIteration_textEdited ( const QString & text );
+
+  unsigned int NumberOfTopPatchesToDisplay;
+  void on_txtNumberOfTopPatchesToDisplay_textEdited ( const QString & text );
+
 };
 
 #include "PatchBasedInpaintingGUI.hxx"
