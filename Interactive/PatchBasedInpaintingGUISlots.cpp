@@ -376,6 +376,10 @@ void PatchBasedInpaintingGUI::on_btnInpaint_clicked()
   //Initialize();
   
   //Refresh();
+
+  // Gray out some items that should not be changed while the inpainting is running.
+  this->txtNumberOfForwardLook->setEnabled(false);
+  this->txtNumberOfTopPatchesToSave->setEnabled(false);
   
   this->Inpainting.SetMaxForwardLookPatches(this->NumberOfForwardLook);
   this->Inpainting.SetNumberOfTopPatchesToSave(this->NumberOfTopPatchesToSave);
@@ -440,8 +444,11 @@ void PatchBasedInpaintingGUI::slot_StartProgress()
 void PatchBasedInpaintingGUI::slot_StopProgress()
 {
   //std::cout << "Form::StopProgressSlot()" << std::endl;
-  // When the ProgressThread emits the StopProgressSignal, we need to display the result of the segmentation
 
+  // Re-enable some items that should not be changed while the inpainting is running.
+  this->txtNumberOfForwardLook->setEnabled(false);
+  this->txtNumberOfTopPatchesToSave->setEnabled(false);
+  
   this->progressBar->hide();
 }
 
