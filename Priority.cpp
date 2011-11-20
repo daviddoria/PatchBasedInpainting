@@ -25,6 +25,8 @@ Priority::Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage,
                    Image(image), MaskImage(maskImage), PatchRadius(patchRadius)
 {
   this->DebugFunctionEnterLeave = true;
+  std::cout << "Priority() image size: " << image->GetLargestPossibleRegion().GetSize() << std::endl;
+  
   EnterFunction("Priority()");
   this->PriorityImage = FloatScalarImageType::New();
   Helpers::InitializeImage<FloatScalarImageType>(this->PriorityImage, image->GetLargestPossibleRegion());
@@ -66,17 +68,26 @@ void Priority::UpdateBoundary()
 void Priority::ComputeAllPriorities()
 {
   EnterFunction("ComputeAllPriorities()");
+
+  if(this->MaskImage->GetLargestPossibleRegion() != this->PriorityImage->GetLargestPossibleRegion())
+    {
+    std::cerr << "Their priority image has not been properly initialized!" << std::endl;
+    exit(-1);
+    }
+
   this->MaskImage->FindBoundary(this->BoundaryImage);
 
   Helpers::SetImageToConstant<FloatScalarImageType>(this->PriorityImage, 0.0f);
 
   std::vector<itk::Index<2> > boundaryPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage);
-
+  std::cout << "There are " << boundaryPixels.size() << " boundaryPixels." << std::endl;
   for(unsigned int pixelId = 0; pixelId < boundaryPixels.size(); ++pixelId)
     {
     this->PriorityImage->SetPixel(boundaryPixels[pixelId], ComputePriority(boundaryPixels[pixelId]));
     }
-    
+
+  std::cout << "Prioirty image size: " << this->PriorityImage->GetLargestPossibleRegion() << std::endl;
+  
   HelpersOutput::WriteImage<FloatScalarImageType>(this->PriorityImage, "Debug/Priority.mha");
   
   LeaveFunction("ComputeAllPriorities()");

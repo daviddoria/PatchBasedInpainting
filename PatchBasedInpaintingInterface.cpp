@@ -109,11 +109,11 @@ void PatchBasedInpainting::SetImage(const FloatVectorImageType::Pointer image)
   // Store the original image
   Helpers::DeepCopy<FloatVectorImageType>(image, this->OriginalImage);
 
-  // Initialize the result to the original image
+  // This must be done here, as CurrentOutputImage must be valid before initializing a priority function.
   Helpers::DeepCopy<FloatVectorImageType>(image, this->CurrentOutputImage);
 
   RGBImageType::Pointer rgbImage = RGBImageType::New();
-  Helpers::VectorImageToRGBImage(this->CurrentOutputImage, rgbImage);
+  Helpers::VectorImageToRGBImage(image, rgbImage);
 
   Helpers::RGBImageToCIELabImage(rgbImage, this->CIELabImage);
   HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CIELabImage, "Debug/SetImage.CIELab.mha", this->DebugImages);
@@ -127,6 +127,7 @@ void PatchBasedInpainting::SetMask(const Mask::Pointer mask)
 {
   // Initialize the CurrentMask to the OriginalMask
   this->MaskImage->DeepCopyFrom(mask);
+  this->MaskImage->SetDebugFunctionEnterLeave(true);
 }
 
 itk::ImageRegion<2> PatchBasedInpainting::GetFullRegion()

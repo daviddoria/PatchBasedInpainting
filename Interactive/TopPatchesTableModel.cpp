@@ -26,8 +26,8 @@
 #include "Helpers.h"
 #include "HelpersQt.h"
 
-TopPatchesTableModel::TopPatchesTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs, DisplayStyle& displayStyle) :
-    QAbstractTableModel(), AllCandidatePairs(allCandidatePairs), ImageDisplayStyle(displayStyle), IterationToDisplay(0),
+TopPatchesTableModel::TopPatchesTableModel(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& displayStyle) :
+    QAbstractTableModel(), IterationRecords(iterationRecords), ImageDisplayStyle(displayStyle), IterationToDisplay(0),
     ForwardLookToDisplay(0), PatchDisplaySize(100)
 {
 }
@@ -63,12 +63,17 @@ void TopPatchesTableModel::SetImage(FloatVectorImageType::Pointer image)
 
 int TopPatchesTableModel::rowCount(const QModelIndex& parent) const
 {
-  if(this->AllCandidatePairs.size() < this->IterationToDisplay || 
-    this->AllCandidatePairs.size() == 0)
+  EnterFunction("TopPatchesTableModel::rowCount()");
+  if(this->IterationRecords.size() < this->IterationToDisplay || 
+    this->IterationRecords.size() == 0 ||
+    this->IterationRecords[this->IterationToDisplay].PotentialPairSets.size() == 0 ||
+    this->IterationRecords[this->IterationToDisplay].PotentialPairSets.size() < this->ForwardLookToDisplay)
     {
     return 0;
     }
-  return this->AllCandidatePairs[this->IterationToDisplay][this->ForwardLookToDisplay].size();
+  unsigned int rows = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay].size();
+  LeaveFunction("TopPatchesTableModel::rowCount()");
+  return rows;
 }
 
 int TopPatchesTableModel::columnCount(const QModelIndex& parent) const
@@ -78,10 +83,11 @@ int TopPatchesTableModel::columnCount(const QModelIndex& parent) const
 
 QVariant TopPatchesTableModel::data(const QModelIndex& index, int role) const
 {
+  EnterFunction("TopPatchesTableModel::data()");
   QVariant returnValue;
   if(role == Qt::DisplayRole && index.row() >= 0)
     {
-    const CandidatePairs& currentCandidateSet = this->AllCandidatePairs[this->IterationToDisplay][this->ForwardLookToDisplay];
+    const CandidatePairs& currentCandidateSet = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay];
     
     switch(index.column())
       {
@@ -113,7 +119,7 @@ QVariant TopPatchesTableModel::data(const QModelIndex& index, int role) const
 	}
       } // end switch
     } // end if DisplayRole
-    
+  LeaveFunction("TopPatchesTableModel::data()");
   return returnValue;
 }
 

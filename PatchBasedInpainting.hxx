@@ -21,5 +21,17 @@ void PatchBasedInpainting::SetPriorityFunction()
 {
   // This must be done internal to PatchBasedInpainting because we want to make sure it is initialized with all of
   // the correct properties.
+
+  if(this->OriginalImage->GetLargestPossibleRegion() != this->CurrentOutputImage->GetLargestPossibleRegion())
+    {
+    std::cerr << "The CurrentOutputImage must have been initialized from OriginalImage before calling this function." << std::endl;
+    exit(-1);
+    }
+
+  // std::cout << "SetPriorityFunction() image size: " << CurrentOutputImage->GetLargestPossibleRegion().GetSize() << std::endl;
+  if(this->PriorityFunction)
+    {
+    delete this->PriorityFunction;
+    }
   this->PriorityFunction = new T(this->CurrentOutputImage, this->MaskImage, this->PatchRadius[0]);
 }

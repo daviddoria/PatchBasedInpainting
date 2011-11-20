@@ -93,7 +93,7 @@ void PatchBasedInpaintingGUI::on_chkLive_clicked()
 
 void PatchBasedInpaintingGUI::on_btnGoToIteration_clicked()
 {
-  if(this->GoToIteration < this->AllPotentialCandidatePairs.size() && this->GoToIteration >= 0)
+  if(this->GoToIteration < this->IterationRecords.size() && this->GoToIteration >= 0)
     {
     this->IterationToDisplay = this->GoToIteration;
     ChangeDisplayedIteration();
@@ -102,11 +102,11 @@ void PatchBasedInpaintingGUI::on_btnGoToIteration_clicked()
 
 void PatchBasedInpaintingGUI::on_btnResort_clicked()
 {
-  for(unsigned int iteration = 0; iteration < this->AllPotentialCandidatePairs.size(); iteration++)
+  for(unsigned int iteration = 0; iteration < this->IterationRecords.size(); iteration++)
     {
-    for(unsigned int forwardLookId = 0; forwardLookId < this->AllPotentialCandidatePairs[iteration].size(); forwardLookId++)
+    for(unsigned int forwardLookId = 0; forwardLookId < this->IterationRecords[iteration].PotentialPairSets.size(); forwardLookId++)
       {
-      CandidatePairs& candidatePairs = this->AllPotentialCandidatePairs[iteration][forwardLookId];
+      CandidatePairs& candidatePairs = this->IterationRecords[iteration].PotentialPairSets[forwardLookId];
 
       if(this->radSortByAverageAbsoluteDifference->isChecked())
         {
@@ -237,7 +237,7 @@ void PatchBasedInpaintingGUI::on_btnDisplayNextStep_clicked()
     //        << " Inpainting iteration: " <<  static_cast<int>(this->Inpainting.GetIteration()) << std::endl;
   
   //if(this->IterationToDisplay < this->Inpainting.GetNumberOfCompletedIterations() - 1)
-  if(this->IterationToDisplay < this->IntermediateImages.size() - 1)
+  if(this->IterationToDisplay < this->IterationRecords.size() - 1)
     {
     this->IterationToDisplay++;
     DebugMessage<unsigned int>("Displaying iteration: ", this->IterationToDisplay);
@@ -322,9 +322,10 @@ void PatchBasedInpaintingGUI::slot_ForwardLookTableView_changed(const QModelInde
     return;
     }
   
-  if(currentIndex.row() > static_cast<int>(this->AllPotentialCandidatePairs[this->IterationToDisplay - 1].size() - 1))
+  if(currentIndex.row() > static_cast<int>(this->IterationRecords[this->IterationToDisplay - 1].PotentialPairSets.size() - 1))
     {
-    std::cerr << "Requested display of forward look patch " << currentIndex.row() << " but there are only " << this->AllPotentialCandidatePairs[this->IterationToDisplay - 1].size() - 1 << std::endl;
+    std::cerr << "Requested display of forward look patch " << currentIndex.row() << " but there are only "
+              << this->IterationRecords[this->IterationToDisplay - 1].PotentialPairSets.size() - 1 << std::endl;
     }
 
   std::cerr << "Requested display of forward look patch " << currentIndex.row() << std::endl;
@@ -395,12 +396,9 @@ void PatchBasedInpaintingGUI::on_btnStep_clicked()
   this->Inpainting.SetMaxForwardLookPatches(this->NumberOfForwardLook);
   this->Inpainting.SetNumberOfTopPatchesToSave(this->NumberOfTopPatchesToSave);
   PatchPair usedPair = this->Inpainting.Iterate();
-  
-  this->UsedPatchPairs.push_back(usedPair);
-  
-  IterationComplete();
-}
 
+  IterationComplete(usedPair);
+}
 
 void PatchBasedInpaintingGUI::on_btnStop_clicked()
 {
@@ -409,15 +407,8 @@ void PatchBasedInpaintingGUI::on_btnStop_clicked()
 
 void PatchBasedInpaintingGUI::on_btnReset_clicked()
 {
-  slot_Refresh();
+  Reset();
 }
-  
-
-void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
-{
-  Initialize();
-}
-
 
 void PatchBasedInpaintingGUI::on_actionHelp_activated()
 {
@@ -426,7 +417,7 @@ void PatchBasedInpaintingGUI::on_actionHelp_activated()
   help->setReadOnly(true);
   help->append("<h1>Patch Based Inpainting</h1>\
   Load an image and a mask. <br/>\
-  Set the settings such as patch size. <br/>\
+  Specify some parameters, such as the patch size, debug verbosity, etc. <br/>\
   To do the complete inpainting, click 'Inpaint'.<br/>\
   To do one step of the inpainting, click 'Step'. This will allow you to inspect forward look candidates and each of their top matches.<br/>\
   <p/>");
@@ -460,10 +451,10 @@ void PatchBasedInpaintingGUI::slot_Refresh()
 }
 
 
-void PatchBasedInpaintingGUI::slot_IterationComplete()
+void PatchBasedInpaintingGUI::slot_IterationComplete(const PatchPair& patchPair)
 {
   DebugMessage("IterationCompleteSlot()");
-  IterationComplete();
+  IterationComplete(patchPair);
 }
 
 void PatchBasedInpaintingGUI::on_txtPatchRadius_textEdited ( const QString & text )

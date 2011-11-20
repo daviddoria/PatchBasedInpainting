@@ -31,7 +31,7 @@ void DebugOutputs::SetDebugFunctionEnterLeave(const bool value)
 }
 
 
-void DebugOutputs::EnterFunction(const std::string& functionName)
+void DebugOutputs::EnterFunction(const std::string& functionName) const
 {
   if(this->DebugFunctionEnterLeave)
     {
@@ -39,7 +39,7 @@ void DebugOutputs::EnterFunction(const std::string& functionName)
     }
 }
 
-void DebugOutputs::LeaveFunction(const std::string& functionName)
+void DebugOutputs::LeaveFunction(const std::string& functionName) const
 {
   if(this->DebugFunctionEnterLeave)
     {
@@ -47,7 +47,7 @@ void DebugOutputs::LeaveFunction(const std::string& functionName)
     }
 }
 
-void DebugOutputs::DebugMessage(const std::string& message)
+void DebugOutputs::DebugMessage(const std::string& message) const
 {
   if(this->DebugMessages)
     {

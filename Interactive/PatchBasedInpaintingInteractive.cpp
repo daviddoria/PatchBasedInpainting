@@ -30,8 +30,8 @@ int main( int argc, char** argv )
   PatchBasedInpaintingGUI* patchBasedInpaintingGUI;
   if(argc == 3)
     {
-    //std::cout << "Using filename arguments." << std::endl;
-    patchBasedInpaintingGUI = new PatchBasedInpaintingGUI(argv[1], argv[2]);
+    std::cout << "Using filename arguments." << std::endl;
+    patchBasedInpaintingGUI = new PatchBasedInpaintingGUI(argv[1], argv[2], true);
     }
   else
     {
@@ -39,7 +39,7 @@ int main( int argc, char** argv )
     patchBasedInpaintingGUI = new PatchBasedInpaintingGUI;
     }
   
-  patchBasedInpaintingGUI->SetDebugFunctionEnterLeave(false);
+  patchBasedInpaintingGUI->SetDebugFunctionEnterLeave(true);
   patchBasedInpaintingGUI->showMaximized();
 
   return app.exec();

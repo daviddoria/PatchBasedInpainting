@@ -283,7 +283,7 @@ void Mask::FindBoundary(UnsignedCharScalarImageType::Pointer boundaryImage)
     Helpers::DeepCopy<UnsignedCharScalarImageType>(invertIntensityFilter->GetOutput(), boundaryImage);
 
     //HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/FindBoundary.BoundaryImage.mha", this->DebugImages);
-    //LeaveFunction("FindBoundary()");
+    LeaveFunction("FindBoundary()");
   }
   catch( itk::ExceptionObject & err )
   {

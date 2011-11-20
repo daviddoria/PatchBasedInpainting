@@ -175,6 +175,7 @@ void PatchBasedInpainting::AddAllSourcePatchesInRegion(const itk::ImageRegion<2>
 
       ++imageIterator;
       }
+    
     DebugMessage<unsigned int>("Number of source patches: ", this->SourcePatches.size());
     LeaveFunction("AddAllSourcePatchesInRegion()");
   }// end try
@@ -190,8 +191,10 @@ void PatchBasedInpainting::AddAllSourcePatchesInRegion(const itk::ImageRegion<2>
 void PatchBasedInpainting::InitializeTargetImage()
 {
   EnterFunction("InitializeTargetImage()");
-  // Initialize to the input
+  // Initialize to the input.
+  std::cout << "InitializeTargetImage: image size: " << this->OriginalImage->GetLargestPossibleRegion().GetSize() << std::endl;
   Helpers::DeepCopy<FloatVectorImageType>(this->OriginalImage, this->CurrentOutputImage);
+  std::cout << "InitializeTargetImage: CurrentOutputImage size: " << this->CurrentOutputImage->GetLargestPossibleRegion().GetSize() << std::endl;
   LeaveFunction("InitializeTargetImage()");
 }
 
@@ -200,15 +203,27 @@ void PatchBasedInpainting::Initialize()
   EnterFunction("PatchBasedInpainting::Initialize()");
   try
   {
+    if(this->MaskImage->GetLargestPossibleRegion() != this->OriginalImage->GetLargestPossibleRegion())
+      {
+      std::cerr << "Original mask size does not match original image size!" << std::endl;
+      std::cerr << "Original mask size: " << this->MaskImage->GetLargestPossibleRegion() << std::endl;
+      std::cerr << "Original image size: " << this->OriginalImage->GetLargestPossibleRegion() << std::endl;
+      exit(-1);
+      }
+      
+    // Initialize the result to the original image
+    InitializeTargetImage();
+
     // If the user hasn't specified a priority function, use the simplest one.
     if(!this->PriorityFunction)
       {
+      std::cout << "Using default Priority function." << std::endl;
       this->PriorityFunction = new PriorityRandom(this->CurrentOutputImage, this->MaskImage, this->PatchRadius[0]);
       }
 
     this->NumberOfCompletedIterations = 0;
+    this->PotentialCandidatePairs.clear();
 
-    InitializeTargetImage();
     HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
 
     // Blur the image incase we want to use a blurred image for pixel to pixel comparisons.
@@ -226,20 +241,11 @@ void PatchBasedInpainting::Initialize()
     //HelpersOutput::WriteImageConditional<FloatScalarImageType>(this->ConfidenceMapImage, "Debug/Initialize.ConfidenceMapImage.mha", this->DebugImages);
 
     DebugMessage("Computing source patches...");
+
+    // Clear the source patches, as additional patches are added each iteration. When we reset the inpainter, we want to start over from only patches that are
+    // valid in the original mask.
+    this->SourcePatches.clear();
     AddAllSourcePatchesInRegion(this->FullImageRegion);
-    // Debugging outputs
-    //WriteImage<TImage>(this->Image, "InitialImage.mhd");
-    //WriteImage<UnsignedCharImageType>(this->Mask, "InitialMask.mhd");
-    //WriteImage<FloatImageType>(this->ConfidenceImage, "InitialConfidence.mhd");
-    //WriteImage<VectorImageType>(this->IsophoteImage, "InitialIsophotes.mhd");
-    
-    if(this->MaskImage->GetLargestPossibleRegion() != this->OriginalImage->GetLargestPossibleRegion())
-      {
-      std::cerr << "Original mask size does not match original image size!" << std::endl;
-      std::cerr << "Original mask size: " << this->MaskImage->GetLargestPossibleRegion() << std::endl;
-      std::cerr << "Original image size: " << this->OriginalImage->GetLargestPossibleRegion() << std::endl;
-      exit(-1);
-      }
 
     this->PatchCompare->SetNumberOfComponentsPerPixel(this->CompareImage->GetNumberOfComponentsPerPixel());
 
@@ -480,7 +486,8 @@ void PatchBasedInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePa
   
   std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDepthDifference);
   
-  WriteImageOfScores(candidatePairs, this->CurrentOutputImage->GetLargestPossibleRegion(), Helpers::GetSequentialFileName("Debug/ImageOfDepthScores", this->NumberOfCompletedIterations, "mha"));
+  WriteImageOfScores(candidatePairs, this->CurrentOutputImage->GetLargestPossibleRegion(),
+                     Helpers::GetSequentialFileName("Debug/ImageOfDepthScores", this->NumberOfCompletedIterations, "mha"));
   //candidatePairs.WriteDepthScoresToFile("candidateScores.txt");
   
   CandidatePairs goodDepthCandidatePairs;
@@ -495,7 +502,8 @@ void PatchBasedInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePa
   this->PatchCompare->ComputeAllSourceDifferences();
   
   std::sort(goodDepthCandidatePairs.begin(), goodDepthCandidatePairs.end(), SortByAverageAbsoluteDifference);
-  WriteImageOfScores(goodDepthCandidatePairs, this->CurrentOutputImage->GetLargestPossibleRegion(), Helpers::GetSequentialFileName("Debug/ImageOfTopColorScores", this->NumberOfCompletedIterations, "mha"));
+  WriteImageOfScores(goodDepthCandidatePairs, this->CurrentOutputImage->GetLargestPossibleRegion(),
+                     Helpers::GetSequentialFileName("Debug/ImageOfTopColorScores", this->NumberOfCompletedIterations, "mha"));
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
   
   // Return the result by reference.

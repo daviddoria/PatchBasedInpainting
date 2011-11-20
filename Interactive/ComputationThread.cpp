@@ -48,8 +48,8 @@ void ComputationThreadClass::run()
   
   while(this->Inpainting->HasMoreToInpaint() && !this->Stop)
     {
-    this->Inpainting->Iterate();
-    IterationCompleteSignal();
+    PatchPair usedPatchPair = this->Inpainting->Iterate();
+    emit IterationCompleteSignal(usedPatchPair);
     }
 
   // When the function is finished, end the thread

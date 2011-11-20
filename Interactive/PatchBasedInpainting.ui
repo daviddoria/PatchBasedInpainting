@@ -52,6 +52,9 @@
             <property name="text">
              <string>Debug Images</string>
             </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
@@ -90,9 +93,9 @@
            </layout>
           </item>
           <item>
-           <widget class="QPushButton" name="btnInitialize">
+           <widget class="QPushButton" name="btnReset">
             <property name="text">
-             <string>Initialize</string>
+             <string>Reset</string>
             </property>
            </widget>
           </item>
@@ -121,13 +124,6 @@
            <widget class="QPushButton" name="btnStop">
             <property name="text">
              <string>Stop</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnReset">
-            <property name="text">
-             <string>Reset</string>
             </property>
            </widget>
           </item>
@@ -318,7 +314,7 @@
          </layout>
         </item>
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
+         <widget class="QVTKWidget" name="qvtkWidget"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -756,7 +752,7 @@
      <x>0</x>
      <y>0</y>
      <width>1385</width>
-     <height>33</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLeft_Pane">

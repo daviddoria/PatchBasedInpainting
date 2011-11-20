@@ -26,8 +26,8 @@
 #include "Helpers.h"
 #include "HelpersQt.h"
 
-ForwardLookTableModel::ForwardLookTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs, DisplayStyle& style) :
-    QAbstractTableModel(), AllCandidatePairs(allCandidatePairs), ImageDisplayStyle(style), IterationToDisplay(0), PatchDisplaySize(100)
+ForwardLookTableModel::ForwardLookTableModel(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& style) :
+    QAbstractTableModel(), IterationRecords(iterationRecords), ImageDisplayStyle(style), IterationToDisplay(0), PatchDisplaySize(100)
 {
 }
 
@@ -56,12 +56,15 @@ void ForwardLookTableModel::SetImage(FloatVectorImageType::Pointer image)
 
 int ForwardLookTableModel::rowCount(const QModelIndex& parent) const
 {
-  if(this->AllCandidatePairs.size() < this->IterationToDisplay || 
-    this->AllCandidatePairs.size() == 0)
+  EnterFunction("ForwardLookTableModel::rowCount()");
+  if(this->IterationRecords.size() < this->IterationToDisplay || 
+    this->IterationRecords.size() == 0)
     {
     return 0;
     }
-  return this->AllCandidatePairs[this->IterationToDisplay].size();
+  unsigned int rows = this->IterationRecords[this->IterationToDisplay].PotentialPairSets.size();
+  LeaveFunction("ForwardLookTableModel::rowCount()");
+  return rows;
 }
 
 int ForwardLookTableModel::columnCount(const QModelIndex& parent) const
@@ -71,10 +74,11 @@ int ForwardLookTableModel::columnCount(const QModelIndex& parent) const
 
 QVariant ForwardLookTableModel::data(const QModelIndex& index, int role) const
 {
+  EnterFunction("ForwardLookTableModel::data()");
   QVariant returnValue;
   if(role == Qt::DisplayRole && index.row() >= 0)
     {
-    const CandidatePairs& currentCandidateSet = this->AllCandidatePairs[this->IterationToDisplay][index.row()];
+    const CandidatePairs& currentCandidateSet = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[index.row()];
     const Patch& currentForwardLookPatch = currentCandidateSet.TargetPatch;
     switch(index.column())
       {
@@ -104,7 +108,7 @@ QVariant ForwardLookTableModel::data(const QModelIndex& index, int role) const
 	}
       } // end switch
     } // end if DisplayRole
-    
+  LeaveFunction("ForwardLookTableModel::data()");
   return returnValue;
 }
 

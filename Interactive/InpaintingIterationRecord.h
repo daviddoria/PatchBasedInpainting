@@ -16,12 +16,29 @@
  *
  *=========================================================================*/
 
-#include "InpaintingVisualizationStack.h"
+#ifndef InpaintingIterationRecord_H
+#define InpaintingIterationRecord_H
 
-InpaintingVisualizationStack::InpaintingVisualizationStack()
+#include "CandidatePairs.h"
+#include "Mask.h"
+#include "Types.h"
+
+class InpaintingIterationRecord
 {
-  this->Image = FloatVectorImageType::New();
-  this->MaskImage = Mask::New();
-  this->Boundary = UnsignedCharScalarImageType::New();
-  this->Priority = FloatScalarImageType::New();
-}
+public:
+  InpaintingIterationRecord();
+  
+  FloatVectorImageType::Pointer Image;
+  Mask::Pointer MaskImage;
+  UnsignedCharScalarImageType::Pointer Boundary;
+  FloatScalarImageType::Pointer Priority;
+
+  // Store the sets of pairs that were considered.
+  std::vector<CandidatePairs> PotentialPairSets;
+
+  // Store the pairs of patches that were actually used.
+  PatchPair UsedPatchPair;
+  
+};
+
+#endif

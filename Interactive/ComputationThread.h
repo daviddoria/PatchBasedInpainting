@@ -25,6 +25,7 @@
 
 #include <QThread>
 
+#include "PatchPair.h"
 #include "PatchBasedInpainting.h"
 
 // This class is named 'ComputationThreadClass' instead of just 'ComputationThread'
@@ -42,7 +43,7 @@ signals:
 
   void RefreshSignal();
   
-  void IterationCompleteSignal();
+  void IterationCompleteSignal(const PatchPair&);
   
 public:
   ComputationThreadClass();

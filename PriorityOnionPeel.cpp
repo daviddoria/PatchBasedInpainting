@@ -100,7 +100,6 @@ void PriorityOnionPeel::InitializeConfidenceMap()
   typedef itk::InvertIntensityImageFilter <Mask> InvertIntensityImageFilterType;
   InvertIntensityImageFilterType::Pointer invertIntensityFilter = InvertIntensityImageFilterType::New();
   invertIntensityFilter->SetInput(maskClone);
-  //invertIntensityFilter->InPlaceOn();
   invertIntensityFilter->Update();
 
   // Convert the inverted mask to floats and scale them to between 0 and 1

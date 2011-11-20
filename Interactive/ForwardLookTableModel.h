@@ -28,12 +28,14 @@
 
 // Custom
 #include "CandidatePairs.h"
+#include "DebugOutputs.h"
 #include "DisplayStyle.h"
+#include "InpaintingIterationRecord.h"
 
-class ForwardLookTableModel : public QAbstractTableModel
+class ForwardLookTableModel : public QAbstractTableModel, public DebugOutputs
 {
 public:
-  ForwardLookTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs, DisplayStyle& style);
+  ForwardLookTableModel(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& style);
   
   int rowCount(const QModelIndex& parent) const;
   int columnCount(const QModelIndex& parent) const;
@@ -51,7 +53,7 @@ public:
   
 protected:
   
-  std::vector<std::vector<CandidatePairs> >& AllCandidatePairs;
+  std::vector<InpaintingIterationRecord>& IterationRecords;
   
   FloatVectorImageType::Pointer Image;
   unsigned int IterationToDisplay;

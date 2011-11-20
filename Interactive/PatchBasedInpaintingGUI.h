@@ -45,7 +45,7 @@ class vtkPolyDataMapper;
 #include "DebugOutputs.h"
 #include "DisplayStyle.h"
 #include "ForwardLookTableModel.h"
-#include "InpaintingVisualizationStack.h"
+#include "InpaintingIterationRecord.h"
 #include "Layer.h"
 #include "PatchBasedInpainting.h"
 #include "TopPatchesTableModel.h"
@@ -62,7 +62,7 @@ public:
   // Constructor/Destructor
   void DefaultConstructor();
   PatchBasedInpaintingGUI();
-  PatchBasedInpaintingGUI(const std::string& imageFileName, const std::string& maskFileName);
+  PatchBasedInpaintingGUI(const std::string& imageFileName, const std::string& maskFileName, const bool debugEnterLeave);
   ~PatchBasedInpaintingGUI() {};
 
   // Change the camera position to produce the effect of flipping the image.
@@ -114,7 +114,6 @@ public slots:
 
   void on_btnInpaint_clicked();
   void on_btnStep_clicked();
-  void on_btnInitialize_clicked();
   void on_btnStop_clicked();
   void on_btnReset_clicked();
 
@@ -131,11 +130,11 @@ public slots:
 
   void slot_Refresh();
 
-  void slot_IterationComplete();
+  void slot_IterationComplete(const PatchPair&);
 
 protected:
 
-  void DisplayIsophotes();
+  void Reset();
   
   void SetCheckboxVisibility(const bool visible);
 
@@ -168,7 +167,7 @@ protected:
   void SetupInitialIntermediateImages();
 
   // Save everything at the end of an iteration.
-  void IterationComplete();
+  void IterationComplete(const PatchPair& patchPair);
 
   // This function is called when the "Previous" or "Next" buttons are pressed, and at the end of IterationComplete().
   void ChangeDisplayedIteration();
@@ -271,16 +270,10 @@ protected:
   QGraphicsScene* UserPatchScene;
   
   void OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename);
-
-  // Store the candidate forward look patches from every iteration for visualization.
-  // The outer vector is the iteration, and the inner vector is the look ahead patch.
-  std::vector<std::vector<CandidatePairs> > AllPotentialCandidatePairs;
   
-  std::vector<bool> Recorded;
-  
-  // These are the state of the completion at every step. The index represents the image AFTER the index'th step.
+  // This stores the state of the completion at every step. The index represents the image AFTER the index'th step.
   // That is, the image at index 0 is the image after 0 iterations (the original image). At index 1 is the image after the first target region has been filled, etc.
-  std::vector<InpaintingVisualizationStack> IntermediateImages;
+  std::vector<InpaintingIterationRecord> IterationRecords;
   
   // Colors
   void SetupColors();
@@ -295,10 +288,7 @@ protected:
   QColor HoleColor;
   QColor SceneBackgroundColor;
   QColor UserPatchColor;
-    
-  // Store the pairs of patches that were actually used.
-  std::vector<PatchPair> UsedPatchPairs;
-  
+
   ForwardLookTableModel* ForwardLookModel;
   TopPatchesTableModel* TopPatchesModel;
   

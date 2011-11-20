@@ -28,12 +28,14 @@
 
 // Custom
 #include "CandidatePairs.h"
+#include "DebugOutputs.h"
 #include "DisplayStyle.h"
+#include "InpaintingIterationRecord.h"
 
-class TopPatchesTableModel : public QAbstractTableModel
+class TopPatchesTableModel : public QAbstractTableModel, public DebugOutputs
 {
 public:
-  TopPatchesTableModel(std::vector<std::vector<CandidatePairs> >& allCandidatePairs, DisplayStyle& displayStyle);
+  TopPatchesTableModel(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& displayStyle);
   
   int rowCount(const QModelIndex& parent) const;
   int columnCount(const QModelIndex& parent) const;
@@ -54,7 +56,7 @@ public:
 protected:
   
   // The outer vector is the iteration, and the inner vector is the look ahead patch.
-  std::vector<std::vector<CandidatePairs> >& AllCandidatePairs;
+  std::vector<InpaintingIterationRecord>& IterationRecords;
   
   FloatVectorImageType::Pointer Image;
   unsigned int IterationToDisplay;

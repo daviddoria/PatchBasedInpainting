@@ -41,11 +41,11 @@ protected:
   bool DebugImages;
   bool DebugMessages;
   
-  void EnterFunction(const std::string&);
-  void LeaveFunction(const std::string&);
+  void EnterFunction(const std::string&) const;
+  void LeaveFunction(const std::string&) const;
   
   // Output a message if DebugMessages is set to true.
-  void DebugMessage(const std::string&);
+  void DebugMessage(const std::string&) const;
   
   // Output a message and a value if DebugMessages is set to true.
   template <typename T>

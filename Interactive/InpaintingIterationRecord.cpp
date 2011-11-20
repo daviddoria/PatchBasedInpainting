@@ -16,21 +16,12 @@
  *
  *=========================================================================*/
 
-#ifndef InpaintingVisualizationStack_H
-#define InpaintingVisualizationStack_H
+#include "InpaintingIterationRecord.h"
 
-#include "Mask.h"
-#include "Types.h"
-
-class InpaintingVisualizationStack
+InpaintingIterationRecord::InpaintingIterationRecord()
 {
-public:
-  InpaintingVisualizationStack();
-  
-  FloatVectorImageType::Pointer Image;
-  Mask::Pointer MaskImage;
-  UnsignedCharScalarImageType::Pointer Boundary;
-  FloatScalarImageType::Pointer Priority;
-};
-
-#endif
+  this->Image = FloatVectorImageType::New();
+  this->MaskImage = Mask::New();
+  this->Boundary = UnsignedCharScalarImageType::New();
+  this->Priority = FloatScalarImageType::New();
+}

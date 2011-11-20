@@ -8,22 +8,22 @@ QT4_WRAP_UI(UISrcs PatchBasedInpainting.ui FileSelector.ui FileSelectionWidget.u
 QT4_WRAP_CPP(MOCSrcs PatchBasedInpaintingGUI.h ComputationThread.h FileSelector.h FileSelectionWidget.h PixmapDelegate.h)
 
 ADD_EXECUTABLE(PatchBasedInpaintingInteractive
+ComputationThread.cpp
 FileSelector.cpp
 FileSelectionWidget.cpp
-PatchBasedInpaintingGUI.cpp
 ForwardLookTableModel.cpp
-PatchBasedInpaintingGUISlots.cpp
 HelpersDisplay.cpp
 HelpersQt.cpp
-InpaintingVisualizationStack.cpp
-PatchBasedInpaintingInteractive.cpp #driver (contains main())
-InteractorStyleImageNoLevel.cpp
+InpaintingIterationRecord.cpp
 InteractorStyleImageWithDrag.cpp
 Layer.cpp
+PatchBasedInpaintingGUI.cpp
+PatchBasedInpaintingGUISlots.cpp
+PatchBasedInpaintingInteractive.cpp #driver (contains main())
 PixmapDelegate.cpp
-ComputationThread.cpp
 TopPatchesTableModel.cpp
 VectorLayer.cpp
 ${UISrcs} ${MOCSrcs})
+
 TARGET_LINK_LIBRARIES(PatchBasedInpaintingInteractive PatchBasedInpainting ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
 INSTALL( TARGETS PatchBasedInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
