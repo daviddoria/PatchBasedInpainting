@@ -43,7 +43,7 @@ public:
   QVariant headerData(int section, Qt::Orientation orientation, int role) const;
   
   Qt::ItemFlags flags(const QModelIndex& index) const;
-  void SetImage(FloatVectorImageType::Pointer image);
+  
   void SetIterationToDisplay(const unsigned int);
   void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
   
@@ -54,8 +54,7 @@ public:
 protected:
   
   std::vector<InpaintingIterationRecord>& IterationRecords;
-  
-  FloatVectorImageType::Pointer Image;
+
   unsigned int IterationToDisplay;
   
   unsigned int PatchDisplaySize;

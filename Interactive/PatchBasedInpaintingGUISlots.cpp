@@ -463,8 +463,9 @@ void PatchBasedInpaintingGUI::slot_Refresh()
 
 void PatchBasedInpaintingGUI::slot_IterationComplete(const PatchPair& patchPair)
 {
-  DebugMessage("IterationCompleteSlot()");
+  EnterFunction("IterationCompleteSlot()");
   IterationComplete(patchPair);
+  LeaveFunction("IterationCompleteSlot()");
 }
 
 void PatchBasedInpaintingGUI::on_txtPatchRadius_textEdited ( const QString & text )
@@ -489,5 +490,9 @@ void PatchBasedInpaintingGUI::on_txtGoToIteration_textEdited ( const QString & t
 
 void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToDisplay_textEdited ( const QString & text )
 {
+  EnterFunction("on_txtNumberOfTopPatchesToDisplay_textEdited()");
   this->NumberOfTopPatchesToDisplay = text.toUInt();
+  this->TopPatchesModel->SetNumberOfTopPatchesToDisplay(this->NumberOfTopPatchesToDisplay);
+  this->TopPatchesModel->Refresh();
+  LeaveFunction("on_txtNumberOfTopPatchesToDisplay_textEdited()");
 }

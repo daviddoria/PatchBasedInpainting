@@ -283,7 +283,7 @@ void PatchBasedInpaintingGUI::UserPatchMoved()
   patchCompare->SetMask(this->IterationRecords[this->IterationToDisplay].MaskImage);
   patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
   patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
-  CandidatePairs candidatePairs(this->IterationRecords[this->IterationToDisplay - 1].PotentialPairSets[this->ForwardLookToDisplay].TargetPatch);
+  CandidatePairs candidatePairs(this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay].TargetPatch);
   Patch userPatch(this->UserPatchRegion);
   candidatePairs.AddPairFromPatch(userPatch);
   patchCompare->SetPairs(&candidatePairs);
@@ -830,7 +830,8 @@ void PatchBasedInpaintingGUI::HighlightForwardLookPatches()
   EnterFunction("HighlightForwardLookPatches()");
   try
   {
-    // Delete any current highlight patches. We want to delete these (if they exist) no matter what because then they won't be displayed if the box is not checked (they will respect the check box).
+    // Delete any current highlight patches. We want to delete these (if they exist) no matter what because
+    // then they won't be displayed if the box is not checked (they will respect the check box).
     Helpers::BlankImage(this->AllForwardLookOutlinesLayer.ImageData);
 
     // If the user has not requested to display the patches, quit.
@@ -847,7 +848,7 @@ void PatchBasedInpaintingGUI::HighlightForwardLookPatches()
       }
 
     // Get the candidate patches and make sure we have requested a valid set.
-    const std::vector<CandidatePairs>& candidatePairs = this->IterationRecords[this->IterationToDisplay - 1].PotentialPairSets;
+    const std::vector<CandidatePairs>& candidatePairs = this->IterationRecords[this->IterationToDisplay].PotentialPairSets;
 
     unsigned char borderColor[3];
     HelpersQt::QColorToUCharColor(this->AllForwardLookPatchColor, borderColor);
@@ -907,7 +908,7 @@ void PatchBasedInpaintingGUI::HighlightSourcePatches()
       return;
       }
 
-    const CandidatePairs& candidatePairs = this->IterationRecords[this->IterationToDisplay - 1].PotentialPairSets[this->ForwardLookToDisplay];
+    const CandidatePairs& candidatePairs = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay];
 
     unsigned char borderColor[3];
     HelpersQt::QColorToUCharColor(this->AllSourcePatchColor, borderColor);
@@ -1178,6 +1179,7 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
 
 void PatchBasedInpaintingGUI::SetupForwardLookingTable()
 {
+  EnterFunction("SetupForwardLookingTable()");
   if(this->IterationToDisplay < 1)
     {
     std::cout << "Can only display result patch for iterations > 0." << std::endl;
@@ -1186,8 +1188,7 @@ void PatchBasedInpaintingGUI::SetupForwardLookingTable()
     return;
     }
 
-  this->ForwardLookModel->SetImage(this->IterationRecords[this->IterationToDisplay - 1].Image);
-  this->ForwardLookModel->SetIterationToDisplay(this->IterationToDisplay - 1);
+  this->ForwardLookModel->SetIterationToDisplay(this->IterationToDisplay);
   this->ForwardLookModel->SetPatchDisplaySize(this->PatchDisplaySize);
   this->ForwardLookModel->Refresh();
 
@@ -1197,17 +1198,18 @@ void PatchBasedInpaintingGUI::SetupForwardLookingTable()
   this->ForwardLookTableView->setColumnWidth(0, this->PatchDisplaySize);
   this->ForwardLookTableView->verticalHeader()->setResizeMode(QHeaderView::Fixed);
   this->ForwardLookTableView->verticalHeader()->setDefaultSectionSize(this->PatchDisplaySize);
-
+  LeaveFunction("SetupForwardLookingTable()");
 }
 
 void PatchBasedInpaintingGUI::ChangeDisplayedTopPatch()
 {
-  std::cout << "ChangeDisplayedTopPatch()" << std::endl;
+  EnterFunction("ChangeDisplayedTopPatch()");
   DisplaySourcePatch();
   DisplayResultPatch();
 
   HighlightSourcePatches();
   HighlightSelectedSourcePatch();
+  LeaveFunction("ChangeDisplayedTopPatch()");
 }
 
 void PatchBasedInpaintingGUI::ChangeDisplayedForwardLookPatch()
@@ -1236,10 +1238,10 @@ void PatchBasedInpaintingGUI::SetupTopPatchesTable()
     return;
     }
 
-  this->TopPatchesModel->SetImage(this->IterationRecords[this->IterationToDisplay - 1].Image);
-  this->TopPatchesModel->SetIterationToDisplay(this->IterationToDisplay - 1);
+  this->TopPatchesModel->SetIterationToDisplay(this->IterationToDisplay);
   this->TopPatchesModel->SetForwardLookToDisplay(this->ForwardLookToDisplay);
   this->TopPatchesModel->SetPatchDisplaySize(this->PatchDisplaySize);
+  this->TopPatchesModel->SetNumberOfTopPatchesToDisplay(this->NumberOfTopPatchesToDisplay);
   this->TopPatchesModel->Refresh();
 
   this->SourcePatchToDisplay = 0;
@@ -1285,8 +1287,9 @@ void PatchBasedInpaintingGUI::HighlightSelectedForwardLookPatch()
     HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
     Helpers::SetImageCenterPixel(this->SelectedForwardLookOutlineLayer.ImageData, centerPixelColor);
 
-    // There is a -1 offset here because the 0th patch pair to be stored is after iteration 1 (as after the 0th iteration (initial conditions) there are no used patch pairs)
-    std::vector<CandidatePairs>& allCandidatePairs = this->IterationRecords[this->IterationToDisplay - 1].PotentialPairSets;
+    // There is a -1 offset here because the 0th patch pair to be stored is after iteration 1
+    // (as after the 0th iteration (initial conditions) there are no used patch pairs)
+    std::vector<CandidatePairs>& allCandidatePairs = this->IterationRecords[this->IterationToDisplay].PotentialPairSets;
 
     const Patch& selectedPatch = allCandidatePairs[this->ForwardLookToDisplay].TargetPatch;
     this->SelectedForwardLookOutlineLayer.ImageSlice->SetPosition(selectedPatch.Region.GetIndex()[0], selectedPatch.Region.GetIndex()[1], 0);
@@ -1329,7 +1332,7 @@ void PatchBasedInpaintingGUI::HighlightSelectedSourcePatch()
 
     // There is a -1 offset here because the 0th patch pair to be stored is after iteration 1
     // (as after the 0th iteration (initial conditions) there are no used patch pairs)
-    const CandidatePairs& candidatePairs = this->IterationRecords[this->IterationToDisplay - 1].PotentialPairSets[this->ForwardLookToDisplay];
+    const CandidatePairs& candidatePairs = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay];
 
     const Patch& selectedPatch = candidatePairs[this->SourcePatchToDisplay].SourcePatch;
     this->SelectedSourcePatchOutlineLayer.ImageSlice->SetPosition(selectedPatch.Region.GetIndex()[0], selectedPatch.Region.GetIndex()[1], 0);

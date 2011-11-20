@@ -28,7 +28,7 @@
 
 TopPatchesTableModel::TopPatchesTableModel(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& displayStyle) :
     QAbstractTableModel(), IterationRecords(iterationRecords), ImageDisplayStyle(displayStyle), IterationToDisplay(0),
-    ForwardLookToDisplay(0), PatchDisplaySize(100)
+    ForwardLookToDisplay(0), PatchDisplaySize(100), NumberOfTopPatchesToDisplay(10)
 {
 }
 
@@ -56,11 +56,6 @@ void TopPatchesTableModel::SetForwardLookToDisplay(const unsigned int forwardLoo
   Refresh();
 }
 
-void TopPatchesTableModel::SetImage(FloatVectorImageType::Pointer image)
-{
-  this->Image = image;
-}
-
 int TopPatchesTableModel::rowCount(const QModelIndex& parent) const
 {
   EnterFunction("TopPatchesTableModel::rowCount()");
@@ -72,13 +67,20 @@ int TopPatchesTableModel::rowCount(const QModelIndex& parent) const
     return 0;
     }
   unsigned int rows = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay].size();
+  unsigned int numberOfRowsToDisplay = std::min(rows, this->NumberOfTopPatchesToDisplay);
+  //std::cout << "Displaying " << numberOfRowsToDisplay << " rows." << std::endl;
   LeaveFunction("TopPatchesTableModel::rowCount()");
-  return rows;
+  return numberOfRowsToDisplay;
 }
 
 int TopPatchesTableModel::columnCount(const QModelIndex& parent) const
 {
   return 4;
+}
+
+void TopPatchesTableModel::SetNumberOfTopPatchesToDisplay(const unsigned int number)
+{
+  this->NumberOfTopPatchesToDisplay = number;
 }
 
 QVariant TopPatchesTableModel::data(const QModelIndex& index, int role) const
@@ -93,7 +95,8 @@ QVariant TopPatchesTableModel::data(const QModelIndex& index, int role) const
       {
       case 0:
 	{
-	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(this->Image, currentCandidateSet[index.row()].SourcePatch.Region, this->ImageDisplayStyle);
+	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(this->IterationRecords[this->IterationToDisplay].Image,
+                                                                       currentCandidateSet[index.row()].SourcePatch.Region, this->ImageDisplayStyle);
 	
 	patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
     

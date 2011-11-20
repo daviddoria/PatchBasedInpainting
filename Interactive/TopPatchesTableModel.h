@@ -43,10 +43,10 @@ public:
   QVariant headerData(int section, Qt::Orientation orientation, int role) const;
   
   Qt::ItemFlags flags(const QModelIndex& index) const;
-  void SetImage(FloatVectorImageType::Pointer image);
   
   void SetIterationToDisplay(const unsigned int);
   void SetForwardLookToDisplay(const unsigned int);
+  void SetNumberOfTopPatchesToDisplay(const unsigned int);
   
   void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
   
@@ -58,11 +58,12 @@ protected:
   // The outer vector is the iteration, and the inner vector is the look ahead patch.
   std::vector<InpaintingIterationRecord>& IterationRecords;
   
-  FloatVectorImageType::Pointer Image;
   unsigned int IterationToDisplay;
   unsigned int ForwardLookToDisplay;
   
   unsigned int PatchDisplaySize;
+
+  unsigned int NumberOfTopPatchesToDisplay;
 
   DisplayStyle& ImageDisplayStyle;
 };

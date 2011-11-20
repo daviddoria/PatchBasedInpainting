@@ -49,11 +49,6 @@ void ForwardLookTableModel::SetIterationToDisplay(const unsigned int iteration)
   Refresh();
 }
 
-void ForwardLookTableModel::SetImage(FloatVectorImageType::Pointer image)
-{
-  this->Image = image;
-}
-
 int ForwardLookTableModel::rowCount(const QModelIndex& parent) const
 {
   EnterFunction("ForwardLookTableModel::rowCount()");
@@ -85,7 +80,8 @@ QVariant ForwardLookTableModel::data(const QModelIndex& index, int role) const
       case 0:
 	{
 	// Display the target patch in the table
-	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(this->Image, currentForwardLookPatch.Region, this->ImageDisplayStyle);
+	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(this->IterationRecords[this->IterationToDisplay].Image,
+                                                                       currentForwardLookPatch.Region, this->ImageDisplayStyle);
 	
 	patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
     
