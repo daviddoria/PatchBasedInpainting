@@ -133,8 +133,13 @@ public slots:
 
   void slot_IterationComplete(const PatchPair&);
 
+  void on_txtPatchRadius_textEdited ( const QString & text );
+  void on_txtNumberOfTopPatchesToSave_textEdited ( const QString & text );
+  void on_txtNumberOfForwardLook_textEdited ( const QString & text );
+  void on_txtGoToIteration_textEdited ( const QString & text );
+  
 protected:
-
+Q_SLOT void on_txtNumberOfTopPatchesToDisplay_textEdited ( const QString & text );
   void Reset();
   
   void SetCheckboxVisibility(const bool visible);
@@ -304,19 +309,10 @@ protected:
 
   // The radius of the patches.
   unsigned int PatchRadius;
-  void on_txtPatchRadius_textEdited ( const QString & text );
-  
   unsigned int NumberOfTopPatchesToSave;
-  void on_txtNumberOfTopPatchesToSave_textEdited ( const QString & text );
-
   unsigned int NumberOfForwardLook;
-  void on_txtNumberOfForwardLook_textEdited ( const QString & text );
-
   unsigned int GoToIteration;
-  void on_txtGoToIteration_textEdited ( const QString & text );
-
   unsigned int NumberOfTopPatchesToDisplay;
-  void on_txtNumberOfTopPatchesToDisplay_textEdited ( const QString & text );
 
   DisplayStyle ImageDisplayStyle;
 
