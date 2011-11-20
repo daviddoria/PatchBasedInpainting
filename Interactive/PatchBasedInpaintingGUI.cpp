@@ -779,13 +779,10 @@ void PatchBasedInpaintingGUI::DisplayResultPatch()
     //qimage.setPixel(regionSize[0]/2, regionSize[1]/2, this->CenterPixelColor.rgb());
 
     qimage = HelpersQt::GetQImage<FloatVectorImageType>(resultPatch, resultPatch->GetLargestPossibleRegion(), this->ImageDisplayStyle);
-    // Flip the image
-    qimage = qimage.mirrored(false, true);
-    
+
     qimage = HelpersQt::FitToGraphicsView(qimage, gfxResult);
     this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
     LeaveFunction("DisplayResultPatch()");
-    //Refresh();
     }// end try
   catch( itk::ExceptionObject & err )
   {

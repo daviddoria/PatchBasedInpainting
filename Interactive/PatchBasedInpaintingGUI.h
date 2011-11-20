@@ -100,7 +100,6 @@ public slots:
 
   void on_chkLive_clicked();
 
-  //void on_ForwardLookTableView_currentChanged(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
   void slot_ForwardLookTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
   void slot_TopPatchesTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
 
@@ -137,9 +136,10 @@ public slots:
   void on_txtNumberOfTopPatchesToSave_textEdited ( const QString & text );
   void on_txtNumberOfForwardLook_textEdited ( const QString & text );
   void on_txtGoToIteration_textEdited ( const QString & text );
-  
+  void on_txtNumberOfTopPatchesToDisplay_textEdited ( const QString & text );
+
 protected:
-Q_SLOT void on_txtNumberOfTopPatchesToDisplay_textEdited ( const QString & text );
+
   void Reset();
   
   void SetCheckboxVisibility(const bool visible);
