@@ -93,7 +93,17 @@
            </layout>
           </item>
           <item>
+           <widget class="QPushButton" name="btnInitialize">
+            <property name="text">
+             <string>Initialize</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="btnReset">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Reset</string>
             </property>
@@ -101,6 +111,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="btnStep">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Step</string>
             </property>
@@ -108,6 +121,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="btnInpaint">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Inpaint</string>
             </property>
@@ -122,6 +138,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="btnStop">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Stop</string>
             </property>

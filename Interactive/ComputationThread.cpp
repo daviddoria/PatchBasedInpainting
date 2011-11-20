@@ -42,10 +42,6 @@ void ComputationThreadClass::run()
   // Start the procedure
   this->Stop = false;
 
-  //DebugMessage("Initializing...");
-  
-  //RefreshSignal();
-  
   while(this->Inpainting->HasMoreToInpaint() && !this->Stop)
     {
     PatchPair usedPatchPair = this->Inpainting->Iterate();

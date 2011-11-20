@@ -372,29 +372,33 @@ void PatchBasedInpaintingGUI::slot_TopPatchesTableView_changed(const QModelIndex
 
 void PatchBasedInpaintingGUI::on_btnInpaint_clicked()
 {
-  EnterFunction("on_btnInpaint_clicked()");
-  
-  //Initialize();
-  
-  //Refresh();
-
-  // Gray out some items that should not be changed while the inpainting is running.
-  this->txtNumberOfForwardLook->setEnabled(false);
-  this->txtNumberOfTopPatchesToSave->setEnabled(false);
-  
-  this->Inpainting.SetMaxForwardLookPatches(this->NumberOfForwardLook);
-  this->Inpainting.SetNumberOfTopPatchesToSave(this->NumberOfTopPatchesToSave);
+  this->btnStop->setEnabled(true);
+  this->btnStep->setEnabled(false);
+  this->btnInpaint->setEnabled(false);
+  this->btnReset->setEnabled(false);
   
   ComputationThread.start();
 }
 
-
-void PatchBasedInpaintingGUI::on_btnStep_clicked()
+void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
 {
+  this->txtNumberOfForwardLook->setEnabled(false);
+  this->txtNumberOfTopPatchesToSave->setEnabled(false);
+  this->btnReset->setEnabled(true);
+  this->btnInpaint->setEnabled(true);
+  this->btnStep->setEnabled(true);
+  this->btnInitialize->setEnabled(false);
+  this->txtPatchRadius->setEnabled(false);
+
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
   this->Inpainting.SetMaxForwardLookPatches(this->NumberOfForwardLook);
   this->Inpainting.SetNumberOfTopPatchesToSave(this->NumberOfTopPatchesToSave);
+}
+
+void PatchBasedInpaintingGUI::on_btnStep_clicked()
+{
+
   PatchPair usedPair = this->Inpainting.Iterate();
 
   IterationComplete(usedPair);
@@ -403,6 +407,12 @@ void PatchBasedInpaintingGUI::on_btnStep_clicked()
 void PatchBasedInpaintingGUI::on_btnStop_clicked()
 {
   this->ComputationThread.StopInpainting();
+
+  this->btnStop->setEnabled(false);
+  
+  this->btnStep->setEnabled(true);
+  this->btnInpaint->setEnabled(true);
+  
 }
 
 void PatchBasedInpaintingGUI::on_btnReset_clicked()

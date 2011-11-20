@@ -112,6 +112,7 @@ public slots:
   void on_chkDisplayForwardLookPatchLocations_clicked();
   void on_chkDisplaySourcePatchLocations_clicked();
 
+  void on_btnInitialize_clicked();
   void on_btnInpaint_clicked();
   void on_btnStep_clicked();
   void on_btnStop_clicked();

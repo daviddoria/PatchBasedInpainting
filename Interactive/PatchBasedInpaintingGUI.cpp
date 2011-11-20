@@ -78,6 +78,7 @@
 #include "PriorityOnionPeel.h"
 #include "Types.h"
 
+Q_DECLARE_METATYPE(PatchPair)
 
 void PatchBasedInpaintingGUI::DefaultConstructor()
 {
@@ -194,6 +195,8 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   // but makes the interface very very choppy.
   // We are assuming that the computation takes longer than the drawing.
   //connect(&ComputationThread, SIGNAL(IterationCompleteSignal()), this, SLOT(IterationCompleteSlot()), Qt::QueuedConnection);
+  
+  qRegisterMetaType<PatchPair>("PatchPair");
   connect(&ComputationThread, SIGNAL(IterationCompleteSignal(const PatchPair&)), this, SLOT(slot_IterationComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
 
   connect(&ComputationThread, SIGNAL(RefreshSignal()), this, SLOT(slot_Refresh()), Qt::QueuedConnection);
@@ -409,6 +412,14 @@ void PatchBasedInpaintingGUI::OpenImage(const std::string& fileName)
 
 void PatchBasedInpaintingGUI::Reset()
 {
+  this->txtNumberOfForwardLook->setEnabled(true);
+  this->txtNumberOfTopPatchesToSave->setEnabled(true);
+  this->btnInpaint->setEnabled(false);
+  this->btnStep->setEnabled(false);
+  this->btnInitialize->setEnabled(true);
+  this->btnReset->setEnabled(false);
+  this->txtPatchRadius->setEnabled(true);
+  
   this->IterationRecords.clear();
   Initialize();
   Refresh();
