@@ -4,6 +4,8 @@ if(NOT QT4_FOUND)
   INCLUDE(${QT_USE_FILE})
 endif(NOT QT4_FOUND)
 
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+
 QT4_WRAP_UI(UISrcs PatchBasedInpainting.ui FileSelector.ui FileSelectionWidget.ui)
 QT4_WRAP_CPP(MOCSrcs PatchBasedInpaintingGUI.h ComputationThread.h FileSelector.h FileSelectionWidget.h PixmapDelegate.h)
 
