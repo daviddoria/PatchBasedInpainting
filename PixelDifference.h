@@ -130,7 +130,7 @@ struct ColorPixelDifference
   
 
 };
- 
+
 struct DepthPixelDifference
 {
   DepthPixelDifference(const unsigned int numberOfComponents)
@@ -145,6 +145,24 @@ struct DepthPixelDifference
   static float Difference(const typename FloatVectorImageType::PixelType &a, const FloatVectorImageType::PixelType &b)
   {
     return fabs(a[3] - b[3]);
+  }
+};
+
+template <unsigned int Channel>
+struct ChannelPixelDifference
+{
+  DepthPixelDifference(const unsigned int numberOfComponents)
+  {
+    if(numberOfComponents < Channel+1)
+      {
+      std::cerr << "ChannelPixelDifference can't compute difference in channel " << Channel << " of an image with only " << numberOfComponents << " components!" << std::endl;
+      exit(-1);
+      }
+  }
+  
+  static float Difference(const typename FloatVectorImageType::PixelType &a, const FloatVectorImageType::PixelType &b)
+  {
+    return fabs(a[Channel] - b[Channel]);
   }
 };
 
