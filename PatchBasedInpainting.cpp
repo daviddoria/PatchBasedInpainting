@@ -22,6 +22,7 @@
 #include "Derivatives.h"
 #include "Helpers.h"
 #include "HelpersOutput.h"
+#include "Histograms.h"
 #include "PixelDifference.h"
 #include "PriorityRandom.h"
 #include "SelfPatchCompare.h"
@@ -566,7 +567,7 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 
     float highestPriority = 0.0f;
     itk::Index<2> pixelToFill = Helpers::FindHighestValueInMaskedRegion(modifiedPriorityImage, highestPriority, modifiedBoundaryImage);
-    std::cout << "Highest priority: " << highestPriority << std::endl;
+    //std::cout << "Highest priority: " << highestPriority << std::endl;
     if(!this->MaskImage->HasHoleNeighbor(pixelToFill))
       {
       std::cerr << "pixelToFill " << pixelToFill << " does not have a hole neighbor - something is wrong!" << std::endl;
@@ -614,10 +615,24 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   unsigned int bestSourcePatchId = 0;
 
   // Return the result by reference.
-  bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][bestSourcePatchId];
+  //bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][bestSourcePatchId];
+  
   //std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
-
-  //std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region);
+  float histogramIntersection = 0.0f;
+  unsigned int sourcePatchId = 0;
+  Mask::Pointer inverseMask = Mask::New();
+  Helpers::DeepCopy<Mask>(this->MaskImage, inverseMask);
+  inverseMask->Invert();
+  do
+  {
+    bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][sourcePatchId];
+    std::vector<float> histogram1 = Histograms::Compute1DHistogramOfMultiChannelMaskedImage(this->CurrentOutputImage, bestPatchPair.TargetPatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region, 50);
+    std::vector<float> histogram2 = Histograms::Compute1DHistogramOfMultiChannelMaskedImage(this->CurrentOutputImage, bestPatchPair.SourcePatch.Region, inverseMask, bestPatchPair.TargetPatch.Region, 50);
+    sourcePatchId++; // Note at the end of the loop bestPatchPair will have been set to the previous patchId.
+    histogramIntersection = Histograms::HistogramIntersection(histogram2, histogram1);
+    std::cout << "histogramIntersection: " << histogramIntersection << std::endl;
+  } while (histogramIntersection < 0.8f);
+  std::cout << "Used patch " << sourcePatchId - 1 << std::endl;
   
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
   LeaveFunction("FindBestPatchLookAhead()");

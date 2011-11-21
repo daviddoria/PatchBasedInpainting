@@ -132,7 +132,7 @@ void Mask::Invert()
       }
     ++maskIterator;
     }
-  std::cout << "Inverted " << invertedCounter << " in the mask." << std::endl;
+  //std::cout << "Inverted " << invertedCounter << " in the mask." << std::endl;
 }
 
 void Mask::Cleanup()

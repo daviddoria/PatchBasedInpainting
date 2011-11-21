@@ -25,15 +25,18 @@
 #include "Mask.h"
 #include "Types.h"
 
-std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
+namespace Histograms
+{
 
-std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
+std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins);
 
-std::vector<float> Compute1DHistogramOfMultiChannelImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
+std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins);
 
-std::vector<float> Compute1DHistogramOfMultiChannelMaskedImage(const FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region);
+std::vector<float> Compute1DHistogramOfMultiChannelImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins);
 
-std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region);
+std::vector<float> Compute1DHistogramOfMultiChannelMaskedImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion, Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const unsigned int numberOfBins);
+
+std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion, Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const unsigned int numberOfBins);
 
 void OutputHistogram(const HistogramType::Pointer);
 
@@ -47,5 +50,7 @@ float NDHistogramDifference(const HistogramType::Pointer, const HistogramType::P
 HistogramType::Pointer ComputeNDHistogramOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
 
 HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(const FloatVectorImageType::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
+
+} // end namespace
 
 #endif

@@ -56,7 +56,7 @@ float PriorityOnionPeel::ComputePriority(const itk::Index<2>& queryPixel)
 void PriorityOnionPeel::UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value)
 {
   EnterFunction("PriorityOnionPeel::UpdateConfidences()");
-  std::cout << "Updating confidences with value " << value << std::endl;
+  //std::cout << "Updating confidences with value " << value << std::endl;
   try
   {
     // Force the region to update to be entirely inside the image

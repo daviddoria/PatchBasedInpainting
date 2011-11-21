@@ -24,6 +24,10 @@
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkVectorIndexSelectionCastImageFilter.h"
 
+
+namespace Histograms
+{
+  
 std::vector<float> ComputeHistogramOfGradient(const FloatVector2ImageType::Pointer gradientImage, const itk::ImageRegion<2>& region)
 {
   // Discretize the continuum of possible angles of vectors in the right half-plane.
@@ -112,7 +116,7 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorI
 }
 
 
-std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region)
+std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion, const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const unsigned int binsPerDimension)
 {
   
   std::vector<HistogramType::Pointer> histograms;
@@ -125,11 +129,10 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatV
     IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
     indexSelectionFilter->SetIndex(i);
     indexSelectionFilter->SetInput(image);
-    indexSelectionFilter->GetOutput()->SetRequestedRegion(region);
+    indexSelectionFilter->GetOutput()->SetRequestedRegion(imageRegion);
     indexSelectionFilter->Update();
   
     const unsigned int MeasurementVectorSize = 1;
-    const unsigned int binsPerDimension = 30;
     
     HistogramType::MeasurementVectorType lowerBound(MeasurementVectorSize);
     lowerBound.Fill(0);
@@ -141,7 +144,8 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatV
     size.Fill(binsPerDimension);
     
     
-    itk::ImageRegionConstIterator<FloatScalarImageType> imageIterator(indexSelectionFilter->GetOutput(), region);
+    itk::ImageRegionConstIterator<FloatScalarImageType> imageIterator(indexSelectionFilter->GetOutput(), imageRegion);
+    itk::ImageRegionConstIterator<Mask> maskIterator(mask, maskRegion);
     
     HistogramType::Pointer histogram = HistogramType::New();
 
@@ -151,9 +155,10 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatV
   
     while(!imageIterator.IsAtEnd())
       {
-      if(mask->IsHole(imageIterator.GetIndex()))
+      if(mask->IsHole(maskIterator.GetIndex()))
 	{
 	++imageIterator;
+	++maskIterator;
 	continue;
 	}
       float pixel = imageIterator.Get();
@@ -163,6 +168,7 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatV
       histogram->IncreaseFrequencyOfMeasurement(mv, 1);
       
       ++imageIterator;
+      ++maskIterator;
       }
       
     histograms.push_back(histogram);
@@ -171,7 +177,7 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatV
   return histograms;
 }
 
-std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region)
+std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins)
 {
   
   std::vector<HistogramType::Pointer> histograms;
@@ -265,28 +271,29 @@ HistogramType::Pointer ComputeNDHistogramOfRegionManual(const FloatVectorImageTy
   return histogram;
 }
 
-std::vector<float> Compute1DHistogramOfMultiChannelMaskedImage(const FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region)
+std::vector<float> Compute1DHistogramOfMultiChannelMaskedImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion, Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const unsigned int numberOfBins)
 {
   // Compute the histogram for each channel separately
-  std::vector<HistogramType::Pointer> channelHistograms = ComputeHistogramsOfMaskedRegion(image, mask, region);
+  std::vector<HistogramType::Pointer> channelHistograms = ComputeHistogramsOfMaskedRegion(image, imageRegion, mask, maskRegion, numberOfBins);
   
-  std::vector<float> histogram(channelHistograms[0]->GetSize(0));
+  unsigned int binsPerHistogram = channelHistograms[0]->GetSize(0);
+  std::vector<float> histogram(binsPerHistogram*image->GetNumberOfComponentsPerPixel());
   
   for(unsigned int channel = 0; channel < image->GetNumberOfComponentsPerPixel(); ++channel)
     {
-    for(unsigned int bin = 0; bin < channelHistograms[0]->GetSize(0); ++bin)
+    for(unsigned int bin = 0; bin < binsPerHistogram; ++bin)
       {
-      histogram.push_back(channelHistograms[channel]->GetFrequency(bin));
+      histogram[channel*binsPerHistogram + bin] = channelHistograms[channel]->GetFrequency(bin);
       }
     }
   
   return histogram;
 }
 
-std::vector<float> Compute1DHistogramOfMultiChannelImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region)
+std::vector<float> Compute1DHistogramOfMultiChannelImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins)
 {
   // Compute the histogram for each channel separately
-  std::vector<HistogramType::Pointer> channelHistograms = ComputeHistogramsOfRegionManual(image, region);
+  std::vector<HistogramType::Pointer> channelHistograms = ComputeHistogramsOfRegionManual(image, region, numberOfBins);
   
   std::vector<float> histogram(channelHistograms[0]->GetSize(0));
   
@@ -453,15 +460,18 @@ float HistogramIntersection(const std::vector<float>& histogram1, const std::vec
     // The casts to float are necessary other wise the integer division always ends up = 0 !
     float frequency1 = static_cast<float>(histogram1[bin]);
     float frequency2 = static_cast<float>(histogram2[bin]);
-    //float difference = fabs(normalized1 - normalized2);
-    float interseciton = std::min(frequency1, frequency2);
-    //std::cout << "difference: " << difference << std::endl;
-    totalIntersection += interseciton;
+    //std::cout << "frequency1: " << frequency1 << std::endl;
+    //std::cout << "frequency2: " << frequency2 << std::endl;
+    float intersection = std::min(frequency1, frequency2);
+    //std::cout << "intersection: " << intersection << std::endl;
+    totalIntersection += intersection;
     }
 
   float totalFrequency = std::accumulate(histogram1.begin(), histogram1.begin() + histogram1.size(), 0);
-  
+  std::cout << "totalFrequency: " << totalFrequency << std::endl;
   float normalizedIntersection = totalIntersection / totalFrequency;
-  
+  std::cout << "normalizedIntersection: " << normalizedIntersection << std::endl;
   return normalizedIntersection;
 }
+
+} // end namespace

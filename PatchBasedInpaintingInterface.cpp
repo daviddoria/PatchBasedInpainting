@@ -127,7 +127,7 @@ void PatchBasedInpainting::SetMask(const Mask::Pointer mask)
 {
   // Initialize the CurrentMask to the OriginalMask
   this->MaskImage->DeepCopyFrom(mask);
-  this->MaskImage->SetDebugFunctionEnterLeave(true);
+  //this->MaskImage->SetDebugFunctionEnterLeave(true);
 }
 
 itk::ImageRegion<2> PatchBasedInpainting::GetFullRegion()

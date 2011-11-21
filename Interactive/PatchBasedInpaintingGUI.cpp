@@ -200,7 +200,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   //this->Inpainting.SetPatchSearchFunctionToTwoStepDepth();
   this->Inpainting.SetPatchSearchFunctionToNormal();
-  this->Inpainting.SetDebugFunctionEnterLeave(true);
+  //this->Inpainting.SetDebugFunctionEnterLeave(true);
   
   SetComparisonFunctionsFromGUI();
   SetSortFunctionFromGUI();
@@ -676,9 +676,9 @@ void PatchBasedInpaintingGUI::DisplaySourcePatch()
     FloatVectorImageType::Pointer currentImage = this->IterationRecords[this->IterationToDisplay].Image;
 
     // This -1 is because the 0th iteration is the initial condition.
-    std::cout << "this->IterationRecords: " << this->IterationRecords.size()
-              << " PotentialPairSets: " << this->IterationRecords[this->IterationToDisplay].PotentialPairSets.size()
-              << " Iteration: " << this->IterationToDisplay << " ForwardLook: " << this->ForwardLookToDisplay << std::endl;
+//     std::cout << "this->IterationRecords: " << this->IterationRecords.size()
+//               << " PotentialPairSets: " << this->IterationRecords[this->IterationToDisplay].PotentialPairSets.size()
+//               << " Iteration: " << this->IterationToDisplay << " ForwardLook: " << this->ForwardLookToDisplay << std::endl;
     const CandidatePairs& candidatePairs = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay];
 
     QImage sourceImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, candidatePairs[this->SourcePatchToDisplay].SourcePatch.Region, this->ImageDisplayStyle);
@@ -1161,25 +1161,25 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
     for(unsigned int i = 0; i < this->Inpainting.GetPotentialCandidatePairsReference().size(); ++i)
       {
       unsigned int numberToKeep = std::min(this->Inpainting.GetPotentialCandidatePairsReference()[i].size(), this->NumberOfTopPatchesToSave);
-      std::cout << "numberToKeep: " << numberToKeep << std::endl;
+      //std::cout << "numberToKeep: " << numberToKeep << std::endl;
       this->Inpainting.GetPotentialCandidatePairsReference()[i].erase(this->Inpainting.GetPotentialCandidatePairsReference()[i].begin() + numberToKeep,
                                                                       this->Inpainting.GetPotentialCandidatePairsReference()[i].end());
       }
 
     iterationRecord.PotentialPairSets = this->Inpainting.GetPotentialCandidatePairs();
-    std::cout << "iterationRecord.PotentialPairSets: " << iterationRecord.PotentialPairSets.size() << std::endl;
+    //std::cout << "iterationRecord.PotentialPairSets: " << iterationRecord.PotentialPairSets.size() << std::endl;
     }
 
   iterationRecord.UsedPatchPair = usedPatchPair;
   this->IterationRecords.push_back(iterationRecord);
-  std::cout << "There are now " << this->IterationRecords.size() << " recorded iterations." << std::endl;
+  //std::cout << "There are now " << this->IterationRecords.size() << " recorded iterations." << std::endl;
 
   // After one iteration, GetNumberOfCompletedIterations will be 1. This is exactly the set of intermediate images we want to display,
   // because the 0th intermediate images are the original inputs.
   if(this->chkLive->isChecked())
     {
     this->IterationToDisplay = this->Inpainting.GetNumberOfCompletedIterations();
-    std::cout << "Switch to display iteration " << this->IterationToDisplay << std::endl;
+    //std::cout << "Switch to display iteration " << this->IterationToDisplay << std::endl;
     ChangeDisplayedIteration();
 
     Refresh();
