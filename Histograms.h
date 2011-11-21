@@ -19,6 +19,7 @@
 #ifndef HISTOGRAMS_H
 #define HISTOGRAMS_H
 
+#include <numeric> // for 'accumulate'
 #include <vector>
 
 #include "Mask.h"
@@ -28,11 +29,18 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorI
 
 std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
 
+std::vector<float> Compute1DHistogramOfMultiChannelImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region);
+
+std::vector<float> Compute1DHistogramOfMultiChannelMaskedImage(const FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region);
+
 std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region);
 
 void OutputHistogram(const HistogramType::Pointer);
 
 float HistogramDifference(const HistogramType::Pointer, const HistogramType::Pointer);
+
+float HistogramIntersection(const HistogramType::Pointer, const HistogramType::Pointer);
+float HistogramIntersection(const std::vector<float>& histogram1, const std::vector<float>& histogram2);
 
 float NDHistogramDifference(const HistogramType::Pointer, const HistogramType::Pointer);
 

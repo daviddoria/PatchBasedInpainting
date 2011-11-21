@@ -617,6 +617,8 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][bestSourcePatchId];
   //std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
 
+  //std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region);
+  
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
   LeaveFunction("FindBestPatchLookAhead()");
 }

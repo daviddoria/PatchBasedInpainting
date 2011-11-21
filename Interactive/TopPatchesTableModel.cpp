@@ -27,8 +27,8 @@
 #include "HelpersQt.h"
 
 TopPatchesTableModel::TopPatchesTableModel(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& displayStyle) :
-    QAbstractTableModel(), IterationRecords(iterationRecords), ImageDisplayStyle(displayStyle), IterationToDisplay(0),
-    ForwardLookToDisplay(0), PatchDisplaySize(100), NumberOfTopPatchesToDisplay(10)
+    QAbstractTableModel(), IterationRecords(iterationRecords), IterationToDisplay(0),
+    ForwardLookToDisplay(0), PatchDisplaySize(100), NumberOfTopPatchesToDisplay(10), ImageDisplayStyle(displayStyle)
 {
 }
 

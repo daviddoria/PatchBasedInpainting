@@ -125,6 +125,11 @@ bool SortByDepthDifference(const PatchPair& pair1, const PatchPair& pair2)
   return (pair1.GetDepthDifference() < pair2.GetDepthDifference());
 }
 
+bool SortByColorDifference(const PatchPair& pair1, const PatchPair& pair2)
+{
+  return (pair1.GetColorDifference() < pair2.GetColorDifference());
+}
+
 bool SortByDepthAndColor(const PatchPair& pair1, const PatchPair& pair2)
 {
   return (pair1.GetDepthAndColorDifference() < pair2.GetDepthAndColorDifference());
@@ -240,6 +245,11 @@ float PatchPair::GetDepthDifference() const
   return this->DepthDifference;
 }
 
+float PatchPair::GetColorDifference() const
+{
+  return this->ColorDifference;
+}
+
 float PatchPair::GetAverageSquaredDifference() const
 {
   return this->AverageSquaredDifference;
@@ -287,7 +297,8 @@ void PatchPair::ComputeDepthAndColorDifference()
 {
   if(this->ValidColorDifference && this->ValidDepthDifference)
     {
-    this->DepthAndColorDifference = this->ColorDifference * DepthColorLambda + (1.0 - DepthColorLambda) * this->DepthDifference;
+    //this->DepthAndColorDifference = this->ColorDifference * DepthColorLambda + (1.0 - DepthColorLambda) * this->DepthDifference;
+    this->DepthAndColorDifference = DepthDifference + DepthColorLambda * this->ColorDifference;
     }
 }
 

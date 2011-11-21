@@ -151,7 +151,7 @@ struct DepthPixelDifference
 template <unsigned int Channel>
 struct ChannelPixelDifference
 {
-  DepthPixelDifference(const unsigned int numberOfComponents)
+  ChannelPixelDifference(const unsigned int numberOfComponents)
   {
     if(numberOfComponents < Channel+1)
       {

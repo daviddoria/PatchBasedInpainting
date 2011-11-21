@@ -265,6 +265,41 @@ HistogramType::Pointer ComputeNDHistogramOfRegionManual(const FloatVectorImageTy
   return histogram;
 }
 
+std::vector<float> Compute1DHistogramOfMultiChannelMaskedImage(const FloatVectorImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region)
+{
+  // Compute the histogram for each channel separately
+  std::vector<HistogramType::Pointer> channelHistograms = ComputeHistogramsOfMaskedRegion(image, mask, region);
+  
+  std::vector<float> histogram(channelHistograms[0]->GetSize(0));
+  
+  for(unsigned int channel = 0; channel < image->GetNumberOfComponentsPerPixel(); ++channel)
+    {
+    for(unsigned int bin = 0; bin < channelHistograms[0]->GetSize(0); ++bin)
+      {
+      histogram.push_back(channelHistograms[channel]->GetFrequency(bin));
+      }
+    }
+  
+  return histogram;
+}
+
+std::vector<float> Compute1DHistogramOfMultiChannelImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region)
+{
+  // Compute the histogram for each channel separately
+  std::vector<HistogramType::Pointer> channelHistograms = ComputeHistogramsOfRegionManual(image, region);
+  
+  std::vector<float> histogram(channelHistograms[0]->GetSize(0));
+  
+  for(unsigned int channel = 0; channel < image->GetNumberOfComponentsPerPixel(); ++channel)
+    {
+    for(unsigned int bin = 0; bin < channelHistograms[0]->GetSize(0); ++bin)
+      {
+      histogram.push_back(channelHistograms[channel]->GetFrequency(bin));
+      }
+    }
+  
+  return histogram;
+}
 
 HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(const FloatVectorImageType::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension)
 {
@@ -375,4 +410,58 @@ float HistogramDifference(const HistogramType::Pointer histogram1, const Histogr
 
   //std::cout << "totalDifference: " << totalDifference << std::endl;
   return totalDifference;
+}
+
+
+float HistogramIntersection(const HistogramType::Pointer histogram1, const HistogramType::Pointer histogram2)
+{
+  if(histogram1->GetSize(0) != histogram2->GetSize(0))
+    {
+    std::cerr << "Histograms must be the same size!" << std::endl;
+    return 0;
+    }
+
+  float totalIntersection = 0.0f;
+  for(unsigned int i = 0; i < histogram1->GetSize(0); ++i)
+    {
+    // The casts to float are necessary other wise the integer division always ends up = 0 !
+    float frequency1 = static_cast<float>(histogram1->GetFrequency(i));
+    float frequency2 = static_cast<float>(histogram2->GetFrequency(i));
+    //float difference = fabs(normalized1 - normalized2);
+    float interseciton = std::min(frequency1, frequency2);
+    //std::cout << "difference: " << difference << std::endl;
+    totalIntersection += interseciton;
+    }
+
+  float normalizedIntersection = totalIntersection / static_cast<float>(histogram2->GetTotalFrequency());
+  
+  return normalizedIntersection;
+}
+
+
+float HistogramIntersection(const std::vector<float>& histogram1, const std::vector<float>& histogram2)
+{
+  if(histogram1.size() != histogram2.size())
+    {
+    std::cerr << "Histograms must be the same size!" << std::endl;
+    return 0;
+    }
+
+  float totalIntersection = 0.0f;
+  for(unsigned int bin = 0; bin < histogram1.size(); ++bin)
+    {
+    // The casts to float are necessary other wise the integer division always ends up = 0 !
+    float frequency1 = static_cast<float>(histogram1[bin]);
+    float frequency2 = static_cast<float>(histogram2[bin]);
+    //float difference = fabs(normalized1 - normalized2);
+    float interseciton = std::min(frequency1, frequency2);
+    //std::cout << "difference: " << difference << std::endl;
+    totalIntersection += interseciton;
+    }
+
+  float totalFrequency = std::accumulate(histogram1.begin(), histogram1.begin() + histogram1.size(), 0);
+  
+  float normalizedIntersection = totalIntersection / totalFrequency;
+  
+  return normalizedIntersection;
 }

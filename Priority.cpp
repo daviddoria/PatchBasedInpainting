@@ -24,7 +24,6 @@
 Priority::Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) :
                    Image(image), MaskImage(maskImage), PatchRadius(patchRadius)
 {
-  this->DebugFunctionEnterLeave = true;
   std::cout << "Priority() image size: " << image->GetLargestPossibleRegion().GetSize() << std::endl;
   
   EnterFunction("Priority()");

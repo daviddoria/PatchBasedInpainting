@@ -99,7 +99,7 @@ void PatchBasedInpaintingGUI::on_btnGoToIteration_clicked()
     ChangeDisplayedIteration();
     }
 }
-
+/*
 void PatchBasedInpaintingGUI::on_btnResort_clicked()
 {
   for(unsigned int iteration = 0; iteration < this->IterationRecords.size(); iteration++)
@@ -108,7 +108,7 @@ void PatchBasedInpaintingGUI::on_btnResort_clicked()
       {
       CandidatePairs& candidatePairs = this->IterationRecords[iteration].PotentialPairSets[forwardLookId];
 
-      if(this->radSortByAverageAbsoluteDifference->isChecked())
+      if(this->radSortByFullDifference->isChecked())
         {
         std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
         }
@@ -144,7 +144,7 @@ void PatchBasedInpaintingGUI::on_btnResort_clicked()
   
   Refresh();
 }
-
+*/
 void PatchBasedInpaintingGUI::on_chkHighlightUsedPatches_clicked()
 {
   RefreshVTK();
@@ -497,4 +497,44 @@ void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToDisplay_textEdited ( con
   this->TopPatchesModel->Refresh();
   HighlightSourcePatches();
   LeaveFunction("on_txtNumberOfTopPatchesToDisplay_textEdited()");
+}
+
+void PatchBasedInpaintingGUI::on_radSortByFullDifference_clicked()
+{
+  this->Inpainting.PatchSortFunction = &SortByAverageAbsoluteDifference;
+}
+
+void PatchBasedInpaintingGUI::on_radSortByColorDifference_clicked()
+{
+  this->Inpainting.PatchSortFunction = &SortByColorDifference;
+}
+
+void PatchBasedInpaintingGUI::on_radSortByDepthDifference_clicked()
+{
+  this->Inpainting.PatchSortFunction = &SortByDepthDifference;
+}
+
+void PatchBasedInpaintingGUI::on_radSortByColorAndDepth_clicked()
+{
+  this->Inpainting.PatchSortFunction = &SortByDepthAndColor;
+}
+
+void PatchBasedInpaintingGUI::on_chkCompareFull_clicked()
+{
+  SetComparisonFunctionsFromGUI();
+}
+
+void PatchBasedInpaintingGUI::on_chkCompareColor_clicked()
+{
+  SetComparisonFunctionsFromGUI();
+}
+
+void PatchBasedInpaintingGUI::on_chkCompareDepth_clicked()
+{
+  SetComparisonFunctionsFromGUI();
+}
+
+void PatchBasedInpaintingGUI::on_sldDepthColorLambda_valueChanged()
+{
+  SetDepthColorLambdaFromGUI();
 }

@@ -132,6 +132,7 @@ bool SortByBoundaryIsophoteAngleDifference(const PatchPair& pair1, const PatchPa
 bool SortByBoundaryIsophoteStrengthDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByBoundaryPixelDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByDepthDifference(const PatchPair& pair1, const PatchPair& pair2);
+bool SortByColorDifference(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByTotalScore(const PatchPair& pair1, const PatchPair& pair2);
 bool SortByDepthAndColor(const PatchPair& pair1, const PatchPair& pair2);
 

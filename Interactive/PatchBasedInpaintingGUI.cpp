@@ -27,6 +27,7 @@
 #include "itkVector.h"
 
 // Qt
+#include <QButtonGroup>
 #include <QFileDialog>
 #include <QIcon>
 #include <QTextEdit>
@@ -86,6 +87,19 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   //std::cout << "DefaultConstructor()" << std::endl;
   // This function is called by both constructors. This avoid code duplication.
   this->setupUi(this);
+
+  QButtonGroup* groupCompare = new QButtonGroup;
+  groupCompare->addButton(radCompareOriginal);
+  groupCompare->addButton(radCompareBlurred);
+  groupCompare->addButton(radCompareCIELAB);
+  
+  QButtonGroup* groupSortBy = new QButtonGroup;
+  groupSortBy->addButton(radSortByColorAndDepth);
+  groupSortBy->addButton(radSortByColorDifference);
+  groupSortBy->addButton(radSortByDepthDifference);
+  groupSortBy->addButton(radSortByFullDifference);
+  
+  this->PatchCompare = new SelfPatchCompare;
 
   this->PatchRadius = 10;
   this->NumberOfTopPatchesToSave = 0;
@@ -187,6 +201,9 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   //this->Inpainting.SetPatchSearchFunctionToTwoStepDepth();
   this->Inpainting.SetPatchSearchFunctionToNormal();
   this->Inpainting.SetDebugFunctionEnterLeave(true);
+  
+  SetComparisonFunctionsFromGUI();
+  SetSortFunctionFromGUI();
 
   connect(&ComputationThread, SIGNAL(StartProgressSignal()), this, SLOT(slot_StartProgress()), Qt::QueuedConnection);
   connect(&ComputationThread, SIGNAL(StopProgressSignal()), this, SLOT(slot_StopProgress()), Qt::QueuedConnection);
@@ -596,6 +613,9 @@ void PatchBasedInpaintingGUI::Initialize()
   this->Inpainting.SetPatchRadius(this->PatchRadius);
   this->Inpainting.SetMask(this->UserMaskImage);
   this->Inpainting.SetImage(this->UserImage);
+  
+  // The PatchSortFunction has already been set by the radio buttons.
+  
   std::cout << "User Image: " << this->UserImage->GetLargestPossibleRegion().GetSize() << std::endl;
   std::cout << "User Mask: " << this->UserMaskImage->GetLargestPossibleRegion().GetSize() << std::endl;
   HelpersOutput::WriteImage<Mask>(this->UserMaskImage, "mask.mha");
@@ -603,7 +623,7 @@ void PatchBasedInpaintingGUI::Initialize()
   // Setup verbosity.
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
-  this->Inpainting.SetDebugFunctionEnterLeave(false);
+  //this->Inpainting.SetDebugFunctionEnterLeave(false);
   
   // Setup the priority function
   
@@ -617,14 +637,12 @@ void PatchBasedInpaintingGUI::Initialize()
   Helpers::ReadImage<UnsignedCharScalarImageType>(manualPriorityImageFileName, manualPriorityImage);
   
   reinterpret_cast<PriorityManual*>(this->Inpainting.GetPriorityFunction())->SetManualPriorityImage(manualPriorityImage);
-  this->Inpainting.GetPriorityFunction()->SetDebugFunctionEnterLeave(true);
+  //this->Inpainting.GetPriorityFunction()->SetDebugFunctionEnterLeave(true);
   
   // Setup the patch comparison function
-  SelfPatchCompare* patchCompare = new SelfPatchCompare;
-  patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
-  patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
-
-  this->Inpainting.SetPatchCompare(patchCompare);
+  //SelfPatchCompare* patchCompare = new SelfPatchCompare;
+  this->PatchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
+  this->Inpainting.SetPatchCompare(this->PatchCompare);
 
   // Setup the sorting function
   this->Inpainting.PatchSortFunction = &SortByAverageAbsoluteDifference;
@@ -1355,4 +1373,48 @@ void PatchBasedInpaintingGUI::InitializeGUIElements()
   this->NumberOfTopPatchesToDisplay = this->txtNumberOfTopPatchesToDisplay->text().toUInt();
 
   this->UserPatchLayer.ImageSlice->SetVisibility(this->chkDisplayUserPatch->isChecked());
+}
+
+
+void PatchBasedInpaintingGUI::SetComparisonFunctionsFromGUI()
+{
+  this->DifferenceFunctionsToCompute.clear();
+  if(this->chkCompareFull->isChecked())
+    {
+    this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,this->PatchCompare,_1));
+    }
+  if(this->chkCompareColor->isChecked())
+    {
+    this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchColorDifference,this->PatchCompare,_1));
+    }
+  if(this->chkCompareDepth->isChecked())
+    {
+    this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,this->PatchCompare,_1));
+    }
+}
+
+void PatchBasedInpaintingGUI::SetSortFunctionFromGUI()
+{
+  if(this->radSortByFullDifference->isChecked())
+    {
+    this->Inpainting.PatchSortFunction = &SortByAverageSquaredDifference;
+    }
+  else if(this->radSortByColorDifference->isChecked())
+    {
+    this->Inpainting.PatchSortFunction = &SortByColorDifference;
+    }
+  else if(this->radSortByDepthDifference->isChecked())
+    {
+    this->Inpainting.PatchSortFunction = &SortByDepthDifference;
+    }
+  else if(this->radSortByColorAndDepth->isChecked())
+    {
+    this->Inpainting.PatchSortFunction = &SortByDepthAndColor;
+    }
+}
+
+void PatchBasedInpaintingGUI::SetDepthColorLambdaFromGUI()
+{
+  PatchPair::DepthColorLambda = static_cast<float>(sldDepthColorLambda->value())/100.0f;
+  std::cout << "DepthColorLambda set to " << PatchPair::DepthColorLambda << std::endl;
 }

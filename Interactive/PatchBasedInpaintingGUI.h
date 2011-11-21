@@ -80,6 +80,16 @@ public slots:
   void on_radCompareBlurred_clicked();
   void on_radCompareCIELAB_clicked();
   
+  void on_radSortByFullDifference_clicked();
+  void on_radSortByColorDifference_clicked();
+  void on_radSortByDepthDifference_clicked();
+  void on_radSortByColorAndDepth_clicked();
+  void on_sldDepthColorLambda_valueChanged();
+  
+  void on_chkCompareFull_clicked();
+  void on_chkCompareColor_clicked();
+  void on_chkCompareDepth_clicked();
+  
   void on_radDisplayColorImage_clicked();
   void on_radDisplayMagnitudeImage_clicked();
   void on_radDisplayChannel_clicked();
@@ -117,7 +127,7 @@ public slots:
   void on_btnStop_clicked();
   void on_btnReset_clicked();
 
-  void on_btnResort_clicked();
+  //void on_btnResort_clicked();
 
   void on_actionHelp_activated();
   void on_actionQuit_activated();
@@ -318,6 +328,12 @@ protected:
 
   void UserPatchMoved();
   void ComputeUserPatchRegion();
+  
+  std::vector<boost::function< void(PatchPair&) > > DifferenceFunctionsToCompute;
+  SelfPatchCompare* PatchCompare;
+  void SetComparisonFunctionsFromGUI();
+  void SetSortFunctionFromGUI();
+  void SetDepthColorLambdaFromGUI();
 };
 
 #include "PatchBasedInpaintingGUI.hxx"
