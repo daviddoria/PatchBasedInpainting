@@ -412,6 +412,7 @@ void PatchBasedInpaintingGUI::on_btnStop_clicked()
   
   this->btnStep->setEnabled(true);
   this->btnInpaint->setEnabled(true);
+  this->btnReset->setEnabled(true);
   
 }
 
@@ -494,5 +495,6 @@ void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToDisplay_textEdited ( con
   this->NumberOfTopPatchesToDisplay = text.toUInt();
   this->TopPatchesModel->SetNumberOfTopPatchesToDisplay(this->NumberOfTopPatchesToDisplay);
   this->TopPatchesModel->Refresh();
+  HighlightSourcePatches();
   LeaveFunction("on_txtNumberOfTopPatchesToDisplay_textEdited()");
 }

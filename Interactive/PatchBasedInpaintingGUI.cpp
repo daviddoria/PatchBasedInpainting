@@ -254,6 +254,29 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   LeaveFunction("DefaultConstructor()");
 }
 
+// Default constructor
+PatchBasedInpaintingGUI::PatchBasedInpaintingGUI()
+{
+  DefaultConstructor();
+};
+
+PatchBasedInpaintingGUI::PatchBasedInpaintingGUI(const std::string& imageFileName, const std::string& maskFileName, const bool debugEnterLeave = false)
+{
+  this->SetDebugFunctionEnterLeave(debugEnterLeave);
+  
+  EnterFunction("PatchBasedInpaintingGUI()");
+
+  std::cout << "Image: " << imageFileName << " Mask: " << maskFileName << std::endl;
+  
+  DefaultConstructor();
+
+  OpenImage(imageFileName);
+  OpenMask(maskFileName, false);
+  Initialize();
+  LeaveFunction("PatchBasedInpaintingGUI()");
+}
+
+
 void PatchBasedInpaintingGUI::UserPatchMoved()
 {
   EnterFunction("UserPatchMoved()");
@@ -278,9 +301,10 @@ void PatchBasedInpaintingGUI::UserPatchMoved()
     return;
     }
 
+  unsigned int iterationToCompare = this->IterationToDisplay - 1;
   SelfPatchCompare* patchCompare = new SelfPatchCompare;
-  patchCompare->SetImage(this->IterationRecords[this->IterationToDisplay].Image);
-  patchCompare->SetMask(this->IterationRecords[this->IterationToDisplay].MaskImage);
+  patchCompare->SetImage(this->IterationRecords[iterationToCompare].Image);
+  patchCompare->SetMask(this->IterationRecords[iterationToCompare].MaskImage);
   patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
   patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
   CandidatePairs candidatePairs(this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay].TargetPatch);
@@ -294,28 +318,6 @@ void PatchBasedInpaintingGUI::UserPatchMoved()
   lblUserPatchError->setText(ss.str().c_str());
 
   LeaveFunction("UserPatchMoved()");
-}
-
-// Default constructor
-PatchBasedInpaintingGUI::PatchBasedInpaintingGUI()
-{
-  DefaultConstructor();
-};
-
-PatchBasedInpaintingGUI::PatchBasedInpaintingGUI(const std::string& imageFileName, const std::string& maskFileName, const bool debugEnterLeave)
-{
-  this->SetDebugFunctionEnterLeave(debugEnterLeave);
-  
-  EnterFunction("PatchBasedInpaintingGUI()");
-
-  std::cout << "Image: " << imageFileName << " Mask: " << maskFileName << std::endl;
-  
-  DefaultConstructor();
-
-  OpenImage(imageFileName);
-  OpenMask(maskFileName, false);
-  Initialize();
-  LeaveFunction("PatchBasedInpaintingGUI()");
 }
 
 void PatchBasedInpaintingGUI::SetupColors()

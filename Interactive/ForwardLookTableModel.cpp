@@ -27,7 +27,7 @@
 #include "HelpersQt.h"
 
 ForwardLookTableModel::ForwardLookTableModel(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& style) :
-    QAbstractTableModel(), IterationRecords(iterationRecords), ImageDisplayStyle(style), IterationToDisplay(0), PatchDisplaySize(100)
+    QAbstractTableModel(), IterationRecords(iterationRecords), IterationToDisplay(0), PatchDisplaySize(100), ImageDisplayStyle(style)
 {
 }
 

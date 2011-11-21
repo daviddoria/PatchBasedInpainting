@@ -32,9 +32,11 @@ float PriorityManual::ComputePriority(const itk::Index<2>& queryPixel)
   
   float priority = 0.0f;
   float manualPriority = this->ManualPriorityImage->GetPixel(queryPixel);
+
+  float offset = 1e4;
   if(manualPriority > 0)
     {
-    priority = manualPriority * PriorityOnionPeel::ComputePriority(queryPixel);
+    priority = offset + PriorityOnionPeel::ComputePriority(queryPixel);
     }
   else
     {

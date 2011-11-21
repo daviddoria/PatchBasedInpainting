@@ -25,56 +25,44 @@ float SelfPatchCompare::PatchAverageSourceDifference(const Patch& sourcePatch)
     exit(-1);
     }
   float totalDifference = 0.0f;
-  
+
+  // We want to do direct pointer arithmetic for speed purposes.
   FloatVectorImageType::InternalPixelType* bufferPointer = this->Image->GetBufferPointer();
+  
+  // Get the locations of the corners of both patches.
   int sourceCornerOffset = this->Image->ComputeOffset(sourcePatch.Region.GetIndex());
   int targetCornerOffset = this->Image->ComputeOffset(this->Pairs->TargetPatch.Region.GetIndex());
   
+  // Compute the difference between the corners (from the target to the source).
   int targetToSourceOffsetPixels = sourceCornerOffset - targetCornerOffset;
   int targetToSourceOffset = targetToSourceOffsetPixels * this->NumberOfComponentsPerPixel;
 
+  // Create empty pixel containers that we will fill.
   FloatVectorImageType::PixelType sourcePixel(this->NumberOfComponentsPerPixel);
-  
   FloatVectorImageType::PixelType targetPixel(this->NumberOfComponentsPerPixel);
   
+  // Instantiate the distance function that has been specified as a template parameter.
   TDifferenceFunction differenceFunction(this->NumberOfComponentsPerPixel);
   float difference = 0;
+  
+  // Loop through the pixels that have been determined to be valid.
   for(unsigned int pixelId = 0; pixelId < this->ValidTargetPatchOffsets.size(); ++pixelId)
     {
+    // Construct a pixel out of the data at the appropriate location.
     for(unsigned int component = 0; component < this->NumberOfComponentsPerPixel; ++component)
       {
-      //sourcePixel[component] = bufferPointer[this->ValidTargetPatchOffsets[pixelId] + targetToSourceOffset + component];
-      //targetPixel[component] = bufferPointer[this->ValidTargetPatchOffsets[pixelId] + component];
-      
       int sourceOffset = this->ValidTargetPatchOffsets[pixelId] + targetToSourceOffset + component;
       int targetOffset = this->ValidTargetPatchOffsets[pixelId] + component;
-//       if(sourceOffset < 0 || sourceOffset > this->Image->GetLargestPossibleRegion().GetNumberOfPixels() * this->NumberOfComponentsPerPixel ||
-// 	 targetOffset < 0 || targetOffset > this->Image->GetLargestPossibleRegion().GetNumberOfPixels() * this->NumberOfComponentsPerPixel)
-// 	{
-// 	std::cerr << "Problem: " << std::endl
-// 	          << " this->ValidTargetPatchOffsets[pixelId]: " << this->ValidTargetPatchOffsets[pixelId] << std::endl
-// 	          << " targetToSourceOffset: " << targetToSourceOffset << std::endl
-// 	          << " sourceOffset: " << sourceOffset << std::endl
-// 	          << " targetOffset: " << targetOffset << std::endl
-// 	          << " sourcePatch: " << sourcePatch.Region.GetIndex() << std::endl
-// 		  << " targetPatch: " << this->Pairs->TargetPatch.Region.GetIndex() << std::endl
-// 		  << " sourceCornerOffset: " << sourceCornerOffset << std::endl
-// 		  << " targetCornerOffset: " << targetCornerOffset << std::endl
-// 		  << " computed target index: " << this->Image->ComputeIndex(this->ValidTargetPatchOffsets[pixelId] / this->NumberOfComponentsPerPixel) << std::endl
-// 	          << std::endl;
-// 		  //std::cout << index[1] * size[0] + index[0] << std::endl;
-// 	exit(-1);
-// 	}
       
       sourcePixel[component] = bufferPointer[sourceOffset];
       
       targetPixel[component] = bufferPointer[targetOffset];
-      }
+      } // end component loop
   
     difference = differenceFunction.Difference(sourcePixel, targetPixel);
 
     totalDifference += difference;
-    }
+    } // end pixel loop
 
   float averageDifference = totalDifference/static_cast<float>(this->ValidTargetPatchOffsets.size());
   return averageDifference;

@@ -35,7 +35,7 @@ PriorityOnionPeel::PriorityOnionPeel(FloatVectorImageType::Pointer image, Mask::
 
 void PriorityOnionPeel::Update(const itk::ImageRegion<2>& filledRegion)
 {
-  EnterFunction("Update()");
+  EnterFunction("PriorityOnionPeel::Update()");
   // Get the center pixel (the pixel around which the region was filled)
   itk::Index<2> centerPixel = Helpers::GetRegionCenter(filledRegion);
   float value = ComputeConfidenceTerm(centerPixel);
@@ -43,7 +43,7 @@ void PriorityOnionPeel::Update(const itk::ImageRegion<2>& filledRegion)
 
   this->MaskImage->FindBoundary(this->BoundaryImage);
 
-  LeaveFunction("Update()");
+  LeaveFunction("PriorityOnionPeel::Update()");
 }
 
 float PriorityOnionPeel::ComputePriority(const itk::Index<2>& queryPixel)
@@ -55,7 +55,7 @@ float PriorityOnionPeel::ComputePriority(const itk::Index<2>& queryPixel)
 
 void PriorityOnionPeel::UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value)
 {
-  EnterFunction("UpdateConfidences()");
+  EnterFunction("PriorityOnionPeel::UpdateConfidences()");
   std::cout << "Updating confidences with value " << value << std::endl;
   try
   {
@@ -77,11 +77,11 @@ void PriorityOnionPeel::UpdateConfidences(const itk::ImageRegion<2>& targetRegio
 
       ++maskIterator;
       } // end while looop with iterator
-    LeaveFunction("UpdateConfidences()");
+    LeaveFunction("PriorityOnionPeel::UpdateConfidences()");
   } // end try
   catch( itk::ExceptionObject & err )
   {
-    std::cerr << "ExceptionObject caught in UpdateConfidences!" << std::endl;
+    std::cerr << "ExceptionObject caught in PriorityOnionPeel::UpdateConfidences!" << std::endl;
     std::cerr << err << std::endl;
     exit(-1);
   }
@@ -90,7 +90,7 @@ void PriorityOnionPeel::UpdateConfidences(const itk::ImageRegion<2>& targetRegio
 
 void PriorityOnionPeel::InitializeConfidenceMap()
 {
-  EnterFunction("InitializeConfidenceMap()");
+  EnterFunction("PriorityOnionPeel::InitializeConfidenceMap()");
   // Clone the mask - we need to invert the mask to actually perform the masking, but we don't want to disturb the original mask
   Mask::Pointer maskClone = Mask::New();
   //Helpers::DeepCopy<Mask>(this->CurrentMask, maskClone);
@@ -112,12 +112,13 @@ void PriorityOnionPeel::InitializeConfidenceMap()
   rescaleFilter->Update();
 
   Helpers::DeepCopy<FloatScalarImageType>(rescaleFilter->GetOutput(), this->ConfidenceMapImage);
-  LeaveFunction("InitializeConfidenceMap()");
+  LeaveFunction("PriorityOnionPeel::InitializeConfidenceMap()");
 }
 
 
 float PriorityOnionPeel::ComputeConfidenceTerm(const itk::Index<2>& queryPixel)
 {
+  EnterFunction("PriorityOnionPeel::ComputeConfidenceTerm()");
   //DebugMessage<itk::Index<2>>("Computing confidence for ", queryPixel);
   try
   {
@@ -148,7 +149,7 @@ float PriorityOnionPeel::ComputeConfidenceTerm(const itk::Index<2>& queryPixel)
 
     float confidence = sum/areaOfPatch;
     DebugMessage<float>("Confidence: ", confidence);
-
+    LeaveFunction("PriorityOnionPeel::ComputeConfidenceTerm()");
     return confidence;
   }
   catch( itk::ExceptionObject & err )
