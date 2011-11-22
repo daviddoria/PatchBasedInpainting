@@ -21,6 +21,7 @@
 
 // Custom
 #include "CandidatePairs.h"
+#include "ClusterColors.h"
 #include "DebugOutputs.h"
 #include "Helpers.h"
 #include "Patch.h"
@@ -231,6 +232,8 @@ private:
 
   Priority* PriorityFunction;
 
+  IntImageType::Pointer ColorBinMembershipImage;
+  ClusterColors ColorFrequency;
 };
 
 #include "PatchBasedInpainting.hxx"

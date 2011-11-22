@@ -92,12 +92,14 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   groupCompare->addButton(radCompareOriginal);
   groupCompare->addButton(radCompareBlurred);
   groupCompare->addButton(radCompareCIELAB);
+  radCompareOriginal->setChecked(true);
   
   QButtonGroup* groupSortBy = new QButtonGroup;
   groupSortBy->addButton(radSortByColorAndDepth);
   groupSortBy->addButton(radSortByColorDifference);
   groupSortBy->addButton(radSortByDepthDifference);
   groupSortBy->addButton(radSortByFullDifference);
+  radSortByFullDifference->setChecked(true);
   
   this->PatchCompare = new SelfPatchCompare;
 

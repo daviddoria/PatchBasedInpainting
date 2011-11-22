@@ -48,10 +48,11 @@ int main(int argc, char *argv[])
     {
     std::cout << "numberOfClusters: " << numberOfClusters << std::endl;
     IntImageType::Pointer outputLabelImage = IntImageType::New();
-    ClusterColorsUniform(reader->GetOutput(), numberOfClusters, outputLabelImage);
+    ClusterColors clusterColors;
+    clusterColors.Construct(reader->GetOutput(), numberOfClusters);
     std::stringstream ss;
     ss << "/home/doriad/Debug/" << outputPrefix << "_" << Helpers::ZeroPad(numberOfClusters, 4) << ".mha";
-    HelpersOutput::WriteImage<IntImageType>(outputLabelImage, ss.str());
+    HelpersOutput::WriteImage<IntImageType>(clusterColors.GetColorBinMembershipImage(), ss.str());
     }
     
   return EXIT_SUCCESS;

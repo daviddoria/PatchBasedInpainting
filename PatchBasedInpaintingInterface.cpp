@@ -18,8 +18,11 @@
 
 #include "PatchBasedInpainting.h"
 
+// Custom
+#include "ClusterColors.h"
 #include "HelpersOutput.h"
 
+// Boost
 #include <boost/bind.hpp>
 
 void PatchBasedInpainting::SetPatchSearchFunctionToScaleConsistent()
@@ -119,6 +122,11 @@ void PatchBasedInpainting::SetImage(const FloatVectorImageType::Pointer image)
   HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CIELabImage, "Debug/SetImage.CIELab.mha", this->DebugImages);
 
   this->FullImageRegion = image->GetLargestPossibleRegion();
+  
+  unsigned int numberOfBinsPerDimension = 6;
+  this->ColorFrequency.Construct(image, numberOfBinsPerDimension);
+  
+  Helpers::DeepCopy<IntImageType>(this->ColorFrequency.GetColorBinMembershipImage(), this->ColorBinMembershipImage);
   
   //ComputeMaxPixelDifference();
 }

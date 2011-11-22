@@ -31,6 +31,7 @@
 namespace HelpersQt
 {
 
+ 
 template <typename TImage>
 QImage GetQImage(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const DisplayStyle& style)
 {
@@ -55,6 +56,7 @@ QImage GetQImage(const typename TImage::Pointer image, const itk::ImageRegion<2>
       std::cerr << "No valid style specified." << std::endl;
       return QImage();
   }
+  return QImage();
 }
 
 template <typename TImage>

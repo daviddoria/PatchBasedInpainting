@@ -22,6 +22,7 @@
 #include "itkCovariantVector.h"
 #include "itkImage.h"
 #include "itkRGBPixel.h"
+#include "itkVector.h"
 #include "itkVectorImage.h"
 
 typedef itk::VectorImage<float,2> FloatVectorImageType;
@@ -53,5 +54,7 @@ typedef itk::Image<FloatVector2Type , 2> FloatVector2ImageType;
 
 typedef itk::Statistics::ImageToHistogramFilter< FloatScalarImageType> ImageToHistogramFilterType;
 typedef ImageToHistogramFilterType::HistogramType HistogramType;
+
+typedef itk::Vector< float, 3 > ColorMeasurementVectorType;
 
 #endif

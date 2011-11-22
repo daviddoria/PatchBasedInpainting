@@ -20,70 +20,150 @@
 
 // ITK
 #include "itkImageRegionConstIterator.h"
-#include "itkDecisionRule.h"
 #include "itkVector.h"
-#include "itkListSample.h"
-#include "itkKdTree.h"
-#include "itkWeightedCentroidKdTreeGenerator.h"
 #include "itkKdTreeBasedKmeansEstimator.h"
 #include "itkMinimumDecisionRule.h"
 #include "itkEuclideanDistanceMetric.h"
 #include "itkDistanceToCentroidMembershipFunction.h"
 #include "itkSampleClassifierFilter.h"
-#include "itkNormalVariateGenerator.h"
 
-
-void ClusterColorsUniform(FloatVectorImageType::Pointer image, const unsigned int binsPerAxis, IntImageType::Pointer outputLabelImage)
+ClusterColors::ClusterColors()
 {
-  // Create samples from an entire image
-  const unsigned int numberOfComponents = 3; // RGB
-  
-  std::cout << "Create samples from an image." << std::endl;
-  typedef itk::Vector< float, numberOfComponents > MeasurementVectorType;
+  // this->ColorBinMembershipImage = IntImageType::New(); // This is done in CreateMembershipImage()
+}
 
-  typedef itk::Statistics::ListSample< MeasurementVectorType > SampleType;
-  SampleType::Pointer sample = SampleType::New();
-  sample->SetMeasurementVectorSize( numberOfComponents );
-
-  MeasurementVectorType mv;
+void ClusterColors::Construct(const FloatVectorImageType::Pointer image, const unsigned int binsPerAxis)
+{
+  this->Image = image;
+  GenerateUniformColors(binsPerAxis);  
   
+  CreateMembershipImage();
+}
+
+IntImageType::Pointer ClusterColors::GetColorBinMembershipImage()
+{
+  return this->ColorBinMembershipImage;
+}
+
+void ClusterColors::GenerateUniformColors(const unsigned int binsPerAxis)
+{
+  EnterFunction("GenerateUniformColors");
+  this->Colors.clear();
   unsigned int step = 256/binsPerAxis;
-  std::cout << "Step: " << step << std::endl;
+  ColorMeasurementVectorType color;
   for(unsigned int r = 0; r < 255; r += step)
     {
     for(unsigned int g = 0; g < 255; g += step)
       {
       for(unsigned int b = 0; b < 255; b += step)
 	{
-	mv[0] = r;
-	mv[1] = g;
-	mv[2] = b;
-
-	sample->PushBack( mv );
+	color[0] = r;
+	color[1] = g;
+	color[2] = b;
+	this->Colors.push_back(color);
 	}
       }
     }
-  std::cout << "Number of colors: " << sample->Size() << std::endl;
+    
   
-  // Create a KDTree
-  typedef itk::Statistics::KdTreeGenerator< SampleType > TreeGeneratorType;
-  TreeGeneratorType::Pointer treeGenerator = TreeGeneratorType::New();
-  treeGenerator->SetSample( sample );
-  treeGenerator->SetBucketSize( 16 );
-  treeGenerator->Update();
+  this->Sample = SampleType::New();
+  this->Sample->SetMeasurementVectorSize( ColorMeasurementVectorType::Dimension );
 
-  typedef TreeGeneratorType::KdTreeType TreeType;
+  for(unsigned int i = 0; i < this->Colors.size(); ++i)
+    {
+    this->Sample->PushBack(this->Colors[i]);
+    }
+    
+        
+  // Create a KDTree
+  
+  this->TreeGenerator = TreeGeneratorType::New();
+  this->TreeGenerator->SetSample( this->Sample );
+  this->TreeGenerator->SetBucketSize( 16 );
+  this->TreeGenerator->Update();
+
   typedef TreeType::NearestNeighbors NeighborsType;
   typedef TreeType::KdTreeNodeType NodeType;
 
-  TreeType::Pointer tree = treeGenerator->GetOutput();
+  this->KDTree = this->TreeGenerator->GetOutput();
+  //this->KDTree->Register();
+  LeaveFunction("GenerateUniformColors");
+}
 
-  MeasurementVectorType queryPoint;
-  itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(image,image->GetLargestPossibleRegion());
+std::vector<float> ClusterColors::HistogramRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion, Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion)
+{
+  std::vector<float> histogram(this->Colors.size(), 0.0f);
 
-  outputLabelImage->SetRegions(image->GetLargestPossibleRegion());
-  outputLabelImage->Allocate();
-  outputLabelImage->FillBuffer(0);
+  itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(image, imageRegion);
+  itk::ImageRegionConstIterator<Mask> maskIterator(mask, maskRegion);
+    
+  while(!imageIterator.IsAtEnd())
+    {
+    if(mask->IsHole(maskIterator.GetIndex()))
+      {
+      ++imageIterator;
+      ++maskIterator;
+      continue;
+      }
+    FloatVectorImageType::PixelType pixel = imageIterator.Get();
+    ColorMeasurementVectorType measurement;
+    measurement[0] = pixel[0];
+    measurement[1] = pixel[1];
+    measurement[2] = pixel[2];
+    
+    TreeType::InstanceIdentifierVectorType neighbors;
+    this->KDTree->Search( measurement, 1u, neighbors );
+  
+    histogram[neighbors[0]] += 1.0f;
+    
+    ++imageIterator;
+    ++maskIterator;
+    }
+    
+  return histogram;
+}
+
+
+std::vector<float> ClusterColors::HistogramRegion(const IntImageType::Pointer image, const itk::ImageRegion<2>& imageRegion, const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion)
+{
+  EnterFunction("ClusterColors::HistogramRegion(IntImageType)");
+  std::vector<float> histogram(this->Colors.size(), 0.0f);
+  //std::cout << "histogram.size() " << histogram.size() << std::endl;
+  itk::ImageRegionConstIterator<IntImageType> imageIterator(image, imageRegion);
+  itk::ImageRegionConstIterator<Mask> maskIterator(mask, maskRegion);
+    
+  while(!imageIterator.IsAtEnd())
+    {
+    if(mask->IsHole(maskIterator.GetIndex()))
+      {
+      ++imageIterator;
+      ++maskIterator;
+      continue;
+      }
+    //std::cout << "Attempting to increment bin " << imageIterator.Get() << std::endl;
+    histogram[imageIterator.Get()] += 1.0f;
+    
+    ++imageIterator;
+    ++maskIterator;
+    }
+  LeaveFunction("ClusterColors::HistogramRegion(IntImageType)");
+  return histogram;
+}
+
+void ClusterColors::CreateMembershipImage()
+{
+  EnterFunction("CreateMembershipImage");
+  this->ColorBinMembershipImage = IntImageType::New();
+  this->ColorBinMembershipImage->SetRegions(this->Image->GetLargestPossibleRegion());
+  this->ColorBinMembershipImage->Allocate();
+  this->ColorBinMembershipImage->FillBuffer(0);
+  
+  ColorMeasurementVectorType queryPoint;
+  itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->Image, this->Image->GetLargestPossibleRegion());
+
+  this->ColorBinMembershipImage->SetRegions(this->Image->GetLargestPossibleRegion());
+  this->ColorBinMembershipImage->Allocate();
+  this->ColorBinMembershipImage->FillBuffer(0);
   
   while(!imageIterator.IsAtEnd())
     {
@@ -95,15 +175,15 @@ void ClusterColorsUniform(FloatVectorImageType::Pointer image, const unsigned in
     queryPoint[2] = pixel[2];
 
     TreeType::InstanceIdentifierVectorType neighbors;
-    tree->Search( queryPoint, 1u, neighbors );
+    this->KDTree->Search( queryPoint, 1u, neighbors );
     //tree->GetMeasurementVector( neighbors[0] );
-    outputLabelImage->SetPixel(imageIterator.GetIndex(), neighbors[0]);
+    this->ColorBinMembershipImage->SetPixel(imageIterator.GetIndex(), neighbors[0]);
     ++imageIterator;
     }
-
+  LeaveFunction("CreateMembershipImage");
 }
 
-void ClusterColors(FloatVectorImageType::Pointer image, const unsigned int numberOfClusters, IntImageType::Pointer outputLabelImage)
+void ClusterColorsAdaptive(const FloatVectorImageType::Pointer image, const unsigned int numberOfClusters, IntImageType::Pointer outputLabelImage)
 {
   // Create samples from an entire image
   const unsigned int numberOfComponents = 3; // RGB
