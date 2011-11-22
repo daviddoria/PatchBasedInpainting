@@ -25,6 +25,7 @@ endif ( QT4_FOUND )
 
 add_library(PatchBasedInpainting
 CandidatePairs.cpp
+ClusterColors.cpp
 PatchBasedInpainting.cpp
 PatchBasedInpaintingDebugging.cpp
 PatchBasedInpaintingInterface.cpp
@@ -60,6 +61,9 @@ if(BuildNonInteractive)
   TARGET_LINK_LIBRARIES(PatchBasedInpaintingNonInteractive PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
   INSTALL( TARGETS PatchBasedInpaintingNonInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
+
+ADD_EXECUTABLE(TestClusterColors Tests/TestClusterColors.cpp)
+TARGET_LINK_LIBRARIES(TestClusterColors ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
 SET(BuildTests CACHE BOOL "Build tests.")
 if(BuildTests)
