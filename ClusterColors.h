@@ -21,9 +21,14 @@
 
 #include "Types.h"
 
+void ClusterColorsUniform(FloatVectorImageType::Pointer image, const unsigned int binsPerAxis, IntImageType::Pointer outputLabelImage);
+
+void ClusterColors(FloatVectorImageType::Pointer image, const unsigned int numberOfClusters, IntImageType::Pointer output);
+
+/*
 class ClusterColors
 {
   ClusterColors(FloatVectorImageType::Pointer image, const unsigned int numberOfClusters, IntImageType::Pointer output);
-};
+};*/
 
 #endif

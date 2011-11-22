@@ -34,6 +34,7 @@ typedef itk::Image<itk::RGBPixel<unsigned char>, 2> RGBImageType;
 // Scalar image types
 typedef itk::Image<float,2> FloatScalarImageType;
 typedef itk::Image<unsigned char,2> UnsignedCharScalarImageType;
+typedef itk::Image<int, 2> IntImageType;
 
 // Vector types
 typedef itk::CovariantVector<unsigned char, 3> UnsignedCharVectorType;

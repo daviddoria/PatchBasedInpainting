@@ -474,4 +474,15 @@ float HistogramIntersection(const std::vector<float>& histogram1, const std::vec
   return normalizedIntersection;
 }
 
+void WriteHistogram(const std::vector<float>& histogram, const std::string& filename)
+{
+  std::ofstream fout(filename.c_str());
+  for(unsigned int i = 0; i < histogram.size(); ++i)
+    {
+    fout << histogram[i] << " ";
+    }
+
+  fout.close();
+}
+
 } // end namespace

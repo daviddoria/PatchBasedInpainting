@@ -631,6 +631,12 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     sourcePatchId++; // Note at the end of the loop bestPatchPair will have been set to the previous patchId.
     histogramIntersection = Histograms::HistogramIntersection(histogram2, histogram1);
     std::cout << "histogramIntersection: " << histogramIntersection << std::endl;
+    std::stringstream ssSource;
+    ssSource << "/home/doriad/Debug/" << this->NumberOfCompletedIterations << "_" << Helpers::ZeroPad(sourcePatchId, 4) << "_source.txt";
+    std::stringstream ssTarget;
+    ssTarget << "/home/doriad/Debug/" << this->NumberOfCompletedIterations << "_" << Helpers::ZeroPad(sourcePatchId, 4) << "_target.txt";
+    Histograms::WriteHistogram(histogram1, ssSource.str());
+    Histograms::WriteHistogram(histogram2, ssTarget.str());
   } while (histogramIntersection < 0.8f);
   std::cout << "Used patch " << sourcePatchId - 1 << std::endl;
   

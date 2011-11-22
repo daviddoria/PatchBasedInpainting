@@ -51,6 +51,8 @@ HistogramType::Pointer ComputeNDHistogramOfRegionManual(const FloatVectorImageTy
 
 HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(const FloatVectorImageType::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
 
+void WriteHistogram(const std::vector<float>& histogram1, const std::string& filename);
+
 } // end namespace
 
 #endif
