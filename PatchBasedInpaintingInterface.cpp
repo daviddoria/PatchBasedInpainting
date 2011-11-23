@@ -122,9 +122,16 @@ void PatchBasedInpainting::SetImage(const FloatVectorImageType::Pointer image)
   HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CIELabImage, "Debug/SetImage.CIELab.mha", this->DebugImages);
 
   this->FullImageRegion = image->GetLargestPossibleRegion();
+
+  //this->ColorFrequency.SetDebugFunctionEnterLeave(true);
   
-  unsigned int numberOfBinsPerDimension = 6;
-  this->ColorFrequency.Construct(image, numberOfBinsPerDimension);
+  //unsigned int numberOfBinsPerDimension = 6;
+  //this->ColorFrequency.SetNumberOfBinsPerAxis(numberOfBinsPerDimension);
+
+  //unsigned int numberOfColors = 50;
+  unsigned int numberOfColors = 100;
+  this->ColorFrequency.SetNumberOfColors(numberOfColors);
+  this->ColorFrequency.Construct(image);
   
   Helpers::DeepCopy<IntImageType>(this->ColorFrequency.GetColorBinMembershipImage(), this->ColorBinMembershipImage);
   

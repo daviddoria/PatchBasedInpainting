@@ -20,7 +20,7 @@
 #include "HelpersOutput.h"
 #include "Mask.h"
 #include "Types.h"
-#include "ClusterColors.h"
+#include "ClusterColorsUniform.h"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -48,8 +48,9 @@ int main(int argc, char *argv[])
     {
     std::cout << "numberOfClusters: " << numberOfClusters << std::endl;
     IntImageType::Pointer outputLabelImage = IntImageType::New();
-    ClusterColors clusterColors;
-    clusterColors.Construct(reader->GetOutput(), numberOfClusters);
+    ClusterColorsUniform clusterColors;
+    clusterColors.SetNumberOfBinsPerAxis(numberOfClusters);
+    clusterColors.Construct(reader->GetOutput());
     std::stringstream ss;
     ss << "/home/doriad/Debug/" << outputPrefix << "_" << Helpers::ZeroPad(numberOfClusters, 4) << ".mha";
     HelpersOutput::WriteImage<IntImageType>(clusterColors.GetColorBinMembershipImage(), ss.str());

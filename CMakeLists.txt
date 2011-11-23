@@ -26,6 +26,8 @@ endif ( QT4_FOUND )
 add_library(PatchBasedInpainting
 CandidatePairs.cpp
 ClusterColors.cpp
+ClusterColorsAdaptive.cpp
+ClusterColorsUniform.cpp
 PatchBasedInpainting.cpp
 PatchBasedInpaintingDebugging.cpp
 PatchBasedInpaintingInterface.cpp

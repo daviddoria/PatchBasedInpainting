@@ -38,27 +38,29 @@ public:
   
   ClusterColors();
   
-  void Construct(const FloatVectorImageType::Pointer image, const unsigned int binsPerAxis);
+  void Construct(const FloatVectorImageType::Pointer image);
     
   typedef itk::Statistics::ListSample< ColorMeasurementVectorType > SampleType;
   typedef itk::Statistics::KdTreeGenerator< SampleType > TreeGeneratorType;
   typedef TreeGeneratorType::KdTreeType TreeType;
   
   // If the MembershipImage is not provided, compute the histogram.
-  std::vector<float> HistogramRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion, const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion);
+  std::vector<float> HistogramRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion,
+                                     const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion);
   
   // If the MembershipImage is provided, compute the histogram (much faster).
-  std::vector<float> HistogramRegion(const IntImageType::Pointer image, const itk::ImageRegion<2>& imageRegion, const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion);
+  std::vector<float> HistogramRegion(const IntImageType::Pointer image, const itk::ImageRegion<2>& imageRegion,
+                                     const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion);
   
-  //void ClusterColorsAdaptive(FloatVectorImageType::Pointer image, const unsigned int numberOfClusters, IntImageType::Pointer output);
-
   IntImageType::Pointer GetColorBinMembershipImage();
   
 protected:
   
-  void GenerateUniformColors(const unsigned int binsPerAxis);
-  void CreateMembershipImage();
+  virtual void GenerateColors() = 0;
   
+  void CreateMembershipImage();
+  void CreateSamplesFromColors();
+
   FloatVectorImageType::Pointer Image;
   std::vector<ColorMeasurementVectorType> Colors;
   
@@ -67,12 +69,7 @@ protected:
   TreeType::Pointer KDTree;
   
   IntImageType::Pointer ColorBinMembershipImage;
-  
-/*
-class ClusterColors
-{
-  ClusterColors(FloatVectorImageType::Pointer image, const unsigned int numberOfClusters, IntImageType::Pointer output);
-};*/
 
 };
+
 #endif
