@@ -209,30 +209,24 @@ protected:
   // Outline display of all forward look patches
   Layer AllForwardLookOutlinesLayer;
 
-  // Selected forward look patch outline display
-  Layer SelectedForwardLookOutlineLayer;
-
   // Outline display of all source patches
   Layer AllSourcePatchOutlinesLayer;
 
-  // Selected source patch outline display
-  Layer SelectedSourcePatchOutlineLayer;
-  
   // Image display
   Layer ImageLayer;
-  
+
   // Priority image display
   Layer PriorityLayer;
-  
+
   // Boundary image display
   Layer BoundaryLayer;
 
   // Mask image display
   Layer MaskLayer;
-  
+
   // The image that the user loads
   FloatVectorImageType::Pointer UserImage;
-  
+
   // The mask that the user loads
   Mask::Pointer UserMaskImage;
   
@@ -250,8 +244,11 @@ protected:
 
   // If IterationToDisplay == 0, then we are just displaying the initial images.
   unsigned int IterationToDisplay;
-  unsigned int ForwardLookToDisplay;
-  unsigned int SourcePatchToDisplay;
+  unsigned int ForwardLookToDisplayId;
+  unsigned int SourcePatchToDisplayId;
+  Patch SourcePatchToDisplay;
+  Patch TargetPatchToDisplay;
+  InpaintingIterationRecord* RecordToDisplay;
   
   // Display zoomed in versions of the patches used at the current iteration
   void DisplayUsedPatches();
@@ -271,14 +268,8 @@ protected:
   // Display outlines of the forward look target patches
   void HighlightForwardLookPatches();
 
-  // Display the outline of the selected forward look target patch
-  void HighlightSelectedForwardLookPatch();
-  
   // Display outlines of the source patches
   void HighlightSourcePatches();
-  
-  // Display the outline of the selected source patch
-  void HighlightSelectedSourcePatch();
   
   QGraphicsScene* SourcePatchScene;
   QGraphicsScene* TargetPatchScene;

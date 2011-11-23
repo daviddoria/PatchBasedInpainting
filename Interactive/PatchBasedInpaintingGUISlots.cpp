@@ -314,6 +314,7 @@ void PatchBasedInpaintingGUI::on_actionQuit_activated()
 
 void PatchBasedInpaintingGUI::slot_ForwardLookTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
 {
+  EnterFunction("slot_ForwardLookTableView_changed()");
   std::cout << "on_ForwardLookTableView_currentCellChanged" << std::endl;
   
   if(currentIndex.row() < 0)
@@ -322,27 +323,29 @@ void PatchBasedInpaintingGUI::slot_ForwardLookTableView_changed(const QModelInde
     return;
     }
   
-  if(currentIndex.row() > static_cast<int>(this->IterationRecords[this->IterationToDisplay - 1].PotentialPairSets.size() - 1))
+  if(currentIndex.row() > static_cast<int>(this->RecordToDisplay->PotentialPairSets.size()) - 1)
     {
     std::cerr << "Requested display of forward look patch " << currentIndex.row() << " but there are only "
-              << this->IterationRecords[this->IterationToDisplay - 1].PotentialPairSets.size() - 1 << std::endl;
+              << this->RecordToDisplay->PotentialPairSets.size() << std::endl;
+    return;
     }
 
   std::cerr << "Requested display of forward look patch " << currentIndex.row() << std::endl;
-  
-  this->ForwardLookToDisplay = currentIndex.row();
-  this->SourcePatchToDisplay = 0;
+
+  this->ForwardLookToDisplayId = currentIndex.row();
+  std::cout << "Set this->ForwardLookToDisplay to " << this->ForwardLookToDisplayId << std::endl;
+  // When we select a different forward look patch, there is no way to know which source patch the user wants to see, so show the 0th.
+  this->SourcePatchToDisplayId = 0;
   
   ChangeDisplayedForwardLookPatch();
-  
-  SetupTopPatchesTable();
-  ChangeDisplayedTopPatch();
-  
+
+  LeaveFunction("slot_ForwardLookTableView_changed()");
 }
 
 
 void PatchBasedInpaintingGUI::slot_TopPatchesTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
 {
+  EnterFunction("slot_TopPatchesTableView_changed()");
   try
   {
     if(currentIndex.row() < 0)
@@ -357,9 +360,11 @@ void PatchBasedInpaintingGUI::slot_TopPatchesTableView_changed(const QModelIndex
       return;
       }
     
-    this->SourcePatchToDisplay = currentIndex.row();
+    this->SourcePatchToDisplayId = currentIndex.row();
+    std::cout << "Set this->SourcePatchToDisplay to " << this->SourcePatchToDisplayId << std::endl;
     ChangeDisplayedTopPatch();
-    
+
+    LeaveFunction("slot_TopPatchesTableView_changed()");
   }// end try
   catch( itk::ExceptionObject & err )
   {

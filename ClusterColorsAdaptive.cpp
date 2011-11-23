@@ -51,7 +51,9 @@ void ClusterColorsAdaptive::GenerateColorsVTK()
   typedef itk::ShrinkImageFilter <FloatVectorImageType, FloatVectorImageType> ShrinkImageFilterType;
   ShrinkImageFilterType::Pointer shrinkFilter = ShrinkImageFilterType::New();
   shrinkFilter->SetInput(this->Image);
-  unsigned int downsampleFactor = 4;
+  //unsigned int downsampleFactor = 4;
+  //unsigned int downsampleFactor = 5;
+  unsigned int downsampleFactor = 20;
   shrinkFilter->SetShrinkFactor(0, downsampleFactor);
   shrinkFilter->SetShrinkFactor(1, downsampleFactor);
   shrinkFilter->Update();

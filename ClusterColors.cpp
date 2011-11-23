@@ -150,7 +150,7 @@ void ClusterColors::CreateMembershipImage()
 
     TreeType::InstanceIdentifierVectorType neighbors;
     this->KDTree->Search( queryPoint, 1u, neighbors );
-    //tree->GetMeasurementVector( neighbors[0] );
+    
     this->ColorBinMembershipImage->SetPixel(imageIterator.GetIndex(), neighbors[0]);
     ++imageIterator;
     }

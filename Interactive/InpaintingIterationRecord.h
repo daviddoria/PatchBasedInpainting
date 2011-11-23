@@ -23,6 +23,10 @@
 #include "Mask.h"
 #include "Types.h"
 
+// This class allows us to record iterations of the inpainting procedure.
+// It stores the image and mask AFTER the ith iteration is complete.
+// For this reason, the PotentialPairSets are the pairs that were considered
+// BEFORE moving to this state.
 class InpaintingIterationRecord
 {
 public:
