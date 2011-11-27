@@ -31,6 +31,16 @@
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
+ClusterColorsAdaptive::ClusterColorsAdaptive() : ClusterColors()
+{
+  this->DownsampleFactor = 1;
+}
+
+void ClusterColorsAdaptive::SetDownsampleFactor(const unsigned int downsampleFactor)
+{
+  this->DownsampleFactor = downsampleFactor;
+}
+
 void ClusterColorsAdaptive::SetNumberOfColors(const unsigned int numberOfColors)
 {
   this->NumberOfColors = numberOfColors;
@@ -51,11 +61,9 @@ void ClusterColorsAdaptive::GenerateColorsVTK()
   typedef itk::ShrinkImageFilter <FloatVectorImageType, FloatVectorImageType> ShrinkImageFilterType;
   ShrinkImageFilterType::Pointer shrinkFilter = ShrinkImageFilterType::New();
   shrinkFilter->SetInput(this->Image);
-  //unsigned int downsampleFactor = 4;
-  //unsigned int downsampleFactor = 5;
-  unsigned int downsampleFactor = 20;
-  shrinkFilter->SetShrinkFactor(0, downsampleFactor);
-  shrinkFilter->SetShrinkFactor(1, downsampleFactor);
+
+  shrinkFilter->SetShrinkFactor(0, this->DownsampleFactor);
+  shrinkFilter->SetShrinkFactor(1, this->DownsampleFactor);
   shrinkFilter->Update();
 
   std::cout << "There are " << this->Image->GetLargestPossibleRegion().GetSize()[0] * this->Image->GetLargestPossibleRegion().GetSize()[1]

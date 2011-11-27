@@ -27,6 +27,11 @@ ClusterColors::ClusterColors()
   // this->ColorBinMembershipImage = IntImageType::New(); // This is done in CreateMembershipImage()
 }
 
+std::vector<ColorMeasurementVectorType> ClusterColors::GetColors()
+{
+  return this->Colors;
+}
+
 void ClusterColors::Construct(const FloatVectorImageType::Pointer image)
 {
   this->Image = image;

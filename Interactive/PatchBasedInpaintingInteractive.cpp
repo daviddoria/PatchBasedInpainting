@@ -25,7 +25,7 @@ int main( int argc, char** argv )
 {
   QApplication app( argc, argv );
 
-  QApplication::setStyle(new QCleanlooksStyle);
+  //QApplication::setStyle(new QCleanlooksStyle);
 
   PatchBasedInpaintingGUI* patchBasedInpaintingGUI;
   if(argc == 3)

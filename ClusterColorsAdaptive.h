@@ -24,14 +24,18 @@
 class ClusterColorsAdaptive : public ClusterColors
 {
 public:
-
+  ClusterColorsAdaptive();
   void SetNumberOfColors(const unsigned int numberOfColors);
+  void SetDownsampleFactor(const unsigned int downsampleFactor);
 protected:
 
   void GenerateColors();
   void GenerateColorsVTK();
   void GenerateColorsITK();
   unsigned int NumberOfColors;
+  unsigned int DownsampleFactor;
+
+  
 };
 
 #endif

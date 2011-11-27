@@ -64,9 +64,6 @@ if(BuildNonInteractive)
   INSTALL( TARGETS PatchBasedInpaintingNonInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-ADD_EXECUTABLE(TestClusterColors Tests/TestClusterColors.cpp)
-TARGET_LINK_LIBRARIES(TestClusterColors PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-
 SET(BuildTests CACHE BOOL "Build tests.")
 if(BuildTests)
   add_subdirectory(Tests)

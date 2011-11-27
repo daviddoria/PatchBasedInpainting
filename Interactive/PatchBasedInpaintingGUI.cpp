@@ -83,14 +83,12 @@ Q_DECLARE_METATYPE(PatchPair)
 
 void PatchBasedInpaintingGUI::DefaultConstructor()
 {
+  // This function is called by both constructors. This avoid code duplication.
   EnterFunction("DefaultConstructor()");
   
   this->RecordToDisplay = NULL;
   
-  // This function is called by both constructors. This avoid code duplication.
   this->setupUi(this);
-
-  this->setWindowState(Qt::WindowMaximized);
   
   QButtonGroup* groupCompare = new QButtonGroup;
   groupCompare->addButton(radCompareOriginal);

@@ -53,7 +53,8 @@ public:
                                      const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion);
   
   IntImageType::Pointer GetColorBinMembershipImage();
-  
+
+  std::vector<ColorMeasurementVectorType> GetColors();
 protected:
   
   virtual void GenerateColors() = 0;

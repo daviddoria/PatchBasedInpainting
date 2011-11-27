@@ -1,9 +1,13 @@
 
-ADD_EXECUTABLE(TestDerivatives Tests/TestDerivatives.cpp)
-TARGET_LINK_LIBRARIES(TestDerivatives PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+ADD_EXECUTABLE(TestClusterColors TestClusterColors.cpp)
+TARGET_LINK_LIBRARIES(TestClusterColors PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
-ADD_EXECUTABLE(TestFindPixelAcrossHole Tests/TestFindPixelAcrossHole.cpp)
-TARGET_LINK_LIBRARIES(TestFindPixelAcrossHole PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# 
+# ADD_EXECUTABLE(TestDerivatives Tests/TestDerivatives.cpp)
+# TARGET_LINK_LIBRARIES(TestDerivatives PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# 
+# ADD_EXECUTABLE(TestFindPixelAcrossHole Tests/TestFindPixelAcrossHole.cpp)
+# TARGET_LINK_LIBRARIES(TestFindPixelAcrossHole PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
 
 # ADD_EXECUTABLE(LearnLambda LearnLambda.cpp)
