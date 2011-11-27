@@ -31,6 +31,7 @@ ClusterColorsUniform.cpp
 PatchBasedInpainting.cpp
 PatchBasedInpaintingDebugging.cpp
 PatchBasedInpaintingInterface.cpp
+PatchSorting.cpp
 DebugOutputs.cpp
 Derivatives.cpp
 Helpers.cpp

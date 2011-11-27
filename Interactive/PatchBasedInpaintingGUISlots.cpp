@@ -506,22 +506,22 @@ void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToDisplay_textEdited ( con
 
 void PatchBasedInpaintingGUI::on_radSortByFullDifference_clicked()
 {
-  this->Inpainting.PatchSortFunction = &SortByAverageAbsoluteDifference;
+  this->Inpainting.PatchSortFunction = new SortByAverageAbsoluteDifference;
 }
 
 void PatchBasedInpaintingGUI::on_radSortByColorDifference_clicked()
 {
-  this->Inpainting.PatchSortFunction = &SortByColorDifference;
+  this->Inpainting.PatchSortFunction = new SortByColorDifference;
 }
 
 void PatchBasedInpaintingGUI::on_radSortByDepthDifference_clicked()
 {
-  this->Inpainting.PatchSortFunction = &SortByDepthDifference;
+  this->Inpainting.PatchSortFunction = new SortByDepthDifference;
 }
 
 void PatchBasedInpaintingGUI::on_radSortByColorAndDepth_clicked()
 {
-  this->Inpainting.PatchSortFunction = &SortByDepthAndColor;
+  this->Inpainting.PatchSortFunction = new SortByDepthAndColor;
 }
 
 void PatchBasedInpaintingGUI::on_chkCompareFull_clicked()

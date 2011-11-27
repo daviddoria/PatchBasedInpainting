@@ -27,6 +27,7 @@
 #include "Helpers.h"
 #include "Patch.h"
 #include "PatchPair.h"
+#include "PatchSorting.h"
 #include "Priority.h"
 #include "SelfPatchCompare.h"
 #include "Types.h"
@@ -110,7 +111,7 @@ public:
 
   void SetPatchCompare(SelfPatchCompare* PatchCompare);
 
-  boost::function<bool (const PatchPair& , const PatchPair& )> PatchSortFunction;
+  PatchSortFunctor* PatchSortFunction;
 
   boost::function<void (CandidatePairs& candidatePairs, PatchPair& bestPatchPair )> PatchSearchFunction;
 

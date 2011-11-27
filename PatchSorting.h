@@ -21,25 +21,71 @@
 
 #include "PatchPair.h"
 
+// This is a pure virtual functor that defines the required interface.
 struct PatchSortFunctor
 {
   virtual bool operator()(const PatchPair &T1, const PatchPair &T2) = 0;
-
-  boost::function<bool (const PatchPair& , const PatchPair& )> PatchSortFunction;
 };
 
-// Sorting functions
-bool SortByAverageSquaredDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByAverageAbsoluteDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByBoundaryGradientDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByBoundaryIsophoteAngleDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByBoundaryIsophoteStrengthDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByBoundaryPixelDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByDepthDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByColorDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByTotalScore(const PatchPair& pair1, const PatchPair& pair2);
+// This class is necessary to pass a subclass of a pure virtual functor to sort()
+// PatchSortFunctor* test = new SortByAverageSquaredDifference;
+// std::sort(testVector.begin(), testVector.end(), SortFunctorWrapper(test));
+struct SortFunctorWrapper
+{
+    SortFunctorWrapper(PatchSortFunctor* func) : func_(func) {}
+    bool operator()(const PatchPair &T1, const PatchPair &T2)
+    {
+        return (*func_)(T1, T2);
+    }
+    PatchSortFunctor* func_;
+};
 
-struct SortByDepthAndColor
+struct SortByAverageSquaredDifference : public PatchSortFunctor
+{
+  bool operator()(const PatchPair& pair1, const PatchPair& pair2);
+};
+
+struct SortByAverageAbsoluteDifference : public PatchSortFunctor
+{
+  bool operator()(const PatchPair& pair1, const PatchPair& pair2);
+};
+
+struct SortByBoundaryGradientDifference : public PatchSortFunctor
+{
+  bool operator()(const PatchPair& pair1, const PatchPair& pair2);
+};
+
+struct SortByBoundaryIsophoteAngleDifference : public PatchSortFunctor
+{
+  bool operator()(const PatchPair& pair1, const PatchPair& pair2);
+};
+
+struct SortByBoundaryIsophoteStrengthDifference : public PatchSortFunctor
+{
+  bool operator()(const PatchPair& pair1, const PatchPair& pair2);
+};
+
+struct SortByBoundaryPixelDifference : public PatchSortFunctor
+{
+  bool operator()(const PatchPair& pair1, const PatchPair& pair2);
+};
+
+struct SortByDepthDifference : public PatchSortFunctor
+{
+  bool operator()(const PatchPair& pair1, const PatchPair& pair2);
+};
+
+struct SortByColorDifference : public PatchSortFunctor
+{
+  bool operator()(const PatchPair& pair1, const PatchPair& pair2);
+};
+
+struct SortByTotalScore : public PatchSortFunctor
+{
+  bool operator()(const PatchPair& pair1, const PatchPair& pair2);
+};
+
+struct SortByDepthAndColor : public PatchSortFunctor
 {
   bool operator()(const PatchPair& pair1, const PatchPair& pair2);
   SortByDepthAndColor() : DepthColorLambda(0.5f){}

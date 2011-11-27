@@ -83,8 +83,6 @@ struct PatchPair
   itk::Offset<2> GetTargetToSourceOffset() const;
   itk::Offset<2> GetSourceToTargetOffset() const;
   
-  static float DepthColorLambda;
-  
 private:
   float AverageSquaredDifference;
   float AverageAbsoluteDifference;
@@ -94,12 +92,17 @@ private:
   float BoundaryIsophoteStrengthDifference;
   float DepthDifference;
   float ColorDifference;
-  float DepthAndColorDifference;
   
   float TotalScore;
   
   void ComputeTotal();
-  void ComputeDepthAndColorDifference();
+
+  struct ComputeDepthAndColorDifferenceFunctor
+  {
+    ComputeDepthAndColorDifferenceFunctor() : DepthColorLambda(0.5f){}
+    float operator()(const float depthDifference, const float colorDifference) const;
+    float DepthColorLambda;
+  } ComputeDepthAndColorDifference; 
   
   // These are initialized to false and set to true when the corresponding SetXYZ() function is called.
   bool ValidAverageSquaredDifference;
@@ -110,30 +113,7 @@ private:
   bool ValidBoundaryIsophoteStrengthDifference;
   bool ValidColorDifference;
   bool ValidDepthDifference;
-  
-  //static float DepthColorLambda;
+
 };
-
-// struct SortFunctor
-// {
-//   bool operator()(const Test &T1, const Test &T2)
-//   {
-//     return(T1.a < T2.a);
-//   }
-//   
-//   boost::function<bool (const PatchPair& , const PatchPair& )> PatchSortFunction;
-// };
-
-// Sorting functions
-bool SortByAverageSquaredDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByAverageAbsoluteDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByBoundaryGradientDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByBoundaryIsophoteAngleDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByBoundaryIsophoteStrengthDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByBoundaryPixelDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByDepthDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByColorDifference(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByTotalScore(const PatchPair& pair1, const PatchPair& pair2);
-bool SortByDepthAndColor(const PatchPair& pair1, const PatchPair& pair2);
 
 #endif

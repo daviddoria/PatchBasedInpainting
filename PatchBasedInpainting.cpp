@@ -23,6 +23,7 @@
 #include "Helpers.h"
 #include "HelpersOutput.h"
 #include "Histograms.h"
+#include "PatchSorting.h"
 #include "PixelDifference.h"
 #include "PriorityRandom.h"
 #include "SelfPatchCompare.h"
@@ -72,7 +73,7 @@ PatchBasedInpainting::PatchBasedInpainting()
   
   this->MaxPixelDifferenceSquared = 0.0f;
   
-  this->PatchSortFunction = &SortByAverageAbsoluteDifference;
+  this->PatchSortFunction = new SortByAverageAbsoluteDifference;
 
   //this->PatchSearchFunction = &FindBestPatch;
   this->PatchSearchFunction = boost::bind(&PatchBasedInpainting::FindBestPatchNormal,this,_1,_2);
@@ -410,7 +411,7 @@ void PatchBasedInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidat
   this->PatchCompare->SetMask(this->MaskImage);
   this->PatchCompare->ComputeAllSourceDifferences();
   
-  std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
+  std::sort(candidatePairs.begin(), candidatePairs.end(), SortFunctorWrapper(this->PatchSortFunction));
   //std::cout << "Blurred score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
   candidatePairs.InvalidateAll();
   
@@ -439,7 +440,7 @@ void PatchBasedInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidat
     }
 
   std::cout << "Total score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
-  std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
+  std::sort(candidatePairs.begin(), candidatePairs.end(), SortFunctorWrapper(this->PatchSortFunction));
 
   // Return the result by reference.
   bestPatchPair = candidatePairs[0];
@@ -463,7 +464,7 @@ void PatchBasedInpainting::FindBestPatchNormal(CandidatePairs& candidatePairs, P
 
   //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
   //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDepthAndColor);
-  std::sort(candidatePairs.begin(), candidatePairs.end(), PatchSortFunction);
+  std::sort(candidatePairs.begin(), candidatePairs.end(), SortFunctorWrapper(this->PatchSortFunction));
 
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
 
@@ -490,7 +491,7 @@ void PatchBasedInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePa
   
   //std::cout << "FindBestPatch: Finished ComputeAllSourceDifferences()" << std::endl;
   
-  std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDepthDifference);
+  std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDepthDifference());
   
   WriteImageOfScores(candidatePairs, this->CurrentOutputImage->GetLargestPossibleRegion(),
                      Helpers::GetSequentialFileName("Debug/ImageOfDepthScores", this->NumberOfCompletedIterations, "mha"));
@@ -507,7 +508,7 @@ void PatchBasedInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePa
   this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,this->PatchCompare,_1));
   this->PatchCompare->ComputeAllSourceDifferences();
   
-  std::sort(goodDepthCandidatePairs.begin(), goodDepthCandidatePairs.end(), SortByAverageAbsoluteDifference);
+  std::sort(goodDepthCandidatePairs.begin(), goodDepthCandidatePairs.end(), SortByAverageAbsoluteDifference());
   WriteImageOfScores(goodDepthCandidatePairs, this->CurrentOutputImage->GetLargestPossibleRegion(),
                      Helpers::GetSequentialFileName("Debug/ImageOfTopColorScores", this->NumberOfCompletedIterations, "mha"));
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;

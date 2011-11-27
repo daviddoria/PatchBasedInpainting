@@ -18,8 +18,6 @@
 
 #include "PatchPair.h"
 
-float PatchPair::DepthColorLambda = 0.5f;
-
 void PatchPair::DefaultConstructor()
 {
   this->AverageAbsoluteDifference = 0.0f;
@@ -30,10 +28,7 @@ void PatchPair::DefaultConstructor()
   this->BoundaryPixelDifference = 0.0f;
   this->DepthDifference = 0.0f;
   this->ColorDifference = 0.0f;
-  this->DepthAndColorDifference = 0.0f;
   this->TotalScore = 0.0f;
-  
-  //this->DepthColorLambda = 0.5f;
   
   this->ValidAverageSquaredDifference = false;
   this->ValidAverageAbsoluteDifference = false;
@@ -118,59 +113,6 @@ bool PatchPair::IsValidBoundaryIsophoteStrengthDifference() const
 }
 
 //////////////////////////////////////////
-/////// Sorting functions //////////////
-//////////////////////////////////////////
-bool SortByDepthDifference(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetDepthDifference() < pair2.GetDepthDifference());
-}
-
-bool SortByColorDifference(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetColorDifference() < pair2.GetColorDifference());
-}
-
-bool SortByDepthAndColor(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetDepthAndColorDifference() < pair2.GetDepthAndColorDifference());
-}
-
-bool SortByAverageSquaredDifference(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetAverageSquaredDifference() < pair2.GetAverageSquaredDifference());
-}
-
-bool SortByAverageAbsoluteDifference(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetAverageAbsoluteDifference() < pair2.GetAverageAbsoluteDifference());
-}
-
-bool SortByBoundaryGradientDifference(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetBoundaryGradientDifference() < pair2.GetBoundaryGradientDifference());
-}
-
-bool SortByBoundaryPixelDifference(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetBoundaryPixelDifference() < pair2.GetBoundaryPixelDifference());
-}
-
-bool SortByBoundaryIsophoteAngleDifference(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetBoundaryIsophoteAngleDifference() < pair2.GetBoundaryIsophoteAngleDifference());
-}
-
-bool SortByBoundaryIsophoteStrengthDifference(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetBoundaryIsophoteStrengthDifference() < pair2.GetBoundaryIsophoteStrengthDifference());
-}
-
-bool SortByTotalScore(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetTotalScore() < pair2.GetTotalScore());
-}
-
-//////////////////////////////////////////
 /////// Difference mutators //////////////
 //////////////////////////////////////////
 void PatchPair::SetAverageSquaredDifference(const float value)
@@ -220,7 +162,6 @@ void PatchPair::SetColorDifference(const float value)
   this->ValidColorDifference = true;
   this->ColorDifference = value;
   ComputeTotal();
-  ComputeDepthAndColorDifference();
 }
 
 void PatchPair::SetDepthDifference(const float value)
@@ -228,7 +169,6 @@ void PatchPair::SetDepthDifference(const float value)
   this->ValidDepthDifference = true;
   this->DepthDifference = value;
   ComputeTotal();
-  ComputeDepthAndColorDifference();
 }
 
 //////////////////////////////////////////
@@ -282,7 +222,12 @@ float PatchPair::GetBoundaryIsophoteStrengthDifference() const
 
 float PatchPair::GetDepthAndColorDifference() const
 {
-  return this->DepthAndColorDifference;
+  if(!this->ValidColorDifference && this->ValidDepthDifference)
+    {
+    std::cerr << "PatchPair::GetDepthAndColorDifference(): Both ColorDifference and DepthDifference must have been calculated!" << std::endl;
+    exit(-1);
+    }
+  return ComputeDepthAndColorDifference(this->DepthDifference, this->ColorDifference);
 }
 
 //////////////////////////////////////////
@@ -293,13 +238,10 @@ void PatchPair::ComputeTotal()
   //this->TotalScore = this->BoundaryIsophoteStrengthDifference + this->BoundaryIsophoteAngleDifference + this->BoundaryPixelDifference + this->AverageSSD + this->BoundaryGradientDifference;
 }
 
-void PatchPair::ComputeDepthAndColorDifference()
+float PatchPair::ComputeDepthAndColorDifferenceFunctor::operator()(const float depthDifference, const float colorDifference) const
 {
-  if(this->ValidColorDifference && this->ValidDepthDifference)
-    {
-    //this->DepthAndColorDifference = this->ColorDifference * DepthColorLambda + (1.0 - DepthColorLambda) * this->DepthDifference;
-    this->DepthAndColorDifference = DepthDifference + DepthColorLambda * this->ColorDifference;
-    }
+  //this->DepthAndColorDifference = this->ColorDifference * DepthColorLambda + (1.0 - DepthColorLambda) * this->DepthDifference;
+  return depthDifference + this->DepthColorLambda * colorDifference;
 }
 
 //////////////////////////////////////////

@@ -72,6 +72,7 @@
 #include "HelpersQt.h"
 #include "InteractorStyleImageWithDrag.h"
 #include "Mask.h"
+#include "PatchSorting.h"
 #include "PixmapDelegate.h"
 #include "PriorityCriminisi.h"
 #include "PriorityDepth.h"
@@ -633,7 +634,7 @@ void PatchBasedInpaintingGUI::Initialize()
   this->Inpainting.SetPatchCompare(this->PatchCompare);
 
   // Setup the sorting function
-  this->Inpainting.PatchSortFunction = &SortByAverageAbsoluteDifference;
+  this->Inpainting.PatchSortFunction = new SortByAverageAbsoluteDifference;
   
   // Finish initializing
   this->Inpainting.Initialize();
@@ -1321,24 +1322,28 @@ void PatchBasedInpaintingGUI::SetSortFunctionFromGUI()
 {
   if(this->radSortByFullDifference->isChecked())
     {
-    this->Inpainting.PatchSortFunction = &SortByAverageSquaredDifference;
+    this->Inpainting.PatchSortFunction = new SortByAverageSquaredDifference;
     }
   else if(this->radSortByColorDifference->isChecked())
     {
-    this->Inpainting.PatchSortFunction = &SortByColorDifference;
+    this->Inpainting.PatchSortFunction = new SortByColorDifference;
     }
   else if(this->radSortByDepthDifference->isChecked())
     {
-    this->Inpainting.PatchSortFunction = &SortByDepthDifference;
+    this->Inpainting.PatchSortFunction = new SortByDepthDifference;
     }
   else if(this->radSortByColorAndDepth->isChecked())
     {
-    this->Inpainting.PatchSortFunction = &SortByDepthAndColor;
+    this->Inpainting.PatchSortFunction = new SortByDepthAndColor;
     }
 }
 
 void PatchBasedInpaintingGUI::SetDepthColorLambdaFromGUI()
 {
-  PatchPair::DepthColorLambda = static_cast<float>(sldDepthColorLambda->value())/100.0f;
-  std::cout << "DepthColorLambda set to " << PatchPair::DepthColorLambda << std::endl;
+  SortByDepthAndColor* functor = new SortByDepthAndColor;
+  functor->DepthColorLambda = static_cast<float>(sldDepthColorLambda->value())/100.0f;
+
+  this->Inpainting.PatchSortFunction = functor;
+  
+  std::cout << "DepthColorLambda set to " << functor->DepthColorLambda << std::endl;
 }
