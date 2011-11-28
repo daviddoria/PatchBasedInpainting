@@ -68,13 +68,17 @@ int main(int argc, char *argv[])
 //     ss << "clusters_" << Helpers::ZeroPad(numberOfClusters, 3) << ".vtp";
 //     WriteClusteredPixelsInRGBSpace(reader->GetOutput(), numberOfClusters, ss.str());
 //     }
-  for(unsigned int maxIterations = 1; maxIterations < 30; maxIterations++)
-    {
-    std::cout << "maxIterations: " << maxIterations << std::endl;
-    std::stringstream ss;
-    ss << "clusters_maxiter_" << Helpers::ZeroPad(maxIterations, 2) << ".vtp";
-    WriteClusteredPixelsInRGBSpace(reader->GetOutput(), 100, maxIterations, ss.str());
-    }
+  
+//   for(unsigned int maxIterations = 1; maxIterations < 30; maxIterations++)
+//     {
+//     std::cout << "maxIterations: " << maxIterations << std::endl;
+//     std::stringstream ss;
+//     ss << "clusters_maxiter_" << Helpers::ZeroPad(maxIterations, 2) << ".vtp";
+//     WriteClusteredPixelsInRGBSpace(reader->GetOutput(), 100, maxIterations, ss.str());
+//     }
+    
+  WriteClusteredPixelsInRGBSpace(reader->GetOutput(), 0, 0, "colors_quantized.vtp");
+  
   return EXIT_SUCCESS;
 }
 
@@ -144,7 +148,7 @@ void WriteClusteredPixelsInRGBSpace(const FloatVectorImageType::Pointer image, c
 {
   ClusterColorsAdaptive clusterColors;
   clusterColors.SetNumberOfColors(numberOfClusters);
-  clusterColors.SetDownsampleFactor(2);
+  clusterColors.SetDownsampleFactor(1);
   clusterColors.SetMaxIterations(maxIterations);
   clusterColors.Construct(image);
   

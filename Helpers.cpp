@@ -27,6 +27,7 @@
 #include "itkVectorIndexSelectionCastImageFilter.h"
 
 // VTK
+#include <vtkCell.h>
 #include <vtkFloatArray.h>
 #include <vtkImageData.h>
 #include <vtkImageMagnitude.h>
@@ -884,6 +885,16 @@ void CreateTransparentVTKImage(const itk::Size<2>& size, vtkImageData* outputIma
       }
     }
   outputImage->Modified();
+}
+
+
+void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double center[3])
+{
+  double pcoords[3] = {0,0,0};
+  double *weights = new double [imageData->GetMaxCellSize()];
+  vtkCell* cell = imageData->GetCell(cellId);
+  int subId = cell->GetParametricCenter(pcoords);
+  cell->EvaluateLocation(subId, pcoords, center, weights);
 }
 
 } // end namespace

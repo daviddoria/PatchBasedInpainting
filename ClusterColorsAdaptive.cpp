@@ -23,6 +23,7 @@
 #include "itkShrinkImageFilter.h"
 
 // VTK
+#include <vtkCellLocator.h>
 #include <vtkDoubleArray.h>
 #include <vtkKMeansStatistics.h>
 #include <vtkMultiBlockDataSet.h>
@@ -32,6 +33,11 @@
 #include <vtkQuantizePolyDataPoints.h>
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
+#include <vtkVertexGlyphFilter.h>
+
+// Custom
+#include "Helpers.h"
+#include "ParallelSort.h"
 
 ClusterColorsAdaptive::ClusterColorsAdaptive() : ClusterColors()
 {
@@ -51,13 +57,98 @@ void ClusterColorsAdaptive::SetNumberOfColors(const unsigned int numberOfColors)
 void ClusterColorsAdaptive::GenerateColors()
 {
   //GenerateColorsVTKKMeans();
-  GenerateColorsVTKDownsample();
+  //GenerateColorsVTKQuantize();
+  GenerateColorsVTKBin();
 }
 
 
-void ClusterColorsAdaptive::GenerateColorsVTKDownsample()
+void ClusterColorsAdaptive::GenerateColorsVTKBin()
 {
-  EnterFunction("GenerateColorsVTKDownsample()");
+  EnterFunction("GenerateColorsVTKBin()");
+  std::cout << "this->NumberOfColors: " << this->NumberOfColors << std::endl;
+  
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+
+  // Create a vtkPoints of all of the pixels
+  itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->Image, this->Image->GetLargestPossibleRegion());
+  while(!imageIterator.IsAtEnd())
+    {
+    FloatVectorImageType::PixelType pixel = imageIterator.Get();
+    points->InsertNextPoint(pixel[0], pixel[1], pixel[2]);
+    ++imageIterator;
+    }
+
+  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+  polyData->SetPoints(points);
+  
+//   vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+//   glyphFilter->SetInputConnection(polyData->GetProducerPort());
+//   glyphFilter->Update();
+
+  
+  double bounds[6];
+  polyData->GetBounds(bounds);
+  
+  vtkSmartPointer<vtkImageData> grid = vtkSmartPointer<vtkImageData>::New();
+  grid->SetOrigin(bounds[0], bounds[2], bounds[4]);
+  
+  unsigned int numVoxelsPerDimension = 2; //the number of voxels in each dimension
+  grid->SetSpacing((bounds[1]-bounds[0])/static_cast<double>(numVoxelsPerDimension),
+                   (bounds[3]-bounds[2])/numVoxelsPerDimension,
+                   (bounds[5]-bounds[4])/static_cast<double>(numVoxelsPerDimension));
+  int extent[6];
+  extent[0] = 0;
+  extent[1] = numVoxelsPerDimension;
+  extent[2] = 0;
+  extent[3] = numVoxelsPerDimension;
+  extent[4] = 0;
+  extent[5] = numVoxelsPerDimension;
+  grid->SetExtent(extent);
+  grid->SetScalarTypeToInt();
+  grid->SetNumberOfScalarComponents(1);
+  grid->Update();
+  
+  std::vector<int> cellOccupancy(grid->GetNumberOfCells());
+  std::cout << "cellOccupancy size: " << cellOccupancy.size() << std::endl;
+    
+  vtkSmartPointer<vtkCellLocator> cellLocator = vtkSmartPointer<vtkCellLocator>::New();
+  cellLocator->SetDataSet(grid);
+  cellLocator->BuildLocator();
+
+  int dims[3];
+  grid->GetDimensions(dims);
+  
+  for(vtkIdType i = 0; i < polyData->GetNumberOfPoints(); i++)
+    {
+    double p[3];
+    polyData->GetPoint(i,p);
+    int cellId = cellLocator->FindCell(p);
+    cellOccupancy[cellId]++;
+    }
+    
+  std::vector<ParallelSort::IndexedValue<int> > sorted = ParallelSort::ParallelSort<int>(cellOccupancy);
+  
+  this->Colors.clear();
+  ColorMeasurementVectorType color;
+  for(unsigned int i = 0; i < this->NumberOfColors; ++i)
+    {
+    double p[3];
+    Helpers::GetCellCenter(grid, sorted[i].index, p);
+    
+    color[0] = p[0];
+    color[1] = p[1];
+    color[2] = p[2];
+    this->Colors.push_back(color);
+    }
+
+  CreateSamplesFromColors();
+  
+  LeaveFunction("GenerateColorsVTK()");
+}
+
+void ClusterColorsAdaptive::GenerateColorsVTKQuantize()
+{
+  EnterFunction("GenerateColorsVTKQuantize()");
   std::cout << "this->NumberOfColors: " << this->NumberOfColors << std::endl;
   
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
@@ -85,12 +176,20 @@ void ClusterColorsAdaptive::GenerateColorsVTKDownsample()
 
   vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
   polyData->SetPoints(points);
+  
+  vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+  glyphFilter->SetInputConnection(polyData->GetProducerPort());
+  glyphFilter->Update();
+             
+  std::cout << "There are " << polyData->GetNumberOfPoints() << " points input to quantization." << std::endl;
   // Downsample the points until the desired number of points was achieved
   vtkSmartPointer<vtkQuantizePolyDataPoints> quantizeFilter = vtkSmartPointer<vtkQuantizePolyDataPoints>::New();
-  quantizeFilter->SetInputConnection(polyData->GetProducerPort());
-  quantizeFilter->SetQFactor(5.0f);
+  quantizeFilter->SetInputConnection(glyphFilter->GetOutputPort());
+  quantizeFilter->SetQFactor(20);
   quantizeFilter->Update();
-  
+ 
+  std::cout << "Test: There are " << quantizeFilter->GetOutput()->GetNumberOfPoints() << " points after quantization." << std::endl;
+            
   this->Colors.clear();
   ColorMeasurementVectorType color;
   for(vtkIdType i = 0; i < quantizeFilter->GetOutput()->GetNumberOfPoints(); ++i)
@@ -317,3 +416,4 @@ void ClusterColorsAdaptive::GenerateColorsITK()
     }*/
 
 }
+

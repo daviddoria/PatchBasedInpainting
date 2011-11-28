@@ -34,6 +34,8 @@ namespace Helpers
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double center[3]);
+
 void ComputeColorIsophotesInRegion(const FloatVectorImageType::Pointer image, const Mask::Pointer mask,
                                    const itk::ImageRegion<2>& region , FloatVector2ImageType::Pointer isophotes);
 
