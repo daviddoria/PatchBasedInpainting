@@ -29,6 +29,7 @@
 // Qt
 #include <QButtonGroup>
 #include <QFileDialog>
+#include <QGraphicsPixmapItem>
 #include <QIcon>
 #include <QTextEdit>
 #include <QIntValidator>
@@ -476,9 +477,9 @@ void PatchBasedInpaintingGUI::DisplayUserPatch()
   ComputeUserPatchRegion();
   QImage userPatch = HelpersQt::GetQImage<FloatVectorImageType>(this->IterationRecords[this->IterationToDisplay].Image,
                                                                 this->UserPatchRegion, this->ImageDisplayStyle);
-  userPatch = HelpersQt::FitToGraphicsView(userPatch, gfxTarget);
-  this->UserPatchScene->addPixmap(QPixmap::fromImage(userPatch));
-
+  //userPatch = HelpersQt::FitToGraphicsView(userPatch, gfxTarget);
+  QGraphicsPixmapItem* item = this->UserPatchScene->addPixmap(QPixmap::fromImage(userPatch));
+  gfxTarget->fitInView(item);
   LeaveFunction("DisplayUserPatch");
 }
 
@@ -664,8 +665,9 @@ void PatchBasedInpaintingGUI::DisplaySourcePatch()
     FloatVectorImageType::Pointer currentImage = this->RecordToDisplay->Image;
 
     QImage sourceImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, this->SourcePatchToDisplay.Region, this->ImageDisplayStyle);
-    sourceImage = HelpersQt::FitToGraphicsView(sourceImage, gfxTarget);
-    this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
+    //sourceImage = HelpersQt::FitToGraphicsView(sourceImage, gfxSource);
+    QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
+    gfxSource->fitInView(item);
     LeaveFunction("DisplaySourcePatch()");
     }// end try
   catch( itk::ExceptionObject & err )
@@ -698,8 +700,9 @@ void PatchBasedInpaintingGUI::DisplayTargetPatch()
     // Target
     QImage targetImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, this->TargetPatchToDisplay.Region, this->ImageDisplayStyle);
 
-    targetImage = HelpersQt::FitToGraphicsView(targetImage, gfxTarget);
-    this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
+    //targetImage = HelpersQt::FitToGraphicsView(targetImage, gfxTarget);
+    QGraphicsPixmapItem* item = this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
+    gfxTarget->fitInView(item);
     LeaveFunction("DisplayTargetPatch()");
     }// end try
   catch( itk::ExceptionObject & err )
@@ -772,9 +775,10 @@ void PatchBasedInpaintingGUI::DisplayResultPatch()
 
     qimage = HelpersQt::GetQImage<FloatVectorImageType>(resultPatch, resultPatch->GetLargestPossibleRegion(), this->ImageDisplayStyle);
 
-    qimage = HelpersQt::FitToGraphicsView(qimage, gfxResult);
+    //qimage = HelpersQt::FitToGraphicsView(qimage, gfxResult);
     this->ResultPatchScene->clear();
-    this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
+    QGraphicsPixmapItem* item = this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
+    gfxResult->fitInView(item);
     //this->ResultPatchScene->addPixmap(QPixmap());
     std::cout << "Set result patch." << std::endl;
     LeaveFunction("DisplayResultPatch()");

@@ -24,7 +24,13 @@
 
 ClusterColors::ClusterColors()
 {
+  this->MaxIterations = 10;
   // this->ColorBinMembershipImage = IntImageType::New(); // This is done in CreateMembershipImage()
+}
+
+void ClusterColors::SetMaxIterations(const unsigned int maxIterations)
+{
+  this->MaxIterations = maxIterations;
 }
 
 std::vector<ColorMeasurementVectorType> ClusterColors::GetColors()
@@ -160,4 +166,9 @@ void ClusterColors::CreateMembershipImage()
     ++imageIterator;
     }
   LeaveFunction("CreateMembershipImage");
+}
+
+ClusterColors::TreeType::Pointer ClusterColors::GetKDTree()
+{
+  return this->KDTree;
 }

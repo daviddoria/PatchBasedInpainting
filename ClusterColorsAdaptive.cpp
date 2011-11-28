@@ -27,7 +27,9 @@
 #include <vtkKMeansStatistics.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkIntArray.h>
+#include <vtkPolyData.h>
 #include <vtkPoints.h>
+#include <vtkQuantizePolyDataPoints.h>
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
@@ -48,10 +50,65 @@ void ClusterColorsAdaptive::SetNumberOfColors(const unsigned int numberOfColors)
 
 void ClusterColorsAdaptive::GenerateColors()
 {
-  GenerateColorsVTK();
+  //GenerateColorsVTKKMeans();
+  GenerateColorsVTKDownsample();
 }
 
-void ClusterColorsAdaptive::GenerateColorsVTK()
+
+void ClusterColorsAdaptive::GenerateColorsVTKDownsample()
+{
+  EnterFunction("GenerateColorsVTKDownsample()");
+  std::cout << "this->NumberOfColors: " << this->NumberOfColors << std::endl;
+  
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+
+  typedef itk::ShrinkImageFilter <FloatVectorImageType, FloatVectorImageType> ShrinkImageFilterType;
+  ShrinkImageFilterType::Pointer shrinkFilter = ShrinkImageFilterType::New();
+  shrinkFilter->SetInput(this->Image);
+  shrinkFilter->SetShrinkFactor(0, this->DownsampleFactor);
+  shrinkFilter->SetShrinkFactor(1, this->DownsampleFactor);
+  shrinkFilter->Update();
+
+  std::cout << "There are " << this->Image->GetLargestPossibleRegion().GetSize()[0] * this->Image->GetLargestPossibleRegion().GetSize()[1]
+            << " original image points." << std::endl;
+  std::cout << "There are " << shrinkFilter->GetOutput()->GetLargestPossibleRegion().GetSize()[0] * shrinkFilter->GetOutput()->GetLargestPossibleRegion().GetSize()[1]
+            << " reduced points." << std::endl;
+  
+  // Create a vtkPoints of all of the pixels
+  itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(shrinkFilter->GetOutput(), shrinkFilter->GetOutput()->GetLargestPossibleRegion());
+  while(!imageIterator.IsAtEnd())
+    {
+    FloatVectorImageType::PixelType pixel = imageIterator.Get();
+    points->InsertNextPoint(pixel[0], pixel[1], pixel[2]);
+    ++imageIterator;
+    }
+
+  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+  polyData->SetPoints(points);
+  // Downsample the points until the desired number of points was achieved
+  vtkSmartPointer<vtkQuantizePolyDataPoints> quantizeFilter = vtkSmartPointer<vtkQuantizePolyDataPoints>::New();
+  quantizeFilter->SetInputConnection(polyData->GetProducerPort());
+  quantizeFilter->SetQFactor(5.0f);
+  quantizeFilter->Update();
+  
+  this->Colors.clear();
+  ColorMeasurementVectorType color;
+  for(vtkIdType i = 0; i < quantizeFilter->GetOutput()->GetNumberOfPoints(); ++i)
+    {
+    double p[3];
+    quantizeFilter->GetOutput()->GetPoint(i, p);
+    color[0] = p[0];
+    color[1] = p[1];
+    color[2] = p[2];
+    this->Colors.push_back(color);
+    }
+
+  CreateSamplesFromColors();
+  
+  LeaveFunction("GenerateColorsVTK()");
+}
+
+void ClusterColorsAdaptive::GenerateColorsVTKKMeans()
 {
   EnterFunction("GenerateColorsVTK()");
   std::cout << "this->NumberOfColors: " << this->NumberOfColors << std::endl;
@@ -73,7 +130,6 @@ void ClusterColorsAdaptive::GenerateColorsVTK()
   
   //itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->Image, this->Image->GetLargestPossibleRegion());
   itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(shrinkFilter->GetOutput(), shrinkFilter->GetOutput()->GetLargestPossibleRegion());
-  unsigned int counter = 0;
   while(!imageIterator.IsAtEnd())
     {
     FloatVectorImageType::PixelType pixel = imageIterator.Get();
@@ -105,16 +161,17 @@ void ClusterColorsAdaptive::GenerateColorsVTK()
     }
 
 
-  vtkSmartPointer<vtkKMeansStatistics> kMeansStatistics =
-    vtkSmartPointer<vtkKMeansStatistics>::New();
-
+  vtkSmartPointer<vtkKMeansStatistics> kMeansStatistics = vtkSmartPointer<vtkKMeansStatistics>::New();
   kMeansStatistics->SetInput( vtkStatisticsAlgorithm::INPUT_DATA, inputData );
   kMeansStatistics->SetColumnStatus( inputData->GetColumnName( 0 ) , 1 );
   kMeansStatistics->SetColumnStatus( inputData->GetColumnName( 1 ) , 1 );
   kMeansStatistics->SetColumnStatus( inputData->GetColumnName( 2 ) , 1 );
   kMeansStatistics->RequestSelectedColumns();
-  kMeansStatistics->SetAssessOption( true );
+  kMeansStatistics->SetAssessOption( false );
+  kMeansStatistics->SetDeriveOption( false );
   kMeansStatistics->SetDefaultNumberOfClusters( this->NumberOfColors );
+  kMeansStatistics->SetMaxNumIterations( this->MaxIterations);
+  std::cout << "Max iterations: " << kMeansStatistics->GetMaxNumIterations() << std::endl;
   kMeansStatistics->Update() ;
 
   vtkMultiBlockDataSet* outputMetaDS = vtkMultiBlockDataSet::SafeDownCast( kMeansStatistics->GetOutputDataObject( vtkStatisticsAlgorithm::OUTPUT_MODEL ) );
@@ -124,14 +181,14 @@ void ClusterColorsAdaptive::GenerateColorsVTK()
   vtkDoubleArray* coord1 = vtkDoubleArray::SafeDownCast(outputMeta->GetColumnByName("coord 1"));
   vtkDoubleArray* coord2 = vtkDoubleArray::SafeDownCast(outputMeta->GetColumnByName("coord 2"));
 
-  if(this->NumberOfColors != coord0->GetNumberOfTuples())
+  if(static_cast<vtkIdType>(this->NumberOfColors) != coord0->GetNumberOfTuples())
     {
     std::cout << "Something is wrong: this->NumberOfColors != coord0->GetNumberOfTuples()" << std::endl;
     exit(-1);
     }
   this->Colors.clear();
   ColorMeasurementVectorType color;
-  for(unsigned int i = 0; i < coord0->GetNumberOfTuples(); ++i)
+  for(vtkIdType i = 0; i < coord0->GetNumberOfTuples(); ++i)
     {
     color[0] = coord0->GetValue(i);
     color[1] = coord1->GetValue(i);

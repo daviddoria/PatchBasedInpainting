@@ -55,6 +55,11 @@ public:
   IntImageType::Pointer GetColorBinMembershipImage();
 
   std::vector<ColorMeasurementVectorType> GetColors();
+
+  TreeType::Pointer GetKDTree();
+
+  void SetMaxIterations(const unsigned int);
+  
 protected:
   
   virtual void GenerateColors() = 0;
@@ -71,6 +76,7 @@ protected:
   
   IntImageType::Pointer ColorBinMembershipImage;
 
+  unsigned int MaxIterations;
 };
 
 #endif

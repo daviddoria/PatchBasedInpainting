@@ -30,7 +30,8 @@ public:
 protected:
 
   void GenerateColors();
-  void GenerateColorsVTK();
+  void GenerateColorsVTKKMeans();
+  void GenerateColorsVTKDownsample();
   void GenerateColorsITK();
   unsigned int NumberOfColors;
   unsigned int DownsampleFactor;
