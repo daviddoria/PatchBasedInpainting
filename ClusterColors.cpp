@@ -114,7 +114,7 @@ std::vector<float> ClusterColors::HistogramRegion(const IntImageType::Pointer im
   return histogram;
 }
 
-void ClusterColors::CreateSamplesFromColors()
+void ClusterColors::CreateKDTreeFromColors()
 {
   EnterFunction("CreateSamplesFromColors");
   this->Sample = SampleType::New();

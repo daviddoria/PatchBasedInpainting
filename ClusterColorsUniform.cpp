@@ -44,7 +44,7 @@ void ClusterColorsUniform::GenerateColors()
       }
     }
 
-  CreateSamplesFromColors();
+  CreateKDTreeFromColors();
   
   LeaveFunction("GenerateUniformColors");
 }

@@ -13,7 +13,7 @@ bool operator<(IndexedValue<T> element1, IndexedValue<T> element2)
 }
 
 template <typename T>
-std::vector<IndexedValue<T> > ParallelSort(const std::vector<T>& v)
+std::vector<IndexedValue<T> > ParallelSort(const std::vector<T>& v, const SORTORDER ordering)
 {
   std::vector<IndexedValue<int> > pairs(v.size());
   for(unsigned int i = 0; i < v.size(); i++)
@@ -21,8 +21,15 @@ std::vector<IndexedValue<T> > ParallelSort(const std::vector<T>& v)
     pairs[i].index = i;
     pairs[i].value = v[i];
     }
-
-  std::sort(pairs.begin(), pairs.end());
+  if(ordering == ASCENDING)
+    {
+    std::sort(pairs.begin(), pairs.end());
+    }
+  else // DESCENDING
+    {
+    std::sort(pairs.rbegin(), pairs.rend());
+    }
+  
 
   return pairs;
 }

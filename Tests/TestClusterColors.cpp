@@ -38,11 +38,9 @@
 #include <vtkVertexGlyphFilter.h>
 #include <vtkXMLPolyDataWriter.h>
 
-static void TestLabelImage(const FloatVectorImageType::Pointer image, const std::string& outputPrefix);
-static void ViewClusterCenters(const FloatVectorImageType::Pointer image);
-static void WriteImagePixelsToRGBSpace(const FloatVectorImageType::Pointer image);
+static void WriteImagePixelsToRGBSpace(const FloatVectorImageType::Pointer image, const std::string& outputFileName);
 static void WriteClusteredPixelsInRGBSpace(const FloatVectorImageType::Pointer image, const unsigned int numberOfClusters,
-                                           const unsigned int maxIterations, const std::string& outputFileName);
+                                           const std::string& outputFileName);
 
 int main(int argc, char *argv[])
 {
@@ -57,99 +55,20 @@ int main(int argc, char *argv[])
   reader->SetFileName(inputFileName);
   reader->Update();
 
-  //TestLabelImage(reader->GetOutput(), outputPrefix);
-  //WriteImagePixelsToRGBSpace(reader->GetOutput());
-  //ViewClusterCenters(reader->GetOutput());
-
-//   for(unsigned int numberOfClusters = 10; numberOfClusters < 300; numberOfClusters += 20)
-//     {
-//     std::cout << "numberOfClusters: " << numberOfClusters << std::endl;
-//     std::stringstream ss;
-//     ss << "clusters_" << Helpers::ZeroPad(numberOfClusters, 3) << ".vtp";
-//     WriteClusteredPixelsInRGBSpace(reader->GetOutput(), numberOfClusters, ss.str());
-//     }
   
-//   for(unsigned int maxIterations = 1; maxIterations < 30; maxIterations++)
-//     {
-//     std::cout << "maxIterations: " << maxIterations << std::endl;
-//     std::stringstream ss;
-//     ss << "clusters_maxiter_" << Helpers::ZeroPad(maxIterations, 2) << ".vtp";
-//     WriteClusteredPixelsInRGBSpace(reader->GetOutput(), 100, maxIterations, ss.str());
-//     }
+  WriteImagePixelsToRGBSpace(reader->GetOutput(), "/home/doriad/Debug/ImageColors.vtp");
     
-  WriteClusteredPixelsInRGBSpace(reader->GetOutput(), 0, 0, "colors_quantized.vtp");
+  WriteClusteredPixelsInRGBSpace(reader->GetOutput(), 100, "/home/doriad/Debug/ImageColorsClustered.vtp");
   
   return EXIT_SUCCESS;
 }
 
-void TestLabelImage(const FloatVectorImageType::Pointer image, const std::string& outputPrefix)
+
+void WriteClusteredPixelsInRGBSpace(const FloatVectorImageType::Pointer image, const unsigned int numberOfClusters, const std::string& outputFileName)
 {
-
-  IntImageType::Pointer outputLabelImage = IntImageType::New();
-  //ClusterColors(reader->GetOutput(), 10, outputLabelImage);
-//   ClusterColorsUniform(reader->GetOutput(), 10, outputLabelImage);
-//   HelpersOutput::WriteImage<IntImageType>(outputLabelImage, "/home/doriad/Debug/10.mha");
-
-  for(unsigned int numberOfClusters = 1; numberOfClusters < 10; numberOfClusters ++)
-    {
-    std::cout << "numberOfClusters: " << numberOfClusters << std::endl;
-    IntImageType::Pointer outputLabelImage = IntImageType::New();
-    ClusterColorsUniform clusterColors;
-    clusterColors.SetNumberOfBinsPerAxis(numberOfClusters);
-    clusterColors.Construct(image);
-    std::stringstream ss;
-    ss << "/home/doriad/Debug/" << outputPrefix << "_" << Helpers::ZeroPad(numberOfClusters, 4) << ".mha";
-    HelpersOutput::WriteImage<IntImageType>(clusterColors.GetColorBinMembershipImage(), ss.str());
-    }
-}
-
-void ViewClusterCenters(const FloatVectorImageType::Pointer image)
-{
-  ClusterColorsAdaptive clusterColors;
-  clusterColors.SetNumberOfColors(100);
-  clusterColors.SetDownsampleFactor(1);
-  clusterColors.Construct(image);
-
-  std::vector<ColorMeasurementVectorType> colorMeasurements = clusterColors.GetColors();
-
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-  vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
-  colors->SetName("Colors");
-  colors->SetNumberOfComponents(3);
-  
-  for(unsigned int colorId = 0; colorId < colorMeasurements.size(); ++colorId)
-    {
-    double point[3];
-    unsigned char color[3];
-    for(unsigned int component = 0; component < 3; component++)
-      {
-      point[component] = colorMeasurements[colorId][component];
-      color[component] = colorMeasurements[colorId][component];
-      }
-    //std::cout << "Color " << colorId << " : " << point[0] << " " << point[1] << " " << point[2] << std::endl;
-    points->InsertNextPoint(point);
-    colors->InsertNextTupleValue(color);
-    }
-  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-  polyData->SetPoints(points);
-  polyData->GetPointData()->SetScalars(colors);
-
-  vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-  glyphFilter->SetInputConnection(polyData->GetProducerPort());
-  glyphFilter->Update();
-
-  vtkSmartPointer<vtkXMLPolyDataWriter> writer = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
-  writer->SetInputConnection(glyphFilter->GetOutputPort());
-  writer->SetFileName("ClusterCenters.vtp");
-  writer->Write();
-}
-
-void WriteClusteredPixelsInRGBSpace(const FloatVectorImageType::Pointer image, const unsigned int numberOfClusters, const unsigned int maxIterations, const std::string& outputFileName)
-{
+  std::cout << "WriteClusteredPixelsInRGBSpace()" << std::endl;
   ClusterColorsAdaptive clusterColors;
   clusterColors.SetNumberOfColors(numberOfClusters);
-  clusterColors.SetDownsampleFactor(1);
-  clusterColors.SetMaxIterations(maxIterations);
   clusterColors.Construct(image);
   
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
@@ -196,8 +115,9 @@ void WriteClusteredPixelsInRGBSpace(const FloatVectorImageType::Pointer image, c
 
 }
 
-void WriteImagePixelsToRGBSpace(const FloatVectorImageType::Pointer image)
+void WriteImagePixelsToRGBSpace(const FloatVectorImageType::Pointer image, const std::string& outputFileName)
 {
+  std::cout << "WriteImagePixelsToRGBSpace()" << std::endl;
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
   vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
   colors->SetName("Colors");
@@ -223,7 +143,7 @@ void WriteImagePixelsToRGBSpace(const FloatVectorImageType::Pointer image)
   
   vtkSmartPointer<vtkXMLPolyDataWriter> writer = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
   writer->SetInputConnection(glyphFilter->GetOutputPort());
-  writer->SetFileName("ImageColors.vtp");
+  writer->SetFileName(outputFileName.c_str());
   writer->Write();
 
 }

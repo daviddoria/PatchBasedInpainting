@@ -65,7 +65,7 @@ protected:
   virtual void GenerateColors() = 0;
   
   void CreateMembershipImage();
-  void CreateSamplesFromColors();
+  void CreateKDTreeFromColors();
 
   FloatVectorImageType::Pointer Image;
   std::vector<ColorMeasurementVectorType> Colors;

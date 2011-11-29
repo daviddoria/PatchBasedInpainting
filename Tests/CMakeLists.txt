@@ -2,6 +2,13 @@
 ADD_EXECUTABLE(TestClusterColors TestClusterColors.cpp)
 TARGET_LINK_LIBRARIES(TestClusterColors PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
+
+ADD_EXECUTABLE(TestClusterColorsClusterCenters TestClusterColorsClusterCenters.cpp)
+TARGET_LINK_LIBRARIES(TestClusterColorsClusterCenters PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+
+ADD_EXECUTABLE(TestClusterColorsLabelImage TestClusterColorsLabelImage.cpp)
+TARGET_LINK_LIBRARIES(TestClusterColorsLabelImage PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+
 # 
 # ADD_EXECUTABLE(TestDerivatives Tests/TestDerivatives.cpp)
 # TARGET_LINK_LIBRARIES(TestDerivatives PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})

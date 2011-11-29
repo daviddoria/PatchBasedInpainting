@@ -88,14 +88,23 @@ void ClusterColorsAdaptive::GenerateColorsVTKBin()
   
   double bounds[6];
   polyData->GetBounds(bounds);
+  //std::cout << "bounds: " << bounds[0] << " " << bounds[1] << " " << bounds[2] << " " << bounds[3] << " " << bounds[4] << " " << bounds[5] << std::endl;
   
+  double epsilon = 1e-6;
+  // We leave a little bit of a boundary around the grid so that pixels exactly on the border are still used.
   vtkSmartPointer<vtkImageData> grid = vtkSmartPointer<vtkImageData>::New();
-  grid->SetOrigin(bounds[0], bounds[2], bounds[4]);
+  grid->SetOrigin(bounds[0] - epsilon, bounds[2] - epsilon, bounds[4] - epsilon);
   
-  unsigned int numVoxelsPerDimension = 2; //the number of voxels in each dimension
-  grid->SetSpacing((bounds[1]-bounds[0])/static_cast<double>(numVoxelsPerDimension),
-                   (bounds[3]-bounds[2])/numVoxelsPerDimension,
-                   (bounds[5]-bounds[4])/static_cast<double>(numVoxelsPerDimension));
+  
+  unsigned int numVoxelsPerDimension = 25; // This produces a bin size of approximately 10x10x10
+  
+//   grid->SetSpacing((bounds[1]-bounds[0])/static_cast<double>(numVoxelsPerDimension),
+//                    (bounds[3]-bounds[2])/static_cast<double>(numVoxelsPerDimension),
+//                    (bounds[5]-bounds[4])/static_cast<double>(numVoxelsPerDimension));
+  // Since we start at bounds[min]-epsilon, we must go to bounds[max]+epsilon, so the total width is bounds+2*epsilon
+  grid->SetSpacing((bounds[1] + 2.0f*epsilon - bounds[0])/static_cast<double>(numVoxelsPerDimension),
+                   (bounds[3] + 2.0f*epsilon - bounds[2])/static_cast<double>(numVoxelsPerDimension),
+                   (bounds[5] + 2.0f*epsilon - bounds[4])/static_cast<double>(numVoxelsPerDimension));
   int extent[6];
   extent[0] = 0;
   extent[1] = numVoxelsPerDimension;
@@ -108,8 +117,14 @@ void ClusterColorsAdaptive::GenerateColorsVTKBin()
   grid->SetNumberOfScalarComponents(1);
   grid->Update();
   
-  std::vector<int> cellOccupancy(grid->GetNumberOfCells());
-  std::cout << "cellOccupancy size: " << cellOccupancy.size() << std::endl;
+  std::vector<int> cellOccupancy(grid->GetNumberOfCells(), 0);
+  //std::cout << "cellOccupancy size: " << cellOccupancy.size() << std::endl;
+    
+  if(cellOccupancy.size() < this->NumberOfColors)
+    {
+    std::cerr << "cellOccupancy.size() < this->NumberOfColors, this doesn't make sense!" << std::endl;
+    exit(-1);
+    }
     
   vtkSmartPointer<vtkCellLocator> cellLocator = vtkSmartPointer<vtkCellLocator>::New();
   cellLocator->SetDataSet(grid);
@@ -123,27 +138,40 @@ void ClusterColorsAdaptive::GenerateColorsVTKBin()
     double p[3];
     polyData->GetPoint(i,p);
     int cellId = cellLocator->FindCell(p);
+    if(cellId < 0 || cellId > static_cast<int>(cellOccupancy.size()))
+      {
+      std::cerr << "Something is wrong, cellId = " << cellId << std::endl;
+      std::cerr << "p = " << p[0] << " " << p[1] << " " << p[2] << std::endl;
+      exit(-1);
+      }
     cellOccupancy[cellId]++;
     }
     
-  std::vector<ParallelSort::IndexedValue<int> > sorted = ParallelSort::ParallelSort<int>(cellOccupancy);
-  
+  std::vector<ParallelSort::IndexedValue<int> > sorted = ParallelSort::ParallelSort<int>(cellOccupancy, ParallelSort::DESCENDING);
+/*  
+  for(unsigned int i = 0; i < sorted.size(); ++i)
+    {
+    std::cout << sorted[i].index << " " << sorted[i].value << std::endl;
+    }*/
   this->Colors.clear();
   ColorMeasurementVectorType color;
   for(unsigned int i = 0; i < this->NumberOfColors; ++i)
     {
     double p[3];
     Helpers::GetCellCenter(grid, sorted[i].index, p);
-    
+    //std::cout << "Keeping cell: " << sorted[i].index << " with center: " << p[0] << " " << p[1] << " " << p[2] << std::endl;
     color[0] = p[0];
     color[1] = p[1];
     color[2] = p[2];
     this->Colors.push_back(color);
     }
 
-  CreateSamplesFromColors();
+  CreateKDTreeFromColors();
   
-  LeaveFunction("GenerateColorsVTK()");
+  std::cout << "There are " << this->Colors.size() << " colors." << std::endl;
+  std::cout << "There are " << this->Colors.size() << " colors." << std::endl;
+  
+  LeaveFunction("GenerateColorsVTKBin()");
 }
 
 void ClusterColorsAdaptive::GenerateColorsVTKQuantize()
@@ -202,7 +230,7 @@ void ClusterColorsAdaptive::GenerateColorsVTKQuantize()
     this->Colors.push_back(color);
     }
 
-  CreateSamplesFromColors();
+  CreateKDTreeFromColors();
   
   LeaveFunction("GenerateColorsVTK()");
 }
@@ -295,7 +323,7 @@ void ClusterColorsAdaptive::GenerateColorsVTKKMeans()
     this->Colors.push_back(color);
     }
 
-  CreateSamplesFromColors();
+  CreateKDTreeFromColors();
   
   LeaveFunction("GenerateColorsVTK()");
 }
