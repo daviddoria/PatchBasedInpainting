@@ -328,6 +328,16 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="chkCompareMembership">
+            <property name="text">
+             <string>Membership</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>
@@ -359,6 +369,13 @@
            <widget class="QRadioButton" name="radSortByColorDifference">
             <property name="text">
              <string>Color Diff.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radSortByMembershipDifference">
+            <property name="text">
+             <string>Membership Dif.</string>
             </property>
            </widget>
           </item>
@@ -442,7 +459,7 @@
          </layout>
         </item>
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget"/>
+         <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -820,7 +837,7 @@
      <x>0</x>
      <y>0</y>
      <width>1457</width>
-     <height>25</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLeft_Pane">

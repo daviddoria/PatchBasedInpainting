@@ -83,12 +83,14 @@ public slots:
   void on_radSortByFullDifference_clicked();
   void on_radSortByColorDifference_clicked();
   void on_radSortByDepthDifference_clicked();
+  void on_radSortByMembershipDifference_clicked();
   void on_radSortByColorAndDepth_clicked();
   void on_sldDepthColorLambda_valueChanged();
   
   void on_chkCompareFull_clicked();
   void on_chkCompareColor_clicked();
   void on_chkCompareDepth_clicked();
+  void on_chkCompareMembership_clicked();
   
   void on_radDisplayColorImage_clicked();
   void on_radDisplayMagnitudeImage_clicked();

@@ -103,6 +103,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   groupSortBy->addButton(radSortByColorDifference);
   groupSortBy->addButton(radSortByDepthDifference);
   groupSortBy->addButton(radSortByFullDifference);
+  groupSortBy->addButton(radSortByMembershipDifference);
   radSortByFullDifference->setChecked(true);
   
   this->PatchCompare = new SelfPatchCompare;
@@ -925,7 +926,7 @@ void PatchBasedInpaintingGUI::HighlightSourcePatches()
         }
 
       const Patch& currentPatch = candidatePairs[candidateId].SourcePatch;
-      DebugMessage<itk::ImageRegion<2> >("HighlightSourcePatches: Display patch: ", currentPatch.Region);
+      //DebugMessage<itk::ImageRegion<2> >("HighlightSourcePatches: Display patch: ", currentPatch.Region);
       Helpers::BlankAndOutlineRegion(this->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, borderColor);
       Helpers::SetRegionCenterPixel(this->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
       }
@@ -1320,9 +1321,10 @@ void PatchBasedInpaintingGUI::SetComparisonFunctionsFromGUI()
     {
     this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,this->PatchCompare,_1));
     }
-    
-  // TODO: A checkbox should be added for this
-  this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,this->PatchCompare,_1));
+  if(this->chkCompareMembership->isChecked())
+    {
+    this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,this->PatchCompare,_1));
+    }
 }
 
 void PatchBasedInpaintingGUI::SetSortFunctionFromGUI()

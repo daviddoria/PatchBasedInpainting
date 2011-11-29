@@ -509,6 +509,11 @@ void PatchBasedInpaintingGUI::on_radSortByFullDifference_clicked()
   this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference);
 }
 
+void PatchBasedInpaintingGUI::on_radSortByMembershipDifference_clicked()
+{
+  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::MembershipDifference);
+}
+
 void PatchBasedInpaintingGUI::on_radSortByColorDifference_clicked()
 {
   this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::ColorDifference);
@@ -522,6 +527,11 @@ void PatchBasedInpaintingGUI::on_radSortByDepthDifference_clicked()
 void PatchBasedInpaintingGUI::on_radSortByColorAndDepth_clicked()
 {
   this->Inpainting.PatchSortFunction = new SortByDepthAndColor(PatchPair::CombinedDifference);
+}
+
+void PatchBasedInpaintingGUI::on_chkCompareMembership_clicked()
+{
+  SetComparisonFunctionsFromGUI();
 }
 
 void PatchBasedInpaintingGUI::on_chkCompareFull_clicked()
