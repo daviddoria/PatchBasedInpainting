@@ -944,46 +944,46 @@ void PatchBasedInpaintingGUI::HighlightUsedPatches()
   EnterFunction("HighlightUsedPatches()");
   try
   {
-    // The last iteration record will not have any potential patches, because there is nothing left to inpaint!
-    if(!this->RecordToDisplay->PotentialPairSets.size())
-      {
-      LeaveFunction("HighlightUsedPatches()");
-      return;
-      }
-
-    PatchPair patchPair = this->RecordToDisplay->UsedPatchPair;
-
-    unsigned char centerPixelColor[3];
-    HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
-
-    // Target
-    DebugMessage("Target...");
-    Patch targetPatch = patchPair.TargetPatch;
-
-    unsigned int patchSize = targetPatch.Region.GetSize()[0];
-    //std::cout << "Displaying used target patch " << this->CurrentUsedPatchDisplayed << " : " << targetPatch.Region << std::endl;
-    DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
-    this->UsedTargetPatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
-    unsigned char targetPatchColor[3];
-    HelpersQt::QColorToUCharColor(this->UsedTargetPatchColor, targetPatchColor);
-    Helpers::BlankAndOutlineImage(this->UsedTargetPatchLayer.ImageData, targetPatchColor);
-    Helpers::SetImageCenterPixel(this->UsedTargetPatchLayer.ImageData, centerPixelColor);
-    this->UsedTargetPatchLayer.ImageSlice->SetPosition(targetPatch.Region.GetIndex()[0], targetPatch.Region.GetIndex()[1], 0);
-
-    // Source
-    DebugMessage("Source...");
-    Patch sourcePatch = patchPair.SourcePatch;
-
-    //std::cout << "Displaying used source patch " << this->CurrentUsedPatchDisplayed << " : " << sourcePatch.Region << std::endl;
-    DebugMessage<itk::ImageRegion<2> >("Source patch region: ", sourcePatch.Region);
-    this->UsedSourcePatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
-    unsigned char sourcePatchColor[3];
-    HelpersQt::QColorToUCharColor(this->UsedSourcePatchColor, sourcePatchColor);
-    Helpers::BlankAndOutlineImage(this->UsedSourcePatchLayer.ImageData, sourcePatchColor);
-    Helpers::SetImageCenterPixel(this->UsedSourcePatchLayer.ImageData, centerPixelColor);
-    this->UsedSourcePatchLayer.ImageSlice->SetPosition(sourcePatch.Region.GetIndex()[0], sourcePatch.Region.GetIndex()[1], 0);
-
-    Refresh();
+//     // The last iteration record will not have any potential patches, because there is nothing left to inpaint!
+//     if(!this->RecordToDisplay->PotentialPairSets.size())
+//       {
+//       LeaveFunction("HighlightUsedPatches()");
+//       return;
+//       }
+// 
+//     PatchPair patchPair = this->RecordToDisplay->UsedPatchPair;
+// 
+//     unsigned char centerPixelColor[3];
+//     HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
+// 
+//     // Target
+//     DebugMessage("Target...");
+//     Patch targetPatch = patchPair.TargetPatch;
+// 
+//     unsigned int patchSize = targetPatch.Region.GetSize()[0];
+//     //std::cout << "Displaying used target patch " << this->CurrentUsedPatchDisplayed << " : " << targetPatch.Region << std::endl;
+//     DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
+//     this->UsedTargetPatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
+//     unsigned char targetPatchColor[3];
+//     HelpersQt::QColorToUCharColor(this->UsedTargetPatchColor, targetPatchColor);
+//     Helpers::BlankAndOutlineImage(this->UsedTargetPatchLayer.ImageData, targetPatchColor);
+//     Helpers::SetImageCenterPixel(this->UsedTargetPatchLayer.ImageData, centerPixelColor);
+//     this->UsedTargetPatchLayer.ImageSlice->SetPosition(targetPatch.Region.GetIndex()[0], targetPatch.Region.GetIndex()[1], 0);
+// 
+//     // Source
+//     DebugMessage("Source...");
+//     Patch sourcePatch = patchPair.SourcePatch;
+// 
+//     //std::cout << "Displaying used source patch " << this->CurrentUsedPatchDisplayed << " : " << sourcePatch.Region << std::endl;
+//     DebugMessage<itk::ImageRegion<2> >("Source patch region: ", sourcePatch.Region);
+//     this->UsedSourcePatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
+//     unsigned char sourcePatchColor[3];
+//     HelpersQt::QColorToUCharColor(this->UsedSourcePatchColor, sourcePatchColor);
+//     Helpers::BlankAndOutlineImage(this->UsedSourcePatchLayer.ImageData, sourcePatchColor);
+//     Helpers::SetImageCenterPixel(this->UsedSourcePatchLayer.ImageData, centerPixelColor);
+//     this->UsedSourcePatchLayer.ImageSlice->SetPosition(sourcePatch.Region.GetIndex()[0], sourcePatch.Region.GetIndex()[1], 0);
+// 
+//     Refresh();
     LeaveFunction("HighlightUsedPatches()");
     }// end try
   catch( itk::ExceptionObject & err )
@@ -1305,7 +1305,7 @@ void PatchBasedInpaintingGUI::InitializeGUIElements()
 
 void PatchBasedInpaintingGUI::SetComparisonFunctionsFromGUI()
 {
-  this->DifferenceFunctionsToCompute.clear();
+  this->Inpainting.GetPatchCompare()->FunctionsToCompute.clear();
   if(this->chkCompareFull->isChecked())
     {
     this->Inpainting.GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,this->Inpainting.GetPatchCompare(),_1));

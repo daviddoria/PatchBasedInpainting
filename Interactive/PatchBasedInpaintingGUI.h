@@ -323,9 +323,7 @@ protected:
 
   void UserPatchMoved();
   void ComputeUserPatchRegion();
-  
-  std::vector<boost::function< void(PatchPair&) > > DifferenceFunctionsToCompute;
-  //SelfPatchCompare* PatchCompare;
+
   void SetComparisonFunctionsFromGUI();
   void SetSortFunctionFromGUI();
   void SetDepthColorLambdaFromGUI();
