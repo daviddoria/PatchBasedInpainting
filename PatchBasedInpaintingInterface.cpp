@@ -128,7 +128,7 @@ void PatchBasedInpainting::SetImage(const FloatVectorImageType::Pointer image)
   //unsigned int numberOfBinsPerDimension = 6;
   //this->ColorFrequency.SetNumberOfBinsPerAxis(numberOfBinsPerDimension);
 
-  this->ColorFrequency.SetNumberOfColors(200);
+  this->ColorFrequency.SetNumberOfColors(20);
   //this->ColorFrequency.SetDownsampleFactor(20);
   this->ColorFrequency.Construct(image);
   

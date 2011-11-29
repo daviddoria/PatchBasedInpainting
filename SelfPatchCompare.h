@@ -28,6 +28,7 @@
 
 // Custom
 #include "CandidatePairs.h"
+#include "ClusterColorsAdaptive.h"
 #include "DebugOutputs.h"
 #include "Helpers.h"
 #include "Mask.h"
@@ -79,6 +80,7 @@ public:
   void SetPatchDepthDifference(PatchPair& patchPair);
   void SetPatchColorDifference(PatchPair& patchPair);
   void SetPatchMembershipDifference(PatchPair& patchPair);
+  void SetPatchHistogramIntersection(PatchPair& patchPair);
   
   float PatchSourceDifferenceBoundary(const Patch& sourcePatch);
 
@@ -91,6 +93,7 @@ public:
   
   std::vector<boost::function< void(PatchPair&) > > FunctionsToCompute;
   
+  ClusterColorsAdaptive* ColorFrequency;
 protected:
   // If a channel of one pixel was white (255) and the corresponding channel of the other pixel
   // was black (0), the difference would be 255, so the difference squared would be 255*255

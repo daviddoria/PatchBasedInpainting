@@ -104,6 +104,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   groupSortBy->addButton(radSortByDepthDifference);
   groupSortBy->addButton(radSortByFullDifference);
   groupSortBy->addButton(radSortByMembershipDifference);
+  groupSortBy->addButton(radSortByHistogramIntersection);
   radSortByFullDifference->setChecked(true);
   
   this->PatchCompare = new SelfPatchCompare;
@@ -1324,6 +1325,10 @@ void PatchBasedInpaintingGUI::SetComparisonFunctionsFromGUI()
   if(this->chkCompareMembership->isChecked())
     {
     this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,this->PatchCompare,_1));
+    }
+  if(this->chkCompareHistogramIntersection->isChecked())
+    {
+    this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchHistogramIntersection,this->PatchCompare,_1));
     }
 }
 

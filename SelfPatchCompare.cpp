@@ -20,6 +20,7 @@
 
 // Custom
 #include "Helpers.h"
+#include "Histograms.h"
 #include "Patch.h"
 #include "PatchPair.h"
 #include "PixelDifference.h"
@@ -39,6 +40,7 @@ SelfPatchCompare::SelfPatchCompare()
   this->MaskImage = NULL;
   this->Image = NULL;
   this->MembershipImage = NULL;
+  this->ColorFrequency = NULL;
 }
 
 void SelfPatchCompare::SetImage(const FloatVectorImageType::Pointer image)
@@ -139,6 +141,22 @@ void SelfPatchCompare::SetPatchMembershipDifference(PatchPair& patchPair)
   //float membershipDifference = PatchAverageSourceDifference<IntImageType, ScalarPixelDifference<IntImageType::PixelType> >(this->MembershipImage, patchPair.SourcePatch);
   float membershipDifference = PatchAverageSourceDifference<IntImageType, ScalarAllOrNothingPixelDifference<IntImageType::PixelType> >(this->MembershipImage, patchPair.SourcePatch);
   patchPair.DifferenceMap[PatchPair::MembershipDifference] = membershipDifference;
+}
+
+void SelfPatchCompare::SetPatchHistogramIntersection(PatchPair& patchPair)
+{
+  if(!this->ColorFrequency)
+    {
+    std::cerr << "No ClusterColors/ColorFrequency set!" << std::endl;
+    exit(-1);
+    }
+  //std::vector<float> histogram1 = this->ColorFrequency->HistogramRegion(this->ColorBinMembershipImage, bestPatchPair.TargetPatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region);
+  //std::vector<float> histogram2 = this->ColorFrequency->HistogramRegion(this->ColorBinMembershipImage, bestPatchPair.SourcePatch.Region, inverseMask, bestPatchPair.TargetPatch.Region);
+  std::vector<float> histogram1 = this->ColorFrequency->HistogramRegion(this->Image, patchPair.TargetPatch.Region, this->MaskImage, patchPair.TargetPatch.Region);
+  std::vector<float> histogram2 = this->ColorFrequency->HistogramRegion(this->Image, patchPair.SourcePatch.Region, this->MaskImage, patchPair.TargetPatch.Region, true);
+
+  float histogramIntersection = Histograms::HistogramIntersection(histogram2, histogram1);
+  patchPair.DifferenceMap[PatchPair::HistogramIntersection] = histogramIntersection;
 }
 
 void SelfPatchCompare::SetPatchDepthDifference(PatchPair& patchPair)

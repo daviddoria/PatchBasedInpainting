@@ -84,6 +84,7 @@ public slots:
   void on_radSortByColorDifference_clicked();
   void on_radSortByDepthDifference_clicked();
   void on_radSortByMembershipDifference_clicked();
+  void on_radSortByHistogramIntersection_clicked();
   void on_radSortByColorAndDepth_clicked();
   void on_sldDepthColorLambda_valueChanged();
   
@@ -91,6 +92,7 @@ public slots:
   void on_chkCompareColor_clicked();
   void on_chkCompareDepth_clicked();
   void on_chkCompareMembership_clicked();
+  void on_chkCompareHistogramIntersection_clicked();
   
   void on_radDisplayColorImage_clicked();
   void on_radDisplayMagnitudeImage_clicked();

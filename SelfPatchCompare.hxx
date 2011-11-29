@@ -119,7 +119,7 @@ float SelfPatchCompare::PatchAverageSourceDifference(const typename TScalarImage
 
     totalDifference += difference;
     } // end pixel loop
-  std::cout << "totalDifference: " << totalDifference << " over " << this->ValidTargetPatchOffsets.size() << " patches." << std::endl;
+  //std::cout << "totalDifference: " << totalDifference << " over " << this->ValidTargetPatchOffsets.size() << " patches." << std::endl;
 
   float averageDifference = totalDifference/static_cast<float>(this->ValidTargetPatchOffsets.size());
   LeaveFunction("SelfPatchCompare::PatchAverageSourceDifference()");

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1457</width>
-    <height>1033</height>
+    <height>1078</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -338,6 +338,16 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="chkCompareHistogramIntersection">
+            <property name="text">
+             <string>Histogram Int.</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>
@@ -376,6 +386,13 @@
            <widget class="QRadioButton" name="radSortByMembershipDifference">
             <property name="text">
              <string>Membership Dif.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radSortByHistogramIntersection">
+            <property name="text">
+             <string>Histogram Int.</string>
             </property>
            </widget>
           </item>

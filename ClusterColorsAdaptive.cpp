@@ -105,62 +105,66 @@ void ClusterColorsAdaptive::GenerateColorsVTKBin()
 
   // This produces a bin size of approximately 10x10x10
   //unsigned int numVoxelsPerDimension = 25;
-  unsigned int numVoxelsPerDimension = 15;
-
-  // Since we start at bounds[min]-epsilon, we must go to bounds[max]+epsilon, so the total width is bounds+2*epsilon
-  grid->SetSpacing((bounds[1] + 2.0f*epsilon - bounds[0])/static_cast<double>(numVoxelsPerDimension),
-                   (bounds[3] + 2.0f*epsilon - bounds[2])/static_cast<double>(numVoxelsPerDimension),
-                   (bounds[5] + 2.0f*epsilon - bounds[4])/static_cast<double>(numVoxelsPerDimension));
-  int extent[6];
-  extent[0] = 0;
-  extent[1] = numVoxelsPerDimension;
-  extent[2] = 0;
-  extent[3] = numVoxelsPerDimension;
-  extent[4] = 0;
-  extent[5] = numVoxelsPerDimension;
-  grid->SetExtent(extent);
-  grid->SetScalarTypeToInt();
-  grid->SetNumberOfScalarComponents(1);
-  grid->Update();
   
-  std::vector<int> cellOccupancy(grid->GetNumberOfCells(), 0);
-
-  vtkSmartPointer<vtkCellLocator> cellLocator = vtkSmartPointer<vtkCellLocator>::New();
-  cellLocator->SetDataSet(grid);
-  cellLocator->BuildLocator();
-
-  int dims[3];
-  grid->GetDimensions(dims);
-  
-  for(vtkIdType i = 0; i < polyData->GetNumberOfPoints(); i++)
+  unsigned int numVoxelsPerDimension = 0;
+  while(this->Colors.size() < this->NumberOfColors)
     {
-    double p[3];
-    polyData->GetPoint(i,p);
-    int cellId = cellLocator->FindCell(p);
-    if(cellId < 0 || cellId > static_cast<int>(cellOccupancy.size()))
-      {
-      std::cerr << "Something is wrong, cellId = " << cellId << std::endl;
-      std::cerr << "p = " << p[0] << " " << p[1] << " " << p[2] << std::endl;
-      exit(-1);
-      }
-    cellOccupancy[cellId]++;
-    }
+    numVoxelsPerDimension++;
+    // Since we start at bounds[min]-epsilon, we must go to bounds[max]+epsilon, so the total width is bounds+2*epsilon
+    grid->SetSpacing((bounds[1] + 2.0f*epsilon - bounds[0])/static_cast<double>(numVoxelsPerDimension),
+                    (bounds[3] + 2.0f*epsilon - bounds[2])/static_cast<double>(numVoxelsPerDimension),
+                    (bounds[5] + 2.0f*epsilon - bounds[4])/static_cast<double>(numVoxelsPerDimension));
+    int extent[6];
+    extent[0] = 0;
+    extent[1] = numVoxelsPerDimension;
+    extent[2] = 0;
+    extent[3] = numVoxelsPerDimension;
+    extent[4] = 0;
+    extent[5] = numVoxelsPerDimension;
+    grid->SetExtent(extent);
+    grid->SetScalarTypeToInt();
+    grid->SetNumberOfScalarComponents(1);
+    grid->Update();
+    
+    std::vector<int> cellOccupancy(grid->GetNumberOfCells(), 0);
 
-  this->Colors.clear();
-  ColorMeasurementVectorType color;
-  for(unsigned int i = 0; i < cellOccupancy.size(); ++i)
-    {
-    if(cellOccupancy[i] > 0)
+    vtkSmartPointer<vtkCellLocator> cellLocator = vtkSmartPointer<vtkCellLocator>::New();
+    cellLocator->SetDataSet(grid);
+    cellLocator->BuildLocator();
+
+    int dims[3];
+    grid->GetDimensions(dims);
+    
+    for(vtkIdType i = 0; i < polyData->GetNumberOfPoints(); i++)
       {
       double p[3];
-      Helpers::GetCellCenter(grid, i, p);
-      //std::cout << "Keeping cell: " << sorted[i].index << " with center: " << p[0] << " " << p[1] << " " << p[2] << std::endl;
-      color[0] = p[0];
-      color[1] = p[1];
-      color[2] = p[2];
-      this->Colors.push_back(color);
+      polyData->GetPoint(i,p);
+      int cellId = cellLocator->FindCell(p);
+      if(cellId < 0 || cellId > static_cast<int>(cellOccupancy.size()))
+        {
+        std::cerr << "Something is wrong, cellId = " << cellId << std::endl;
+        std::cerr << "p = " << p[0] << " " << p[1] << " " << p[2] << std::endl;
+        exit(-1);
+        }
+      cellOccupancy[cellId]++;
       }
-    }
+
+    this->Colors.clear();
+    ColorMeasurementVectorType color;
+    for(unsigned int i = 0; i < cellOccupancy.size(); ++i)
+      {
+      if(cellOccupancy[i] > 0)
+        {
+        double p[3];
+        Helpers::GetCellCenter(grid, i, p);
+        //std::cout << "Keeping cell: " << sorted[i].index << " with center: " << p[0] << " " << p[1] << " " << p[2] << std::endl;
+        color[0] = p[0];
+        color[1] = p[1];
+        color[2] = p[2];
+        this->Colors.push_back(color);
+        } // end if
+      } // end for
+    }// end while
 
   CreateKDTreeFromColors();
   

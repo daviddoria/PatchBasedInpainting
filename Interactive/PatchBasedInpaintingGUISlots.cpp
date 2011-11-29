@@ -504,6 +504,11 @@ void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToDisplay_textEdited ( con
   LeaveFunction("on_txtNumberOfTopPatchesToDisplay_textEdited()");
 }
 
+void PatchBasedInpaintingGUI::on_radSortByHistogramIntersection_clicked()
+{
+  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::HistogramIntersection);
+}
+
 void PatchBasedInpaintingGUI::on_radSortByFullDifference_clicked()
 {
   this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference);
@@ -527,6 +532,11 @@ void PatchBasedInpaintingGUI::on_radSortByDepthDifference_clicked()
 void PatchBasedInpaintingGUI::on_radSortByColorAndDepth_clicked()
 {
   this->Inpainting.PatchSortFunction = new SortByDepthAndColor(PatchPair::CombinedDifference);
+}
+
+void PatchBasedInpaintingGUI::on_chkCompareHistogramIntersection_clicked()
+{
+  SetComparisonFunctionsFromGUI();
 }
 
 void PatchBasedInpaintingGUI::on_chkCompareMembership_clicked()

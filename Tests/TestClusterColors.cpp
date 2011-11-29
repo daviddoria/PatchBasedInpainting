@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
   
   WriteImagePixelsToRGBSpace(reader->GetOutput(), outputPrefix + "/ImageColors.vtp");
     
-  WriteClusteredPixelsInRGBSpace(reader->GetOutput(), 100, outputPrefix + "/ImageColorsClustered.vtp");
+  WriteClusteredPixelsInRGBSpace(reader->GetOutput(), 20, outputPrefix + "/ImageColorsClustered.vtp");
   
   return EXIT_SUCCESS;
 }

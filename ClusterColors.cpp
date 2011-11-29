@@ -53,7 +53,7 @@ IntImageType::Pointer ClusterColors::GetColorBinMembershipImage()
 
 
 std::vector<float> ClusterColors::HistogramRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion,
-                                                  Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion)
+                                                  Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const bool invertMask)
 {
   std::vector<float> histogram(this->Colors.size(), 0.0f);
 
@@ -62,7 +62,7 @@ std::vector<float> ClusterColors::HistogramRegion(const FloatVectorImageType::Po
     
   while(!imageIterator.IsAtEnd())
     {
-    if(mask->IsHole(maskIterator.GetIndex()))
+    if(!(invertMask) * mask->IsHole(maskIterator.GetIndex()))
       {
       ++imageIterator;
       ++maskIterator;
@@ -88,7 +88,7 @@ std::vector<float> ClusterColors::HistogramRegion(const FloatVectorImageType::Po
 
 
 std::vector<float> ClusterColors::HistogramRegion(const IntImageType::Pointer image, const itk::ImageRegion<2>& imageRegion,
-                                                  const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion)
+                                                  const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const bool invertMask)
 {
   EnterFunction("ClusterColors::HistogramRegion(IntImageType)");
   std::vector<float> histogram(this->Colors.size(), 0.0f);
@@ -98,7 +98,7 @@ std::vector<float> ClusterColors::HistogramRegion(const IntImageType::Pointer im
     
   while(!imageIterator.IsAtEnd())
     {
-    if(mask->IsHole(maskIterator.GetIndex()))
+    if(!(invertMask) * mask->IsHole(maskIterator.GetIndex()))
       {
       ++imageIterator;
       ++maskIterator;

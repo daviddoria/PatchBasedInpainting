@@ -76,6 +76,7 @@ PatchBasedInpainting::PatchBasedInpainting()
   this->PatchSearchFunction = boost::bind(&PatchBasedInpainting::FindBestPatchNormal,this,_1,_2);
   
   this->PatchCompare = new SelfPatchCompare;
+  this->PatchCompare->ColorFrequency = &(this->ColorFrequency); // Give access to the histograms
 
   this->PriorityFunction = NULL; // Can't initialize this here, must wait until the image and mask are opened
 }
@@ -625,31 +626,29 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   // Return the result by reference.
   bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][bestSourcePatchId];
   
-  //std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
-//   float histogramIntersection = 0.0f;
-//   unsigned int sourcePatchId = 0;
-//   Mask::Pointer inverseMask = Mask::New();
-//   Helpers::DeepCopy<Mask>(this->MaskImage, inverseMask);
-//   inverseMask->Invert();
-//   //this->ColorFrequency.SetDebugFunctionEnterLeave(true);
-//   float requiredHistogramIntersection = 0.75f;
-//   do
-//   {
-//     bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][sourcePatchId];
-//     //std::vector<float> histogram1 = Histograms::Compute1DHistogramOfMultiChannelMaskedImage(this->CurrentOutputImage, bestPatchPair.TargetPatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region, 50);
-//     //std::vector<float> histogram2 = Histograms::Compute1DHistogramOfMultiChannelMaskedImage(this->CurrentOutputImage, bestPatchPair.SourcePatch.Region, inverseMask, bestPatchPair.TargetPatch.Region, 50);
-//     std::vector<float> histogram1 = this->ColorFrequency.HistogramRegion(this->ColorBinMembershipImage, bestPatchPair.TargetPatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region);
-//     std::vector<float> histogram2 = this->ColorFrequency.HistogramRegion(this->ColorBinMembershipImage, bestPatchPair.SourcePatch.Region, inverseMask, bestPatchPair.TargetPatch.Region);
-//     sourcePatchId++; // Note at the end of the loop bestPatchPair will have been set to the previous patchId.
-//     histogramIntersection = Histograms::HistogramIntersection(histogram2, histogram1);
-//     std::cout << "histogramIntersection: " << histogramIntersection << std::endl;
-//     std::stringstream ssSource;
-//     ssSource << "/home/doriad/Debug/" << this->NumberOfCompletedIterations << "_" << Helpers::ZeroPad(sourcePatchId, 4) << "_source.txt";
-//     std::stringstream ssTarget;
-//     ssTarget << "/home/doriad/Debug/" << this->NumberOfCompletedIterations << "_" << Helpers::ZeroPad(sourcePatchId, 4) << "_target.txt";
-//     Histograms::WriteHistogram(histogram1, ssSource.str());
-//     Histograms::WriteHistogram(histogram2, ssTarget.str());
-//   } while (histogramIntersection < requiredHistogramIntersection);
+  std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
+  float histogramIntersection = 0.0f;
+  unsigned int sourcePatchId = 0;
+
+  //this->ColorFrequency.SetDebugFunctionEnterLeave(true);
+  float requiredHistogramIntersection = 0.75f;
+  do
+  {
+    bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][sourcePatchId];
+    //std::vector<float> histogram1 = Histograms::Compute1DHistogramOfMultiChannelMaskedImage(this->CurrentOutputImage, bestPatchPair.TargetPatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region, 50);
+    //std::vector<float> histogram2 = Histograms::Compute1DHistogramOfMultiChannelMaskedImage(this->CurrentOutputImage, bestPatchPair.SourcePatch.Region, inverseMask, bestPatchPair.TargetPatch.Region, 50);
+    std::vector<float> histogram1 = this->ColorFrequency.HistogramRegion(this->ColorBinMembershipImage, bestPatchPair.TargetPatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region);
+    std::vector<float> histogram2 = this->ColorFrequency.HistogramRegion(this->ColorBinMembershipImage, bestPatchPair.SourcePatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region, true);
+    sourcePatchId++; // Note at the end of the loop bestPatchPair will have been set to the previous patchId.
+    histogramIntersection = Histograms::HistogramIntersection(histogram2, histogram1);
+    std::cout << "histogramIntersection: " << histogramIntersection << std::endl;
+    std::stringstream ssSource;
+    ssSource << "/home/doriad/Debug/" << this->NumberOfCompletedIterations << "_" << Helpers::ZeroPad(sourcePatchId, 4) << "_source.txt";
+    std::stringstream ssTarget;
+    ssTarget << "/home/doriad/Debug/" << this->NumberOfCompletedIterations << "_" << Helpers::ZeroPad(sourcePatchId, 4) << "_target.txt";
+    //Histograms::WriteHistogram(histogram1, ssSource.str());
+    //Histograms::WriteHistogram(histogram2, ssTarget.str());
+  } while (histogramIntersection < requiredHistogramIntersection);
 //   std::cout << "Used patch " << sourcePatchId - 1 << std::endl;
   
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;

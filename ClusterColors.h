@@ -46,11 +46,11 @@ public:
   
   // If the MembershipImage is not provided, compute the histogram.
   std::vector<float> HistogramRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion,
-                                     const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion);
+                                     const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const bool invertMask = false);
   
   // If the MembershipImage is provided, compute the histogram (much faster).
   std::vector<float> HistogramRegion(const IntImageType::Pointer image, const itk::ImageRegion<2>& imageRegion,
-                                     const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion);
+                                     const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const bool invertMask = false);
   
   IntImageType::Pointer GetColorBinMembershipImage();
 
