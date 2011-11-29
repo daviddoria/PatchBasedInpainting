@@ -56,9 +56,9 @@ int main(int argc, char *argv[])
   reader->Update();
 
   
-  WriteImagePixelsToRGBSpace(reader->GetOutput(), "/home/doriad/Debug/ImageColors.vtp");
+  WriteImagePixelsToRGBSpace(reader->GetOutput(), outputPrefix + "/ImageColors.vtp");
     
-  WriteClusteredPixelsInRGBSpace(reader->GetOutput(), 100, "/home/doriad/Debug/ImageColorsClustered.vtp");
+  WriteClusteredPixelsInRGBSpace(reader->GetOutput(), 100, outputPrefix + "/ImageColorsClustered.vtp");
   
   return EXIT_SUCCESS;
 }

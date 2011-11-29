@@ -146,13 +146,15 @@ void ClusterColorsAdaptive::GenerateColorsVTKBin()
       }
     cellOccupancy[cellId]++;
     }
-    
+
   std::vector<ParallelSort::IndexedValue<int> > sorted = ParallelSort::ParallelSort<int>(cellOccupancy, ParallelSort::DESCENDING);
-/*  
-  for(unsigned int i = 0; i < sorted.size(); ++i)
-    {
-    std::cout << sorted[i].index << " " << sorted[i].value << std::endl;
-    }*/
+
+//   for(unsigned int i = 0; i < this->NumberOfColors; ++i)
+//     {
+//     double p[3];
+//     Helpers::GetCellCenter(grid, sorted[i].index, p);
+//     std::cout << "index: " << sorted[i].index << " value: " << sorted[i].value << " center: " << p[0] << " " << p[1] << " " << p[2] << std::endl;
+//     }
   this->Colors.clear();
   ColorMeasurementVectorType color;
   for(unsigned int i = 0; i < this->NumberOfColors; ++i)
