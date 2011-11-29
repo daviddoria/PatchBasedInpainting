@@ -33,7 +33,7 @@ struct PatchPair
 //   enum PatchDifferenceTypes {AverageSquaredDifference, AverageAbsoluteDifference, BoundaryGradientDifference,
 //                              BoundaryPixelDifference, BoundaryIsophoteAngleDifference, BoundaryIsophoteStrengthDifference,
 //                              ColorDifference, DepthDifference, CombinedDifference};
-  enum PatchDifferenceTypes {AverageAbsoluteDifference, ColorDifference, DepthDifference, CombinedDifference};
+  enum PatchDifferenceTypes {AverageAbsoluteDifference, ColorDifference, DepthDifference, CombinedDifference, MembershipDifference};
   static std::string NameOfDifference(PatchDifferenceTypes);
   
   typedef std::map <PatchDifferenceTypes, float> DifferenceMapType;

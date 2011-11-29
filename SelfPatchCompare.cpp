@@ -36,6 +36,9 @@
 SelfPatchCompare::SelfPatchCompare()
 {
   this->NumberOfComponentsPerPixel = 1;
+  this->MaskImage = NULL;
+  this->Image = NULL;
+  this->MembershipImage = NULL;
 }
 
 void SelfPatchCompare::SetImage(const FloatVectorImageType::Pointer image)
@@ -46,6 +49,12 @@ void SelfPatchCompare::SetImage(const FloatVectorImageType::Pointer image)
   //std::cout << "Leave SelfPatchCompare::SetImage()" << std::endl;
 }
 
+// Provide the membership image (used in some difference functions).
+void SelfPatchCompare::SetMembershipImage(const IntImageType::Pointer membershipImage)
+{
+  this->MembershipImage = membershipImage;
+}
+  
 void SelfPatchCompare::SetMask(const Mask::Pointer mask)
 {
   //std::cout << "Enter SelfPatchCompare::SetMask()" << std::endl;
@@ -79,7 +88,7 @@ void SelfPatchCompare::ComputeOffsets()
 	  std::cerr << "SelfPatchCompare::ComputeOffsets - Something is wrong!" << std::endl;
 	  exit(-1);
 	  }
-	
+	// The ComputeOffset function returns the linear index of the pixel. To compute the memory address of the pixel, we must multiply by the number of components per pixel.
 	FloatVectorImageType::OffsetValueType offset = this->Image->ComputeOffset(maskIterator.GetIndex()) * this->NumberOfComponentsPerPixel;
 	if(offset < 0)
 	  {
@@ -118,6 +127,17 @@ void SelfPatchCompare::SetPatchColorDifference(PatchPair& patchPair)
 {
   float colorDifference = PatchAverageSourceDifference<ColorPixelDifference>(patchPair.SourcePatch);
   patchPair.DifferenceMap[PatchPair::ColorDifference] = colorDifference;
+}
+
+void SelfPatchCompare::SetPatchMembershipDifference(PatchPair& patchPair)
+{
+  if(!this->MembershipImage)
+    {
+    std::cerr << "No membership image set!" << std::endl;
+    exit(-1);
+    }
+  float membershipDifference = PatchAverageSourceDifference<IntImageType, ScalarPixelDifference<IntImageType::PixelType> >(this->MembershipImage, patchPair.SourcePatch);
+  patchPair.DifferenceMap[PatchPair::MembershipDifference] = membershipDifference;
 }
 
 void SelfPatchCompare::SetPatchDepthDifference(PatchPair& patchPair)
@@ -299,6 +319,12 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
           SetPatchAllDifferences((*this->Pairs)[i]);
           }
       #endif
+      
+      // Serial only - for testing
+//       for(unsigned int i = 0; i < this->Pairs->size(); ++i)
+//         {
+//         SetPatchAllDifferences((*this->Pairs)[i]);
+//         }
       }
     //std::cout << "Leave SelfPatchCompare::ComputeAllSourceDifferences()" << std::endl;
   }

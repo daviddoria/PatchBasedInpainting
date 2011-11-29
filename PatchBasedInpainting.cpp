@@ -385,6 +385,7 @@ void PatchBasedInpainting::RecomputeScoresWithNewPatches(std::vector<Patch>& new
     this->PatchCompare->SetPairs(&newPairs);
     this->PatchCompare->SetImage(this->CompareImage);
     this->PatchCompare->SetMask(this->MaskImage);
+    this->PatchCompare->SetMembershipImage(this->ColorBinMembershipImage);
     this->PatchCompare->ComputeAllSourceDifferences();
 
     this->PotentialCandidatePairs[candidateId].Combine(newPairs);
@@ -406,6 +407,7 @@ void PatchBasedInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidat
   this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(this->BlurredImage);
   this->PatchCompare->SetMask(this->MaskImage);
+  this->PatchCompare->SetMembershipImage(this->ColorBinMembershipImage);
   this->PatchCompare->ComputeAllSourceDifferences();
   
   std::sort(candidatePairs.begin(), candidatePairs.end(), SortFunctorWrapper(this->PatchSortFunction));
@@ -427,6 +429,7 @@ void PatchBasedInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidat
   this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(tempImage);
   this->PatchCompare->SetMask(this->MaskImage);
+  this->PatchCompare->SetMembershipImage(this->ColorBinMembershipImage);
   this->PatchCompare->ComputeAllSourceAndTargetDifferences();
 
   //std::cout << "Detailed score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
@@ -455,6 +458,7 @@ void PatchBasedInpainting::FindBestPatchNormal(CandidatePairs& candidatePairs, P
   this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(this->CompareImage);
   this->PatchCompare->SetMask(this->MaskImage);
+  this->PatchCompare->SetMembershipImage(this->ColorBinMembershipImage);
   this->PatchCompare->ComputeAllSourceDifferences();
 
   //std::cout << "FindBestPatch: Finished ComputeAllSourceDifferences()" << std::endl;
@@ -481,6 +485,7 @@ void PatchBasedInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePa
   this->PatchCompare->SetImage(this->CompareImage);
   this->PatchCompare->SetMask(this->MaskImage);
   this->PatchCompare->SetPairs(&candidatePairs);
+  this->PatchCompare->SetMembershipImage(this->ColorBinMembershipImage);
   
   this->PatchCompare->FunctionsToCompute.clear();
   this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,this->PatchCompare,_1));

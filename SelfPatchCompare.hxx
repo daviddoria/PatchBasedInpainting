@@ -67,3 +67,60 @@ float SelfPatchCompare::PatchAverageSourceDifference(const Patch& sourcePatch)
   float averageDifference = totalDifference/static_cast<float>(this->ValidTargetPatchOffsets.size());
   return averageDifference;
 }
+
+template<typename TScalarImage, typename TDifferenceFunction>
+float SelfPatchCompare::PatchAverageSourceDifference(const typename TScalarImage::Pointer image, const Patch& sourcePatch)
+{
+  EnterFunction("SelfPatchCompare::PatchAverageSourceDifference()");
+  if(this->ValidTargetPatchOffsets.size() <= 0)
+    {
+    std::cout << "SelfPatchCompare::PatchAverageSourceDifference had 0 ValidTargetPatchOffsets on which to operate!" << std::endl;
+    exit(-1);
+    }
+  float totalDifference = 0.0f;
+
+  // We want to do direct pointer arithmetic for speed purposes.
+  typename TScalarImage::PixelType* bufferPointer = image->GetBufferPointer();
+  
+  // Get the locations of the corners of both patches.
+  int sourceCornerOffset = image->ComputeOffset(sourcePatch.Region.GetIndex());
+  int targetCornerOffset = image->ComputeOffset(this->Pairs->TargetPatch.Region.GetIndex());
+  
+  // Compute the difference between the corners (from the target to the source).
+  int targetToSourceOffsetPixels = sourceCornerOffset - targetCornerOffset;
+  int targetToSourceOffset = targetToSourceOffsetPixels;
+
+  // Create empty pixel containers that we will fill.
+  typename TScalarImage::PixelType sourcePixel;
+  typename TScalarImage::PixelType targetPixel;
+  
+  // Instantiate the distance function that has been specified as a template parameter.
+  TDifferenceFunction differenceFunction;
+  float difference = 0;
+  
+  // Loop through the pixels that have been determined to be valid.
+  for(unsigned int pixelId = 0; pixelId < this->ValidTargetPatchOffsets.size(); ++pixelId)
+    {
+    int currentTargetPatchOffset = this->ValidTargetPatchOffsets[pixelId] / this->NumberOfComponentsPerPixel; // We have stored the list of valid offsets as indexes into the memory of the FloatVectorImage
+    int sourceOffset = currentTargetPatchOffset + targetToSourceOffset;
+    int targetOffset = currentTargetPatchOffset;
+//     if(sourceOffset > image->GetLargestPossibleRegion().GetNumberOfPixels() ||
+//        targetOffset > image->GetLargestPossibleRegion().GetNumberOfPixels())
+//       {
+//       std::cerr << "Offsets are too large!" << std::endl;
+//       std::cout << "sourceOffset: " << sourceOffset << " targetOffset: " << targetOffset << " numPixels: " << image->GetLargestPossibleRegion().GetNumberOfPixels() << std::endl;
+//       exit(-1);
+//       }
+    sourcePixel = bufferPointer[sourceOffset];
+    
+    targetPixel = bufferPointer[targetOffset];  
+    difference = differenceFunction.Difference(sourcePixel, targetPixel);
+
+    totalDifference += difference;
+    } // end pixel loop
+
+  float averageDifference = totalDifference/static_cast<float>(this->ValidTargetPatchOffsets.size());
+  LeaveFunction("SelfPatchCompare::PatchAverageSourceDifference()");
+  return averageDifference;
+}
+

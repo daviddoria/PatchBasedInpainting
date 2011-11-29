@@ -271,7 +271,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->txtGoToIteration->setValidator(this->IntValidator);
   this->txtNumberOfTopPatchesToDisplay->setValidator(this->IntValidator);
 
-  LeaveFunction("DefaultConstructor()");
+  LeaveFunction("PatchBasedInpaintingGUI::DefaultConstructor()");
 }
 
 // Default constructor
@@ -1320,6 +1320,9 @@ void PatchBasedInpaintingGUI::SetComparisonFunctionsFromGUI()
     {
     this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,this->PatchCompare,_1));
     }
+    
+  // TODO: A checkbox should be added for this
+  this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,this->PatchCompare,_1));
 }
 
 void PatchBasedInpaintingGUI::SetSortFunctionFromGUI()

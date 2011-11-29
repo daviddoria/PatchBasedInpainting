@@ -50,6 +50,9 @@ std::string PatchPair::NameOfDifference(PatchDifferenceTypes enumValue)
     case DepthDifference:
       namedDifference = "DepthDifference";
       break;
+    case MembershipDifference:
+      namedDifference = "MembershipDifference";
+      break;
     case CombinedDifference:
       namedDifference = "CombinedDifference";
       break;

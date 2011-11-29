@@ -28,6 +28,7 @@
 
 // Custom
 #include "CandidatePairs.h"
+#include "DebugOutputs.h"
 #include "Helpers.h"
 #include "Mask.h"
 #include "Patch.h"
@@ -42,7 +43,7 @@
 // Boost
 #include <boost/function.hpp>
 
-class SelfPatchCompare
+class SelfPatchCompare : public DebugOutputs
 {
   
 public:
@@ -55,6 +56,9 @@ public:
   
   // Provide the image to work with.
   void SetImage(const FloatVectorImageType::Pointer);
+  
+  // Provide the membership image (used in some difference functions).
+  void SetMembershipImage(const IntImageType::Pointer);
 
   // Provide the mask to work with.
   void SetMask(const Mask::Pointer mask);
@@ -74,6 +78,7 @@ public:
   //void SetPatchAverageSquaredDifference(PatchPair& patchPair);
   void SetPatchDepthDifference(PatchPair& patchPair);
   void SetPatchColorDifference(PatchPair& patchPair);
+  void SetPatchMembershipDifference(PatchPair& patchPair);
   
   float PatchSourceDifferenceBoundary(const Patch& sourcePatch);
 
@@ -103,6 +108,9 @@ protected:
 
   // This is the image from which to take the patches
   FloatVectorImageType::Pointer Image;
+  
+  // Membership image
+  IntImageType::Pointer MembershipImage;
 
   // This is the mask to check the validity of target pixels
   Mask::Pointer MaskImage;
@@ -112,6 +120,10 @@ protected:
   // This function takes a template paramter of a class which has a Difference(pixel, pixel) function.
   template<typename TDifferenceFunction>
   float PatchAverageSourceDifference(const Patch& sourcePatch);
+  
+  // This function takes a template paramter of a class which has a Difference(pixel, pixel) function and a scalar image type.
+  template<typename TScalarImage, typename TDifferenceFunction>
+  float PatchAverageSourceDifference(const typename TScalarImage::Pointer image, const Patch& sourcePatch);
 
 };
 

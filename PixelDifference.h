@@ -166,4 +166,31 @@ struct ChannelPixelDifference
   }
 };
 
+template <typename TScalar>
+struct ScalarPixelDifference
+{
+  static float Difference(const TScalar &a, const TScalar &b)
+  {
+    return fabs(static_cast<float>(a) - static_cast<float>(b));
+  }
+};
+
+template <typename TScalar>
+struct ScalarAllOrNothingPixelDifference
+{
+  // Using this class will count how many pixels are not identically the same. This should clearly only be used when comparing int/char-valued images (like a membership image).
+  static float Difference(const TScalar &a, const TScalar &b)
+  {
+    if(a == b)
+    {
+      return 0;
+    }
+    else
+    {
+      return 1;
+    }
+    
+  }
+};
+
 #endif
