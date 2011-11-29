@@ -66,6 +66,8 @@ protected:
   unsigned int NumberOfTopPatchesToDisplay;
 
   DisplayStyle& ImageDisplayStyle;
+  
+  std::vector<PatchPair::PatchDifferenceTypes> ComputedKeys;
 };
 
 #endif

@@ -224,9 +224,10 @@ void WriteImageOfScores(const CandidatePairs& candidatePairs, const itk::ImageRe
   float worstScore = 0.0f;
   for(unsigned int i = 0; i < candidatePairs.size(); ++i)
     {
-    if(candidatePairs[i].GetDepthDifference() > worstScore)
+    float depthDifference = candidatePairs[i].DifferenceMap.find(PatchPair::DepthDifference)->second;
+    if(depthDifference > worstScore)
       {
-      worstScore = candidatePairs[i].GetDepthDifference();
+      worstScore = candidatePairs[i].DifferenceMap.find(PatchPair::DepthDifference)->second;
       }
     }
   Helpers::SetImageToConstant<FloatScalarImageType>(scoreColoredImage, worstScore);
@@ -234,7 +235,7 @@ void WriteImageOfScores(const CandidatePairs& candidatePairs, const itk::ImageRe
 
   for(unsigned int i = 0; i < candidatePairs.size(); ++i)
     {
-    scoreColoredImage->SetPixel(Helpers::GetRegionCenter(candidatePairs[i].SourcePatch.Region), candidatePairs[i].GetDepthDifference());
+    scoreColoredImage->SetPixel(Helpers::GetRegionCenter(candidatePairs[i].SourcePatch.Region), candidatePairs[i].DifferenceMap.find(PatchPair::DepthDifference)->second);
     }
 
   HelpersOutput::WriteImage<FloatScalarImageType>(scoreColoredImage, fileName);

@@ -75,7 +75,8 @@ int TopPatchesTableModel::rowCount(const QModelIndex& parent) const
 
 int TopPatchesTableModel::columnCount(const QModelIndex& parent) const
 {
-  return 4;
+  // We have the patch itelf, the location, the id, and then all of the computed values.
+  return 3 + this->ComputedKeys.size();
 }
 
 void TopPatchesTableModel::SetNumberOfTopPatchesToDisplay(const unsigned int number)
@@ -105,15 +106,10 @@ QVariant TopPatchesTableModel::data(const QModelIndex& index, int role) const
 	}
       case 1:
 	{
-	returnValue = currentCandidateSet[index.row()].GetAverageAbsoluteDifference();
-	break;
-	}
-      case 2:
-	{
 	returnValue = index.row();
 	break;
 	}
-      case 3:
+      case 2:
 	{
 	std::stringstream ss;
 	ss << "(" << currentCandidateSet[index.row()].SourcePatch.Region.GetIndex()[0] << ", " << currentCandidateSet[index.row()].SourcePatch.Region.GetIndex()[1] << ")";
@@ -121,6 +117,12 @@ QVariant TopPatchesTableModel::data(const QModelIndex& index, int role) const
 	break;
 	}
       } // end switch
+    
+    if(index.column() > 2)
+      {
+      unsigned int keyId = index.column() - 3; // There are 3 fixed columns
+      returnValue = currentCandidateSet[index.row()].DifferenceMap.find(this->ComputedKeys[keyId])->second;
+      }
     } // end if DisplayRole
   LeaveFunction("TopPatchesTableModel::data()");
   return returnValue;
@@ -139,15 +141,17 @@ QVariant TopPatchesTableModel::headerData(int section, Qt::Orientation orientati
 	  returnValue = "Patch";
 	  break;
 	case 1:
-	  returnValue = "Av. Abs. Diff.";
-	  break;
-	case 2:
 	  returnValue = "Id";
 	  break;
-	case 3:
+	case 2:
 	  returnValue = "Location";
 	  break;
 	} // end switch
+      if(section > 2)
+        {
+        PatchPair::PatchDifferenceTypes key = this->ComputedKeys[section-3];
+        returnValue = PatchPair::NameOfDifference(key).c_str();
+        }
       }// end Horizontal orientation
     } // end DisplayRole
   
@@ -157,6 +161,20 @@ QVariant TopPatchesTableModel::headerData(int section, Qt::Orientation orientati
 void TopPatchesTableModel::Refresh()
 {
   //std::cout << "TopPatchesTableModel::Refresh(): Displaying iteration: " << this->IterationToDisplay << std::endl;
+  this->ComputedKeys.clear();
+  // Store the keys that have been computed.
+  if(this->IterationRecords.size() > 0)
+  {
+    if(this->IterationRecords[this->IterationToDisplay].PotentialPairSets.size() > 0)
+      {
+      for(PatchPair::DifferenceMapType::const_iterator it = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay][0].DifferenceMap.begin();
+          it != this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay][0].DifferenceMap.end(); it++)
+        {
+        this->ComputedKeys.push_back(it->first);
+        }
+      }
+  }
+    
   beginResetModel();
   endResetModel();
 }

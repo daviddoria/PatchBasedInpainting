@@ -94,12 +94,7 @@ void CandidatePairs::InvalidateAll()
 {
   for(unsigned int i = 0; i < (*this).size(); ++i)
     {
-    (*this)[i].SetValidAverageSquaredDifference(false);
-    (*this)[i].SetValidAverageAbsoluteDifference(false);
-    (*this)[i].SetValidBoundaryGradientDifference(false);
-    (*this)[i].SetValidBoundaryPixelDifference(false);
-    (*this)[i].SetValidBoundaryIsophoteAngleDifference(false);
-    (*this)[i].SetValidBoundaryIsophoteStrengthDifference(false);
+    (*this)[i].DifferenceMap.clear();
     }
 }
 
@@ -121,7 +116,7 @@ void CandidatePairs::WriteDepthScoresToFile(const std::string& fileName)
   std::ofstream fout(fileName.c_str());
   for(unsigned int i = 0; i < this->size(); ++i)
     {
-    fout << (*this)[i].GetDepthDifference() << std::endl;
+    fout << (*this)[i].DifferenceMap[PatchPair::DepthDifference] << std::endl;
     }
     
   fout.close();

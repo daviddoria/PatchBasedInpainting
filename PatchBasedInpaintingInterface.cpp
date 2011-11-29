@@ -133,7 +133,7 @@ void PatchBasedInpainting::SetImage(const FloatVectorImageType::Pointer image)
   this->ColorFrequency.Construct(image);
   
   Helpers::DeepCopy<IntImageType>(this->ColorFrequency.GetColorBinMembershipImage(), this->ColorBinMembershipImage);
-  
+  HelpersOutput::WriteImage<IntImageType>(this->ColorBinMembershipImage, "Debug/SetImage.ColorBinMembershipImage.mha");
   //ComputeMaxPixelDifference();
 }
 

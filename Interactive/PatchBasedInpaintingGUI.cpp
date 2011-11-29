@@ -86,7 +86,7 @@ Q_DECLARE_METATYPE(PatchPair)
 void PatchBasedInpaintingGUI::DefaultConstructor()
 {
   // This function is called by both constructors. This avoid code duplication.
-  EnterFunction("DefaultConstructor()");
+  EnterFunction("PatchBasedInpaintingGUI::DefaultConstructor()");
   
   this->RecordToDisplay = NULL;
   
@@ -334,7 +334,7 @@ void PatchBasedInpaintingGUI::UserPatchMoved()
   patchCompare->ComputeAllSourceDifferences();
 
   std::stringstream ss;
-  ss << candidatePairs[0].GetAverageAbsoluteDifference();
+  ss << candidatePairs[0].DifferenceMap[PatchPair::AverageAbsoluteDifference];
   lblUserPatchError->setText(ss.str().c_str());
 
   LeaveFunction("UserPatchMoved()");
@@ -635,7 +635,7 @@ void PatchBasedInpaintingGUI::Initialize()
   this->Inpainting.SetPatchCompare(this->PatchCompare);
 
   // Setup the sorting function
-  this->Inpainting.PatchSortFunction = new SortByAverageAbsoluteDifference;
+  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference);
   
   // Finish initializing
   this->Inpainting.Initialize();
@@ -1326,25 +1326,25 @@ void PatchBasedInpaintingGUI::SetSortFunctionFromGUI()
 {
   if(this->radSortByFullDifference->isChecked())
     {
-    this->Inpainting.PatchSortFunction = new SortByAverageSquaredDifference;
+    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference);
     }
   else if(this->radSortByColorDifference->isChecked())
     {
-    this->Inpainting.PatchSortFunction = new SortByColorDifference;
+    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::ColorDifference);
     }
   else if(this->radSortByDepthDifference->isChecked())
     {
-    this->Inpainting.PatchSortFunction = new SortByDepthDifference;
+    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::DepthDifference);
     }
   else if(this->radSortByColorAndDepth->isChecked())
     {
-    this->Inpainting.PatchSortFunction = new SortByDepthAndColor;
+    this->Inpainting.PatchSortFunction = new SortByDepthAndColor(PatchPair::ColorDifference);
     }
 }
 
 void PatchBasedInpaintingGUI::SetDepthColorLambdaFromGUI()
 {
-  SortByDepthAndColor* functor = new SortByDepthAndColor;
+  SortByDepthAndColor* functor = new SortByDepthAndColor(PatchPair::ColorDifference);
   functor->DepthColorLambda = static_cast<float>(sldDepthColorLambda->value())/100.0f;
 
   this->Inpainting.PatchSortFunction = functor;

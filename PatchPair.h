@@ -30,72 +30,23 @@ struct PatchPair
   Patch SourcePatch;
   Patch TargetPatch;
   
-  // All of these different scores must use accessors/mutators because we might want to recompute other scores if one of the scores changes.
-  // Also, we can avoid recomputation if a container of PatchPairs is asked to compute everything - we would only compute each difference
-  // if it is invalid (i.e. not already computed).
+//   enum PatchDifferenceTypes {AverageSquaredDifference, AverageAbsoluteDifference, BoundaryGradientDifference,
+//                              BoundaryPixelDifference, BoundaryIsophoteAngleDifference, BoundaryIsophoteStrengthDifference,
+//                              ColorDifference, DepthDifference, CombinedDifference};
+  enum PatchDifferenceTypes {AverageAbsoluteDifference, ColorDifference, DepthDifference, CombinedDifference};
+  static std::string NameOfDifference(PatchDifferenceTypes);
   
-  // Difference accessors
-  float GetAverageSquaredDifference() const;
-  float GetAverageAbsoluteDifference() const;
-  float GetBoundaryGradientDifference() const;
-  float GetBoundaryPixelDifference() const;
-  float GetBoundaryIsophoteAngleDifference() const;
-  float GetBoundaryIsophoteStrengthDifference() const;
-  float GetColorDifference() const;
-  float GetDepthDifference() const;
-  float GetTotalScore() const;
+  typedef std::map <PatchDifferenceTypes, float> DifferenceMapType;
+  DifferenceMapType DifferenceMap;
 
+  // These differences are computed as combinations of other differences
   float GetDepthAndColorDifference() const;
-  
-  // Difference mutators
-  void SetAverageSquaredDifference(const float value);
-  void SetAverageAbsoluteDifference(const float value);
-  void SetBoundaryGradientDifference(const float value);
-  void SetBoundaryPixelDifference(const float value);
-  void SetBoundaryIsophoteAngleDifference(const float value);
-  void SetBoundaryIsophoteStrengthDifference(const float value);
-  void SetColorDifference(const float value);
-  void SetDepthDifference(const float value);
-  
-  // Valid accessors
-  bool IsValidAverageSquaredDifference() const;
-  bool IsValidAverageAbsoluteDifference() const;
-  bool IsValidBoundaryGradientDifference() const;
-  bool IsValidBoundaryPixelDifference() const;
-  bool IsValidBoundaryIsophoteAngleDifference() const;
-  bool IsValidBoundaryIsophoteStrengthDifference() const;
-  bool IsValidColorDifference() const;
-  bool IsValidDepthDifference() const;
-  bool IsValidDepthAndColorDifference() const;
-  
-  // Valid mutators
-  void SetValidAverageSquaredDifference(const bool);
-  void SetValidAverageAbsoluteDifference(const bool);
-  void SetValidBoundaryGradientDifference(const bool);
-  void SetValidBoundaryPixelDifference(const bool);
-  void SetValidBoundaryIsophoteAngleDifference(const bool);
-  void SetValidBoundaryIsophoteStrengthDifference(const bool);
-  void SetValidColorDifference(const bool);
-  void SetValidDepthDifference(const bool);
-  
-  //float GetSortValue();
 
+  // Store the relative location of the source and target patch corners
   itk::Offset<2> GetTargetToSourceOffset() const;
   itk::Offset<2> GetSourceToTargetOffset() const;
   
 private:
-  float AverageSquaredDifference;
-  float AverageAbsoluteDifference;
-  float BoundaryGradientDifference;
-  float BoundaryPixelDifference;
-  float BoundaryIsophoteAngleDifference;
-  float BoundaryIsophoteStrengthDifference;
-  float DepthDifference;
-  float ColorDifference;
-  
-  float TotalScore;
-  
-  void ComputeTotal();
 
   struct ComputeDepthAndColorDifferenceFunctor
   {
@@ -103,16 +54,6 @@ private:
     float operator()(const float depthDifference, const float colorDifference) const;
     float DepthColorLambda;
   } ComputeDepthAndColorDifference; 
-  
-  // These are initialized to false and set to true when the corresponding SetXYZ() function is called.
-  bool ValidAverageSquaredDifference;
-  bool ValidAverageAbsoluteDifference;
-  bool ValidBoundaryGradientDifference;
-  bool ValidBoundaryPixelDifference;
-  bool ValidBoundaryIsophoteAngleDifference;
-  bool ValidBoundaryIsophoteStrengthDifference;
-  bool ValidColorDifference;
-  bool ValidDepthDifference;
 
 };
 

@@ -117,32 +117,24 @@ void SelfPatchCompare::SetPatchAverageSquaredDifference(PatchPair& patchPair)
 void SelfPatchCompare::SetPatchColorDifference(PatchPair& patchPair)
 {
   float colorDifference = PatchAverageSourceDifference<ColorPixelDifference>(patchPair.SourcePatch);
-  patchPair.SetColorDifference(colorDifference);
+  patchPair.DifferenceMap[PatchPair::ColorDifference] = colorDifference;
 }
 
 void SelfPatchCompare::SetPatchDepthDifference(PatchPair& patchPair)
 {
   float depthDifference = PatchAverageSourceDifference<DepthPixelDifference>(patchPair.SourcePatch);
-  patchPair.SetDepthDifference(depthDifference);
+  patchPair.DifferenceMap[PatchPair::DepthDifference] = depthDifference;
 }
 
 
 void SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference(PatchPair& patchPair)
 {
-  if(!patchPair.IsValidAverageAbsoluteDifference())
-    {
-    float averageAbsoluteDifference = PatchAverageSourceDifference<FullPixelDifference>(patchPair.SourcePatch);
-    patchPair.SetAverageAbsoluteDifference(averageAbsoluteDifference);
-    }
+  float averageAbsoluteDifference = PatchAverageSourceDifference<FullPixelDifference>(patchPair.SourcePatch);
+  patchPair.DifferenceMap[PatchPair::AverageAbsoluteDifference] = averageAbsoluteDifference;
 }
 
 void SelfPatchCompare::SetPatchAverageAbsoluteFullDifference(PatchPair& patchPair)
 {
-  // Don't recompute.
-  if(patchPair.IsValidAverageAbsoluteDifference())
-    {
-    return;
-    }
   itk::ImageRegionConstIterator<FloatVectorImageType> sourcePatchIterator(this->Image, patchPair.SourcePatch.Region);
   itk::ImageRegionConstIterator<FloatVectorImageType> targetPatchIterator(this->Image, patchPair.TargetPatch.Region);
   
@@ -158,7 +150,7 @@ void SelfPatchCompare::SetPatchAverageAbsoluteFullDifference(PatchPair& patchPai
     }
     
   float averageAbsoluteDifference = totalAbsoluteDifference / static_cast<float>(patchPair.SourcePatch.Region.GetNumberOfPixels());
-  patchPair.SetAverageAbsoluteDifference(averageAbsoluteDifference);
+  patchPair.DifferenceMap[PatchPair::AverageAbsoluteDifference] = averageAbsoluteDifference;
 }
 
 float SelfPatchCompare::PatchSourceDifferenceBoundary(const Patch& sourcePatch)
@@ -288,8 +280,8 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
       for(unsigned int sourcePatchId = 0; sourcePatchId < this->Pairs->size(); ++sourcePatchId)
 	{
 	float distance = PatchSourceDifferenceBoundary((*this->Pairs)[sourcePatchId].SourcePatch);
-	(*this->Pairs)[sourcePatchId].SetAverageAbsoluteDifference(distance);
-	(*this->Pairs)[sourcePatchId].SetAverageSquaredDifference(distance);
+	(*this->Pairs)[sourcePatchId].DifferenceMap[PatchPair::AverageAbsoluteDifference] = distance;
+	//(*this->Pairs)[sourcePatchId].DifferenceMap[PatchPair::AverageSquaredDifference] = distance;
 	}
       }
     else // The target patch is entirely inside the image

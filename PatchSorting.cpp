@@ -18,53 +18,21 @@
 
 #include "PatchSorting.h"
 
-//////////////////////////////////////////
-/////// Sorting functions //////////////
-//////////////////////////////////////////
-bool SortByDepthDifference::operator()(const PatchPair& pair1, const PatchPair& pair2)
+PatchSortFunctor::PatchSortFunctor(PatchPair::PatchDifferenceTypes differenceType)
 {
-  return (pair1.GetDepthDifference() < pair2.GetDepthDifference());
+  this->DifferenceType = differenceType;
 }
 
-bool SortByColorDifference::operator()(const PatchPair& pair1, const PatchPair& pair2)
+bool SortByDifference::operator()(const PatchPair& pair1, const PatchPair& pair2)
 {
-  return (pair1.GetColorDifference() < pair2.GetColorDifference());
+  return (pair1.DifferenceMap.find(DifferenceType)->second < pair2.DifferenceMap.find(DifferenceType)->second);
 }
 
-bool SortByAverageSquaredDifference::operator()(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetAverageSquaredDifference() < pair2.GetAverageSquaredDifference());
-}
 
-bool SortByAverageAbsoluteDifference::operator()(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetAverageAbsoluteDifference() < pair2.GetAverageAbsoluteDifference());
-}
-
-bool SortByBoundaryGradientDifference::operator()(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetBoundaryGradientDifference() < pair2.GetBoundaryGradientDifference());
-}
-
-bool SortByBoundaryPixelDifference::operator()(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetBoundaryPixelDifference() < pair2.GetBoundaryPixelDifference());
-}
-
-bool SortByBoundaryIsophoteAngleDifference::operator()(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetBoundaryIsophoteAngleDifference() < pair2.GetBoundaryIsophoteAngleDifference());
-}
-
-bool SortByBoundaryIsophoteStrengthDifference::operator()(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetBoundaryIsophoteStrengthDifference() < pair2.GetBoundaryIsophoteStrengthDifference());
-}
-
-bool SortByTotalScore::operator()(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetTotalScore() < pair2.GetTotalScore());
-}
+// bool SortByTotalScore::operator()(const PatchPair& pair1, const PatchPair& pair2)
+// {
+//   return (pair1.GetTotalScore() < pair2.GetTotalScore());
+// }
 
 bool SortByDepthAndColor::operator()(const PatchPair& pair1, const PatchPair& pair2)
 {

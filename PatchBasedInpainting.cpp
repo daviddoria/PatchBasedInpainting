@@ -24,7 +24,6 @@
 #include "HelpersOutput.h"
 #include "Histograms.h"
 #include "PatchSorting.h"
-#include "PixelDifference.h"
 #include "PriorityRandom.h"
 #include "SelfPatchCompare.h"
 
@@ -71,9 +70,7 @@ PatchBasedInpainting::PatchBasedInpainting()
   this->HistogramBinsPerDimension = 10;
   this->MaxForwardLookPatches = 10;
   
-  this->MaxPixelDifferenceSquared = 0.0f;
-  
-  this->PatchSortFunction = new SortByAverageAbsoluteDifference;
+  this->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference);
 
   //this->PatchSearchFunction = &FindBestPatch;
   this->PatchSearchFunction = boost::bind(&PatchBasedInpainting::FindBestPatchNormal,this,_1,_2);
@@ -418,7 +415,7 @@ void PatchBasedInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidat
   std::vector<float> blurredScores(candidatePairs.size());
   for(unsigned int i = 0; i < candidatePairs.size(); ++i)
     {
-    blurredScores[i] = candidatePairs[i].GetAverageAbsoluteDifference();
+    blurredScores[i] = candidatePairs[i].DifferenceMap[PatchPair::AverageAbsoluteDifference];
     }
 
   // Create a temporary image to fill for now, but we might not actually end up filling this patch.
@@ -436,10 +433,10 @@ void PatchBasedInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidat
   
   for(unsigned int i = 0; i < candidatePairs.size(); ++i)
     {
-    candidatePairs[i].SetAverageAbsoluteDifference(blurredScores[i] + candidatePairs[i].GetAverageAbsoluteDifference());
+    candidatePairs[i].DifferenceMap[PatchPair::AverageAbsoluteDifference] = blurredScores[i] + candidatePairs[i].DifferenceMap[PatchPair::AverageAbsoluteDifference];
     }
 
-  std::cout << "Total score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
+  std::cout << "Total score for pair 0: " << candidatePairs[0].DifferenceMap[PatchPair::AverageAbsoluteDifference] << std::endl;
   std::sort(candidatePairs.begin(), candidatePairs.end(), SortFunctorWrapper(this->PatchSortFunction));
 
   // Return the result by reference.
@@ -491,7 +488,7 @@ void PatchBasedInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePa
   
   //std::cout << "FindBestPatch: Finished ComputeAllSourceDifferences()" << std::endl;
   
-  std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDepthDifference());
+  std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDifference(PatchPair::DepthDifference));
   
   WriteImageOfScores(candidatePairs, this->CurrentOutputImage->GetLargestPossibleRegion(),
                      Helpers::GetSequentialFileName("Debug/ImageOfDepthScores", this->NumberOfCompletedIterations, "mha"));
@@ -508,7 +505,7 @@ void PatchBasedInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePa
   this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,this->PatchCompare,_1));
   this->PatchCompare->ComputeAllSourceDifferences();
   
-  std::sort(goodDepthCandidatePairs.begin(), goodDepthCandidatePairs.end(), SortByAverageAbsoluteDifference());
+  std::sort(goodDepthCandidatePairs.begin(), goodDepthCandidatePairs.end(), SortByDifference(PatchPair::AverageAbsoluteDifference));
   WriteImageOfScores(goodDepthCandidatePairs, this->CurrentOutputImage->GetLargestPossibleRegion(),
                      Helpers::GetSequentialFileName("Debug/ImageOfTopColorScores", this->NumberOfCompletedIterations, "mha"));
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
@@ -662,9 +659,9 @@ unsigned int PatchBasedInpainting::ComputeMinimumScoreLookAhead()
   unsigned int lowestLookAhead = 0;
   for(unsigned int i = 0; i < this->PotentialCandidatePairs.size(); ++i)
     {
-    if(this->PotentialCandidatePairs[i][0].GetAverageAbsoluteDifference() < lowestScore)
+    if(this->PotentialCandidatePairs[i][0].DifferenceMap[PatchPair::AverageAbsoluteDifference] < lowestScore)
       {
-      lowestScore = this->PotentialCandidatePairs[i][0].GetAverageAbsoluteDifference();
+      lowestScore = this->PotentialCandidatePairs[i][0].DifferenceMap[PatchPair::AverageAbsoluteDifference];
       lowestLookAhead = i;
       }
     }
