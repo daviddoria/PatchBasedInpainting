@@ -330,22 +330,22 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
       ComputeOffsets();
       //std::cout << "Enter SelfPatchCompare::ComputeAllSourceDifferences parallel SetPatchAllDifferences" << std::endl;
       std::cout << "SelfPatchCompare::ComputeAllSourceDifferences had: " << this->ValidTargetPatchOffsets.size() << " ValidTargetPatchOffsets on which to operate!" << std::endl;
-//       #ifdef USE_QT_PARALLEL
-//         #pragma message("Using QtConcurrent!")
-//         QtConcurrent::blockingMap<std::vector<PatchPair> >((*this->Pairs), boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
-//       #else
-//         #pragma message("NOT using QtConcurrent!")
-//         for(unsigned int i = 0; i < this->Pairs->size(); ++i)
-//           {
-//           SetPatchAllDifferences((*this->Pairs)[i]);
-//           }
-//       #endif
+      #ifdef USE_QT_PARALLEL
+        #pragma message("Using QtConcurrent!")
+        QtConcurrent::blockingMap<std::vector<PatchPair> >((*this->Pairs), boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
+      #else
+        #pragma message("NOT using QtConcurrent!")
+        for(unsigned int i = 0; i < this->Pairs->size(); ++i)
+          {
+          SetPatchAllDifferences((*this->Pairs)[i]);
+          }
+      #endif
       
       // Serial only - for testing
-      for(unsigned int i = 0; i < this->Pairs->size(); ++i)
-        {
-        SetPatchAllDifferences((*this->Pairs)[i]);
-        }
+//       for(unsigned int i = 0; i < this->Pairs->size(); ++i)
+//         {
+//         SetPatchAllDifferences((*this->Pairs)[i]);
+//         }
       }
     //std::cout << "Leave SelfPatchCompare::ComputeAllSourceDifferences()" << std::endl;
   }

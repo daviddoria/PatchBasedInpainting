@@ -506,27 +506,27 @@ void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToDisplay_textEdited ( con
 
 void PatchBasedInpaintingGUI::on_radSortByHistogramIntersection_clicked()
 {
-  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::HistogramIntersection);
+  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::HistogramIntersection, PatchSortFunctor::DESCENDING);
 }
 
 void PatchBasedInpaintingGUI::on_radSortByFullDifference_clicked()
 {
-  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference);
+  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
 }
 
 void PatchBasedInpaintingGUI::on_radSortByMembershipDifference_clicked()
 {
-  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::MembershipDifference);
+  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::MembershipDifference, PatchSortFunctor::ASCENDING);
 }
 
 void PatchBasedInpaintingGUI::on_radSortByColorDifference_clicked()
 {
-  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::ColorDifference);
+  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::ColorDifference, PatchSortFunctor::ASCENDING);
 }
 
 void PatchBasedInpaintingGUI::on_radSortByDepthDifference_clicked()
 {
-  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::DepthDifference);
+  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::DepthDifference, PatchSortFunctor::ASCENDING);
 }
 
 void PatchBasedInpaintingGUI::on_radSortByColorAndDepth_clicked()

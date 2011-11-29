@@ -18,14 +18,21 @@
 
 #include "PatchSorting.h"
 
-PatchSortFunctor::PatchSortFunctor(PatchPair::PatchDifferenceTypes differenceType)
+PatchSortFunctor::PatchSortFunctor(PatchPair::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder) : DifferenceType(differenceType), SortOrder(sortOrder)
 {
-  this->DifferenceType = differenceType;
+
 }
 
 bool SortByDifference::operator()(const PatchPair& pair1, const PatchPair& pair2)
 {
-  return (pair1.DifferenceMap.find(DifferenceType)->second < pair2.DifferenceMap.find(DifferenceType)->second);
+  if(SortOrder == ASCENDING)
+    {
+    return (pair1.DifferenceMap.find(DifferenceType)->second < pair2.DifferenceMap.find(DifferenceType)->second);
+    }
+  else
+    {
+    return !(pair1.DifferenceMap.find(DifferenceType)->second < pair2.DifferenceMap.find(DifferenceType)->second);
+    }
 }
 
 

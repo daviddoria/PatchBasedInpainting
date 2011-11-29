@@ -633,7 +633,7 @@ void PatchBasedInpaintingGUI::Initialize()
   this->Inpainting.GetPatchCompare()->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
 
   // Setup the sorting function
-  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference);
+  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
   
   // Finish initializing
   this->Inpainting.Initialize();
@@ -1332,19 +1332,23 @@ void PatchBasedInpaintingGUI::SetSortFunctionFromGUI()
 {
   if(this->radSortByFullDifference->isChecked())
     {
-    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference);
+    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
     }
   else if(this->radSortByColorDifference->isChecked())
     {
-    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::ColorDifference);
+    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::ColorDifference, PatchSortFunctor::ASCENDING);
     }
   else if(this->radSortByDepthDifference->isChecked())
     {
-    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::DepthDifference);
+    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::DepthDifference, PatchSortFunctor::ASCENDING);
     }
   else if(this->radSortByColorAndDepth->isChecked())
     {
-    this->Inpainting.PatchSortFunction = new SortByDepthAndColor(PatchPair::ColorDifference);
+    this->Inpainting.PatchSortFunction = new SortByDepthAndColor(PatchPair::CombinedDifference);
+    }
+  else if(this->radSortByHistogramIntersection->isChecked())
+    {
+    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::HistogramIntersection, PatchSortFunctor::DESCENDING);
     }
 }
 

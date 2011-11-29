@@ -63,6 +63,7 @@ std::string PatchPair::NameOfDifference(PatchDifferenceTypes enumValue)
       break;
     case HistogramIntersection:
       namedDifference = "Hist.Int.";
+      break;
     default:
       namedDifference = "INVALID";
       break;

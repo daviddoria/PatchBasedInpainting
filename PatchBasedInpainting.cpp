@@ -70,7 +70,7 @@ PatchBasedInpainting::PatchBasedInpainting()
   this->HistogramBinsPerDimension = 10;
   this->MaxForwardLookPatches = 10;
   
-  this->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference);
+  this->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
 
   //this->PatchSearchFunction = &FindBestPatch;
   this->PatchSearchFunction = boost::bind(&PatchBasedInpainting::FindBestPatchNormal,this,_1,_2);
@@ -494,7 +494,7 @@ void PatchBasedInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePa
   
   //std::cout << "FindBestPatch: Finished ComputeAllSourceDifferences()" << std::endl;
   
-  std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDifference(PatchPair::DepthDifference));
+  std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDifference(PatchPair::DepthDifference, PatchSortFunctor::ASCENDING));
   
   WriteImageOfScores(candidatePairs, this->CurrentOutputImage->GetLargestPossibleRegion(),
                      Helpers::GetSequentialFileName("Debug/ImageOfDepthScores", this->NumberOfCompletedIterations, "mha"));
@@ -511,7 +511,7 @@ void PatchBasedInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePa
   this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,this->PatchCompare,_1));
   this->PatchCompare->ComputeAllSourceDifferences();
   
-  std::sort(goodDepthCandidatePairs.begin(), goodDepthCandidatePairs.end(), SortByDifference(PatchPair::AverageAbsoluteDifference));
+  std::sort(goodDepthCandidatePairs.begin(), goodDepthCandidatePairs.end(), SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING));
   WriteImageOfScores(goodDepthCandidatePairs, this->CurrentOutputImage->GetLargestPossibleRegion(),
                      Helpers::GetSequentialFileName("Debug/ImageOfTopColorScores", this->NumberOfCompletedIterations, "mha"));
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
@@ -641,7 +641,7 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     std::vector<float> histogram2 = this->ColorFrequency.HistogramRegion(this->ColorBinMembershipImage, bestPatchPair.SourcePatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region, true);
     sourcePatchId++; // Note at the end of the loop bestPatchPair will have been set to the previous patchId.
     histogramIntersection = Histograms::HistogramIntersection(histogram2, histogram1);
-    std::cout << "histogramIntersection: " << histogramIntersection << std::endl;
+    //std::cout << "histogramIntersection: " << histogramIntersection << std::endl;
     std::stringstream ssSource;
     ssSource << "/home/doriad/Debug/" << this->NumberOfCompletedIterations << "_" << Helpers::ZeroPad(sourcePatchId, 4) << "_source.txt";
     std::stringstream ssTarget;

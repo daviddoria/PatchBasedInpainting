@@ -24,9 +24,11 @@
 // This is a pure virtual functor that defines the required interface.
 struct PatchSortFunctor
 {
-  PatchSortFunctor(PatchPair::PatchDifferenceTypes differenceType);
+  enum SortOrderEnum {ASCENDING, DESCENDING};
+  PatchSortFunctor(PatchPair::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder);
   virtual bool operator()(const PatchPair &T1, const PatchPair &T2) = 0;
   PatchPair::PatchDifferenceTypes DifferenceType;
+  SortOrderEnum SortOrder;
 };
 
 // This class is necessary to pass a subclass of a pure virtual functor to sort()
@@ -44,7 +46,7 @@ struct SortFunctorWrapper
 
 struct SortByDifference : public PatchSortFunctor
 {
-  SortByDifference(PatchPair::PatchDifferenceTypes differenceType) : PatchSortFunctor(differenceType){}
+  SortByDifference(PatchPair::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder) : PatchSortFunctor(differenceType, sortOrder){}
   bool operator()(const PatchPair& pair1, const PatchPair& pair2);
 };
 
@@ -57,7 +59,7 @@ struct SortByDifference : public PatchSortFunctor
 struct SortByDepthAndColor : public PatchSortFunctor
 {
   bool operator()(const PatchPair& pair1, const PatchPair& pair2);
-  SortByDepthAndColor(PatchPair::PatchDifferenceTypes differenceType) : PatchSortFunctor(differenceType), DepthColorLambda(0.5f){}
+  SortByDepthAndColor(PatchPair::PatchDifferenceTypes differenceType) : PatchSortFunctor(differenceType, ASCENDING), DepthColorLambda(0.5f){}
   float DepthColorLambda;
 };
 
