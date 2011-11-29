@@ -44,12 +44,20 @@ signals:
   void RefreshSignal();
   
   void IterationCompleteSignal(const PatchPair&);
+  void StepCompleteSignal(const PatchPair&);
   
 public:
   ComputationThreadClass();
-  
+
+  // Store the type of operation to perform.
+  enum OPERATION {ALLSTEPS, SINGLESTEP};
+  OPERATION Operation;
+
   // This function is called when the thread is started.
   void run();
+
+  void AllSteps();
+  void SingleStep();
 
   // This function is called when the thread is stopped.
   void exit();

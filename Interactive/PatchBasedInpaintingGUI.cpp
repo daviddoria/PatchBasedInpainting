@@ -217,6 +217,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   
   qRegisterMetaType<PatchPair>("PatchPair");
   connect(&ComputationThread, SIGNAL(IterationCompleteSignal(const PatchPair&)), this, SLOT(slot_IterationComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
+  connect(&ComputationThread, SIGNAL(StepCompleteSignal(const PatchPair&)), this, SLOT(slot_StepComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
 
   connect(&ComputationThread, SIGNAL(RefreshSignal()), this, SLOT(slot_Refresh()), Qt::QueuedConnection);
 

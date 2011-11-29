@@ -18,9 +18,9 @@
 
 #include "ComputationThread.h"
 
-ComputationThreadClass::ComputationThreadClass()
+ComputationThreadClass::ComputationThreadClass() : Operation(ALLSTEPS), Stop(false)
 {
-  this->Stop = false;
+
 }
 
 // PatchBasedInpainting* ProgressThread::GetObject()
@@ -33,10 +33,8 @@ void ComputationThreadClass::StopInpainting()
   this->Stop = true;
 }
 
-void ComputationThreadClass::run()
+void ComputationThreadClass::AllSteps()
 {
-  //std::cout << "ProgressThread::run()" << std::endl;
-  // When the thread is started, emit the signal to start the marquee progress bar
   emit StartProgressSignal();
 
   // Start the procedure
@@ -50,6 +48,32 @@ void ComputationThreadClass::run()
 
   // When the function is finished, end the thread
   exit();
+}
+
+void ComputationThreadClass::SingleStep()
+{
+  //std::cout << "ProgressThread::run()" << std::endl;
+  // When the thread is started, emit the signal to start the marquee progress bar
+  emit StartProgressSignal();
+
+  PatchPair usedPatchPair = this->Inpainting->Iterate();
+  emit IterationCompleteSignal(usedPatchPair);
+  emit StepCompleteSignal(usedPatchPair);
+
+  // When the function is finished, end the thread
+  exit();
+}
+  
+void ComputationThreadClass::run()
+{
+  if(this->Operation == ALLSTEPS)
+    {
+    AllSteps();
+    }
+  else if(this->Operation == SINGLESTEP)
+    {
+    SingleStep();
+    }
 }
 
 void ComputationThreadClass::exit()
