@@ -107,8 +107,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   groupSortBy->addButton(radSortByHistogramIntersection);
   radSortByFullDifference->setChecked(true);
   
-  this->PatchCompare = new SelfPatchCompare;
-
   this->PatchRadius = 10;
   this->NumberOfTopPatchesToSave = 0;
   this->NumberOfForwardLook = 0;
@@ -632,9 +630,7 @@ void PatchBasedInpaintingGUI::Initialize()
   //this->Inpainting.GetPriorityFunction()->SetDebugFunctionEnterLeave(true);
   
   // Setup the patch comparison function
-  //SelfPatchCompare* patchCompare = new SelfPatchCompare;
-  this->PatchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
-  this->Inpainting.SetPatchCompare(this->PatchCompare);
+  this->Inpainting.GetPatchCompare()->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
 
   // Setup the sorting function
   this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference);
@@ -1312,23 +1308,23 @@ void PatchBasedInpaintingGUI::SetComparisonFunctionsFromGUI()
   this->DifferenceFunctionsToCompute.clear();
   if(this->chkCompareFull->isChecked())
     {
-    this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,this->PatchCompare,_1));
+    this->Inpainting.GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,this->Inpainting.GetPatchCompare(),_1));
     }
   if(this->chkCompareColor->isChecked())
     {
-    this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchColorDifference,this->PatchCompare,_1));
+    this->Inpainting.GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchColorDifference,this->Inpainting.GetPatchCompare(),_1));
     }
   if(this->chkCompareDepth->isChecked())
     {
-    this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,this->PatchCompare,_1));
+    this->Inpainting.GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,this->Inpainting.GetPatchCompare(),_1));
     }
   if(this->chkCompareMembership->isChecked())
     {
-    this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,this->PatchCompare,_1));
+    this->Inpainting.GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,this->Inpainting.GetPatchCompare(),_1));
     }
   if(this->chkCompareHistogramIntersection->isChecked())
     {
-    this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchHistogramIntersection,this->PatchCompare,_1));
+    this->Inpainting.GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchHistogramIntersection,this->Inpainting.GetPatchCompare(),_1));
     }
 }
 

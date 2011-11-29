@@ -109,7 +109,8 @@ public:
   void SetCompareToBlurred();
   void SetCompareToCIELAB();
 
-  void SetPatchCompare(SelfPatchCompare* PatchCompare);
+  //void SetPatchCompare(SelfPatchCompare* PatchCompare);
+  SelfPatchCompare* GetPatchCompare() const;
 
   PatchSortFunctor* PatchSortFunction;
 

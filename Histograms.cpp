@@ -470,7 +470,7 @@ float HistogramIntersection(const std::vector<float>& histogram1, const std::vec
   float totalFrequency = std::accumulate(histogram1.begin(), histogram1.begin() + histogram1.size(), 0);
   //std::cout << "totalFrequency: " << totalFrequency << std::endl;
   float normalizedIntersection = totalIntersection / totalFrequency;
-  std::cout << "normalizedIntersection: " << normalizedIntersection << std::endl;
+  //std::cout << "normalizedIntersection: " << normalizedIntersection << std::endl;
   return normalizedIntersection;
 }
 

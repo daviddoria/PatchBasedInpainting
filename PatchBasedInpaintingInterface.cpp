@@ -170,8 +170,13 @@ void PatchBasedInpainting::SetCompareToCIELAB()
   this->CompareImage = this->CIELabImage;
 }
 
-void PatchBasedInpainting::SetPatchCompare(SelfPatchCompare* patchCompare)
+SelfPatchCompare* PatchBasedInpainting::GetPatchCompare() const
 {
-  delete this->PatchCompare;
-  this->PatchCompare = patchCompare;
+  return this->PatchCompare;
 }
+
+// void PatchBasedInpainting::SetPatchCompare(SelfPatchCompare* patchCompare)
+// {
+//   delete this->PatchCompare;
+//   this->PatchCompare = patchCompare;
+// }
