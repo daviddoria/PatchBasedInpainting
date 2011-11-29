@@ -101,7 +101,7 @@ void SelfPatchCompare::ComputeOffsets()
 
       ++maskIterator;
       }
-    //std::cout << "Number of valid offsets: " << this->ValidOffsets.size() << std::endl;
+    std::cout << "Number of valid offsets: " << this->ValidTargetPatchOffsets.size() << std::endl;
   }
   catch( itk::ExceptionObject & err )
   {
@@ -136,7 +136,8 @@ void SelfPatchCompare::SetPatchMembershipDifference(PatchPair& patchPair)
     std::cerr << "No membership image set!" << std::endl;
     exit(-1);
     }
-  float membershipDifference = PatchAverageSourceDifference<IntImageType, ScalarPixelDifference<IntImageType::PixelType> >(this->MembershipImage, patchPair.SourcePatch);
+  //float membershipDifference = PatchAverageSourceDifference<IntImageType, ScalarPixelDifference<IntImageType::PixelType> >(this->MembershipImage, patchPair.SourcePatch);
+  float membershipDifference = PatchAverageSourceDifference<IntImageType, ScalarAllOrNothingPixelDifference<IntImageType::PixelType> >(this->MembershipImage, patchPair.SourcePatch);
   patchPair.DifferenceMap[PatchPair::MembershipDifference] = membershipDifference;
 }
 
@@ -291,7 +292,8 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
     //std::cout << "ComputeAllSourceDifferences()" << std::endl;
     // If the target region is not fully inside the image, crop it and proceed.
     if(!this->Image->GetLargestPossibleRegion().IsInside(this->Pairs->TargetPatch.Region))
-      {  
+      {
+      std::cout << "Using special boundary difference." << std::endl;
       // Force the target region to be entirely inside the image
       this->Pairs->TargetPatch.Region.Crop(this->Image->GetLargestPossibleRegion());
     
@@ -306,25 +308,26 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
       }
     else // The target patch is entirely inside the image
       {
+      std::cout << "Using normal difference." << std::endl;
       ComputeOffsets();
       //std::cout << "Enter SelfPatchCompare::ComputeAllSourceDifferences parallel SetPatchAllDifferences" << std::endl;
-      
-      #ifdef USE_QT_PARALLEL
-        #pragma message("Using QtConcurrent!")
-        QtConcurrent::blockingMap<std::vector<PatchPair> >((*this->Pairs), boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
-      #else
-        #pragma message("NOT using QtConcurrent!")
-        for(unsigned int i = 0; i < this->Pairs->size(); ++i)
-          {
-          SetPatchAllDifferences((*this->Pairs)[i]);
-          }
-      #endif
+      std::cout << "SelfPatchCompare::ComputeAllSourceDifferences had: " << this->ValidTargetPatchOffsets.size() << " ValidTargetPatchOffsets on which to operate!" << std::endl;
+//       #ifdef USE_QT_PARALLEL
+//         #pragma message("Using QtConcurrent!")
+//         QtConcurrent::blockingMap<std::vector<PatchPair> >((*this->Pairs), boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
+//       #else
+//         #pragma message("NOT using QtConcurrent!")
+//         for(unsigned int i = 0; i < this->Pairs->size(); ++i)
+//           {
+//           SetPatchAllDifferences((*this->Pairs)[i]);
+//           }
+//       #endif
       
       // Serial only - for testing
-//       for(unsigned int i = 0; i < this->Pairs->size(); ++i)
-//         {
-//         SetPatchAllDifferences((*this->Pairs)[i]);
-//         }
+      for(unsigned int i = 0; i < this->Pairs->size(); ++i)
+        {
+        SetPatchAllDifferences((*this->Pairs)[i]);
+        }
       }
     //std::cout << "Leave SelfPatchCompare::ComputeAllSourceDifferences()" << std::endl;
   }

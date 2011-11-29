@@ -181,13 +181,13 @@ struct ScalarAllOrNothingPixelDifference
   // Using this class will count how many pixels are not identically the same. This should clearly only be used when comparing int/char-valued images (like a membership image).
   static float Difference(const TScalar &a, const TScalar &b)
   {
-    if(a == b)
+    if(a == b) // If the pixels are the same, the difference is 0.
     {
-      return 0;
+      return 0.0f;
     }
-    else
+    else // If the pixels are different, the difference is set to 1.
     {
-      return 1;
+      return 1.0f;
     }
     
   }

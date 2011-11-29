@@ -19,9 +19,10 @@
 template<typename TDifferenceFunction>
 float SelfPatchCompare::PatchAverageSourceDifference(const Patch& sourcePatch)
 {
+  EnterFunction("SelfPatchCompare::PatchAverageSourceDifference<TDifferenceFunction>()");
   if(this->ValidTargetPatchOffsets.size() <= 0)
     {
-    std::cout << "SelfPatchCompare::PatchAverageSourceDifference had 0 ValidTargetPatchOffsets on which to operate!" << std::endl;
+    std::cout << "SelfPatchCompare::PatchAverageSourceDifference had " << this->ValidTargetPatchOffsets.size() << " ValidTargetPatchOffsets on which to operate!" << std::endl;
     exit(-1);
     }
   float totalDifference = 0.0f;
@@ -71,10 +72,10 @@ float SelfPatchCompare::PatchAverageSourceDifference(const Patch& sourcePatch)
 template<typename TScalarImage, typename TDifferenceFunction>
 float SelfPatchCompare::PatchAverageSourceDifference(const typename TScalarImage::Pointer image, const Patch& sourcePatch)
 {
-  EnterFunction("SelfPatchCompare::PatchAverageSourceDifference()");
+  EnterFunction("SelfPatchCompare::PatchAverageSourceDifference<TScalarImage, TDifferenceFunction>()");
   if(this->ValidTargetPatchOffsets.size() <= 0)
     {
-    std::cout << "SelfPatchCompare::PatchAverageSourceDifference had 0 ValidTargetPatchOffsets on which to operate!" << std::endl;
+    std::cout << "SelfPatchCompare::PatchAverageSourceDifference had: " << this->ValidTargetPatchOffsets.size() << " ValidTargetPatchOffsets on which to operate!" << std::endl;
     exit(-1);
     }
   float totalDifference = 0.0f;
@@ -118,9 +119,9 @@ float SelfPatchCompare::PatchAverageSourceDifference(const typename TScalarImage
 
     totalDifference += difference;
     } // end pixel loop
+  std::cout << "totalDifference: " << totalDifference << " over " << this->ValidTargetPatchOffsets.size() << " patches." << std::endl;
 
   float averageDifference = totalDifference/static_cast<float>(this->ValidTargetPatchOffsets.size());
   LeaveFunction("SelfPatchCompare::PatchAverageSourceDifference()");
   return averageDifference;
 }
-

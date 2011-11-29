@@ -16,10 +16,15 @@
  *
  *=========================================================================*/
 
+// Custom
+#include "CandidatePairs.h"
+#include "Helpers.h"
 #include "Mask.h"
+#include "Patch.h"
 #include "SelfPatchCompare.h"
 #include "Types.h"
 
+// ITK
 #include "itkBinaryThresholdImageFilter.h"
 #include "itkImageRegionConstIterator.h"
 #include "itkImageFileWriter.h"
@@ -27,11 +32,13 @@
 #include "itkTimeProbe.h"
 #include "itkVectorImage.h"
 
+// Boost
+#include <boost/bind.hpp>
+
+// STL
 #include <cstdlib>
 #include <ctime>
-
-itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2> pixel, const unsigned int radius);
-float RandomFloat();
+#include <vector>
 
 int main(int argc, char *argv[])
 {
@@ -39,7 +46,7 @@ int main(int argc, char *argv[])
   srand(t);
   
   itk::Size<2> size;
-  size.Fill(10);
+  size.Fill(100);
 
   itk::Index<2> index;
   index.Fill(0);
@@ -69,11 +76,29 @@ int main(int argc, char *argv[])
     {
     FloatVectorImageType::PixelType pixel;
     pixel.SetSize(3);
-    pixel[0] = RandomFloat();
-    pixel[1] = RandomFloat();
-    pixel[2] = RandomFloat();
+    pixel[0] = drand48();
+    pixel[1] = drand48();
+    pixel[2] = drand48();
     imageIterator.Set(pixel);
     ++imageIterator;
+    }
+  }
+  
+  // Generate a random membership image
+  IntImageType::Pointer membershipImage = IntImageType::New();
+  membershipImage->SetRegions(region);
+  membershipImage->Allocate();
+  membershipImage->FillBuffer(0);
+
+  {
+  itk::ImageRegionIterator<IntImageType> membershipImageIterator(membershipImage, membershipImage->GetLargestPossibleRegion());
+
+  while(!membershipImageIterator.IsAtEnd())
+    {
+    IntImageType::PixelType pixel;
+    pixel = rand() / 1000;
+    membershipImageIterator.Set(pixel);
+    ++membershipImageIterator;
     }
   }
   
@@ -84,66 +109,112 @@ int main(int argc, char *argv[])
   imageWriter->SetInput(image);
   imageWriter->Update();
 
-  // Generate a random mask
-  itk::RandomImageSource<Mask>::Pointer maskSource =
-    itk::RandomImageSource<Mask>::New();
-  maskSource->SetNumberOfThreads(1); // to produce non-random results
-  maskSource->SetSize(size);
-  maskSource->SetMin(0);
-  maskSource->SetMax(255);
-  maskSource->Update();
+//   // Generate a random mask
+//   itk::RandomImageSource<Mask>::Pointer maskSource = itk::RandomImageSource<Mask>::New();
+//   maskSource->SetNumberOfThreads(1); // to produce non-random results
+//   maskSource->SetSize(size);
+//   maskSource->SetMin(0);
+//   maskSource->SetMax(255);
+//   maskSource->Update();
+// 
+//   // Threshold the mask
+//   //typedef itk::ThresholdImageFilter <UnsignedCharImageType> ThresholdImageFilterType;
+//   typedef itk::BinaryThresholdImageFilter <Mask, Mask> ThresholdImageFilterType;
+//   ThresholdImageFilterType::Pointer thresholdFilter = ThresholdImageFilterType::New();
+//   thresholdFilter->SetInput(maskSource->GetOutput());
+//   thresholdFilter->SetLowerThreshold(0);
+//   thresholdFilter->SetUpperThreshold(122);
+//   thresholdFilter->SetOutsideValue(1);
+//   thresholdFilter->SetInsideValue(0);
+//   thresholdFilter->Update();
+//   Mask::Pointer mask = thresholdFilter->GetOutput();
+  
+  std::cout << "Creating mask..." << std::endl;
+  Mask::Pointer mask = Mask::New();
+  mask->SetRegions(region);
+  mask->Allocate();
 
-  // Threshold the mask
-  //typedef itk::ThresholdImageFilter <UnsignedCharImageType> ThresholdImageFilterType;
-  typedef itk::BinaryThresholdImageFilter <Mask, Mask> ThresholdImageFilterType;
-  ThresholdImageFilterType::Pointer thresholdFilter = ThresholdImageFilterType::New();
-  thresholdFilter->SetInput(maskSource->GetOutput());
-  thresholdFilter->SetLowerThreshold(0);
-  thresholdFilter->SetUpperThreshold(122);
-  thresholdFilter->SetOutsideValue(1);
-  thresholdFilter->SetInsideValue(0);
-  thresholdFilter->Update();
-  Mask::Pointer mask = thresholdFilter->GetOutput();
+  {
+  itk::ImageRegionIterator<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
 
+  while(!maskIterator.IsAtEnd())
+    {
+    int randomNumber = rand()%10;
+    //std::cout << "randomNumber: " << randomNumber << std::endl; 
+    if(randomNumber > 5)
+      {
+      maskIterator.Set(mask->GetHoleValue());
+      }
+    else
+      {
+      maskIterator.Set(mask->GetValidValue());
+      }
+    ++maskIterator;
+    }
+  }
+  std::cout << "Writing mask..." << std::endl;
   // Write the mask
-  itk::ImageFileWriter<Mask>::Pointer maskWriter =
-    itk::ImageFileWriter<Mask>::New();
+  itk::ImageFileWriter<Mask>::Pointer maskWriter = itk::ImageFileWriter<Mask>::New();
   maskWriter->SetFileName("mask.png");
   maskWriter->SetInput(mask);
   maskWriter->Update();
 
-  unsigned int patchRadius = 1;
+  std::cout << "Creating source patches..." << std::endl;
+  unsigned int patchRadius = 10;
   // Create source patches
   itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(image, image->GetLargestPossibleRegion());
-  std::vector<itk::ImageRegion<2> > sourcePatches;
+  std::vector<Patch> sourcePatches;
   while(!imageIterator.IsAtEnd())
     {
     itk::Index<2> currentPixel = imageIterator.GetIndex();
-    itk::ImageRegion<2> region = GetRegionInRadiusAroundPixel(currentPixel, patchRadius);
+    itk::ImageRegion<2> region = Helpers::GetRegionInRadiusAroundPixel(currentPixel, patchRadius);
     if(image->GetLargestPossibleRegion().IsInside(region))
       {
-      sourcePatches.push_back(region);
+      sourcePatches.push_back(Patch(region));
       }
     ++imageIterator;
     }
-
+  std::cout << "Source patches: " << sourcePatches.size() << std::endl;
   itk::Size<2> targetSize;
   targetSize.Fill(patchRadius * 2 + 1);
 
   itk::Index<2> targetIndex;
   targetIndex.Fill(3);
-  
+
   itk::ImageRegion<2> targetRegion(targetIndex, targetSize);
+  Patch targetPatch(targetRegion);
+  
+  CandidatePairs pairs(targetPatch);
+  pairs.AddPairFromPatch(targetPatch);
+  
+  itk::ImageRegion<2> adjacentRegion = targetRegion;
+  itk::Index<2> adjacentIndex;
+  adjacentIndex[0] = targetIndex[0] + 1;
+  adjacentIndex[1] = targetIndex[1] + 1;
+  adjacentRegion.SetIndex(adjacentIndex);
+  Patch adjacentPatch(adjacentRegion);
+  pairs.AddPairFromPatch(adjacentPatch);
+  //pairs.AddPairFromPatch(sourcePatches[0]);
+  
   SelfPatchCompare patchCompare;
+  patchCompare.SetPairs(&pairs);
   patchCompare.SetImage(image);
   patchCompare.SetMask(mask);
-  patchCompare.SetSourceRegions(sourcePatches);
-  patchCompare.SetTargetRegion(targetRegion);
-  patchCompare.ComputeOffsets();
+  patchCompare.SetNumberOfComponentsPerPixel(3);
+  patchCompare.SetMembershipImage(membershipImage);
+  
+  patchCompare.FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,&patchCompare,_1));
+  patchCompare.ComputeAllSourceDifferences();
+  
+  std::cout << "pairs: " << pairs.size() << std::endl;
+  for(unsigned int i = 0; i < pairs.size(); ++i)
+    {
+    std::cout << "MembershipDifference: " << pairs[i].DifferenceMap[PatchPair::MembershipDifference] << std::endl;
+    }
   
   //unsigned int bestMatchSourcePatchId = patchCompare.FindBestPatch();
   //std::cout << "bestMatchSourcePatchId: " << bestMatchSourcePatchId << std::endl;
-
+/*
   unsigned int patchId = 1;
   float slowPatchDifference = patchCompare.SlowDifference(sourcePatches[patchId]);
   std::cout << "slowPatchDifference: " << slowPatchDifference << std::endl;
@@ -173,38 +244,7 @@ int main(int argc, char *argv[])
     }
 
   fastTimer.Stop();
-  std::cout << "Fast Total: " << fastTimer.GetTotal() << std::endl;
+  std::cout << "Fast Total: " << fastTimer.GetTotal() << std::endl;*/
+
   return EXIT_SUCCESS;
-}
-
-itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2> pixel, const unsigned int radius)
-{
-  // This function returns a Region with the specified 'radius' centered at 'pixel'. By the definition of the radius of a square patch, the output region is (radius*2 + 1)x(radius*2 + 1).
-  // Note: This region is not necessarily entirely inside the image!
-
-  // The "index" is the lower left corner, so we need to subtract the radius from the center to obtain it
-  itk::Index<2> lowerLeft;
-  lowerLeft[0] = pixel[0] - radius;
-  lowerLeft[1] = pixel[1] - radius;
-
-  itk::ImageRegion<2> region;
-  region.SetIndex(lowerLeft);
-  itk::Size<2> size;
-  size[0] = radius*2 + 1;
-  size[1] = radius*2 + 1;
-  region.SetSize(size);
-
-  return region;
-}
-
-float RandomFloat()
-{
-  /*
-  typedef itk::Statistics::MersenneTwisterRandomVariateGenerator GeneratorType;
-  GeneratorType::Pointer generator = GeneratorType::New();
-
-  generator->Initialize();
-  return generator->GetUniformVariate(0, 5);
-  */
-  return drand48();
 }

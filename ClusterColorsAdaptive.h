@@ -33,6 +33,7 @@ protected:
   void GenerateColorsVTKKMeans();
   void GenerateColorsVTKQuantize();
   void GenerateColorsVTKBin();
+  void GenerateColorsVTKTopBins();
   
   void GenerateColorsITK();
   unsigned int NumberOfColors;

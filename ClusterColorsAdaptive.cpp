@@ -64,7 +64,115 @@ void ClusterColorsAdaptive::GenerateColors()
 
 void ClusterColorsAdaptive::GenerateColorsVTKBin()
 {
+  // This function creates a fixed number of bins, and then keeps the ones that have at least one color inside.
+
   EnterFunction("GenerateColorsVTKBin()");
+  std::cout << "this->NumberOfColors: " << this->NumberOfColors << std::endl;
+  
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+
+  // Create a vtkPoints of all of the pixels
+  itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->Image, this->Image->GetLargestPossibleRegion());
+  while(!imageIterator.IsAtEnd())
+    {
+    FloatVectorImageType::PixelType pixel = imageIterator.Get();
+    points->InsertNextPoint(pixel[0], pixel[1], pixel[2]);
+    ++imageIterator;
+    }
+
+  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+  polyData->SetPoints(points);
+  
+//   vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+//   glyphFilter->SetInputConnection(polyData->GetProducerPort());
+//   glyphFilter->Update();
+
+  
+  double bounds[6];
+  polyData->GetBounds(bounds);
+  //std::cout << "bounds: " << bounds[0] << " " << bounds[1] << " " << bounds[2] << " " << bounds[3] << " " << bounds[4] << " " << bounds[5] << std::endl;
+  
+  float xWidth = bounds[1] - bounds[0];
+  float yWidth = bounds[3] - bounds[2];
+  float zWidth = bounds[5] - bounds[4];
+  
+  float binSize = std::min(std::min(xWidth,yWidth), zWidth);
+  
+  double epsilon = 1e-6;
+  // We leave a little bit of a boundary around the grid so that pixels exactly on the border are still used.
+  vtkSmartPointer<vtkImageData> grid = vtkSmartPointer<vtkImageData>::New();
+  grid->SetOrigin(bounds[0] - epsilon, bounds[2] - epsilon, bounds[4] - epsilon);
+
+  // This produces a bin size of approximately 10x10x10
+  //unsigned int numVoxelsPerDimension = 25;
+  unsigned int numVoxelsPerDimension = 15;
+
+  // Since we start at bounds[min]-epsilon, we must go to bounds[max]+epsilon, so the total width is bounds+2*epsilon
+  grid->SetSpacing((bounds[1] + 2.0f*epsilon - bounds[0])/static_cast<double>(numVoxelsPerDimension),
+                   (bounds[3] + 2.0f*epsilon - bounds[2])/static_cast<double>(numVoxelsPerDimension),
+                   (bounds[5] + 2.0f*epsilon - bounds[4])/static_cast<double>(numVoxelsPerDimension));
+  int extent[6];
+  extent[0] = 0;
+  extent[1] = numVoxelsPerDimension;
+  extent[2] = 0;
+  extent[3] = numVoxelsPerDimension;
+  extent[4] = 0;
+  extent[5] = numVoxelsPerDimension;
+  grid->SetExtent(extent);
+  grid->SetScalarTypeToInt();
+  grid->SetNumberOfScalarComponents(1);
+  grid->Update();
+  
+  std::vector<int> cellOccupancy(grid->GetNumberOfCells(), 0);
+
+  vtkSmartPointer<vtkCellLocator> cellLocator = vtkSmartPointer<vtkCellLocator>::New();
+  cellLocator->SetDataSet(grid);
+  cellLocator->BuildLocator();
+
+  int dims[3];
+  grid->GetDimensions(dims);
+  
+  for(vtkIdType i = 0; i < polyData->GetNumberOfPoints(); i++)
+    {
+    double p[3];
+    polyData->GetPoint(i,p);
+    int cellId = cellLocator->FindCell(p);
+    if(cellId < 0 || cellId > static_cast<int>(cellOccupancy.size()))
+      {
+      std::cerr << "Something is wrong, cellId = " << cellId << std::endl;
+      std::cerr << "p = " << p[0] << " " << p[1] << " " << p[2] << std::endl;
+      exit(-1);
+      }
+    cellOccupancy[cellId]++;
+    }
+
+  this->Colors.clear();
+  ColorMeasurementVectorType color;
+  for(unsigned int i = 0; i < cellOccupancy.size(); ++i)
+    {
+    if(cellOccupancy[i] > 0)
+      {
+      double p[3];
+      Helpers::GetCellCenter(grid, i, p);
+      //std::cout << "Keeping cell: " << sorted[i].index << " with center: " << p[0] << " " << p[1] << " " << p[2] << std::endl;
+      color[0] = p[0];
+      color[1] = p[1];
+      color[2] = p[2];
+      this->Colors.push_back(color);
+      }
+    }
+
+  CreateKDTreeFromColors();
+  
+  std::cout << "There are " << this->Colors.size() << " colors." << std::endl;
+  
+  LeaveFunction("GenerateColorsVTKBin()");
+}
+
+void ClusterColorsAdaptive::GenerateColorsVTKTopBins()
+{
+  // This doesn't really make sense, because we want to make sure the entire space of colors from the image is covered by cluster centers.
+  EnterFunction("GenerateColorsVTKTopBins()");
   std::cout << "this->NumberOfColors: " << this->NumberOfColors << std::endl;
   
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();

@@ -9,6 +9,9 @@ TARGET_LINK_LIBRARIES(TestClusterColorsClusterCenters PatchBasedInpainting ${VTK
 ADD_EXECUTABLE(TestClusterColorsLabelImage TestClusterColorsLabelImage.cpp)
 TARGET_LINK_LIBRARIES(TestClusterColorsLabelImage PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
+ADD_EXECUTABLE(TestSelfPatchCompare TestSelfPatchCompare.cpp)
+TARGET_LINK_LIBRARIES(TestSelfPatchCompare PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES})
+
 # 
 # ADD_EXECUTABLE(TestDerivatives Tests/TestDerivatives.cpp)
 # TARGET_LINK_LIBRARIES(TestDerivatives PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
@@ -76,6 +79,3 @@ TARGET_LINK_LIBRARIES(TestClusterColorsLabelImage PatchBasedInpainting ${VTK_LIB
 #   set(ExeDir ${CriminisiInpainting_BINARY_DIR})
 #   set(OutDir ${CriminisiInpainting_BINARY_DIR}/Testing/)
 # ENDIF()
-#
-# ADD_EXECUTABLE(TestSelfPatchCompare TestSelfPatchCompare.cpp SelfPatchCompare.cpp)
-# TARGET_LINK_LIBRARIES(TestSelfPatchCompare ${ITK_LIBRARIES})

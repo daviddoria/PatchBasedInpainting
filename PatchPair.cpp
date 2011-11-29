@@ -42,19 +42,24 @@ std::string PatchPair::NameOfDifference(PatchDifferenceTypes enumValue)
   switch(enumValue)
   {
     case AverageAbsoluteDifference:
-      namedDifference = "AverageAbsoluteDifference";
+      //namedDifference = "AverageAbsoluteDifference";
+      namedDifference = "Av.Abs.";
       break;
     case ColorDifference:
-      namedDifference = "ColorDifference";
+      //namedDifference = "ColorDifference";
+      namedDifference = "Color";
       break;
     case DepthDifference:
-      namedDifference = "DepthDifference";
+      //namedDifference = "DepthDifference";
+      namedDifference = "Depth";
       break;
     case MembershipDifference:
-      namedDifference = "MembershipDifference";
+      //namedDifference = "MembershipDifference";
+      namedDifference = "Membership";
       break;
     case CombinedDifference:
-      namedDifference = "CombinedDifference";
+      //namedDifference = "CombinedDifference";
+      namedDifference = "Combined";
       break;
     default:
       namedDifference = "INVALID";
