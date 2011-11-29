@@ -289,14 +289,16 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
       ComputeOffsets();
       //std::cout << "Enter SelfPatchCompare::ComputeAllSourceDifferences parallel SetPatchAllDifferences" << std::endl;
       
-      // Parallel version
-      //QtConcurrent::blockingMap<std::vector<PatchPair> >((*this->Pairs), boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
-    
-      // Serial version
-      for(unsigned int i = 0; i < this->Pairs->size(); ++i)
-	{
-	SetPatchAllDifferences((*this->Pairs)[i]);
-	}
+      #ifdef USE_QT_PARALLEL
+        #pragma message("Using QtConcurrent!")
+        QtConcurrent::blockingMap<std::vector<PatchPair> >((*this->Pairs), boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
+      #else
+        #pragma message("NOT using QtConcurrent!")
+        for(unsigned int i = 0; i < this->Pairs->size(); ++i)
+          {
+          SetPatchAllDifferences((*this->Pairs)[i]);
+          }
+      #endif
       }
     //std::cout << "Leave SelfPatchCompare::ComputeAllSourceDifferences()" << std::endl;
   }
