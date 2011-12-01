@@ -248,7 +248,7 @@ void PatchBasedInpainting::Initialize()
 
     this->ColorFrequency.SetNumberOfColors(20);
     //this->ColorFrequency.SetDownsampleFactor(20);
-    this->ColorFrequency.Construct(this->CurrentOutputImage);
+    this->ColorFrequency.ConstructFromMaskedImage(this->CurrentOutputImage, this->MaskImage);
     
     Helpers::DeepCopy<IntImageType>(this->ColorFrequency.GetColorBinMembershipImage(), this->ColorBinMembershipImage);
     HelpersOutput::WriteImage<IntImageType>(this->ColorBinMembershipImage, "Debug/SetImage.ColorBinMembershipImage.mha");

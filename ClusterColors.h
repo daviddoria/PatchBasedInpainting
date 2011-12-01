@@ -38,7 +38,8 @@ public:
   
   ClusterColors();
   
-  void Construct(const FloatVectorImageType::Pointer image);
+  void ConstructFromImage(const FloatVectorImageType::Pointer image);
+  void ConstructFromMaskedImage(const FloatVectorImageType::Pointer image, const Mask::Pointer mask);
     
   typedef itk::Statistics::ListSample< ColorMeasurementVectorType > SampleType;
   typedef itk::Statistics::KdTreeGenerator< SampleType > TreeGeneratorType;
@@ -68,6 +69,7 @@ protected:
   void CreateKDTreeFromColors();
 
   FloatVectorImageType::Pointer Image;
+  Mask::Pointer MaskImage;
   std::vector<ColorMeasurementVectorType> Colors;
   
   SampleType::Pointer Sample;

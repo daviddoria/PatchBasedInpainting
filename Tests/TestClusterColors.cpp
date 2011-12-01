@@ -83,7 +83,7 @@ void WriteClusteredPixelsInRGBSpace(const FloatVectorImageType::Pointer image, c
   std::cout << "WriteClusteredPixelsInRGBSpace()" << std::endl;
   ClusterColorsAdaptive clusterColors;
   clusterColors.SetNumberOfColors(numberOfClusters);
-  clusterColors.Construct(image);
+  clusterColors.ConstructFromImage(image);
   
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
   vtkSmartPointer<vtkUnsignedCharArray> colorsVTK = vtkSmartPointer<vtkUnsignedCharArray>::New();

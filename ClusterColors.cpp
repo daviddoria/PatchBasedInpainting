@@ -24,6 +24,9 @@
 
 ClusterColors::ClusterColors()
 {
+  this->Image = NULL;
+  this->MaskImage = NULL;
+  
   this->MaxIterations = 10;
   // this->ColorBinMembershipImage = IntImageType::New(); // This is done in CreateMembershipImage()
 }
@@ -38,9 +41,18 @@ std::vector<ColorMeasurementVectorType> ClusterColors::GetColors()
   return this->Colors;
 }
 
-void ClusterColors::Construct(const FloatVectorImageType::Pointer image)
+void ClusterColors::ConstructFromImage(const FloatVectorImageType::Pointer image)
 {
   this->Image = image;
+  GenerateColors();
+  
+  CreateMembershipImage();
+}
+
+void ClusterColors::ConstructFromMaskedImage(const FloatVectorImageType::Pointer image, const Mask::Pointer mask)
+{
+  this->Image = image;
+  this->MaskImage = mask;
   GenerateColors();
   
   CreateMembershipImage();
@@ -152,17 +164,24 @@ void ClusterColors::CreateMembershipImage()
 
   while(!imageIterator.IsAtEnd())
     {
-    // Get the value of the current pixel
-    FloatVectorImageType::PixelType pixel = imageIterator.Get();
+    if(this->MaskImage && this->MaskImage->IsValid(imageIterator.GetIndex()))
+      {
+      // Get the value of the current pixel
+      FloatVectorImageType::PixelType pixel = imageIterator.Get();
 
-    queryPoint[0] = pixel[0];
-    queryPoint[1] = pixel[1];
-    queryPoint[2] = pixel[2];
+      queryPoint[0] = pixel[0];
+      queryPoint[1] = pixel[1];
+      queryPoint[2] = pixel[2];
 
-    TreeType::InstanceIdentifierVectorType neighbors;
-    this->KDTree->Search( queryPoint, 1u, neighbors );
-    
-    this->ColorBinMembershipImage->SetPixel(imageIterator.GetIndex(), neighbors[0]);
+      TreeType::InstanceIdentifierVectorType neighbors;
+      this->KDTree->Search( queryPoint, 1u, neighbors );
+      
+      this->ColorBinMembershipImage->SetPixel(imageIterator.GetIndex(), neighbors[0]);
+      }
+    else
+      {
+      this->ColorBinMembershipImage->SetPixel(imageIterator.GetIndex(), -1);
+      }
     ++imageIterator;
     }
   LeaveFunction("CreateMembershipImage");

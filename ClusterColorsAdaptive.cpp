@@ -75,8 +75,11 @@ void ClusterColorsAdaptive::GenerateColorsVTKBin()
   itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->Image, this->Image->GetLargestPossibleRegion());
   while(!imageIterator.IsAtEnd())
     {
-    FloatVectorImageType::PixelType pixel = imageIterator.Get();
-    points->InsertNextPoint(pixel[0], pixel[1], pixel[2]);
+    if(this->MaskImage && this->MaskImage->IsValid(imageIterator.GetIndex()))
+      {
+      FloatVectorImageType::PixelType pixel = imageIterator.Get();
+      points->InsertNextPoint(pixel[0], pixel[1], pixel[2]);
+      }
     ++imageIterator;
     }
 

@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
   
   ClusterColorsAdaptive clusterColors;
   clusterColors.SetNumberOfColors(100);
-  clusterColors.Construct(reader->GetOutput());
+  clusterColors.ConstructFromImage(reader->GetOutput());
 
   std::vector<ColorMeasurementVectorType> colorMeasurements = clusterColors.GetColors();
 

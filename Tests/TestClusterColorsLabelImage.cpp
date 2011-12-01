@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 
   ClusterColorsAdaptive clusterColors;
   clusterColors.SetNumberOfColors(200);
-  clusterColors.Construct(reader->GetOutput());
+  clusterColors.ConstructFromImage(reader->GetOutput());
 
   HelpersOutput::WriteImage<IntImageType>(clusterColors.GetColorBinMembershipImage(), outputPrefix + ".mha");
     
