@@ -770,7 +770,7 @@ void CreatePatchImage(typename TImage::Pointer image, const itk::ImageRegion<2>&
 }
 
 template<typename TVectorImage>
-void BlurAllChannels(const typename TVectorImage::Pointer image, typename TVectorImage::Pointer output, const float sigma)
+void AnisotropicBlurAllChannels(const typename TVectorImage::Pointer image, typename TVectorImage::Pointer output, const float sigma)
 {
   typedef itk::Image<typename TVectorImage::InternalPixelType, 2> ScalarImageType;
   

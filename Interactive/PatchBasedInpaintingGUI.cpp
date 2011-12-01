@@ -779,7 +779,7 @@ void PatchBasedInpaintingGUI::DisplayResultPatch()
     QGraphicsPixmapItem* item = this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
     gfxResult->fitInView(item);
     //this->ResultPatchScene->addPixmap(QPixmap());
-    std::cout << "Set result patch." << std::endl;
+    //std::cout << "Set result patch." << std::endl;
     LeaveFunction("DisplayResultPatch()");
     }// end try
   catch( itk::ExceptionObject & err )

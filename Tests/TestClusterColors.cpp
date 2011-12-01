@@ -17,6 +17,7 @@
  *=========================================================================*/
 
 // Custom
+#include "Helpers.h"
 #include "HelpersOutput.h"
 #include "Mask.h"
 #include "Types.h"
@@ -55,10 +56,23 @@ int main(int argc, char *argv[])
   reader->SetFileName(inputFileName);
   reader->Update();
 
+  HelpersOutput::WriteVectorImageAsRGB(reader->GetOutput(), outputPrefix + "/Image.mha");
   
   WriteImagePixelsToRGBSpace(reader->GetOutput(), outputPrefix + "/ImageColors.vtp");
     
   WriteClusteredPixelsInRGBSpace(reader->GetOutput(), 20, outputPrefix + "/ImageColorsClustered.vtp");
+  
+  FloatVectorImageType::Pointer blurred = FloatVectorImageType::New();
+  //float blurVariance = 2.0f; // almost no visible blurring
+  //float blurVariance = 10.0f; // slight blurring of concrete
+  float blurVariance = 30.0f;
+  Helpers::AnisotropicBlurAllChannels<FloatVectorImageType>(reader->GetOutput(), blurred, blurVariance);
+  
+  HelpersOutput::WriteVectorImageAsRGB(blurred, outputPrefix + "/BlurredImage.mha");
+  
+  WriteImagePixelsToRGBSpace(blurred, outputPrefix + "/BlurredImageColors.vtp");
+    
+  WriteClusteredPixelsInRGBSpace(blurred, 20, outputPrefix + "/BlurredImageColorsClustered.vtp");
   
   return EXIT_SUCCESS;
 }

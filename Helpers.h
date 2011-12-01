@@ -159,7 +159,7 @@ std::vector<itk::Offset<2> > Get8NeighborOffsets();
 // void ApplyToAllChannels(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value);
 
 template<typename TVectorImage>
-void BlurAllChannels(const typename TVectorImage::Pointer image, typename TVectorImage::Pointer output, const float sigma);
+void AnisotropicBlurAllChannels(const typename TVectorImage::Pointer image, typename TVectorImage::Pointer output, const float sigma);
 
 template<typename TImage>
 void OutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value);

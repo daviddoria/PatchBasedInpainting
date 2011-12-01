@@ -61,12 +61,12 @@ PatchBasedInpainting::PatchBasedInpainting()
   this->BlurredImage = FloatVectorImageType::New();
   this->LuminanceImage = FloatScalarImageType::New();
 
-//   ImagesToUpdate.AddImage(this->MaskImage);
-//   ImagesToUpdate.AddImage(this->ColorBinMembershipImage);
-//   ImagesToUpdate.AddImage(this->CurrentOutputImage);
-//   ImagesToUpdate.AddImage(this->CIELabImage);
-//   ImagesToUpdate.AddImage(this->BlurredImage);
-//   ImagesToUpdate.AddImage(this->LuminanceImage);
+  ImagesToUpdate.AddImage(this->ColorBinMembershipImage);
+  ImagesToUpdate.AddImage(this->CurrentOutputImage);
+  ImagesToUpdate.AddImage(this->CIELabImage);
+  ImagesToUpdate.AddImage(this->BlurredImage);
+  ImagesToUpdate.AddImage(this->MaskImage); // We MUST update the mask LAST, because it is used to know where to update everything else!
+  //ImagesToUpdate.AddImage(this->LuminanceImage);
   
   // Set the image to use for pixel to pixel comparisons.
   //this->CompareImage = this->CIELabImage;
@@ -240,7 +240,7 @@ void PatchBasedInpainting::Initialize()
     //unsigned int kernelRadius = 5;
     //Helpers::VectorMaskedBlur(this->OriginalImage, this->CurrentMask, kernelRadius, this->BlurredImage);
     
-    // BlurImage();
+    BlurImage();
 
     // Initialize internal images
     //Helpers::InitializeImage<FloatScalarImageType>(this->DataImage, this->FullImageRegion);
@@ -297,31 +297,12 @@ PatchPair PatchBasedInpainting::Iterate()
 //     }
 
   // Copy the patch. This is the actual inpainting step.
-//   std::cout << "this->CurrentOutputImage address at copy: " << this->CurrentOutputImage << std::endl;
-//   Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->CurrentOutputImage, this->MaskImage,
-//                                                                      usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
-
-  // We also have to copy patches in the blurred image and CIELab image incase we are using those
-  //Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->BlurredImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
-//   Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->CIELabImage, this->MaskImage,
-//                                                                      usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
-//   Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatScalarImageType>(this->LuminanceImage, this->MaskImage,
-//                                                                      usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
-  
-//   Helpers::CopySelfPatchIntoHoleOfTargetRegion<IntImageType>(this->ColorBinMembershipImage, this->MaskImage,
-//                                                              usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
-
-  // Update all of the images we have specified to update with the selected patch.
   ImagesToUpdate.CopySelfPatchIntoHoleOfTargetRegion(this->MaskImage, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
+  std::cout << "Image size: " << this->CurrentOutputImage->GetLargestPossibleRegion().GetSize() << std::endl;
+  std::cout << "Blurred size: " << this->BlurredImage->GetLargestPossibleRegion().GetSize() << std::endl;
   
   this->PriorityFunction->Update(usedPatchPair.TargetPatch.Region);
 
-  // Update the mask
-  // This is not necessary - the mask can be copied, because it is entirely valid in the source patch, and we want the hole region to be filled with valid pixels.
-//   HelpersOutput::WriteImage<Mask>(this->MaskImage, "Debug/MaskImageBeforeUpdate.mha");
-//   this->UpdateMask(usedPatchPair.TargetPatch.Region);
-//   HelpersOutput::WriteImage<Mask>(this->MaskImage, "Debug/MaskImageAfterUpdate.mha");
-  
   HelpersOutput::WriteImage<UnsignedCharScalarImageType>(this->PriorityFunction->GetBoundaryImage(), "Debug/BoundaryImageBeforeUpdate.mha");
   this->PriorityFunction->UpdateBoundary();
   HelpersOutput::WriteImage<UnsignedCharScalarImageType>(this->PriorityFunction->GetBoundaryImage(), "Debug/BoundaryImageAfterUpdate.mha");
@@ -671,6 +652,7 @@ unsigned int PatchBasedInpainting::GetRequiredHistogramIntersection(const unsign
     //Histograms::WriteHistogram(histogram2, ssTarget.str());
   } while (histogramIntersection < requiredHistogramIntersection && sourcePatchId < this->PotentialCandidatePairs[bestForwardLookId].size());
   
+  return sourcePatchId;
 }
 
 unsigned int PatchBasedInpainting::ComputeMinimumScoreLookAhead()
@@ -824,7 +806,8 @@ unsigned int PatchBasedInpainting::GetNumberOfCompletedIterations()
 void PatchBasedInpainting::BlurImage()
 {
   EnterFunction("BlurImage()");
-  Helpers::BlurAllChannels<FloatVectorImageType>(this->OriginalImage, this->BlurredImage, 10);
+  float blurVariance = 1.0;
+  Helpers::AnisotropicBlurAllChannels<FloatVectorImageType>(this->OriginalImage, this->BlurredImage, blurVariance);
   HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->BlurredImage, "Debug/Initialize.BlurredImage.mha", this->DebugImages);
   HelpersOutput::WriteVectorImageAsRGB(this->BlurredImage, "Debug/Initialize.BlurredImageRGB.mha");
   LeaveFunction("BlurImage()");

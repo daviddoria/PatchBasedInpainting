@@ -46,6 +46,11 @@ void ImageCollection::CopySelfPatchIntoHoleOfTargetRegion(const Mask::Pointer ma
       std::cout << "Image " << imageId << " is UnsignedCharScalarImageType" << std::endl;
       Helpers::CopySelfPatchIntoHoleOfTargetRegion<UnsignedCharScalarImageType>(dynamic_cast<UnsignedCharScalarImageType*>(image), mask, sourceRegion, targetRegion);
       }
+    else if(dynamic_cast<Mask*>(image))
+      {
+      std::cout << "Image " << imageId << " is Mask" << std::endl;
+      Helpers::CopySelfPatchIntoHoleOfTargetRegion<Mask>(dynamic_cast<Mask*>(image), mask, sourceRegion, targetRegion);
+      }
     else if(dynamic_cast<FloatVectorImageType*>(image))
       {
       std::cout << "Image " << imageId << " is FloatVectorImageType" << std::endl;
