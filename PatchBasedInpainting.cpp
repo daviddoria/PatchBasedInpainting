@@ -283,7 +283,7 @@ void PatchBasedInpainting::SetupHistograms()
   //unsigned int numberOfBinsPerDimension = 6;
   //this->ColorFrequency.SetNumberOfBinsPerAxis(numberOfBinsPerDimension);
 
-  this->ColorFrequency.SetNumberOfColors(20);
+  this->ColorFrequency.SetNumberOfColors(100);
   //this->ColorFrequency.SetDownsampleFactor(20);
   //this->ColorFrequency.ConstructFromMaskedImage(this->CurrentOutputImage, this->MaskImage);
   //this->ColorFrequency.ConstructFromMaskedImage(this->BlurredImage, this->MaskImage);
@@ -838,4 +838,9 @@ void PatchBasedInpainting::BlurImage()
   HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->BlurredImage, "Debug/Initialize.BlurredImage.mha", this->DebugImages);
   HelpersOutput::WriteVectorImageAsRGB(this->BlurredImage, "Debug/Initialize.BlurredImageRGB.mha");
   LeaveFunction("BlurImage()");
+}
+
+ClusterColorsAdaptive* PatchBasedInpainting::GetClusterColors()
+{
+  return &this->ColorFrequency;
 }

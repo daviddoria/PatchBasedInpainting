@@ -147,6 +147,7 @@ public slots:
   void slot_IterationComplete(const PatchPair&);
   void slot_StepComplete(const PatchPair&);
 
+  void on_txtNumberOfBins_textEdited ( const QString & text );
   void on_txtPatchRadius_textEdited ( const QString & text );
   void on_txtNumberOfTopPatchesToSave_textEdited ( const QString & text );
   void on_txtNumberOfForwardLook_textEdited ( const QString & text );
@@ -328,6 +329,8 @@ protected:
   void SetComparisonFunctionsFromGUI();
   void SetSortFunctionFromGUI();
   void SetDepthColorLambdaFromGUI();
+  void SetParametersFromGUI();
+
 };
 
 #include "PatchBasedInpaintingGUI.hxx"

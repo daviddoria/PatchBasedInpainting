@@ -206,6 +206,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   
   SetComparisonFunctionsFromGUI();
   SetSortFunctionFromGUI();
+  SetParametersFromGUI();
 
   connect(&ComputationThread, SIGNAL(StartProgressSignal()), this, SLOT(slot_StartProgress()), Qt::QueuedConnection);
   connect(&ComputationThread, SIGNAL(StopProgressSignal()), this, SLOT(slot_StopProgress()), Qt::QueuedConnection);
@@ -271,6 +272,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->txtNumberOfForwardLook->setValidator(this->IntValidator);
   this->txtGoToIteration->setValidator(this->IntValidator);
   this->txtNumberOfTopPatchesToDisplay->setValidator(this->IntValidator);
+  this->txtNumberOfBins->setValidator(this->IntValidator);
 
   LeaveFunction("PatchBasedInpaintingGUI::DefaultConstructor()");
 }
@@ -1310,6 +1312,10 @@ void PatchBasedInpaintingGUI::InitializeGUIElements()
   this->UserPatchLayer.ImageSlice->SetVisibility(this->chkDisplayUserPatch->isChecked());
 }
 
+void PatchBasedInpaintingGUI::SetParametersFromGUI()
+{
+  this->Inpainting.GetClusterColors()->SetNumberOfColors(this->txtNumberOfBins->text().toUInt());
+}
 
 void PatchBasedInpaintingGUI::SetComparisonFunctionsFromGUI()
 {

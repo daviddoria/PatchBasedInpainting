@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1457</width>
-    <height>1078</height>
+    <height>1130</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -86,6 +86,24 @@
              <widget class="QLineEdit" name="txtPatchRadius">
               <property name="text">
                <string>10</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_12">
+            <item>
+             <widget class="QLabel" name="label_19">
+              <property name="text">
+               <string>Num bins: </string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="txtNumberOfBins">
+              <property name="text">
+               <string>100</string>
               </property>
              </widget>
             </item>
@@ -476,7 +494,7 @@
          </layout>
         </item>
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget" native="true"/>
+         <widget class="QVTKWidget" name="qvtkWidget"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">

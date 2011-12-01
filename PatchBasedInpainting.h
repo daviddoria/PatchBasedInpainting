@@ -132,6 +132,8 @@ public:
   // It is sometimes very slow to compute an anisotropic blurring. For testing, we would want to compute this once and use it each time.
   void SetBlurredImage(FloatVectorImageType::Pointer);
 
+  ClusterColorsAdaptive* GetClusterColors();
+  
 private:
 
   void SetupHistograms();

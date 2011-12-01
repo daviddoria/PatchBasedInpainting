@@ -138,8 +138,8 @@ void SelfPatchCompare::SetPatchMembershipDifference(PatchPair& patchPair)
     std::cerr << "No membership image set!" << std::endl;
     exit(-1);
     }
-  //float membershipDifference = PatchAverageSourceDifference<IntImageType, ScalarPixelDifference<IntImageType::PixelType> >(this->MembershipImage, patchPair.SourcePatch);
-  float membershipDifference = PatchAverageSourceDifference<IntImageType, ScalarAllOrNothingPixelDifference<IntImageType::PixelType> >(this->MembershipImage, patchPair.SourcePatch);
+  float membershipDifference = PatchAverageSourceDifference<IntImageType, ScalarPixelDifference<IntImageType::PixelType> >(this->MembershipImage, patchPair.SourcePatch);
+  //float membershipDifference = PatchAverageSourceDifference<IntImageType, ScalarAllOrNothingPixelDifference<IntImageType::PixelType> >(this->MembershipImage, patchPair.SourcePatch);
   patchPair.DifferenceMap[PatchPair::MembershipDifference] = membershipDifference;
 }
 

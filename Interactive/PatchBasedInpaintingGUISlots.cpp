@@ -487,6 +487,11 @@ void PatchBasedInpaintingGUI::slot_IterationComplete(const PatchPair& patchPair)
   LeaveFunction("IterationCompleteSlot()");
 }
 
+void PatchBasedInpaintingGUI::on_txtNumberOfBins_textEdited ( const QString & text )
+{
+  this->Inpainting.GetClusterColors()->SetNumberOfColors(text.toUInt());
+}
+
 void PatchBasedInpaintingGUI::on_txtPatchRadius_textEdited ( const QString & text )
 {
   this->PatchRadius = text.toUInt();
