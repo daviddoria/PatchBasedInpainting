@@ -192,6 +192,13 @@ itk::Size<2> SizeFromRadius(const unsigned int radius)
   return size;
 }
 
+void ITKImageToCIELabImage(const FloatVectorImageType::Pointer image, FloatVectorImageType::Pointer cielabImage)
+{
+  RGBImageType::Pointer rgbImage = RGBImageType::New();
+  VectorImageToRGBImage(image, rgbImage);
+  RGBImageToCIELabImage(rgbImage, cielabImage);
+}
+
 void RGBImageToCIELabImage(const RGBImageType::Pointer rgbImage, FloatVectorImageType::Pointer cielabImage)
 {
   // Convert RGB image to Lab color space

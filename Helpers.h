@@ -66,6 +66,9 @@ itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned
 // Convert an RGB image to the CIELAB colorspace.
 void RGBImageToCIELabImage(const RGBImageType::Pointer rgbImage, FloatVectorImageType::Pointer cielabImage);
 
+// Convert the first 3 channels of an ITK image to the CIELAB colorspace.
+void ITKImageToCIELabImage(const FloatVectorImageType::Pointer rgbImage, FloatVectorImageType::Pointer cielabImage);
+
 // Normalize every pixel/vector in a vector image.
 void NormalizeVectorImage(FloatVector2ImageType::Pointer image);
 

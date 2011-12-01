@@ -134,6 +134,8 @@ public:
 
 private:
 
+  void SetupHistograms();
+  
   void RecomputeScoresWithNewPatches(std::vector<Patch>& newPatches, PatchPair& usedPatchPair);
 
   void BlurImage();

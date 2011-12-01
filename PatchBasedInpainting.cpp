@@ -236,28 +236,13 @@ void PatchBasedInpainting::Initialize()
 
     HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
 
-    // Blur the image incase we want to use a blurred image for pixel to pixel comparisons.
-    //unsigned int kernelRadius = 5;
-    //Helpers::VectorMaskedBlur(this->OriginalImage, this->CurrentMask, kernelRadius, this->BlurredImage);
-    
-    // Construct the histogram kdtree and membership image
-    //this->ColorFrequency.SetDebugFunctionEnterLeave(true);
-    
-    //unsigned int numberOfBinsPerDimension = 6;
-    //this->ColorFrequency.SetNumberOfBinsPerAxis(numberOfBinsPerDimension);
-
-    this->ColorFrequency.SetNumberOfColors(20);
-    //this->ColorFrequency.SetDownsampleFactor(20);
-    this->ColorFrequency.ConstructFromMaskedImage(this->CurrentOutputImage, this->MaskImage);
-    
-    Helpers::DeepCopy<IntImageType>(this->ColorFrequency.GetColorBinMembershipImage(), this->ColorBinMembershipImage);
-    HelpersOutput::WriteImage<IntImageType>(this->ColorBinMembershipImage, "Debug/SetImage.ColorBinMembershipImage.mha");
-    
     // If the user hasn't provided a blurred image, blur the image.
     if(this->BlurredImage->GetLargestPossibleRegion().GetSize()[0] == 0)
       {
       BlurImage();
       }
+
+    SetupHistograms();
 
     // Initialize internal images
     //Helpers::InitializeImage<FloatScalarImageType>(this->DataImage, this->FullImageRegion);
@@ -286,6 +271,31 @@ void PatchBasedInpainting::Initialize()
   }
 }
 
+void PatchBasedInpainting::SetupHistograms()
+{
+  // Blur the image incase we want to use a blurred image for pixel to pixel comparisons.
+  //unsigned int kernelRadius = 5;
+  //Helpers::VectorMaskedBlur(this->OriginalImage, this->CurrentMask, kernelRadius, this->BlurredImage);
+  
+  // Construct the histogram kdtree and membership image
+  //this->ColorFrequency.SetDebugFunctionEnterLeave(true);
+  
+  //unsigned int numberOfBinsPerDimension = 6;
+  //this->ColorFrequency.SetNumberOfBinsPerAxis(numberOfBinsPerDimension);
+
+  this->ColorFrequency.SetNumberOfColors(20);
+  //this->ColorFrequency.SetDownsampleFactor(20);
+  //this->ColorFrequency.ConstructFromMaskedImage(this->CurrentOutputImage, this->MaskImage);
+  //this->ColorFrequency.ConstructFromMaskedImage(this->BlurredImage, this->MaskImage);
+  FloatVectorImageType::Pointer blurredCIELabImage = FloatVectorImageType::New();
+  Helpers::ITKImageToCIELabImage(this->BlurredImage, blurredCIELabImage);
+  this->ColorFrequency.ConstructFromMaskedImage(blurredCIELabImage, this->MaskImage);
+  
+  Helpers::DeepCopy<IntImageType>(this->ColorFrequency.GetColorBinMembershipImage(), this->ColorBinMembershipImage);
+  HelpersOutput::WriteImage<IntImageType>(this->ColorBinMembershipImage, "Debug/ColorBinMembershipImage.mha");
+
+}
+    
 PatchPair PatchBasedInpainting::Iterate()
 {
   EnterFunction("Iterate()");
