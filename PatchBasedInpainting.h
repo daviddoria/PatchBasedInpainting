@@ -25,6 +25,7 @@
 #include "ClusterColorsAdaptive.h"
 #include "DebugOutputs.h"
 #include "Helpers.h"
+#include "ImageCollection.h"
 #include "Patch.h"
 #include "PatchPair.h"
 #include "PatchSorting.h"
@@ -160,6 +161,9 @@ private:
   // This image will be used for all patch to patch comparisons. It should point at either OriginalImage or CIELabImage.
   FloatVectorImageType::Pointer CompareImage;
 
+  // The images in this collection will have the selected patch copied into them at each iteration.
+  ImageCollection ImagesToUpdate;
+  
   // The mask specifying the region to inpaint. It is updated as patches are copied.
   Mask::Pointer MaskImage;
 
@@ -238,6 +242,8 @@ private:
   IntImageType::Pointer ColorBinMembershipImage;
   //ClusterColorsUniform ColorFrequency;
   ClusterColorsAdaptive ColorFrequency;
+
+  unsigned int GetRequiredHistogramIntersection(const unsigned int bestForwardLookId);
 };
 
 #include "PatchBasedInpainting.hxx"

@@ -51,14 +51,22 @@ PatchBasedInpainting::PatchBasedInpainting()
   
   this->PatchRadius.Fill(3);
 
-  this->ColorBinMembershipImage = IntImageType::New();
+  this->OriginalImage = FloatVectorImageType::New();
   
   this->MaskImage = Mask::New();
-  this->OriginalImage = FloatVectorImageType::New();
+  this->ColorBinMembershipImage = IntImageType::New();
   this->CurrentOutputImage = FloatVectorImageType::New();
+  //std::cout << "this->CurrentOutputImage address in constructor: " << this->CurrentOutputImage << std::endl;
   this->CIELabImage = FloatVectorImageType::New();
   this->BlurredImage = FloatVectorImageType::New();
   this->LuminanceImage = FloatScalarImageType::New();
+
+//   ImagesToUpdate.AddImage(this->MaskImage);
+//   ImagesToUpdate.AddImage(this->ColorBinMembershipImage);
+//   ImagesToUpdate.AddImage(this->CurrentOutputImage);
+//   ImagesToUpdate.AddImage(this->CIELabImage);
+//   ImagesToUpdate.AddImage(this->BlurredImage);
+//   ImagesToUpdate.AddImage(this->LuminanceImage);
   
   // Set the image to use for pixel to pixel comparisons.
   //this->CompareImage = this->CIELabImage;
@@ -271,14 +279,10 @@ PatchPair PatchBasedInpainting::Iterate()
 
   FindBestPatchLookAhead(usedPatchPair);
 
-  //std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
+  std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
 
 //   if(this->DebugImages)
 //     {
-//     std::stringstream ssTargetIsophotes;
-//     ssTargetIsophotes << "Debug/TargetIsophotes_" << this->NumberOfCompletedIterations << ".mha";
-//     HelpersOutput::Write2DVectorRegion(this->IsophoteImage, usedPatchPair.TargetPatch.Region, ssTargetIsophotes.str());
-// 
 //     std::stringstream ssSource;
 //     ssSource << "Debug/source_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
 //     HelpersOutput::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.SourcePatch, ssSource.str());
@@ -293,8 +297,9 @@ PatchPair PatchBasedInpainting::Iterate()
 //     }
 
   // Copy the patch. This is the actual inpainting step.
-  Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->CurrentOutputImage, this->MaskImage,
-                                                                     usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
+//   std::cout << "this->CurrentOutputImage address at copy: " << this->CurrentOutputImage << std::endl;
+//   Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->CurrentOutputImage, this->MaskImage,
+//                                                                      usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
 
   // We also have to copy patches in the blurred image and CIELab image incase we are using those
   //Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->BlurredImage, this->CurrentMask, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
@@ -303,16 +308,19 @@ PatchPair PatchBasedInpainting::Iterate()
 //   Helpers::CopySelfPatchIntoHoleOfTargetRegion<FloatScalarImageType>(this->LuminanceImage, this->MaskImage,
 //                                                                      usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
   
-  Helpers::CopySelfPatchIntoHoleOfTargetRegion<IntImageType>(this->ColorBinMembershipImage, this->MaskImage,
-                                                             usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
+//   Helpers::CopySelfPatchIntoHoleOfTargetRegion<IntImageType>(this->ColorBinMembershipImage, this->MaskImage,
+//                                                              usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
 
+  // Update all of the images we have specified to update with the selected patch.
+  ImagesToUpdate.CopySelfPatchIntoHoleOfTargetRegion(this->MaskImage, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
+  
   this->PriorityFunction->Update(usedPatchPair.TargetPatch.Region);
 
   // Update the mask
-
-  HelpersOutput::WriteImage<Mask>(this->MaskImage, "Debug/MaskImageBeforeUpdate.mha");
-  this->UpdateMask(usedPatchPair.TargetPatch.Region);
-  HelpersOutput::WriteImage<Mask>(this->MaskImage, "Debug/MaskImageAfterUpdate.mha");
+  // This is not necessary - the mask can be copied, because it is entirely valid in the source patch, and we want the hole region to be filled with valid pixels.
+//   HelpersOutput::WriteImage<Mask>(this->MaskImage, "Debug/MaskImageBeforeUpdate.mha");
+//   this->UpdateMask(usedPatchPair.TargetPatch.Region);
+//   HelpersOutput::WriteImage<Mask>(this->MaskImage, "Debug/MaskImageAfterUpdate.mha");
   
   HelpersOutput::WriteImage<UnsignedCharScalarImageType>(this->PriorityFunction->GetBoundaryImage(), "Debug/BoundaryImageBeforeUpdate.mha");
   this->PriorityFunction->UpdateBoundary();
@@ -621,12 +629,23 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   std::sort(this->PotentialCandidatePairs.rbegin(), this->PotentialCandidatePairs.rend(), SortByPriority);
 
   unsigned int bestForwardLookId = ComputeMinimumScoreLookAhead();
-  unsigned int bestSourcePatchId = 0;
 
+  unsigned int bestSourcePatchId = 0;
+  //unsigned int bestSourcePatchId = GetRequiredHistogramIntersection(bestForwardLookId);
+
+  std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
+    
   // Return the result by reference.
   bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][bestSourcePatchId];
   
-  std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
+//   std::cout << "Used patch " << sourcePatchId - 1 << std::endl;
+  
+  //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
+  LeaveFunction("FindBestPatchLookAhead()");
+}
+
+unsigned int PatchBasedInpainting::GetRequiredHistogramIntersection(const unsigned int bestForwardLookId)
+{
   float histogramIntersection = 0.0f;
   unsigned int sourcePatchId = 0;
 
@@ -634,11 +653,13 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
   float requiredHistogramIntersection = 0.75f;
   do
   {
-    bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][sourcePatchId];
+    PatchPair patchPair = this->PotentialCandidatePairs[bestForwardLookId][sourcePatchId];
     //std::vector<float> histogram1 = Histograms::Compute1DHistogramOfMultiChannelMaskedImage(this->CurrentOutputImage, bestPatchPair.TargetPatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region, 50);
     //std::vector<float> histogram2 = Histograms::Compute1DHistogramOfMultiChannelMaskedImage(this->CurrentOutputImage, bestPatchPair.SourcePatch.Region, inverseMask, bestPatchPair.TargetPatch.Region, 50);
-    std::vector<float> histogram1 = this->ColorFrequency.HistogramRegion(this->ColorBinMembershipImage, bestPatchPair.TargetPatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region);
-    std::vector<float> histogram2 = this->ColorFrequency.HistogramRegion(this->ColorBinMembershipImage, bestPatchPair.SourcePatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region, true);
+    std::vector<float> histogram1 = this->ColorFrequency.HistogramRegion(this->ColorBinMembershipImage,
+                                                                         patchPair.TargetPatch.Region, this->MaskImage, patchPair.TargetPatch.Region);
+    std::vector<float> histogram2 = this->ColorFrequency.HistogramRegion(this->ColorBinMembershipImage,
+                                                                         patchPair.SourcePatch.Region, this->MaskImage, patchPair.TargetPatch.Region, true);
     sourcePatchId++; // Note at the end of the loop bestPatchPair will have been set to the previous patchId.
     histogramIntersection = Histograms::HistogramIntersection(histogram2, histogram1);
     //std::cout << "histogramIntersection: " << histogramIntersection << std::endl;
@@ -648,11 +669,8 @@ void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
     ssTarget << "/home/doriad/Debug/" << this->NumberOfCompletedIterations << "_" << Helpers::ZeroPad(sourcePatchId, 4) << "_target.txt";
     //Histograms::WriteHistogram(histogram1, ssSource.str());
     //Histograms::WriteHistogram(histogram2, ssTarget.str());
-  } while (histogramIntersection < requiredHistogramIntersection);
-//   std::cout << "Used patch " << sourcePatchId - 1 << std::endl;
+  } while (histogramIntersection < requiredHistogramIntersection && sourcePatchId < this->PotentialCandidatePairs[bestForwardLookId].size());
   
-  //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
-  LeaveFunction("FindBestPatchLookAhead()");
 }
 
 unsigned int PatchBasedInpainting::ComputeMinimumScoreLookAhead()
