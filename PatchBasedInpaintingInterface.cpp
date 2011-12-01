@@ -123,18 +123,6 @@ void PatchBasedInpainting::SetImage(const FloatVectorImageType::Pointer image)
 
   this->FullImageRegion = image->GetLargestPossibleRegion();
 
-  //this->ColorFrequency.SetDebugFunctionEnterLeave(true);
-  
-  //unsigned int numberOfBinsPerDimension = 6;
-  //this->ColorFrequency.SetNumberOfBinsPerAxis(numberOfBinsPerDimension);
-
-  this->ColorFrequency.SetNumberOfColors(20);
-  //this->ColorFrequency.SetDownsampleFactor(20);
-  this->ColorFrequency.Construct(image);
-  
-  Helpers::DeepCopy<IntImageType>(this->ColorFrequency.GetColorBinMembershipImage(), this->ColorBinMembershipImage);
-  HelpersOutput::WriteImage<IntImageType>(this->ColorBinMembershipImage, "Debug/SetImage.ColorBinMembershipImage.mha");
-  //ComputeMaxPixelDifference();
 }
 
 void PatchBasedInpainting::SetMask(const Mask::Pointer mask)
@@ -180,3 +168,8 @@ SelfPatchCompare* PatchBasedInpainting::GetPatchCompare() const
 //   delete this->PatchCompare;
 //   this->PatchCompare = patchCompare;
 // }
+
+void PatchBasedInpainting::SetBlurredImage(FloatVectorImageType::Pointer blurredImage)
+{
+  Helpers::DeepCopy<FloatVectorImageType>(blurredImage, this->BlurredImage);
+}

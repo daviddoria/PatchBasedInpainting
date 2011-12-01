@@ -604,6 +604,13 @@ void PatchBasedInpaintingGUI::Initialize()
   this->Inpainting.SetMask(this->UserMaskImage);
   this->Inpainting.SetImage(this->UserImage);
   
+  // TODO: don't hard code this.
+  typedef itk::ImageFileReader<FloatVectorImageType> ReaderType;
+  ReaderType::Pointer reader = ReaderType::New();
+  reader->SetFileName("trashcan_blurred.mha");
+  reader->Update();
+  this->Inpainting.SetBlurredImage(reader->GetOutput());
+  
   // The PatchSortFunction has already been set by the radio buttons.
   
   std::cout << "User Image: " << this->UserImage->GetLargestPossibleRegion().GetSize() << std::endl;

@@ -240,7 +240,24 @@ void PatchBasedInpainting::Initialize()
     //unsigned int kernelRadius = 5;
     //Helpers::VectorMaskedBlur(this->OriginalImage, this->CurrentMask, kernelRadius, this->BlurredImage);
     
-    BlurImage();
+    // Construct the histogram kdtree and membership image
+    //this->ColorFrequency.SetDebugFunctionEnterLeave(true);
+    
+    //unsigned int numberOfBinsPerDimension = 6;
+    //this->ColorFrequency.SetNumberOfBinsPerAxis(numberOfBinsPerDimension);
+
+    this->ColorFrequency.SetNumberOfColors(20);
+    //this->ColorFrequency.SetDownsampleFactor(20);
+    this->ColorFrequency.Construct(this->CurrentOutputImage);
+    
+    Helpers::DeepCopy<IntImageType>(this->ColorFrequency.GetColorBinMembershipImage(), this->ColorBinMembershipImage);
+    HelpersOutput::WriteImage<IntImageType>(this->ColorBinMembershipImage, "Debug/SetImage.ColorBinMembershipImage.mha");
+    
+    // If the user hasn't provided a blurred image, blur the image.
+    if(this->BlurredImage->GetLargestPossibleRegion().GetSize()[0] == 0)
+      {
+      BlurImage();
+      }
 
     // Initialize internal images
     //Helpers::InitializeImage<FloatScalarImageType>(this->DataImage, this->FullImageRegion);
