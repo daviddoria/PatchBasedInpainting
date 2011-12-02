@@ -970,5 +970,20 @@ void ReadImage(const std::string& fileName, typename TImage::Pointer image)
   Helpers::DeepCopy<TImage>(reader->GetOutput(), image);
 }
 
+template<typename TImage>
+void MaskedMedianFilter(const typename TImage::Pointer inputImage, const Mask::Pointer mask, const unsigned int kernelRadius, typename TImage::Pointer output)
+{
+
+}
+
+template<typename T>
+T VectorMedian(std::vector<T> v)
+{
+  // Don't want to pass by reference because the elements are shuffled around.
+  
+  int n = v.size() / 2;
+  std::nth_element(v.begin(), v.begin()+n, v.end());
+  return v[n];
+}
 
 }// end namespace

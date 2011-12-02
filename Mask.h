@@ -125,7 +125,11 @@ public:
 
   // Recolor the hole pixels in 'image' a specified 'color'.
   template<typename TImage, typename TColor>
-  void ApplyToImage(const typename TImage::Pointer image, const TColor& color);
+  void ApplyColorToImage(const typename TImage::Pointer image, const TColor& color);
+  
+  // Change the hole pixels in 'image' to a specified 'holeValue'.
+  template<typename TImage, typename TColor>
+  void ApplyToImage(const typename TImage::Pointer image, const typename TImage::PixelType& holeValue);
 
   // Recolor the hole pixels in 'image' a specified 'color'.
   template<typename TImage, typename TColor>

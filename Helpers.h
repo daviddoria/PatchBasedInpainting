@@ -281,6 +281,13 @@ typename TImage::TPixel ComputeMaxPixelDifference(const typename TImage::Pointer
 template<typename TImage>
 void ReadImage(const std::string&, typename TImage::Pointer);
 
+// Median filter an image ignoring a masked region.
+template<typename TImage>
+void MaskedMedianFilter(const typename TImage::Pointer inputImage, const Mask::Pointer mask, const unsigned int kernelRadius, typename TImage::Pointer output);
+
+template<typename T>
+T VectorMedian(std::vector<T> v);
+
 }// end namespace
 
 #include "Helpers.hxx"

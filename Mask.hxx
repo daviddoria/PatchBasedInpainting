@@ -54,7 +54,7 @@ void Mask::ApplyToVectorImage(const typename TImage::Pointer image, const TColor
 }
 
 template<typename TImage, typename TColor>
-void Mask::ApplyToImage(const typename TImage::Pointer image, const TColor& color)
+void Mask::ApplyColorToImage(const typename TImage::Pointer image, const TColor& color)
 {
   // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
   // to be used to specify the color.
@@ -75,6 +75,34 @@ void Mask::ApplyToImage(const typename TImage::Pointer image, const TColor& colo
     holeValue[0] = color.red();
     holeValue[1] = color.green();
     holeValue[2] = color.blue();
+    }
+
+  itk::ImageRegionConstIterator<Mask> maskIterator(this, this->GetLargestPossibleRegion());
+
+  while(!maskIterator.IsAtEnd())
+    {
+    if(this->IsHole(maskIterator.GetIndex()))
+      {
+      image->SetPixel(maskIterator.GetIndex(), holeValue);
+      }
+
+    ++maskIterator;
+    }
+}
+
+
+template<typename TImage, typename TColor>
+void Mask::ApplyToImage(const typename TImage::Pointer image, const typename TImage::PixelType& holeValue)
+{
+  // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
+  // to be used to specify the color.
+  
+  if(image->GetLargestPossibleRegion() != this->GetLargestPossibleRegion())
+    {
+    std::cerr << "Image and mask must be the same size!" << std::endl
+              << "Image region: " << image->GetLargestPossibleRegion() << std::endl
+              << "Mask region: " << this->GetLargestPossibleRegion() << std::endl;
+    return;
     }
 
   itk::ImageRegionConstIterator<Mask> maskIterator(this, this->GetLargestPossibleRegion());
