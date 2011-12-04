@@ -43,6 +43,8 @@ public:
   // Get the current data image
   FloatScalarImageType::Pointer GetDataImage();
 
+  std::vector<NamedVTKImage> GetNamedImages();
+  
 protected:
 
   // Compute the Data at a pixel.

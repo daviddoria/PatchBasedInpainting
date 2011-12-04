@@ -21,6 +21,8 @@
 #include "Helpers.h"
 #include "HelpersOutput.h"
 
+#include <vtkSmartPointer.h>
+
 Priority::Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) :
                    Image(image), MaskImage(maskImage), PatchRadius(patchRadius)
 {
@@ -35,6 +37,21 @@ Priority::Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage,
   Helpers::InitializeImage<UnsignedCharScalarImageType>(this->BoundaryImage, image->GetLargestPossibleRegion());
   Helpers::SetImageToConstant<UnsignedCharScalarImageType>(this->BoundaryImage, 0u);
   LeaveFunction("Priority()");
+}
+
+std::vector<NamedVTKImage> Priority::GetNamedImages()
+{
+  std::vector<NamedVTKImage> namedImages;
+  
+  NamedVTKImage priorityImage;
+  priorityImage.Name = "Priority";
+  vtkSmartPointer<vtkImageData> priorityImageVTK = vtkSmartPointer<vtkImageData>::New();
+  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->PriorityImage, priorityImageVTK);
+  priorityImage.ImageData = priorityImageVTK;
+
+  namedImages.push_back(priorityImage);
+
+  return namedImages;
 }
 
 void Priority::Update(const itk::ImageRegion<2>& filledRegion)

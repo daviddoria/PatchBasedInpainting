@@ -75,19 +75,12 @@ public:
 public slots:
 
   void on_chkDisplayUserPatch_clicked();
-  
-  void on_radCompareOriginal_clicked();
-  void on_radCompareBlurred_clicked();
-  void on_radCompareCIELAB_clicked();
-  
-  void on_radSortByFullDifference_clicked();
-  void on_radSortByColorDifference_clicked();
-  void on_radSortByDepthDifference_clicked();
-  void on_radSortByMembershipDifference_clicked();
-  void on_radSortByHistogramIntersection_clicked();
-  void on_radSortByColorAndDepth_clicked();
+
+  void on_cmbCompareImage_activated(int value);
+  void on_cmbSortBy_activated(int value);
+
   void on_sldDepthColorLambda_valueChanged();
-  
+
   void on_chkCompareFull_clicked();
   void on_chkCompareColor_clicked();
   void on_chkCompareDepth_clicked();
@@ -326,6 +319,7 @@ protected:
   void UserPatchMoved();
   void ComputeUserPatchRegion();
 
+  void SetCompareImageFromGUI();
   void SetComparisonFunctionsFromGUI();
   void SetSortFunctionFromGUI();
   void SetDepthColorLambdaFromGUI();

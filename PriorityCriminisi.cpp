@@ -31,6 +31,9 @@
 #include "itkMaskImageFilter.h"
 #include "itkInvertIntensityImageFilter.h"
 
+// VTK
+#include <vtkSmartPointer.h>
+
 PriorityCriminisi::PriorityCriminisi(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) :
                                      PriorityOnionPeel(image, maskImage, patchRadius)
 {
@@ -45,6 +48,30 @@ PriorityCriminisi::PriorityCriminisi(FloatVectorImageType::Pointer image, Mask::
   Helpers::ComputeColorIsophotesInRegion(image, maskImage, image->GetLargestPossibleRegion(), this->IsophoteImage);
 
 }
+
+std::vector<NamedVTKImage> PriorityCriminisi::GetNamedImages()
+{
+  std::vector<NamedVTKImage> namedImages = PriorityOnionPeel::GetNamedImages();
+
+  NamedVTKImage isophoteNamedImage;
+  isophoteNamedImage.Name = "Isophotes";
+  vtkSmartPointer<vtkImageData> isophoteImageVTK = vtkSmartPointer<vtkImageData>::New();
+  Helpers::ITKImageToVTKVectorFieldImage(this->IsophoteImage, isophoteImageVTK);
+  isophoteNamedImage.ImageData = isophoteImageVTK;
+  isophoteNamedImage.Vectors = true;
+  namedImages.push_back(isophoteNamedImage);
+
+  NamedVTKImage boundaryNormalsNamedImage;
+  boundaryNormalsNamedImage.Name = "BoundaryNormals";
+  vtkSmartPointer<vtkImageData> boundaryNormalsImageVTK = vtkSmartPointer<vtkImageData>::New();
+  Helpers::ITKImageToVTKVectorFieldImage(this->BoundaryNormalsImage, boundaryNormalsImageVTK);
+  boundaryNormalsNamedImage.ImageData = isophoteImageVTK;
+  boundaryNormalsNamedImage.Vectors = true;
+  namedImages.push_back(boundaryNormalsNamedImage);
+  
+  return namedImages;
+}
+
 
 void PriorityCriminisi::Update(const itk::ImageRegion<2>& filledRegion)
 {

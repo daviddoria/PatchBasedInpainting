@@ -87,26 +87,11 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 {
   // This function is called by both constructors. This avoid code duplication.
   EnterFunction("PatchBasedInpaintingGUI::DefaultConstructor()");
-  
+
   this->RecordToDisplay = NULL;
-  
+
   this->setupUi(this);
-  
-  QButtonGroup* groupCompare = new QButtonGroup;
-  groupCompare->addButton(radCompareOriginal);
-  groupCompare->addButton(radCompareBlurred);
-  groupCompare->addButton(radCompareCIELAB);
-  radCompareOriginal->setChecked(true);
-  
-  QButtonGroup* groupSortBy = new QButtonGroup;
-  groupSortBy->addButton(radSortByColorAndDepth);
-  groupSortBy->addButton(radSortByColorDifference);
-  groupSortBy->addButton(radSortByDepthDifference);
-  groupSortBy->addButton(radSortByFullDifference);
-  groupSortBy->addButton(radSortByMembershipDifference);
-  groupSortBy->addButton(radSortByHistogramIntersection);
-  radSortByFullDifference->setChecked(true);
-  
+
   this->PatchRadius = 10;
   this->NumberOfTopPatchesToSave = 0;
   this->NumberOfForwardLook = 0;
@@ -203,7 +188,8 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   //this->Inpainting.SetPatchSearchFunctionToTwoStepDepth();
   this->Inpainting.SetPatchSearchFunctionToNormal();
   //this->Inpainting.SetDebugFunctionEnterLeave(true);
-  
+
+  SetCompareImageFromGUI();
   SetComparisonFunctionsFromGUI();
   SetSortFunctionFromGUI();
   SetParametersFromGUI();
@@ -1317,6 +1303,22 @@ void PatchBasedInpaintingGUI::SetParametersFromGUI()
   this->Inpainting.GetClusterColors()->SetNumberOfColors(this->txtNumberOfBins->text().toUInt());
 }
 
+void PatchBasedInpaintingGUI::SetCompareImageFromGUI()
+{
+  if(Helpers::StringsMatch(this->cmbCompareImage->currentText().toStdString(), "Original"))
+    {
+    this->Inpainting.SetCompareToOriginal();
+    }
+  else if(Helpers::StringsMatch(this->cmbCompareImage->currentText().toStdString(), "Blurred"))
+    {
+    this->Inpainting.SetCompareToBlurred();
+    }
+  else if(Helpers::StringsMatch(this->cmbCompareImage->currentText().toStdString(), "CIELab"))
+    {
+    this->Inpainting.SetCompareToCIELAB();
+    }
+}
+
 void PatchBasedInpaintingGUI::SetComparisonFunctionsFromGUI()
 {
   this->Inpainting.GetPatchCompare()->FunctionsToCompute.clear();
@@ -1344,25 +1346,29 @@ void PatchBasedInpaintingGUI::SetComparisonFunctionsFromGUI()
 
 void PatchBasedInpaintingGUI::SetSortFunctionFromGUI()
 {
-  if(this->radSortByFullDifference->isChecked())
+  if(this->cmbSortBy->currentText().toStdString().compare("Full Difference"))
     {
     this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
     }
-  else if(this->radSortByColorDifference->isChecked())
+  else if(this->cmbSortBy->currentText().toStdString().compare("Color Difference"))
     {
     this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::ColorDifference, PatchSortFunctor::ASCENDING);
     }
-  else if(this->radSortByDepthDifference->isChecked())
+  else if(this->cmbSortBy->currentText().toStdString().compare("Depth Difference"))
     {
     this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::DepthDifference, PatchSortFunctor::ASCENDING);
     }
-  else if(this->radSortByColorAndDepth->isChecked())
+  else if(this->cmbSortBy->currentText().toStdString().compare("Depth + Color Difference"))
     {
     this->Inpainting.PatchSortFunction = new SortByDepthAndColor(PatchPair::CombinedDifference);
     }
-  else if(this->radSortByHistogramIntersection->isChecked())
+  else if(this->cmbSortBy->currentText().toStdString().compare("Histogram Intersection"))
     {
     this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::HistogramIntersection, PatchSortFunctor::DESCENDING);
+    }
+  else if(this->cmbSortBy->currentText().toStdString().compare("Membership Difference"))
+    {
+    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::MembershipDifference, PatchSortFunctor::DESCENDING);
     }
 }
 

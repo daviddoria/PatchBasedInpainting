@@ -276,27 +276,22 @@
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radCompareOriginal">
-            <property name="text">
-             <string>Original</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radCompareBlurred">
-            <property name="text">
-             <string>Blurred</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radCompareCIELAB">
-            <property name="text">
-             <string>CIELAB</string>
-            </property>
+           <widget class="QComboBox" name="cmbCompareImage">
+            <item>
+             <property name="text">
+              <string>Original</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Blurred</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>CIELab</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>
@@ -384,48 +379,37 @@
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="radSortByFullDifference">
-            <property name="text">
-             <string>Full Diff.</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radSortByColorDifference">
-            <property name="text">
-             <string>Color Diff.</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radSortByMembershipDifference">
-            <property name="text">
-             <string>Membership Dif.</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radSortByHistogramIntersection">
-            <property name="text">
-             <string>Histogram Int.</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radSortByDepthDifference">
-            <property name="text">
-             <string>Depth Diff.</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radSortByColorAndDepth">
-            <property name="text">
-             <string>Depth + Color</string>
-            </property>
+           <widget class="QComboBox" name="cmbSortBy">
+            <item>
+             <property name="text">
+              <string>Full Difference</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Color Difference</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Membership Difference</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Histogram Intersection</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Depth Difference</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Depth + Color Difference</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item>
@@ -872,7 +856,7 @@
      <x>0</x>
      <y>0</y>
      <width>1457</width>
-     <height>28</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLeft_Pane">

@@ -43,6 +43,8 @@ public:
   // Get the current confidence map image
   FloatScalarImageType::Pointer GetConfidenceMapImage();
 
+  std::vector<NamedVTKImage> GetNamedImages();
+
 protected:
 
   // Compute the Confidence values for pixels that were just inpainted.

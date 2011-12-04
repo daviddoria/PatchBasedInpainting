@@ -21,6 +21,7 @@
 
 #include "DebugOutputs.h"
 #include "Mask.h"
+#include "NamedVTKImage.h"
 #include "Types.h"
 
 class Priority : public DebugOutputs
@@ -43,6 +44,8 @@ public:
   float GetPriority(const itk::Index<2>& queryPixel);
 
   void UpdateBoundary();
+
+  virtual std::vector<NamedVTKImage> GetNamedImages();
 
 protected:
 

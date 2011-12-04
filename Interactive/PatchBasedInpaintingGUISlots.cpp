@@ -66,20 +66,11 @@ void PatchBasedInpaintingGUI::on_spinChannelToDisplay_valueChanged(int unused)
   Refresh();
 }
 
-void PatchBasedInpaintingGUI::on_radCompareOriginal_clicked()
+void PatchBasedInpaintingGUI::on_cmbCompareImage_activated(int value)
 {
-  this->Inpainting.SetCompareToOriginal();
+  SetCompareImageFromGUI();
 }
 
-void PatchBasedInpaintingGUI::on_radCompareBlurred_clicked()
-{
-  this->Inpainting.SetCompareToBlurred();
-}
-
-void PatchBasedInpaintingGUI::on_radCompareCIELAB_clicked()
-{
-  this->Inpainting.SetCompareToCIELAB();
-}
   
 void PatchBasedInpaintingGUI::on_chkLive_clicked()
 {
@@ -522,34 +513,9 @@ void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToDisplay_textEdited ( con
   LeaveFunction("on_txtNumberOfTopPatchesToDisplay_textEdited()");
 }
 
-void PatchBasedInpaintingGUI::on_radSortByHistogramIntersection_clicked()
+void PatchBasedInpaintingGUI::on_cmbSortBy_activated(int value)
 {
-  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::HistogramIntersection, PatchSortFunctor::DESCENDING);
-}
-
-void PatchBasedInpaintingGUI::on_radSortByFullDifference_clicked()
-{
-  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
-}
-
-void PatchBasedInpaintingGUI::on_radSortByMembershipDifference_clicked()
-{
-  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::MembershipDifference, PatchSortFunctor::ASCENDING);
-}
-
-void PatchBasedInpaintingGUI::on_radSortByColorDifference_clicked()
-{
-  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::ColorDifference, PatchSortFunctor::ASCENDING);
-}
-
-void PatchBasedInpaintingGUI::on_radSortByDepthDifference_clicked()
-{
-  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::DepthDifference, PatchSortFunctor::ASCENDING);
-}
-
-void PatchBasedInpaintingGUI::on_radSortByColorAndDepth_clicked()
-{
-  this->Inpainting.PatchSortFunction = new SortByDepthAndColor(PatchPair::CombinedDifference);
+  SetSortFunctionFromGUI();
 }
 
 void PatchBasedInpaintingGUI::on_chkCompareHistogramIntersection_clicked()

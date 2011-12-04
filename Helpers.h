@@ -126,6 +126,9 @@ void MakeValueTransparent(const vtkImageData* inputImage, vtkImageData* outputIm
 // Make an entire image transparent.
 void MakeImageTransparent(vtkImageData* image);
 
+// STL's .compare() function returns 0 when strings match, this is unintuitive.
+bool StringsMatch(const std::string&, const std::string&);
+
 // "Follow" a vector from one pixel to find the next pixel it would "hit".
 itk::Index<2> GetNextPixelAlongVector(const itk::Index<2>& pixel, const FloatVector2Type& vector);
 itk::Offset<2> GetOffsetAlongVector(const FloatVector2Type& vector);
