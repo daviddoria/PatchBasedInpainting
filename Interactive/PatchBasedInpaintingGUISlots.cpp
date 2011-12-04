@@ -141,21 +141,15 @@ void PatchBasedInpaintingGUI::on_chkHighlightUsedPatches_clicked()
   RefreshVTK();
 }
 
-void PatchBasedInpaintingGUI::on_chkImage_clicked()
+void PatchBasedInpaintingGUI::on_chkDisplayImage_clicked()
 {
-  this->ImageLayer.ImageSlice->SetVisibility(this->chkImage->isChecked());
+  this->ImageLayer.ImageSlice->SetVisibility(this->chkDisplayImage->isChecked());
   RefreshVTK();
 }
 
-void PatchBasedInpaintingGUI::on_chkMask_clicked()
+void PatchBasedInpaintingGUI::on_chkDisplayMask_clicked()
 {
-  this->MaskLayer.ImageSlice->SetVisibility(this->chkMask->isChecked());
-  RefreshVTK();
-}
-
-void PatchBasedInpaintingGUI::on_chkPriority_clicked()
-{
-  this->PriorityLayer.ImageSlice->SetVisibility(this->chkPriority->isChecked());
+  this->MaskLayer.ImageSlice->SetVisibility(this->chkDisplayMask->isChecked());
   RefreshVTK();
 }
 
@@ -170,9 +164,9 @@ void PatchBasedInpaintingGUI::on_chkDisplaySourcePatchLocations_clicked()
 }
 
 
-void PatchBasedInpaintingGUI::on_chkBoundary_clicked()
+void PatchBasedInpaintingGUI::on_chkDisplayBoundary_clicked()
 {
-  this->BoundaryLayer.ImageSlice->SetVisibility(this->chkBoundary->isChecked());
+  this->BoundaryLayer.ImageSlice->SetVisibility(this->chkDisplayBoundary->isChecked());
   RefreshVTK();
 }
 
@@ -201,10 +195,9 @@ void PatchBasedInpaintingGUI::on_actionFlipImageHorizontally_activated()
 
 void PatchBasedInpaintingGUI::SetCheckboxVisibility(const bool visible)
 {
-  chkImage->setEnabled(visible);
-  chkPriority->setEnabled(visible);
-  chkBoundary->setEnabled(visible);
-  chkMask->setEnabled(visible);
+  chkDisplayImage->setEnabled(visible);
+  chkDisplayBoundary->setEnabled(visible);
+  chkDisplayMask->setEnabled(visible);
 }
 
 void PatchBasedInpaintingGUI::on_btnDisplayPreviousStep_clicked()

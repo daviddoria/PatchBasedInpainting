@@ -179,7 +179,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="chkImage">
+             <widget class="QCheckBox" name="chkDisplayImage">
               <property name="text">
                <string>Image</string>
               </property>
@@ -189,21 +189,14 @@
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="chkPriority">
-              <property name="text">
-               <string>Priority</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="chkBoundary">
+             <widget class="QCheckBox" name="chkDisplayBoundary">
               <property name="text">
                <string>Boundary</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="chkMask">
+             <widget class="QCheckBox" name="chkDisplayMask">
               <property name="text">
                <string>Mask</string>
               </property>
@@ -261,7 +254,7 @@
          </widget>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_13">
+         <layout class="QVBoxLayout" name="verticalLayoutPriority">
           <item>
            <widget class="QLabel" name="label_20">
             <property name="font">

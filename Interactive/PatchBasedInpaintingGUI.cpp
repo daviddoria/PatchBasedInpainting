@@ -161,7 +161,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   
   this->ImageLayer.ImageSlice->SetPickable(false);
   this->BoundaryLayer.ImageSlice->SetPickable(false);
-  this->PriorityLayer.ImageSlice->SetPickable(false);
   this->MaskLayer.ImageSlice->SetPickable(false);
   this->UsedTargetPatchLayer.ImageSlice->SetPickable(false);
   this->UsedSourcePatchLayer.ImageSlice->SetPickable(false);
@@ -170,7 +169,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   this->Renderer->AddViewProp(this->ImageLayer.ImageSlice);
   this->Renderer->AddViewProp(this->BoundaryLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->PriorityLayer.ImageSlice);
   this->Renderer->AddViewProp(this->MaskLayer.ImageSlice);
   this->Renderer->AddViewProp(this->UsedTargetPatchLayer.ImageSlice);
   this->Renderer->AddViewProp(this->UsedSourcePatchLayer.ImageSlice);
@@ -275,7 +273,7 @@ PatchBasedInpaintingGUI::PatchBasedInpaintingGUI(const std::string& imageFileNam
 {
   this->SetDebugFunctionEnterLeave(debugEnterLeave);
   
-  EnterFunction("PatchBasedInpaintingGUI()");
+  EnterFunction("PatchBasedInpaintingGUI(string, string, bool)");
 
   std::cout << "Image: " << imageFileName << " Mask: " << maskFileName << std::endl;
   
@@ -284,7 +282,7 @@ PatchBasedInpaintingGUI::PatchBasedInpaintingGUI(const std::string& imageFileNam
   OpenImage(imageFileName);
   OpenMask(maskFileName, false);
   Initialize();
-  LeaveFunction("PatchBasedInpaintingGUI()");
+  LeaveFunction("PatchBasedInpaintingGUI(string, string, bool)");
 }
 
 
@@ -502,14 +500,27 @@ void PatchBasedInpaintingGUI::DisplayBoundary()
   LeaveFunction("DisplayBoundary");
 }
 
-void PatchBasedInpaintingGUI::DisplayPriority()
+void PatchBasedInpaintingGUI::DisplayPriorityImages()
 {
-  EnterFunction("DisplayPriority");
-  vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
-  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IterationRecords[this->IterationToDisplay].Priority, temp);
-  Helpers::MakeValueTransparent(temp, this->PriorityLayer.ImageData, 0); // Set the zero pixels to transparent
+  EnterFunction("DisplayPriorityImages");
+
+  for(unsigned int i = 0; i < this->PriorityImageCheckBoxes.size(); ++i)
+    {
+    if(this->PriorityImageCheckBoxes[i]->isChecked())
+      {
+      std::cout << "Image name: " << this->PriorityImageCheckBoxes[i]->text().toStdString() << std::endl;
+      Layer newLayer;
+      NamedVTKImage namedImage = FindImageByName(this->Inpainting.GetPriorityFunction()->GetNamedImages(), this->PriorityImageCheckBoxes[i]->text().toStdString());
+      newLayer.ImageData = namedImage.ImageData;
+      newLayer.Setup();
+      newLayer.ImageSlice->SetPickable(false);
+
+      this->Renderer->AddViewProp(newLayer.ImageSlice);
+      }
+    }
+
   this->qvtkWidget->GetRenderWindow()->Render();
-  LeaveFunction("DisplayPriority");
+  LeaveFunction("DisplayPriorityImages");
 }
 
 void PatchBasedInpaintingGUI::RefreshVTK()
@@ -517,33 +528,29 @@ void PatchBasedInpaintingGUI::RefreshVTK()
   EnterFunction("RefreshVTK()");
   try
   {
-
+// 
     // The following are valid for all iterations
     if(this->chkDisplayUserPatch->isChecked())
       {
       DisplayUserPatch();
       }
 
-    if(this->chkImage->isChecked())
+    if(this->chkDisplayImage->isChecked())
       {
       DisplayImage();
       }
 
-    if(this->chkMask->isChecked())
+    if(this->chkDisplayMask->isChecked())
       {
       DisplayMask();
       }
 
-    if(this->chkPriority->isChecked())
-      {
-      DisplayPriority();
-      }
-
-    if(this->chkBoundary->isChecked())
+    if(this->chkDisplayBoundary->isChecked())
       {
       DisplayBoundary();
       }
 
+    DisplayPriorityImages();
 
     this->UsedSourcePatchLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
     this->UsedTargetPatchLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
@@ -1411,6 +1418,29 @@ void PatchBasedInpaintingGUI::SetPriorityFromGUI()
   else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Criminisi"))
     {
     this->Inpainting.SetPriorityFunction<PriorityCriminisi>();
+    }
+
+  // Delete the old checkboxes
+  for(unsigned int i = 0; i < PriorityImageCheckBoxes.size(); ++i)
+    {
+    std::cout << "Removing " << this->PriorityImageCheckBoxes[i]->text().toStdString() << std::endl;
+    this->verticalLayoutPriority->removeWidget(this->PriorityImageCheckBoxes[i]);
+    delete this->PriorityImageCheckBoxes[i];
+    this->PriorityImageCheckBoxes.resize(this->PriorityImageCheckBoxes.size() - 1);
+    }
+    
+  this->PriorityImageCheckBoxes.clear();
+
+  // Add the new checkboxes
+  std::vector<NamedVTKImage> namedImages = this->Inpainting.GetPriorityFunction()->GetNamedImages();
+
+  for(unsigned int i = 0; i < namedImages.size(); ++i)
+    {
+    std::cout << "Adding " << namedImages[i].Name << std::endl;
+    QCheckBox* extraCheckBox = new QCheckBox(namedImages[i].Name.c_str(), this );
+    connect(extraCheckBox, SIGNAL(clicked()), this, SLOT(DisplayPriorityImages()));
+    this->PriorityImageCheckBoxes.push_back(extraCheckBox);
+    this->verticalLayoutPriority->addWidget(extraCheckBox);
     }
 
   //this->Inpainting.GetPriorityFunction()->SetDebugFunctionEnterLeave(true);

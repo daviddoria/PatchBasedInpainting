@@ -19,14 +19,21 @@
 #ifndef NamedVTKImage_H
 #define NamedVTKImage_H
 
+// VTK
 #include <vtkImageData.h>
+#include <vtkSmartPointer.h>
+
+// STL
+#include <vector>
 
 struct NamedVTKImage
 {
   NamedVTKImage() : Vectors(false), Name("Unnamed"), ImageData(NULL) {}
   bool Vectors; // Should the image be displayed as vectors (little lines) vs scalars (pixels).
   std::string Name;
-  vtkImageData* ImageData;
+  vtkSmartPointer<vtkImageData> ImageData;
 };
+
+NamedVTKImage FindImageByName(const std::vector<NamedVTKImage>&, const std::string&);
 
 #endif

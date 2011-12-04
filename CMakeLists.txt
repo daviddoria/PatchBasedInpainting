@@ -35,6 +35,7 @@ HelpersOutput.cpp
 Histograms.cpp
 ImageCollection.cpp
 Mask.cpp
+NamedVTKImage.cpp
 Patch.cpp
 PatchBasedInpainting.cpp
 PatchBasedInpaintingDebugging.cpp

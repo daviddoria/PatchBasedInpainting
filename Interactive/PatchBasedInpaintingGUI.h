@@ -73,6 +73,7 @@ public:
   void Refresh();
 
 public slots:
+  void DisplayPriorityImages();
 
   void on_chkDisplayUserPatch_clicked();
 
@@ -112,10 +113,9 @@ public slots:
   void slot_TopPatchesTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
 
   // Defined in FormGUIElements.cxx
-  void on_chkImage_clicked();
-  void on_chkMask_clicked();
-  void on_chkPriority_clicked();
-  void on_chkBoundary_clicked();
+  void on_chkDisplayImage_clicked();
+  void on_chkDisplayMask_clicked();
+  void on_chkDisplayBoundary_clicked();
   void on_chkDisplayForwardLookPatchLocations_clicked();
   void on_chkDisplaySourcePatchLocations_clicked();
 
@@ -166,11 +166,12 @@ protected:
   void DisplayMask();
   void DisplayConfidence();
   void DisplayConfidenceMap();
-  void DisplayPriority();
+  //void DisplayPriority();
   void DisplayData();
   void DisplayImage();
   void DisplayUserPatch();
-
+  
+  
   void OpenImage(const std::string& filename);
   void OpenMask(const std::string& filename, const bool inverted);
 
@@ -326,6 +327,8 @@ protected:
   void SetSortFunctionFromGUI();
   void SetDepthColorLambdaFromGUI();
   void SetParametersFromGUI();
+
+  std::vector<QCheckBox*> PriorityImageCheckBoxes;
 
 };
 

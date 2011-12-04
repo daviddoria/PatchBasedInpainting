@@ -283,7 +283,7 @@ void PatchBasedInpainting::SetupHistograms()
   //unsigned int numberOfBinsPerDimension = 6;
   //this->ColorFrequency.SetNumberOfBinsPerAxis(numberOfBinsPerDimension);
 
-  this->ColorFrequency.SetNumberOfColors(100);
+  this->ColorFrequency.SetNumberOfColors(10);
   //this->ColorFrequency.SetDownsampleFactor(20);
   //this->ColorFrequency.ConstructFromMaskedImage(this->CurrentOutputImage, this->MaskImage);
   //this->ColorFrequency.ConstructFromMaskedImage(this->BlurredImage, this->MaskImage);

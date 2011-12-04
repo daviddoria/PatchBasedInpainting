@@ -29,8 +29,7 @@ class Layer
 {
 public:
   Layer();
-  
-//protected:
+  void Setup();
   vtkSmartPointer<vtkImageData> ImageData;
   vtkSmartPointer<vtkImageSlice> ImageSlice;
   vtkSmartPointer<vtkImageSliceMapper> ImageSliceMapper;

@@ -31,10 +31,16 @@ Layer::Layer()
 
   this->ImageSlice = vtkSmartPointer<vtkImageSlice>::New();
   this->ImageSlice->GetProperty()->SetInterpolationTypeToNearest();
-
+  
   this->ImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
   this->ImageSliceMapper->BorderOn();
-  
-  this->ImageSliceMapper->SetInputConnection(this->ImageData->GetProducerPort());
   this->ImageSlice->SetMapper(this->ImageSliceMapper);
+
+  Setup();
+}
+
+void Layer::Setup()
+{
+  // This function should be called if ImageData has been replaced.
+  this->ImageSliceMapper->SetInputConnection(this->ImageData->GetProducerPort());
 }

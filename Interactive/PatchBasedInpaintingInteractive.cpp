@@ -31,7 +31,7 @@ int main( int argc, char** argv )
   if(argc == 3)
     {
     std::cout << "Using filename arguments." << std::endl;
-    bool debugFunctionEnterLeave = false;
+    bool debugFunctionEnterLeave = true;
     patchBasedInpaintingGUI = new PatchBasedInpaintingGUI(argv[1], argv[2], debugFunctionEnterLeave);
     }
   else
