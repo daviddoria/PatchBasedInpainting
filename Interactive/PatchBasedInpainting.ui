@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1457</width>
-    <height>1130</height>
+    <height>886</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -30,7 +30,7 @@
     <item row="0" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,6,1,2,5">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
@@ -259,6 +259,52 @@
            <string>Only save image</string>
           </property>
          </widget>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_13">
+          <item>
+           <widget class="QLabel" name="label_20">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Priority</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cmbPriority">
+            <item>
+             <property name="text">
+              <string>Random</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Manual</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>OnionPeel</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Depth</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Criminisi</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_11">

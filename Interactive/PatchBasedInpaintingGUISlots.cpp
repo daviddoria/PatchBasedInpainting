@@ -385,6 +385,16 @@ void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
   this->btnStep->setEnabled(true);
   this->btnInitialize->setEnabled(false);
   this->txtPatchRadius->setEnabled(false);
+  
+  this->cmbPriority->setEnabled(false);
+  this->cmbSortBy->setEnabled(false);
+  this->cmbCompareImage->setEnabled(false);
+
+  this->chkCompareColor->setEnabled(false);
+  this->chkCompareDepth->setEnabled(false);
+  this->chkCompareFull->setEnabled(false);
+  this->chkCompareHistogramIntersection->setEnabled(false);
+  this->chkCompareMembership->setEnabled(false);
 
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
@@ -511,6 +521,11 @@ void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToDisplay_textEdited ( con
   this->TopPatchesModel->Refresh();
   HighlightSourcePatches();
   LeaveFunction("on_txtNumberOfTopPatchesToDisplay_textEdited()");
+}
+
+void PatchBasedInpaintingGUI::on_cmbPriority_activated(int value)
+{
+  SetPriorityFromGUI();
 }
 
 void PatchBasedInpaintingGUI::on_cmbSortBy_activated(int value)

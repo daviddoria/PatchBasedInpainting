@@ -78,6 +78,7 @@ public slots:
 
   void on_cmbCompareImage_activated(int value);
   void on_cmbSortBy_activated(int value);
+  void on_cmbPriority_activated(int value);
 
   void on_sldDepthColorLambda_valueChanged();
 
@@ -319,6 +320,7 @@ protected:
   void UserPatchMoved();
   void ComputeUserPatchRegion();
 
+  void SetPriorityFromGUI();
   void SetCompareImageFromGUI();
   void SetComparisonFunctionsFromGUI();
   void SetSortFunctionFromGUI();

@@ -79,6 +79,7 @@
 #include "PriorityDepth.h"
 #include "PriorityManual.h"
 #include "PriorityOnionPeel.h"
+#include "PriorityRandom.h"
 #include "Types.h"
 
 Q_DECLARE_METATYPE(PatchPair)
@@ -189,6 +190,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->Inpainting.SetPatchSearchFunctionToNormal();
   //this->Inpainting.SetDebugFunctionEnterLeave(true);
 
+  SetPriorityFromGUI();
   SetCompareImageFromGUI();
   SetComparisonFunctionsFromGUI();
   SetSortFunctionFromGUI();
@@ -430,6 +432,17 @@ void PatchBasedInpaintingGUI::Reset()
   this->btnInitialize->setEnabled(true);
   this->btnReset->setEnabled(false);
   this->txtPatchRadius->setEnabled(true);
+
+  this->cmbPriority->setEnabled(true);
+  this->cmbSortBy->setEnabled(true);
+  this->cmbCompareImage->setEnabled(true);
+
+  this->chkCompareColor->setEnabled(true);
+  this->chkCompareDepth->setEnabled(true);
+  this->chkCompareFull->setEnabled(true);
+  this->chkCompareHistogramIntersection->setEnabled(true);
+  this->chkCompareMembership->setEnabled(true);
+
   
   this->IterationRecords.clear();
   Initialize();
@@ -611,19 +624,7 @@ void PatchBasedInpaintingGUI::Initialize()
   //this->Inpainting.SetDebugFunctionEnterLeave(false);
   
   // Setup the priority function
-  
-  //this->Inpainting.SetPriorityFunction<PriorityOnionPeel>();
-  //this->Inpainting.SetPriorityFunction<PriorityCriminisi>();
-  //this->Inpainting.SetPriorityFunction<PriorityDepth>();
-  this->Inpainting.SetPriorityFunction<PriorityManual>();
-  
-  UnsignedCharScalarImageType::Pointer manualPriorityImage = UnsignedCharScalarImageType::New();
-  std::string manualPriorityImageFileName = "/media/portable/Data/LidarImageCompletion/PaperDataSets/trashcan/trashcan_medium/trashcan_manualPriority.mha";
-  Helpers::ReadImage<UnsignedCharScalarImageType>(manualPriorityImageFileName, manualPriorityImage);
-  std::cout << "manualPriorityImage non-zero pixels: " << Helpers::CountNonZeroPixels<UnsignedCharScalarImageType>(manualPriorityImage) << std::endl;
-  
-  reinterpret_cast<PriorityManual*>(this->Inpainting.GetPriorityFunction())->SetManualPriorityImage(manualPriorityImage);
-  //this->Inpainting.GetPriorityFunction()->SetDebugFunctionEnterLeave(true);
+
   
   // Setup the patch comparison function
   this->Inpainting.GetPatchCompare()->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
@@ -1346,27 +1347,27 @@ void PatchBasedInpaintingGUI::SetComparisonFunctionsFromGUI()
 
 void PatchBasedInpaintingGUI::SetSortFunctionFromGUI()
 {
-  if(this->cmbSortBy->currentText().toStdString().compare("Full Difference"))
+  if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Full Difference"))
     {
     this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
     }
-  else if(this->cmbSortBy->currentText().toStdString().compare("Color Difference"))
+  else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Color Difference"))
     {
     this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::ColorDifference, PatchSortFunctor::ASCENDING);
     }
-  else if(this->cmbSortBy->currentText().toStdString().compare("Depth Difference"))
+  else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Depth Difference"))
     {
     this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::DepthDifference, PatchSortFunctor::ASCENDING);
     }
-  else if(this->cmbSortBy->currentText().toStdString().compare("Depth + Color Difference"))
+  else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Depth + Color Difference"))
     {
     this->Inpainting.PatchSortFunction = new SortByDepthAndColor(PatchPair::CombinedDifference);
     }
-  else if(this->cmbSortBy->currentText().toStdString().compare("Histogram Intersection"))
+  else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Histogram Intersection"))
     {
     this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::HistogramIntersection, PatchSortFunctor::DESCENDING);
     }
-  else if(this->cmbSortBy->currentText().toStdString().compare("Membership Difference"))
+  else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Membership Difference"))
     {
     this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::MembershipDifference, PatchSortFunctor::DESCENDING);
     }
@@ -1380,4 +1381,37 @@ void PatchBasedInpaintingGUI::SetDepthColorLambdaFromGUI()
   this->Inpainting.PatchSortFunction = functor;
   
   std::cout << "DepthColorLambda set to " << functor->DepthColorLambda << std::endl;
+}
+
+void PatchBasedInpaintingGUI::SetPriorityFromGUI()
+{
+  if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Manual"))
+    {
+    this->Inpainting.SetPriorityFunction<PriorityManual>();
+
+    UnsignedCharScalarImageType::Pointer manualPriorityImage = UnsignedCharScalarImageType::New();
+    std::string manualPriorityImageFileName = "/media/portable/Data/LidarImageCompletion/PaperDataSets/trashcan/trashcan_medium/trashcan_manualPriority.mha";
+    Helpers::ReadImage<UnsignedCharScalarImageType>(manualPriorityImageFileName, manualPriorityImage);
+    std::cout << "manualPriorityImage non-zero pixels: " << Helpers::CountNonZeroPixels<UnsignedCharScalarImageType>(manualPriorityImage) << std::endl;
+
+    reinterpret_cast<PriorityManual*>(this->Inpainting.GetPriorityFunction())->SetManualPriorityImage(manualPriorityImage);
+    }
+  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "OnionPeel"))
+    {
+    this->Inpainting.SetPriorityFunction<PriorityOnionPeel>();
+    }
+  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Random"))
+    {
+    this->Inpainting.SetPriorityFunction<PriorityRandom>();
+    }
+  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Depth"))
+    {
+    this->Inpainting.SetPriorityFunction<PriorityDepth>();
+    }
+  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Criminisi"))
+    {
+    this->Inpainting.SetPriorityFunction<PriorityCriminisi>();
+    }
+
+  //this->Inpainting.GetPriorityFunction()->SetDebugFunctionEnterLeave(true);
 }
