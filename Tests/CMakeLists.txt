@@ -1,16 +1,22 @@
+# 
+# ADD_EXECUTABLE(TestClusterColors TestClusterColors.cpp)
+# TARGET_LINK_LIBRARIES(TestClusterColors PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# 
+# 
+# ADD_EXECUTABLE(TestClusterColorsClusterCenters TestClusterColorsClusterCenters.cpp)
+# TARGET_LINK_LIBRARIES(TestClusterColorsClusterCenters PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# 
+# ADD_EXECUTABLE(TestClusterColorsLabelImage TestClusterColorsLabelImage.cpp)
+# TARGET_LINK_LIBRARIES(TestClusterColorsLabelImage PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# 
+# ADD_EXECUTABLE(TestSelfPatchCompare TestSelfPatchCompare.cpp)
+# TARGET_LINK_LIBRARIES(TestSelfPatchCompare PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES})
 
-ADD_EXECUTABLE(TestClusterColors TestClusterColors.cpp)
-TARGET_LINK_LIBRARIES(TestClusterColors PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# ADD_EXECUTABLE(TestCreateMask TestCreateMask.cpp)
+# TARGET_LINK_LIBRARIES(TestCreateMask PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES})
 
-
-ADD_EXECUTABLE(TestClusterColorsClusterCenters TestClusterColorsClusterCenters.cpp)
-TARGET_LINK_LIBRARIES(TestClusterColorsClusterCenters PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-
-ADD_EXECUTABLE(TestClusterColorsLabelImage TestClusterColorsLabelImage.cpp)
-TARGET_LINK_LIBRARIES(TestClusterColorsLabelImage PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-
-ADD_EXECUTABLE(TestSelfPatchCompare TestSelfPatchCompare.cpp)
-TARGET_LINK_LIBRARIES(TestSelfPatchCompare PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES})
+ADD_EXECUTABLE(TestCreateImage TestCreateImage.cpp)
+TARGET_LINK_LIBRARIES(TestCreateImage PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES})
 
 # 
 # ADD_EXECUTABLE(TestDerivatives Tests/TestDerivatives.cpp)

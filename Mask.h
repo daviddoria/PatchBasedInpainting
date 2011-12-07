@@ -137,6 +137,10 @@ public:
 
   template<typename TColor>
   void MakeVTKImage(vtkImageData* image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent);
+  
+  // Create a mask from a mask image.
+  template<typename TImage>
+  void CreateFromImage(const TImage* image, const typename TImage::PixelType& holeColor);
 
   std::vector<itk::Index<2> > GetValidPixelsInRegion(const itk::ImageRegion<2>& region);
   std::vector<itk::Index<2> > GetHolePixelsInRegion(const itk::ImageRegion<2>& region);

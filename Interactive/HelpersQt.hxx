@@ -33,7 +33,7 @@ namespace HelpersQt
 
  
 template <typename TImage>
-QImage GetQImage(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const DisplayStyle& style)
+QImage GetQImage(const TImage* image, const itk::ImageRegion<2>& region, const DisplayStyle& style)
 {
   // Expects an itk::VectorImage
   switch(style.Style)
@@ -60,7 +60,7 @@ QImage GetQImage(const typename TImage::Pointer image, const itk::ImageRegion<2>
 }
 
 template <typename TImage>
-QImage GetQImageColor(const typename TImage::Pointer image, const itk::ImageRegion<2>& region)
+QImage GetQImageColor(const TImage* image, const itk::ImageRegion<2>& region)
 {
   QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888);
 
@@ -98,7 +98,7 @@ QImage GetQImageColor(const typename TImage::Pointer image, const itk::ImageRegi
 }
 
 template <typename TImage>
-QImage GetQImageMagnitude(const typename TImage::Pointer image, const itk::ImageRegion<2>& region)
+QImage GetQImageMagnitude(const TImage* image, const itk::ImageRegion<2>& region)
 {
   QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888);
 
@@ -142,7 +142,7 @@ QImage GetQImageMagnitude(const typename TImage::Pointer image, const itk::Image
 
 
 template <typename TImage>
-QImage GetQImageScalar(const typename TImage::Pointer image, const itk::ImageRegion<2>& region)
+QImage GetQImageScalar(const TImage* image, const itk::ImageRegion<2>& region)
 {
   QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888);
 
@@ -171,7 +171,7 @@ QImage GetQImageScalar(const typename TImage::Pointer image, const itk::ImageReg
 }
 
 template <typename TImage>
-QImage GetQImageMasked(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region)
+QImage GetQImageMasked(const TImage* image, const Mask::Pointer mask, const itk::ImageRegion<2>& region)
 {
   QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888);
 

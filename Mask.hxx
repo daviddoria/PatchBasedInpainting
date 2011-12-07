@@ -174,3 +174,33 @@ void Mask::MakeVTKImage(vtkImageData* image, const TColor& validColor, const TCo
       }
     }
 }
+
+// Create a mask from a mask image.
+template<typename TImage>
+void Mask::CreateFromImage(const TImage* image, const typename TImage::PixelType& holeColor)
+{
+  this->SetRegions(image->GetLargestPossibleRegion());
+  this->Allocate();
+  
+  itk::ImageRegionConstIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
+
+  std::cout << "Hole color: " << holeColor << std::endl;
+  unsigned int counter = 0;
+  while(!imageIterator.IsAtEnd())
+    {
+    typename TImage::PixelType currentPixel = imageIterator.Get();
+    std::cout << "Current color: " << currentPixel << std::endl;
+    if(currentPixel == holeColor)
+      {
+      this->SetPixel(imageIterator.GetIndex(), this->HoleValue);
+      counter++;
+      }
+    else
+      {
+      this->SetPixel(imageIterator.GetIndex(), this->ValidValue);
+      }
+
+    ++imageIterator;
+    }
+  std::cout << "There were " << counter << " mask pixels." << std::endl;
+}

@@ -46,19 +46,19 @@ QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx);
 ///////// Function templates (defined in HelpersQt.hxx) /////////
 ////////////////////////////////////
 template <typename TImage>
-QImage GetQImage(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const DisplayStyle& style);
+QImage GetQImage(const TImage* image, const itk::ImageRegion<2>& region, const DisplayStyle& style);
 
 template <typename TImage>
-QImage GetQImageColor(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
+QImage GetQImageColor(const TImage* image, const itk::ImageRegion<2>& region);
 
 template <typename TImage>
-QImage GetQImageMagnitude(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
+QImage GetQImageMagnitude(const TImage* image, const itk::ImageRegion<2>& region);
 
 template <typename TImage>
-QImage GetQImageScalar(const typename TImage::Pointer image, const itk::ImageRegion<2>& region);
+QImage GetQImageScalar(const TImage* image, const itk::ImageRegion<2>& region);
 
 template <typename TImage>
-QImage GetQImageMasked(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region);
+QImage GetQImageMasked(const TImage* image, const Mask::Pointer mask, const itk::ImageRegion<2>& region);
 
 } // end namespace
 

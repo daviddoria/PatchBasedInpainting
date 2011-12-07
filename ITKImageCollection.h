@@ -16,9 +16,20 @@
  *
  *=========================================================================*/
 
-#include "InpaintingIterationRecord.h"
+#ifndef ITKImageCollection_H
+#define ITKImageCollection_H
 
-InpaintingIterationRecord::InpaintingIterationRecord()
+#include "Mask.h"
+
+// This class stores a vector of images of any type, and has some operations defined that can be applied to the whole list.
+
+class ITKImageCollection : public std::vector<itk::ImageBase<2>*>
 {
+public:
 
-}
+  // Apply Helpers::CopySelfPatchIntoHoleOfTargetRegion to all images in the collection.
+  void CopySelfPatchIntoHoleOfTargetRegion(const Mask::Pointer mask, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
+
+};
+
+#endif

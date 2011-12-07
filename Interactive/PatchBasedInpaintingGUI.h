@@ -181,7 +181,8 @@ protected:
   // Initialize everything.
   void Initialize();
 
-  void SetupInitialIntermediateImages();
+  // Copy the initial state into the first record
+  void CreateInitialRecord();
 
   // Save everything at the end of an iteration.
   void IterationComplete(const PatchPair& patchPair);
@@ -216,9 +217,6 @@ protected:
   // Image display
   Layer ImageLayer;
 
-  // Priority image display
-  Layer PriorityLayer;
-
   // Boundary image display
   Layer BoundaryLayer;
 
@@ -237,7 +235,7 @@ protected:
   // Perform the long inpainting operation in this thread so that the UI remains active.
   ComputationThreadClass ComputationThread;
 
-  // A flag that determines if intermediate images should be output to files.
+  // A flag that determines if debugging images should be output to files.
   bool DebugImages;
   
   // A flag that determines if debugging messages should be output.

@@ -61,11 +61,11 @@ PatchBasedInpainting::PatchBasedInpainting()
   this->BlurredImage = FloatVectorImageType::New();
   this->LuminanceImage = FloatScalarImageType::New();
 
-  ImagesToUpdate.AddImage(this->ColorBinMembershipImage);
-  ImagesToUpdate.AddImage(this->CurrentOutputImage);
-  ImagesToUpdate.AddImage(this->CIELabImage);
-  ImagesToUpdate.AddImage(this->BlurredImage);
-  ImagesToUpdate.AddImage(this->MaskImage); // We MUST update the mask LAST, because it is used to know where to update everything else!
+  //ImagesToUpdate.push_back(this->ColorBinMembershipImage);
+  ImagesToUpdate.push_back(this->CurrentOutputImage);
+  //ImagesToUpdate.push_back(this->CIELabImage);
+  //ImagesToUpdate.push_back(this->BlurredImage);
+  ImagesToUpdate.push_back(this->MaskImage); // We MUST update the mask LAST, because it is used to know where to update everything else!
   //ImagesToUpdate.AddImage(this->LuminanceImage);
   
   // Set the image to use for pixel to pixel comparisons.
@@ -283,16 +283,16 @@ void PatchBasedInpainting::SetupHistograms()
   //unsigned int numberOfBinsPerDimension = 6;
   //this->ColorFrequency.SetNumberOfBinsPerAxis(numberOfBinsPerDimension);
 
-  this->ColorFrequency.SetNumberOfColors(10);
-  //this->ColorFrequency.SetDownsampleFactor(20);
-  //this->ColorFrequency.ConstructFromMaskedImage(this->CurrentOutputImage, this->MaskImage);
-  //this->ColorFrequency.ConstructFromMaskedImage(this->BlurredImage, this->MaskImage);
-  FloatVectorImageType::Pointer blurredCIELabImage = FloatVectorImageType::New();
-  Helpers::ITKImageToCIELabImage(this->BlurredImage, blurredCIELabImage);
-  this->ColorFrequency.ConstructFromMaskedImage(blurredCIELabImage, this->MaskImage);
-  
-  Helpers::DeepCopy<IntImageType>(this->ColorFrequency.GetColorBinMembershipImage(), this->ColorBinMembershipImage);
-  HelpersOutput::WriteImage<IntImageType>(this->ColorBinMembershipImage, "Debug/ColorBinMembershipImage.mha");
+//   this->ColorFrequency.SetNumberOfColors(10);
+//   //this->ColorFrequency.SetDownsampleFactor(20);
+//   //this->ColorFrequency.ConstructFromMaskedImage(this->CurrentOutputImage, this->MaskImage);
+//   //this->ColorFrequency.ConstructFromMaskedImage(this->BlurredImage, this->MaskImage);
+//   FloatVectorImageType::Pointer blurredCIELabImage = FloatVectorImageType::New();
+//   Helpers::ITKImageToCIELabImage(this->BlurredImage, blurredCIELabImage);
+//   this->ColorFrequency.ConstructFromMaskedImage(blurredCIELabImage, this->MaskImage);
+//   
+//   Helpers::DeepCopy<IntImageType>(this->ColorFrequency.GetColorBinMembershipImage(), this->ColorBinMembershipImage);
+//   HelpersOutput::WriteImage<IntImageType>(this->ColorBinMembershipImage, "Debug/ColorBinMembershipImage.mha");
 
 }
     
@@ -843,4 +843,9 @@ void PatchBasedInpainting::BlurImage()
 ClusterColorsAdaptive* PatchBasedInpainting::GetClusterColors()
 {
   return &this->ColorFrequency;
+}
+
+ITKImageCollection& PatchBasedInpainting::GetImagesToUpdate()
+{
+  return this->ImagesToUpdate;
 }

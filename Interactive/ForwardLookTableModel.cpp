@@ -23,6 +23,7 @@
 #include <QAbstractItemView>
 
 // Custom
+#include "NamedITKImageCollection.h"
 #include "Helpers.h"
 #include "HelpersQt.h"
 
@@ -80,7 +81,7 @@ QVariant ForwardLookTableModel::data(const QModelIndex& index, int role) const
       case 0:
 	{
 	// Display the target patch in the table
-	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(this->IterationRecords[this->IterationToDisplay].Image,
+	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].Images.FindImageByName("Image").Image.GetPointer()),
                                                                        currentForwardLookPatch.Region, this->ImageDisplayStyle);
 	
 	patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);

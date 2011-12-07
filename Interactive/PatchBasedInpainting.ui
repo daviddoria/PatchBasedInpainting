@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1457</width>
-    <height>886</height>
+    <height>1039</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -30,7 +30,7 @@
     <item row="0" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,6,1,2,5">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,0,0,0">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
@@ -110,41 +110,53 @@
            </layout>
           </item>
           <item>
-           <widget class="QPushButton" name="btnInitialize">
-            <property name="text">
-             <string>Initialize</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnReset">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Reset</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnStep">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Step</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnInpaint">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Inpaint</string>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_13">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_14">
+              <item>
+               <widget class="QPushButton" name="btnInitialize">
+                <property name="text">
+                 <string>Initialize</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btnReset">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Reset</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_13">
+              <item>
+               <widget class="QPushButton" name="btnStep">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Step</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btnInpaint">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Inpaint</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
           </item>
           <item>
            <widget class="QProgressBar" name="progressBar">
@@ -247,9 +259,29 @@
          </layout>
         </item>
         <item>
-         <widget class="QCheckBox" name="chkOnlySaveImage">
+         <widget class="QLabel" name="label_21">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="text">
-           <string>Only save image</string>
+           <string>Save</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkSaveImage">
+          <property name="text">
+           <string>Image</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkSaveMask">
+          <property name="text">
+           <string>Mask</string>
           </property>
          </widget>
         </item>
@@ -366,7 +398,7 @@
              <string>Color</string>
             </property>
             <property name="checked">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -376,7 +408,7 @@
              <string>Depth</string>
             </property>
             <property name="checked">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -386,7 +418,7 @@
              <string>Membership</string>
             </property>
             <property name="checked">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -396,7 +428,7 @@
              <string>Histogram Int.</string>
             </property>
             <property name="checked">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -895,7 +927,7 @@
      <x>0</x>
      <y>0</y>
      <width>1457</width>
-     <height>20</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLeft_Pane">

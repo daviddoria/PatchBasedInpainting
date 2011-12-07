@@ -25,7 +25,7 @@
 #include "ClusterColorsAdaptive.h"
 #include "DebugOutputs.h"
 #include "Helpers.h"
-#include "ImageCollection.h"
+#include "ITKImageCollection.h"
 #include "Patch.h"
 #include "PatchPair.h"
 #include "PatchSorting.h"
@@ -134,6 +134,8 @@ public:
 
   ClusterColorsAdaptive* GetClusterColors();
   
+  ITKImageCollection& GetImagesToUpdate();
+  
 private:
 
   void SetupHistograms();
@@ -169,7 +171,7 @@ private:
   FloatVectorImageType::Pointer CompareImage;
 
   // The images in this collection will have the selected patch copied into them at each iteration.
-  ImageCollection ImagesToUpdate;
+  ITKImageCollection ImagesToUpdate;
   
   // The mask specifying the region to inpaint. It is updated as patches are copied.
   Mask::Pointer MaskImage;

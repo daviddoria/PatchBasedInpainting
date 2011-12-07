@@ -47,7 +47,7 @@ namespace Helpers
 
 /** Copy the input to the output*/
 template<typename TImage>
-void DeepCopy(const typename TImage::Pointer input, typename TImage::Pointer output)
+void DeepCopy(const TImage* input, TImage* output)
 {
   //std::cout << "DeepCopy()" << std::endl;
   if(output->GetLargestPossibleRegion() != input->GetLargestPossibleRegion())
@@ -59,7 +59,7 @@ void DeepCopy(const typename TImage::Pointer input, typename TImage::Pointer out
 }
 
 template<typename TImage>
-void DeepCopyInRegion(const typename TImage::Pointer input, const itk::ImageRegion<2>& region, typename TImage::Pointer output)
+void DeepCopyInRegion(const TImage* input, const itk::ImageRegion<2>& region, TImage* output)
 {
   // This function assumes that the size of input and output are the same.
   
@@ -862,7 +862,7 @@ void ChangeValue(const typename TImage::Pointer image, const typename TImage::Pi
 }
 
 template<typename TPixel>
-void ExtractChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, typename itk::Image<TPixel, 2>::Pointer output)
+void ExtractChannel(const itk::VectorImage<TPixel, 2>* image, const unsigned int channel, typename itk::Image<TPixel, 2>::Pointer output)
 {
   typedef itk::VectorImage<TPixel, 2> VectorImageType;
   typedef itk::Image<TPixel, 2> ScalarImageType;
@@ -877,7 +877,7 @@ void ExtractChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, c
 }
 
 template<typename TPixel>
-void ScaleChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, const TPixel channelMax, typename itk::VectorImage<TPixel, 2>::Pointer output)
+void ScaleChannel(const itk::VectorImage<TPixel, 2>* image, const unsigned int channel, const TPixel channelMax, typename itk::VectorImage<TPixel, 2>::Pointer output)
 {
   typedef itk::VectorImage<TPixel, 2> VectorImageType;
   typedef itk::Image<TPixel, 2> ScalarImageType;
@@ -901,7 +901,7 @@ void ScaleChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, con
 }
 
 template<typename TPixel>
-void ReplaceChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, typename itk::Image<TPixel, 2>::Pointer replacement, typename itk::VectorImage<TPixel, 2>::Pointer output)
+void ReplaceChannel(const itk::VectorImage<TPixel, 2>* image, const unsigned int channel, typename itk::Image<TPixel, 2>::Pointer replacement, typename itk::VectorImage<TPixel, 2>::Pointer output)
 {
   if(image->GetLargestPossibleRegion() != replacement->GetLargestPossibleRegion())
     {

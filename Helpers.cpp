@@ -738,7 +738,7 @@ void BlankAndOutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& regio
 
 // This is a specialization that ensures that the number of pixels per component also matches.
 template<>
-void DeepCopy<FloatVectorImageType>(const FloatVectorImageType::Pointer input, FloatVectorImageType::Pointer output)
+void DeepCopy<FloatVectorImageType>(const FloatVectorImageType* input, FloatVectorImageType* output)
 {
   //std::cout << "DeepCopy<FloatVectorImageType>()" << std::endl;
   bool changed = false;
@@ -914,6 +914,87 @@ bool StringsMatch(const std::string& a, const std::string& b)
   else
     {
     return false;
+    }
+}
+
+void OutputImageType(const itk::ImageBase<2>* input)
+{
+  if(dynamic_cast<const FloatScalarImageType*>(input))
+    {
+    std::cout << "Image type FloatScalarImageType" << std::endl;
+    }
+  else if(dynamic_cast<const Mask*>(input)) // This must come before UnsignedCharScalarImageType
+    {
+    std::cout << "Image type Mask" << std::endl;
+    }
+  else if(dynamic_cast<const UnsignedCharScalarImageType*>(input))
+    {
+    std::cout << "Image type UnsignedCharScalarImageType" << std::endl;
+    }
+  else if(dynamic_cast<const FloatVectorImageType*>(input))
+    {
+    std::cout << "Image type FloatVectorImageType" << std::endl;
+    }
+  else if(dynamic_cast<const FloatVector2ImageType*>(input))
+    {
+    std::cout << "Image type FloatVector2ImageType" << std::endl;
+    }
+  else if(dynamic_cast<const IntImageType*>(input))
+    {
+    std::cout << "Image type IntImageType" << std::endl;
+    }
+  else
+    {
+    std::cout << "OutputImageType: Image is Invalid type!" << std::endl;
+    }
+}
+
+// The return value MUST be a smart pointer
+itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* input)
+{
+  itk::LightObject::Pointer objectCopyLight = input->CreateAnother();
+
+  itk::ImageBase<2>::Pointer objectCopy = dynamic_cast<itk::ImageBase<2>*>(objectCopyLight.GetPointer());
+
+  return objectCopy;
+}
+
+void DeepCopy(const itk::ImageBase<2>* input, itk::ImageBase<2>* output)
+{
+  if(dynamic_cast<const FloatScalarImageType*>(input))
+    {
+    std::cout << "Deep copying FloatScalarImageType" << std::endl;
+    Helpers::DeepCopy<FloatScalarImageType>(dynamic_cast<const FloatScalarImageType*>(input), dynamic_cast<FloatScalarImageType*>(output));
+    }
+  else if(dynamic_cast<const Mask*>(input)) // This must come before UnsignedCharScalarImageType because they will both succeed.
+    {
+    std::cout << "Deep copying Mask" << std::endl;
+    Helpers::DeepCopy<Mask>(dynamic_cast<const Mask*>(input), dynamic_cast<Mask*>(output));
+    }
+  else if(dynamic_cast<const UnsignedCharScalarImageType*>(input))
+    {
+    std::cout << "Deep copying UnsignedCharScalarImageType" << std::endl;
+    Helpers::DeepCopy<UnsignedCharScalarImageType>(dynamic_cast<const UnsignedCharScalarImageType*>(input), dynamic_cast<UnsignedCharScalarImageType*>(output));
+    }
+  else if(dynamic_cast<const FloatVectorImageType*>(input))
+    {
+    std::cout << "Deep copying FloatVectorImageType" << std::endl;
+    Helpers::DeepCopy<FloatVectorImageType>(dynamic_cast<const FloatVectorImageType*>(input), dynamic_cast<FloatVectorImageType*>(output));
+    }
+  else if(dynamic_cast<const FloatVector2ImageType*>(input))
+    {
+    std::cout << "Deep copying FloatVector2ImageType" << std::endl;
+    Helpers::DeepCopy<FloatVector2ImageType>(dynamic_cast<const FloatVector2ImageType*>(input), dynamic_cast<FloatVector2ImageType*>(output));
+    }
+  else if(dynamic_cast<const IntImageType*>(input))
+    {
+    std::cout << "Deep copying IntImageType" << std::endl;
+    Helpers::DeepCopy<IntImageType>(dynamic_cast<const IntImageType*>(input), dynamic_cast<IntImageType*>(output));
+    }
+  else
+    {
+    std::cout << "Image is Invalid type!" << std::endl;
+    std::cerr << "Cannot cast to any of the specified types!" << std::endl;
     }
 }
 

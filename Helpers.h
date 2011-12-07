@@ -34,6 +34,8 @@ namespace Helpers
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+void OutputImageType(const itk::ImageBase<2>* input);
+
 void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double center[3]);
 
 void ComputeColorIsophotesInRegion(const FloatVectorImageType::Pointer image, const Mask::Pointer mask,
@@ -157,6 +159,11 @@ void BlankRegion(vtkImageData* image, const itk::ImageRegion<2>& region);
 // Get the offsets of the 8 neighborhood of a pixel.
 std::vector<itk::Offset<2> > Get8NeighborOffsets();
 
+void DeepCopy(const itk::ImageBase<2>* input, itk::ImageBase<2>* output);
+
+// The return value MUST be a smart pointer
+itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* input);
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// Template function declarations (defined in Helpers.hxx) ///////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -171,14 +178,14 @@ template<typename TImage>
 void OutlineRegion(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value);
 
 template<typename TImage>
-void DeepCopy(const typename TImage::Pointer input, typename TImage::Pointer output);
+void DeepCopy(const TImage* input, TImage* output);
 
 // Note: specialization declarations must appear in the header or the compiler does not know about their definition in the .cpp file!
 template<>
-void DeepCopy<FloatVectorImageType>(const FloatVectorImageType::Pointer input, FloatVectorImageType::Pointer output);
+void DeepCopy<FloatVectorImageType>(const FloatVectorImageType* input, FloatVectorImageType* output);
 
 template<typename TImage>
-void DeepCopyInRegion(const typename TImage::Pointer input, const itk::ImageRegion<2>& region, typename TImage::Pointer output);
+void DeepCopyInRegion(const TImage* input, const itk::ImageRegion<2>& region, TImage* output);
 
 template <typename TImage>
 void ITKScalarImageToScaledVTKImage(const typename TImage::Pointer image, vtkImageData* outputImage);
@@ -270,13 +277,13 @@ template<typename TImage>
 void ChangeValue(const typename TImage::Pointer image, const typename TImage::PixelType& oldValue, const typename TImage::PixelType& newValue);
 
 template<typename TPixel>
-void ExtractChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, typename itk::Image<TPixel, 2>::Pointer output);
+void ExtractChannel(const itk::VectorImage<TPixel, 2>* image, const unsigned int channel, typename itk::Image<TPixel, 2>::Pointer output);
 
 template<typename TPixel>
-void ScaleChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, const TPixel channelMax, typename itk::VectorImage<TPixel, 2>::Pointer output);
+void ScaleChannel(const itk::VectorImage<TPixel, 2>* image, const unsigned int channel, const TPixel channelMax, typename itk::VectorImage<TPixel, 2>::Pointer output);
 
 template<typename TPixel>
-void ReplaceChannel(const typename itk::VectorImage<TPixel, 2>::Pointer image, const unsigned int channel, typename itk::Image<TPixel, 2>::Pointer replacement, typename itk::VectorImage<TPixel, 2>::Pointer output);
+void ReplaceChannel(const itk::VectorImage<TPixel, 2>* image, const unsigned int channel, typename itk::Image<TPixel, 2>::Pointer replacement, typename itk::VectorImage<TPixel, 2>::Pointer output);
 
 template<typename TImage>
 typename TImage::TPixel ComputeMaxPixelDifference(const typename TImage::Pointer image);

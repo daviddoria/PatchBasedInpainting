@@ -16,25 +16,22 @@
  *
  *=========================================================================*/
 
-#ifndef ImageCollection_H
-#define ImageCollection_H
+// Custom
+#include "Helpers.h"
 
-#include "Mask.h"
+// ITK
+#include "itkImage.h"
 
-// This class stores a vector of images of any type, and has some operations defined that can be applied to the whole list.
+typedef itk::Image<float,2> FloatScalarImageType;
 
-class ImageCollection
+void OutputImageType(const itk::ImageBase<2>* input);
+
+int main(int argc, char *argv[])
 {
-public:
-  void AddImage(itk::ImageBase<2>* image);
-  void Clear();
+  FloatScalarImageType::Pointer floatImage = FloatScalarImageType::New();
 
-  // Apply Helpers::CopySelfPatchIntoHoleOfTargetRegion to all images in the collection.
-  void CopySelfPatchIntoHoleOfTargetRegion(const Mask::Pointer mask, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
+  itk::ImageBase<2>::Pointer floatCopy = Helpers::CreateImageWithSameType(floatImage);
+  Helpers::OutputImageType(floatCopy);
 
-protected:
-  std::vector<itk::ImageBase<2>*> Images;
-
-};
-
-#endif
+  return EXIT_SUCCESS;
+}

@@ -20,6 +20,7 @@
 #define InpaintingIterationRecord_H
 
 #include "CandidatePairs.h"
+#include "NamedITKImageCollection.h"
 #include "Mask.h"
 #include "Types.h"
 
@@ -32,10 +33,11 @@ class InpaintingIterationRecord
 public:
   InpaintingIterationRecord();
   
-  FloatVectorImageType::Pointer Image;
-  Mask::Pointer MaskImage;
-  UnsignedCharScalarImageType::Pointer Boundary;
-  FloatScalarImageType::Pointer Priority;
+//   FloatVectorImageType::Pointer Image;
+//   Mask::Pointer MaskImage;
+//   UnsignedCharScalarImageType::Pointer Boundary;
+//   FloatScalarImageType::Pointer Priority;
+  NamedITKImageCollection Images;
 
   // Store the sets of pairs that were considered.
   std::vector<CandidatePairs> PotentialPairSets;

@@ -33,8 +33,10 @@ Derivatives.cpp
 Helpers.cpp
 HelpersOutput.cpp
 Histograms.cpp
-ImageCollection.cpp
+ITKImageCollection.cpp
 Mask.cpp
+NamedITKImageCollection.cpp
+NamedITKImage.cpp
 NamedVTKImage.cpp
 Patch.cpp
 PatchBasedInpainting.cpp
