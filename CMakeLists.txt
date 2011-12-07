@@ -33,6 +33,7 @@ Derivatives.cpp
 Helpers.cpp
 HelpersOutput.cpp
 Histograms.cpp
+itkCommandLineArgumentParser.cxx
 ITKImageCollection.cpp
 Mask.cpp
 NamedITKImageCollection.cpp

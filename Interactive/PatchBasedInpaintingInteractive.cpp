@@ -21,6 +21,8 @@
 
 #include "PatchBasedInpaintingGUI.h"
 
+#include "itkCommandLineArgumentParser.h"
+
 int main( int argc, char** argv )
 {
   QApplication app( argc, argv );
@@ -28,11 +30,26 @@ int main( int argc, char** argv )
   //QApplication::setStyle(new QCleanlooksStyle);
 
   PatchBasedInpaintingGUI* patchBasedInpaintingGUI;
-  if(argc == 3)
+  if(argc >= 3)
     {
     std::cout << "Using filename arguments." << std::endl;
+
+    itk::CommandLineArgumentParser::Pointer parser = itk::CommandLineArgumentParser::New();
+    parser->SetCommandLineArguments( argc, argv );
+
+    std::string imageFileName;
+    bool imageFileNameProvided = parser->GetCommandLineArgument( "-image", imageFileName);
+
+    std::string maskFileName;
+    bool maskFileNameProvided = parser->GetCommandLineArgument( "-mask", maskFileName );
+
+    if(!imageFileNameProvided || !maskFileNameProvided)
+      {
+      std::cerr << "Must provide at least an image and a mask!" << std::endl;
+      exit(-1);
+      }
     bool debugFunctionEnterLeave = true;
-    patchBasedInpaintingGUI = new PatchBasedInpaintingGUI(argv[1], argv[2], debugFunctionEnterLeave);
+    patchBasedInpaintingGUI = new PatchBasedInpaintingGUI(imageFileName, maskFileName, debugFunctionEnterLeave);
     }
   else
     {
