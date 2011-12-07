@@ -18,7 +18,7 @@
 
 #include "PriorityRandom.h"
 
-PriorityRandom::PriorityRandom(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) : Priority(image, maskImage, patchRadius)
+PriorityRandom::PriorityRandom(FloatVectorImageType* image, Mask* maskImage, const unsigned int patchRadius) : Priority(image, maskImage, patchRadius)
 {
 
 }

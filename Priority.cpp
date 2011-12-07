@@ -23,7 +23,7 @@
 
 #include <vtkSmartPointer.h>
 
-Priority::Priority(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) :
+Priority::Priority(FloatVectorImageType* image, Mask* maskImage, const unsigned int patchRadius) :
                    Image(image), MaskImage(maskImage), PatchRadius(patchRadius)
 {
   //std::cout << "Priority() image size: " << image->GetLargestPossibleRegion().GetSize() << std::endl;
@@ -87,7 +87,8 @@ void Priority::ComputeAllPriorities()
 
   if(this->MaskImage->GetLargestPossibleRegion() != this->PriorityImage->GetLargestPossibleRegion())
     {
-    std::cerr << "Their priority image has not been properly initialized!" << std::endl;
+    std::cerr << "Priority::ComputeAllPriorities: The priority image has not been properly initialized!" 
+              << this->PriorityImage->GetLargestPossibleRegion() << std::endl;
     exit(-1);
     }
 

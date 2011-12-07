@@ -389,6 +389,8 @@ void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
   this->chkCompareHistogramIntersection->setEnabled(false);
   this->chkCompareMembership->setEnabled(false);
 
+  SetPriorityFromGUI();
+
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
   this->Inpainting.SetMaxForwardLookPatches(this->NumberOfForwardLook);

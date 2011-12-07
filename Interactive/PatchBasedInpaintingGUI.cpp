@@ -1168,7 +1168,7 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
   for(unsigned int i = 0; i < this->Inpainting.GetImagesToUpdate().size(); ++i)
     {
     std::cout << "Updating image " << i << std::endl;
-    //itk::ImageBase<2>* newImage = Helpers::CreateImageWithSameType(this->Inpainting.GetImagesToUpdate()[i]);
+    
     Helpers::OutputImageType(this->Inpainting.GetImagesToUpdate()[i]);
     itk::ImageBase<2>::Pointer newImage = Helpers::CreateImageWithSameType(this->Inpainting.GetImagesToUpdate()[i]);
     Helpers::OutputImageType(newImage);
