@@ -275,9 +275,6 @@ void PatchBasedInpaintingGUI::on_actionSaveResult_activated()
 
 void PatchBasedInpaintingGUI::on_chkDebugImages_clicked()
 {
-  QDir directoryMaker;
-  directoryMaker.mkdir("Debug");
-
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->DebugImages = this->chkDebugImages->isChecked();
 
@@ -371,6 +368,13 @@ void PatchBasedInpaintingGUI::on_btnInpaint_clicked()
 
 void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
 {
+  // We will potentially write debug outputs to the Debug/ directory of the working directory.
+  // We need to create this directory if it doesn't exist.
+  if(!QDir(QDir::current().filePath("Debug")).exists())
+    {
+    QDir().mkdir(QDir::current().filePath("Debug"));
+    }
+
   this->txtNumberOfForwardLook->setEnabled(false);
   this->txtNumberOfTopPatchesToSave->setEnabled(false);
   this->btnReset->setEnabled(true);
