@@ -423,25 +423,15 @@ void PatchBasedInpaintingGUI::OpenImage(const std::string& fileName)
 
 void PatchBasedInpaintingGUI::Reset()
 {
-  this->txtNumberOfForwardLook->setEnabled(true);
-  this->txtNumberOfTopPatchesToSave->setEnabled(true);
+  this->tabSettings->setEnabled(true);
+  this->tabRecord->setEnabled(true);
+  this->tabPrecomputed->setEnabled(true);
+  
+  this->btnReset->setEnabled(false);
   this->btnInpaint->setEnabled(false);
   this->btnStep->setEnabled(false);
   this->btnInitialize->setEnabled(true);
-  this->btnReset->setEnabled(false);
-  this->txtPatchRadius->setEnabled(true);
 
-  this->cmbPriority->setEnabled(true);
-  this->cmbSortBy->setEnabled(true);
-  this->cmbCompareImage->setEnabled(true);
-
-  this->chkCompareColor->setEnabled(true);
-  this->chkCompareDepth->setEnabled(true);
-  this->chkCompareFull->setEnabled(true);
-  this->chkCompareHistogramIntersection->setEnabled(true);
-  this->chkCompareMembership->setEnabled(true);
-
-  
   this->IterationRecords.clear();
   Initialize();
   Refresh();

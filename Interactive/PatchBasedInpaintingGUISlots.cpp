@@ -375,23 +375,14 @@ void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
     QDir().mkdir(QDir::current().filePath("Debug"));
     }
 
-  this->txtNumberOfForwardLook->setEnabled(false);
-  this->txtNumberOfTopPatchesToSave->setEnabled(false);
+  this->tabSettings->setEnabled(false);
+  this->tabRecord->setEnabled(false);
+  this->tabPrecomputed->setEnabled(false);
+
   this->btnReset->setEnabled(true);
   this->btnInpaint->setEnabled(true);
   this->btnStep->setEnabled(true);
   this->btnInitialize->setEnabled(false);
-  this->txtPatchRadius->setEnabled(false);
-  
-  this->cmbPriority->setEnabled(false);
-  this->cmbSortBy->setEnabled(false);
-  this->cmbCompareImage->setEnabled(false);
-
-  this->chkCompareColor->setEnabled(false);
-  this->chkCompareDepth->setEnabled(false);
-  this->chkCompareFull->setEnabled(false);
-  this->chkCompareHistogramIntersection->setEnabled(false);
-  this->chkCompareMembership->setEnabled(false);
 
   SetPriorityFromGUI();
 
