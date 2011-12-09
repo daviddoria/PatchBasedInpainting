@@ -82,8 +82,6 @@ public:
   void SetPatchMembershipDifference(PatchPair& patchPair);
   void SetPatchHistogramIntersection(PatchPair& patchPair);
   
-  float PatchSourceDifferenceBoundary(const Patch& sourcePatch);
-
   // Prepare to do some comparisons by finding all of the valid pixels in the target region
   void ComputeOffsets();
   

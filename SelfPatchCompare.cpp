@@ -34,13 +34,8 @@
 // Boost
 #include <boost/bind.hpp>
 
-SelfPatchCompare::SelfPatchCompare()
+SelfPatchCompare::SelfPatchCompare() : ColorFrequency(NULL), Image(NULL), MembershipImage(NULL), MaskImage(NULL), NumberOfComponentsPerPixel(1)
 {
-  this->NumberOfComponentsPerPixel = 1;
-  this->MaskImage = NULL;
-  this->Image = NULL;
-  this->MembershipImage = NULL;
-  this->ColorFrequency = NULL;
 }
 
 void SelfPatchCompare::SetImage(const FloatVectorImageType::Pointer image)
@@ -192,62 +187,6 @@ void SelfPatchCompare::SetPatchAverageAbsoluteFullDifference(PatchPair& patchPai
   patchPair.DifferenceMap[PatchPair::AverageAbsoluteDifference] = averageAbsoluteDifference;
 }
 
-float SelfPatchCompare::PatchSourceDifferenceBoundary(const Patch& sourcePatch)
-{
-  // This function assumes that all pixels in the source region are unmasked.
-  try
-  {
-    //assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
-
-    itk::ImageRegion<2> newSourceRegion = sourcePatch.Region;
-
-    // Move the source region to the target region. We move this way because we want to iterate over the mask in the target region.
-    itk::Offset<2> sourceTargetOffset = this->Pairs->TargetPatch.Region.GetIndex() - sourcePatch.Region.GetIndex();
-
-    newSourceRegion.SetIndex(sourcePatch.Region.GetIndex() + sourceTargetOffset);
-
-    // Force the source region to be entirely inside the image
-    newSourceRegion.Crop(this->Image->GetLargestPossibleRegion());
-
-    // Move the source region back to its original position
-    newSourceRegion.SetIndex(newSourceRegion.GetIndex() - sourceTargetOffset);
-
-    //std::cout << "New source region: " << newSourceRegion << std::endl;
-    //std::cout << "New target region: " << newTargetRegion << std::endl;
-    
-    float totalDifference = 0;
-
-    unsigned int componentsPerPixel = this->Image->GetNumberOfComponentsPerPixel();
-    
-    FloatVectorImageType::InternalPixelType *buffptr = this->Image->GetBufferPointer();
-    unsigned int offsetDifference = (this->Image->ComputeOffset(this->Pairs->TargetPatch.Region.GetIndex())
-                                    - this->Image->ComputeOffset(newSourceRegion.GetIndex())) * componentsPerPixel;
-
-    float difference = 0;
-    for(unsigned int pixelId = 0; pixelId < this->ValidTargetPatchOffsets.size(); ++pixelId)
-      {
-      difference = 0;
-      for(unsigned int i = 0; i < componentsPerPixel; ++i)
-        {
-	//std::cout << "component " << i << ": " << buffptr[this->ValidOffsets[pixelId] + i] - buffptr[this->ValidOffsets[pixelId] - offsetDifference + i] << std::endl;
-        //difference += fabs(buffptr[this->ValidOffsets[pixelId] + i] - buffptr[this->ValidOffsets[pixelId] - offsetDifference + i]);
-	difference += (buffptr[this->ValidTargetPatchOffsets[pixelId] + i] - buffptr[this->ValidTargetPatchOffsets[pixelId] - offsetDifference + i]) * 
-		      (buffptr[this->ValidTargetPatchOffsets[pixelId] + i] - buffptr[this->ValidTargetPatchOffsets[pixelId] - offsetDifference + i]);
-        }
-      totalDifference += difference;
-      }
-
-    float averageDifference = totalDifference/static_cast<float>(this->ValidTargetPatchOffsets.size());
-    return averageDifference;
-  } //end try
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in PatchDifference!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
-
 void SelfPatchCompare::SetPatchAllDifferences(PatchPair& patchPair)
 {
   //std::cout << "Enter SelfPatchCompare::SetPatchAllDifferences()" << std::endl;
@@ -307,46 +246,27 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
   // and when it is not.
   try
   {
-    //std::cout << "ComputeAllSourceDifferences()" << std::endl;
-    // If the target region is not fully inside the image, crop it and proceed.
-    if(!this->Image->GetLargestPossibleRegion().IsInside(this->Pairs->TargetPatch.Region))
-      {
-      std::cout << "Using special boundary difference." << std::endl;
-      // Force the target region to be entirely inside the image
-      this->Pairs->TargetPatch.Region.Crop(this->Image->GetLargestPossibleRegion());
+
+    ComputeOffsets();
+    //std::cout << "Enter SelfPatchCompare::ComputeAllSourceDifferences parallel SetPatchAllDifferences" << std::endl;
+    std::cout << "SelfPatchCompare::ComputeAllSourceDifferences had: " << this->ValidTargetPatchOffsets.size() << " ValidTargetPatchOffsets on which to operate!" << std::endl;
+    #ifdef USE_QT_PARALLEL
+      #pragma message("Using QtConcurrent!")
+      QtConcurrent::blockingMap<std::vector<PatchPair> >((*this->Pairs), boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
+    #else
+      #pragma message("NOT using QtConcurrent!")
+      for(unsigned int i = 0; i < this->Pairs->size(); ++i)
+        {
+        SetPatchAllDifferences((*this->Pairs)[i]);
+        }
+    #endif
     
-      ComputeOffsets();
-    
-      for(unsigned int sourcePatchId = 0; sourcePatchId < this->Pairs->size(); ++sourcePatchId)
-	{
-	float distance = PatchSourceDifferenceBoundary((*this->Pairs)[sourcePatchId].SourcePatch);
-	(*this->Pairs)[sourcePatchId].DifferenceMap[PatchPair::AverageAbsoluteDifference] = distance;
-	//(*this->Pairs)[sourcePatchId].DifferenceMap[PatchPair::AverageSquaredDifference] = distance;
-	}
-      }
-    else // The target patch is entirely inside the image
-      {
-      std::cout << "Using normal difference." << std::endl;
-      ComputeOffsets();
-      //std::cout << "Enter SelfPatchCompare::ComputeAllSourceDifferences parallel SetPatchAllDifferences" << std::endl;
-      std::cout << "SelfPatchCompare::ComputeAllSourceDifferences had: " << this->ValidTargetPatchOffsets.size() << " ValidTargetPatchOffsets on which to operate!" << std::endl;
-      #ifdef USE_QT_PARALLEL
-        #pragma message("Using QtConcurrent!")
-        QtConcurrent::blockingMap<std::vector<PatchPair> >((*this->Pairs), boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
-      #else
-        #pragma message("NOT using QtConcurrent!")
-        for(unsigned int i = 0; i < this->Pairs->size(); ++i)
-          {
-          SetPatchAllDifferences((*this->Pairs)[i]);
-          }
-      #endif
-      
-      // Serial only - for testing
+    // Serial only - for testing
 //       for(unsigned int i = 0; i < this->Pairs->size(); ++i)
 //         {
 //         SetPatchAllDifferences((*this->Pairs)[i]);
 //         }
-      }
+      
     //std::cout << "Leave SelfPatchCompare::ComputeAllSourceDifferences()" << std::endl;
   }
   catch( itk::ExceptionObject & err )
