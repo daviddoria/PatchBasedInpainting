@@ -169,7 +169,12 @@ SelfPatchCompare* PatchBasedInpainting::GetPatchCompare() const
 //   this->PatchCompare = patchCompare;
 // }
 
-void PatchBasedInpainting::SetBlurredImage(FloatVectorImageType::Pointer blurredImage)
+void PatchBasedInpainting::SetBlurredImage(const FloatVectorImageType::Pointer blurredImage)
 {
   Helpers::DeepCopy<FloatVectorImageType>(blurredImage, this->BlurredImage);
+}
+
+void PatchBasedInpainting::SetMembershipImage(const IntImageType::Pointer membershipImage)
+{
+  Helpers::DeepCopy<IntImageType>(membershipImage, this->MembershipImage);
 }

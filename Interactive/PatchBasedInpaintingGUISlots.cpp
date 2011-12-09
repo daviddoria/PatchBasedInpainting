@@ -561,3 +561,29 @@ void PatchBasedInpaintingGUI::on_sldDepthColorLambda_valueChanged()
 {
   SetDepthColorLambdaFromGUI();
 }
+
+void PatchBasedInpaintingGUI::on_btnChooseBlurredImage_clicked()
+{
+  QString fileName = QFileDialog::getOpenFileName(this, "Save File", ".", "Image Files (*.png *.mha)");
+
+  DebugMessage<std::string>("Got filename: ", fileName.toStdString());
+  if(fileName.toStdString().empty())
+    {
+    std::cout << "Filename was empty." << std::endl;
+    return;
+    }
+  this->txtBlurredImage->setText(fileName);
+}
+
+void PatchBasedInpaintingGUI::on_btnChooseMembershipImage_clicked()
+{
+  QString fileName = QFileDialog::getOpenFileName(this, "Save File", ".", "Image Files (*.png *.mha)");
+
+  DebugMessage<std::string>("Got filename: ", fileName.toStdString());
+  if(fileName.toStdString().empty())
+    {
+    std::cout << "Filename was empty." << std::endl;
+    return;
+    }
+  this->txtMembershipImage->setText(fileName);
+}

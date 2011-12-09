@@ -611,13 +611,24 @@ void PatchBasedInpaintingGUI::Initialize()
   this->Inpainting.SetPatchRadius(this->PatchRadius);
   this->Inpainting.SetMask(this->UserMaskImage);
   this->Inpainting.SetImage(this->UserImage);
-  
-  // TODO: don't hard code this.
-  typedef itk::ImageFileReader<FloatVectorImageType> ReaderType;
-  ReaderType::Pointer reader = ReaderType::New();
-  reader->SetFileName("trashcan_blurred.mha");
-  reader->Update();
-  this->Inpainting.SetBlurredImage(reader->GetOutput());
+
+  if(!this->txtBlurredImage->text().isEmpty())
+    {
+    typedef itk::ImageFileReader<FloatVectorImageType> ReaderType;
+    ReaderType::Pointer reader = ReaderType::New();
+    reader->SetFileName(this->txtBlurredImage->text().toStdString());
+    reader->Update();
+    this->Inpainting.SetBlurredImage(reader->GetOutput());
+    }
+
+  if(!this->txtMembershipImage->text().isEmpty())
+    {
+    typedef itk::ImageFileReader<IntImageType> ReaderType;
+    ReaderType::Pointer reader = ReaderType::New();
+    reader->SetFileName(this->txtMembershipImage->text().toStdString());
+    reader->Update();
+    this->Inpainting.SetMembershipImage(reader->GetOutput());
+    }
   
   // The PatchSortFunction has already been set by the radio buttons.
   

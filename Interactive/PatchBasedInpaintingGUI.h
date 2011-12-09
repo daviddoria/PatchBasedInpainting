@@ -94,6 +94,9 @@ public slots:
   void on_radDisplayChannel_clicked();
   void on_spinChannelToDisplay_valueChanged(int unused);
 
+  void on_btnChooseBlurredImage_clicked();
+  void on_btnChooseMembershipImage_clicked();
+  
   void on_btnGoToIteration_clicked();
 
   void on_btnDisplayPreviousStep_clicked();

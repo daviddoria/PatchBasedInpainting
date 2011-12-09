@@ -130,8 +130,11 @@ public:
   itk::Size<2> GetPatchSize();
   
   // It is sometimes very slow to compute an anisotropic blurring. For testing, we would want to compute this once and use it each time.
-  void SetBlurredImage(FloatVectorImageType::Pointer);
+  void SetBlurredImage(const FloatVectorImageType::Pointer);
 
+  // Some techniques are very slow to compute the membership image. For testing, we would want to compute this once and use it each time.
+  void SetMembershipImage(const IntImageType::Pointer);
+  
   ClusterColorsAdaptive* GetClusterColors();
   
   ITKImageCollection& GetImagesToUpdate();
@@ -248,7 +251,7 @@ private:
 
   Priority* PriorityFunction;
 
-  IntImageType::Pointer ColorBinMembershipImage;
+  IntImageType::Pointer MembershipImage;
   //ClusterColorsUniform ColorFrequency;
   ClusterColorsAdaptive ColorFrequency;
 

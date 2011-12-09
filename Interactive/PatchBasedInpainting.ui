@@ -30,12 +30,12 @@
     <item row="0" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,6,1,2,5">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout" stretch=""/>
+       <layout class="QVBoxLayout" name="verticalLayout"/>
       </item>
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>3</number>
         </property>
         <widget class="QWidget" name="tabCompute">
          <attribute name="title">
@@ -594,17 +594,41 @@
             <item>
              <widget class="QLabel" name="label_22">
               <property name="text">
-               <string>TextLabel</string>
+               <string>Blurred</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit"/>
+             <widget class="QLineEdit" name="txtBlurredImage"/>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton">
+             <widget class="QPushButton" name="btnChooseBlurredImage">
               <property name="text">
-               <string>PushButton</string>
+               <string>Choose</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_17">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="text">
+               <string>Membership</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="txtMembershipImage"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnChooseMembershipImage">
+              <property name="text">
+               <string>Choose</string>
               </property>
              </widget>
             </item>

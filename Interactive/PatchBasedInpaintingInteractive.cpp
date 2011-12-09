@@ -61,12 +61,14 @@ int main( int argc, char** argv )
     bool blurredFileNameProvided = parser->GetCommandLineArgument( "-blurredImage", blurredFileName );
     if(blurredFileNameProvided)
       {
+      patchBasedInpaintingGUI->txtBlurredImage->setText(blurredFileName.c_str());
       }
 
     std::string membershipFileName;
     bool membershipFileNameProvided = parser->GetCommandLineArgument( "-membershipImage", membershipFileName );
     if(membershipFileNameProvided)
       {
+      patchBasedInpaintingGUI->txtMembershipImage->setText(membershipFileName.c_str());
       }
 
     }

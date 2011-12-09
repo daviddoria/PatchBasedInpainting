@@ -54,7 +54,7 @@ PatchBasedInpainting::PatchBasedInpainting()
   this->OriginalImage = FloatVectorImageType::New();
   
   this->MaskImage = Mask::New();
-  this->ColorBinMembershipImage = IntImageType::New();
+  this->MembershipImage = IntImageType::New();
   this->CurrentOutputImage = FloatVectorImageType::New();
   //std::cout << "this->CurrentOutputImage address in constructor: " << this->CurrentOutputImage << std::endl;
   this->CIELabImage = FloatVectorImageType::New();
@@ -402,7 +402,7 @@ void PatchBasedInpainting::RecomputeScoresWithNewPatches(std::vector<Patch>& new
     this->PatchCompare->SetPairs(&newPairs);
     this->PatchCompare->SetImage(this->CompareImage);
     this->PatchCompare->SetMask(this->MaskImage);
-    this->PatchCompare->SetMembershipImage(this->ColorBinMembershipImage);
+    this->PatchCompare->SetMembershipImage(this->MembershipImage);
     this->PatchCompare->ComputeAllSourceDifferences();
 
     this->PotentialCandidatePairs[candidateId].Combine(newPairs);
@@ -424,7 +424,7 @@ void PatchBasedInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidat
   this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(this->BlurredImage);
   this->PatchCompare->SetMask(this->MaskImage);
-  this->PatchCompare->SetMembershipImage(this->ColorBinMembershipImage);
+  this->PatchCompare->SetMembershipImage(this->MembershipImage);
   this->PatchCompare->ComputeAllSourceDifferences();
   
   std::sort(candidatePairs.begin(), candidatePairs.end(), SortFunctorWrapper(this->PatchSortFunction));
@@ -446,7 +446,7 @@ void PatchBasedInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidat
   this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(tempImage);
   this->PatchCompare->SetMask(this->MaskImage);
-  this->PatchCompare->SetMembershipImage(this->ColorBinMembershipImage);
+  this->PatchCompare->SetMembershipImage(this->MembershipImage);
   this->PatchCompare->ComputeAllSourceAndTargetDifferences();
 
   //std::cout << "Detailed score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
@@ -475,7 +475,7 @@ void PatchBasedInpainting::FindBestPatchNormal(CandidatePairs& candidatePairs, P
   this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(this->CompareImage);
   this->PatchCompare->SetMask(this->MaskImage);
-  this->PatchCompare->SetMembershipImage(this->ColorBinMembershipImage);
+  this->PatchCompare->SetMembershipImage(this->MembershipImage);
   this->PatchCompare->ComputeAllSourceDifferences();
 
   //std::cout << "FindBestPatch: Finished ComputeAllSourceDifferences()" << std::endl;
@@ -502,7 +502,7 @@ void PatchBasedInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePa
   this->PatchCompare->SetImage(this->CompareImage);
   this->PatchCompare->SetMask(this->MaskImage);
   this->PatchCompare->SetPairs(&candidatePairs);
-  this->PatchCompare->SetMembershipImage(this->ColorBinMembershipImage);
+  this->PatchCompare->SetMembershipImage(this->MembershipImage);
   
   this->PatchCompare->FunctionsToCompute.clear();
   this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,this->PatchCompare,_1));
@@ -664,9 +664,9 @@ unsigned int PatchBasedInpainting::GetRequiredHistogramIntersection(const unsign
     PatchPair patchPair = this->PotentialCandidatePairs[bestForwardLookId][sourcePatchId];
     //std::vector<float> histogram1 = Histograms::Compute1DHistogramOfMultiChannelMaskedImage(this->CurrentOutputImage, bestPatchPair.TargetPatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region, 50);
     //std::vector<float> histogram2 = Histograms::Compute1DHistogramOfMultiChannelMaskedImage(this->CurrentOutputImage, bestPatchPair.SourcePatch.Region, inverseMask, bestPatchPair.TargetPatch.Region, 50);
-    std::vector<float> histogram1 = this->ColorFrequency.HistogramRegion(this->ColorBinMembershipImage,
+    std::vector<float> histogram1 = this->ColorFrequency.HistogramRegion(this->MembershipImage,
                                                                          patchPair.TargetPatch.Region, this->MaskImage, patchPair.TargetPatch.Region);
-    std::vector<float> histogram2 = this->ColorFrequency.HistogramRegion(this->ColorBinMembershipImage,
+    std::vector<float> histogram2 = this->ColorFrequency.HistogramRegion(this->MembershipImage,
                                                                          patchPair.SourcePatch.Region, this->MaskImage, patchPair.TargetPatch.Region, true);
     sourcePatchId++; // Note at the end of the loop bestPatchPair will have been set to the previous patchId.
     histogramIntersection = Histograms::HistogramIntersection(histogram2, histogram1);
