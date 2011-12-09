@@ -48,8 +48,27 @@ int main( int argc, char** argv )
       std::cerr << "Must provide at least an image and a mask!" << std::endl;
       exit(-1);
       }
-    bool debugFunctionEnterLeave = true;
-    patchBasedInpaintingGUI = new PatchBasedInpaintingGUI(imageFileName, maskFileName, debugFunctionEnterLeave);
+
+    bool enterLeave;
+    bool enterLeaveProvided = parser->GetCommandLineArgument( "-enterLeave", enterLeave );
+    if(!enterLeaveProvided)
+      {
+      enterLeave = false;
+      }
+    patchBasedInpaintingGUI = new PatchBasedInpaintingGUI(imageFileName, maskFileName, enterLeave);
+    
+    std::string blurredFileName;
+    bool blurredFileNameProvided = parser->GetCommandLineArgument( "-blurredImage", blurredFileName );
+    if(blurredFileNameProvided)
+      {
+      }
+
+    std::string membershipFileName;
+    bool membershipFileNameProvided = parser->GetCommandLineArgument( "-membershipImage", membershipFileName );
+    if(membershipFileNameProvided)
+      {
+      }
+
     }
   else
     {
