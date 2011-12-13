@@ -16,19 +16,23 @@
  *
  *=========================================================================*/
 
+// Custom
 #include "Types.h"
 #include "Helpers.h"
+#include "HelpersOutput.h"
 
-#include "itkGradientImageFilter.h"
-#include "itkGradientMagnitudeImageFilter.h"
+// ITK
+#include "itkBinaryDilateImageFilter.h"
 #include "itkDiscreteGaussianImageFilter.h"
 #include "itkFlatStructuringElement.h"
+#include "itkGradientImageFilter.h"
+#include "itkGradientMagnitudeImageFilter.h"
 #include "itkInvertIntensityImageFilter.h"
 #include "itkMaskImageFilter.h"
-#include "itkBinaryDilateImageFilter.h"
+#include "itkRGBToLuminanceImageFilter.h"
 
-void CreateErroneousGradient(std::string imageFilename);
-void MaskNewGradientWithOriginalMask(std::string imageFilename, std::string maskFilename);
+void CreateErroneousGradient(const std::string& imageFilename);
+void MaskNewGradientWithOriginalMask(const std::string& imageFilename, const std::string& maskFilename);
 
 int main(int argc, char *argv[])
 {
@@ -47,26 +51,30 @@ int main(int argc, char *argv[])
   return EXIT_SUCCESS;
 }
 
-void CreateErroneousGradient(std::string imageFilename)
+void CreateErroneousGradient(const std::string& imageFilename)
 {
   std::cout << "Reading image: " << imageFilename << std::endl;
 
-  ColorImageReaderType::Pointer imageReader = ColorImageReaderType::New();
+  typedef itk::ImageFileReader<RGBImageType> ReaderType;
+  ReaderType::Pointer imageReader = ReaderType::New();
   imageReader->SetFileName(imageFilename.c_str());
   imageReader->Update();
 
   // Convert the color input image to a grayscale image
-  UnsignedCharImageType::Pointer grayscaleImage = UnsignedCharImageType::New();
-  ColorToGrayscale<ColorImageType>(imageReader->GetOutput(), grayscaleImage);
+  UnsignedCharScalarImageType::Pointer grayscaleImage = UnsignedCharScalarImageType::New();
+  //Helpers::ColorToGrayscale<RGBImageType>(imageReader->GetOutput(), grayscaleImage);
+  
+  typedef itk::RGBToLuminanceImageFilter< RGBImageType, UnsignedCharScalarImageType> LuminanceFilterType;
+  LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
+  luminanceFilter->SetInput(imageReader->GetOutput());
+  luminanceFilter->Update();
+  Helpers::DeepCopy<UnsignedCharScalarImageType>(luminanceFilter->GetOutput(), grayscaleImage);
 
-  WriteImage<UnsignedCharImageType>(grayscaleImage, "greyscale.png");
+  HelpersOutput::WriteImage<UnsignedCharScalarImageType>(grayscaleImage, "greyscale.png");
 
   // Blur the image to compute better gradient estimates
-  typedef itk::DiscreteGaussianImageFilter<
-          UnsignedCharImageType, FloatImageType >  filterType;
-
-  // Create and setup a Gaussian filter
-  filterType::Pointer gaussianFilter = filterType::New();
+  typedef itk::DiscreteGaussianImageFilter<UnsignedCharScalarImageType, FloatScalarImageType >  GaussianFilterType;
+  GaussianFilterType::Pointer gaussianFilter = GaussianFilterType::New();
   gaussianFilter->SetInput(grayscaleImage);
   gaussianFilter->SetVariance(2);
   gaussianFilter->Update();
@@ -85,37 +93,36 @@ void CreateErroneousGradient(std::string imageFilename)
   */
 
   // Compute the gradient magnitude
-  typedef itk::GradientMagnitudeImageFilter<
-      FloatImageType, UnsignedCharImageType>  GradientMagnitudeFilterType;
+  typedef itk::GradientMagnitudeImageFilter<FloatScalarImageType, UnsignedCharScalarImageType>  GradientMagnitudeFilterType;
   GradientMagnitudeFilterType::Pointer gradientMagnitudeFilter = GradientMagnitudeFilterType::New();
   gradientMagnitudeFilter->SetInput(gaussianFilter->GetOutput());
   gradientMagnitudeFilter->Update();
 
-  WriteImage<UnsignedCharImageType>(gradientMagnitudeFilter->GetOutput(), "gradient.png");
+  HelpersOutput::WriteImage<UnsignedCharScalarImageType>(gradientMagnitudeFilter->GetOutput(), "gradient.png");
 
 }
 
-void MaskNewGradientWithOriginalMask(std::string imageFilename, std::string maskFilename)
+void MaskNewGradientWithOriginalMask(const std::string& imageFilename, const std::string& maskFilename)
 {
   // Read image and convert it to grayscale
-  ColorImageReaderType::Pointer imageReader = ColorImageReaderType::New();
+  typedef itk::ImageFileReader<RGBImageType> RGBReaderType;
+  RGBReaderType::Pointer imageReader = RGBReaderType::New();
   imageReader->SetFileName(imageFilename);
   imageReader->Update();
 
-  UnsignedCharImageType::Pointer image = UnsignedCharImageType::New();
-  ColorToGrayscale<ColorImageType>(imageReader->GetOutput(), image);
+  UnsignedCharScalarImageType::Pointer image = UnsignedCharScalarImageType::New();
+  //Helpers::ColorToGrayscale<RGBImageType>(imageReader->GetOutput(), image);
+  Helpers::FilterImage<RGBImageType, UnsignedCharScalarImageType, itk::RGBToLuminanceImageFilter<RGBImageType, UnsignedCharScalarImageType> >(imageReader->GetOutput(), image);
 
   // Read mask image
-  UnsignedCharImageReaderType::Pointer maskReader = UnsignedCharImageReaderType::New();
+  typedef itk::ImageFileReader<Mask> MaskReaderType;
+  MaskReaderType::Pointer maskReader = MaskReaderType::New();
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 
   // Blur the image to compute better gradient estimates
-  typedef itk::DiscreteGaussianImageFilter<
-          UnsignedCharImageType, FloatImageType >  filterType;
-
-  // Create and setup a Gaussian filter
-  filterType::Pointer gaussianFilter = filterType::New();
+  typedef itk::DiscreteGaussianImageFilter<UnsignedCharScalarImageType, FloatScalarImageType >  GaussianFilterType;
+  GaussianFilterType::Pointer gaussianFilter = GaussianFilterType::New();
   gaussianFilter->SetInput(image);
   gaussianFilter->SetVariance(2);
   gaussianFilter->Update();
@@ -134,13 +141,12 @@ void MaskNewGradientWithOriginalMask(std::string imageFilename, std::string mask
   */
 
   // Compute the gradient magnitude
-  typedef itk::GradientMagnitudeImageFilter<
-      FloatImageType, UnsignedCharImageType>  GradientMagnitudeFilterType;
+  typedef itk::GradientMagnitudeImageFilter<FloatScalarImageType, UnsignedCharScalarImageType>  GradientMagnitudeFilterType;
   GradientMagnitudeFilterType::Pointer gradientMagnitudeFilter = GradientMagnitudeFilterType::New();
   gradientMagnitudeFilter->SetInput(gaussianFilter->GetOutput());
   gradientMagnitudeFilter->Update();
 
-  WriteImage<UnsignedCharImageType>(gradientMagnitudeFilter->GetOutput(), "gradient.png");
+  HelpersOutput::WriteImage<UnsignedCharScalarImageType>(gradientMagnitudeFilter->GetOutput(), "gradient.png");
 
 
   // Expand the mask - this is necessary to prevent the isophotes from being undefined in the target region
@@ -149,7 +155,7 @@ void MaskNewGradientWithOriginalMask(std::string imageFilename, std::string mask
   radius.Fill(5);
 
   StructuringElementType structuringElement = StructuringElementType::Box(radius);
-  typedef itk::BinaryDilateImageFilter<UnsignedCharImageType, UnsignedCharImageType, StructuringElementType>
+  typedef itk::BinaryDilateImageFilter<UnsignedCharScalarImageType, UnsignedCharScalarImageType, StructuringElementType>
           BinaryDilateImageFilterType;
 
   BinaryDilateImageFilterType::Pointer expandMaskFilter
@@ -158,28 +164,26 @@ void MaskNewGradientWithOriginalMask(std::string imageFilename, std::string mask
   expandMaskFilter->SetKernel(structuringElement);
   expandMaskFilter->Update();
 
-  UnsignedCharImageType::Pointer expandedMask = UnsignedCharImageType::New();
+  UnsignedCharScalarImageType::Pointer expandedMask = UnsignedCharScalarImageType::New();
   expandedMask->Graft(expandMaskFilter->GetOutput());
 
-  WriteScaledImage<UnsignedCharImageType>(expandedMask, "ExpandedMasked.png");
+  HelpersOutput::WriteScaledScalarImage<UnsignedCharScalarImageType>(expandedMask, "ExpandedMasked.png");
 
   // Invert the mask
-  typedef itk::InvertIntensityImageFilter <UnsignedCharImageType>
-          InvertIntensityImageFilterType;
+  typedef itk::InvertIntensityImageFilter <UnsignedCharScalarImageType> InvertIntensityImageFilterType;
 
-  InvertIntensityImageFilterType::Pointer invertMaskFilter
-          = InvertIntensityImageFilterType::New();
+  InvertIntensityImageFilterType::Pointer invertMaskFilter = InvertIntensityImageFilterType::New();
   invertMaskFilter->SetInput(expandedMask);
   invertMaskFilter->Update();
 
   //WriteScaledImage<UnsignedCharImageType>(invertMaskFilter->GetOutput(), "invertedExpandedMask.mhd");
 
   // Keep only values outside the masked region
-  typedef itk::MaskImageFilter< UnsignedCharImageType, UnsignedCharImageType, UnsignedCharImageType > MaskFilterType;
+  typedef itk::MaskImageFilter< UnsignedCharScalarImageType, UnsignedCharScalarImageType, UnsignedCharScalarImageType > MaskFilterType;
   MaskFilterType::Pointer maskFilter = MaskFilterType::New();
   maskFilter->SetInput(gradientMagnitudeFilter->GetOutput());
   maskFilter->SetMaskImage(invertMaskFilter->GetOutput());
   maskFilter->Update();
 
-  WriteScaledImage<UnsignedCharImageType>(maskFilter->GetOutput(), "MaskedGradientMagnitude.png");
+  HelpersOutput::WriteScaledScalarImage<UnsignedCharScalarImageType>(maskFilter->GetOutput(), "MaskedGradientMagnitude.png");
 }

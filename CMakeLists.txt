@@ -66,7 +66,7 @@ SET(BuildNonInteractive CACHE BOOL "Build the non-interactive version.")
 if(BuildNonInteractive)
   ADD_EXECUTABLE(PatchBasedInpaintingNonInteractive
   PatchBasedInpaintingNonInteractive.cpp)
-  TARGET_LINK_LIBRARIES(PatchBasedInpaintingNonInteractive PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(PatchBasedInpaintingNonInteractive PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES})
   INSTALL( TARGETS PatchBasedInpaintingNonInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
@@ -74,3 +74,8 @@ SET(BuildTests CACHE BOOL "Build tests.")
 if(BuildTests)
   add_subdirectory(Tests)
 ENDIF(BuildTests)
+
+SET(BuildDemos CACHE BOOL "Build demos.")
+if(BuildDemos)
+  add_subdirectory(Demos)
+ENDIF(BuildDemos)

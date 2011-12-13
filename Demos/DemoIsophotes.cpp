@@ -17,9 +17,10 @@
  *=========================================================================*/
 
 // Custom
+#include "HelpersOutput.h"
 #include "Mask.h"
+#include "PatchBasedInpainting.h"
 #include "Types.h"
-#include "CriminisiInpainting.h"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -29,6 +30,9 @@
 // VTK
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
+
+// Qt
+#include <QColor>
 
 int main(int argc, char *argv[])
 {
@@ -59,22 +63,22 @@ int main(int argc, char *argv[])
   // Prepare image
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   Helpers::VectorImageToRGBImage(imageReader->GetOutput(), rgbImage);
-  maskReader->GetOutput()->ApplyToImage<RGBImageType>(rgbImage, Qt::black);
-  Helpers::WriteImage<RGBImageType>(rgbImage, "Test/TestIsophotes.rgb.mha");
+  maskReader->GetOutput()->ApplyToImage<RGBImageType, QColor>(rgbImage, Qt::black);
+  HelpersOutput::WriteImage<RGBImageType>(rgbImage, "Test/TestIsophotes.rgb.mha");
 
   typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
   LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
   luminanceFilter->SetInput(rgbImage);
   luminanceFilter->Update();
 
-  Helpers::WriteImage<FloatScalarImageType>(luminanceFilter->GetOutput(), "Test/Luminance.mha");
+  HelpersOutput::WriteImage<FloatScalarImageType>(luminanceFilter->GetOutput(), "Test/Luminance.mha");
 
-  CriminisiInpainting inpainting;
+  PatchBasedInpainting inpainting;
   inpainting.SetDebugImages(true);
   inpainting.SetMask(maskReader->GetOutput());
   inpainting.SetImage(imageReader->GetOutput());
   //Helpers::Write2DVectorImage(inpainting.GetIsophoteImage(), "Test/TestIsophotes.isophotes.mha");
-  inpainting.FindBoundary();
+  //inpainting.FindBoundary();
 
   // After blurVariance == 4, you cannot tell the difference in the output.
   for(unsigned int blurVariance = 0; blurVariance < 5; ++blurVariance)
@@ -87,23 +91,23 @@ int main(int argc, char *argv[])
     Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), maskReader->GetOutput(), blurVariance, blurredLuminance);
     std::stringstream ssBlurredLuminance;
     ssBlurredLuminance << "Test/BlurredLuminance_" << fileNumber << ".mha";
-    Helpers::WriteImage<FloatScalarImageType>(blurredLuminance, ssBlurredLuminance.str());
+    HelpersOutput::WriteImage<FloatScalarImageType>(blurredLuminance, ssBlurredLuminance.str());
   
     //Helpers::WriteImage<FloatScalarImageType>(blurredLuminance, "Test/TestIsophotes.blurred.mha");
-    inpainting.ComputeMaskedIsophotes(blurredLuminance, maskReader->GetOutput());
+    //inpainting.ComputeMaskedIsophotes(blurredLuminance, maskReader->GetOutput());
 
     // Boundary isophotes
     typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
     MaskFilterType::Pointer maskFilter = MaskFilterType::New();
-    maskFilter->SetInput(inpainting.GetIsophoteImage());
-    maskFilter->SetMaskImage(inpainting.GetBoundaryImage());
+    //maskFilter->SetInput(inpainting.GetIsophoteImage());
+    //maskFilter->SetMaskImage(inpainting.GetBoundaryImage());
     maskFilter->Update();
 
     vtkSmartPointer<vtkPolyData> boundaryIsophotes = vtkSmartPointer<vtkPolyData>::New();
     Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), boundaryIsophotes);
     std::stringstream ssPolyData;
     ssPolyData << "Test/BoundaryIsophotes_" << fileNumber << ".vtp";
-    Helpers::WritePolyData(boundaryIsophotes, ssPolyData.str());
+    HelpersOutput::WritePolyData(boundaryIsophotes, ssPolyData.str());
     }
 
   return EXIT_SUCCESS;

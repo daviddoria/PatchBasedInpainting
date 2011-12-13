@@ -18,6 +18,7 @@
 
 #include "Types.h"
 #include "Helpers.h"
+#include "HelpersOutput.h"
 
 #include "itkGradientImageFilter.h"
 #include "itkGradientMagnitudeImageFilter.h"
@@ -39,53 +40,47 @@ int main(int argc, char *argv[])
   std::string maskFilename = argv[1];
 
   std::cout << "Reading image: " << maskFilename << std::endl;
-
-  UnsignedCharImageReaderType::Pointer maskReader = UnsignedCharImageReaderType::New();
+  typedef itk::ImageFileReader<UnsignedCharScalarImageType> ReaderType;
+  ReaderType::Pointer maskReader = ReaderType::New();
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 
    // Blur the mask, compute the gradient, then keep the normals only at the original mask boundary
 
-  typedef itk::DiscreteGaussianImageFilter<
-          UnsignedCharImageType, FloatImageType >  filterType;
+  typedef itk::DiscreteGaussianImageFilter<UnsignedCharScalarImageType, FloatScalarImageType >  filterType;
   filterType::Pointer gaussianFilter = filterType::New();
   gaussianFilter->SetInput(maskReader->GetOutput());
   gaussianFilter->SetVariance(2);
   gaussianFilter->Update();
 
   // Invert the mask
-  typedef itk::InvertIntensityImageFilter <UnsignedCharImageType>
-          InvertIntensityImageFilterType;
+  typedef itk::InvertIntensityImageFilter <UnsignedCharScalarImageType> InvertIntensityImageFilterType;
 
-  InvertIntensityImageFilterType::Pointer invertIntensityFilter
-          = InvertIntensityImageFilterType::New();
+  InvertIntensityImageFilterType::Pointer invertIntensityFilter = InvertIntensityImageFilterType::New();
   invertIntensityFilter->SetInput(maskReader->GetOutput());
   invertIntensityFilter->Update();
 
   // Find the boundary
-  typedef itk::BinaryContourImageFilter <UnsignedCharImageType, UnsignedCharImageType >
-          binaryContourImageFilterType;
-  binaryContourImageFilterType::Pointer binaryContourFilter
-          = binaryContourImageFilterType::New ();
+  typedef itk::BinaryContourImageFilter <UnsignedCharScalarImageType, UnsignedCharScalarImageType > binaryContourImageFilterType;
+  binaryContourImageFilterType::Pointer binaryContourFilter = binaryContourImageFilterType::New ();
   binaryContourFilter->SetInput(invertIntensityFilter->GetOutput());
   binaryContourFilter->Update();
 
-  typedef itk::GradientMagnitudeImageFilter<
-      FloatImageType, UnsignedCharImageType>  GradientMagnitudeFilterType;
+  typedef itk::GradientMagnitudeImageFilter< FloatScalarImageType, UnsignedCharScalarImageType>  GradientMagnitudeFilterType;
   GradientMagnitudeFilterType::Pointer gradientMagnitudeFilter = GradientMagnitudeFilterType::New();
   gradientMagnitudeFilter->SetInput(gaussianFilter->GetOutput());
   gradientMagnitudeFilter->Update();
 
-  WriteImage<UnsignedCharImageType>(gradientMagnitudeFilter->GetOutput(), "BoundaryGradient.png");
+  HelpersOutput::WriteImage<UnsignedCharScalarImageType>(gradientMagnitudeFilter->GetOutput(), "BoundaryGradient.png");
 
   // Only keep the normals at the boundary
-  typedef itk::MaskImageFilter< UnsignedCharImageType, UnsignedCharImageType, UnsignedCharImageType > MaskFilterType;
+  typedef itk::MaskImageFilter< UnsignedCharScalarImageType, UnsignedCharScalarImageType, UnsignedCharScalarImageType > MaskFilterType;
   MaskFilterType::Pointer maskFilter = MaskFilterType::New();
   maskFilter->SetInput(gradientMagnitudeFilter->GetOutput());
   maskFilter->SetMaskImage(binaryContourFilter->GetOutput());
   maskFilter->Update();
 
-  WriteImage<UnsignedCharImageType>(maskFilter->GetOutput(), "MaskedBoundaryGradient.png");
+  HelpersOutput::WriteImage<UnsignedCharScalarImageType>(maskFilter->GetOutput(), "MaskedBoundaryGradient.png");
 
   return EXIT_SUCCESS;
 }

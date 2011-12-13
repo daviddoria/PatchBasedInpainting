@@ -16,10 +16,13 @@
  *
  *=========================================================================*/
 
+// Custom
+#include "HelpersOutput.h"
 #include "Mask.h"
+#include "PatchBasedInpainting.h"
 #include "Types.h"
-#include "CriminisiInpainting.h"
 
+// ITK
 #include "itkImageFileReader.h"
 #include "itkRGBToLuminanceImageFilter.h"
 
@@ -53,7 +56,7 @@ int main(int argc, char *argv[])
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   Helpers::VectorImageToRGBImage(imageReader->GetOutput(), rgbImage);
 
-  Helpers::WriteImage<RGBImageType>(rgbImage, "Test/TestIsophotes.rgb.mha");
+  HelpersOutput::WriteImage<RGBImageType>(rgbImage, "Test/TestIsophotes.rgb.mha");
 
   typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
   LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
@@ -65,16 +68,16 @@ int main(int argc, char *argv[])
   unsigned int kernelRadius = 5;
   Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), maskReader->GetOutput(), kernelRadius, blurredLuminance);
 
-  Helpers::WriteImage<FloatScalarImageType>(blurredLuminance, "Test/TestIsophotes.blurred.mha");
+  HelpersOutput::WriteImage<FloatScalarImageType>(blurredLuminance, "Test/TestIsophotes.blurred.mha");
 
 
-  CriminisiInpainting inpainting;
+  PatchBasedInpainting inpainting;
   inpainting.SetMask(maskReader->GetOutput());
   inpainting.SetImage(imageReader->GetOutput());
-  inpainting.ComputeMaskedIsophotes(blurredLuminance, maskReader->GetOutput());
+  //inpainting.ComputeMaskedIsophotes(blurredLuminance, maskReader->GetOutput());
 
   //Helpers::WriteImage<FloatVector2ImageType>(inpainting.GetIsophoteImage(), );
-  Helpers::Write2DVectorImage(inpainting.GetIsophoteImage(), "Test/TestIsophotes.isophotes.mha");
+  //HelpersOutput::Write2DVectorImage(inpainting.GetIsophoteImage(), "Test/TestIsophotes.isophotes.mha");
 
   itk::Size<2> size;
   size.Fill(21);
@@ -97,9 +100,9 @@ int main(int argc, char *argv[])
   Patch targetPatch(targetRegion);
   PatchPair patchPair(sourcePatch, targetPatch);
 
-  inpainting.FindBoundary();
+  //inpainting.FindBoundary();
 
-  std::vector<itk::Index<2> > borderPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(inpainting.GetBoundaryImage(), targetRegion);
+  //std::vector<itk::Index<2> > borderPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(inpainting.GetBoundaryImage(), targetRegion);
 
   itk::RGBPixel<unsigned char> black;
   black.SetRed(0);
@@ -148,15 +151,14 @@ int main(int argc, char *argv[])
   target->SetRegions(imageReader->GetOutput()->GetLargestPossibleRegion());
   target->Allocate();
   Helpers::BlankAndOutlineRegion<RGBImageType>(target, targetRegion, black, red);
-  
-  
+
   RGBImageType::Pointer source = RGBImageType::New();
   source->SetRegions(imageReader->GetOutput()->GetLargestPossibleRegion());
   source->Allocate();
   Helpers::BlankAndOutlineRegion<RGBImageType>(source, sourceRegion, black, green);
 
   itk::Offset<2> offset = targetIndex - sourceIndex;
-  
+  /*
   for(unsigned int pixelId = 0; pixelId < borderPixels.size(); ++pixelId)
     {
     itk::Index<2> targetPatchSourceSideBoundaryPixel = borderPixels[pixelId];
@@ -180,10 +182,11 @@ int main(int argc, char *argv[])
     output->SetPixel(targetPatchTargetSideBoundaryPixel, blue);
     output->SetPixel(sourcePatchTargetSideBoundaryPixel, darkGreen);
     }
+  */
 
-  Helpers::WriteImage<RGBImageType>(output, "Test/FollowIsophotes.Output.mha");
-  Helpers::WriteImage<RGBImageType>(target, "Test/FollowIsophotes.Target.mha");
-  Helpers::WriteImage<RGBImageType>(source, "Test/FollowIsophotes.Source.mha");
+  HelpersOutput::WriteImage<RGBImageType>(output, "Test/FollowIsophotes.Output.mha");
+  HelpersOutput::WriteImage<RGBImageType>(target, "Test/FollowIsophotes.Target.mha");
+  HelpersOutput::WriteImage<RGBImageType>(source, "Test/FollowIsophotes.Source.mha");
 
   return EXIT_SUCCESS;
 }

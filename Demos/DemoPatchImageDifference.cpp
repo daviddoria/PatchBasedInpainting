@@ -16,9 +16,12 @@
  *
  *=========================================================================*/
 
-#include "SelfPatchMatch.h"
+// Custom
 #include "Helpers.h"
+#include "HelpersOutput.h"
+#include "SelfPatchCompare.h"
 
+// ITK
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
@@ -57,19 +60,14 @@ int main(int argc, char*argv[])
   typedef itk::RegionOfInterestImageFilter< ColorImageType,
                                             ColorImageType > ExtractImageFilterType;
   ExtractImageFilterType::Pointer extractImageFilter = ExtractImageFilterType::New();
-  extractImageFilter->SetRegionOfInterest(GetRegionAroundPixel(queryPixel, 3u));
+  extractImageFilter->SetRegionOfInterest(Helpers::GetRegionInRadiusAroundPixel(queryPixel, 3u));
   extractImageFilter->SetInput(imageReader->GetOutput());
   extractImageFilter->Update();
 
-  FloatImageType::Pointer differenceImage = FloatImageType::New();
-  PatchImageDifference(imageReader->GetOutput(), maskReader->GetOutput(), extractImageFilter->GetOutput(), differenceImage);
+  FloatScalarImageType::Pointer differenceImage = FloatScalarImageType::New();
+  //PatchImageDifference(imageReader->GetOutput(), maskReader->GetOutput(), extractImageFilter->GetOutput(), differenceImage);
 
-  typedef itk::Image< float, 2 > FloatImageType;
-  itk::ImageFileWriter<FloatImageType>::Pointer writer =
-    itk::ImageFileWriter<FloatImageType>::New();
-  writer->SetFileName(outputFilename);
-  writer->SetInput(differenceImage);
-  writer->Update();
+  HelpersOutput::WriteImage<FloatScalarImageType>(differenceImage, outputFilename);
 
   return EXIT_SUCCESS;
 }

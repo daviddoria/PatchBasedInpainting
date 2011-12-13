@@ -64,8 +64,8 @@ int main(int argc, char *argv[])
   PatchBasedInpainting inpainting;
   inpainting.SetMask(maskReader->GetOutput());
   inpainting.SetImage(imageReader->GetOutput());
-  inpainting.PatchSortFunction = &SortByDepthDifference;
-  inpainting.SetPatchCompare(patchCompare);
+  //inpainting.PatchSortFunction = &SortByDepthDifference;
+  //inpainting.SetPatchCompare(patchCompare);
   inpainting.Initialize();
   inpainting.Iterate();
   

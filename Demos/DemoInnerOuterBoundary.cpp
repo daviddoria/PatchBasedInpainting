@@ -16,9 +16,12 @@
  *
  *=========================================================================*/
 
-#include "Types.h"
+// Custom
 #include "Helpers.h"
+#include "HelpersOutput.h"
+#include "Types.h"
 
+// ITK
 #include "itkBinaryDilateImageFilter.h"
 #include "itkBinaryContourImageFilter.h"
 #include "itkBinaryThresholdImageFilter.h"
@@ -46,16 +49,16 @@ int main(int argc, char *argv[])
   std::cout << "Reading image: " << filename << std::endl;
 
   // Read the image
-  UnsignedCharScalarImageReaderType::Pointer reader = UnsignedCharScalarImageReaderType::New();
-  reader->SetFileName(filename.c_str());
+  typedef itk::ImageFileReader<UnsignedCharScalarImageType> ReaderType;
+  ReaderType::Pointer reader = ReaderType::New();
+  reader->SetFileName(filename);
   reader->Update();
 
   // Ensure the image is binary
   typedef itk::BinaryThresholdImageFilter <UnsignedCharScalarImageType, UnsignedCharScalarImageType>
           BinaryThresholdImageFilterType;
 
-  BinaryThresholdImageFilterType::Pointer thresholdFilter
-          = BinaryThresholdImageFilterType::New();
+  BinaryThresholdImageFilterType::Pointer thresholdFilter = BinaryThresholdImageFilterType::New();
   thresholdFilter->SetInput(reader->GetOutput());
   thresholdFilter->SetLowerThreshold(122);
   thresholdFilter->SetUpperThreshold(255);
@@ -63,7 +66,7 @@ int main(int argc, char *argv[])
   thresholdFilter->SetOutsideValue(0);
   thresholdFilter->Update();
 
-  Helpers::WriteImage<UnsignedCharScalarImageType>(thresholdFilter->GetOutput(), "Binary.png");
+  HelpersOutput::WriteImage<UnsignedCharScalarImageType>(thresholdFilter->GetOutput(), "Binary.png");
 
   // Find the outer boundary
   typedef itk::BinaryContourImageFilter <UnsignedCharScalarImageType, UnsignedCharScalarImageType >
@@ -83,18 +86,16 @@ int main(int argc, char *argv[])
   invertIntensityFilter->SetInput(outerBoundaryFilter->GetOutput());
   invertIntensityFilter->Update();
 
-  Helpers::WriteImage<UnsignedCharScalarImageType>(invertIntensityFilter->GetOutput(), "OuterBoundary.png");
-
+  HelpersOutput::WriteImage<UnsignedCharScalarImageType>(invertIntensityFilter->GetOutput(), "OuterBoundary.png");
 
   // Find the inner boundary
-  binaryContourImageFilterType::Pointer innerBoundaryFilter
-          = binaryContourImageFilterType::New ();
+  binaryContourImageFilterType::Pointer innerBoundaryFilter = binaryContourImageFilterType::New ();
   innerBoundaryFilter->SetInput(thresholdFilter->GetOutput());
   innerBoundaryFilter->SetForegroundValue(255);
   innerBoundaryFilter->SetBackgroundValue(0);
   innerBoundaryFilter->Update();
 
-  Helpers::WriteImage<UnsignedCharScalarImageType>(innerBoundaryFilter->GetOutput(), "InnerBoundary.png");
+  HelpersOutput::WriteImage<UnsignedCharScalarImageType>(innerBoundaryFilter->GetOutput(), "InnerBoundary.png");
 
   typedef itk::Compose3DCovariantVectorImageFilter<UnsignedCharScalarImageType,
                               UnsignedCharVectorImageType> ComposeCovariantVectorImageFilterType;
@@ -105,7 +106,7 @@ int main(int argc, char *argv[])
   composeFilter->SetInput3(thresholdFilter->GetOutput());
   composeFilter->Update();
 
-  Helpers::WriteImage<UnsignedCharVectorImageType>(composeFilter->GetOutput(), "Composed.png");
+  HelpersOutput::WriteImage<UnsignedCharVectorImageType>(composeFilter->GetOutput(), "Composed.png");
 
   /*
   typedef itk::ImageDuplicator< ImageType > DuplicatorType;
@@ -144,7 +145,7 @@ int main(int argc, char *argv[])
     ++outputIterator;
     }
 
-  Helpers::WriteImage<UnsignedCharVectorImageType>(composeFilter->GetOutput(), "BothBoundaries.png");
+  HelpersOutput::WriteImage<UnsignedCharVectorImageType>(composeFilter->GetOutput(), "BothBoundaries.png");
 
   return EXIT_SUCCESS;
 }

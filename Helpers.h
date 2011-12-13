@@ -208,31 +208,31 @@ void CopyPatchIntoImage(const typename T::Pointer patch, typename T::Pointer ima
 template <class T>
 void CreateBlankPatch(typename T::Pointer patch, const unsigned int radius);
 
-template <class T>
-void CopySelfPatchIntoHoleOfTargetRegion(typename T::Pointer image, const Mask::Pointer mask,
+template <class TImage>
+void CopySelfPatchIntoHoleOfTargetRegion(typename TImage::Pointer image, const Mask::Pointer mask,
                                    const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput);
 
-template <class T>
-void CopySourcePatchIntoHoleOfTargetRegion(typename T::Pointer sourceImage, typename T::Pointer targetImage, const Mask::Pointer mask,
+template <class TImage>
+void CopySourcePatchIntoHoleOfTargetRegion(typename TImage::Pointer sourceImage, typename TImage::Pointer targetImage, const Mask::Pointer mask,
                                            const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput);
 
-template <class T>
-float MaxValue(const typename T::Pointer image);
+template <class TImage>
+float MaxValue(const typename TImage::Pointer image);
 
 template <class T>
 std::vector<T> MaxValuesVectorImage(const typename itk::VectorImage<T, 2>::Pointer image);
 
-template <class T>
-float MaxValueLocation(const typename T::Pointer image);
+template <class TImage>
+float MaxValueLocation(const typename TImage::Pointer image);
 
-template <class T>
-float MinValue(const typename T::Pointer image);
+template <class TImage>
+float MinValue(const typename TImage::Pointer image);
 
 template <class T>
 unsigned int argmin(const typename std::vector<T>& vec);
 
-template <class T>
-itk::Index<2> MinValueLocation(const typename T::Pointer image);
+template <class TImage>
+itk::Index<2> MinValueLocation(const typename TImage::Pointer image);
 
 template <typename TImage>
 void ColorToGrayscale(const typename TImage::Pointer colorImage, UnsignedCharScalarImageType::Pointer grayscaleImage);
@@ -290,6 +290,9 @@ typename TImage::TPixel ComputeMaxPixelDifference(const typename TImage::Pointer
 
 template<typename TImage>
 void ReadImage(const std::string&, typename TImage::Pointer);
+
+template<typename TInputImage, typename TOutputImage, typename TFilter>
+void FilterImage(const typename TInputImage::Pointer input, typename TOutputImage::Pointer output);
 
 // Median filter an image ignoring a masked region.
 template<typename TImage>

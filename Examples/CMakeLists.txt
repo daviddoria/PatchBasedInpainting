@@ -1,0 +1,11 @@
+add_executable(ExamplePatchDifference ExamplePatchDifference.cpp)
+target_link_libraries(ExamplePatchDifference PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+
+add_executable(ExampleSelfPatchCompare ExampleSelfPatchCompare.cpp)
+target_link_libraries(ExampleSelfPatchCompare PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+
+add_executable(ExamplePatchBasedInpaintingRGBD ExamplePatchBasedInpaintingRGBD.cpp)
+target_link_libraries(ExamplePatchBasedInpaintingRGBD PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+
+add_executable(ExamplePatchBasedInpaintingRGBDI ExamplePatchBasedInpaintingRGBDI.cpp)
+target_link_libraries(ExamplePatchBasedInpaintingRGBDI PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})

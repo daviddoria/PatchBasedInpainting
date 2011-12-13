@@ -555,7 +555,7 @@ void PatchBasedInpaintingGUI::on_sldDepthColorLambda_valueChanged()
 
 void PatchBasedInpaintingGUI::on_btnChooseBlurredImage_clicked()
 {
-  QString fileName = QFileDialog::getOpenFileName(this, "Save File", ".", "Image Files (*.png *.mha)");
+  QString fileName = QFileDialog::getOpenFileName(this, "Open Blurred Image", ".", "Image Files (*.png *.mha)");
 
   DebugMessage<std::string>("Got filename: ", fileName.toStdString());
   if(fileName.toStdString().empty())
@@ -568,7 +568,7 @@ void PatchBasedInpaintingGUI::on_btnChooseBlurredImage_clicked()
 
 void PatchBasedInpaintingGUI::on_btnChooseMembershipImage_clicked()
 {
-  QString fileName = QFileDialog::getOpenFileName(this, "Save File", ".", "Image Files (*.png *.mha)");
+  QString fileName = QFileDialog::getOpenFileName(this, "Open Membership Image", ".", "Image Files (*.png *.mha)");
 
   DebugMessage<std::string>("Got filename: ", fileName.toStdString());
   if(fileName.toStdString().empty())

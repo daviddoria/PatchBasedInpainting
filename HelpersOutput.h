@@ -61,7 +61,7 @@ template <typename TDebugImageType>
 void WriteImageConditional(const typename TDebugImageType::Pointer image, const std::string& fileName, const bool condition);
 
 template <class T>
-void WriteScaledScalarImage(const typename T::Pointer image, std::string filename);
+void WriteScaledScalarImage(const typename T::Pointer image, const std::string& filename);
 
 template<typename T>
 void WriteImage(const typename T::Pointer image, const std::string& filename);

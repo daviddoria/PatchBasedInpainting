@@ -387,9 +387,6 @@ void CopyPatch(const typename T::Pointer sourceImage, typename T::Pointer target
   }
 }
 
-
-
-
 template <typename TImage>
 void ColorToGrayscale(const typename TImage::Pointer colorImage, UnsignedCharScalarImageType::Pointer grayscaleImage)
 {
@@ -412,8 +409,6 @@ void ColorToGrayscale(const typename TImage::Pointer colorImage, UnsignedCharSca
     ++grayscaleImageIterator;
     }
 }
-
-
 
 template <typename TImage>
 void ITKScalarImageToScaledVTKImage(const typename TImage::Pointer image, vtkImageData* outputImage)
@@ -984,6 +979,15 @@ T VectorMedian(std::vector<T> v)
   int n = v.size() / 2;
   std::nth_element(v.begin(), v.begin()+n, v.end());
   return v[n];
+}
+
+template<typename TInputImage, typename TOutputImage, typename TFilter>
+void FilterImage(const typename TInputImage::Pointer input, typename TOutputImage::Pointer output)
+{
+  typename TFilter::Pointer filter = TFilter::New();
+  filter->SetInput(input);
+  filter->Update();
+  DeepCopy<TOutputImage>(filter->GetOutput(), output);
 }
 
 }// end namespace
