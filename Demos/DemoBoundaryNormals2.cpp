@@ -17,10 +17,11 @@
  *=========================================================================*/
 
 // Custom
+#include "Helpers.h"
 #include "HelpersOutput.h"
 #include "Mask.h"
-#include "Types.h"
 #include "PatchBasedInpainting.h"
+#include "Types.h"
 
 // ITK
 #include "itkImageFileReader.h"

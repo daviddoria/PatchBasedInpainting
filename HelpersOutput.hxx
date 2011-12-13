@@ -18,25 +18,27 @@
 
 #include "Helpers.h"
 
+#include <vtkPolyData.h>
+
 namespace HelpersOutput
 {
-  
-template <typename TImageType>
-void WriteSequentialImage(const typename TImageType::Pointer image, const std::string& filePrefix, const unsigned int iteration)
+
+template <typename TImage>
+void WriteSequentialImage(const TImage* image, const std::string& filePrefix, const unsigned int iteration)
 {
   std::string fileName = Helpers::GetSequentialFileName(filePrefix, iteration, "mha");
   
-  HelpersOutput::WriteImage<TImageType>(image, fileName);
+  HelpersOutput::WriteImage<TImage>(image, fileName);
 }
 
-template <typename TImageType>
-void WriteImageConditional(const typename TImageType::Pointer image, const std::string& fileName, const bool condition)
+template <typename TImage>
+void WriteImageConditional(const TImage* image, const std::string& fileName, const bool condition)
 {
   try
   {
   if(condition)
     {
-    WriteImage<TImageType>(image, fileName);
+    WriteImage<TImage>(image, fileName);
     }
   }
   catch( itk::ExceptionObject & err )
@@ -48,7 +50,7 @@ void WriteImageConditional(const typename TImageType::Pointer image, const std::
 
 
 template <class TImage>
-void WriteScaledScalarImage(const typename TImage::Pointer image, const std::string& filename)
+void WriteScaledScalarImage(const TImage* image, const std::string& filename)
 {
 //   if(T::PixelType::Dimension > 1)
 //     {
@@ -72,7 +74,7 @@ void WriteScaledScalarImage(const typename TImage::Pointer image, const std::str
 
 
 template<typename TImage>
-void WriteImage(const typename TImage::Pointer image, const std::string& filename)
+void WriteImage(const TImage* image, const std::string& filename)
 {
   // This is a convenience function so that images can be written in 1 line instead of 4.
   typename itk::ImageFileWriter<TImage>::Pointer writer = itk::ImageFileWriter<TImage>::New();
@@ -83,7 +85,7 @@ void WriteImage(const typename TImage::Pointer image, const std::string& filenam
 
 
 template<typename TImage>
-void WriteRGBImage(const typename TImage::Pointer input, const std::string& filename)
+void WriteRGBImage(const TImage* input, const std::string& filename)
 {
   typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> RGBImageType;
 
@@ -113,20 +115,20 @@ void WriteRGBImage(const typename TImage::Pointer input, const std::string& file
 }
 
 template<typename TImage>
-void WritePatch(const typename TImage::Pointer image, const Patch& patch, const std::string& filename)
+void WritePatch(const TImage* image, const Patch& patch, const std::string& filename)
 {
   WriteRegion<TImage>(image, patch.Region, filename);
 }
 
 template<typename TImage>
-void WriteMaskedPatch(const typename TImage::Pointer image, const Mask::Pointer mask, const Patch& patch, const std::string& filename)
+void WriteMaskedPatch(const TImage* image, const Mask* mask, const Patch& patch, const std::string& filename)
 {
   WriteMaskedRegion<TImage>(image, mask, patch.Region, filename);
 }
 
 
 template<typename TImage>
-void WriteMaskedRegion(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, const std::string& filename)
+void WriteMaskedRegion(const TImage* image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename)
 {
   typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
   typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
@@ -169,7 +171,7 @@ void WriteMaskedRegion(const typename TImage::Pointer image, const Mask::Pointer
 
 
 template<typename TImage>
-void WriteRegion(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename)
+void WriteRegion(const TImage* image, const itk::ImageRegion<2>& region, const std::string& filename)
 {
   //std::cout << "WriteRegion() " << filename << std::endl;
   //std::cout << "region " << region << std::endl;

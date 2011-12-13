@@ -19,24 +19,24 @@
 #ifndef HISTOGRAMS_H
 #define HISTOGRAMS_H
 
-#include <numeric> // for 'accumulate'
 #include <vector>
 
-#include "Mask.h"
+//#include "Mask.h"
+class Mask;
 #include "Types.h"
 
 namespace Histograms
 {
 
-std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins);
+std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorImageType* image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins);
 
-std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins);
+std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatVectorImageType* image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins);
 
-std::vector<float> Compute1DHistogramOfMultiChannelImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins);
+std::vector<float> Compute1DHistogramOfMultiChannelImage(const FloatVectorImageType* image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins);
 
-std::vector<float> Compute1DHistogramOfMultiChannelMaskedImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion, Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const unsigned int numberOfBins);
+std::vector<float> Compute1DHistogramOfMultiChannelMaskedImage(const FloatVectorImageType* image, const itk::ImageRegion<2>& imageRegion, Mask* mask, const itk::ImageRegion<2>& maskRegion, const unsigned int numberOfBins);
 
-std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion, Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const unsigned int numberOfBins);
+std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType* image, const itk::ImageRegion<2>& imageRegion, const Mask* mask, const itk::ImageRegion<2>& maskRegion, const unsigned int numberOfBins);
 
 void OutputHistogram(const HistogramType::Pointer);
 
@@ -47,9 +47,9 @@ float HistogramIntersection(const std::vector<float>& histogram1, const std::vec
 
 float NDHistogramDifference(const HistogramType::Pointer, const HistogramType::Pointer);
 
-HistogramType::Pointer ComputeNDHistogramOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
+HistogramType::Pointer ComputeNDHistogramOfRegionManual(const FloatVectorImageType* image, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
 
-HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(const FloatVectorImageType::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
+HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(const FloatVectorImageType* image, const Mask* mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension);
 
 void WriteHistogram(const std::vector<float>& histogram1, const std::string& filename);
 

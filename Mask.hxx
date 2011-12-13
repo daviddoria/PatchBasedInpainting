@@ -16,8 +16,10 @@
  *
  *=========================================================================*/
 
+#include <vtkImageData.h>
+
 template<typename TImage, typename TColor>
-void Mask::ApplyToVectorImage(const typename TImage::Pointer image, const TColor& color)
+void Mask::ApplyToVectorImage(TImage* image, const TColor& color)
 {
   // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
   // to be used to specify the color.
@@ -92,7 +94,7 @@ void Mask::ApplyColorToImage(const typename TImage::Pointer image, const TColor&
 
 
 template<typename TImage, typename TColor>
-void Mask::ApplyToImage(const typename TImage::Pointer image, const typename TImage::PixelType& holeValue)
+void Mask::ApplyToImage(TImage* image, const typename TImage::PixelType& holeValue)
 {
   // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
   // to be used to specify the color.

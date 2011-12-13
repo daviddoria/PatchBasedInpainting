@@ -30,7 +30,7 @@
 // VTK
 #include <vtkSmartPointer.h>
 
-PriorityOnionPeel::PriorityOnionPeel(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) : Priority(image, maskImage, patchRadius)
+PriorityOnionPeel::PriorityOnionPeel(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius) : Priority(image, maskImage, patchRadius)
 {
   this->ConfidenceMapImage = FloatScalarImageType::New();
   InitializeConfidenceMap();

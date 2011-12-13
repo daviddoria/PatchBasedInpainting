@@ -20,8 +20,6 @@
 #define RotateVectors_h
 
 #include "itkImage.h"
-#include "itkCovariantVector.h"
-#include "itkRigid2DTransform.h"
 
 template< class TInput, class TOutput>
 class RotateVectors

@@ -23,7 +23,7 @@
 namespace Derivatives
 {
 
-void ComputeMaskedIsophotesInRegion(FloatScalarImageType::Pointer image, Mask::Pointer mask, const itk::ImageRegion<2>& region, FloatVector2ImageType::Pointer outputIsophotes)
+void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* image, const Mask* mask, const itk::ImageRegion<2>& region, FloatVector2ImageType* outputIsophotes)
 {
   try
   {

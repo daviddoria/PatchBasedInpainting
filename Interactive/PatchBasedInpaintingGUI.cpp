@@ -80,6 +80,7 @@
 #include "PriorityManual.h"
 #include "PriorityOnionPeel.h"
 #include "PriorityRandom.h"
+#include "SelfPatchCompare.h"
 #include "Types.h"
 
 Q_DECLARE_METATYPE(PatchPair)

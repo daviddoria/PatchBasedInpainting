@@ -192,20 +192,20 @@ itk::Size<2> SizeFromRadius(const unsigned int radius)
   return size;
 }
 
-void ITKImageToCIELabImage(const FloatVectorImageType::Pointer image, FloatVectorImageType::Pointer cielabImage)
+void ITKImageToCIELabImage(const FloatVectorImageType* image, FloatVectorImageType* cielabImage)
 {
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   VectorImageToRGBImage(image, rgbImage);
   RGBImageToCIELabImage(rgbImage, cielabImage);
 }
 
-void RGBImageToCIELabImage(const RGBImageType::Pointer rgbImage, FloatVectorImageType::Pointer cielabImage)
+void RGBImageToCIELabImage(const RGBImageType* rgbImage, FloatVectorImageType* cielabImage)
 {
   // Convert RGB image to Lab color space
   typedef itk::Accessor::RGBToLabColorSpacePixelAccessor<unsigned char, float> RGBToLabColorSpaceAccessorType;
   typedef itk::ImageAdaptor<RGBImageType, RGBToLabColorSpaceAccessorType> RGBToLabAdaptorType;
   RGBToLabAdaptorType::Pointer rgbToLabAdaptor = RGBToLabAdaptorType::New();
-  rgbToLabAdaptor->SetImage(rgbImage);
+  rgbToLabAdaptor->SetImage(const_cast<RGBImageType*>(rgbImage)); // The adaptor expects to be able to modify the image, even though we don't.
   
   // Disassembler
   typedef itk::VectorIndexSelectionCastImageFilter<RGBToLabAdaptorType, FloatScalarImageType> VectorIndexSelectionFilterType;
@@ -233,7 +233,7 @@ void RGBImageToCIELabImage(const RGBImageType::Pointer rgbImage, FloatVectorImag
   DeepCopy<FloatVectorImageType>(reassembler->GetOutput(), cielabImage);
 }
 
-void VectorImageToRGBImage(const FloatVectorImageType::Pointer image, RGBImageType::Pointer rgbImage)
+void VectorImageToRGBImage(const FloatVectorImageType* image, RGBImageType* rgbImage)
 {
   // Only the first 3 components are used (assumed to be RGB)
   rgbImage->SetRegions(image->GetLargestPossibleRegion());
@@ -285,7 +285,7 @@ itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region)
   return center;
 }
 
-void NormalizeVectorImage(FloatVector2ImageType::Pointer image)
+void NormalizeVectorImage(FloatVector2ImageType* image)
 {
   itk::ImageRegionIterator<FloatVector2ImageType> imageIterator(image, image->GetLargestPossibleRegion());
 
@@ -298,7 +298,7 @@ void NormalizeVectorImage(FloatVector2ImageType::Pointer image)
     }
 }
 
-void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, vtkImageData* outputImage)
+void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType* image, vtkImageData* outputImage)
 {
   //std::cout << "ITKImagetoVTKVectorFieldImage()" << std::endl;
 
@@ -331,7 +331,7 @@ void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType::Pointer image, v
   outputImage->Modified();
 }
 
-void ITKImageChannelToVTKImage(const FloatVectorImageType::Pointer image, const unsigned int channel, vtkImageData* outputImage)
+void ITKImageChannelToVTKImage(const FloatVectorImageType* image, const unsigned int channel, vtkImageData* outputImage)
 {
   FloatScalarImageType::Pointer channelImage = FloatScalarImageType::New();
   ExtractChannel<float>(image, channel, channelImage);
@@ -339,7 +339,7 @@ void ITKImageChannelToVTKImage(const FloatVectorImageType::Pointer image, const 
 }
 
 // Convert a vector ITK image to a VTK image for display
-void ITKVectorImageToVTKImageFromDimension(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
+void ITKVectorImageToVTKImageFromDimension(const FloatVectorImageType* image, vtkImageData* outputImage)
 {
   // If the image has 3 channels, assume it is RGB.
   if(image->GetNumberOfComponentsPerPixel() == 3)
@@ -355,7 +355,7 @@ void ITKVectorImageToVTKImageFromDimension(const FloatVectorImageType::Pointer i
 }
 
 // Convert a vector ITK image to a VTK image for display
-void ITKImageToVTKRGBImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
+void ITKImageToVTKRGBImage(const FloatVectorImageType* image, vtkImageData* outputImage)
 {
   // This function assumes an ND (with N>3) image has the first 3 channels as RGB and extra information in the remaining channels.
   
@@ -396,7 +396,7 @@ void ITKImageToVTKRGBImage(const FloatVectorImageType::Pointer image, vtkImageDa
 
 
 // Convert a vector ITK image to a VTK image for display
-void ITKImageToVTKMagnitudeImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage)
+void ITKImageToVTKMagnitudeImage(const FloatVectorImageType* image, vtkImageData* outputImage)
 {
   //std::cout << "ITKImagetoVTKMagnitudeImage()" << std::endl;
   // Compute the magnitude of the ITK image
@@ -542,7 +542,7 @@ void KeepNonZeroVectors(const vtkImageData* image, vtkPolyData* output)
   output->Modified();
 }
 
-void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType::Pointer vectorImage, vtkPolyData* output)
+void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType* vectorImage, vtkPolyData* output)
 {
   vtkSmartPointer<vtkFloatArray> vectors = vtkSmartPointer<vtkFloatArray>::New();
   vectors->SetNumberOfComponents(3);
@@ -788,7 +788,7 @@ itk::ImageRegion<2> CropToRegion(const itk::ImageRegion<2>& inputRegion, const i
 }
 
 
-itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType::Pointer image, float& maxValue, UnsignedCharScalarImageType::Pointer maskImage)
+itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType* image, float& maxValue, UnsignedCharScalarImageType* maskImage)
 {
   //EnterFunction("FindHighestValueOnBoundary()");
   // Return the location of the highest pixel in 'image' out of the non-zero pixels in 'boundaryImage'. Return the value of that pixel by reference.
@@ -827,8 +827,8 @@ itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType::Pointer
   }
 }
 
-void ComputeColorIsophotesInRegion(const FloatVectorImageType::Pointer image, const Mask::Pointer mask,
-                                   const itk::ImageRegion<2>& region , FloatVector2ImageType::Pointer isophotes)
+void ComputeColorIsophotesInRegion(const FloatVectorImageType* image, const Mask* mask,
+                                   const itk::ImageRegion<2>& region , FloatVector2ImageType* isophotes)
 {
   //EnterFunction("ComputeIsophotes()");
   RGBImageType::Pointer rgbImage = RGBImageType::New();
@@ -862,7 +862,7 @@ void ComputeColorIsophotesInRegion(const FloatVectorImageType::Pointer image, co
 }
 
 
-void CreatePatchVTKImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, vtkImageData* outputImage)
+void CreatePatchVTKImage(const FloatVectorImageType* image, const itk::ImageRegion<2>& region, vtkImageData* outputImage)
 {
   typedef itk::RegionOfInterestImageFilter<FloatVectorImageType,FloatVectorImageType> ExtractFilterType;
   typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();

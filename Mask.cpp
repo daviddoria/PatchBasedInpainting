@@ -21,11 +21,14 @@
 // Custom
 #include "Helpers.h"
 
+#include <vtkImageData.h>
+
 // ITK
 #include "itkBinaryContourImageFilter.h"
 #include "itkBinaryDilateImageFilter.h"
 #include "itkFlatStructuringElement.h"
 #include "itkInvertIntensityImageFilter.h"
+#include "itkImageRegionIterator.h"
 
 Mask::Mask()
 {
@@ -185,7 +188,7 @@ void Mask::OutputMembers() const
   std::cout << "ValidValue: " << static_cast<unsigned int>(this->ValidValue) << std::endl;
 }
 
-void Mask::DeepCopyFrom(const Mask::Pointer inputMask)
+void Mask::DeepCopyFrom(const Mask* inputMask)
 {
   this->SetRegions(inputMask->GetLargestPossibleRegion());
   this->Allocate();
@@ -225,7 +228,7 @@ void Mask::ExpandHole()
 }
 
 
-void Mask::FindBoundary(UnsignedCharScalarImageType::Pointer boundaryImage)
+void Mask::FindBoundary(UnsignedCharScalarImageType* boundaryImage) const
 {
   EnterFunction("Mask::FindBoundary()");
   try
@@ -308,7 +311,7 @@ bool Mask::HasHoleNeighbor(const itk::Index<2>& pixel)
   return false;
 }
 
-itk::Index<2> Mask::FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVector2Type& inputDirection)
+itk::Index<2> Mask::FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVector2Type& inputDirection) const
 {
   if(!this->IsValid(queryPixel))
     {

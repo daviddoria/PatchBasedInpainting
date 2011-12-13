@@ -20,7 +20,7 @@
 #define NamedITKImage_H
 
 // ITK
-#include "itkImage.h"
+#include "itkImageBase.h"
 
 // STL
 #include <vector>

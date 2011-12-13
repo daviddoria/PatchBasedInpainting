@@ -19,8 +19,9 @@
 #include "ITKImageCollection.h"
 
 #include "Helpers.h"
+#include "Mask.h"
 
-void ITKImageCollection::CopySelfPatchIntoHoleOfTargetRegion(const Mask::Pointer mask, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
+void ITKImageCollection::CopySelfPatchIntoHoleOfTargetRegion(const Mask* mask, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
 {
   std::cout << "CopySelfPatchIntoHoleOfTargetRegion:" << std::endl;
   for(unsigned int imageId = 0; imageId < this->size(); ++imageId)

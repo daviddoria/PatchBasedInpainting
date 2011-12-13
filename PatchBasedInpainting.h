@@ -24,14 +24,14 @@
 #include "ClusterColorsUniform.h"
 #include "ClusterColorsAdaptive.h"
 #include "DebugOutputs.h"
-#include "Helpers.h"
 #include "ITKImageCollection.h"
 #include "Patch.h"
 #include "PatchPair.h"
 #include "PatchSorting.h"
-#include "Priority.h"
-#include "SelfPatchCompare.h"
 #include "Types.h"
+
+class Priority;
+class SelfPatchCompare;
 
 // ITK
 #include "itkCovariantVector.h"
@@ -54,7 +54,7 @@ public:
   void SetImage(const FloatVectorImageType::Pointer image);
 
   // Specify the region to inpaint.
-  void SetMask(const Mask::Pointer mask);
+  void SetMask(const Mask* mask);
 
   // Specify the size of the patches to copy.
   void SetPatchRadius(const unsigned int);
@@ -70,7 +70,7 @@ public:
   FloatVectorImageType::Pointer GetCurrentOutputImage();
 
   // Get the current mask image
-  Mask::Pointer GetMaskImage();
+  Mask* GetMaskImage();
 
   //////////////////////////////////////////////////////////////
   /////////////////// CriminisiInpainting.cpp //////////////////
@@ -177,7 +177,7 @@ private:
   ITKImageCollection ImagesToUpdate;
   
   // The mask specifying the region to inpaint. It is updated as patches are copied.
-  Mask::Pointer MaskImage;
+  Mask* MaskImage;
 
   // The patch radius.
   itk::Size<2> PatchRadius;

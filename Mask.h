@@ -26,13 +26,13 @@
 
 // ITK
 #include "itkImage.h"
-#include "itkImageRegionIterator.h"
 
 // Qt
 //#include <QColor>
 
 // VTK
-#include <vtkImageData.h>
+//#include <vtkImageData.h>
+class vtkImageData;
 
 // Custom
 #include "DebugOutputs.h"
@@ -91,7 +91,7 @@ public:
   bool HasHoleNeighbor(const itk::Index<2>& pixel);
 
   // Look from a pixel across the hole in a specified direction and return the pixel that exists on the other side of the hole.
-  itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVector2Type& direction);
+  itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVector2Type& direction) const;
   
   // Invert the mask by switching the hole and valid pixel values.
   void Invert();
@@ -118,10 +118,10 @@ public:
   void OutputMembers() const;
 
   // Copy a mask.
-  void DeepCopyFrom(const Mask::Pointer inputMask);
+  void DeepCopyFrom(const Mask* inputMask);
 
   // Find the boundary of the Mask.
-  void FindBoundary(UnsignedCharScalarImageType::Pointer boundary);
+  void FindBoundary(UnsignedCharScalarImageType* boundary) const;
 
   // Recolor the hole pixels in 'image' a specified 'color'.
   template<typename TImage, typename TColor>
@@ -129,11 +129,11 @@ public:
   
   // Change the hole pixels in 'image' to a specified 'holeValue'.
   template<typename TImage, typename TColor>
-  void ApplyToImage(const typename TImage::Pointer image, const typename TImage::PixelType& holeValue);
+  void ApplyToImage(TImage* image, const typename TImage::PixelType& holeValue);
 
   // Recolor the hole pixels in 'image' a specified 'color'.
   template<typename TImage, typename TColor>
-  void ApplyToVectorImage(const typename TImage::Pointer image, const TColor& color);
+  void ApplyToVectorImage(TImage* image, const TColor& color);
 
   template<typename TColor>
   void MakeVTKImage(vtkImageData* image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent);

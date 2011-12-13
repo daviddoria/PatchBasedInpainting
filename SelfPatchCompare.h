@@ -27,12 +27,13 @@
  */
 
 // Custom
-#include "CandidatePairs.h"
-#include "ClusterColorsAdaptive.h"
+class CandidatePairs;
+class ClusterColorsAdaptive;
+class Mask;
+
 #include "DebugOutputs.h"
-#include "Helpers.h"
-#include "Mask.h"
 #include "Patch.h"
+#include "PatchPair.h"
 #include "Types.h"
 
 // ITK
@@ -46,23 +47,24 @@
 
 class SelfPatchCompare : public DebugOutputs
 {
-  
+
 public:
+  //SelfPatchCompare(const FloatVectorImageType* image, const Mask* mask);
   SelfPatchCompare();
-  
+
   // Compute the SSD for all of the pairs. Store the values in the PatchPair objects inside of the CandidatePairs object.
   void ComputeAllSourceDifferences();
-  
+
   void ComputeAllSourceAndTargetDifferences();
-  
+
   // Provide the image to work with.
   void SetImage(const FloatVectorImageType::Pointer);
-  
+
   // Provide the membership image (used in some difference functions).
   void SetMembershipImage(const IntImageType::Pointer);
 
   // Provide the mask to work with.
-  void SetMask(const Mask::Pointer mask);
+  void SetMask(const Mask* mask);
 
   float SlowDifference(const Patch& sourcePatch);
   float PatchDifferenceManual(const Patch& sourcePatch);
@@ -108,13 +110,13 @@ protected:
   CandidatePairs* Pairs;
 
   // This is the image from which to take the patches
-  FloatVectorImageType::Pointer Image;
+  const FloatVectorImageType* Image;
   
   // Membership image
   IntImageType::Pointer MembershipImage;
 
   // This is the mask to check the validity of target pixels
-  Mask::Pointer MaskImage;
+  const Mask* MaskImage;
 
   unsigned int NumberOfComponentsPerPixel;
 

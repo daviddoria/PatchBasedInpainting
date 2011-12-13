@@ -24,6 +24,7 @@
 #include <vtkSmartPointer.h>
 
 // STL
+#include <string>
 #include <vector>
 
 struct NamedVTKImage

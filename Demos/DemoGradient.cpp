@@ -18,6 +18,7 @@
 
 // Custom
 #include "Derivatives.h"
+#include "Helpers.h"
 #include "HelpersOutput.h"
 #include "Mask.h"
 #include "PatchBasedInpainting.h"

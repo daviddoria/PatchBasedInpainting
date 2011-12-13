@@ -18,7 +18,11 @@
 
 #include "Histograms.h"
 
+// Custom
 #include "Helpers.h"
+
+// STL
+#include <numeric> // for 'accumulate'
 
 // ITK
 #include "itkRegionOfInterestImageFilter.h"
@@ -28,7 +32,7 @@
 namespace Histograms
 {
   
-std::vector<float> ComputeHistogramOfGradient(const FloatVector2ImageType::Pointer gradientImage, const itk::ImageRegion<2>& region)
+std::vector<float> ComputeHistogramOfGradient(const FloatVector2ImageType* gradientImage, const itk::ImageRegion<2>& region)
 {
   // Discretize the continuum of possible angles of vectors in the right half-plane.
   // (We flip all vectors so that they are pointing towards the right half-plane, since their orientation is not important).
@@ -68,7 +72,7 @@ std::vector<float> ComputeHistogramOfGradient(const FloatVector2ImageType::Point
   return histogram;
 }
 
-std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region)
+std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorImageType* image, const itk::ImageRegion<2>& region)
 {
   
   std::vector<HistogramType::Pointer> histograms;
@@ -115,8 +119,7 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorI
   return histograms;
 }
 
-
-std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion, const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const unsigned int binsPerDimension)
+std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType* image, const itk::ImageRegion<2>& imageRegion, const Mask* mask, const itk::ImageRegion<2>& maskRegion, const unsigned int binsPerDimension)
 {
   
   std::vector<HistogramType::Pointer> histograms;
@@ -177,7 +180,7 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatV
   return histograms;
 }
 
-std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins)
+std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatVectorImageType* image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins)
 {
   
   std::vector<HistogramType::Pointer> histograms;
@@ -233,7 +236,7 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatV
 }
 
 
-HistogramType::Pointer ComputeNDHistogramOfRegionManual(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension)
+HistogramType::Pointer ComputeNDHistogramOfRegionManual(const FloatVectorImageType* image, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension)
 {
   const unsigned int MeasurementVectorSize = image->GetNumberOfComponentsPerPixel();
   
@@ -271,7 +274,7 @@ HistogramType::Pointer ComputeNDHistogramOfRegionManual(const FloatVectorImageTy
   return histogram;
 }
 
-std::vector<float> Compute1DHistogramOfMultiChannelMaskedImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion, Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const unsigned int numberOfBins)
+std::vector<float> Compute1DHistogramOfMultiChannelMaskedImage(const FloatVectorImageType* image, const itk::ImageRegion<2>& imageRegion, const Mask* mask, const itk::ImageRegion<2>& maskRegion, const unsigned int numberOfBins)
 {
   // Compute the histogram for each channel separately
   std::vector<HistogramType::Pointer> channelHistograms = ComputeHistogramsOfMaskedRegion(image, imageRegion, mask, maskRegion, numberOfBins);
@@ -290,7 +293,7 @@ std::vector<float> Compute1DHistogramOfMultiChannelMaskedImage(const FloatVector
   return histogram;
 }
 
-std::vector<float> Compute1DHistogramOfMultiChannelImage(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins)
+std::vector<float> Compute1DHistogramOfMultiChannelImage(const FloatVectorImageType* image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins)
 {
   // Compute the histogram for each channel separately
   std::vector<HistogramType::Pointer> channelHistograms = ComputeHistogramsOfRegionManual(image, region, numberOfBins);
@@ -308,7 +311,7 @@ std::vector<float> Compute1DHistogramOfMultiChannelImage(const FloatVectorImageT
   return histogram;
 }
 
-HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(const FloatVectorImageType::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension)
+HistogramType::Pointer ComputeNDHistogramOfMaskedRegionManual(const FloatVectorImageType* image, const Mask* mask, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension)
 {
   const unsigned int MeasurementVectorSize = image->GetNumberOfComponentsPerPixel();
 

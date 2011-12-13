@@ -21,7 +21,7 @@
 #include "Derivatives.h"
 #include "HelpersOutput.h"
 
-PriorityDepth::PriorityDepth(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) : Priority(image, maskImage, patchRadius)
+PriorityDepth::PriorityDepth(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius) : Priority(image, maskImage, patchRadius)
 {
   if(!image->GetNumberOfComponentsPerPixel() >= 4)
     {

@@ -16,6 +16,8 @@
  *
  *=========================================================================*/
 
+#include "CandidatePairs.h"
+
 template<typename TDifferenceFunction>
 float SelfPatchCompare::PatchAverageSourceDifference(const Patch& sourcePatch)
 {
@@ -28,7 +30,7 @@ float SelfPatchCompare::PatchAverageSourceDifference(const Patch& sourcePatch)
   float totalDifference = 0.0f;
 
   // We want to do direct pointer arithmetic for speed purposes.
-  FloatVectorImageType::InternalPixelType* bufferPointer = this->Image->GetBufferPointer();
+  const FloatVectorImageType::InternalPixelType* bufferPointer = this->Image->GetBufferPointer();
   
   // Get the locations of the corners of both patches.
   int sourceCornerOffset = this->Image->ComputeOffset(sourcePatch.Region.GetIndex());

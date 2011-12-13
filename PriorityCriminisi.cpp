@@ -34,7 +34,7 @@
 // VTK
 #include <vtkSmartPointer.h>
 
-PriorityCriminisi::PriorityCriminisi(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) :
+PriorityCriminisi::PriorityCriminisi(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius) :
                                      PriorityOnionPeel(image, maskImage, patchRadius)
 {
   this->BoundaryNormalsImage = FloatVector2ImageType::New();

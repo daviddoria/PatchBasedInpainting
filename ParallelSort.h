@@ -1,10 +1,7 @@
 #ifndef PARALLELSORT_H
 #define PARALLELSORT_H
 
-#include <iostream>
 #include <vector>
-#include <algorithm>
-#include <string>
 
 namespace ParallelSort
 {

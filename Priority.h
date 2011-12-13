@@ -20,14 +20,14 @@
 #define PRIORITY_H
 
 #include "DebugOutputs.h"
-#include "Mask.h"
+class Mask;
 #include "NamedVTKImage.h"
 #include "Types.h"
 
 class Priority : public DebugOutputs
 {
 public:
-  Priority(FloatVectorImageType* image, Mask* maskImage, const unsigned int patchRadius);
+  Priority(const FloatVectorImageType* image, const Mask* maskImage, const unsigned int patchRadius);
 
   // Compute the priorities at all boundary pixels.
   virtual void ComputeAllPriorities();
@@ -56,8 +56,8 @@ protected:
   FloatScalarImageType::Pointer PriorityImage;
 
   // In most subclasses, the image and mask are needed to compute the priority.
-  FloatVectorImageType* Image;
-  Mask* MaskImage;
+  const FloatVectorImageType* Image;
+  const Mask* MaskImage;
 
   // In most subclasses, the boundary image is needed to know where to compute the priority.
   UnsignedCharScalarImageType::Pointer BoundaryImage;

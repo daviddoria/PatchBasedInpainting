@@ -19,7 +19,8 @@
 #ifndef NamedITKImageCollection_H
 #define NamedITKImageCollection_H
 
-#include "Mask.h"
+class Mask;
+
 #include "NamedITKImage.h"
 
 // This class stores a vector of images of any type, and has some operations defined that can be applied to the whole list.
@@ -28,7 +29,7 @@ class NamedITKImageCollection : public std::vector<NamedITKImage>
 {
 public:
   // Apply Helpers::CopySelfPatchIntoHoleOfTargetRegion to all images in the collection.
-  void CopySelfPatchIntoHoleOfTargetRegion(const Mask::Pointer mask, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
+  void CopySelfPatchIntoHoleOfTargetRegion(const Mask* mask, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
   NamedITKImage FindImageByName(const std::string&);
 };
 

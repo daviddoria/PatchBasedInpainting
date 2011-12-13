@@ -19,14 +19,17 @@
 #ifndef HELPERS_OUTPUT_H
 #define HELPERS_OUTPUT_H
 
-#include <vtkImageData.h>
-#include <vtkPolyData.h>
+// VTK
+//#include <vtkImageData.h>
+//#include <vtkPolyData.h>
+class vtkImageData;
+class vtkPolyData;
 
-#include "Mask.h"
+// Custom
+//#include "Mask.h"
+class Mask;
 #include "Patch.h"
 #include "Types.h"
-
-#include "itkRescaleIntensityImageFilter.h"
 
 namespace HelpersOutput
 {
@@ -39,44 +42,44 @@ void WriteImageData(const vtkImageData* imageData, const std::string& fileName);
 
 
 // Paraview requires 3D vectors to display glyphs, even if the vectors are really 2D. These functions appends a 0 to each vectors of a 2D vector image so that it can be easily visualized with Paraview.
-void Write2DVectorRegion(const FloatVector2ImageType::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename);
+void Write2DVectorRegion(const FloatVector2ImageType* image, const itk::ImageRegion<2>& region, const std::string& filename);
 
 // Calls Write2DVectorRegion on a full image.
-void Write2DVectorImage(const FloatVector2ImageType::Pointer image, const std::string& filename);
+void Write2DVectorImage(const FloatVector2ImageType* image, const std::string& filename);
 
 // Write the first 3 channels of a FloatVectorImageType as an unsigned char (RGB) image.
-void WriteVectorImageAsRGB(const FloatVectorImageType::Pointer image, const std::string& fileName);
+void WriteVectorImageAsRGB(const FloatVectorImageType* image, const std::string& fileName);
 
 ////////////////////////////////////
 ///////// Function templates (defined in HelpersOutput.hxx) /////////
 ////////////////////////////////////
 
-template<typename T>
-void WriteRGBImage(const typename T::Pointer input, const std::string& filename);
+template<typename TImage>
+void WriteRGBImage(const TImage* input, const std::string& filename);
 
-template <typename TDebugImageType>
-void WriteSequentialImage(const typename TDebugImageType::Pointer image, const std::string& filePrefix, const unsigned int iteration);
+template <typename TImage>
+void WriteSequentialImage(const TImage* image, const std::string& filePrefix, const unsigned int iteration);
 
-template <typename TDebugImageType>
-void WriteImageConditional(const typename TDebugImageType::Pointer image, const std::string& fileName, const bool condition);
+template <typename TImage>
+void WriteImageConditional(const TImage* image, const std::string& fileName, const bool condition);
 
-template <class T>
-void WriteScaledScalarImage(const typename T::Pointer image, const std::string& filename);
-
-template<typename T>
-void WriteImage(const typename T::Pointer image, const std::string& filename);
+template <class TImage>
+void WriteScaledScalarImage(const TImage* image, const std::string& filename);
 
 template<typename TImage>
-void WritePatch(const typename TImage::Pointer image, const Patch& patch, const std::string& filename);
+void WriteImage(const TImage* image, const std::string& filename);
 
 template<typename TImage>
-void WriteMaskedPatch(const typename TImage::Pointer image, const Mask::Pointer mask, const Patch& patch, const std::string& filename);
+void WritePatch(const TImage* image, const Patch& patch, const std::string& filename);
 
 template<typename TImage>
-void WriteMaskedRegion(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, const std::string& filename);
+void WriteMaskedPatch(const TImage* image, const Mask* mask, const Patch& patch, const std::string& filename);
 
 template<typename TImage>
-void WriteRegion(const typename TImage::Pointer image, const itk::ImageRegion<2>& region, const std::string& filename);
+void WriteMaskedRegion(const TImage* image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename);
+
+template<typename TImage>
+void WriteRegion(const TImage* image, const itk::ImageRegion<2>& region, const std::string& filename);
 
 } // end namespace
 

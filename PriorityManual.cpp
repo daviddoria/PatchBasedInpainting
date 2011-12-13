@@ -20,8 +20,7 @@
 
 #include "Helpers.h"
 
-//PriorityManual::PriorityManual(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) : Priority(image, maskImage, patchRadius)
-PriorityManual::PriorityManual(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius) : PriorityOnionPeel(image, maskImage, patchRadius)
+PriorityManual::PriorityManual(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius) : PriorityOnionPeel(image, maskImage, patchRadius)
 {
   this->ManualPriorityImage = UnsignedCharScalarImageType::New();
 }

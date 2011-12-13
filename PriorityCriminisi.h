@@ -30,7 +30,7 @@ public:
   // Functions reimplemented from Priority //
   ///////////////////////////////////////////
 
-  PriorityCriminisi(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius);
+  PriorityCriminisi(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius);
 
   float ComputePriority(const itk::Index<2>& queryPixel);
 

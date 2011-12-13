@@ -27,7 +27,7 @@ class PriorityManual : public PriorityOnionPeel
 {
 public:
   // Reimplemented
-  PriorityManual(FloatVectorImageType::Pointer image, Mask::Pointer maskImage, unsigned int patchRadius);
+  PriorityManual(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius);
   
   float ComputePriority(const itk::Index<2>& queryPixel);
   

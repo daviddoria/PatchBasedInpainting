@@ -16,13 +16,15 @@
  *
  *=========================================================================*/
 
+// Custom
 #include "Helpers.h"
+#include "Mask.h"
 
 namespace Derivatives
 {
 
 template <typename TImage>
-void MaskedDerivative(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output)
+void MaskedDerivative(const TImage* image, const Mask* mask, const unsigned int direction, FloatScalarImageType* output)
 {
   // Setup the output
   output->SetRegions(image->GetLargestPossibleRegion());
@@ -85,7 +87,7 @@ void MaskedDerivative(const typename TImage::Pointer image, const Mask::Pointer 
 
 
 template <typename TImage>
-void MaskedDerivativePrewitt(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output)
+void MaskedDerivativePrewitt(const TImage* image, const Mask* mask, const unsigned int direction, FloatScalarImageType* output)
 {
   if(direction > 1)
     {
@@ -184,7 +186,7 @@ void MaskedDerivativePrewitt(const typename TImage::Pointer image, const Mask::P
 
 
 template <typename TImage>
-void MaskedDerivativeSobel(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output)
+void MaskedDerivativeSobel(const TImage* image, const Mask* mask, const unsigned int direction, FloatScalarImageType* output)
 {
   if(direction > 1)
     {
@@ -292,7 +294,7 @@ void MaskedDerivativeSobel(const typename TImage::Pointer image, const Mask::Poi
 }
 
 template <typename TImage>
-void MaskedDerivativeGaussianInRegion(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, const itk::ImageRegion<2>& region, FloatScalarImageType::Pointer output)
+void MaskedDerivativeGaussianInRegion(const TImage* image, const Mask* mask, const unsigned int direction, const itk::ImageRegion<2>& region, FloatScalarImageType* output)
 {
   // It is assumed that 'output' is the right size and initialized already.
   
@@ -317,7 +319,7 @@ void MaskedDerivativeGaussianInRegion(const typename TImage::Pointer image, cons
   // Setup the output
   //Helpers::InitializeImage<FloatScalarImageType>(output, image->GetLargestPossibleRegion());
 
-  itk::ImageRegionIterator<TImage> imageIterator(image, region);
+  itk::ImageRegionConstIterator<TImage> imageIterator(image, region);
 
   // If we are taking x derivatives, we want to use 3 columns. If we are taking y derivatives, we want to use 3 rows.
   unsigned int shiftIndex;
@@ -414,13 +416,13 @@ void MaskedDerivativeGaussianInRegion(const typename TImage::Pointer image, cons
 }
 
 template <typename TImage>
-void MaskedDerivativeGaussian(const typename TImage::Pointer image, const Mask::Pointer mask, const unsigned int direction, FloatScalarImageType::Pointer output)
+void MaskedDerivativeGaussian(const TImage* image, const Mask* mask, const unsigned int direction, FloatScalarImageType* output)
 {
   MaskedDerivativeGaussianInRegion(image, mask, direction, image->GetLargestPossibleRegion(), output);
 }
 
 template <typename TImage>
-void MaskedGradientInRegion(const typename TImage::Pointer image, const Mask::Pointer mask, const itk::ImageRegion<2>& region, FloatVector2ImageType::Pointer output)
+void MaskedGradientInRegion(const TImage* image, const Mask* mask, const itk::ImageRegion<2>& region, FloatVector2ImageType* output)
 {
   // Compute the derivatives
   // X derivative
@@ -448,13 +450,13 @@ void MaskedGradientInRegion(const typename TImage::Pointer image, const Mask::Po
 }
 
 template <typename TImage>
-void MaskedGradient(const typename TImage::Pointer image, const Mask::Pointer mask, FloatVector2ImageType::Pointer output)
+void MaskedGradient(const TImage* image, const Mask* mask, FloatVector2ImageType* output)
 {
   MaskedGradientInRegion<TImage>(image, mask, image->GetLargestPossibleRegion(), output);
 }
 
 template<typename TPixel>
-void GradientFromDerivativesInRegion(const typename itk::Image<TPixel, 2>::Pointer xDerivative, const typename itk::Image<TPixel, 2>::Pointer yDerivative, const itk::ImageRegion<2>& region, typename itk::Image<itk::CovariantVector<TPixel, 2> >::Pointer output)
+void GradientFromDerivativesInRegion(const itk::Image<TPixel, 2>* xDerivative, const itk::Image<TPixel, 2>* yDerivative, const itk::ImageRegion<2>& region, itk::Image<itk::CovariantVector<TPixel, 2> >* output)
 {
   // It is assumed that 'output' is the right size and initialized already.
 
@@ -479,7 +481,7 @@ void GradientFromDerivativesInRegion(const typename itk::Image<TPixel, 2>::Point
 }
 
 template<typename TPixel>
-void GradientFromDerivatives(const typename itk::Image<TPixel, 2>::Pointer xDerivative, const typename itk::Image<TPixel, 2>::Pointer yDerivative, typename itk::Image<itk::CovariantVector<TPixel, 2> >::Pointer output)
+void GradientFromDerivatives(const itk::Image<TPixel, 2>* xDerivative, const itk::Image<TPixel, 2>* yDerivative, itk::Image<itk::CovariantVector<TPixel, 2> >* output)
 {
   GradientFromDerivativesInRegion<TPixel>(xDerivative, yDerivative, xDerivative->GetLargestPossibleRegion(), output);
 }

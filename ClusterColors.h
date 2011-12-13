@@ -21,7 +21,8 @@
 
 // Custom
 #include "DebugOutputs.h"
-#include "Mask.h"
+//#include "Mask.h"
+class Mask;
 #include "Types.h"
 
 // STL
@@ -32,26 +33,28 @@
 #include "itkKdTree.h"
 #include "itkKdTreeGenerator.h"
 
+//class itk::Statistics::KdTreeGenerator; // This forward declaration does not work.
+
 class ClusterColors : public DebugOutputs
 {
 public:
   
   ClusterColors();
   
-  void ConstructFromImage(const FloatVectorImageType::Pointer image);
-  void ConstructFromMaskedImage(const FloatVectorImageType::Pointer image, const Mask::Pointer mask);
+  void ConstructFromImage(const FloatVectorImageType* image);
+  void ConstructFromMaskedImage(const FloatVectorImageType* image, const Mask* mask);
     
   typedef itk::Statistics::ListSample< ColorMeasurementVectorType > SampleType;
   typedef itk::Statistics::KdTreeGenerator< SampleType > TreeGeneratorType;
   typedef TreeGeneratorType::KdTreeType TreeType;
   
   // If the MembershipImage is not provided, compute the histogram.
-  std::vector<float> HistogramRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion,
-                                     const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const bool invertMask = false);
+  std::vector<float> HistogramRegion(const FloatVectorImageType* image, const itk::ImageRegion<2>& imageRegion,
+                                     const Mask* mask, const itk::ImageRegion<2>& maskRegion, const bool invertMask = false);
   
   // If the MembershipImage is provided, compute the histogram (much faster).
-  std::vector<float> HistogramRegion(const IntImageType::Pointer image, const itk::ImageRegion<2>& imageRegion,
-                                     const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const bool invertMask = false);
+  std::vector<float> HistogramRegion(const IntImageType* image, const itk::ImageRegion<2>& imageRegion,
+                                     const Mask* mask, const itk::ImageRegion<2>& maskRegion, const bool invertMask = false);
   
   IntImageType::Pointer GetColorBinMembershipImage();
 
@@ -68,8 +71,8 @@ protected:
   void CreateMembershipImage();
   void CreateKDTreeFromColors();
 
-  FloatVectorImageType::Pointer Image;
-  Mask::Pointer MaskImage;
+  FloatVectorImageType* Image;
+  Mask* MaskImage;
   std::vector<ColorMeasurementVectorType> Colors;
   
   SampleType::Pointer Sample;

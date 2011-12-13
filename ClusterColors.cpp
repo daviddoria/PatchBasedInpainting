@@ -18,6 +18,9 @@
 
 #include "ClusterColors.h"
 
+// Custom
+#include "Mask.h"
+
 // ITK
 #include "itkImageRegionConstIterator.h"
 #include "itkVector.h"
@@ -41,18 +44,18 @@ std::vector<ColorMeasurementVectorType> ClusterColors::GetColors()
   return this->Colors;
 }
 
-void ClusterColors::ConstructFromImage(const FloatVectorImageType::Pointer image)
+void ClusterColors::ConstructFromImage(const FloatVectorImageType* image)
 {
-  this->Image = image;
+  this->Image = const_cast<FloatVectorImageType*>(image); // TODO: remove the need for this cast
   GenerateColors();
   
   CreateMembershipImage();
 }
 
-void ClusterColors::ConstructFromMaskedImage(const FloatVectorImageType::Pointer image, const Mask::Pointer mask)
+void ClusterColors::ConstructFromMaskedImage(const FloatVectorImageType* image, const Mask* mask)
 {
-  this->Image = image;
-  this->MaskImage = mask;
+  this->Image = const_cast<FloatVectorImageType*>(image); // TODO: remove the need for this cast
+  this->MaskImage = const_cast<Mask*>(mask); // TODO: remove the need for this cast
   GenerateColors();
   
   CreateMembershipImage();
@@ -64,8 +67,8 @@ IntImageType::Pointer ClusterColors::GetColorBinMembershipImage()
 }
 
 
-std::vector<float> ClusterColors::HistogramRegion(const FloatVectorImageType::Pointer image, const itk::ImageRegion<2>& imageRegion,
-                                                  Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const bool invertMask)
+std::vector<float> ClusterColors::HistogramRegion(const FloatVectorImageType* image, const itk::ImageRegion<2>& imageRegion,
+                                                  const Mask* mask, const itk::ImageRegion<2>& maskRegion, const bool invertMask)
 {
   std::vector<float> histogram(this->Colors.size(), 0.0f);
 
@@ -99,8 +102,8 @@ std::vector<float> ClusterColors::HistogramRegion(const FloatVectorImageType::Po
 }
 
 
-std::vector<float> ClusterColors::HistogramRegion(const IntImageType::Pointer image, const itk::ImageRegion<2>& imageRegion,
-                                                  const Mask::Pointer mask, const itk::ImageRegion<2>& maskRegion, const bool invertMask)
+std::vector<float> ClusterColors::HistogramRegion(const IntImageType* image, const itk::ImageRegion<2>& imageRegion,
+                                                  const Mask* mask, const itk::ImageRegion<2>& maskRegion, const bool invertMask)
 {
   EnterFunction("ClusterColors::HistogramRegion(IntImageType)");
   std::vector<float> histogram(this->Colors.size(), 0.0f);

@@ -65,7 +65,7 @@ FloatScalarImageType::Pointer PatchBasedInpainting::GetConfidenceMapImage()
 //   return this->BoundaryImage;
 // }
 
-Mask::Pointer PatchBasedInpainting::GetMaskImage()
+Mask* PatchBasedInpainting::GetMaskImage()
 {
   return this->MaskImage;
 }
@@ -125,7 +125,7 @@ void PatchBasedInpainting::SetImage(const FloatVectorImageType::Pointer image)
 
 }
 
-void PatchBasedInpainting::SetMask(const Mask::Pointer mask)
+void PatchBasedInpainting::SetMask(const Mask* mask)
 {
   // Initialize the CurrentMask to the OriginalMask
   this->MaskImage->DeepCopyFrom(mask);

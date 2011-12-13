@@ -19,6 +19,7 @@
 #include "SelfPatchCompare.h"
 
 // Custom
+#include "ClusterColorsAdaptive.h"
 #include "Helpers.h"
 #include "Histograms.h"
 #include "Patch.h"
@@ -34,8 +35,16 @@
 // Boost
 #include <boost/bind.hpp>
 
-SelfPatchCompare::SelfPatchCompare() : ColorFrequency(NULL), Image(NULL), MembershipImage(NULL), MaskImage(NULL), NumberOfComponentsPerPixel(1)
+// SelfPatchCompare::SelfPatchCompare(const FloatVectorImageType* image, const Mask* mask) :
+// ColorFrequency(NULL), Image(NULL), MembershipImage(NULL), MaskImage(NULL), NumberOfComponentsPerPixel(1), Image(image), Mask(mask)
+// {
+//   this->NumberOfComponentsPerPixel = image->GetNumberOfComponentsPerPixel();
+// }
+
+SelfPatchCompare::SelfPatchCompare() :
+ColorFrequency(NULL), Image(NULL), MembershipImage(NULL), MaskImage(NULL), NumberOfComponentsPerPixel(1)
 {
+  
 }
 
 void SelfPatchCompare::SetImage(const FloatVectorImageType::Pointer image)
@@ -52,7 +61,7 @@ void SelfPatchCompare::SetMembershipImage(const IntImageType::Pointer membership
   this->MembershipImage = membershipImage;
 }
   
-void SelfPatchCompare::SetMask(const Mask::Pointer mask)
+void SelfPatchCompare::SetMask(const Mask* mask)
 {
   //std::cout << "Enter SelfPatchCompare::SetMask()" << std::endl;
   this->MaskImage = mask;
