@@ -32,20 +32,20 @@ int main(int argc, char *argv[])
 {
   Mask::Pointer mask = Mask::New();
   CreateMask(mask);
-  
+
   itk::Index<2> queryPixel;
   queryPixel[0] = 5;
   queryPixel[1] = 5;
-  
+
   FloatVector2Type direction;
   direction[0] = 1;
   direction[1] = 1;
   direction.Normalize();
-  
+
   itk::Index<2> pixelAcross = mask->FindPixelAcrossHole(queryPixel, direction);
-  
+
   std::cout << "Pixel across: " << pixelAcross << std::endl;
-  
+
   //HelpersOutput::WriteImage<Mask>(blurredLuminance, "Test/TestIsophotes.blurred.mha");
 
   return EXIT_SUCCESS;
@@ -55,21 +55,21 @@ static void CreateMask(Mask::Pointer mask)
 {
   itk::Size<2> size;
   size.Fill(20);
-  
+
   itk::Index<2> start;
   start.Fill(0);
-  
+
   itk::ImageRegion<2> region(start,size);
-  
+
   mask->SetRegions(region);
   mask->Allocate();
   mask->FillBuffer(mask->GetValidValue());
-  
+
   itk::ImageRegionIterator<Mask> iterator(mask, mask->GetLargestPossibleRegion());
 
   while(!iterator.IsAtEnd())
     {
-    if(iterator.GetIndex()[0] > 5 && iterator.GetIndex()[0] < 15 && 
+    if(iterator.GetIndex()[0] > 5 && iterator.GetIndex()[0] < 15 &&
        iterator.GetIndex()[1] > 5 && iterator.GetIndex()[1] < 15)
       {
       mask->SetPixel(iterator.GetIndex(), mask->GetHoleValue());

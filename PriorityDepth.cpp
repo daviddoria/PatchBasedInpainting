@@ -28,7 +28,7 @@ PriorityDepth::PriorityDepth(const FloatVectorImageType* image, const Mask* mask
     std::cerr << "Cannot instantiate PriorityDepth with an image with less than 4 channels!" << std::endl;
     exit(-1);
     }
-  
+
   this->DepthIsophoteImage = FloatVector2ImageType::New();
   Helpers::InitializeImage<FloatVector2ImageType>(this->DepthIsophoteImage, image->GetLargestPossibleRegion());
 
@@ -37,12 +37,12 @@ PriorityDepth::PriorityDepth(const FloatVectorImageType* image, const Mask* mask
   indexSelectionFilter->SetIndex(3);
   indexSelectionFilter->SetInput(image);
   indexSelectionFilter->Update();
-  
+
   HelpersOutput::WriteImage<FloatScalarImageType>(indexSelectionFilter->GetOutput(), "Debug/Depth.mha");
-  
+
   this->BlurredDepth = FloatScalarImageType::New();
   //Helpers::MaskedBlur<FloatScalarImageType>(indexSelectionFilter->GetOutput(), maskImage, 2.0f, this->BlurredDepth);
-  
+
   typedef itk::BilateralImageFilter<FloatScalarImageType, FloatScalarImageType>  BilateralImageFilterType;
   BilateralImageFilterType::Pointer bilateralImageFilter = BilateralImageFilterType::New();
   bilateralImageFilter->SetInput(indexSelectionFilter->GetOutput());
@@ -53,9 +53,9 @@ PriorityDepth::PriorityDepth(const FloatVectorImageType* image, const Mask* mask
   bilateralImageFilter->Update();
 
   Helpers::DeepCopy<FloatScalarImageType>(bilateralImageFilter->GetOutput(), this->BlurredDepth);
-  
+
   HelpersOutput::WriteImage<FloatScalarImageType>(this->BlurredDepth, "Debug/BlurredDepth.mha");
-  
+
   Derivatives::ComputeMaskedIsophotesInRegion(this->BlurredDepth, maskImage, image->GetLargestPossibleRegion(), this->DepthIsophoteImage);
   HelpersOutput::Write2DVectorImage(this->DepthIsophoteImage, "Debug/BlurredDepthIsophoteImage.mha");
 
@@ -71,11 +71,11 @@ float PriorityDepth::ComputePriority(const itk::Index<2>& queryPixel)
 {
   FloatVector2Type isophote = this->DepthIsophoteImage->GetPixel(queryPixel);
   isophote.Normalize();
-  
+
   itk::Index<2> pixelAcrossHole = this->MaskImage->FindPixelAcrossHole(queryPixel, isophote);
-  
+
   FloatVector2Type acrossIsophote = this->DepthIsophoteImage->GetPixel(pixelAcrossHole);
-  
+
   //float priority = Helpers::AngleBetween(isophote, acrossIsophote) * isophote.GetNorm() * acrossIsophote.GetNorm();
   float priority = isophote * acrossIsophote; // dot product
   if(priority < 0.0f)

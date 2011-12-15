@@ -30,9 +30,9 @@ void MaskedDerivative(const TImage* image, const Mask* mask, const unsigned int 
   output->SetRegions(image->GetLargestPossibleRegion());
   output->Allocate();
   output->FillBuffer(0);
-  
+
   itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
- 
+
   while(!imageIterator.IsAtEnd())
     {
     // We should not compute derivatives for pixels in the hole.
@@ -50,7 +50,7 @@ void MaskedDerivative(const TImage* image, const Mask* mask, const unsigned int 
       {
       backwardValid = true;
       }
-      
+
     bool forwardValid = false;
     itk::Index<2> forwardIndex = imageIterator.GetIndex();
     forwardIndex[direction]++;
@@ -58,10 +58,10 @@ void MaskedDerivative(const TImage* image, const Mask* mask, const unsigned int 
       {
       forwardValid = true;
       }
-      
+
     // Compute the correct difference
     float difference = 0.0f;
-    
+
     if(backwardValid && !forwardValid) // Use backwards half difference
       {
       difference = image->GetPixel(imageIterator.GetIndex()) - image->GetPixel(backwardIndex);
@@ -78,7 +78,7 @@ void MaskedDerivative(const TImage* image, const Mask* mask, const unsigned int 
       {
       difference = 0.0f; // There is nothing we can do here, so set the derivative to zero.
       }
-      
+
     output->SetPixel(imageIterator.GetIndex(), difference);
 
     ++imageIterator;
@@ -94,7 +94,7 @@ void MaskedDerivativePrewitt(const TImage* image, const Mask* mask, const unsign
     std::cerr << "This function can only compute derivatives of 2D images!" << std::endl;
     exit(-1);
     }
-    
+
   // Setup the output
   Helpers::InitializeImage<FloatScalarImageType>(output, image->GetLargestPossibleRegion());
 
@@ -146,7 +146,7 @@ void MaskedDerivativePrewitt(const TImage* image, const Mask* mask, const unsign
       itk::Index<2> forwardIndex;
       forwardIndex[direction] = imageIterator.GetIndex()[direction] + 1;
       forwardIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
-      
+
       if(image->GetLargestPossibleRegion().IsInside(forwardIndex) && mask->IsValid(forwardIndex))
         {
         forwardValid = true;
@@ -232,7 +232,7 @@ void MaskedDerivativeSobel(const TImage* image, const Mask* mask, const unsigned
         }
 
       float difference = 0.0f;
-    
+
       // Determine which neighbors are valid
       bool backwardValid = false;
       itk::Index<2> backwardIndex;
@@ -297,7 +297,7 @@ template <typename TImage>
 void MaskedDerivativeGaussianInRegion(const TImage* image, const Mask* mask, const unsigned int direction, const itk::ImageRegion<2>& region, FloatScalarImageType* output)
 {
   // It is assumed that 'output' is the right size and initialized already.
-  
+
   if(direction > 1)
     {
     std::cerr << "This function can only compute derivatives of 2D images!" << std::endl;
@@ -315,7 +315,7 @@ void MaskedDerivativeGaussianInRegion(const TImage* image, const Mask* mask, con
   gaussianOperator.SetDirection(0); // It doesn't matter which direction we set - we will be interpreting the kernel as 1D (no direction)
   gaussianOperator.SetVariance(3);
   gaussianOperator.CreateToRadius(radius);
-  
+
   // Setup the output
   //Helpers::InitializeImage<FloatScalarImageType>(output, image->GetLargestPossibleRegion());
 
@@ -346,7 +346,7 @@ void MaskedDerivativeGaussianInRegion(const TImage* image, const Mask* mask, con
     for(unsigned int shiftId = 0; shiftId < gaussianOperator.Size(); shiftId++) // this shift is either rows or columns, depending on the derivative direction
       {
       int shift = gaussianOperator.GetOffset(shiftId)[0];
-    
+
       itk::Index<2> centerIndex;
       centerIndex[direction] = imageIterator.GetIndex()[direction];
       centerIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
@@ -428,7 +428,7 @@ void MaskedGradientInRegion(const TImage* image, const Mask* mask, const itk::Im
   // X derivative
   FloatScalarImageType::Pointer xDerivative = FloatScalarImageType::New();
   Helpers::InitializeImage<FloatScalarImageType>(xDerivative, image->GetLargestPossibleRegion());
-  
+
   //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 0, xDerivative);
   //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 0, xDerivative);
   //Helpers::MaskedDerivativeSobel<FloatScalarImageType>(image, mask, 0, xDerivative);
@@ -438,7 +438,7 @@ void MaskedGradientInRegion(const TImage* image, const Mask* mask, const itk::Im
   // Y derivative
   FloatScalarImageType::Pointer yDerivative = FloatScalarImageType::New();
   Helpers::InitializeImage<FloatScalarImageType>(yDerivative, image->GetLargestPossibleRegion());
-  
+
   //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 1, yDerivative);
   //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 1, yDerivative);
   //Helpers::MaskedDerivativeSobel<FloatScalarImageType>(image, mask, 1, yDerivative);
@@ -465,17 +465,17 @@ void GradientFromDerivativesInRegion(const itk::Image<TPixel, 2>* xDerivative, c
     std::cerr << "X and Y derivative images must be the same size!" << std::endl;
     return;
     }
-  
+
   itk::ImageRegionIterator<itk::Image<itk::CovariantVector<TPixel, 2> > > imageIterator(output, region);
- 
+
   while(!imageIterator.IsAtEnd())
     {
     itk::CovariantVector<TPixel, 2> vectorPixel;
     vectorPixel[0] = xDerivative->GetPixel(imageIterator.GetIndex());
     vectorPixel[1] = yDerivative->GetPixel(imageIterator.GetIndex());
-  
+
     output->SetPixel(imageIterator.GetIndex(), vectorPixel);
- 
+
     ++imageIterator;
     }
 }

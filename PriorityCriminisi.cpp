@@ -68,7 +68,7 @@ std::vector<NamedVTKImage> PriorityCriminisi::GetNamedImages()
   boundaryNormalsNamedImage.ImageData = isophoteImageVTK;
   boundaryNormalsNamedImage.Vectors = true;
   namedImages.push_back(boundaryNormalsNamedImage);
-  
+
   return namedImages;
 }
 

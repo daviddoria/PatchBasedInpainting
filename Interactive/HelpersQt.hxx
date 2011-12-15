@@ -31,7 +31,7 @@
 namespace HelpersQt
 {
 
- 
+
 template <typename TImage>
 QImage GetQImage(const TImage* image, const itk::ImageRegion<2>& region, const DisplayStyle& style)
 {
@@ -69,9 +69,9 @@ QImage GetQImageColor(const TImage* image, const itk::ImageRegion<2>& region)
   regionOfInterestImageFilter->SetRegionOfInterest(region);
   regionOfInterestImageFilter->SetInput(image);
   regionOfInterestImageFilter->Update();
-  
+
   itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
-  
+
   while(!imageIterator.IsAtEnd())
     {
     typename TImage::PixelType pixel = imageIterator.Get();
@@ -92,7 +92,7 @@ QImage GetQImageColor(const TImage* image, const itk::ImageRegion<2>& region)
 
   QColor highlightColor(255, 0, 255);
   qimage.setPixel(region.GetSize()[0]/2, region.GetSize()[1]/2, highlightColor.rgb());
-  
+
   //return qimage; // The actual image region
   return qimage.mirrored(false, true); // The flipped image region
 }
@@ -114,7 +114,7 @@ QImage GetQImageMagnitude(const TImage* image, const itk::ImageRegion<2>& region
   rescaleFilter->SetOutputMaximum(255);
   rescaleFilter->SetInput( magnitudeFilter->GetOutput() );
   rescaleFilter->Update();
-  
+
   typedef itk::RegionOfInterestImageFilter< UnsignedCharScalarImageType, UnsignedCharScalarImageType> RegionOfInterestImageFilterType;
   typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
   regionOfInterestImageFilter->SetRegionOfInterest(region);
@@ -186,11 +186,11 @@ QImage GetQImageMasked(const TImage* image, const Mask::Pointer mask, const itk:
   regionOfInterestMaskFilter->SetRegionOfInterest(region);
   regionOfInterestMaskFilter->SetInput(mask);
   regionOfInterestMaskFilter->Update();
-  
+
   itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
 
   QColor holeColor(0, 255, 0);
-  
+
   while(!imageIterator.IsAtEnd())
     {
     typename TImage::PixelType pixel = imageIterator.Get();
@@ -212,7 +212,7 @@ QImage GetQImageMasked(const TImage* image, const Mask::Pointer mask, const itk:
 
   QColor highlightColor(255, 0, 255);
   qimage.setPixel(region.GetSize()[0]/2, region.GetSize()[1]/2, highlightColor.rgb());
-  
+
   //return qimage; // The actual image region
   return qimage.mirrored(false, true); // The flipped image region
 }

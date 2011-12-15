@@ -45,12 +45,12 @@ int main(int argc, char *argv[])
 
   std::cout << "Input: " << inputFileName << std::endl;
   std::cout << "Output prefix: " << outputPrefix << std::endl;
-  
+
   typedef itk::ImageFileReader<FloatVectorImageType> ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName(inputFileName);
   reader->Update();
-  
+
   IntImageType::Pointer outputLabelImage = IntImageType::New();
 
   ClusterColorsAdaptive clusterColors;
@@ -58,6 +58,6 @@ int main(int argc, char *argv[])
   clusterColors.ConstructFromImage(reader->GetOutput());
 
   HelpersOutput::WriteImage<IntImageType>(clusterColors.GetColorBinMembershipImage(), outputPrefix + ".mha");
-    
+
   return EXIT_SUCCESS;
 }

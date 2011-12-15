@@ -9,15 +9,15 @@
 //  this->InteractorStyle->SetCurrentRenderer(this->Renderer);
 //  this->Interactor->SetInteractorStyle(this->InteractorStyle);
 //  this->InteractorStyle->Init();
-    
+
 class CustomTrackballStyle;
 class CustomImageStyle;
 // Define interaction style
 class InteractorStyleImageWithDrag : public vtkInteractorStyleTrackballActor
 {
   public:
-    
-    
+
+
     static InteractorStyleImageWithDrag* New();
     vtkTypeMacro(InteractorStyleImageWithDrag,vtkInteractorStyleTrackballActor);
 
@@ -28,14 +28,14 @@ class InteractorStyleImageWithDrag : public vtkInteractorStyleTrackballActor
     void SetCurrentRenderer(vtkRenderer* renderer);
 
     void SetImageOrientation(const double*, const double*);
-    
-        
+
+
     vtkSmartPointer<CustomImageStyle> ImageStyle;
     vtkSmartPointer<CustomTrackballStyle> TrackballStyle;
-    
+
   protected:
 
-    
+
 
 };
 
@@ -60,10 +60,10 @@ class CustomImageStyle : public vtkInteractorStyleImage
 
     void SetOtherStyle(CustomTrackballStyle* style);
 
-  
+
 private:
   CustomTrackballStyle* OtherStyle;
-  
+
 };
 
 class CustomImageStyle;
@@ -77,7 +77,7 @@ class CustomTrackballStyle : public vtkInteractorStyleTrackballActor
 {
   public:
     const static unsigned int PatchesMovedEvent = vtkCommand::UserEvent + 1;
-    
+
     static CustomTrackballStyle* New();
     vtkTypeMacro(CustomTrackballStyle,vtkInteractorStyleTrackballActor);
 
@@ -93,7 +93,7 @@ class CustomTrackballStyle : public vtkInteractorStyleTrackballActor
 
 private:
   CustomImageStyle* OtherStyle;
-  
+
 };
 
 

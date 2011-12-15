@@ -63,7 +63,7 @@ void ComputationThreadClass::SingleStep()
   // When the function is finished, end the thread
   exit();
 }
-  
+
 void ComputationThreadClass::run()
 {
   if(this->Operation == ALLSTEPS)

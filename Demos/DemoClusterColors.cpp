@@ -50,30 +50,30 @@ int main(int argc, char *argv[])
 
   std::cout << "Input: " << inputFileName << std::endl;
   std::cout << "Output prefix: " << outputPrefix << std::endl;
-  
+
   typedef itk::ImageFileReader<FloatVectorImageType> ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName(inputFileName);
   reader->Update();
 
   HelpersOutput::WriteVectorImageAsRGB(reader->GetOutput(), outputPrefix + "/Image.mha");
-  
+
   WriteImagePixelsToRGBSpace(reader->GetOutput(), outputPrefix + "/ImageColors.vtp");
-    
+
   WriteClusteredPixelsInRGBSpace(reader->GetOutput(), 20, outputPrefix + "/ImageColorsClustered.vtp");
-  
+
   FloatVectorImageType::Pointer blurred = FloatVectorImageType::New();
   //float blurVariance = 2.0f; // almost no visible blurring
   //float blurVariance = 10.0f; // slight blurring of concrete
   float blurVariance = 30.0f;
   Helpers::AnisotropicBlurAllChannels<FloatVectorImageType>(reader->GetOutput(), blurred, blurVariance);
-  
+
   HelpersOutput::WriteVectorImageAsRGB(blurred, outputPrefix + "/BlurredImage.mha");
-  
+
   WriteImagePixelsToRGBSpace(blurred, outputPrefix + "/BlurredImageColors.vtp");
-    
+
   WriteClusteredPixelsInRGBSpace(blurred, 20, outputPrefix + "/BlurredImageColorsClustered.vtp");
-  
+
   return EXIT_SUCCESS;
 }
 
@@ -84,7 +84,7 @@ void WriteClusteredPixelsInRGBSpace(const FloatVectorImageType::Pointer image, c
   ClusterColorsAdaptive clusterColors;
   clusterColors.SetNumberOfColors(numberOfClusters);
   clusterColors.ConstructFromImage(image);
-  
+
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
   vtkSmartPointer<vtkUnsignedCharArray> colorsVTK = vtkSmartPointer<vtkUnsignedCharArray>::New();
   colorsVTK->SetName("Colors");
@@ -154,7 +154,7 @@ void WriteImagePixelsToRGBSpace(const FloatVectorImageType::Pointer image, const
   vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
   glyphFilter->SetInputConnection(polyData->GetProducerPort());
   glyphFilter->Update();
-  
+
   vtkSmartPointer<vtkXMLPolyDataWriter> writer = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
   writer->SetInputConnection(glyphFilter->GetOutputPort());
   writer->SetFileName(outputFileName.c_str());

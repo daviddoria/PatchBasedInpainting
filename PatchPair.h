@@ -26,16 +26,16 @@ struct PatchPair
   void DefaultConstructor();
   PatchPair();
   PatchPair(const Patch& sourcePatch, const Patch& targetPatch);
-  
+
   Patch SourcePatch;
   Patch TargetPatch;
-  
+
 //   enum PatchDifferenceTypes {AverageSquaredDifference, AverageAbsoluteDifference, BoundaryGradientDifference,
 //                              BoundaryPixelDifference, BoundaryIsophoteAngleDifference, BoundaryIsophoteStrengthDifference,
 //                              ColorDifference, DepthDifference, CombinedDifference};
   enum PatchDifferenceTypes {AverageAbsoluteDifference, ColorDifference, DepthDifference, CombinedDifference, MembershipDifference, HistogramIntersection};
   static std::string NameOfDifference(PatchDifferenceTypes);
-  
+
   typedef std::map <PatchDifferenceTypes, float> DifferenceMapType;
   DifferenceMapType DifferenceMap;
 
@@ -45,7 +45,7 @@ struct PatchPair
   // Store the relative location of the source and target patch corners
   itk::Offset<2> GetTargetToSourceOffset() const;
   itk::Offset<2> GetSourceToTargetOffset() const;
-  
+
 private:
 
   struct ComputeDepthAndColorDifferenceFunctor
@@ -53,7 +53,7 @@ private:
     ComputeDepthAndColorDifferenceFunctor() : DepthColorLambda(0.5f){}
     float operator()(const float depthDifference, const float colorDifference) const;
     float DepthColorLambda;
-  } ComputeDepthAndColorDifference; 
+  } ComputeDepthAndColorDifference;
 
 };
 

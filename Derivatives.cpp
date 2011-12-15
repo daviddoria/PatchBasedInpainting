@@ -35,7 +35,7 @@ void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* image, const Mas
 
     //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha", this->DebugImages);
     //Helpers::Write2DVectorImage(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha");
-    
+
     // Rotate the gradient 90 degrees to obtain isophotes from gradient
     typedef itk::UnaryFunctorImageFilter<FloatVector2ImageType, FloatVector2ImageType,
     RotateVectors<FloatVector2ImageType::PixelType,

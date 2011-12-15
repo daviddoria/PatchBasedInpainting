@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
   bool result1 = TestSamePatch(imageReader->GetOutput(), maskReader->GetOutput());
   bool result2 = TestDifferentPatch(imageReader->GetOutput(), maskReader->GetOutput());
   bool result3 = TestOutsideImage(imageReader->GetOutput(), maskReader->GetOutput());
-  
+
   return EXIT_SUCCESS;
 }
 
@@ -69,7 +69,7 @@ bool TestSamePatch(const RGBImageType::Pointer image, const Mask::Pointer mask)
 
 //   float difference = PatchDifference(image.GetPointer(), mask.GetPointer(), queryPixel, fixedPixel, patchRadius);
 //   std::cerr << "Difference: " << difference << std::endl;
-// 
+//
 //   if(difference != 0)
 //     {
 //     std::cerr << "Error: the difference between the same pixel should be zero!" << std::endl;
@@ -92,7 +92,7 @@ bool TestDifferentPatch(const RGBImageType::Pointer image, const Mask::Pointer m
 
 //   float difference = PatchDifference(image.GetPointer(), mask.GetPointer(), queryPixel, fixedPixel, patchRadius);
 //   std::cerr << "Difference: " << difference << std::endl;
-// 
+//
 //   if(difference == 0)
 //     {
 //     std::cerr << "Error: the difference between non-exact patches should not be zero!" << std::endl;
@@ -116,7 +116,7 @@ bool TestOutsideImage(const RGBImageType::Pointer image, const Mask::Pointer mas
 
 //   float difference = PatchDifference(image.GetPointer(), mask.GetPointer(), queryPixel, fixedPixel, patchRadius);
 //   std::cerr << "Difference: " << difference << std::endl;
-// 
+//
 //   if(difference == 0)
 //     {
 //     std::cerr << "Error: the difference between non-exact patches should not be zero!" << std::endl;

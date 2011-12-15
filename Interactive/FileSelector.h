@@ -40,14 +40,14 @@ public:
   std::string GetImageFileName();
   std::string GetMaskFileName();
   bool IsMaskInverted();
-  
+
 public slots:
   void on_buttonBox_accepted();
   void on_buttonBox_rejected();
   void Verify();
   void LoadAndDisplayImage();
   void LoadAndDisplayMask();
-  
+
 protected:
   std::string ImageFileName;
   std::string MaskFileName;

@@ -128,21 +128,21 @@ public:
 
   // We store the patch radius, so we need this function to compute the actual patch size from the radius.
   itk::Size<2> GetPatchSize();
-  
+
   // It is sometimes very slow to compute an anisotropic blurring. For testing, we would want to compute this once and use it each time.
   void SetBlurredImage(const FloatVectorImageType::Pointer);
 
   // Some techniques are very slow to compute the membership image. For testing, we would want to compute this once and use it each time.
   void SetMembershipImage(const IntImageType::Pointer);
-  
+
   ClusterColorsAdaptive* GetClusterColors();
-  
+
   ITKImageCollection& GetImagesToUpdate();
-  
+
 private:
 
   void SetupHistograms();
-  
+
   void RecomputeScoresWithNewPatches(std::vector<Patch>& newPatches, PatchPair& usedPatchPair);
 
   void BlurImage();
@@ -175,7 +175,7 @@ private:
 
   // The images in this collection will have the selected patch copied into them at each iteration.
   ITKImageCollection ImagesToUpdate;
-  
+
   // The mask specifying the region to inpaint. It is updated as patches are copied.
   Mask* MaskImage;
 

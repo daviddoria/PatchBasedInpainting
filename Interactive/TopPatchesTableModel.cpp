@@ -59,7 +59,7 @@ void TopPatchesTableModel::SetForwardLookToDisplay(const unsigned int forwardLoo
 int TopPatchesTableModel::rowCount(const QModelIndex& parent) const
 {
   EnterFunction("TopPatchesTableModel::rowCount()");
-  if(this->IterationRecords.size() < this->IterationToDisplay || 
+  if(this->IterationRecords.size() < this->IterationToDisplay ||
     this->IterationRecords.size() == 0 ||
     this->IterationRecords[this->IterationToDisplay].PotentialPairSets.size() == 0 ||
     this->IterationRecords[this->IterationToDisplay].PotentialPairSets.size() < this->ForwardLookToDisplay)
@@ -91,16 +91,16 @@ QVariant TopPatchesTableModel::data(const QModelIndex& index, int role) const
   if(role == Qt::DisplayRole && index.row() >= 0)
     {
     const CandidatePairs& currentCandidateSet = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay];
-    
+
     switch(index.column())
       {
       case 0:
 	{
 	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].Images.FindImageByName("Image").Image.GetPointer()),
                                                                        currentCandidateSet[index.row()].SourcePatch.Region, this->ImageDisplayStyle);
-	
+
 	patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
-    
+
 	returnValue = QPixmap::fromImage(patchImage);
 	break;
 	}
@@ -117,7 +117,7 @@ QVariant TopPatchesTableModel::data(const QModelIndex& index, int role) const
 	break;
 	}
       } // end switch
-    
+
     if(index.column() > 2)
       {
       unsigned int keyId = index.column() - 3; // There are 3 fixed columns
@@ -154,7 +154,7 @@ QVariant TopPatchesTableModel::headerData(int section, Qt::Orientation orientati
         }
       }// end Horizontal orientation
     } // end DisplayRole
-  
+
   return returnValue;
 }
 
@@ -174,7 +174,7 @@ void TopPatchesTableModel::Refresh()
         }
       }
   }
-    
+
   beginResetModel();
   endResetModel();
 }

@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
   blue.SetRed(0);
   blue.SetGreen(0);
   blue.SetBlue(255);
-  
+
   RGBImageType::Pointer output = RGBImageType::New();
   output->SetRegions(imageReader->GetOutput()->GetLargestPossibleRegion());
   output->Allocate();

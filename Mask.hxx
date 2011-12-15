@@ -41,7 +41,7 @@ void Mask::ApplyToVectorImage(TImage* image, const TColor& color)
     holeValue[1] = color.green();
     holeValue[2] = color.blue();
     }
-  
+
   itk::ImageRegionConstIterator<Mask> maskIterator(this, this->GetLargestPossibleRegion());
 
   while(!maskIterator.IsAtEnd())
@@ -60,7 +60,7 @@ void Mask::ApplyColorToImage(const typename TImage::Pointer image, const TColor&
 {
   // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
   // to be used to specify the color.
-  
+
   if(image->GetLargestPossibleRegion() != this->GetLargestPossibleRegion())
     {
     std::cerr << "Image and mask must be the same size!" << std::endl
@@ -98,7 +98,7 @@ void Mask::ApplyToImage(TImage* image, const typename TImage::PixelType& holeVal
 {
   // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
   // to be used to specify the color.
-  
+
   if(image->GetLargestPossibleRegion() != this->GetLargestPossibleRegion())
     {
     std::cerr << "Image and mask must be the same size!" << std::endl
@@ -127,12 +127,12 @@ void Mask::MakeVTKImage(vtkImageData* image, const TColor& validColor, const TCo
   dims[0] = this->GetLargestPossibleRegion().GetSize()[0];
   dims[1] = this->GetLargestPossibleRegion().GetSize()[1];
   dims[2] = 1;
- 
+
   image->SetScalarTypeToUnsignedChar();
   image->SetNumberOfScalarComponents(4);
   image->SetDimensions(dims);
   image->AllocateScalars();
-  
+
   for(int i = 0; i < dims[0]; ++i)
     {
     for(int j = 0; j < dims[1]; ++j)
@@ -183,7 +183,7 @@ void Mask::CreateFromImage(const TImage* image, const typename TImage::PixelType
 {
   this->SetRegions(image->GetLargestPossibleRegion());
   this->Allocate();
-  
+
   itk::ImageRegionConstIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
 
   std::cout << "Hole color: " << holeColor << std::endl;

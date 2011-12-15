@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 
   PatchBasedInpainting inpainting;
   inpainting.SetPatchSearchFunctionToNormal();
-  
+
 
   return EXIT_SUCCESS;
 }

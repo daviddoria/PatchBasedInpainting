@@ -40,7 +40,7 @@ std::vector<itk::Index<2> > Mask::GetValidPixelsInRegion(const itk::ImageRegion<
 {
   itk::ImageRegion<2> region = inputRegion;
   region.Crop(this->GetLargestPossibleRegion());
-  
+
   std::vector<itk::Index<2> > validPixels;
 
   itk::ImageRegionIterator<Mask> iterator(this, region);
@@ -61,7 +61,7 @@ std::vector<itk::Index<2> > Mask::GetHolePixelsInRegion(const itk::ImageRegion<2
 {
   itk::ImageRegion<2> region = inputRegion;
   region.Crop(this->GetLargestPossibleRegion());
-  
+
   std::vector<itk::Index<2> > holePixels;
 
   typename itk::ImageRegionIterator<Mask> iterator(this, region);
@@ -86,18 +86,18 @@ bool Mask::IsHole(const itk::Index<2>& index) const
     }
   return false;
 }
-    
+
 bool Mask::IsValid(const itk::ImageRegion<2>& region) const
 {
   // If any of the pixels in the region are invalid, the region is invalid.
-  
+
   itk::ImageRegionConstIterator<Mask> maskIterator(this, region);
 
   while(!maskIterator.IsAtEnd())
     {
     if(!this->IsValid(maskIterator.GetIndex()))
       {
-      //std::cout << "Mask::IsValid - Pixel " << maskIterator.GetIndex() << " has value " << static_cast<unsigned int>(maskIterator.Get()) 
+      //std::cout << "Mask::IsValid - Pixel " << maskIterator.GetIndex() << " has value " << static_cast<unsigned int>(maskIterator.Get())
       //          << " which makes the region invalid because Mask::ValidValue = " << static_cast<unsigned int>(this->ValidValue) << std::endl;
       return false;
       }
@@ -143,7 +143,7 @@ void Mask::Cleanup()
   // We want to interpret pixels that are "pretty much hole value" as holes, and pixels that
   // are "pretty much valid value" as valid. The "do not use" pixels must be very far away from both of these values.
   itk::ImageRegionIterator<Mask> maskIterator(this, this->GetLargestPossibleRegion());
-  
+
   float tolerance = 4;
   while(!maskIterator.IsAtEnd())
     {
@@ -159,17 +159,17 @@ void Mask::Cleanup()
       }
     ++maskIterator;
     }
-  
+
 }
 
 void Mask::SetHoleValue(const unsigned char value)
 {
-  this->HoleValue = value; 
+  this->HoleValue = value;
 }
 
 void Mask::SetValidValue(const unsigned char value)
 {
-  this->ValidValue = value; 
+  this->ValidValue = value;
 }
 
 unsigned char Mask::GetHoleValue() const
@@ -221,7 +221,7 @@ void Mask::ExpandHole()
   expandMaskFilter->SetInput(this);
   expandMaskFilter->SetKernel(structuringElement);
   expandMaskFilter->Update();
-    
+
   //Helpers::DeepCopy<Mask>(expandMaskFilter->GetOutput(), this->CurrentMask);
   this->DeepCopyFrom(expandMaskFilter->GetOutput());
 
@@ -320,7 +320,7 @@ itk::Index<2> Mask::FindPixelAcrossHole(const itk::Index<2>& queryPixel, const F
     }
 
   // Determine if 'direction' is pointing inside or outside the hole
-  
+
   FloatVector2Type direction = inputDirection;
 
   itk::Index<2> nextPixelAlongVector = Helpers::GetNextPixelAlongVector(queryPixel, direction);
@@ -336,7 +336,7 @@ itk::Index<2> Mask::FindPixelAcrossHole(const itk::Index<2>& queryPixel, const F
     direction *= -1.0;
     nextPixelAlongVector = Helpers::GetNextPixelAlongVector(queryPixel, direction);
     }
-  
+
   // Trace across the hole
   while(this->IsHole(nextPixelAlongVector))
     {
@@ -347,6 +347,6 @@ itk::Index<2> Mask::FindPixelAcrossHole(const itk::Index<2>& queryPixel, const F
       exit(-1);
       }
     }
-  
+
   return nextPixelAlongVector;
 }

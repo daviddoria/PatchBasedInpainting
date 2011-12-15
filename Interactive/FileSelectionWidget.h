@@ -38,7 +38,7 @@ public:
   void setCurrentIndex(const QModelIndex& index);
 
   QModelIndex currentIndex() const;
-  
+
 public slots:
   void on_listView_doubleClicked(const QModelIndex & index);
   void on_listView_clicked(const QModelIndex & index);
@@ -46,7 +46,7 @@ public slots:
 
 signals:
   void selectionChanged();
-  
+
 protected:
   QFileSystemModel *model;
 

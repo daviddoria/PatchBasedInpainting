@@ -33,7 +33,7 @@ public:
   vtkSmartPointer<vtkImageData> ImageData;
   vtkSmartPointer<vtkImageSlice> ImageSlice;
   vtkSmartPointer<vtkImageSliceMapper> ImageSliceMapper;
-  
+
 };
 
 #endif

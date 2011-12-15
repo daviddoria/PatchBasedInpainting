@@ -8,7 +8,7 @@ vtkStandardNewMacro(InteractorStyleImageWithDrag);
 InteractorStyleImageWithDrag::InteractorStyleImageWithDrag()
 {
   this->ImageStyle = vtkSmartPointer<CustomImageStyle>::New();
-  
+
   this->TrackballStyle = vtkSmartPointer<CustomTrackballStyle>::New();
 
 }

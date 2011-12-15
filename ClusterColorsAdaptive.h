@@ -34,12 +34,12 @@ protected:
   void GenerateColorsVTKQuantize();
   void GenerateColorsVTKBin();
   void GenerateColorsVTKTopBins();
-  
+
   void GenerateColorsITK();
   unsigned int NumberOfColors;
   unsigned int DownsampleFactor;
 
-  
+
 };
 
 #endif

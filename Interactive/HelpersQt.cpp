@@ -24,12 +24,12 @@
 
 namespace HelpersQt
 {
-  
+
 bool GetColumnIdByHeader(const QTableWidget* table, const std::string& header, int& columnId)
 {
   //std::cout << "There are " << static_cast<unsigned int>(topPatchesTableWidget->columnCount()) << " columns" << std::endl;
   //std::cout << "Looking for column with header = " << header << std::endl;
-  
+
   for(unsigned int i = 0; i < static_cast<unsigned int>(table->columnCount()); ++i)
     {
     if(table->horizontalHeaderItem(i)->text().toStdString().compare(header) == 0)
@@ -38,7 +38,7 @@ bool GetColumnIdByHeader(const QTableWidget* table, const std::string& header, i
       return true;
       }
     }
-    
+
   std::cerr << "Requested invalid column!" << std::endl;
 
   return false;
@@ -56,7 +56,7 @@ void QColorToUCharColor(const QColor& color, unsigned char outputColor[3])
 QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx)
 {
   // The fudge factors so that the scroll bars do not appear
-  
+
   unsigned int fudge = 6;
   if(gfx->height() < gfx->width())
     {

@@ -31,7 +31,7 @@
 // struct NamedITKImage : public itk::ImageBase<2>
 // {
 //   NamedITKImage() : Vectors(false), Name("Unnamed") {}
-// 
+//
 //   bool Vectors; // Should the image be displayed as vectors (little lines) vs scalars (pixels).
 //   std::string Name;
 // };

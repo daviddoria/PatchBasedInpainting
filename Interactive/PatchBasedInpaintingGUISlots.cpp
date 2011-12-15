@@ -71,13 +71,13 @@ void PatchBasedInpaintingGUI::on_cmbCompareImage_activated(int value)
   SetCompareImageFromGUI();
 }
 
-  
+
 void PatchBasedInpaintingGUI::on_chkLive_clicked()
 {
   // When "Live" is checked, we do not want to be able to click 'next' and 'previous'
   this->btnDisplayNextStep->setEnabled(!this->chkLive->isChecked());
   this->btnDisplayPreviousStep->setEnabled(!this->chkLive->isChecked());
-  
+
   this->btnGoToIteration->setEnabled(!this->chkLive->isChecked());
   this->txtGoToIteration->setEnabled(!this->chkLive->isChecked());
 }
@@ -132,7 +132,7 @@ void PatchBasedInpaintingGUI::on_btnResort_clicked()
 
   SetupTopPatchesTable();
   //on_topPatchesTableWidget_currentCellChanged(0, 0);
-  
+
   Refresh();
 }
 */
@@ -219,7 +219,7 @@ void PatchBasedInpaintingGUI::on_btnDisplayNextStep_clicked()
 {
   //std::cout << "IterationToDisplay: " << this->IterationToDisplay
     //        << " Inpainting iteration: " <<  static_cast<int>(this->Inpainting.GetIteration()) << std::endl;
-  
+
   //if(this->IterationToDisplay < this->Inpainting.GetNumberOfCompletedIterations() - 1)
   if(this->IterationToDisplay < this->IterationRecords.size() - 1)
     {
@@ -297,13 +297,13 @@ void PatchBasedInpaintingGUI::slot_ForwardLookTableView_changed(const QModelInde
 {
   EnterFunction("slot_ForwardLookTableView_changed()");
   std::cout << "on_ForwardLookTableView_currentCellChanged" << std::endl;
-  
+
   if(currentIndex.row() < 0)
     {
     std::cout << "on_ForwardLookTableView_currentCellChanged: row < 0!" << std::endl;
     return;
     }
-  
+
   if(currentIndex.row() > static_cast<int>(this->RecordToDisplay->PotentialPairSets.size()) - 1)
     {
     std::cerr << "Requested display of forward look patch " << currentIndex.row() << " but there are only "
@@ -317,7 +317,7 @@ void PatchBasedInpaintingGUI::slot_ForwardLookTableView_changed(const QModelInde
   std::cout << "Set this->ForwardLookToDisplay to " << this->ForwardLookToDisplayId << std::endl;
   // When we select a different forward look patch, there is no way to know which source patch the user wants to see, so show the 0th.
   this->SourcePatchToDisplayId = 0;
-  
+
   ChangeDisplayedForwardLookPatch();
 
   LeaveFunction("slot_ForwardLookTableView_changed()");
@@ -334,13 +334,13 @@ void PatchBasedInpaintingGUI::slot_TopPatchesTableView_changed(const QModelIndex
       std::cout << "Selected row is < 0!" << std::endl;
       return;
       }
-      
+
     if(currentIndex.row() == previousIndex.row())
       {
       std::cout << "Nothing changed!" << std::endl;
       return;
       }
-    
+
     this->SourcePatchToDisplayId = currentIndex.row();
     std::cout << "Set this->SourcePatchToDisplay to " << this->SourcePatchToDisplayId << std::endl;
     ChangeDisplayedTopPatch();
@@ -398,8 +398,8 @@ void PatchBasedInpaintingGUI::on_btnStep_clicked()
   //PatchPair usedPair = this->Inpainting.Iterate();
 
   //IterationComplete(usedPair);
-  
-  
+
+
   this->btnStep->setEnabled(false);
   this->btnInpaint->setEnabled(false);
   this->btnReset->setEnabled(false);
@@ -412,11 +412,11 @@ void PatchBasedInpaintingGUI::on_btnStop_clicked()
   this->ComputationThread.StopInpainting();
 
   this->btnStop->setEnabled(false);
-  
+
   this->btnStep->setEnabled(true);
   this->btnInpaint->setEnabled(true);
   this->btnReset->setEnabled(true);
-  
+
 }
 
 void PatchBasedInpaintingGUI::on_btnReset_clicked()
@@ -453,7 +453,7 @@ void PatchBasedInpaintingGUI::slot_StopProgress()
   // Re-enable some items that should not be changed while the inpainting is running.
   this->txtNumberOfForwardLook->setEnabled(false);
   this->txtNumberOfTopPatchesToSave->setEnabled(false);
-  
+
   this->progressBar->hide();
 }
 

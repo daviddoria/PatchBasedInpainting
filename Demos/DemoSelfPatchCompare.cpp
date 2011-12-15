@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 {
   unsigned int t = time(NULL);
   srand(t);
-  
+
   itk::Size<2> size;
   size.Fill(100);
 
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
     ++imageIterator;
     }
   }
-  
+
   // Generate a random membership image
   IntImageType::Pointer membershipImage = IntImageType::New();
   membershipImage->SetRegions(region);
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
     ++membershipImageIterator;
     }
   }
-  
+
   // Write the image
   itk::ImageFileWriter<FloatVectorImageType>::Pointer imageWriter =
     itk::ImageFileWriter<FloatVectorImageType>::New();
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 //   maskSource->SetMin(0);
 //   maskSource->SetMax(255);
 //   maskSource->Update();
-// 
+//
 //   // Threshold the mask
 //   //typedef itk::ThresholdImageFilter <UnsignedCharImageType> ThresholdImageFilterType;
 //   typedef itk::BinaryThresholdImageFilter <Mask, Mask> ThresholdImageFilterType;
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 //   thresholdFilter->SetInsideValue(0);
 //   thresholdFilter->Update();
 //   Mask::Pointer mask = thresholdFilter->GetOutput();
-  
+
   std::cout << "Creating mask..." << std::endl;
   Mask::Pointer mask = Mask::New();
   mask->SetRegions(region);
@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
   while(!maskIterator.IsAtEnd())
     {
     int randomNumber = rand()%10;
-    //std::cout << "randomNumber: " << randomNumber << std::endl; 
+    //std::cout << "randomNumber: " << randomNumber << std::endl;
     if(randomNumber > 5)
       {
       maskIterator.Set(mask->GetHoleValue());
@@ -183,10 +183,10 @@ int main(int argc, char *argv[])
 
   itk::ImageRegion<2> targetRegion(targetIndex, targetSize);
   Patch targetPatch(targetRegion);
-  
+
   CandidatePairs pairs(targetPatch);
   pairs.AddPairFromPatch(targetPatch);
-  
+
   itk::ImageRegion<2> adjacentRegion = targetRegion;
   itk::Index<2> adjacentIndex;
   adjacentIndex[0] = targetIndex[0] + 1;
@@ -195,30 +195,30 @@ int main(int argc, char *argv[])
   Patch adjacentPatch(adjacentRegion);
   pairs.AddPairFromPatch(adjacentPatch);
   //pairs.AddPairFromPatch(sourcePatches[0]);
-  
+
   SelfPatchCompare patchCompare;
   patchCompare.SetPairs(&pairs);
   patchCompare.SetImage(image);
   patchCompare.SetMask(mask);
   patchCompare.SetNumberOfComponentsPerPixel(3);
   patchCompare.SetMembershipImage(membershipImage);
-  
+
   patchCompare.FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,&patchCompare,_1));
   patchCompare.ComputeAllSourceDifferences();
-  
+
   std::cout << "pairs: " << pairs.size() << std::endl;
   for(unsigned int i = 0; i < pairs.size(); ++i)
     {
     std::cout << "MembershipDifference: " << pairs[i].DifferenceMap[PatchPair::MembershipDifference] << std::endl;
     }
-  
+
   //unsigned int bestMatchSourcePatchId = patchCompare.FindBestPatch();
   //std::cout << "bestMatchSourcePatchId: " << bestMatchSourcePatchId << std::endl;
 /*
   unsigned int patchId = 1;
   float slowPatchDifference = patchCompare.SlowDifference(sourcePatches[patchId]);
   std::cout << "slowPatchDifference: " << slowPatchDifference << std::endl;
-  
+
   float fastPatchDifference = patchCompare.PatchDifference(sourcePatches[patchId]);
   std::cout << "fastPatchDifference: " << fastPatchDifference << std::endl;
 
@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
 
   itk::TimeProbe slowTimer;
   slowTimer.Start();
-  
+
   for(unsigned int i = 0; i < iterations; ++i)
     {
     float slowPatchDifference = patchCompare.SlowDifference(sourcePatches[patchId]);

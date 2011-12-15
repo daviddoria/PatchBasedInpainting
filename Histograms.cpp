@@ -31,28 +31,28 @@
 
 namespace Histograms
 {
-  
+
 std::vector<float> ComputeHistogramOfGradient(const FloatVector2ImageType* gradientImage, const itk::ImageRegion<2>& region)
 {
   // Discretize the continuum of possible angles of vectors in the right half-plane.
   // (We flip all vectors so that they are pointing towards the right half-plane, since their orientation is not important).
   // Add the strength/magnitude of the vector to the appropriate bin in the histogram.
-  
+
   // The synatx is atan2(y,x)
   //float radiansToDegrees = 180./3.14159;
   float minValue = atan2(1, 0);
   float maxValue = atan2(-1, 0);
-  
+
   float range = maxValue - minValue;
-  
+
   unsigned int numberOfBins = 20;
-  
+
   std::vector<float> histogram(numberOfBins);
-  
+
   float step = range / static_cast<float>(numberOfBins);
-  
+
   itk::ImageRegionConstIterator<FloatVector2ImageType> iterator(gradientImage, region);
-  
+
   while(!iterator.IsAtEnd())
     {
     FloatVector2ImageType::PixelType v = iterator.Get();
@@ -65,18 +65,18 @@ std::vector<float> ComputeHistogramOfGradient(const FloatVector2ImageType* gradi
     histogram[bin] += iterator.Get().GetNorm();
     ++iterator;
     }
-    
+
   // Normalize
   Helpers::NormalizeVector<float>(histogram);
-    
+
   return histogram;
 }
 
 std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorImageType* image, const itk::ImageRegion<2>& region)
 {
-  
+
   std::vector<HistogramType::Pointer> histograms;
-  
+
   typedef itk::RegionOfInterestImageFilter< FloatVectorImageType, FloatVectorImageType > RegionOfInterestImageFilterType;
   RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
   regionOfInterestImageFilter->SetRegionOfInterest(region);
@@ -92,19 +92,19 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorI
     indexSelectionFilter->SetInput(image);
     indexSelectionFilter->GetOutput()->SetRequestedRegion(region);
     indexSelectionFilter->Update();
-  
+
     const unsigned int MeasurementVectorSize = 1;
     const unsigned int binsPerDimension = 30;
-    
+
     HistogramType::MeasurementVectorType lowerBound(MeasurementVectorSize);
     lowerBound.Fill(0);
-    
+
     HistogramType::MeasurementVectorType upperBound(MeasurementVectorSize);
     upperBound.Fill(255) ;
-    
+
     HistogramType::SizeType size(MeasurementVectorSize);
     size.Fill(binsPerDimension);
-    
+
     ImageToHistogramFilterType::Pointer imageToHistogramFilter = ImageToHistogramFilterType::New();
     imageToHistogramFilter->SetInput(indexSelectionFilter->GetOutput());
     imageToHistogramFilter->SetHistogramBinMinimum(lowerBound);
@@ -115,47 +115,47 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfRegion(const FloatVectorI
 
     histograms.push_back(imageToHistogramFilter->GetOutput());
     }
-    
+
   return histograms;
 }
 
 std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatVectorImageType* image, const itk::ImageRegion<2>& imageRegion, const Mask* mask, const itk::ImageRegion<2>& maskRegion, const unsigned int binsPerDimension)
 {
-  
+
   std::vector<HistogramType::Pointer> histograms;
 
   // Compute the histogram of each channel
   for(unsigned int i = 0; i < image->GetNumberOfComponentsPerPixel(); ++i)
     {
-      
+
     typedef itk::VectorIndexSelectionCastImageFilter<FloatVectorImageType, FloatScalarImageType> IndexSelectionType;
     IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
     indexSelectionFilter->SetIndex(i);
     indexSelectionFilter->SetInput(image);
     indexSelectionFilter->GetOutput()->SetRequestedRegion(imageRegion);
     indexSelectionFilter->Update();
-  
+
     const unsigned int MeasurementVectorSize = 1;
-    
+
     HistogramType::MeasurementVectorType lowerBound(MeasurementVectorSize);
     lowerBound.Fill(0);
-    
+
     HistogramType::MeasurementVectorType upperBound(MeasurementVectorSize);
     upperBound.Fill(255) ;
-    
+
     HistogramType::SizeType size(MeasurementVectorSize);
     size.Fill(binsPerDimension);
-    
-    
+
+
     itk::ImageRegionConstIterator<FloatScalarImageType> imageIterator(indexSelectionFilter->GetOutput(), imageRegion);
     itk::ImageRegionConstIterator<Mask> maskIterator(mask, maskRegion);
-    
+
     HistogramType::Pointer histogram = HistogramType::New();
 
     histogram->SetMeasurementVectorSize(MeasurementVectorSize);
- 
+
     histogram->Initialize(size, lowerBound, upperBound );
-  
+
     while(!imageIterator.IsAtEnd())
       {
       if(mask->IsHole(maskIterator.GetIndex()))
@@ -169,54 +169,54 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfMaskedRegion(const FloatV
       mv[0] = pixel;
 
       histogram->IncreaseFrequencyOfMeasurement(mv, 1);
-      
+
       ++imageIterator;
       ++maskIterator;
       }
-      
+
     histograms.push_back(histogram);
     }
-    
+
   return histograms;
 }
 
 std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatVectorImageType* image, const itk::ImageRegion<2>& region, const unsigned int numberOfBins)
 {
-  
+
   std::vector<HistogramType::Pointer> histograms;
 
   // Compute the histogram of each channel
   for(unsigned int i = 0; i < image->GetNumberOfComponentsPerPixel(); ++i)
     {
-      
+
     typedef itk::VectorIndexSelectionCastImageFilter<FloatVectorImageType, FloatScalarImageType> IndexSelectionType;
     IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
     indexSelectionFilter->SetIndex(i);
     indexSelectionFilter->SetInput(image);
     indexSelectionFilter->GetOutput()->SetRequestedRegion(region);
     indexSelectionFilter->Update();
-  
+
     const unsigned int MeasurementVectorSize = 1;
     const unsigned int binsPerDimension = 30;
-    
+
     HistogramType::MeasurementVectorType lowerBound(MeasurementVectorSize);
     lowerBound.Fill(0);
-    
+
     HistogramType::MeasurementVectorType upperBound(MeasurementVectorSize);
     upperBound.Fill(255) ;
-    
+
     HistogramType::SizeType size(MeasurementVectorSize);
     size.Fill(binsPerDimension);
-    
-    
+
+
     itk::ImageRegionConstIterator<FloatScalarImageType> imageIterator(indexSelectionFilter->GetOutput(), region);
-    
+
     HistogramType::Pointer histogram = HistogramType::New();
 
     histogram->SetMeasurementVectorSize(MeasurementVectorSize);
- 
+
     histogram->Initialize(size, lowerBound, upperBound );
-  
+
     while(!imageIterator.IsAtEnd())
       {
 
@@ -225,13 +225,13 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatV
       mv[0] = pixel;
 
       histogram->IncreaseFrequencyOfMeasurement(mv, 1);
-      
+
       ++imageIterator;
       }
-      
+
     histograms.push_back(histogram);
     }
-    
+
   return histograms;
 }
 
@@ -239,7 +239,7 @@ std::vector<HistogramType::Pointer> ComputeHistogramsOfRegionManual(const FloatV
 HistogramType::Pointer ComputeNDHistogramOfRegionManual(const FloatVectorImageType* image, const itk::ImageRegion<2>& region, const unsigned int binsPerDimension)
 {
   const unsigned int MeasurementVectorSize = image->GetNumberOfComponentsPerPixel();
-  
+
   HistogramType::MeasurementVectorType lowerBound(MeasurementVectorSize);
   lowerBound.Fill(0);
 
@@ -278,10 +278,10 @@ std::vector<float> Compute1DHistogramOfMultiChannelMaskedImage(const FloatVector
 {
   // Compute the histogram for each channel separately
   std::vector<HistogramType::Pointer> channelHistograms = ComputeHistogramsOfMaskedRegion(image, imageRegion, mask, maskRegion, numberOfBins);
-  
+
   unsigned int binsPerHistogram = channelHistograms[0]->GetSize(0);
   std::vector<float> histogram(binsPerHistogram*image->GetNumberOfComponentsPerPixel());
-  
+
   for(unsigned int channel = 0; channel < image->GetNumberOfComponentsPerPixel(); ++channel)
     {
     for(unsigned int bin = 0; bin < binsPerHistogram; ++bin)
@@ -289,7 +289,7 @@ std::vector<float> Compute1DHistogramOfMultiChannelMaskedImage(const FloatVector
       histogram[channel*binsPerHistogram + bin] = channelHistograms[channel]->GetFrequency(bin);
       }
     }
-  
+
   return histogram;
 }
 
@@ -297,9 +297,9 @@ std::vector<float> Compute1DHistogramOfMultiChannelImage(const FloatVectorImageT
 {
   // Compute the histogram for each channel separately
   std::vector<HistogramType::Pointer> channelHistograms = ComputeHistogramsOfRegionManual(image, region, numberOfBins);
-  
+
   std::vector<float> histogram(channelHistograms[0]->GetSize(0));
-  
+
   for(unsigned int channel = 0; channel < image->GetNumberOfComponentsPerPixel(); ++channel)
     {
     for(unsigned int bin = 0; bin < channelHistograms[0]->GetSize(0); ++bin)
@@ -307,7 +307,7 @@ std::vector<float> Compute1DHistogramOfMultiChannelImage(const FloatVectorImageT
       histogram.push_back(channelHistograms[channel]->GetFrequency(bin));
       }
     }
-  
+
   return histogram;
 }
 
@@ -377,7 +377,7 @@ float NDHistogramDifference(const HistogramType::Pointer histogram1, const Histo
     }
 
   float totalDifference = 0;
-  
+
   for(unsigned int i = 0; i < totalBins; ++i)
     {
     // The casts to float are necessary other wise the integer division always ends up = 0 !
@@ -405,7 +405,7 @@ float HistogramDifference(const HistogramType::Pointer histogram1, const Histogr
     {
 //     std::cout << "h1 " << i << " " << histogram1->GetFrequency(i) << std::endl;
 //     std::cout << "h1 total " << histogram1->GetTotalFrequency() << std::endl;
-// 
+//
 //     std::cout << "h2 " << i << " " << histogram2->GetFrequency(i) << std::endl;
 //     std::cout << "h2 total " << histogram2->GetTotalFrequency() << std::endl;
 
@@ -444,7 +444,7 @@ float HistogramIntersection(const HistogramType::Pointer histogram1, const Histo
     }
 
   float normalizedIntersection = totalIntersection / static_cast<float>(histogram2->GetTotalFrequency());
-  
+
   return normalizedIntersection;
 }
 

@@ -32,7 +32,7 @@ class InpaintingIterationRecord
 {
 public:
   InpaintingIterationRecord();
-  
+
 //   FloatVectorImageType::Pointer Image;
 //   Mask::Pointer MaskImage;
 //   UnsignedCharScalarImageType::Pointer Boundary;
@@ -44,7 +44,7 @@ public:
 
   // Store the pairs of patches that were actually used.
   PatchPair UsedPatchPair;
-  
+
 };
 
 #endif

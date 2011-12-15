@@ -113,7 +113,7 @@ void BlankAndOutlineImage(vtkImageData*, const unsigned char color[3]);
 // Set an image to black.
 void BlankImage(vtkImageData*);
 
-// Extract the non-zero pixels of a "vector image" and convert them to vectors in a vtkPolyData. This is useful because glyphing a vector image is too slow to use as a visualization, 
+// Extract the non-zero pixels of a "vector image" and convert them to vectors in a vtkPolyData. This is useful because glyphing a vector image is too slow to use as a visualization,
 // because it "draws" the vectors, even if they are zero length. In this code we are often interested in displaying vectors along a contour, so this is a very very small subset of a whole vector image.
 void KeepNonZeroVectors(const vtkImageData* image, vtkPolyData* output);
 void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType* vectorImage, vtkPolyData* output);

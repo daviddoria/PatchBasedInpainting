@@ -36,27 +36,27 @@ class ForwardLookTableModel : public QAbstractTableModel, public DebugOutputs
 {
 public:
   ForwardLookTableModel(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& style);
-  
+
   int rowCount(const QModelIndex& parent) const;
   int columnCount(const QModelIndex& parent) const;
   QVariant data(const QModelIndex& index, int role) const;
   QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-  
+
   Qt::ItemFlags flags(const QModelIndex& index) const;
-  
+
   void SetIterationToDisplay(const unsigned int);
   void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
-  
+
   void Refresh();
-  
+
   void SetPatchDisplaySize(const unsigned int value);
-  
+
 protected:
-  
+
   std::vector<InpaintingIterationRecord>& IterationRecords;
 
   unsigned int IterationToDisplay;
-  
+
   unsigned int PatchDisplaySize;
 
   DisplayStyle& ImageDisplayStyle;

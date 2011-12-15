@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
   MaskReaderType::Pointer maskReader = MaskReaderType::New();
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
-  
+
   SelfPatchCompare* patchCompare = new SelfPatchCompare;
   patchCompare->SetNumberOfComponentsPerPixel(imageReader->GetOutput()->GetNumberOfComponentsPerPixel());
   //patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
   patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,patchCompare,_1));
   //patchCompare->SetImage(imageReader->GetOutput());
   //patchCompare->SetMask(maskReader->GetOutput());
-  
+
   PatchBasedInpainting inpainting;
   inpainting.SetMask(maskReader->GetOutput());
   inpainting.SetImage(imageReader->GetOutput());
@@ -68,11 +68,11 @@ int main(int argc, char *argv[])
   //inpainting.SetPatchCompare(patchCompare);
   inpainting.Initialize();
   inpainting.Iterate();
-  
+
   CandidatePairs candidatePairs = inpainting.GetPotentialCandidatePairs()[0];
   //patchCompare->SetPairs(&candidatePairs);
   //patchCompare->ComputeAllSourceDifferences();
   WriteImageOfScores(candidatePairs, imageReader->GetOutput()->GetLargestPossibleRegion(), "ScoreImage_TargetPatch.mha");
-  
+
   return EXIT_SUCCESS;
 }

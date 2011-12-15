@@ -29,7 +29,7 @@ ClusterColors::ClusterColors()
 {
   this->Image = NULL;
   this->MaskImage = NULL;
-  
+
   this->MaxIterations = 10;
   // this->ColorBinMembershipImage = IntImageType::New(); // This is done in CreateMembershipImage()
 }
@@ -48,7 +48,7 @@ void ClusterColors::ConstructFromImage(const FloatVectorImageType* image)
 {
   this->Image = const_cast<FloatVectorImageType*>(image); // TODO: remove the need for this cast
   GenerateColors();
-  
+
   CreateMembershipImage();
 }
 
@@ -57,7 +57,7 @@ void ClusterColors::ConstructFromMaskedImage(const FloatVectorImageType* image, 
   this->Image = const_cast<FloatVectorImageType*>(image); // TODO: remove the need for this cast
   this->MaskImage = const_cast<Mask*>(mask); // TODO: remove the need for this cast
   GenerateColors();
-  
+
   CreateMembershipImage();
 }
 
@@ -74,7 +74,7 @@ std::vector<float> ClusterColors::HistogramRegion(const FloatVectorImageType* im
 
   itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(image, imageRegion);
   itk::ImageRegionConstIterator<Mask> maskIterator(mask, maskRegion);
-    
+
   while(!imageIterator.IsAtEnd())
     {
     if(!(invertMask) * mask->IsHole(maskIterator.GetIndex()))
@@ -88,16 +88,16 @@ std::vector<float> ClusterColors::HistogramRegion(const FloatVectorImageType* im
     measurement[0] = pixel[0];
     measurement[1] = pixel[1];
     measurement[2] = pixel[2];
-    
+
     TreeType::InstanceIdentifierVectorType neighbors;
     this->KDTree->Search( measurement, 1u, neighbors );
-  
+
     histogram[neighbors[0]] += 1.0f;
-    
+
     ++imageIterator;
     ++maskIterator;
     }
-    
+
   return histogram;
 }
 
@@ -110,7 +110,7 @@ std::vector<float> ClusterColors::HistogramRegion(const IntImageType* image, con
   //std::cout << "histogram.size() " << histogram.size() << std::endl;
   itk::ImageRegionConstIterator<IntImageType> imageIterator(image, imageRegion);
   itk::ImageRegionConstIterator<Mask> maskIterator(mask, maskRegion);
-    
+
   while(!imageIterator.IsAtEnd())
     {
     if(!(invertMask) * mask->IsHole(maskIterator.GetIndex()))
@@ -121,7 +121,7 @@ std::vector<float> ClusterColors::HistogramRegion(const IntImageType* image, con
       }
     //std::cout << "Attempting to increment bin " << imageIterator.Get() << std::endl;
     histogram[imageIterator.Get()] += 1.0f;
-    
+
     ++imageIterator;
     ++maskIterator;
     }
@@ -161,7 +161,7 @@ void ClusterColors::CreateMembershipImage()
   this->ColorBinMembershipImage->SetRegions(this->Image->GetLargestPossibleRegion());
   this->ColorBinMembershipImage->Allocate();
   this->ColorBinMembershipImage->FillBuffer(0);
-  
+
   ColorMeasurementVectorType queryPoint;
   itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->Image, this->Image->GetLargestPossibleRegion());
 
@@ -178,7 +178,7 @@ void ClusterColors::CreateMembershipImage()
 
       TreeType::InstanceIdentifierVectorType neighbors;
       this->KDTree->Search( queryPoint, 1u, neighbors );
-      
+
       this->ColorBinMembershipImage->SetPixel(imageIterator.GetIndex(), neighbors[0]);
       }
     else

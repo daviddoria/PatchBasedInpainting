@@ -38,10 +38,10 @@ void PatchBasedInpainting::DebugWriteAllImages()
   //HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->ConfidenceImage, "Debug/ConfidenceImage", this->NumberOfCompletedIterations);
   //HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->DataImage, "Debug/DataImage", this->NumberOfCompletedIterations);
   //HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->PriorityImage, "Debug/PriorityImage", this->NumberOfCompletedIterations);
-  
+
   //Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->IsophoteImage, "IsophoteImage", this->NumberOfCompletedIterations);
   //HelpersOutput::Write2DVectorImage(this->IsophoteImage, Helpers::GetSequentialFileName("Debug/IsophoteImage", this->NumberOfCompletedIterations, "mha"));
-  
+
   //HelpersOutput::WriteSequentialImage<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/BoundaryImage", this->NumberOfCompletedIterations);
 
   // Boundary isophotes
@@ -219,7 +219,7 @@ void WriteImageOfScores(const CandidatePairs& candidatePairs, const itk::ImageRe
   // Create the score-colored image
   FloatScalarImageType::Pointer scoreColoredImage = FloatScalarImageType::New();
   Helpers::InitializeImage<FloatScalarImageType>(scoreColoredImage, imageRegion);
-  
+
   // Find max value (worst score)
   float worstScore = 0.0f;
   for(unsigned int i = 0; i < candidatePairs.size(); ++i)

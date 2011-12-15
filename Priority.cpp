@@ -27,7 +27,7 @@ Priority::Priority(const FloatVectorImageType* image, const Mask* maskImage, con
                    Image(image), MaskImage(maskImage), PatchRadius(patchRadius)
 {
   //std::cout << "Priority() image size: " << image->GetLargestPossibleRegion().GetSize() << std::endl;
-  
+
   EnterFunction("Priority()");
   this->PriorityImage = FloatScalarImageType::New();
   Helpers::InitializeImage<FloatScalarImageType>(this->PriorityImage, image->GetLargestPossibleRegion());
@@ -42,7 +42,7 @@ Priority::Priority(const FloatVectorImageType* image, const Mask* maskImage, con
 std::vector<NamedVTKImage> Priority::GetNamedImages()
 {
   std::vector<NamedVTKImage> namedImages;
-  
+
   NamedVTKImage priorityImage;
   priorityImage.Name = "Priority";
   vtkSmartPointer<vtkImageData> priorityImageVTK = vtkSmartPointer<vtkImageData>::New();
@@ -87,7 +87,7 @@ void Priority::ComputeAllPriorities()
 
   if(this->MaskImage->GetLargestPossibleRegion() != this->PriorityImage->GetLargestPossibleRegion())
     {
-    std::cerr << "Priority::ComputeAllPriorities: The priority image has not been properly initialized!" 
+    std::cerr << "Priority::ComputeAllPriorities: The priority image has not been properly initialized!"
               << this->PriorityImage->GetLargestPossibleRegion() << std::endl;
     exit(-1);
     }
@@ -104,8 +104,8 @@ void Priority::ComputeAllPriorities()
     }
 
   //std::cout << "Priority image size: " << this->PriorityImage->GetLargestPossibleRegion() << std::endl;
-  
+
   HelpersOutput::WriteImage<FloatScalarImageType>(this->PriorityImage, "Debug/Priority.mha");
-  
+
   LeaveFunction("ComputeAllPriorities()");
 }

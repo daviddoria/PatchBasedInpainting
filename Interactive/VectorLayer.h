@@ -32,15 +32,15 @@ class VectorLayer
 {
 public:
   VectorLayer();
-  
+
   vtkSmartPointer<vtkPolyDataMapper> Mapper;
   vtkSmartPointer<vtkActor> Actor;
   vtkSmartPointer<vtkImageData> ImageData;
   vtkSmartPointer<vtkPolyData> Vectors;
   //vtkSmartPointer<vtkGlyph2D> GlyphFilter;
   vtkSmartPointer<vtkHedgeHog> GlyphFilter;
-  
-  
+
+
 };
 
 #endif

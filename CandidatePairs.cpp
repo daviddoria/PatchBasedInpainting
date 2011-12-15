@@ -118,6 +118,6 @@ void CandidatePairs::WriteDepthScoresToFile(const std::string& fileName)
     {
     fout << (*this)[i].DifferenceMap[PatchPair::DepthDifference] << std::endl;
     }
-    
+
   fout.close();
 }

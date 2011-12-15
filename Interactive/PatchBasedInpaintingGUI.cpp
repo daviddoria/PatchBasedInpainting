@@ -159,7 +159,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->qvtkWidget->GetRenderWindow()->AddRenderer(this->Renderer);
 
   this->UserPatchLayer.ImageSlice->SetPickable(true);
-  
+
   this->ImageLayer.ImageSlice->SetPickable(false);
   this->BoundaryLayer.ImageSlice->SetPickable(false);
   this->MaskLayer.ImageSlice->SetPickable(false);
@@ -177,11 +177,11 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->Renderer->AddViewProp(this->AllForwardLookOutlinesLayer.ImageSlice);
 
   this->Renderer->AddViewProp(this->UserPatchLayer.ImageSlice);
-  
+
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
   this->InteractorStyle->Init();
-  
+
   this->UserImage = FloatVectorImageType::New();
   this->UserMaskImage = Mask::New();
 
@@ -202,7 +202,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   // but makes the interface very very choppy.
   // We are assuming that the computation takes longer than the drawing.
   //connect(&ComputationThread, SIGNAL(IterationCompleteSignal()), this, SLOT(IterationCompleteSlot()), Qt::QueuedConnection);
-  
+
   qRegisterMetaType<PatchPair>("PatchPair");
   connect(&ComputationThread, SIGNAL(IterationCompleteSignal(const PatchPair&)), this, SLOT(slot_IterationComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
   connect(&ComputationThread, SIGNAL(StepCompleteSignal(const PatchPair&)), this, SLOT(slot_StepComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
@@ -273,11 +273,11 @@ PatchBasedInpaintingGUI::PatchBasedInpaintingGUI()
 PatchBasedInpaintingGUI::PatchBasedInpaintingGUI(const std::string& imageFileName, const std::string& maskFileName, const bool debugEnterLeave = false)
 {
   this->SetDebugFunctionEnterLeave(debugEnterLeave);
-  
+
   EnterFunction("PatchBasedInpaintingGUI(string, string, bool)");
 
   std::cout << "Image: " << imageFileName << " Mask: " << maskFileName << std::endl;
-  
+
   DefaultConstructor();
 
   OpenImage(imageFileName);
@@ -356,7 +356,7 @@ void PatchBasedInpaintingGUI::OpenMask(const std::string& fileName, const bool i
 
   Helpers::DeepCopy<Mask>(reader->GetOutput(), this->UserMaskImage);
   //std::cout << "UserMaskImage region: " << this->UserMaskImage->GetLargestPossibleRegion() << std::endl;
-  
+
   // For this program, we ALWAYS assume the hole to be filled is white, and the valid/source region is black.
   // This is not simply reversible because of some subtle erosion operations that are performed.
   // For this reason, we provide an "load inverted mask" action in the file menu.
@@ -400,9 +400,9 @@ void PatchBasedInpaintingGUI::OpenImage(const std::string& fileName)
   this->spinChannelToDisplay->setMaximum(reader->GetOutput()->GetNumberOfComponentsPerPixel() - 1);
 
   //this->Image = reader->GetOutput();
-  
+
   Helpers::DeepCopy<FloatVectorImageType>(reader->GetOutput(), this->UserImage);
-  
+
   //std::cout << "UserImage region: " << this->UserImage->GetLargestPossibleRegion() << std::endl;
 
   HelpersDisplay::ITKVectorImageToVTKImage(this->UserImage, this->ImageLayer.ImageData, this->ImageDisplayStyle);
@@ -427,7 +427,7 @@ void PatchBasedInpaintingGUI::Reset()
   this->tabSettings->setEnabled(true);
   this->tabRecord->setEnabled(true);
   this->tabPrecomputed->setEnabled(true);
-  
+
   this->btnReset->setEnabled(false);
   this->btnInpaint->setEnabled(false);
   this->btnStep->setEnabled(false);
@@ -441,9 +441,9 @@ void PatchBasedInpaintingGUI::Reset()
 void PatchBasedInpaintingGUI::DisplayMask()
 {
   //vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
-  //Helpers::ITKScalarImageToScaledVTKImage<Mask>(this->IntermediateImages[this->IterationToDisplay].MaskImage, temp);  
+  //Helpers::ITKScalarImageToScaledVTKImage<Mask>(this->IntermediateImages[this->IterationToDisplay].MaskImage, temp);
   //Helpers::MakeValidPixelsTransparent(temp, this->MaskLayer.ImageData, 0); // Set the zero pixels of the mask to transparent
-  
+
   dynamic_cast<Mask*>(this->IterationRecords[this->IterationToDisplay].Images.FindImageByName("Mask").Image.GetPointer())->MakeVTKImage(this->MaskLayer.ImageData, QColor(Qt::white), this->HoleColor, false, true); // (..., holeTransparent, validTransparent);
   this->qvtkWidget->GetRenderWindow()->Render();
 }
@@ -519,7 +519,7 @@ void PatchBasedInpaintingGUI::RefreshVTK()
   EnterFunction("RefreshVTK()");
   try
   {
-// 
+//
     // The following are valid for all iterations
     if(this->chkDisplayUserPatch->isChecked())
       {
@@ -572,7 +572,7 @@ void PatchBasedInpaintingGUI::RefreshVTK()
 void PatchBasedInpaintingGUI::RefreshQt()
 {
   EnterFunction("RefreshQt()");
-  
+
   ChangeDisplayedTopPatch();
   ChangeDisplayedForwardLookPatch();
   SetupForwardLookingTable();
@@ -620,9 +620,9 @@ void PatchBasedInpaintingGUI::Initialize()
     reader->Update();
     this->Inpainting.SetMembershipImage(reader->GetOutput());
     }
-  
+
   // The PatchSortFunction has already been set by the radio buttons.
-  
+
   std::cout << "User Image: " << this->UserImage->GetLargestPossibleRegion().GetSize() << std::endl;
   std::cout << "User Mask: " << this->UserMaskImage->GetLargestPossibleRegion().GetSize() << std::endl;
   HelpersOutput::WriteImage<Mask>(this->UserMaskImage, "mask.mha");
@@ -631,23 +631,23 @@ void PatchBasedInpaintingGUI::Initialize()
   this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
   //this->Inpainting.SetDebugFunctionEnterLeave(false);
-  
+
   // Setup the priority function
 
-  
+
   // Setup the patch comparison function
   this->Inpainting.GetPatchCompare()->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
 
   // Setup the sorting function
   this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
-  
+
   // Finish initializing
   this->Inpainting.Initialize();
 
   CreateInitialRecord();
   this->IterationToDisplay = 0;
   ChangeDisplayedIteration();
-  
+
   SetCheckboxVisibility(true);
 
   Refresh();
@@ -729,13 +729,13 @@ void PatchBasedInpaintingGUI::DisplayResultPatch()
       }
 
     FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->Images.FindImageByName("Image").Image.GetPointer());
-    
+
     // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration
     // (as the current mask has been cleared where the target patch was copied).
     Mask::Pointer currentMask = dynamic_cast<Mask*>(this->RecordToDisplay->Images.FindImageByName("Mask").Image.GetPointer());
 
     itk::Size<2> regionSize = this->Inpainting.GetPatchSize();
-    
+
     QImage qimage(regionSize[0], regionSize[1], QImage::Format_RGB888);
 
     itk::ImageRegionIterator<FloatVectorImageType> sourceIterator(currentImage, this->SourcePatchToDisplay.Region);
@@ -749,11 +749,11 @@ void PatchBasedInpaintingGUI::DisplayResultPatch()
     region.SetSize(patchSize);
     resultPatch->SetRegions(region);
     resultPatch->Allocate();
-    
+
     while(!maskIterator.IsAtEnd())
       {
       FloatVectorImageType::PixelType pixel;
-    
+
       if(currentMask->IsHole(maskIterator.GetIndex()))
 	{
 	pixel = sourceIterator.Get();
@@ -762,7 +762,7 @@ void PatchBasedInpaintingGUI::DisplayResultPatch()
 	{
 	pixel = targetIterator.Get();
 	}
-      
+
       itk::Offset<2> offset = sourceIterator.GetIndex() - this->SourcePatchToDisplay.Region.GetIndex();
       itk::Index<2> offsetIndex;
       offsetIndex[0] = offset[0];
@@ -810,7 +810,7 @@ void PatchBasedInpaintingGUI::DisplayUsedPatches()
 
       return;
       }
-      
+
     DisplaySourcePatch();
     DisplayTargetPatch();
     DisplayResultPatch();
@@ -850,7 +850,7 @@ void PatchBasedInpaintingGUI::HighlightForwardLookPatches()
 
     unsigned char centerPixelColor[3];
     HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
-    
+
     for(unsigned int candidateId = 0; candidateId < candidatePairs.size(); ++candidateId)
       {
       unsigned char borderColor[3];
@@ -908,7 +908,7 @@ void PatchBasedInpaintingGUI::HighlightSourcePatches()
       LeaveFunction("HighlightSourcePatches()");
       return;
       }
-    
+
     unsigned char centerPixelColor[3];
     HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
 
@@ -916,7 +916,7 @@ void PatchBasedInpaintingGUI::HighlightSourcePatches()
     unsigned int numberToDisplay = std::min(candidatePairs.size(), NumberOfTopPatchesToDisplay);
     DebugMessage<unsigned int>("HighlightSourcePatches: Displaying patches: ", numberToDisplay);
     unsigned char borderColor[3];
-    
+
     for(unsigned int candidateId = 0; candidateId < numberToDisplay; ++candidateId)
       {
       if(candidateId == this->SourcePatchToDisplayId)
@@ -956,16 +956,16 @@ void PatchBasedInpaintingGUI::HighlightUsedPatches()
 //       LeaveFunction("HighlightUsedPatches()");
 //       return;
 //       }
-// 
+//
 //     PatchPair patchPair = this->RecordToDisplay->UsedPatchPair;
-// 
+//
 //     unsigned char centerPixelColor[3];
 //     HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
-// 
+//
 //     // Target
 //     DebugMessage("Target...");
 //     Patch targetPatch = patchPair.TargetPatch;
-// 
+//
 //     unsigned int patchSize = targetPatch.Region.GetSize()[0];
 //     //std::cout << "Displaying used target patch " << this->CurrentUsedPatchDisplayed << " : " << targetPatch.Region << std::endl;
 //     DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
@@ -975,11 +975,11 @@ void PatchBasedInpaintingGUI::HighlightUsedPatches()
 //     Helpers::BlankAndOutlineImage(this->UsedTargetPatchLayer.ImageData, targetPatchColor);
 //     Helpers::SetImageCenterPixel(this->UsedTargetPatchLayer.ImageData, centerPixelColor);
 //     this->UsedTargetPatchLayer.ImageSlice->SetPosition(targetPatch.Region.GetIndex()[0], targetPatch.Region.GetIndex()[1], 0);
-// 
+//
 //     // Source
 //     DebugMessage("Source...");
 //     Patch sourcePatch = patchPair.SourcePatch;
-// 
+//
 //     //std::cout << "Displaying used source patch " << this->CurrentUsedPatchDisplayed << " : " << sourcePatch.Region << std::endl;
 //     DebugMessage<itk::ImageRegion<2> >("Source patch region: ", sourcePatch.Region);
 //     this->UsedSourcePatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
@@ -988,7 +988,7 @@ void PatchBasedInpaintingGUI::HighlightUsedPatches()
 //     Helpers::BlankAndOutlineImage(this->UsedSourcePatchLayer.ImageData, sourcePatchColor);
 //     Helpers::SetImageCenterPixel(this->UsedSourcePatchLayer.ImageData, centerPixelColor);
 //     this->UsedSourcePatchLayer.ImageSlice->SetPosition(sourcePatch.Region.GetIndex()[0], sourcePatch.Region.GetIndex()[1], 0);
-// 
+//
 //     Refresh();
     LeaveFunction("HighlightUsedPatches()");
     }// end try
@@ -1017,26 +1017,26 @@ void PatchBasedInpaintingGUI::DisplayUsedPatchInformation()
     std::stringstream ssSource;
     ssSource << "(" << patchPair.SourcePatch.Region.GetIndex()[0] << ", " << patchPair.SourcePatch.Region.GetIndex()[1] << ")";
     this->lblSourceCorner->setText(ssSource.str().c_str());
-    
+
     // Target information
     std::stringstream ssTarget;
     ssTarget << "(" << patchPair.TargetPatch.Region.GetIndex()[0] << ", " << patchPair.TargetPatch.Region.GetIndex()[1] << ")";
     this->lblTargetCorner->setText(ssTarget.str().c_str());
     */
-    
+
     /*
     // Patch pair information
     float ssd = patchPair.AverageSSD;
-    
+
     std::stringstream ssSSD;
     ssSSD << ssd;
     this->lblAverageSSD->setText(ssSSD.str().c_str());
-    
+
     std::stringstream ssHistogramDifference;
     ssHistogramDifference << patchPair.HistogramDifference;
     this->lblHistogramDistance->setText(ssHistogramDifference.str().c_str());
     */
-    
+
     Refresh();
     LeaveFunction("DisplayUsedPatchInformation()");
     }// end try
@@ -1051,7 +1051,7 @@ void PatchBasedInpaintingGUI::DisplayUsedPatchInformation()
 void PatchBasedInpaintingGUI::OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename)
 {
   std::ofstream fout(filename.c_str());
-  
+
   for(unsigned int i = 0; i < patchPairs.size(); ++i)
     {
     fout << "Potential patch " << i << ": " << std::endl
@@ -1059,14 +1059,14 @@ void PatchBasedInpaintingGUI::OutputPairs(const std::vector<PatchPair>& patchPai
 	//<< "ssd score: " << patchPairs[i].GetAverageSSD() << std::endl;
 	//<< "histogram score: " << patchPairs[i].HistogramDifference << std::endl;
     }
-    
+
   fout.close();
 }
 
 void PatchBasedInpaintingGUI::ChangeDisplayedIteration()
 {
   // This should be called only when the iteration actually changed.
-  
+
   EnterFunction("ChangeDisplayedIteration()");
 
   if(this->IterationToDisplay > this->IterationRecords.size())
@@ -1121,7 +1121,7 @@ void PatchBasedInpaintingGUI::CreateInitialRecord()
   this->IterationRecords.clear();
 
   InpaintingIterationRecord iterationRecord;
-  
+
   //NamedITKImage::Pointer image = dynamic_cast<NamedITKImage*>(FloatVectorImageType::New().GetPointer());
   FloatVectorImageType::Pointer image = FloatVectorImageType::New();
   Helpers::DeepCopy<FloatVectorImageType>(this->UserImage, image);
@@ -1129,7 +1129,7 @@ void PatchBasedInpaintingGUI::CreateInitialRecord()
   namedImage.Image = image;
   namedImage.Name = "Image";
   iterationRecord.Images.push_back(namedImage);
-  
+
   //Helpers::DeepCopy<FloatVectorImageType>(this->UserImage, dynamic_cast<FloatVectorImageType*>(iterationRecord.Images.FindImageByName("Image")));
   //Helpers::DeepCopy<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), stack.Image);
 
@@ -1148,7 +1148,7 @@ void PatchBasedInpaintingGUI::CreateInitialRecord()
   namedPriorityImage.Name = "Priority";
   namedPriorityImage.Image = priorityImage;
   iterationRecord.Images.push_back(namedPriorityImage);
-  
+
   //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityFunction()->GetPriorityImage(), dynamic_cast<FloatScalarImageType*>(iterationRecord.Images.FindImageByName("Priority")));
 
   this->IterationRecords.push_back(iterationRecord);
@@ -1170,14 +1170,14 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
   for(unsigned int i = 0; i < this->Inpainting.GetImagesToUpdate().size(); ++i)
     {
     std::cout << "Updating image " << i << std::endl;
-    
+
     Helpers::OutputImageType(this->Inpainting.GetImagesToUpdate()[i]);
     itk::ImageBase<2>::Pointer newImage = Helpers::CreateImageWithSameType(this->Inpainting.GetImagesToUpdate()[i]);
     Helpers::OutputImageType(newImage);
     Helpers::DeepCopy(this->Inpainting.GetImagesToUpdate()[i], newImage);
     }
   std::cout << "Finished creating record images." << std::endl;
-  
+
   //HelpersOutput::WriteImage<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), "CurrentOutput.mha");
   //Helpers::DeepCopy<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), dynamic_cast<FloatVectorImageType*>(iterationRecord.Images.FindImageByName("Image")));
   //Helpers::DeepCopy<Mask>(this->Inpainting.GetMaskImage(), dynamic_cast<Mask*>(iterationRecord.Images.FindImageByName("Mask")));
@@ -1190,7 +1190,7 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
   if(this->chkRecordSteps->isChecked())
     {
     std::cout << "Recording step." << std::endl;
-      
+
     // Chop to the desired length
     for(unsigned int i = 0; i < this->Inpainting.GetPotentialCandidatePairsReference().size(); ++i)
       {
@@ -1232,7 +1232,7 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
     ss << this->IterationToDisplay << " out of " << this->Inpainting.GetNumberOfCompletedIterations();
     this->lblCurrentIteration->setText(ss.str().c_str());
     }
-  
+
   LeaveFunction("Leave IterationComplete()");
 }
 
@@ -1271,7 +1271,7 @@ void PatchBasedInpaintingGUI::ChangeDisplayedTopPatch()
 
   this->SourcePatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->ForwardLookToDisplayId][this->SourcePatchToDisplayId].SourcePatch;
   this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->ForwardLookToDisplayId].TargetPatch;
-  
+
   DisplaySourcePatch();
   DisplayResultPatch();
 
@@ -1423,7 +1423,7 @@ void PatchBasedInpaintingGUI::SetDepthColorLambdaFromGUI()
   functor->DepthColorLambda = static_cast<float>(sldDepthColorLambda->value())/100.0f;
 
   this->Inpainting.PatchSortFunction = functor;
-  
+
   std::cout << "DepthColorLambda set to " << functor->DepthColorLambda << std::endl;
 }
 
@@ -1465,7 +1465,7 @@ void PatchBasedInpaintingGUI::SetPriorityFromGUI()
     delete this->PriorityImageCheckBoxes[i];
     this->PriorityImageCheckBoxes.resize(this->PriorityImageCheckBoxes.size() - 1);
     }
-    
+
   this->PriorityImageCheckBoxes.clear();
 
   // Add the new checkboxes

@@ -44,7 +44,7 @@
 SelfPatchCompare::SelfPatchCompare() :
 ColorFrequency(NULL), Image(NULL), MembershipImage(NULL), MaskImage(NULL), NumberOfComponentsPerPixel(1)
 {
-  
+
 }
 
 void SelfPatchCompare::SetImage(const FloatVectorImageType::Pointer image)
@@ -60,7 +60,7 @@ void SelfPatchCompare::SetMembershipImage(const IntImageType::Pointer membership
 {
   this->MembershipImage = membershipImage;
 }
-  
+
 void SelfPatchCompare::SetMask(const Mask* mask)
 {
   //std::cout << "Enter SelfPatchCompare::SetMask()" << std::endl;
@@ -75,7 +75,7 @@ void SelfPatchCompare::ComputeOffsets()
   {
     //std::cout << "Computing offsets for TargetPatch: " << this->Pairs->TargetPatch.Region.GetIndex() << std::endl;
     this->ValidTargetPatchOffsets.clear();
-    
+
     if(this->Image->GetNumberOfComponentsPerPixel() != this->NumberOfComponentsPerPixel)
       {
       std::cerr << "this->Image->GetNumberOfComponentsPerPixel() does not match this->NumberOfComponentsPerPixel!" << std::endl;
@@ -83,7 +83,7 @@ void SelfPatchCompare::ComputeOffsets()
       }
     // Iterate over the target region of the mask. Add the linear offset of valid pixels to the offsets to be used later in the comparison.
     itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, this->Pairs->TargetPatch.Region);
-    
+
     while(!maskIterator.IsAtEnd())
       {
       if(this->MaskImage->IsValid(maskIterator.GetIndex()))
@@ -180,7 +180,7 @@ void SelfPatchCompare::SetPatchAverageAbsoluteFullDifference(PatchPair& patchPai
 {
   itk::ImageRegionConstIterator<FloatVectorImageType> sourcePatchIterator(this->Image, patchPair.SourcePatch.Region);
   itk::ImageRegionConstIterator<FloatVectorImageType> targetPatchIterator(this->Image, patchPair.TargetPatch.Region);
-  
+
   float totalAbsoluteDifference = 0.0f;
 
   FullPixelDifference differenceFunction(this->Image->GetNumberOfComponentsPerPixel());
@@ -191,7 +191,7 @@ void SelfPatchCompare::SetPatchAverageAbsoluteFullDifference(PatchPair& patchPai
     ++sourcePatchIterator;
     ++targetPatchIterator;
     }
-    
+
   float averageAbsoluteDifference = totalAbsoluteDifference / static_cast<float>(patchPair.SourcePatch.Region.GetNumberOfPixels());
   patchPair.DifferenceMap[PatchPair::AverageAbsoluteDifference] = averageAbsoluteDifference;
 }
@@ -226,7 +226,7 @@ void SelfPatchCompare::ComputeAllSourceAndTargetDifferences()
   {
     // Force the target region to be entirely inside the image
     this->Pairs->TargetPatch.Region.Crop(this->Image->GetLargestPossibleRegion());
-  
+
     ComputeOffsets();
     #ifdef USE_QT_PARALLEL
       #pragma message("Using QtConcurrent!")
@@ -269,13 +269,13 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
         SetPatchAllDifferences((*this->Pairs)[i]);
         }
     #endif
-    
+
     // Serial only - for testing
 //       for(unsigned int i = 0; i < this->Pairs->size(); ++i)
 //         {
 //         SetPatchAllDifferences((*this->Pairs)[i]);
 //         }
-      
+
     //std::cout << "Leave SelfPatchCompare::ComputeAllSourceDifferences()" << std::endl;
   }
   catch( itk::ExceptionObject & err )

@@ -34,7 +34,7 @@ public:
 protected:
   // Isophotes of the depth channel.
   FloatVector2ImageType::Pointer DepthIsophoteImage;
-  
+
   FloatScalarImageType::Pointer BlurredDepth;
 };
 

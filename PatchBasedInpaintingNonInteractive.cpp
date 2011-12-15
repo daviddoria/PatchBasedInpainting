@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   ssPatchRadius >> patchRadius;
 
   std::string outputFilename = argv[4];
-  
+
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;

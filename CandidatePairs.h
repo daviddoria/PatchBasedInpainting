@@ -30,13 +30,13 @@ class CandidatePairs : public std::vector<PatchPair>
 {
 public:
   CandidatePairs(){} // This is so that we can construct a CandidatePairs to be filled by an accessor.
-  
+
   CandidatePairs(const Patch& targetPatch);
-  
+
   void AddCandidatePair(const PatchPair& patchPair);
 
   Patch TargetPatch;
-  
+
   void AddPairsFromPatches(const std::vector<Patch>& patches);
 
   void AddPairFromPatch(const Patch& patch);
@@ -46,12 +46,12 @@ public:
   float Priority;
 
   void InvalidateAll();
-  
+
   void Combine(CandidatePairs& pairs);
-  
+
   void CopyFrom(const CandidatePairs& pairs);
   void CopyMetaOnly(const CandidatePairs& pairs);
-  
+
   void WriteDepthScoresToFile(const std::string& fileName);
 };
 

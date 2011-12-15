@@ -48,9 +48,9 @@ int main(int argc, char *argv[])
   green[1] = 255;
   green[2] = 0;
   green[3] = 255;
-  
+
   mask->CreateFromImage<FloatVectorImageType>(reader->GetOutput(), green);
-  
+
   HelpersOutput::WriteImage<Mask>(mask, outputFileName);
 
   return EXIT_SUCCESS;

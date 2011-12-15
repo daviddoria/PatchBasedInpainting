@@ -44,7 +44,7 @@ public:
   FloatScalarImageType::Pointer GetDataImage();
 
   std::vector<NamedVTKImage> GetNamedImages();
-  
+
 protected:
 
   // Compute the Data at a pixel.

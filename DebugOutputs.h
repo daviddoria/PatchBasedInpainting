@@ -24,15 +24,15 @@
 class DebugOutputs
 {
 public:
-  
+
   DebugOutputs();
-  
+
   // Specify if you want to output the parts of the call stack that you have specified.
   void SetDebugFunctionEnterLeave(const bool value);
-  
+
   // Specify if you want to write debuging images.
   void SetDebugImages(const bool);
-  
+
   // Specify if you want to see debugging messages.
   void SetDebugMessages(const bool);
 
@@ -40,13 +40,13 @@ protected:
   bool DebugFunctionEnterLeave;
   bool DebugImages;
   bool DebugMessages;
-  
+
   void EnterFunction(const std::string&) const;
   void LeaveFunction(const std::string&) const;
-  
+
   // Output a message if DebugMessages is set to true.
   void DebugMessage(const std::string&) const;
-  
+
   // Output a message and a value if DebugMessages is set to true.
   template <typename T>
   void DebugMessage(const std::string& message, const T value);

@@ -33,7 +33,7 @@ class Mask;
 
 namespace HelpersOutput
 {
-  
+
 // Write a vtkPolyData to a .vtp file.
 void WritePolyData(const vtkPolyData* polyData, const std::string& fileName);
 

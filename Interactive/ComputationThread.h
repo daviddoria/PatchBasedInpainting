@@ -42,10 +42,10 @@ signals:
   void StopProgressSignal();
 
   void RefreshSignal();
-  
+
   void IterationCompleteSignal(const PatchPair&);
   void StepCompleteSignal(const PatchPair&);
-  
+
 public:
   ComputationThreadClass();
 
@@ -66,11 +66,11 @@ public:
 
   // Provide the object with which to do the computation.
   void SetObject(PatchBasedInpainting*);
-  
+
 private:
   // We need a pointer to this object so we can perform the computations in this thread
   PatchBasedInpainting* Inpainting;
-  
+
   // This flag can be set from another thread (by calling StopInpainting()) to indicate that we want to stop the computation at the next possible opportunity.
   bool Stop;
 };

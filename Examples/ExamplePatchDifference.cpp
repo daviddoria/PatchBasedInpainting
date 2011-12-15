@@ -62,13 +62,13 @@ int main(int argc, char *argv[])
 
   CandidatePairs candidatePairs(targetPatch);
   candidatePairs.AddPairFromPatch(sourcePatch);
-  
+
   SelfPatchCompareAll patchCompare(imageReader->GetOutput()->GetNumberOfComponentsPerPixel(), candidatePairs);
   patchCompare.SetImage(imageReader->GetOutput());
   patchCompare.SetMask(maskReader->GetOutput());
 
   patchCompare.ComputeAllDifferences();
-  
+
   //float totalAbsoluteDifference = patchCompare.SlowTotalAbsoluteDifference(sourceRegion);
   //float totalSquaredDifference = patchCompare.SlowTotalSquaredDifference(sourceRegion);
 

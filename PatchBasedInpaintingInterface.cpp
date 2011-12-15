@@ -74,7 +74,7 @@ Mask* PatchBasedInpainting::GetMaskImage()
 // {
 //   return this->BoundaryNormals;
 // }
-// 
+//
 // FloatVector2ImageType::Pointer PatchBasedInpainting::GetIsophoteImage()
 // {
 //   return this->IsophoteImage;
@@ -147,7 +147,7 @@ void PatchBasedInpainting::SetCompareToOriginal()
 {
   this->CompareImage = this->CurrentOutputImage;
 }
-  
+
 void PatchBasedInpainting::SetCompareToBlurred()
 {
   this->CompareImage = this->BlurredImage;

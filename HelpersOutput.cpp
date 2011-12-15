@@ -32,7 +32,7 @@ void WritePolyData(const vtkPolyData* polyData, const std::string& fileName)
     std::cerr << "Cannot write a vtkPolyData to a non .vtp file!" << std::endl;
     return;
     }
-  
+
   vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
   polyDataWriter->SetFileName(fileName.c_str());
   polyDataWriter->SetInputConnection(const_cast<vtkPolyData*>(polyData)->GetProducerPort());
@@ -47,7 +47,7 @@ void WriteImageData(const vtkImageData* imageData, const std::string& fileName)
     std::cerr << "Cannot write a vtkImageData to a non .vti file!" << std::endl;
     return;
     }
-    
+
   vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
   writer->SetFileName(fileName.c_str());
   writer->SetInputConnection(const_cast<vtkImageData*>(imageData)->GetProducerPort());
@@ -63,14 +63,14 @@ void Write2DVectorImage(const FloatVector2ImageType* image, const std::string& f
 void Write2DVectorRegion(const FloatVector2ImageType* image, const itk::ImageRegion<2>& region, const std::string& filename)
 {
   // This is a separate function than WriteRegion because Paraview requires vectors to b 3D to glyph them.
-  
+
   typedef itk::RegionOfInterestImageFilter<FloatVector2ImageType, FloatVector2ImageType> RegionOfInterestImageFilterType;
 
   typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
   regionOfInterestImageFilter->SetRegionOfInterest(region);
   regionOfInterestImageFilter->SetInput(image);
   regionOfInterestImageFilter->Update();
-  
+
   itk::Point<float, 2> origin;
   origin.Fill(0);
   regionOfInterestImageFilter->GetOutput()->SetOrigin(origin);
@@ -78,9 +78,9 @@ void Write2DVectorRegion(const FloatVector2ImageType* image, const itk::ImageReg
   FloatVector3ImageType::Pointer vectors3D = FloatVector3ImageType::New();
   vectors3D->SetRegions(regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
   vectors3D->Allocate();
-  
+
   itk::ImageRegionConstIterator<FloatVector2ImageType> iterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
-  
+
   while(!iterator.IsAtEnd())
     {
     FloatVector2Type vec2d = iterator.Get();
@@ -88,13 +88,13 @@ void Write2DVectorRegion(const FloatVector2ImageType* image, const itk::ImageReg
     vec3d[0] = vec2d[0];
     vec3d[1] = vec2d[1];
     vec3d[2] = 0;
- 
+
     vectors3D->SetPixel(iterator.GetIndex(), vec3d);
     ++iterator;
     }
-    
+
   //std::cout << "regionOfInterestImageFilter " << regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion() << std::endl;
-  
+
   itk::ImageFileWriter<FloatVector3ImageType>::Pointer writer = itk::ImageFileWriter<FloatVector3ImageType>::New();
   writer->SetFileName(filename);
   writer->SetInput(vectors3D);

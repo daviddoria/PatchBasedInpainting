@@ -67,7 +67,7 @@ public:
   * pointers. */
   typedef itk::NeighborhoodAccessorFunctor< Self >
   NeighborhoodAccessorFunctorType;
-  
+
   /** Return the NeighborhoodAccessor functor. This method is called by the
    * neighborhood iterators. */
   NeighborhoodAccessorFunctorType GetNeighborhoodAccessor()
@@ -92,7 +92,7 @@ public:
 
   // Look from a pixel across the hole in a specified direction and return the pixel that exists on the other side of the hole.
   itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVector2Type& direction) const;
-  
+
   // Invert the mask by switching the hole and valid pixel values.
   void Invert();
 
@@ -126,7 +126,7 @@ public:
   // Recolor the hole pixels in 'image' a specified 'color'.
   template<typename TImage, typename TColor>
   void ApplyColorToImage(const typename TImage::Pointer image, const TColor& color);
-  
+
   // Change the hole pixels in 'image' to a specified 'holeValue'.
   template<typename TImage, typename TColor>
   void ApplyToImage(TImage* image, const typename TImage::PixelType& holeValue);
@@ -137,7 +137,7 @@ public:
 
   template<typename TColor>
   void MakeVTKImage(vtkImageData* image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent);
-  
+
   // Create a mask from a mask image.
   template<typename TImage>
   void CreateFromImage(const TImage* image, const typename TImage::PixelType& holeColor);

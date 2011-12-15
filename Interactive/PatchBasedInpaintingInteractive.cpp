@@ -56,7 +56,7 @@ int main( int argc, char** argv )
       enterLeave = false;
       }
     patchBasedInpaintingGUI = new PatchBasedInpaintingGUI(imageFileName, maskFileName, enterLeave);
-    
+
     std::string blurredFileName;
     bool blurredFileNameProvided = parser->GetCommandLineArgument( "-blurredImage", blurredFileName );
     if(blurredFileNameProvided)
@@ -77,7 +77,7 @@ int main( int argc, char** argv )
     //std::cout << "Not using filename arguments." << std::endl;
     patchBasedInpaintingGUI = new PatchBasedInpaintingGUI;
     }
-  
+
   //patchBasedInpaintingGUI->SetDebugFunctionEnterLeave(true); // This should be set in the constructor instead
   //patchBasedInpaintingGUI->SetDebugMessages(true);
   patchBasedInpaintingGUI->showMaximized();

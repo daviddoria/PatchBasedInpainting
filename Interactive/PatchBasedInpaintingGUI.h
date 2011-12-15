@@ -88,7 +88,7 @@ public slots:
   void on_chkCompareDepth_clicked();
   void on_chkCompareMembership_clicked();
   void on_chkCompareHistogramIntersection_clicked();
-  
+
   void on_radDisplayColorImage_clicked();
   void on_radDisplayMagnitudeImage_clicked();
   void on_radDisplayChannel_clicked();
@@ -96,7 +96,7 @@ public slots:
 
   void on_btnChooseBlurredImage_clicked();
   void on_btnChooseMembershipImage_clicked();
-  
+
   void on_btnGoToIteration_clicked();
 
   void on_btnDisplayPreviousStep_clicked();
@@ -154,7 +154,7 @@ public slots:
 protected:
 
   void Reset();
-  
+
   void SetCheckboxVisibility(const bool visible);
 
   std::vector<float> CameraLeftToRightVector;
@@ -173,8 +173,8 @@ protected:
   void DisplayData();
   void DisplayImage();
   void DisplayUserPatch();
-  
-  
+
+
   void OpenImage(const std::string& filename);
   void OpenMask(const std::string& filename, const bool inverted);
 
@@ -204,7 +204,7 @@ protected:
 
   // A patch that the user can move around freely.
   Layer UserPatchLayer;
-  
+
   // Source patch outline display
   Layer UsedSourcePatchLayer;
 
@@ -231,16 +231,16 @@ protected:
 
   // The mask that the user loads
   Mask::Pointer UserMaskImage;
-  
+
   // The class that does all the work.
   PatchBasedInpainting Inpainting;
-  
+
   // Perform the long inpainting operation in this thread so that the UI remains active.
   ComputationThreadClass ComputationThread;
 
   // A flag that determines if debugging images should be output to files.
   bool DebugImages;
-  
+
   // A flag that determines if debugging messages should be output.
   bool DebugMessages;
 
@@ -251,7 +251,7 @@ protected:
   Patch SourcePatchToDisplay;
   Patch TargetPatchToDisplay;
   InpaintingIterationRecord* RecordToDisplay;
-  
+
   // Display zoomed in versions of the patches used at the current iteration
   void DisplayUsedPatches();
   void DisplaySourcePatch();
@@ -260,10 +260,10 @@ protected:
 
   // Make sure internal variables and the state of the GUI elements matches.
   void InitializeGUIElements();
-  
+
   // Display the text information (scores, etc) of the patches used at the current information
   void DisplayUsedPatchInformation();
-  
+
   // Display outlines of where the source patch came from and the target patch to which it was copied
   void HighlightUsedPatches();
 
@@ -272,18 +272,18 @@ protected:
 
   // Display outlines of the source patches
   void HighlightSourcePatches();
-  
+
   QGraphicsScene* SourcePatchScene;
   QGraphicsScene* TargetPatchScene;
   QGraphicsScene* ResultPatchScene;
   QGraphicsScene* UserPatchScene;
-  
+
   void OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename);
-  
+
   // This stores the state of the completion at every step. The index represents the image AFTER the index'th step.
   // That is, the image at index 0 is the image after 0 iterations (the original image). At index 1 is the image after the first target region has been filled, etc.
   std::vector<InpaintingIterationRecord> IterationRecords;
-  
+
   // Colors
   void SetupColors();
   QColor UsedTargetPatchColor;
@@ -300,10 +300,10 @@ protected:
 
   ForwardLookTableModel* ForwardLookModel;
   TopPatchesTableModel* TopPatchesModel;
-  
+
   // The size to display the patches.
   unsigned int PatchDisplaySize;
-  
+
   // The position of the freely movable patch.
   itk::ImageRegion<2> UserPatchRegion;
 

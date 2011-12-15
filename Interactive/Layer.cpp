@@ -31,7 +31,7 @@ Layer::Layer()
 
   this->ImageSlice = vtkSmartPointer<vtkImageSlice>::New();
   this->ImageSlice->GetProperty()->SetInterpolationTypeToNearest();
-  
+
   this->ImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
   this->ImageSliceMapper->BorderOn();
   this->ImageSlice->SetMapper(this->ImageSliceMapper);

@@ -28,7 +28,7 @@ PriorityManual::PriorityManual(const FloatVectorImageType* image, const Mask* ma
 float PriorityManual::ComputePriority(const itk::Index<2>& queryPixel)
 {
   //std::cout << static_cast<float>(this->ManualPriorityImage->GetPixel(queryPixel)) << std::endl;
-  
+
   float priority = 0.0f;
   float manualPriority = this->ManualPriorityImage->GetPixel(queryPixel);
 
@@ -41,7 +41,7 @@ float PriorityManual::ComputePriority(const itk::Index<2>& queryPixel)
     {
     priority = PriorityOnionPeel::ComputePriority(queryPixel);
     }
-  
+
   return priority;
 }
 

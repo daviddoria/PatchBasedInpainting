@@ -27,7 +27,7 @@ template <typename TImage>
 void WriteSequentialImage(const TImage* image, const std::string& filePrefix, const unsigned int iteration)
 {
   std::string fileName = Helpers::GetSequentialFileName(filePrefix, iteration, "mha");
-  
+
   HelpersOutput::WriteImage<TImage>(image, fileName);
 }
 
@@ -148,7 +148,7 @@ void WriteMaskedRegion(const TImage* image, const Mask* mask, const itk::ImageRe
   greenPixel[0] = 0;
   greenPixel[1] = 255;
   greenPixel[0] = 0;
-  
+
   while(!imageIterator.IsAtEnd())
     {
     typename TImage::PixelType pixel = imageIterator.Get();
@@ -183,7 +183,7 @@ void WriteRegion(const TImage* image, const itk::ImageRegion<2>& region, const s
   regionOfInterestImageFilter->Update();
 
   //std::cout << "regionOfInterestImageFilter " << regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion() << std::endl;
-  
+
   typename itk::ImageFileWriter<TImage>::Pointer writer = itk::ImageFileWriter<TImage>::New();
   writer->SetFileName(filename);
   writer->SetInput(regionOfInterestImageFilter->GetOutput());

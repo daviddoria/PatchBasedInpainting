@@ -26,13 +26,13 @@ struct FullPixelDifference
     this->NumberOfComponentsPerPixel = examplePixel.GetNumberOfElements();
     //std::cout << "FullPixelDifference set NumberOfComponentsPerPixel to " << this->NumberOfComponentsPerPixel << std::endl;
   }
-  
+
   FullPixelDifference(const unsigned int numberOfComponents)
   {
     this->NumberOfComponentsPerPixel = numberOfComponents;
     //std::cout << "FullPixelDifference set NumberOfComponentsPerPixel to " << this->NumberOfComponentsPerPixel << std::endl;
   }
-  
+
   float Difference(const typename FloatVectorImageType::PixelType &a, const typename FloatVectorImageType::PixelType &b)
   {
     float difference = 0;
@@ -45,7 +45,7 @@ struct FullPixelDifference
       }
     return difference;
   }
-  
+
   static float Difference(const typename FloatVectorImageType::PixelType &a, const typename FloatVectorImageType::PixelType &b, unsigned int numberOfComponents)
   {
     float difference = 0;
@@ -58,7 +58,7 @@ struct FullPixelDifference
       }
     return difference;
   }
-  
+
   unsigned int NumberOfComponentsPerPixel;
 };
 
@@ -68,13 +68,13 @@ struct FullSquaredPixelDifference
   {
     this->NumberOfComponentsPerPixel = examplePixel.GetNumberOfElements();
   }
-  
+
   FullSquaredPixelDifference(const unsigned int numberOfComponents)
   {
     this->NumberOfComponentsPerPixel = numberOfComponents;
     //std::cout << "FullSquaredPixelDifference set NumberOfComponentsPerPixel to " << this->NumberOfComponentsPerPixel << std::endl;
   }
-  
+
   float Difference(const typename FloatVectorImageType::PixelType &a, const typename FloatVectorImageType::PixelType &b)
   {
     float difference = 0;
@@ -87,7 +87,7 @@ struct FullSquaredPixelDifference
       }
     return difference*difference;
   }
-  
+
   static float Difference(const typename FloatVectorImageType::PixelType &a, const typename FloatVectorImageType::PixelType &b, unsigned int numberOfComponents)
   {
     float difference = 0;
@@ -100,7 +100,7 @@ struct FullSquaredPixelDifference
       }
     return difference*difference;
   }
-  
+
   unsigned int NumberOfComponentsPerPixel;
 };
 
@@ -114,7 +114,7 @@ struct ColorPixelDifference
       exit(-1);
       }
   }
-  
+
   static float Difference(const typename FloatVectorImageType::PixelType &a, const FloatVectorImageType::PixelType &b)
   {
     float difference = 0;
@@ -127,7 +127,7 @@ struct ColorPixelDifference
       }
     return difference;
   }
-  
+
 
 };
 
@@ -141,7 +141,7 @@ struct DepthPixelDifference
       exit(-1);
       }
   }
-  
+
   static float Difference(const typename FloatVectorImageType::PixelType &a, const FloatVectorImageType::PixelType &b)
   {
     return fabs(a[3] - b[3]);
@@ -159,7 +159,7 @@ struct ChannelPixelDifference
       exit(-1);
       }
   }
-  
+
   static float Difference(const typename FloatVectorImageType::PixelType &a, const FloatVectorImageType::PixelType &b)
   {
     return fabs(a[Channel] - b[Channel]);
@@ -189,7 +189,7 @@ struct ScalarAllOrNothingPixelDifference
     {
       return 1.0f;
     }
-    
+
   }
 };
 

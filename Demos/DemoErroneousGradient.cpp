@@ -63,7 +63,7 @@ void CreateErroneousGradient(const std::string& imageFilename)
   // Convert the color input image to a grayscale image
   UnsignedCharScalarImageType::Pointer grayscaleImage = UnsignedCharScalarImageType::New();
   //Helpers::ColorToGrayscale<RGBImageType>(imageReader->GetOutput(), grayscaleImage);
-  
+
   typedef itk::RGBToLuminanceImageFilter< RGBImageType, UnsignedCharScalarImageType> LuminanceFilterType;
   LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
   luminanceFilter->SetInput(imageReader->GetOutput());

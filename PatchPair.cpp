@@ -31,7 +31,7 @@ PatchPair::PatchPair()
 PatchPair::PatchPair(const Patch& sourcePatch, const Patch& targetPatch)
 {
   DefaultConstructor();
-  
+
   this->SourcePatch = sourcePatch;
   this->TargetPatch = targetPatch;
 }
@@ -85,7 +85,7 @@ itk::Offset<2> PatchPair::GetSourceToTargetOffset() const
 float PatchPair::GetDepthAndColorDifference() const
 {
   DifferenceMapType::const_iterator colorIter = this->DifferenceMap.find(ColorDifference);
-  
+
   if(colorIter == this->DifferenceMap.end())
     {
     std::cerr << "Could not compute GetDepthAndColorDifference, ColorDifference not found." << std::endl;
@@ -99,7 +99,7 @@ float PatchPair::GetDepthAndColorDifference() const
     std::cerr << "Could not compute GetDepthAndColorDifference, DepthDifference not found." << std::endl;
     exit(-1);
     }
-  
+
   return ComputeDepthAndColorDifference(this->DifferenceMap.find(DepthDifference)->second, this->DifferenceMap.find(ColorDifference)->second);
 }
 

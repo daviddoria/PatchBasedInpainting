@@ -50,7 +50,7 @@ FileSelector::FileSelector()
 
   this->ImageGraphicsScene = new QGraphicsScene;
   this->graphicsViewImage->setScene(this->ImageGraphicsScene);
-  
+
   this->MaskGraphicsScene = new QGraphicsScene;
   this->graphicsViewMask->setScene(this->MaskGraphicsScene);
   /*
@@ -78,10 +78,10 @@ void FileSelector::LoadAndDisplayImage()
   reader->Update();
 
   this->Image = reader->GetOutput();
-  
+
   QImage image = HelpersQt::GetQImageColor<FloatVectorImageType>(this->Image, this->Image->GetLargestPossibleRegion());
   image = HelpersQt::FitToGraphicsView(image, this->graphicsViewImage);
-  
+
   this->ImageGraphicsScene->clear();
   this->ImageGraphicsScene->addPixmap(QPixmap::fromImage(image));
 
@@ -98,7 +98,7 @@ void FileSelector::LoadAndDisplayMask()
   reader->Update();
 
   this->ImageMask = reader->GetOutput();
-  
+
   QImage mask = HelpersQt::GetQImageScalar<Mask>(this->ImageMask, this->ImageMask->GetLargestPossibleRegion());
   mask = HelpersQt::FitToGraphicsView(mask, this->graphicsViewMask);
 
@@ -107,7 +107,7 @@ void FileSelector::LoadAndDisplayMask()
 
   Verify();
 }
-  
+
 void FileSelector::Verify()
 {
   bool bothLoaded = this->FileSelectionWidgetImage->IsValid() && this->FileSelectionWidgetMask->IsValid();
@@ -152,11 +152,11 @@ void FileSelector::on_buttonBox_accepted()
       this->FileSelectionWidgetMask->currentIndex().data(QFileSystemModel::FilePathRole).toString().toStdString()) == 0)
     {
     std::string workingDirectory = this->FileSelectionWidgetImage->currentIndex().data(QFileSystemModel::FilePathRole).toString().toStdString() + "/";
-    
+
     QDir::setCurrent(QString(workingDirectory.c_str()));
     std::cout << "Working directory set to: " << workingDirectory << std::endl;
     }
-  
+
   std::cout << "FileSelector got image file name: " << this->ImageFileName
             << " and mask file name: " << this->MaskFileName << std::endl;
 

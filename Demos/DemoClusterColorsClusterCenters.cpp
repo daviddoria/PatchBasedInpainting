@@ -45,12 +45,12 @@ int main(int argc, char *argv[])
 
   std::cout << "Input: " << inputFileName << std::endl;
   std::cout << "Output prefix: " << outputPrefix << std::endl;
-  
+
   typedef itk::ImageFileReader<FloatVectorImageType> ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName(inputFileName);
   reader->Update();
-  
+
   ClusterColorsAdaptive clusterColors;
   clusterColors.SetNumberOfColors(100);
   clusterColors.ConstructFromImage(reader->GetOutput());
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
   vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
   colors->SetName("Colors");
   colors->SetNumberOfComponents(3);
-  
+
   for(unsigned int colorId = 0; colorId < colorMeasurements.size(); ++colorId)
     {
     double point[3];
@@ -87,6 +87,6 @@ int main(int argc, char *argv[])
   writer->SetInputConnection(glyphFilter->GetOutputPort());
   writer->SetFileName((outputPrefix + ".vtp").c_str());
   writer->Write();
-  
+
   return EXIT_SUCCESS;
 }

@@ -656,29 +656,29 @@ FloatVector2Type CriminisiInpainting::GetAverageIsophote(const itk::Index<2>& qu
     //HistogramType::Pointer sourceHistogram = Helpers::ComputeNDHistogramOfRegionManual(this->CurrentOutputImage, sourcePatch.Region, this->HistogramBinsPerDimension);
     HistogramType::Pointer sourceHistogram = Helpers::ComputeNDHistogramOfMaskedRegionManual(this->CurrentOutputImage, this->CurrentMask, sourcePatch.Region, this->HistogramBinsPerDimension);
     HistogramType::Pointer targetHistogram = Helpers::ComputeNDHistogramOfMaskedRegionManual(this->CurrentOutputImage, this->CurrentMask, targetPatch.Region, this->HistogramBinsPerDimension);
-    
+
     float histogramDifference = Helpers::NDHistogramDifference(sourceHistogram, targetHistogram);
     patchPair.HistogramDifference = histogramDifference;
     */
 
-    
-    
+
+
 #if 0
 unsigned int SelfPatchCompare::FindBestPatch(float& minDistance)
 {
   // This function returns the Id of the best source patch, as well as returns the minDistance by reference
-  
+
   try
   {
     minDistance = std::numeric_limits<float>::infinity();
     unsigned int bestMatchId = 0;
     if(!this->Image->GetLargestPossibleRegion().IsInside(this->Pairs.TargetPatch.Region))
-      {  
+      {
       // Force the target region to be entirely inside the image
       this->Pairs.TargetPatch.Region.Crop(this->Image->GetLargestPossibleRegion());
-    
+
       ComputeOffsets();
-    
+
       for(unsigned int i = 0; i < this->Pairs.size(); ++i)
 	{
 	float distance = PatchDifferenceBoundary(this->Pairs[i].SourcePatch);
@@ -722,21 +722,21 @@ unsigned int SelfPatchCompare::FindBestPatch(float& minDistance)
 float CriminisiInpainting::ComputeTotalContinuationDifference(PatchPair& patchPair)
 {
   float totalContinuationDifference = 0.0f;
-  
+
   // Identify border pixels on the source side of the boundary. Of course the boundary is defined in the target patch. The isophote extension is later check in the source patch.
   std::vector<itk::Index<2> > borderPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage, patchPair.TargetPatch.Region);
-  
+
   for(unsigned int i = 0; i < borderPixels.size(); ++i)
     {
     float difference = ComputePixelContinuationDifference(borderPixels[i], patchPair);
     totalContinuationDifference += difference;
     }
-  
+
   // We don't watch patches to be penalized for having longer boundaries
   float averageContinuationDifference = totalContinuationDifference / borderPixels.size();
-  
+
   patchPair.SetContinuationDifference(averageContinuationDifference);
-  
+
   return averageContinuationDifference;
 }
 */
@@ -745,16 +745,16 @@ float CriminisiInpainting::ComputeTotalContinuationDifference(PatchPair& patchPa
 unsigned int CriminisiInpainting::FindPatchWithBestContinuationDifference(const Patch& targetPatch)
 {
   // This is a naive method that recomputes the boundary for every pair! This is way too slow to actually use.
-  
+
   std::vector<PatchPair> patchPairs;
   std::vector<float> differences;
-  
+
   for(unsigned int i = 0; i < this->SourcePatches.size(); ++i)
     {
     PatchPair patchPair;
     patchPair.SourcePatch = this->SourcePatches[i];
     patchPair.TargetPatch = targetPatch;
-    
+
     float continuationDifference = ContinuationDifference(patchPair);
     differences.push_back(continuationDifference);
     }
@@ -833,7 +833,7 @@ void CriminisiInpainting::FindBestPatchForHighestPriority(PatchPair& bestPatchPa
 {
   // This function implements Criminisi's idea of "find the highest priority pixel and proceed to fill it".
   // We have replaced this idea with FindBestPatchLookAhead().
-  
+
   // This function returns the best PatchPair by reference.
 #if 0
   float highestPriority = 0;
@@ -843,7 +843,7 @@ void CriminisiInpainting::FindBestPatchForHighestPriority(PatchPair& bestPatchPa
   itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
   Patch targetPatch;
   targetPatch.Region = targetRegion;
-  
+
   DebugMessage("Finding best patch...");
 
   CandidatePairs candidatePairs;
@@ -851,7 +851,7 @@ void CriminisiInpainting::FindBestPatchForHighestPriority(PatchPair& bestPatchPa
   patchCompare = new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel(), candidatePairs);
   patchCompare->SetImage(this->CompareImage);
   patchCompare->SetMask(this->CurrentMask);
-  
+
   float distance = 0;
   unsigned int bestMatchSourcePatchId = patchCompare->FindBestPatch(distance);
   //DebugMessage<unsigned int>("Found best patch to be ", bestMatchSourcePatchId);
@@ -861,7 +861,7 @@ void CriminisiInpainting::FindBestPatchForHighestPriority(PatchPair& bestPatchPa
   //this->DebugWritePatch(targetRegion, "TargetPatch.png");
   Patch sourcePatch;
   sourcePatch = this->SourcePatches[bestMatchSourcePatchId];
-  
+
   bestPatchPair.TargetPatch = targetPatch;
   bestPatchPair.SourcePatch = sourcePatch;
 #endif
@@ -878,7 +878,7 @@ float SelfPatchCompare::PatchDifferenceManual(const Patch& sourcePatch)
     float totalDifference = 0;
 
     unsigned int componentsPerPixel = this->Image->GetNumberOfComponentsPerPixel();
-    
+
     FloatVectorImageType::InternalPixelType *buffptr = this->Image->GetBufferPointer();
     unsigned int offsetDifference = (this->Image->ComputeOffset(this->Pairs->TargetPatch.Region.GetIndex())
                                     - this->Image->ComputeOffset(sourcePatch.Region.GetIndex())) * componentsPerPixel;
@@ -900,8 +900,8 @@ float SelfPatchCompare::PatchDifferenceManual(const Patch& sourcePatch)
         {
 	//std::cout << "component " << i << ": " << buffptr[this->ValidOffsets[pixelId] + i] - buffptr[this->ValidOffsets[pixelId] - offsetDifference + i] << std::endl;
         //difference += fabs(buffptr[this->ValidOffsets[pixelId] + i] - buffptr[this->ValidOffsets[pixelId] - offsetDifference + i]);
-      
-	difference += (buffptr[this->ValidOffsets[pixelId] + i] - buffptr[this->ValidOffsets[pixelId] - offsetDifference + i]) * 
+
+	difference += (buffptr[this->ValidOffsets[pixelId] + i] - buffptr[this->ValidOffsets[pixelId] - offsetDifference + i]) *
 		      (buffptr[this->ValidOffsets[pixelId] + i] - buffptr[this->ValidOffsets[pixelId] - offsetDifference + i]);
         }
       //std::cout << "difference: " << difference << std::endl;
@@ -936,14 +936,14 @@ float SelfPatchCompare::PatchDifferenceManual(const Patch& sourcePatch)
 float SelfPatchCompare::SlowDifference(const Patch& sourcePatch)
 {
   // This function assumes that all pixels in the source region are unmasked.
-  
+
   // This method uses 3 iterators - one for the mask, and one for each image patch.
   // The entire mask is traversed looking for valid pixels, and then comparing the image pixels.
   // This is very inefficient because, since the target region stays constant for many thousands of patch
   // comparisons, the mask need only be traversed once. This method is performed by ComputeOffsets()
   // and PatchDifference*(). This function is only here for comparison purposes (to ensure the result of the other functions
   // is correct).
-  
+
   try
   {
     //assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
@@ -976,7 +976,7 @@ float SelfPatchCompare::SlowDifference(const Patch& sourcePatch)
     unsigned int validPixelCounter = 0;
     //unsigned int componentsPerPixel = this->Image->GetNumberOfComponentsPerPixel();
     FullSquaredPixelDifference differenceFunction(this->Image->GetNumberOfComponentsPerPixel());
-    
+
     while(!sourcePatchIterator.IsAtEnd())
       {
       itk::Index<2> currentPixel = maskIterator.GetIndex();
@@ -1029,45 +1029,45 @@ float SelfPatchCompare::PatchAverageSquaredDifference(const Patch& sourcePatch)
     //assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
 
     float totalDifference = 0.0f;
-    
+
     FloatVectorImageType::InternalPixelType *buffptr = this->Image->GetBufferPointer();
     unsigned int offsetDifference = (this->Image->ComputeOffset(this->Pairs->TargetPatch.Region.GetIndex())
                                     - this->Image->ComputeOffset(sourcePatch.Region.GetIndex())) * this->NumberOfComponentsPerPixel;
 
     float squaredDifference = 0;
-    
+
     FloatVectorImageType::PixelType sourcePixel;
     sourcePixel.SetSize(this->NumberOfComponentsPerPixel);
-    
+
     FloatVectorImageType::PixelType targetPixel;
     targetPixel.SetSize(this->NumberOfComponentsPerPixel);
-    
+
     FloatVectorImageType::PixelType differencePixel;
     differencePixel.SetSize(this->NumberOfComponentsPerPixel);
-    
+
     FullSquaredPixelDifference differenceFunction(sourcePixel);
-    
+
     for(unsigned int pixelId = 0; pixelId < this->ValidOffsets.size(); ++pixelId)
       {
-      
+
       for(unsigned int i = 0; i < this->NumberOfComponentsPerPixel; ++i)
         {
 	sourcePixel[i] = buffptr[this->ValidOffsets[pixelId] + i];
         targetPixel[i] = buffptr[this->ValidOffsets[pixelId] - offsetDifference + i];
         }
-    
-      
+
+
       squaredDifference = differenceFunction.Difference(sourcePixel, targetPixel);
       //difference = NonVirtualPixelDifference(sourcePixel, targetPixel); // This call seems to make it very slow?
       //difference = (sourcePixel-targetPixel).GetSquaredNorm(); // horribly slow
-      
+
       //differencePixel = sourcePixel-targetPixel;
       //difference = differencePixel.GetSquaredNorm();
-      
+
 //       difference = 0;
 //       for(unsigned int i = 0; i < componentsPerPixel; ++i)
 //         {
-// 	difference += (sourcePixel[i] - targetPixel[i]) * 
+// 	difference += (sourcePixel[i] - targetPixel[i]) *
 // 		      (sourcePixel[i] - targetPixel[i]);
 // 	}
 
@@ -1098,7 +1098,7 @@ float SelfPatchCompare::PatchAverageAbsoluteSourceDifference(const Patch& source
     float totalAbsoluteDifference = 0.0f;
 
     FloatVectorImageType::InternalPixelType *buffptr = this->Image->GetBufferPointer();
-    
+
     // This is the vector from the target patch to the source patch.
     int targetToSourceOffsetPixels = this->Image->ComputeOffset(sourcePatch.Region.GetIndex()) - this->Image->ComputeOffset(this->Pairs->TargetPatch.Region.GetIndex());
     int targetToSourceOffset = targetToSourceOffsetPixels * this->NumberOfComponentsPerPixel;
@@ -1123,7 +1123,7 @@ float SelfPatchCompare::PatchAverageAbsoluteSourceDifference(const Patch& source
 
       totalAbsoluteDifference += absoluteDifference;
       }
-  
+
     float averageAbsoluteDifference = totalAbsoluteDifference / static_cast<float>(this->ValidTargetPatchOffsets.size());
     return averageAbsoluteDifference;
   } //end try
@@ -1154,26 +1154,26 @@ void PatchBasedInpaintingGUI::DisplayIsophotes()
     zero.Fill(0);
     maskFilter->SetOutsideValue(zero);
     maskFilter->Update();
-  
+
     HelpersOutput::WriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(), "Debug/ShowIsophotes.BoundaryIsophotes.mha", this->DebugImages);
     HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Boundary, "Debug/ShowIsophotes.Boundary.mha", this->DebugImages);
-    
+
     Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), this->IsophoteLayer.Vectors);
-    
+
     if(this->DebugImages)
       {
       vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
       writer->SetFileName("Debug/VTKIsophotes.vti");
       writer->SetInputConnection(this->IsophoteLayer.ImageData->GetProducerPort());
       writer->Write();
-    
+
       vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
       polyDataWriter->SetFileName("Debug/VTKIsophotes.vtp");
       polyDataWriter->SetInputConnection(this->IsophoteLayer.Vectors->GetProducerPort());
       polyDataWriter->Write();
       }
 
-    } 
+    }
   else
     {
     std::cerr << "Isophotes are not defined!" << std::endl;
@@ -1197,15 +1197,15 @@ void PatchBasedInpaintingGUI::DisplayBoundaryNormals()
 //     {
 //     Helpers::ConvertNonZeroPixelsToVectors(this->IntermediateImages[this->IterationToDisplay].BoundaryNormals, this->BoundaryNormalsLayer.Vectors);
 //     this->qvtkWidget->GetRenderWindow()->Render();
-// 
+//
 //     if(this->DebugImages)
 //       {
 //       std::cout << "Writing boundary normals..." << std::endl;
-// 
+//
 //       HelpersOutput::WriteImage<FloatVector2ImageType>(this->Inpainting.GetBoundaryNormalsImage(), "Debug/RefreshSlot.BoundaryNormals.mha");
-// 
+//
 //       HelpersOutput::WriteImageData(this->BoundaryNormalsLayer.ImageData, "Debug/RefreshSlot.VTKBoundaryNormals.vti");
-// 
+//
 //       HelpersOutput::WritePolyData(this->BoundaryNormalsLayer.Vectors, "Debug/RefreshSlot.VTKBoundaryNormals.vtp");
 //       }
 //     }
@@ -1216,7 +1216,7 @@ void PatchBasedInpaintingGUI::DisplayBoundaryNormals()
 void PatchBasedInpaintingGUI::DisplayConfidence()
 {
   vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
-  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Confidence, temp);  
+  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->IntermediateImages[this->IterationToDisplay].Confidence, temp);
   Helpers::MakeValueTransparent(temp, this->ConfidenceLayer.ImageData, 0); // Set the zero pixels to transparent
   this->qvtkWidget->GetRenderWindow()->Render();
 }
@@ -1232,7 +1232,7 @@ void PatchBasedInpaintingGUI::CreatePotentialTargetPatchesImage()
 {
   DebugMessage("CreatePotentialTargetPatchesImage()");
   // Draw potential patch pairs
-  
+
 //   std::stringstream ssPatchPairsFile;
 //   ssPatchPairsFile << "Debug/PatchPairs_" << Helpers::ZeroPad(this->Inpainting.GetIteration(), 3) << ".txt";
 //   OutputPairs(potentialPatchPairs, ssPatchPairsFile.str());
@@ -1241,18 +1241,18 @@ void PatchBasedInpaintingGUI::CreatePotentialTargetPatchesImage()
     {
     return;
     }
-    
+
   if(!this->Recorded[this->IterationToDisplay - 1])
     {
     return;
     }
-    
+
   this->PotentialTargetPatchesImage->SetRegions(this->Inpainting.GetFullRegion());
   this->PotentialTargetPatchesImage->Allocate();
   this->PotentialTargetPatchesImage->FillBuffer(0);
 
   const std::vector<CandidatePairs>& potentialCandidatePairs = this->AllPotentialCandidatePairs[this->IterationToDisplay - 1];
-  
+
   for(unsigned int i = 0; i < potentialCandidatePairs.size(); ++i)
     {
     Helpers::BlankAndOutlineRegion<UnsignedCharScalarImageType>(this->PotentialTargetPatchesImage,

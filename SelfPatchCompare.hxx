@@ -31,11 +31,11 @@ float SelfPatchCompare::PatchAverageSourceDifference(const Patch& sourcePatch)
 
   // We want to do direct pointer arithmetic for speed purposes.
   const FloatVectorImageType::InternalPixelType* bufferPointer = this->Image->GetBufferPointer();
-  
+
   // Get the locations of the corners of both patches.
   int sourceCornerOffset = this->Image->ComputeOffset(sourcePatch.Region.GetIndex());
   int targetCornerOffset = this->Image->ComputeOffset(this->Pairs->TargetPatch.Region.GetIndex());
-  
+
   // Compute the difference between the corners (from the target to the source).
   int targetToSourceOffsetPixels = sourceCornerOffset - targetCornerOffset;
   int targetToSourceOffset = targetToSourceOffsetPixels * this->NumberOfComponentsPerPixel;
@@ -43,11 +43,11 @@ float SelfPatchCompare::PatchAverageSourceDifference(const Patch& sourcePatch)
   // Create empty pixel containers that we will fill.
   FloatVectorImageType::PixelType sourcePixel(this->NumberOfComponentsPerPixel);
   FloatVectorImageType::PixelType targetPixel(this->NumberOfComponentsPerPixel);
-  
+
   // Instantiate the distance function that has been specified as a template parameter.
   TDifferenceFunction differenceFunction(this->NumberOfComponentsPerPixel);
   float difference = 0;
-  
+
   // Loop through the pixels that have been determined to be valid.
   for(unsigned int pixelId = 0; pixelId < this->ValidTargetPatchOffsets.size(); ++pixelId)
     {
@@ -56,12 +56,12 @@ float SelfPatchCompare::PatchAverageSourceDifference(const Patch& sourcePatch)
       {
       int sourceOffset = this->ValidTargetPatchOffsets[pixelId] + targetToSourceOffset + component;
       int targetOffset = this->ValidTargetPatchOffsets[pixelId] + component;
-      
+
       sourcePixel[component] = bufferPointer[sourceOffset];
-      
+
       targetPixel[component] = bufferPointer[targetOffset];
       } // end component loop
-  
+
     difference = differenceFunction.Difference(sourcePixel, targetPixel);
 
     totalDifference += difference;
@@ -84,11 +84,11 @@ float SelfPatchCompare::PatchAverageSourceDifference(const typename TScalarImage
 
   // We want to do direct pointer arithmetic for speed purposes.
   typename TScalarImage::PixelType* bufferPointer = image->GetBufferPointer();
-  
+
   // Get the locations of the corners of both patches.
   int sourceCornerOffset = image->ComputeOffset(sourcePatch.Region.GetIndex());
   int targetCornerOffset = image->ComputeOffset(this->Pairs->TargetPatch.Region.GetIndex());
-  
+
   // Compute the difference between the corners (from the target to the source).
   int targetToSourceOffsetPixels = sourceCornerOffset - targetCornerOffset;
   int targetToSourceOffset = targetToSourceOffsetPixels;
@@ -96,11 +96,11 @@ float SelfPatchCompare::PatchAverageSourceDifference(const typename TScalarImage
   // Create empty pixel containers that we will fill.
   typename TScalarImage::PixelType sourcePixel;
   typename TScalarImage::PixelType targetPixel;
-  
+
   // Instantiate the distance function that has been specified as a template parameter.
   TDifferenceFunction differenceFunction;
   float difference = 0;
-  
+
   // Loop through the pixels that have been determined to be valid.
   for(unsigned int pixelId = 0; pixelId < this->ValidTargetPatchOffsets.size(); ++pixelId)
     {
@@ -115,8 +115,8 @@ float SelfPatchCompare::PatchAverageSourceDifference(const typename TScalarImage
 //       exit(-1);
 //       }
     sourcePixel = bufferPointer[sourceOffset];
-    
-    targetPixel = bufferPointer[targetOffset];  
+
+    targetPixel = bufferPointer[targetOffset];
     difference = differenceFunction.Difference(sourcePixel, targetPixel);
 
     totalDifference += difference;

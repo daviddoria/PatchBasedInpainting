@@ -5,7 +5,7 @@
 
 namespace ParallelSort
 {
-  
+
 template <typename T>
 bool operator<(IndexedValue<T> element1, IndexedValue<T> element2)
 {
@@ -29,7 +29,7 @@ std::vector<IndexedValue<T> > ParallelSort(const std::vector<T>& v, const SORTOR
     {
     std::sort(pairs.rbegin(), pairs.rend());
     }
-  
+
 
   return pairs;
 }
@@ -40,7 +40,7 @@ void OutputIndexedValueVector(const std::vector<T>& v)
   for(unsigned int i = 0; i < v.size(); i++)
     {
     std::cout << v[i].index << " " << v[i].value << std::endl;
-    }  
+    }
 }
 
 template <typename T>
@@ -49,7 +49,7 @@ void OutputVector(const std::vector<T>& v)
   for(unsigned int i = 0; i < v.size(); i++)
     {
     std::cout << v[i] << std::endl;
-    }  
+    }
 }
 
 } // end namespace

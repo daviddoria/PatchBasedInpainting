@@ -28,12 +28,12 @@ class PriorityManual : public PriorityOnionPeel
 public:
   // Reimplemented
   PriorityManual(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius);
-  
+
   float ComputePriority(const itk::Index<2>& queryPixel);
-  
+
   // New functions
   void SetManualPriorityImage(UnsignedCharScalarImageType::Pointer);
-  
+
 protected:
   UnsignedCharScalarImageType::Pointer ManualPriorityImage;
 };
