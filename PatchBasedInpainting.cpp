@@ -761,34 +761,6 @@ bool PatchBasedInpainting::HasMoreToInpaint()
   }
 }
 
-
-void PatchBasedInpainting::UpdateMask(const itk::ImageRegion<2>& region)
-{
-  EnterFunction("UpdateMask()");
-  try
-  {
-    itk::ImageRegionIterator<Mask> maskIterator(this->MaskImage, region);
-
-    while(!maskIterator.IsAtEnd())
-      {
-      if(this->MaskImage->IsHole(maskIterator.GetIndex()))
-        {
-        maskIterator.Set(this->MaskImage->GetValidValue());
-        }
-
-      ++maskIterator;
-      }
-    LeaveFunction("UpdateMask()");
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in UpdateMask!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
-
-
 bool PatchBasedInpainting::IsValidPatch(const itk::Index<2>& queryPixel, const unsigned int radius)
 {
   // This function checks if a patch is completely inside the image and not intersecting the mask

@@ -192,9 +192,6 @@ private:
   // Compute the number of pixels in a patch of the specified size.
   unsigned int GetNumberOfPixelsInPatch();
 
-  // Update the mask so that the pixels in the region that was filled are marked as filled.
-  void UpdateMask(const itk::ImageRegion<2>& region);
-
   // Locate all patches centered at pixels in 'region' that are completely inside of the image and completely inside of the
   // source region and add them to the current list of source patches.
   void AddAllSourcePatchesInRegion(const itk::ImageRegion<2>& region);
