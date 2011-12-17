@@ -90,6 +90,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   // This function is called by both constructors. This avoid code duplication.
   EnterFunction("PatchBasedInpaintingGUI::DefaultConstructor()");
 
+  this->Inpainting = NULL;
   this->RecordToDisplay = NULL;
 
   this->setupUi(this);
@@ -186,7 +187,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->UserMaskImage = Mask::New();
 
   //this->Inpainting.SetPatchSearchFunctionToTwoStepDepth();
-  this->Inpainting.SetPatchSearchFunctionToNormal();
+  this->Inpainting->SetPatchSearchFunctionToNormal();
   //this->Inpainting.SetDebugFunctionEnterLeave(true);
 
   SetPriorityFromGUI();
@@ -219,7 +220,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->progressBar->setMaximum(0);
   this->progressBar->hide();
 
-  this->ComputationThread.SetObject(&(this->Inpainting));
+  this->ComputationThread.SetObject(this->Inpainting);
 
   InitializeGUIElements();
 
@@ -501,7 +502,7 @@ void PatchBasedInpaintingGUI::DisplayPriorityImages()
       {
       std::cout << "Image name: " << this->PriorityImageCheckBoxes[i]->text().toStdString() << std::endl;
       Layer newLayer;
-      NamedVTKImage namedImage = FindImageByName(this->Inpainting.GetPriorityFunction()->GetNamedImages(), this->PriorityImageCheckBoxes[i]->text().toStdString());
+      NamedVTKImage namedImage = FindImageByName(this->Inpainting->GetPriorityFunction()->GetNamedImages(), this->PriorityImageCheckBoxes[i]->text().toStdString());
       newLayer.ImageData = namedImage.ImageData;
       newLayer.Setup();
       newLayer.ImageSlice->SetPickable(false);
@@ -599,9 +600,14 @@ void PatchBasedInpaintingGUI::Initialize()
   this->UserMaskImage->ApplyToVectorImage<FloatVectorImageType>(this->UserImage, this->HoleColor);
 
   // Provide required data.
-  this->Inpainting.SetPatchRadius(this->PatchRadius);
-  this->Inpainting.SetMask(this->UserMaskImage);
-  this->Inpainting.SetImage(this->UserImage);
+  if(this->Inpainting)
+    {
+    delete this->Inpainting;
+    }
+  this->Inpainting = new PatchBasedInpainting(this->UserImage, this->UserMaskImage);
+  this->Inpainting->SetPatchRadius(this->PatchRadius);
+  //this->Inpainting.SetMask(this->UserMaskImage);
+  //this->Inpainting.SetImage(this->UserImage);
 
   if(!this->txtBlurredImage->text().isEmpty())
     {
@@ -609,7 +615,7 @@ void PatchBasedInpaintingGUI::Initialize()
     ReaderType::Pointer reader = ReaderType::New();
     reader->SetFileName(this->txtBlurredImage->text().toStdString());
     reader->Update();
-    this->Inpainting.SetBlurredImage(reader->GetOutput());
+    this->Inpainting->SetBlurredImage(reader->GetOutput());
     }
 
   if(!this->txtMembershipImage->text().isEmpty())
@@ -618,7 +624,7 @@ void PatchBasedInpaintingGUI::Initialize()
     ReaderType::Pointer reader = ReaderType::New();
     reader->SetFileName(this->txtMembershipImage->text().toStdString());
     reader->Update();
-    this->Inpainting.SetMembershipImage(reader->GetOutput());
+    this->Inpainting->SetMembershipImage(reader->GetOutput());
     }
 
   // The PatchSortFunction has already been set by the radio buttons.
@@ -628,21 +634,21 @@ void PatchBasedInpaintingGUI::Initialize()
   HelpersOutput::WriteImage<Mask>(this->UserMaskImage, "mask.mha");
 
   // Setup verbosity.
-  this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
-  this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
+  this->Inpainting->SetDebugImages(this->chkDebugImages->isChecked());
+  this->Inpainting->SetDebugMessages(this->chkDebugMessages->isChecked());
   //this->Inpainting.SetDebugFunctionEnterLeave(false);
 
   // Setup the priority function
 
 
   // Setup the patch comparison function
-  this->Inpainting.GetPatchCompare()->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
+  this->Inpainting->GetPatchCompare()->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
 
   // Setup the sorting function
-  this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
+  this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
 
   // Finish initializing
-  this->Inpainting.Initialize();
+  this->Inpainting->Initialize();
 
   CreateInitialRecord();
   this->IterationToDisplay = 0;
@@ -734,7 +740,7 @@ void PatchBasedInpaintingGUI::DisplayResultPatch()
     // (as the current mask has been cleared where the target patch was copied).
     Mask::Pointer currentMask = dynamic_cast<Mask*>(this->RecordToDisplay->Images.FindImageByName("Mask").Image.GetPointer());
 
-    itk::Size<2> regionSize = this->Inpainting.GetPatchSize();
+    itk::Size<2> regionSize = this->Inpainting->GetPatchSize();
 
     QImage qimage(regionSize[0], regionSize[1], QImage::Format_RGB888);
 
@@ -1092,7 +1098,7 @@ void PatchBasedInpaintingGUI::ChangeDisplayedIteration()
   this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->ForwardLookToDisplayId].TargetPatch;
 
   std::stringstream ss;
-  ss << this->IterationToDisplay << " out of " << this->Inpainting.GetNumberOfCompletedIterations();
+  ss << this->IterationToDisplay << " out of " << this->Inpainting->GetNumberOfCompletedIterations();
   this->lblCurrentIteration->setText(ss.str().c_str());
 
   if(this->IterationToDisplay > 0)
@@ -1143,7 +1149,7 @@ void PatchBasedInpaintingGUI::CreateInitialRecord()
   //Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
 
   FloatScalarImageType::Pointer priorityImage = FloatScalarImageType::New();
-  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityFunction()->GetPriorityImage(), priorityImage);
+  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting->GetPriorityFunction()->GetPriorityImage(), priorityImage);
   NamedITKImage namedPriorityImage;
   namedPriorityImage.Name = "Priority";
   namedPriorityImage.Image = priorityImage;
@@ -1167,14 +1173,14 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
   EnterFunction("IterationComplete()");
 
   InpaintingIterationRecord iterationRecord;
-  for(unsigned int i = 0; i < this->Inpainting.GetImagesToUpdate().size(); ++i)
+  for(unsigned int i = 0; i < this->Inpainting->GetImagesToUpdate().size(); ++i)
     {
     std::cout << "Updating image " << i << std::endl;
 
-    Helpers::OutputImageType(this->Inpainting.GetImagesToUpdate()[i]);
-    itk::ImageBase<2>::Pointer newImage = Helpers::CreateImageWithSameType(this->Inpainting.GetImagesToUpdate()[i]);
+    Helpers::OutputImageType(this->Inpainting->GetImagesToUpdate()[i]);
+    itk::ImageBase<2>::Pointer newImage = Helpers::CreateImageWithSameType(this->Inpainting->GetImagesToUpdate()[i]);
     Helpers::OutputImageType(newImage);
-    Helpers::DeepCopy(this->Inpainting.GetImagesToUpdate()[i], newImage);
+    Helpers::DeepCopy(this->Inpainting->GetImagesToUpdate()[i], newImage);
     }
   std::cout << "Finished creating record images." << std::endl;
 
@@ -1192,12 +1198,12 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
     std::cout << "Recording step." << std::endl;
 
     // Chop to the desired length
-    for(unsigned int i = 0; i < this->Inpainting.GetPotentialCandidatePairsReference().size(); ++i)
+    for(unsigned int i = 0; i < this->Inpainting->GetPotentialCandidatePairsReference().size(); ++i)
       {
-      unsigned int numberToKeep = std::min(this->Inpainting.GetPotentialCandidatePairsReference()[i].size(), this->NumberOfTopPatchesToSave);
+      unsigned int numberToKeep = std::min(this->Inpainting->GetPotentialCandidatePairsReference()[i].size(), this->NumberOfTopPatchesToSave);
       //std::cout << "numberToKeep: " << numberToKeep << std::endl;
-      this->Inpainting.GetPotentialCandidatePairsReference()[i].erase(this->Inpainting.GetPotentialCandidatePairsReference()[i].begin() + numberToKeep,
-                                                                      this->Inpainting.GetPotentialCandidatePairsReference()[i].end());
+      this->Inpainting->GetPotentialCandidatePairsReference()[i].erase(this->Inpainting->GetPotentialCandidatePairsReference()[i].begin() + numberToKeep,
+                                                                       this->Inpainting->GetPotentialCandidatePairsReference()[i].end());
       }
 
     // Add the patch pairs to the new record. This will mean the pairs are 1 record out of sync with the images. The interpretation would be:
@@ -1206,7 +1212,7 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
 
     // Add the patch pairs to the previous record. The interpretation is "these patches are considered here, to produce the next image".
     // There should always be a previous record, because an initial record is created for the initial state.
-    this->IterationRecords[this->IterationRecords.size() - 1].PotentialPairSets = this->Inpainting.GetPotentialCandidatePairs();
+    this->IterationRecords[this->IterationRecords.size() - 1].PotentialPairSets = this->Inpainting->GetPotentialCandidatePairs();
     //std::cout << "iterationRecord.PotentialPairSets: " << iterationRecord.PotentialPairSets.size() << std::endl;
     }
 
@@ -1220,7 +1226,7 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
     {
     std::cout << "Switching to live iteration." << std::endl;
     //this->IterationToDisplay = this->Inpainting.GetNumberOfCompletedIterations();
-    this->IterationToDisplay = this->Inpainting.GetNumberOfCompletedIterations() - 1;
+    this->IterationToDisplay = this->Inpainting->GetNumberOfCompletedIterations() - 1;
     //std::cout << "Switch to display iteration " << this->IterationToDisplay << std::endl;
     ChangeDisplayedIteration();
 
@@ -1229,7 +1235,7 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
   else
     {
     std::stringstream ss;
-    ss << this->IterationToDisplay << " out of " << this->Inpainting.GetNumberOfCompletedIterations();
+    ss << this->IterationToDisplay << " out of " << this->Inpainting->GetNumberOfCompletedIterations();
     this->lblCurrentIteration->setText(ss.str().c_str());
     }
 
@@ -1345,47 +1351,52 @@ void PatchBasedInpaintingGUI::InitializeGUIElements()
 
 void PatchBasedInpaintingGUI::SetParametersFromGUI()
 {
-  this->Inpainting.GetClusterColors()->SetNumberOfColors(this->txtNumberOfBins->text().toUInt());
+  //this->Inpainting->GetClusterColors()->SetNumberOfColors(this->txtNumberOfBins->text().toUInt());
 }
 
 void PatchBasedInpaintingGUI::SetCompareImageFromGUI()
 {
   if(Helpers::StringsMatch(this->cmbCompareImage->currentText().toStdString(), "Original"))
     {
-    this->Inpainting.SetCompareToOriginal();
+    this->Inpainting->SetCompareToOriginal();
     }
   else if(Helpers::StringsMatch(this->cmbCompareImage->currentText().toStdString(), "Blurred"))
     {
-    this->Inpainting.SetCompareToBlurred();
+    this->Inpainting->SetCompareToBlurred();
     }
   else if(Helpers::StringsMatch(this->cmbCompareImage->currentText().toStdString(), "CIELab"))
     {
-    this->Inpainting.SetCompareToCIELAB();
+    this->Inpainting->SetCompareToCIELAB();
     }
 }
 
 void PatchBasedInpaintingGUI::SetComparisonFunctionsFromGUI()
 {
-  this->Inpainting.GetPatchCompare()->FunctionsToCompute.clear();
+  this->Inpainting->GetPatchCompare()->FunctionsToCompute.clear();
   if(this->chkCompareFull->isChecked())
     {
-    this->Inpainting.GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,this->Inpainting.GetPatchCompare(),_1));
+    this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,
+                                                                                  this->Inpainting->GetPatchCompare(),_1));
     }
   if(this->chkCompareColor->isChecked())
     {
-    this->Inpainting.GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchColorDifference,this->Inpainting.GetPatchCompare(),_1));
+    this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchColorDifference,
+                                                                                  this->Inpainting->GetPatchCompare(),_1));
     }
   if(this->chkCompareDepth->isChecked())
     {
-    this->Inpainting.GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,this->Inpainting.GetPatchCompare(),_1));
+    this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,
+                                                                                  this->Inpainting->GetPatchCompare(),_1));
     }
   if(this->chkCompareMembership->isChecked())
     {
-    this->Inpainting.GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,this->Inpainting.GetPatchCompare(),_1));
+    this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,
+                                                                                  this->Inpainting->GetPatchCompare(),_1));
     }
   if(this->chkCompareHistogramIntersection->isChecked())
     {
-    this->Inpainting.GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchHistogramIntersection,this->Inpainting.GetPatchCompare(),_1));
+    this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchHistogramIntersection,
+                                                                                  this->Inpainting->GetPatchCompare(),_1));
     }
 }
 
@@ -1393,27 +1404,27 @@ void PatchBasedInpaintingGUI::SetSortFunctionFromGUI()
 {
   if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Full Difference"))
     {
-    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
+    this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
     }
   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Color Difference"))
     {
-    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::ColorDifference, PatchSortFunctor::ASCENDING);
+    this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::ColorDifference, PatchSortFunctor::ASCENDING);
     }
   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Depth Difference"))
     {
-    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::DepthDifference, PatchSortFunctor::ASCENDING);
+    this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::DepthDifference, PatchSortFunctor::ASCENDING);
     }
   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Depth + Color Difference"))
     {
-    this->Inpainting.PatchSortFunction = new SortByDepthAndColor(PatchPair::CombinedDifference);
+    this->Inpainting->PatchSortFunction = new SortByDepthAndColor(PatchPair::CombinedDifference);
     }
   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Histogram Intersection"))
     {
-    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::HistogramIntersection, PatchSortFunctor::DESCENDING);
+    this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::HistogramIntersection, PatchSortFunctor::DESCENDING);
     }
   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Membership Difference"))
     {
-    this->Inpainting.PatchSortFunction = new SortByDifference(PatchPair::MembershipDifference, PatchSortFunctor::DESCENDING);
+    this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::MembershipDifference, PatchSortFunctor::DESCENDING);
     }
 }
 
@@ -1422,7 +1433,7 @@ void PatchBasedInpaintingGUI::SetDepthColorLambdaFromGUI()
   SortByDepthAndColor* functor = new SortByDepthAndColor(PatchPair::ColorDifference);
   functor->DepthColorLambda = static_cast<float>(sldDepthColorLambda->value())/100.0f;
 
-  this->Inpainting.PatchSortFunction = functor;
+  this->Inpainting->PatchSortFunction = functor;
 
   std::cout << "DepthColorLambda set to " << functor->DepthColorLambda << std::endl;
 }
@@ -1431,30 +1442,30 @@ void PatchBasedInpaintingGUI::SetPriorityFromGUI()
 {
   if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Manual"))
     {
-    this->Inpainting.SetPriorityFunction<PriorityManual>();
+    this->Inpainting->SetPriorityFunction<PriorityManual>();
 
     UnsignedCharScalarImageType::Pointer manualPriorityImage = UnsignedCharScalarImageType::New();
     std::string manualPriorityImageFileName = "/media/portable/Data/LidarImageCompletion/PaperDataSets/trashcan/trashcan_medium/trashcan_manualPriority.mha";
     Helpers::ReadImage<UnsignedCharScalarImageType>(manualPriorityImageFileName, manualPriorityImage);
     std::cout << "manualPriorityImage non-zero pixels: " << Helpers::CountNonZeroPixels<UnsignedCharScalarImageType>(manualPriorityImage) << std::endl;
 
-    reinterpret_cast<PriorityManual*>(this->Inpainting.GetPriorityFunction())->SetManualPriorityImage(manualPriorityImage);
+    reinterpret_cast<PriorityManual*>(this->Inpainting->GetPriorityFunction())->SetManualPriorityImage(manualPriorityImage);
     }
   else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "OnionPeel"))
     {
-    this->Inpainting.SetPriorityFunction<PriorityOnionPeel>();
+    this->Inpainting->SetPriorityFunction<PriorityOnionPeel>();
     }
   else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Random"))
     {
-    this->Inpainting.SetPriorityFunction<PriorityRandom>();
+    this->Inpainting->SetPriorityFunction<PriorityRandom>();
     }
   else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Depth"))
     {
-    this->Inpainting.SetPriorityFunction<PriorityDepth>();
+    this->Inpainting->SetPriorityFunction<PriorityDepth>();
     }
   else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Criminisi"))
     {
-    this->Inpainting.SetPriorityFunction<PriorityCriminisi>();
+    this->Inpainting->SetPriorityFunction<PriorityCriminisi>();
     }
 
   // Delete the old checkboxes
@@ -1469,7 +1480,7 @@ void PatchBasedInpaintingGUI::SetPriorityFromGUI()
   this->PriorityImageCheckBoxes.clear();
 
   // Add the new checkboxes
-  std::vector<NamedVTKImage> namedImages = this->Inpainting.GetPriorityFunction()->GetNamedImages();
+  std::vector<NamedVTKImage> namedImages = this->Inpainting->GetPriorityFunction()->GetNamedImages();
 
   for(unsigned int i = 0; i < namedImages.size(); ++i)
     {

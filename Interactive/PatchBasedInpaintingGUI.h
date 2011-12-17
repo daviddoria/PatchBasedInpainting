@@ -233,7 +233,7 @@ protected:
   Mask::Pointer UserMaskImage;
 
   // The class that does all the work.
-  PatchBasedInpainting Inpainting;
+  PatchBasedInpainting* Inpainting;
 
   // Perform the long inpainting operation in this thread so that the UI remains active.
   ComputationThreadClass ComputationThread;

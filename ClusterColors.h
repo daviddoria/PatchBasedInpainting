@@ -21,7 +21,6 @@
 
 // Custom
 #include "DebugOutputs.h"
-//#include "Mask.h"
 class Mask;
 #include "Types.h"
 

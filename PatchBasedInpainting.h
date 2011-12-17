@@ -21,8 +21,6 @@
 
 // Custom
 #include "CandidatePairs.h"
-#include "ClusterColorsUniform.h"
-#include "ClusterColorsAdaptive.h"
 #include "DebugOutputs.h"
 #include "ITKImageCollection.h"
 #include "Patch.h"
@@ -30,6 +28,7 @@
 #include "PatchSorting.h"
 #include "Types.h"
 
+class Mask;
 class Priority;
 class SelfPatchCompare;
 
@@ -77,7 +76,8 @@ public:
   //////////////////////////////////////////////////////////////
 
   // Constructor
-  PatchBasedInpainting();
+  //PatchBasedInpainting();
+  PatchBasedInpainting(const FloatVectorImageType* image, const Mask* mask);
 
   // A single step of the algorithm. The real work is done here.
   PatchPair Iterate();
@@ -134,8 +134,6 @@ public:
 
   // Some techniques are very slow to compute the membership image. For testing, we would want to compute this once and use it each time.
   void SetMembershipImage(const IntImageType::Pointer);
-
-  ClusterColorsAdaptive* GetClusterColors();
 
   ITKImageCollection& GetImagesToUpdate();
 
@@ -252,8 +250,6 @@ private:
   Priority* PriorityFunction;
 
   IntImageType::Pointer MembershipImage;
-  //ClusterColorsUniform ColorFrequency;
-  ClusterColorsAdaptive ColorFrequency;
 
   unsigned int GetRequiredHistogramIntersection(const unsigned int bestForwardLookId);
 };

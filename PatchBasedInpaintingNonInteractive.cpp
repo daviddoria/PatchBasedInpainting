@@ -59,16 +59,14 @@ int main(int argc, char *argv[])
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 
-  PatchBasedInpainting inpainting;
-  inpainting.SetPatchRadius(patchRadius);
-  inpainting.SetImage(imageReader->GetOutput());
-  inpainting.SetMask(maskReader->GetOutput());
-  inpainting.SetMaxForwardLookPatches(3);
-  inpainting.Initialize();
-  inpainting.Inpaint();
+  PatchBasedInpainting* inpainting = new PatchBasedInpainting(imageReader->GetOutput(), maskReader->GetOutput());
+  inpainting->SetPatchRadius(patchRadius);
+  inpainting->SetMaxForwardLookPatches(3);
+  inpainting->Initialize();
+  inpainting->Inpaint();
 
-  HelpersOutput::WriteImage<FloatVectorImageType>(inpainting.GetCurrentOutputImage(), outputFilename + ".mha");
-  HelpersOutput::WriteVectorImageAsRGB(inpainting.GetCurrentOutputImage(), outputFilename);
+  HelpersOutput::WriteImage<FloatVectorImageType>(inpainting->GetCurrentOutputImage(), outputFilename + ".mha");
+  HelpersOutput::WriteVectorImageAsRGB(inpainting->GetCurrentOutputImage(), outputFilename);
 
   return EXIT_SUCCESS;
 }

@@ -43,9 +43,8 @@ int main(int argc, char*argv[])
   imageReader->SetFileName(imageFilename);
   imageReader->Update();
 
-  typedef itk::Image< unsigned char, 2 > UnsignedCharImageType;
-  typedef  itk::ImageFileReader< UnsignedCharImageType  > UnsignedCharImageReaderType;
-  UnsignedCharImageReaderType::Pointer maskReader = UnsignedCharImageReaderType::New();
+  typedef  itk::ImageFileReader<Mask> MaskReaderType;
+  MaskReaderType::Pointer maskReader = MaskReaderType::New();
   maskReader->SetFileName(maskFilename);
   maskReader->Update();
 

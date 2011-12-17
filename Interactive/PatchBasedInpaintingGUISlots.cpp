@@ -267,7 +267,7 @@ void PatchBasedInpaintingGUI::on_actionSaveResult_activated()
     return;
     }
 
-  HelpersOutput::WriteImage<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), fileName.toStdString());
+  HelpersOutput::WriteImage<FloatVectorImageType>(this->Inpainting->GetCurrentOutputImage(), fileName.toStdString());
 
   this->statusBar()->showMessage("Saved result.");
 }
@@ -275,7 +275,7 @@ void PatchBasedInpaintingGUI::on_actionSaveResult_activated()
 
 void PatchBasedInpaintingGUI::on_chkDebugImages_clicked()
 {
-  this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
+  this->Inpainting->SetDebugImages(this->chkDebugImages->isChecked());
   this->DebugImages = this->chkDebugImages->isChecked();
 
   DebugMessage<bool>("DebugImages: ", this->DebugImages);
@@ -283,7 +283,7 @@ void PatchBasedInpaintingGUI::on_chkDebugImages_clicked()
 
 void PatchBasedInpaintingGUI::on_chkDebugMessages_clicked()
 {
-  this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
+  this->Inpainting->SetDebugMessages(this->chkDebugMessages->isChecked());
   this->DebugMessages = this->chkDebugMessages->isChecked();
 }
 
@@ -386,10 +386,10 @@ void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
 
   SetPriorityFromGUI();
 
-  this->Inpainting.SetDebugImages(this->chkDebugImages->isChecked());
-  this->Inpainting.SetDebugMessages(this->chkDebugMessages->isChecked());
-  this->Inpainting.SetMaxForwardLookPatches(this->NumberOfForwardLook);
-  this->Inpainting.SetNumberOfTopPatchesToSave(this->NumberOfTopPatchesToSave);
+  this->Inpainting->SetDebugImages(this->chkDebugImages->isChecked());
+  this->Inpainting->SetDebugMessages(this->chkDebugMessages->isChecked());
+  this->Inpainting->SetMaxForwardLookPatches(this->NumberOfForwardLook);
+  this->Inpainting->SetNumberOfTopPatchesToSave(this->NumberOfTopPatchesToSave);
 }
 
 void PatchBasedInpaintingGUI::on_btnStep_clicked()
@@ -480,7 +480,7 @@ void PatchBasedInpaintingGUI::slot_IterationComplete(const PatchPair& patchPair)
 
 void PatchBasedInpaintingGUI::on_txtNumberOfBins_textEdited ( const QString & text )
 {
-  this->Inpainting.GetClusterColors()->SetNumberOfColors(text.toUInt());
+  //this->Inpainting->GetClusterColors()->SetNumberOfColors(text.toUInt());
 }
 
 void PatchBasedInpaintingGUI::on_txtPatchRadius_textEdited ( const QString & text )

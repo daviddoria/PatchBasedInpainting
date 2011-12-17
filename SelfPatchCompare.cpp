@@ -42,7 +42,7 @@
 // }
 
 SelfPatchCompare::SelfPatchCompare() :
-ColorFrequency(NULL), Image(NULL), MembershipImage(NULL), MaskImage(NULL), NumberOfComponentsPerPixel(1)
+Image(NULL), MembershipImage(NULL), MaskImage(NULL), NumberOfComponentsPerPixel(1)
 {
 
 }
@@ -149,18 +149,20 @@ void SelfPatchCompare::SetPatchMembershipDifference(PatchPair& patchPair)
 
 void SelfPatchCompare::SetPatchHistogramIntersection(PatchPair& patchPair)
 {
-  if(!this->ColorFrequency)
-    {
-    std::cerr << "No ClusterColors/ColorFrequency set!" << std::endl;
-    exit(-1);
-    }
-  //std::vector<float> histogram1 = this->ColorFrequency->HistogramRegion(this->ColorBinMembershipImage, bestPatchPair.TargetPatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region);
-  //std::vector<float> histogram2 = this->ColorFrequency->HistogramRegion(this->ColorBinMembershipImage, bestPatchPair.SourcePatch.Region, inverseMask, bestPatchPair.TargetPatch.Region);
-  std::vector<float> histogram1 = this->ColorFrequency->HistogramRegion(this->Image, patchPair.TargetPatch.Region, this->MaskImage, patchPair.TargetPatch.Region);
-  std::vector<float> histogram2 = this->ColorFrequency->HistogramRegion(this->Image, patchPair.SourcePatch.Region, this->MaskImage, patchPair.TargetPatch.Region, true);
-
-  float histogramIntersection = Histograms::HistogramIntersection(histogram2, histogram1);
-  patchPair.DifferenceMap[PatchPair::HistogramIntersection] = histogramIntersection;
+//   if(!this->ColorFrequency)
+//     {
+//     std::cerr << "No ClusterColors/ColorFrequency set!" << std::endl;
+//     exit(-1);
+//     }
+// //   std::vector<float> histogram1 = this->ColorFrequency->HistogramRegion(this->ColorBinMembershipImage,
+// //                                                                         bestPatchPair.TargetPatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region);
+// //   std::vector<float> histogram2 = this->ColorFrequency->HistogramRegion(this->ColorBinMembershipImage,
+// //                                                                         bestPatchPair.SourcePatch.Region, inverseMask, bestPatchPair.TargetPatch.Region);
+//   std::vector<float> histogram1 = this->ColorFrequency->HistogramRegion(this->Image, patchPair.TargetPatch.Region, this->MaskImage, patchPair.TargetPatch.Region);
+//   std::vector<float> histogram2 = this->ColorFrequency->HistogramRegion(this->Image, patchPair.SourcePatch.Region, this->MaskImage, patchPair.TargetPatch.Region, true);
+// 
+//   float histogramIntersection = Histograms::HistogramIntersection(histogram2, histogram1);
+//   patchPair.DifferenceMap[PatchPair::HistogramIntersection] = histogramIntersection;
 }
 
 void SelfPatchCompare::SetPatchDepthDifference(PatchPair& patchPair)

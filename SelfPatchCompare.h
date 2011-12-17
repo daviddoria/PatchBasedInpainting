@@ -28,7 +28,7 @@
 
 // Custom
 class CandidatePairs;
-class ClusterColorsAdaptive;
+
 class Mask;
 
 #include "DebugOutputs.h"
@@ -93,7 +93,6 @@ public:
 
   std::vector<boost::function< void(PatchPair&) > > FunctionsToCompute;
 
-  ClusterColorsAdaptive* ColorFrequency;
 protected:
   // If a channel of one pixel was white (255) and the corresponding channel of the other pixel
   // was black (0), the difference would be 255, so the difference squared would be 255*255
