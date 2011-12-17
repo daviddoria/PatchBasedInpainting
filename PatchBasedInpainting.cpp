@@ -78,9 +78,6 @@ PatchBasedInpainting::PatchBasedInpainting(const FloatVectorImageType* image, co
 
   this->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
 
-  //this->PatchSearchFunction = &FindBestPatch;
-  this->PatchSearchFunction = boost::bind(&PatchBasedInpainting::FindBestPatchNormal,this,_1,_2);
-
   this->PatchCompare = new SelfPatchCompare;
   //this->PatchCompare->ColorFrequency = &(this->ColorFrequency); // Give access to the histograms
 
@@ -261,7 +258,7 @@ PatchPair PatchBasedInpainting::Iterate()
 
   PatchPair usedPatchPair;
 
-  FindBestPatchLookAhead(usedPatchPair);
+  FindBestPatch(usedPatchPair);
 
   std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
 
@@ -371,61 +368,21 @@ Priority* PatchBasedInpainting::GetPriorityFunction()
 {
   return this->PriorityFunction;
 }
-/*
-void PatchBasedInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidatePairs, PatchPair& bestPatchPair)
+
+void PatchBasedInpainting::FindBestPatch(PatchPair& bestPatchPair)
 {
-  //std::cout << "FindBestPatchScaleConsistent: There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
-  EnterFunction("FindBestPatchScaleConsistent()");
+  EnterFunction("PatchBasedInpainting::FindBestPatch()");
 
-  this->PatchCompare->SetPairs(&candidatePairs);
-  this->PatchCompare->SetImage(this->BlurredImage);
-  this->PatchCompare->SetMask(this->MaskImage);
-  this->PatchCompare->SetMembershipImage(this->MembershipImage);
-  this->PatchCompare->ComputeAllSourceDifferences();
+  float highestPriority = 0.0f;
+  itk::Index<2> pixelToFill = Helpers::FindHighestValueInMaskedRegion(this->PriorityFunction->GetPriorityImage(),
+                                                                      highestPriority, this->PriorityFunction->GetBoundaryImage());
 
-  std::sort(candidatePairs.begin(), candidatePairs.end(), SortFunctorWrapper(this->PatchSortFunction));
-  //std::cout << "Blurred score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
-  candidatePairs.InvalidateAll();
+  itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
+  Patch targetPatch(targetRegion);
 
-  std::vector<float> blurredScores(candidatePairs.size());
-  for(unsigned int i = 0; i < candidatePairs.size(); ++i)
-    {
-    blurredScores[i] = candidatePairs[i].DifferenceMap[PatchPair::AverageAbsoluteDifference];
-    }
-
-  // Create a temporary image to fill for now, but we might not actually end up filling this patch.
-  FloatVectorImageType::Pointer tempImage = FloatVectorImageType::New();
-  Helpers::DeepCopy<FloatVectorImageType>(this->CurrentOutputImage, tempImage);
-  // Fill the detailed image hole with a part of the blurred image
-  Helpers::CopySourcePatchIntoHoleOfTargetRegion<FloatVectorImageType>(this->BlurredImage, tempImage, this->MaskImage, candidatePairs[0].SourcePatch.Region, candidatePairs[0].TargetPatch.Region);
-
-  this->PatchCompare->SetPairs(&candidatePairs);
-  this->PatchCompare->SetImage(tempImage);
-  this->PatchCompare->SetMask(this->MaskImage);
-  this->PatchCompare->SetMembershipImage(this->MembershipImage);
-  this->PatchCompare->ComputeAllSourceAndTargetDifferences();
-
-  //std::cout << "Detailed score for pair 0: " << candidatePairs[0].GetAverageAbsoluteDifference() << std::endl;
-
-  for(unsigned int i = 0; i < candidatePairs.size(); ++i)
-    {
-    candidatePairs[i].DifferenceMap[PatchPair::AverageAbsoluteDifference] = blurredScores[i] + candidatePairs[i].DifferenceMap[PatchPair::AverageAbsoluteDifference];
-    }
-
-  std::cout << "Total score for pair 0: " << candidatePairs[0].DifferenceMap[PatchPair::AverageAbsoluteDifference] << std::endl;
-  std::sort(candidatePairs.begin(), candidatePairs.end(), SortFunctorWrapper(this->PatchSortFunction));
-
-  // Return the result by reference.
-  bestPatchPair = candidatePairs[0];
-
-  //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatchScaleConsistent()." << std::endl;
-  LeaveFunction("FindBestPatchScaleConsistent()");
-}*/
-
-
-void PatchBasedInpainting::FindBestPatchNormal(CandidatePairs& candidatePairs, PatchPair& bestPatchPair)
-{
-  EnterFunction("FindBestPatchNormal()");
+  CandidatePairs candidatePairs(targetPatch);
+  candidatePairs.AddPairsFromPatches(this->SourcePatches);
+  candidatePairs.Priority = highestPriority;
 
   //std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
   this->PatchCompare->SetPairs(&candidatePairs);
@@ -446,168 +403,9 @@ void PatchBasedInpainting::FindBestPatchNormal(CandidatePairs& candidatePairs, P
   bestPatchPair = candidatePairs[0];
 
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatch()." << std::endl;
-  LeaveFunction("FindBestPatchNormal()");
+  LeaveFunction("PatchBasedInpainting::FindBestPatch()");
 }
-/*
-void PatchBasedInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePairs, PatchPair& bestPatchPair)
-{
-  EnterFunction("FindBestPatchTwoStepDepth()");
 
-  //std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
-  this->PatchCompare->SetPairs(&candidatePairs);
-  this->PatchCompare->SetImage(this->CompareImage);
-  this->PatchCompare->SetMask(this->MaskImage);
-  this->PatchCompare->SetPairs(&candidatePairs);
-  this->PatchCompare->SetMembershipImage(this->MembershipImage);
-
-  this->PatchCompare->FunctionsToCompute.clear();
-  this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,this->PatchCompare,_1));
-  this->PatchCompare->ComputeAllSourceDifferences();
-
-  //std::cout << "FindBestPatch: Finished ComputeAllSourceDifferences()" << std::endl;
-
-  std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDifference(PatchPair::DepthDifference, PatchSortFunctor::ASCENDING));
-
-  WriteImageOfScores(candidatePairs, this->CurrentOutputImage->GetLargestPossibleRegion(),
-                     Helpers::GetSequentialFileName("Debug/ImageOfDepthScores", this->NumberOfCompletedIterations, "mha"));
-  //candidatePairs.WriteDepthScoresToFile("candidateScores.txt");
-
-  CandidatePairs goodDepthCandidatePairs;
-  goodDepthCandidatePairs.CopyMetaOnly(candidatePairs);
-  goodDepthCandidatePairs.insert(goodDepthCandidatePairs.end(), candidatePairs.begin(), candidatePairs.begin() + 1000);
-  this->PatchCompare->SetPairs(&goodDepthCandidatePairs);
-
-  //goodDepthCandidatePairs.WriteDepthScoresToFile("depthScores.txt");
-
-  this->PatchCompare->FunctionsToCompute.clear();
-  this->PatchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,this->PatchCompare,_1));
-  this->PatchCompare->ComputeAllSourceDifferences();
-
-  std::sort(goodDepthCandidatePairs.begin(), goodDepthCandidatePairs.end(), SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING));
-  WriteImageOfScores(goodDepthCandidatePairs, this->CurrentOutputImage->GetLargestPossibleRegion(),
-                     Helpers::GetSequentialFileName("Debug/ImageOfTopColorScores", this->NumberOfCompletedIterations, "mha"));
-  //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
-
-  // Return the result by reference.
-  bestPatchPair = goodDepthCandidatePairs[0];
-
-  //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatch()." << std::endl;
-  LeaveFunction("FindBestPatchTwoStepDepth()");
-}
-*/
-
-void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
-{
-  EnterFunction("FindBestPatchLookAhead()");
-  // This function returns the best PatchPair by reference
-
-  //std::cout << "FindBestPatchLookAhead: There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
-
-  // If this is not the first iteration, get the potential forward look patch candidates from the previous step
-  if(this->NumberOfCompletedIterations > 0)
-    {
-    // Remove the patch candidate that was actually filled
-    unsigned int idToRemove = 0;
-    for(unsigned int forwardLookId = 0; forwardLookId < this->PotentialCandidatePairs.size(); ++forwardLookId)
-      {
-      if(PreviousIterationUsedPatchPair.TargetPatch.Region == this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region)
-        {
-        idToRemove = forwardLookId;
-        break;
-        }
-      }
-    this->PotentialCandidatePairs.erase(this->PotentialCandidatePairs.begin() + idToRemove);
-    DebugMessage<unsigned int>("Removed forward look: ", idToRemove);
-    }
-
-  // We need to temporarily modify the priority image and boundary image without affecting the actual images, so we copy them.
-  FloatScalarImageType::Pointer modifiedPriorityImage = FloatScalarImageType::New();
-  Helpers::DeepCopy<FloatScalarImageType>(this->PriorityFunction->GetPriorityImage(), modifiedPriorityImage);
-
-  UnsignedCharScalarImageType::Pointer modifiedBoundaryImage = UnsignedCharScalarImageType::New();
-  Helpers::DeepCopy<UnsignedCharScalarImageType>(this->PriorityFunction->GetBoundaryImage(), modifiedBoundaryImage);
-
-  // Blank all regions that are already look ahead patches.
-  for(unsigned int forwardLookId = 0; forwardLookId < this->PotentialCandidatePairs.size(); ++forwardLookId)
-    {
-    Helpers::SetRegionToConstant<FloatScalarImageType>(modifiedPriorityImage, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region, 0.0f);
-    Helpers::SetRegionToConstant<UnsignedCharScalarImageType>(modifiedBoundaryImage, this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region, 0);
-    }
-
-  // Find the remaining number of patch candidates
-  unsigned int numberOfNewPatchesToFind = this->MaxForwardLookPatches - this->PotentialCandidatePairs.size();
-  for(unsigned int newPatchId = 0; newPatchId < numberOfNewPatchesToFind; ++newPatchId)
-    {
-    //std::cout << "FindBestPatchLookAhead: Start computing new patch " << newPatchId << std::endl;
-
-    // If there are no boundary pixels, we can't find any more look ahead patches. This is not an error - near the end of the inpainting this will most likely occur. It is ok - we just don't have to compute as many forward look patches.
-    if(Helpers::CountNonZeroPixels<UnsignedCharScalarImageType>(modifiedBoundaryImage) == 0)
-      {
-      //std::cout << "FindBestPatchLookAhead: There are no more boundary pixels!" << std::endl;
-      break;
-      }
-
-    float highestPriority = 0.0f;
-    itk::Index<2> pixelToFill = Helpers::FindHighestValueInMaskedRegion(modifiedPriorityImage, highestPriority, modifiedBoundaryImage);
-    //std::cout << "Highest priority: " << highestPriority << std::endl;
-    if(!this->MaskImage->HasHoleNeighbor(pixelToFill))
-      {
-      std::cerr << "pixelToFill " << pixelToFill << " does not have a hole neighbor - something is wrong!" << std::endl;
-      std::cerr << "Mask value " << static_cast<unsigned int>(this->MaskImage->GetPixel(pixelToFill)) << std::endl;
-      HelpersOutput::WriteImage<Mask>(this->MaskImage, "Debug/MaskImageError.mha");
-      HelpersOutput::WriteImage<UnsignedCharScalarImageType>(modifiedBoundaryImage, "Debug/ModifiedBoundaryImageError.mha");
-      HelpersOutput::WriteImage<FloatScalarImageType>(modifiedPriorityImage, "Debug/ModifiedPriorityImageError.mha");
-      //std::cerr << "Boundary value " << static_cast<unsigned int>(this->BoundaryImage->GetPixel(pixelToFill)) << std::endl;
-      exit(-1);
-      }
-
-    itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
-    Patch targetPatch(targetRegion);
-
-    CandidatePairs candidatePairs(targetPatch);
-    candidatePairs.AddPairsFromPatches(this->SourcePatches);
-    candidatePairs.Priority = highestPriority;
-
-    PatchPair currentLookAheadBestPatchPair;
-    this->PatchSearchFunction(candidatePairs, currentLookAheadBestPatchPair);
-
-    // Keep only the number of top patches specified.
-    //patchPairsSortedByContinuation.erase(patchPairsSortedByContinuation.begin() + this->NumberOfTopPatchesToSave, patchPairsSortedByContinuation.end());
-
-    // Blank a region around the current potential patch to fill. This will ensure the next potential patch to fill is reasonably far away.
-    Helpers::SetRegionToConstant<FloatScalarImageType>(modifiedPriorityImage, targetRegion, 0.0f);
-    Helpers::SetRegionToConstant<UnsignedCharScalarImageType>(modifiedBoundaryImage, targetRegion, 0);
-
-    //std::cout << "Sorted " << candidatePairs.size() << " candidatePairs." << std::endl;
-
-    this->PotentialCandidatePairs.push_back(candidatePairs);
-    //std::cout << "FindBestPatchLookAhead: Finished computing new patch " << newPatchId << std::endl;
-    } // end forward look loop
-
-  if(this->PotentialCandidatePairs.size() == 0)
-    {
-    std::cerr << "Something is wrong - there are 0 forward look candidates!" << std::endl;
-    exit(-1);
-    }
-
-  // Sort the forward look patches so that the highest priority sets are first in the vector (descending order).
-  std::sort(this->PotentialCandidatePairs.rbegin(), this->PotentialCandidatePairs.rend(), SortByPriority);
-
-  unsigned int bestForwardLookId = ComputeMinimumScoreLookAhead();
-
-  unsigned int bestSourcePatchId = 0;
-  //unsigned int bestSourcePatchId = GetRequiredHistogramIntersection(bestForwardLookId);
-
-  std::cout << "Best pair found to be " << bestForwardLookId << " " << bestSourcePatchId << std::endl;
-
-  // Return the result by reference.
-  bestPatchPair = this->PotentialCandidatePairs[bestForwardLookId][bestSourcePatchId];
-
-//   std::cout << "Used patch " << sourcePatchId - 1 << std::endl;
-
-  //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
-  LeaveFunction("FindBestPatchLookAhead()");
-}
 
 unsigned int PatchBasedInpainting::GetRequiredHistogramIntersection(const unsigned int bestForwardLookId)
 {

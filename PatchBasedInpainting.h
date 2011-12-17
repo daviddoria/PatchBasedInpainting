@@ -111,12 +111,6 @@ public:
 
   PatchSortFunctor* PatchSortFunction;
 
-  boost::function<void (CandidatePairs& candidatePairs, PatchPair& bestPatchPair )> PatchSearchFunction;
-
-  //void SetPatchSearchFunctionToScaleConsistent();
-  void SetPatchSearchFunctionToNormal();
-  void SetPatchSearchFunctionToTwoStepDepth();
-
   template <typename T>
   void SetPriorityFunction();
 
@@ -137,14 +131,8 @@ private:
 
   PatchPair PreviousIterationUsedPatchPair;
 
-  // This is a new idea to try to fill several patches and return the best pair.
-  // Note that if the number of look ahead patches is 1, this is exactly the same as not looking ahead.
-  void FindBestPatchLookAhead(PatchPair& bestPatchPair);
-
-  // One of these functions is called multiple times from FindBestPatchLookAhead (based on the value of PatchSearchFunction)
-  //void FindBestPatchScaleConsistent(CandidatePairs& candidatePairs, PatchPair& bestPatchPair);
-  void FindBestPatchNormal(CandidatePairs& candidatePairs, PatchPair& bestPatchPair);
-  //void FindBestPatchTwoStepDepth(CandidatePairs& candidatePairs, PatchPair& bestPatchPair);
+  // This function is called multiple times from FindBestPatchLookAhead (based on the value of PatchSearchFunction)
+  virtual void FindBestPatch(PatchPair& bestPatchPair);
 
   // Image to inpaint. This should not be modified throughout the algorithm.
   FloatVectorImageType::Pointer OriginalImage;
