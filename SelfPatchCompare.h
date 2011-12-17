@@ -58,10 +58,10 @@ public:
   void ComputeAllSourceAndTargetDifferences();
 
   // Provide the image to work with.
-  void SetImage(const FloatVectorImageType::Pointer);
+  void SetImage(const FloatVectorImageType*);
 
   // Provide the membership image (used in some difference functions).
-  void SetMembershipImage(const IntImageType::Pointer);
+  void SetMembershipImage(const IntImageType*);
 
   // Provide the mask to work with.
   void SetMask(const Mask* mask);
@@ -81,7 +81,7 @@ public:
   //void SetPatchAverageSquaredDifference(PatchPair& patchPair);
   void SetPatchDepthDifference(PatchPair& patchPair);
   void SetPatchColorDifference(PatchPair& patchPair);
-  void SetPatchMembershipDifference(PatchPair& patchPair);
+  
   void SetPatchHistogramIntersection(PatchPair& patchPair);
 
   // Prepare to do some comparisons by finding all of the valid pixels in the target region
@@ -112,7 +112,7 @@ protected:
   const FloatVectorImageType* Image;
 
   // Membership image
-  IntImageType::Pointer MembershipImage;
+  IntImageType* MembershipImage;
 
   // This is the mask to check the validity of target pixels
   const Mask* MaskImage;

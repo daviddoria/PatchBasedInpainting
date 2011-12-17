@@ -106,10 +106,6 @@ public:
   // Return a pointer to all forward look sets.
   std::vector<CandidatePairs>& GetPotentialCandidatePairsReference();
 
-  void SetCompareToOriginal();
-  void SetCompareToBlurred();
-  void SetCompareToCIELAB();
-
   //void SetPatchCompare(SelfPatchCompare* PatchCompare);
   SelfPatchCompare* GetPatchCompare() const;
 
@@ -117,7 +113,7 @@ public:
 
   boost::function<void (CandidatePairs& candidatePairs, PatchPair& bestPatchPair )> PatchSearchFunction;
 
-  void SetPatchSearchFunctionToScaleConsistent();
+  //void SetPatchSearchFunctionToScaleConsistent();
   void SetPatchSearchFunctionToNormal();
   void SetPatchSearchFunctionToTwoStepDepth();
 
@@ -128,12 +124,6 @@ public:
 
   // We store the patch radius, so we need this function to compute the actual patch size from the radius.
   itk::Size<2> GetPatchSize();
-
-  // It is sometimes very slow to compute an anisotropic blurring. For testing, we would want to compute this once and use it each time.
-  void SetBlurredImage(const FloatVectorImageType::Pointer);
-
-  // Some techniques are very slow to compute the membership image. For testing, we would want to compute this once and use it each time.
-  void SetMembershipImage(const IntImageType::Pointer);
 
   ITKImageCollection& GetImagesToUpdate();
 
@@ -152,24 +142,19 @@ private:
   void FindBestPatchLookAhead(PatchPair& bestPatchPair);
 
   // One of these functions is called multiple times from FindBestPatchLookAhead (based on the value of PatchSearchFunction)
-  void FindBestPatchScaleConsistent(CandidatePairs& candidatePairs, PatchPair& bestPatchPair);
+  //void FindBestPatchScaleConsistent(CandidatePairs& candidatePairs, PatchPair& bestPatchPair);
   void FindBestPatchNormal(CandidatePairs& candidatePairs, PatchPair& bestPatchPair);
-  void FindBestPatchTwoStepDepth(CandidatePairs& candidatePairs, PatchPair& bestPatchPair);
+  //void FindBestPatchTwoStepDepth(CandidatePairs& candidatePairs, PatchPair& bestPatchPair);
 
   // Image to inpaint. This should not be modified throughout the algorithm.
   FloatVectorImageType::Pointer OriginalImage;
 
-  // The CIELab conversion of the input RGB image
-  FloatVectorImageType::Pointer CIELabImage;
-
-  // The blurred image which is useful for computing gradients as well as softening pixel to pixel comparisons.
-  FloatVectorImageType::Pointer BlurredImage;
-
   // The intermediate steps and eventually the result of the inpainting.
   FloatVectorImageType::Pointer CurrentOutputImage;
 
-  // This image will be used for all patch to patch comparisons. It should point at either OriginalImage or CIELabImage.
-  FloatVectorImageType::Pointer CompareImage;
+  // This image will be used for all patch to patch comparisons.
+  //itk::ImageBase<2>* CompareImage; // Ideally we would be able to compare any type of image...
+  FloatVectorImageType* CompareImage; // Currently we can only compare images of this type.
 
   // The images in this collection will have the selected patch copied into them at each iteration.
   ITKImageCollection ImagesToUpdate;
@@ -227,8 +212,6 @@ private:
 
   // Set the member MaxPixelDifference;
   void ComputeMaxPixelDifference();
-
-  FloatScalarImageType::Pointer LuminanceImage;
 
   ///////////// CriminisiInpaintingDebugging.cpp /////////////
   void DebugWriteAllImages();

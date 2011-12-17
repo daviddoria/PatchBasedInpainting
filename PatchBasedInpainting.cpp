@@ -58,10 +58,6 @@ PatchBasedInpainting::PatchBasedInpainting(const FloatVectorImageType* image, co
   this->MaskImage = Mask::New();
   this->MembershipImage = IntImageType::New();
   this->CurrentOutputImage = FloatVectorImageType::New();
-  //std::cout << "this->CurrentOutputImage address in constructor: " << this->CurrentOutputImage << std::endl;
-  this->CIELabImage = FloatVectorImageType::New();
-  this->BlurredImage = FloatVectorImageType::New();
-  this->LuminanceImage = FloatScalarImageType::New();
 
   //ImagesToUpdate.push_back(this->ColorBinMembershipImage);
   ImagesToUpdate.push_back(this->CurrentOutputImage);
@@ -238,22 +234,6 @@ void PatchBasedInpainting::Initialize()
 
     HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
 
-    // If the user hasn't provided a blurred image, blur the image.
-    if(this->BlurredImage->GetLargestPossibleRegion().GetSize()[0] == 0)
-      {
-      BlurImage();
-      }
-
-    SetupHistograms();
-
-    // Initialize internal images
-    //Helpers::InitializeImage<FloatScalarImageType>(this->DataImage, this->FullImageRegion);
-    //Helpers::InitializeImage<FloatScalarImageType>(this->PriorityImage, this->FullImageRegion);
-    //Helpers::InitializeImage<FloatScalarImageType>(this->ConfidenceImage, this->FullImageRegion);
-
-    //InitializeConfidenceMap();
-    //HelpersOutput::WriteImageConditional<FloatScalarImageType>(this->ConfidenceMapImage, "Debug/Initialize.ConfidenceMapImage.mha", this->DebugImages);
-
     DebugMessage("Computing source patches...");
 
     // Clear the source patches, as additional patches are added each iteration. When we reset the inpainter, we want to start over from only patches that are
@@ -271,31 +251,6 @@ void PatchBasedInpainting::Initialize()
     std::cerr << err << std::endl;
     exit(-1);
   }
-}
-
-void PatchBasedInpainting::SetupHistograms()
-{
-  // Blur the image incase we want to use a blurred image for pixel to pixel comparisons.
-  //unsigned int kernelRadius = 5;
-  //Helpers::VectorMaskedBlur(this->OriginalImage, this->CurrentMask, kernelRadius, this->BlurredImage);
-
-  // Construct the histogram kdtree and membership image
-  //this->ColorFrequency.SetDebugFunctionEnterLeave(true);
-
-  //unsigned int numberOfBinsPerDimension = 6;
-  //this->ColorFrequency.SetNumberOfBinsPerAxis(numberOfBinsPerDimension);
-
-//   this->ColorFrequency.SetNumberOfColors(10);
-//   //this->ColorFrequency.SetDownsampleFactor(20);
-//   //this->ColorFrequency.ConstructFromMaskedImage(this->CurrentOutputImage, this->MaskImage);
-//   //this->ColorFrequency.ConstructFromMaskedImage(this->BlurredImage, this->MaskImage);
-//   FloatVectorImageType::Pointer blurredCIELabImage = FloatVectorImageType::New();
-//   Helpers::ITKImageToCIELabImage(this->BlurredImage, blurredCIELabImage);
-//   this->ColorFrequency.ConstructFromMaskedImage(blurredCIELabImage, this->MaskImage);
-//
-//   Helpers::DeepCopy<IntImageType>(this->ColorFrequency.GetColorBinMembershipImage(), this->ColorBinMembershipImage);
-//   HelpersOutput::WriteImage<IntImageType>(this->ColorBinMembershipImage, "Debug/ColorBinMembershipImage.mha");
-
 }
 
 PatchPair PatchBasedInpainting::Iterate()
@@ -328,7 +283,6 @@ PatchPair PatchBasedInpainting::Iterate()
   // Copy the patch. This is the actual inpainting step.
   ImagesToUpdate.CopySelfPatchIntoHoleOfTargetRegion(this->MaskImage, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
   std::cout << "Image size: " << this->CurrentOutputImage->GetLargestPossibleRegion().GetSize() << std::endl;
-  std::cout << "Blurred size: " << this->BlurredImage->GetLargestPossibleRegion().GetSize() << std::endl;
 
   this->PriorityFunction->Update(usedPatchPair.TargetPatch.Region);
 
@@ -417,7 +371,7 @@ Priority* PatchBasedInpainting::GetPriorityFunction()
 {
   return this->PriorityFunction;
 }
-
+/*
 void PatchBasedInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidatePairs, PatchPair& bestPatchPair)
 {
   //std::cout << "FindBestPatchScaleConsistent: There are " << this->SourcePatches.size() << " source patches at the beginning." << std::endl;
@@ -466,7 +420,7 @@ void PatchBasedInpainting::FindBestPatchScaleConsistent(CandidatePairs& candidat
 
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatchScaleConsistent()." << std::endl;
   LeaveFunction("FindBestPatchScaleConsistent()");
-}
+}*/
 
 
 void PatchBasedInpainting::FindBestPatchNormal(CandidatePairs& candidatePairs, PatchPair& bestPatchPair)
@@ -494,7 +448,7 @@ void PatchBasedInpainting::FindBestPatchNormal(CandidatePairs& candidatePairs, P
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatch()." << std::endl;
   LeaveFunction("FindBestPatchNormal()");
 }
-
+/*
 void PatchBasedInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePairs, PatchPair& bestPatchPair)
 {
   EnterFunction("FindBestPatchTwoStepDepth()");
@@ -540,6 +494,7 @@ void PatchBasedInpainting::FindBestPatchTwoStepDepth(CandidatePairs& candidatePa
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatch()." << std::endl;
   LeaveFunction("FindBestPatchTwoStepDepth()");
 }
+*/
 
 void PatchBasedInpainting::FindBestPatchLookAhead(PatchPair& bestPatchPair)
 {
@@ -802,16 +757,6 @@ std::vector<CandidatePairs> PatchBasedInpainting::GetPotentialCandidatePairs()
 unsigned int PatchBasedInpainting::GetNumberOfCompletedIterations()
 {
   return this->NumberOfCompletedIterations;
-}
-
-void PatchBasedInpainting::BlurImage()
-{
-  EnterFunction("BlurImage()");
-  float blurVariance = 1.0;
-  Helpers::AnisotropicBlurAllChannels<FloatVectorImageType>(this->OriginalImage, this->BlurredImage, blurVariance);
-  HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->BlurredImage, "Debug/Initialize.BlurredImage.mha", this->DebugImages);
-  HelpersOutput::WriteVectorImageAsRGB(this->BlurredImage, "Debug/Initialize.BlurredImageRGB.mha");
-  LeaveFunction("BlurImage()");
 }
 
 ITKImageCollection& PatchBasedInpainting::GetImagesToUpdate()

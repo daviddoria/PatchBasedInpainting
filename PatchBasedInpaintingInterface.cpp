@@ -24,7 +24,7 @@
 
 // Boost
 #include <boost/bind.hpp>
-
+/*
 void PatchBasedInpainting::SetPatchSearchFunctionToScaleConsistent()
 {
   this->PatchSearchFunction = boost::bind(&PatchBasedInpainting::FindBestPatchScaleConsistent,this,_1,_2);
@@ -39,6 +39,7 @@ void PatchBasedInpainting::SetPatchSearchFunctionToTwoStepDepth()
 {
   this->PatchSearchFunction = boost::bind(&PatchBasedInpainting::FindBestPatchTwoStepDepth,this,_1,_2);
 }
+*/
 
 FloatVectorImageType::Pointer PatchBasedInpainting::GetCurrentOutputImage()
 {
@@ -118,11 +119,7 @@ void PatchBasedInpainting::SetImage(const FloatVectorImageType::Pointer image)
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   Helpers::VectorImageToRGBImage(image, rgbImage);
 
-  Helpers::RGBImageToCIELabImage(rgbImage, this->CIELabImage);
-  HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CIELabImage, "Debug/SetImage.CIELab.mha", this->DebugImages);
-
   this->FullImageRegion = image->GetLargestPossibleRegion();
-
 }
 
 void PatchBasedInpainting::SetMask(const Mask* mask)
@@ -143,21 +140,6 @@ std::vector<CandidatePairs>& PatchBasedInpainting::GetPotentialCandidatePairsRef
   return PotentialCandidatePairs;
 }
 
-void PatchBasedInpainting::SetCompareToOriginal()
-{
-  this->CompareImage = this->CurrentOutputImage;
-}
-
-void PatchBasedInpainting::SetCompareToBlurred()
-{
-  this->CompareImage = this->BlurredImage;
-}
-
-void PatchBasedInpainting::SetCompareToCIELAB()
-{
-  this->CompareImage = this->CIELabImage;
-}
-
 SelfPatchCompare* PatchBasedInpainting::GetPatchCompare() const
 {
   return this->PatchCompare;
@@ -168,13 +150,3 @@ SelfPatchCompare* PatchBasedInpainting::GetPatchCompare() const
 //   delete this->PatchCompare;
 //   this->PatchCompare = patchCompare;
 // }
-
-void PatchBasedInpainting::SetBlurredImage(const FloatVectorImageType::Pointer blurredImage)
-{
-  Helpers::DeepCopy<FloatVectorImageType>(blurredImage, this->BlurredImage);
-}
-
-void PatchBasedInpainting::SetMembershipImage(const IntImageType::Pointer membershipImage)
-{
-  Helpers::DeepCopy<IntImageType>(membershipImage, this->MembershipImage);
-}

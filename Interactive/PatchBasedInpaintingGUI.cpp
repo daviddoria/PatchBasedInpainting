@@ -187,7 +187,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->UserMaskImage = Mask::New();
 
   //this->Inpainting.SetPatchSearchFunctionToTwoStepDepth();
-  this->Inpainting->SetPatchSearchFunctionToNormal();
+  //this->Inpainting->SetPatchSearchFunctionToNormal();
   //this->Inpainting.SetDebugFunctionEnterLeave(true);
 
   SetPriorityFromGUI();
@@ -260,7 +260,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->txtNumberOfForwardLook->setValidator(this->IntValidator);
   this->txtGoToIteration->setValidator(this->IntValidator);
   this->txtNumberOfTopPatchesToDisplay->setValidator(this->IntValidator);
-  this->txtNumberOfBins->setValidator(this->IntValidator);
 
   LeaveFunction("PatchBasedInpaintingGUI::DefaultConstructor()");
 }
@@ -615,7 +614,7 @@ void PatchBasedInpaintingGUI::Initialize()
     ReaderType::Pointer reader = ReaderType::New();
     reader->SetFileName(this->txtBlurredImage->text().toStdString());
     reader->Update();
-    this->Inpainting->SetBlurredImage(reader->GetOutput());
+    //this->Inpainting->SetBlurredImage(reader->GetOutput());
     }
 
   if(!this->txtMembershipImage->text().isEmpty())
@@ -624,7 +623,7 @@ void PatchBasedInpaintingGUI::Initialize()
     ReaderType::Pointer reader = ReaderType::New();
     reader->SetFileName(this->txtMembershipImage->text().toStdString());
     reader->Update();
-    this->Inpainting->SetMembershipImage(reader->GetOutput());
+    //this->Inpainting->SetMembershipImage(reader->GetOutput());
     }
 
   // The PatchSortFunction has already been set by the radio buttons.
@@ -1358,15 +1357,15 @@ void PatchBasedInpaintingGUI::SetCompareImageFromGUI()
 {
   if(Helpers::StringsMatch(this->cmbCompareImage->currentText().toStdString(), "Original"))
     {
-    this->Inpainting->SetCompareToOriginal();
+    //this->Inpainting->SetCompareToOriginal();
     }
   else if(Helpers::StringsMatch(this->cmbCompareImage->currentText().toStdString(), "Blurred"))
     {
-    this->Inpainting->SetCompareToBlurred();
+    //this->Inpainting->SetCompareToBlurred();
     }
   else if(Helpers::StringsMatch(this->cmbCompareImage->currentText().toStdString(), "CIELab"))
     {
-    this->Inpainting->SetCompareToCIELAB();
+    //this->Inpainting->SetCompareToCIELAB();
     }
 }
 
@@ -1388,11 +1387,11 @@ void PatchBasedInpaintingGUI::SetComparisonFunctionsFromGUI()
     this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,
                                                                                   this->Inpainting->GetPatchCompare(),_1));
     }
-  if(this->chkCompareMembership->isChecked())
-    {
-    this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,
-                                                                                  this->Inpainting->GetPatchCompare(),_1));
-    }
+//   if(this->chkCompareMembership->isChecked())
+//     {
+//     this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,
+//                                                                                   this->Inpainting->GetPatchCompare(),_1));
+//     }
   if(this->chkCompareHistogramIntersection->isChecked())
     {
     this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchHistogramIntersection,

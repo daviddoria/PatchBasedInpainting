@@ -35,7 +35,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>3</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tabCompute">
          <attribute name="title">
@@ -303,16 +303,6 @@
                 <string>Original</string>
                </property>
               </item>
-              <item>
-               <property name="text">
-                <string>Blurred</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>CIELab</string>
-               </property>
-              </item>
              </widget>
             </item>
            </layout>
@@ -359,24 +349,6 @@
                 <string>Criminisi</string>
                </property>
               </item>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_15">
-            <item>
-             <widget class="QLabel" name="label_19">
-              <property name="text">
-               <string>Histogram bins: </string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="txtNumberOfBins">
-              <property name="text">
-               <string>100</string>
-              </property>
              </widget>
             </item>
            </layout>
@@ -1066,7 +1038,7 @@
      <x>0</x>
      <y>0</y>
      <width>1457</width>
-     <height>28</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLeft_Pane">
