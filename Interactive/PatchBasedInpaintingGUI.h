@@ -16,6 +16,11 @@
  *
  *=========================================================================*/
 
+/* This widget configures the options of a PatchBasedInpainting object
+ * and visualizes the output at each iteration. The PatchBasedInpainting
+ * is not created until the Initialize button is clicked.
+*/
+
 #ifndef PatchBasedInpaintingGUI_H
 #define PatchBasedInpaintingGUI_H
 
@@ -144,7 +149,6 @@ public slots:
   void slot_IterationComplete(const PatchPair&);
   void slot_StepComplete(const PatchPair&);
 
-  void on_txtNumberOfBins_textEdited ( const QString & text );
   void on_txtPatchRadius_textEdited ( const QString & text );
   void on_txtNumberOfTopPatchesToSave_textEdited ( const QString & text );
   void on_txtNumberOfForwardLook_textEdited ( const QString & text );
@@ -155,7 +159,7 @@ protected:
 
   void Reset();
 
-  void SetCheckboxVisibility(const bool visible);
+  void SetDisplayCheckboxVisibility(const bool visible);
 
   std::vector<float> CameraLeftToRightVector;
   std::vector<float> CameraBottomToTopVector;
@@ -332,7 +336,5 @@ protected:
   std::vector<QCheckBox*> PriorityImageCheckBoxes;
 
 };
-
-#include "PatchBasedInpaintingGUI.hxx"
 
 #endif // PatchBasedInpaintingGUI_H

@@ -62,10 +62,10 @@ void PatchBasedInpainting::DebugWriteAllImages()
   //Helpers::DebugWriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals, "BoundaryNormals", this->NumberOfCompletedIterations);
 
   HelpersOutput::WriteSequentialImage<Mask>(this->MaskImage, "Debug/MaskImage", this->NumberOfCompletedIterations);
-  HelpersOutput::WriteSequentialImage<FloatVectorImageType>(this->CurrentOutputImage, "Debug/CurrentImage", this->NumberOfCompletedIterations);
+  HelpersOutput::WriteSequentialImage<FloatVectorImageType>(this->CurrentInpaintedImage, "Debug/CurrentImage", this->NumberOfCompletedIterations);
 
   RGBImageType::Pointer rgbImage = RGBImageType::New();
-  Helpers::VectorImageToRGBImage(this->CurrentOutputImage, rgbImage);
+  Helpers::VectorImageToRGBImage(this->CurrentInpaintedImage, rgbImage);
   HelpersOutput::WriteSequentialImage<RGBImageType>(rgbImage, "Debug/CurrentImage_RGB", this->NumberOfCompletedIterations);
 }
 
@@ -88,7 +88,7 @@ void PatchBasedInpainting::DebugWriteAllImages(const itk::Index<2>& pixelToFill,
   //HelpersOutput::WriteSequentialImage<FloatVector2ImageType>(this->BoundaryNormals,"Debug/BoundaryNormals", iteration);
   //HelpersOutput::WriteSequentialImage<FloatScalarImageType>(this->PriorityImage,"Debug/Priorities", iteration);
   HelpersOutput::WriteSequentialImage<Mask>(this->MaskImage,"Debug/Mask", iteration);
-  HelpersOutput::WriteSequentialImage<FloatVectorImageType>(this->CurrentOutputImage,"Debug/FilledImage", iteration);
+  HelpersOutput::WriteSequentialImage<FloatVectorImageType>(this->CurrentInpaintedImage,"Debug/FilledImage", iteration);
 
 }
 
@@ -110,11 +110,11 @@ void PatchBasedInpainting::DebugWritePatch(const itk::ImageRegion<2>& inputRegio
     typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
 					      FloatVectorImageType> ExtractFilterType;
     itk::ImageRegion<2> region = inputRegion;
-    region.Crop(this->CurrentOutputImage->GetLargestPossibleRegion());
+    region.Crop(this->CurrentInpaintedImage->GetLargestPossibleRegion());
 
     ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
     extractFilter->SetRegionOfInterest(region);
-    extractFilter->SetInput(this->CurrentOutputImage);
+    extractFilter->SetInput(this->CurrentInpaintedImage);
     extractFilter->Update();
     /*
     typedef itk::Image<itk::CovariantVector<unsigned char, TImage::PixelType::Dimension>, 2> OutputImageType;
@@ -143,11 +143,11 @@ void PatchBasedInpainting::DebugWritePatch(const itk::Index<2>& pixel, const std
 					      FloatVectorImageType> ExtractFilterType;
 
     itk::ImageRegion<2> region = Helpers::GetRegionInRadiusAroundPixel(pixel, this->PatchRadius[0]);
-    region.Crop(this->CurrentOutputImage->GetLargestPossibleRegion());
+    region.Crop(this->CurrentInpaintedImage->GetLargestPossibleRegion());
 
     ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
     extractFilter->SetRegionOfInterest(region);
-    extractFilter->SetInput(this->CurrentOutputImage);
+    extractFilter->SetInput(this->CurrentInpaintedImage);
     extractFilter->Update();
 
     HelpersOutput::WriteImage<FloatVectorImageType>(extractFilter->GetOutput(), filename);

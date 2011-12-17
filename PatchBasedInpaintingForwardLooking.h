@@ -31,6 +31,19 @@ class PatchBasedInpaintingForwardLooking : public PatchBasedInpainting
 public:
   void FindBestPatch(CandidatePairs& candidatePairs, PatchPair& bestPatchPair);
 
+
+  // Specify the maximum number of top candidate patches to consider. Near the end of the inpainting there may not be this many viable patches,
+  // that is why we set the max instead of the absolute number of patches.
+  void SetMaxForwardLookPatches(const unsigned int);
+
+  void SetNumberOfTopPatchesToSave(const unsigned int);
+
+protected:
+
+  // The maximum number of patch pairs to examine in deciding which one to actually fill.
+  // The number compared could actually be less than this near the end of the inpainting because there may
+  // not be enough non-zero priority values outside of one patch region.
+  unsigned int MaxForwardLookPatches;
 };
 
 #endif

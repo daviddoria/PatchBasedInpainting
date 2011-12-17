@@ -115,7 +115,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   SetupColors();
 
-  SetCheckboxVisibility(false);
+  SetDisplayCheckboxVisibility(false);
 
   QBrush brush;
   brush.setStyle(Qt::SolidPattern);
@@ -185,16 +185,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   this->UserImage = FloatVectorImageType::New();
   this->UserMaskImage = Mask::New();
-
-  //this->Inpainting.SetPatchSearchFunctionToTwoStepDepth();
-  //this->Inpainting->SetPatchSearchFunctionToNormal();
-  //this->Inpainting.SetDebugFunctionEnterLeave(true);
-
-  SetPriorityFromGUI();
-  SetCompareImageFromGUI();
-  SetComparisonFunctionsFromGUI();
-  SetSortFunctionFromGUI();
-  SetParametersFromGUI();
 
   connect(&ComputationThread, SIGNAL(StartProgressSignal()), this, SLOT(slot_StartProgress()), Qt::QueuedConnection);
   connect(&ComputationThread, SIGNAL(StopProgressSignal()), this, SLOT(slot_StopProgress()), Qt::QueuedConnection);
@@ -593,20 +583,6 @@ void PatchBasedInpaintingGUI::Refresh()
 void PatchBasedInpaintingGUI::Initialize()
 {
   EnterFunction("PatchBasedInpaintingGUI::Initialize()");
-  // Reset some things (this is so that if we want to run another completion it will work normally)
-
-  // Color the pixels inside the hole in the image so we will notice if they are erroneously being copied/used.
-  this->UserMaskImage->ApplyToVectorImage<FloatVectorImageType>(this->UserImage, this->HoleColor);
-
-  // Provide required data.
-  if(this->Inpainting)
-    {
-    delete this->Inpainting;
-    }
-  this->Inpainting = new PatchBasedInpainting(this->UserImage, this->UserMaskImage);
-  this->Inpainting->SetPatchRadius(this->PatchRadius);
-  //this->Inpainting.SetMask(this->UserMaskImage);
-  //this->Inpainting.SetImage(this->UserImage);
 
   if(!this->txtBlurredImage->text().isEmpty())
     {
@@ -632,28 +608,11 @@ void PatchBasedInpaintingGUI::Initialize()
   std::cout << "User Mask: " << this->UserMaskImage->GetLargestPossibleRegion().GetSize() << std::endl;
   HelpersOutput::WriteImage<Mask>(this->UserMaskImage, "mask.mha");
 
-  // Setup verbosity.
-  this->Inpainting->SetDebugImages(this->chkDebugImages->isChecked());
-  this->Inpainting->SetDebugMessages(this->chkDebugMessages->isChecked());
-  //this->Inpainting.SetDebugFunctionEnterLeave(false);
-
-  // Setup the priority function
-
-
-  // Setup the patch comparison function
-  this->Inpainting->GetPatchCompare()->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
-
-  // Setup the sorting function
-  this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
-
-  // Finish initializing
-  this->Inpainting->Initialize();
-
-  CreateInitialRecord();
-  this->IterationToDisplay = 0;
-  ChangeDisplayedIteration();
-
-  SetCheckboxVisibility(true);
+//   CreateInitialRecord();
+//   this->IterationToDisplay = 0;
+//   ChangeDisplayedIteration();
+// 
+//   SetCheckboxVisibility(true);
 
   Refresh();
   LeaveFunction("PatchBasedInpaintingGUI::Initialize()");
@@ -1491,4 +1450,12 @@ void PatchBasedInpaintingGUI::SetPriorityFromGUI()
     }
 
   //this->Inpainting.GetPriorityFunction()->SetDebugFunctionEnterLeave(true);
+}
+
+
+void PatchBasedInpaintingGUI::SetDisplayCheckboxVisibility(const bool visible)
+{
+  chkDisplayImage->setEnabled(visible);
+  chkDisplayBoundary->setEnabled(visible);
+  chkDisplayMask->setEnabled(visible);
 }

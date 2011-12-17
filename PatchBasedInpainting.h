@@ -23,12 +23,12 @@
 #include "CandidatePairs.h"
 #include "DebugOutputs.h"
 #include "ITKImageCollection.h"
+#include "Mask.h"
 #include "Patch.h"
 #include "PatchPair.h"
 #include "PatchSorting.h"
 #include "Types.h"
 
-class Mask;
 class Priority;
 class SelfPatchCompare;
 
@@ -49,21 +49,9 @@ public:
 
   void SetDifferenceType(const int);
 
-  // Specify the image to inpaint.
-  void SetImage(const FloatVectorImageType::Pointer image);
-
-  // Specify the region to inpaint.
-  void SetMask(const Mask* mask);
-
   // Specify the size of the patches to copy.
   void SetPatchRadius(const unsigned int);
   unsigned int GetPatchRadius();
-
-  // Specify the maximum number of top candidate patches to consider. Near the end of the inpainting there may not be this many viable patches,
-  // that is why we set the max instead of the absolute number of patches.
-  void SetMaxForwardLookPatches(const unsigned int);
-
-  void SetNumberOfTopPatchesToSave(const unsigned int);
 
   // Get the result/output of the inpainting so far. When the algorithm is complete, this will be the final output.
   FloatVectorImageType::Pointer GetCurrentOutputImage();
@@ -134,27 +122,22 @@ private:
   // This function is called multiple times from FindBestPatchLookAhead (based on the value of PatchSearchFunction)
   virtual void FindBestPatch(PatchPair& bestPatchPair);
 
-  // Image to inpaint. This should not be modified throughout the algorithm.
-  FloatVectorImageType::Pointer OriginalImage;
-
   // The intermediate steps and eventually the result of the inpainting.
-  FloatVectorImageType::Pointer CurrentOutputImage;
+  FloatVectorImageType::Pointer CurrentInpaintedImage;
 
   // This image will be used for all patch to patch comparisons.
   //itk::ImageBase<2>* CompareImage; // Ideally we would be able to compare any type of image...
   FloatVectorImageType* CompareImage; // Currently we can only compare images of this type.
 
   // The images in this collection will have the selected patch copied into them at each iteration.
+  // It should at least include the image and the mask.
   ITKImageCollection ImagesToUpdate;
 
   // The mask specifying the region to inpaint. It is updated as patches are copied.
-  Mask* MaskImage;
+  Mask::Pointer MaskImage;
 
   // The patch radius.
   itk::Size<2> PatchRadius;
-
-  // The target image is colored bright green inside the hole. This is helpful when watching the inpainting proceed.
-  void InitializeTargetImage();
 
   // Determine if a patch is completely valid (no hole pixels).
   bool IsValidPatch(const itk::Index<2>& queryPixel, const unsigned int radius);
@@ -187,13 +170,6 @@ private:
 
   // The number of bins to use per dimension in the histogram computations.
   unsigned int HistogramBinsPerDimension;
-
-  // The maximum number of patch pairs to examine in deciding which one to actually fill.
-  // The number compared could actually be less than this near the end of the inpainting because there may
-  // not be enough non-zero priority values outside of one patch region.
-  unsigned int MaxForwardLookPatches;
-
-  unsigned int NumberOfTopPatchesToSave;
 
   // The maximum possible pixel squared difference in the image.
   float MaxPixelDifferenceSquared;

@@ -93,7 +93,7 @@ void Mask::ApplyColorToImage(const typename TImage::Pointer image, const TColor&
 }
 
 
-template<typename TImage, typename TColor>
+template<typename TImage>
 void Mask::ApplyToImage(TImage* image, const typename TImage::PixelType& holeValue)
 {
   // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions

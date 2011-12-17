@@ -43,7 +43,7 @@ void PatchBasedInpainting::SetPatchSearchFunctionToTwoStepDepth()
 
 FloatVectorImageType::Pointer PatchBasedInpainting::GetCurrentOutputImage()
 {
-  return this->CurrentOutputImage;
+  return this->CurrentInpaintedImage;
 }
 /*
 FloatScalarImageType::Pointer PatchBasedInpainting::GetPriorityImage()
@@ -96,37 +96,6 @@ void PatchBasedInpainting::SetPatchRadius(const unsigned int radius)
 unsigned int PatchBasedInpainting::GetPatchRadius()
 {
   return this->PatchRadius[0];
-}
-
-void PatchBasedInpainting::SetMaxForwardLookPatches(const unsigned int numberOfPatches)
-{
-  this->MaxForwardLookPatches = numberOfPatches;
-}
-
-void PatchBasedInpainting::SetNumberOfTopPatchesToSave(const unsigned int number)
-{
-  this->NumberOfTopPatchesToSave = number;
-}
-
-void PatchBasedInpainting::SetImage(const FloatVectorImageType::Pointer image)
-{
-  // Store the original image
-  Helpers::DeepCopy<FloatVectorImageType>(image, this->OriginalImage);
-
-  // This must be done here, as CurrentOutputImage must be valid before initializing a priority function.
-  Helpers::DeepCopy<FloatVectorImageType>(image, this->CurrentOutputImage);
-
-  RGBImageType::Pointer rgbImage = RGBImageType::New();
-  Helpers::VectorImageToRGBImage(image, rgbImage);
-
-  this->FullImageRegion = image->GetLargestPossibleRegion();
-}
-
-void PatchBasedInpainting::SetMask(const Mask* mask)
-{
-  // Initialize the CurrentMask to the OriginalMask
-  this->MaskImage->DeepCopyFrom(mask);
-  //this->MaskImage->SetDebugFunctionEnterLeave(true);
 }
 
 itk::ImageRegion<2> PatchBasedInpainting::GetFullRegion()

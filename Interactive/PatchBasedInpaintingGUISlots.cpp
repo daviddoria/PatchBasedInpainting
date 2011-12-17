@@ -19,9 +19,10 @@
 #include "PatchBasedInpaintingGUI.h"
 
 // Custom
-#include "InteractorStyleImageWithDrag.h"
 #include "FileSelector.h"
 #include "HelpersOutput.h"
+#include "InteractorStyleImageWithDrag.h"
+#include "SelfPatchCompare.h"
 
 // VTK
 #include <vtkImageSlice.h>
@@ -191,13 +192,6 @@ void PatchBasedInpaintingGUI::on_actionFlipImageHorizontally_activated()
 {
   this->CameraLeftToRightVector[0] *= -1;
   SetCameraPosition();
-}
-
-void PatchBasedInpaintingGUI::SetCheckboxVisibility(const bool visible)
-{
-  chkDisplayImage->setEnabled(visible);
-  chkDisplayBoundary->setEnabled(visible);
-  chkDisplayMask->setEnabled(visible);
 }
 
 void PatchBasedInpaintingGUI::on_btnDisplayPreviousStep_clicked()
@@ -384,12 +378,35 @@ void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
   this->btnStep->setEnabled(true);
   this->btnInitialize->setEnabled(false);
 
-  SetPriorityFromGUI();
+  if(this->Inpainting)
+    {
+    delete this->Inpainting;
+    }
+  this->Inpainting = new PatchBasedInpainting(this->UserImage, this->UserMaskImage);
+  this->Inpainting->SetPatchRadius(this->PatchRadius);
 
   this->Inpainting->SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting->SetDebugMessages(this->chkDebugMessages->isChecked());
-  this->Inpainting->SetMaxForwardLookPatches(this->NumberOfForwardLook);
-  this->Inpainting->SetNumberOfTopPatchesToSave(this->NumberOfTopPatchesToSave);
+  //this->Inpainting.SetDebugFunctionEnterLeave(false);
+
+
+  // Setup the patch comparison function
+  this->Inpainting->GetPatchCompare()->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
+
+  // Setup the sorting function
+  this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
+
+  // Finish initializing
+  this->Inpainting->Initialize();
+
+  SetPriorityFromGUI();
+  SetCompareImageFromGUI();
+  SetComparisonFunctionsFromGUI();
+  SetSortFunctionFromGUI();
+  SetParametersFromGUI();
+
+  this->Inpainting->SetDebugImages(this->chkDebugImages->isChecked());
+  this->Inpainting->SetDebugMessages(this->chkDebugMessages->isChecked());
 }
 
 void PatchBasedInpaintingGUI::on_btnStep_clicked()
@@ -476,11 +493,6 @@ void PatchBasedInpaintingGUI::slot_IterationComplete(const PatchPair& patchPair)
   EnterFunction("IterationCompleteSlot()");
   IterationComplete(patchPair);
   LeaveFunction("IterationCompleteSlot()");
-}
-
-void PatchBasedInpaintingGUI::on_txtNumberOfBins_textEdited ( const QString & text )
-{
-  //this->Inpainting->GetClusterColors()->SetNumberOfColors(text.toUInt());
 }
 
 void PatchBasedInpaintingGUI::on_txtPatchRadius_textEdited ( const QString & text )

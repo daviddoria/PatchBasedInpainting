@@ -132,3 +132,9 @@ void PatchBasedInpaintingForwardLooking::FindBestPatch(CandidatePairs& candidate
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end." << std::endl;
   LeaveFunction("PatchBasedInpaintingForwardLooking::FindBestPatch()");
 }
+
+
+void PatchBasedInpaintingForwardLooking::SetMaxForwardLookPatches(const unsigned int numberOfPatches)
+{
+  this->MaxForwardLookPatches = numberOfPatches;
+}

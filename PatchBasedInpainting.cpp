@@ -53,28 +53,34 @@ PatchBasedInpainting::PatchBasedInpainting(const FloatVectorImageType* image, co
 
   this->PatchRadius.Fill(3);
 
-  this->OriginalImage = FloatVectorImageType::New();
-
+  // We don't want to modify the input images.
   this->MaskImage = Mask::New();
-  this->MembershipImage = IntImageType::New();
-  this->CurrentOutputImage = FloatVectorImageType::New();
+  this->MaskImage->DeepCopyFrom(mask);
 
-  //ImagesToUpdate.push_back(this->ColorBinMembershipImage);
-  ImagesToUpdate.push_back(this->CurrentOutputImage);
-  //ImagesToUpdate.push_back(this->CIELabImage);
-  //ImagesToUpdate.push_back(this->BlurredImage);
+  // The target image is colored bright green inside the hole. This is helpful when watching the inpainting proceed.
+  this->CurrentInpaintedImage = FloatVectorImageType::New();
+  Helpers::DeepCopy<FloatVectorImageType>(image, this->CurrentInpaintedImage);
+  FloatVectorImageType::PixelType fillColor;
+  fillColor.SetSize(this->CurrentInpaintedImage->GetNumberOfComponentsPerPixel());
+  fillColor.Fill(0);
+  fillColor[0] = 255;
+  this->MaskImage->ApplyToImage<FloatVectorImageType>(this->CurrentInpaintedImage, fillColor);
+
+  this->FullImageRegion = image->GetLargestPossibleRegion();
+  if(this->MaskImage->GetLargestPossibleRegion() != this->FullImageRegion)
+    {
+    std::cerr << "Mask and image size must match! Mask is " << this->MaskImage->GetLargestPossibleRegion().GetSize()
+              << " while image is " << this->FullImageRegion << std::endl;
+    exit(-1);
+    }
+
+  ImagesToUpdate.push_back(this->CurrentInpaintedImage);
   ImagesToUpdate.push_back(this->MaskImage); // We MUST update the mask LAST, because it is used to know where to update everything else!
-  //ImagesToUpdate.AddImage(this->LuminanceImage);
 
   // Set the image to use for pixel to pixel comparisons.
-  //this->CompareImage = this->CIELabImage;
-  //this->CompareImage = this->BlurredImage;
-  this->CompareImage = this->CurrentOutputImage;
+  this->CompareImage = this->CurrentInpaintedImage;
 
   this->NumberOfCompletedIterations = 0;
-
-  this->HistogramBinsPerDimension = 10;
-  this->MaxForwardLookPatches = 10;
 
   this->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
 
@@ -108,7 +114,7 @@ std::vector<Patch> PatchBasedInpainting::AddNewSourcePatchesInRegion(const itk::
     // Clearly we cannot add source patches from regions that are outside the image.
     itk::ImageRegion<2> newRegion = Helpers::CropToRegion(region, this->FullImageRegion);
 
-    itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->CurrentOutputImage, newRegion);
+    itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->CurrentInpaintedImage, newRegion);
 
     while(!imageIterator.IsAtEnd())
       {
@@ -163,7 +169,7 @@ void PatchBasedInpainting::AddAllSourcePatchesInRegion(const itk::ImageRegion<2>
     // Clearly we cannot add source patches from regions that are outside the image, so crop the desired region to be inside the image.
     itk::ImageRegion<2> newRegion = Helpers::CropToRegion(region, this->FullImageRegion);
 
-    itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->CurrentOutputImage, newRegion);
+    itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->CurrentInpaintedImage, newRegion);
 
     while(!imageIterator.IsAtEnd())
       {
@@ -193,43 +199,22 @@ void PatchBasedInpainting::AddAllSourcePatchesInRegion(const itk::ImageRegion<2>
 
 }
 
-void PatchBasedInpainting::InitializeTargetImage()
-{
-  EnterFunction("InitializeTargetImage()");
-  // Initialize to the input.
-  std::cout << "InitializeTargetImage: image size: " << this->OriginalImage->GetLargestPossibleRegion().GetSize() << std::endl;
-  Helpers::DeepCopy<FloatVectorImageType>(this->OriginalImage, this->CurrentOutputImage);
-  std::cout << "InitializeTargetImage: CurrentOutputImage size: " << this->CurrentOutputImage->GetLargestPossibleRegion().GetSize() << std::endl;
-  LeaveFunction("InitializeTargetImage()");
-}
-
 void PatchBasedInpainting::Initialize()
 {
   EnterFunction("PatchBasedInpainting::Initialize()");
   try
   {
-    if(this->MaskImage->GetLargestPossibleRegion() != this->OriginalImage->GetLargestPossibleRegion())
-      {
-      std::cerr << "Original mask size does not match original image size!" << std::endl;
-      std::cerr << "Original mask size: " << this->MaskImage->GetLargestPossibleRegion() << std::endl;
-      std::cerr << "Original image size: " << this->OriginalImage->GetLargestPossibleRegion() << std::endl;
-      exit(-1);
-      }
-
-    // Initialize the result to the original image
-    InitializeTargetImage();
-
     // If the user hasn't specified a priority function, use the simplest one.
     if(!this->PriorityFunction)
       {
       std::cout << "Using default Priority function." << std::endl;
-      this->PriorityFunction = new PriorityRandom(this->CurrentOutputImage, this->MaskImage, this->PatchRadius[0]);
+      this->PriorityFunction = new PriorityRandom(this->CurrentInpaintedImage, this->MaskImage, this->PatchRadius[0]);
       }
 
     this->NumberOfCompletedIterations = 0;
     this->PotentialCandidatePairs.clear();
 
-    HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CurrentOutputImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
+    HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CurrentInpaintedImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
 
     DebugMessage("Computing source patches...");
 
@@ -279,7 +264,7 @@ PatchPair PatchBasedInpainting::Iterate()
 
   // Copy the patch. This is the actual inpainting step.
   ImagesToUpdate.CopySelfPatchIntoHoleOfTargetRegion(this->MaskImage, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
-  std::cout << "Image size: " << this->CurrentOutputImage->GetLargestPossibleRegion().GetSize() << std::endl;
+  std::cout << "Image size: " << this->CurrentInpaintedImage->GetLargestPossibleRegion().GetSize() << std::endl;
 
   this->PriorityFunction->Update(usedPatchPair.TargetPatch.Region);
 

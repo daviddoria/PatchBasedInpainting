@@ -12,11 +12,10 @@
 
 class CustomTrackballStyle;
 class CustomImageStyle;
-// Define interaction style
+
 class InteractorStyleImageWithDrag : public vtkInteractorStyleTrackballActor
 {
   public:
-
 
     static InteractorStyleImageWithDrag* New();
     vtkTypeMacro(InteractorStyleImageWithDrag,vtkInteractorStyleTrackballActor);
@@ -29,14 +28,8 @@ class InteractorStyleImageWithDrag : public vtkInteractorStyleTrackballActor
 
     void SetImageOrientation(const double*, const double*);
 
-
     vtkSmartPointer<CustomImageStyle> ImageStyle;
     vtkSmartPointer<CustomTrackballStyle> TrackballStyle;
-
-  protected:
-
-
-
 };
 
 

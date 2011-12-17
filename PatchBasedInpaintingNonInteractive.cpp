@@ -61,7 +61,6 @@ int main(int argc, char *argv[])
 
   PatchBasedInpainting* inpainting = new PatchBasedInpainting(imageReader->GetOutput(), maskReader->GetOutput());
   inpainting->SetPatchRadius(patchRadius);
-  inpainting->SetMaxForwardLookPatches(3);
   inpainting->Initialize();
   inpainting->Inpaint();
 
