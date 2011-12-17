@@ -186,20 +186,10 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->UserImage = FloatVectorImageType::New();
   this->UserMaskImage = Mask::New();
 
-  connect(&ComputationThread, SIGNAL(StartProgressSignal()), this, SLOT(slot_StartProgress()), Qt::QueuedConnection);
-  connect(&ComputationThread, SIGNAL(StopProgressSignal()), this, SLOT(slot_StopProgress()), Qt::QueuedConnection);
+  this->InpaintingComputation->moveToThread(this->ComputationThread);
 
-  // Using a blocking connection allows everything (computation and drawing) to be performed sequentially which is helpful for debugging,
-  // but makes the interface very very choppy.
-  // We are assuming that the computation takes longer than the drawing.
-  //connect(&ComputationThread, SIGNAL(IterationCompleteSignal()), this, SLOT(IterationCompleteSlot()), Qt::QueuedConnection);
-
-  qRegisterMetaType<PatchPair>("PatchPair");
-  connect(&ComputationThread, SIGNAL(IterationCompleteSignal(const PatchPair&)), this, SLOT(slot_IterationComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
-  connect(&ComputationThread, SIGNAL(StepCompleteSignal(const PatchPair&)), this, SLOT(slot_StepComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
-
-  connect(&ComputationThread, SIGNAL(RefreshSignal()), this, SLOT(slot_Refresh()), Qt::QueuedConnection);
-
+  SetupConnections();
+  
   //disconnect(this->topPatchesTableWidget, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_topPatchesTableWidget_currentCellChanged(int,int,int,int)), Qt::AutoConnection);
   //this->topPatchesTableWidget->disconnect(SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_topPatchesTableWidget_currentCellChanged(int,int,int,int)));
   //this->topPatchesTableWidget->disconnect();
@@ -209,8 +199,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->progressBar->setMinimum(0);
   this->progressBar->setMaximum(0);
   this->progressBar->hide();
-
-  this->ComputationThread.SetObject(this->Inpainting);
 
   InitializeGUIElements();
 
@@ -252,6 +240,31 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->txtNumberOfTopPatchesToDisplay->setValidator(this->IntValidator);
 
   LeaveFunction("PatchBasedInpaintingGUI::DefaultConstructor()");
+}
+
+void PatchBasedInpaintingGUI::SetupConnections()
+{
+  qRegisterMetaType<PatchPair>("PatchPair");
+  connect(this->ComputationThread, SIGNAL(started()), this->InpaintingComputation, SLOT(start()));
+  connect(this->InpaintingComputation, SIGNAL(InpaintingComplete()), this->ComputationThread, SLOT(quit()));
+  connect(this->InpaintingComputation, SIGNAL(IterationComplete(const PatchPair&)), this->ComputationThread, SLOT(quit()));
+
+  connect(this->ComputationThread, SIGNAL(started()), this, SLOT(slot_StartProgress()), Qt::QueuedConnection);
+  connect(this->InpaintingComputation, SIGNAL(InpaintingComplete()), this, SLOT(slot_StopProgress()), Qt::QueuedConnection);
+  connect(this->InpaintingComputation, SIGNAL(IterationComplete(const PatchPair&)), this, SLOT(slot_StopProgress()), Qt::QueuedConnection);
+
+  // Using a blocking connection allows everything (computation and drawing) to be performed sequentially which is helpful for debugging,
+  // but makes the interface very very choppy.
+  // We are assuming that the computation takes longer than the drawing.
+  //connect(&ComputationThread, SIGNAL(IterationCompleteSignal()), this, SLOT(IterationCompleteSlot()), Qt::QueuedConnection);
+
+  connect(this->InpaintingComputation, SIGNAL(IterationCompleteSignal(const PatchPair&)),
+          this, SLOT(slot_IterationComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
+  connect(this->InpaintingComputation, SIGNAL(StepCompleteSignal(const PatchPair&)),
+          this, SLOT(slot_StepComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
+  connect(this->InpaintingComputation, SIGNAL(IterationComplete(const PatchPair&)),
+          this, SLOT(slot_Refresh()), Qt::QueuedConnection);
+
 }
 
 // Default constructor

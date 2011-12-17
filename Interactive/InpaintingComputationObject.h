@@ -20,48 +20,44 @@
  * separate thread so that the GUI can remain responsive during the computation.
 */
 
-#ifndef COMPUTATIONTHREAD_H
-#define COMPUTATIONTHREAD_H
+#ifndef InpaintingComputationObject_H
+#define InpaintingComputationObject_H
 
-#include <QThread>
+#include <QObject>
 
 #include "PatchPair.h"
 #include "PatchBasedInpainting.h"
 
-// This class is named 'ComputationThreadClass' instead of just 'ComputationThread'
-// because we often want to name a member variable 'ComputationThread'
-class ComputationThreadClass : public QThread
+class InpaintingComputationObject : public QObject
 {
 Q_OBJECT
 
 signals:
-  // This signal is emitted to start the progress bar
-  void StartProgressSignal();
 
-  // This signal is emitted to stop the progress bar
-  void StopProgressSignal();
+  // This signal is emitted when an iteration is complete.
+  void IterationComplete(const PatchPair&);
 
-  void RefreshSignal();
+  // This signal is emitted when the entire inpainting is complete.
+  void InpaintingComplete();
 
-  void IterationCompleteSignal(const PatchPair&);
-  void StepCompleteSignal(const PatchPair&);
+public slots:
+  // This function is called when the thread is started.
+  void start();
 
 public:
-  ComputationThreadClass();
+  InpaintingComputationObject();
 
   // Store the type of operation to perform.
   enum OPERATION {ALLSTEPS, SINGLESTEP};
   OPERATION Operation;
 
-  // This function is called when the thread is started.
-  void run();
-
+  // Perform the entire inpainting operation.
   void AllSteps();
+
+  // Perform one iteration of the inpainting.
   void SingleStep();
 
-  // This function is called when the thread is stopped.
-  void exit();
-
+  // Set the Stop flag so that the inpainting will stop before the next iteration.
   void StopInpainting();
 
   // Provide the object with which to do the computation.

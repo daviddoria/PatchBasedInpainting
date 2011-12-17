@@ -44,12 +44,13 @@ class vtkPolyDataMapper;
 
 // Qt
 #include <QMainWindow>
+#include <QThread>
 
 // Custom
-#include "ComputationThread.h"
 #include "DebugOutputs.h"
 #include "DisplayStyle.h"
 #include "ForwardLookTableModel.h"
+#include "InpaintingComputationObject.h"
 #include "InpaintingIterationRecord.h"
 #include "Layer.h"
 #include "PatchBasedInpainting.h"
@@ -147,7 +148,6 @@ public slots:
   void slot_Refresh();
 
   void slot_IterationComplete(const PatchPair&);
-  void slot_StepComplete(const PatchPair&);
 
   void on_txtPatchRadius_textEdited ( const QString & text );
   void on_txtNumberOfTopPatchesToSave_textEdited ( const QString & text );
@@ -240,7 +240,8 @@ protected:
   PatchBasedInpainting* Inpainting;
 
   // Perform the long inpainting operation in this thread so that the UI remains active.
-  ComputationThreadClass ComputationThread;
+  InpaintingComputationObject* InpaintingComputation;
+  QThread* ComputationThread;
 
   // A flag that determines if debugging images should be output to files.
   bool DebugImages;
@@ -334,6 +335,8 @@ protected:
   void SetParametersFromGUI();
 
   std::vector<QCheckBox*> PriorityImageCheckBoxes;
+
+  void SetupConnections();
 
 };
 

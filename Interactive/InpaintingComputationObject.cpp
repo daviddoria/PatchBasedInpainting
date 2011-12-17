@@ -16,9 +16,9 @@
  *
  *=========================================================================*/
 
-#include "ComputationThread.h"
+#include "InpaintingComputationObject.h"
 
-ComputationThreadClass::ComputationThreadClass() : Operation(ALLSTEPS), Stop(false)
+InpaintingComputationObject::InpaintingComputationObject() : Operation(ALLSTEPS), Stop(false)
 {
 
 }
@@ -28,43 +28,33 @@ ComputationThreadClass::ComputationThreadClass() : Operation(ALLSTEPS), Stop(fal
 //   return this->Inpainting;
 // }
 
-void ComputationThreadClass::StopInpainting()
+void InpaintingComputationObject::StopInpainting()
 {
   this->Stop = true;
 }
 
-void ComputationThreadClass::AllSteps()
+void InpaintingComputationObject::AllSteps()
 {
-  emit StartProgressSignal();
-
   // Start the procedure
   this->Stop = false;
 
   while(this->Inpainting->HasMoreToInpaint() && !this->Stop)
     {
     PatchPair usedPatchPair = this->Inpainting->Iterate();
-    emit IterationCompleteSignal(usedPatchPair);
+    emit IterationComplete(usedPatchPair);
     }
 
   // When the function is finished, end the thread
-  exit();
+  emit InpaintingComplete();
 }
 
-void ComputationThreadClass::SingleStep()
+void InpaintingComputationObject::SingleStep()
 {
-  //std::cout << "ProgressThread::run()" << std::endl;
-  // When the thread is started, emit the signal to start the marquee progress bar
-  emit StartProgressSignal();
-
   PatchPair usedPatchPair = this->Inpainting->Iterate();
-  emit IterationCompleteSignal(usedPatchPair);
-  emit StepCompleteSignal(usedPatchPair);
-
-  // When the function is finished, end the thread
-  exit();
+  emit IterationComplete(usedPatchPair);
 }
 
-void ComputationThreadClass::run()
+void InpaintingComputationObject::start()
 {
   if(this->Operation == ALLSTEPS)
     {
@@ -76,13 +66,7 @@ void ComputationThreadClass::run()
     }
 }
 
-void ComputationThreadClass::exit()
-{
-  // When the thread is stopped, emit the signal to stop the marquee progress bar
-  emit StopProgressSignal();
-}
-
-void ComputationThreadClass::SetObject(PatchBasedInpainting* inpainting)
+void InpaintingComputationObject::SetObject(PatchBasedInpainting* inpainting)
 {
   this->Inpainting = inpainting;
 }

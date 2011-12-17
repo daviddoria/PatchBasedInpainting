@@ -356,8 +356,8 @@ void PatchBasedInpaintingGUI::on_btnInpaint_clicked()
   this->btnStep->setEnabled(false);
   this->btnInpaint->setEnabled(false);
   this->btnReset->setEnabled(false);
-  ComputationThread.Operation = ComputationThreadClass::ALLSTEPS;
-  ComputationThread.start();
+  this->InpaintingComputation->Operation = InpaintingComputationObject::ALLSTEPS;
+  this->ComputationThread->start();
 }
 
 void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
@@ -407,6 +407,9 @@ void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
 
   this->Inpainting->SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting->SetDebugMessages(this->chkDebugMessages->isChecked());
+
+  this->InpaintingComputation->SetObject(this->Inpainting);
+
 }
 
 void PatchBasedInpaintingGUI::on_btnStep_clicked()
@@ -416,17 +419,16 @@ void PatchBasedInpaintingGUI::on_btnStep_clicked()
 
   //IterationComplete(usedPair);
 
-
   this->btnStep->setEnabled(false);
   this->btnInpaint->setEnabled(false);
   this->btnReset->setEnabled(false);
-  ComputationThread.Operation = ComputationThreadClass::SINGLESTEP;
-  ComputationThread.start();
+  this->InpaintingComputation->Operation = InpaintingComputationObject::SINGLESTEP;
+  this->ComputationThread->start();
 }
 
 void PatchBasedInpaintingGUI::on_btnStop_clicked()
 {
-  this->ComputationThread.StopInpainting();
+  this->InpaintingComputation->StopInpainting();
 
   this->btnStop->setEnabled(false);
 
@@ -481,16 +483,12 @@ void PatchBasedInpaintingGUI::slot_Refresh()
   Refresh();
 }
 
-void PatchBasedInpaintingGUI::slot_StepComplete(const PatchPair&)
-{
-  this->btnStep->setEnabled(true);
-  this->btnInpaint->setEnabled(true);
-  this->btnReset->setEnabled(true);
-}
-
 void PatchBasedInpaintingGUI::slot_IterationComplete(const PatchPair& patchPair)
 {
   EnterFunction("IterationCompleteSlot()");
+  this->btnStep->setEnabled(true);
+  this->btnInpaint->setEnabled(true);
+  this->btnReset->setEnabled(true);
   IterationComplete(patchPair);
   LeaveFunction("IterationCompleteSlot()");
 }
