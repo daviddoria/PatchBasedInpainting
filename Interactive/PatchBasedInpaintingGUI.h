@@ -50,6 +50,7 @@ class vtkPolyDataMapper;
 #include "DebugOutputs.h"
 #include "DisplayStyle.h"
 #include "ForwardLookTableModel.h"
+#include "ImageInput.h"
 #include "InpaintingComputationObject.h"
 #include "InpaintingIterationRecord.h"
 #include "Layer.h"
@@ -100,8 +101,8 @@ public slots:
   void on_radDisplayChannel_clicked();
   void on_spinChannelToDisplay_valueChanged(int unused);
 
-  void on_btnChooseBlurredImage_clicked();
-  void on_btnChooseMembershipImage_clicked();
+//   void on_btnChooseBlurredImage_clicked();
+//   void on_btnChooseMembershipImage_clicked();
 
   void on_btnGoToIteration_clicked();
 
@@ -122,9 +123,6 @@ public slots:
   void slot_TopPatchesTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
 
   // Defined in FormGUIElements.cxx
-  void on_chkDisplayImage_clicked();
-  void on_chkDisplayMask_clicked();
-  void on_chkDisplayBoundary_clicked();
   void on_chkDisplayForwardLookPatchLocations_clicked();
   void on_chkDisplaySourcePatchLocations_clicked();
 
@@ -156,8 +154,6 @@ public slots:
 protected:
 
   void Reset();
-
-  void SetDisplayCheckboxVisibility(const bool visible);
 
   std::vector<float> CameraLeftToRightVector;
   std::vector<float> CameraBottomToTopVector;
@@ -336,6 +332,7 @@ protected:
 
   void SetupConnections();
 
+  QVector<ImageInput> ImageInputs;
 };
 
 #endif // PatchBasedInpaintingGUI_H

@@ -19,6 +19,9 @@ InpaintingComputationObject.cpp
 InpaintingIterationRecord.cpp
 InteractorStyleImageWithDrag.cpp
 Layer.cpp
+ListModelDisplay.cpp
+ListModelImageInput.cpp
+ListModelSave.cpp
 PatchBasedInpaintingGUI.cpp
 PatchBasedInpaintingGUISlots.cpp
 PatchBasedInpaintingInteractive.cpp #driver (contains main())

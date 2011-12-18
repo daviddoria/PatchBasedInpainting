@@ -115,8 +115,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   SetupColors();
 
-  SetDisplayCheckboxVisibility(false);
-
   QBrush brush;
   brush.setStyle(Qt::SolidPattern);
   brush.setColor(this->SceneBackgroundColor);
@@ -418,7 +416,7 @@ void PatchBasedInpaintingGUI::Reset()
 {
   this->tabSettings->setEnabled(true);
   this->tabRecord->setEnabled(true);
-  this->tabPrecomputed->setEnabled(true);
+  this->tabImages->setEnabled(true);
 
   this->btnReset->setEnabled(false);
   this->btnInpaint->setEnabled(false);
@@ -517,20 +515,20 @@ void PatchBasedInpaintingGUI::RefreshVTK()
       DisplayUserPatch();
       }
 
-    if(this->chkDisplayImage->isChecked())
-      {
-      DisplayImage();
-      }
-
-    if(this->chkDisplayMask->isChecked())
-      {
-      DisplayMask();
-      }
-
-    if(this->chkDisplayBoundary->isChecked())
-      {
-      DisplayBoundary();
-      }
+//     if(this->chkDisplayImage->isChecked())
+//       {
+//       DisplayImage();
+//       }
+// 
+//     if(this->chkDisplayMask->isChecked())
+//       {
+//       DisplayMask();
+//       }
+// 
+//     if(this->chkDisplayBoundary->isChecked())
+//       {
+//       DisplayBoundary();
+//       }
 
     DisplayPriorityImages();
 
@@ -585,23 +583,23 @@ void PatchBasedInpaintingGUI::Initialize()
 {
   EnterFunction("PatchBasedInpaintingGUI::Initialize()");
 
-  if(!this->txtBlurredImage->text().isEmpty())
-    {
-    typedef itk::ImageFileReader<FloatVectorImageType> ReaderType;
-    ReaderType::Pointer reader = ReaderType::New();
-    reader->SetFileName(this->txtBlurredImage->text().toStdString());
-    reader->Update();
-    //this->Inpainting->SetBlurredImage(reader->GetOutput());
-    }
-
-  if(!this->txtMembershipImage->text().isEmpty())
-    {
-    typedef itk::ImageFileReader<IntImageType> ReaderType;
-    ReaderType::Pointer reader = ReaderType::New();
-    reader->SetFileName(this->txtMembershipImage->text().toStdString());
-    reader->Update();
-    //this->Inpainting->SetMembershipImage(reader->GetOutput());
-    }
+//   if(!this->txtBlurredImage->text().isEmpty())
+//     {
+//     typedef itk::ImageFileReader<FloatVectorImageType> ReaderType;
+//     ReaderType::Pointer reader = ReaderType::New();
+//     reader->SetFileName(this->txtBlurredImage->text().toStdString());
+//     reader->Update();
+//     //this->Inpainting->SetBlurredImage(reader->GetOutput());
+//     }
+// 
+//   if(!this->txtMembershipImage->text().isEmpty())
+//     {
+//     typedef itk::ImageFileReader<IntImageType> ReaderType;
+//     ReaderType::Pointer reader = ReaderType::New();
+//     reader->SetFileName(this->txtMembershipImage->text().toStdString());
+//     reader->Update();
+//     //this->Inpainting->SetMembershipImage(reader->GetOutput());
+//     }
 
   // The PatchSortFunction has already been set by the radio buttons.
 
@@ -1450,12 +1448,4 @@ void PatchBasedInpaintingGUI::SetPriorityFromGUI()
     }
 
   //this->Inpainting.GetPriorityFunction()->SetDebugFunctionEnterLeave(true);
-}
-
-
-void PatchBasedInpaintingGUI::SetDisplayCheckboxVisibility(const bool visible)
-{
-  chkDisplayImage->setEnabled(visible);
-  chkDisplayBoundary->setEnabled(visible);
-  chkDisplayMask->setEnabled(visible);
 }

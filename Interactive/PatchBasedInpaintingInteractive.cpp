@@ -57,19 +57,19 @@ int main( int argc, char** argv )
       }
     patchBasedInpaintingGUI = new PatchBasedInpaintingGUI(imageFileName, maskFileName, enterLeave);
 
-    std::string blurredFileName;
-    bool blurredFileNameProvided = parser->GetCommandLineArgument( "-blurredImage", blurredFileName );
-    if(blurredFileNameProvided)
-      {
-      patchBasedInpaintingGUI->txtBlurredImage->setText(blurredFileName.c_str());
-      }
-
-    std::string membershipFileName;
-    bool membershipFileNameProvided = parser->GetCommandLineArgument( "-membershipImage", membershipFileName );
-    if(membershipFileNameProvided)
-      {
-      patchBasedInpaintingGUI->txtMembershipImage->setText(membershipFileName.c_str());
-      }
+//     std::string blurredFileName;
+//     bool blurredFileNameProvided = parser->GetCommandLineArgument( "-blurredImage", blurredFileName );
+//     if(blurredFileNameProvided)
+//       {
+//       patchBasedInpaintingGUI->txtBlurredImage->setText(blurredFileName.c_str());
+//       }
+// 
+//     std::string membershipFileName;
+//     bool membershipFileNameProvided = parser->GetCommandLineArgument( "-membershipImage", membershipFileName );
+//     if(membershipFileNameProvided)
+//       {
+//       patchBasedInpaintingGUI->txtMembershipImage->setText(membershipFileName.c_str());
+//       }
 
     }
   else

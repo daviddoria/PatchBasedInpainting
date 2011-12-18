@@ -142,18 +142,6 @@ void PatchBasedInpaintingGUI::on_chkHighlightUsedPatches_clicked()
   RefreshVTK();
 }
 
-void PatchBasedInpaintingGUI::on_chkDisplayImage_clicked()
-{
-  this->ImageLayer.ImageSlice->SetVisibility(this->chkDisplayImage->isChecked());
-  RefreshVTK();
-}
-
-void PatchBasedInpaintingGUI::on_chkDisplayMask_clicked()
-{
-  this->MaskLayer.ImageSlice->SetVisibility(this->chkDisplayMask->isChecked());
-  RefreshVTK();
-}
-
 void PatchBasedInpaintingGUI::on_chkDisplayForwardLookPatchLocations_clicked()
 {
   RefreshVTK();
@@ -161,13 +149,6 @@ void PatchBasedInpaintingGUI::on_chkDisplayForwardLookPatchLocations_clicked()
 
 void PatchBasedInpaintingGUI::on_chkDisplaySourcePatchLocations_clicked()
 {
-  RefreshVTK();
-}
-
-
-void PatchBasedInpaintingGUI::on_chkDisplayBoundary_clicked()
-{
-  this->BoundaryLayer.ImageSlice->SetVisibility(this->chkDisplayBoundary->isChecked());
   RefreshVTK();
 }
 
@@ -365,7 +346,7 @@ void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
 
   this->tabSettings->setEnabled(false);
   this->tabRecord->setEnabled(false);
-  this->tabPrecomputed->setEnabled(false);
+  this->tabImages->setEnabled(false);
 
   this->btnReset->setEnabled(true);
   this->btnInpaint->setEnabled(true);
@@ -546,7 +527,7 @@ void PatchBasedInpaintingGUI::on_sldDepthColorLambda_valueChanged()
 {
   SetDepthColorLambdaFromGUI();
 }
-
+/*
 void PatchBasedInpaintingGUI::on_btnChooseBlurredImage_clicked()
 {
   QString fileName = QFileDialog::getOpenFileName(this, "Open Blurred Image", ".", "Image Files (*.png *.mha)");
@@ -571,4 +552,4 @@ void PatchBasedInpaintingGUI::on_btnChooseMembershipImage_clicked()
     return;
     }
   this->txtMembershipImage->setText(fileName);
-}
+}*/

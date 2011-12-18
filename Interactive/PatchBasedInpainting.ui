@@ -124,28 +124,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="chkDisplayImage">
-              <property name="text">
-               <string>Image</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="chkDisplayBoundary">
-              <property name="text">
-               <string>Boundary</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="chkDisplayMask">
-              <property name="text">
-               <string>Mask</string>
-              </property>
-             </widget>
+             <widget class="QListView" name="listViewDisplay"/>
             </item>
            </layout>
           </item>
@@ -526,18 +505,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="chkSaveMask">
-              <property name="text">
-               <string>Mask</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="chkSaveImage">
-              <property name="text">
-               <string>Image</string>
-              </property>
-             </widget>
+             <widget class="QListView" name="listViewSave"/>
             </item>
            </layout>
           </item>
@@ -556,55 +524,13 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="tabPrecomputed">
+        <widget class="QWidget" name="tabImages">
          <attribute name="title">
           <string>Precomputed</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_11">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_14">
-            <item>
-             <widget class="QLabel" name="label_22">
-              <property name="text">
-               <string>Blurred</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="txtBlurredImage"/>
-            </item>
-            <item>
-             <widget class="QPushButton" name="btnChooseBlurredImage">
-              <property name="text">
-               <string>Choose</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_17">
-            <item>
-             <widget class="QLabel" name="label">
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="text">
-               <string>Membership</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="txtMembershipImage"/>
-            </item>
-            <item>
-             <widget class="QPushButton" name="btnChooseMembershipImage">
-              <property name="text">
-               <string>Choose</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           <widget class="QTableView" name="tableViewImages"/>
           </item>
           <item>
            <spacer name="verticalSpacer_5">
