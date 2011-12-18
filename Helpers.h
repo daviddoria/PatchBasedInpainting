@@ -66,7 +66,7 @@ void SetRegionCenterPixel(vtkImageData* image, const itk::ImageRegion<2>& region
 itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned int dimension);
 
 // Convert an RGB image to the CIELAB colorspace.
-void RGBImageToCIELabImage(const RGBImageType* rgbImage, FloatVectorImageType* cielabImage);
+void RGBImageToCIELabImage(RGBImageType* const rgbImage, FloatVectorImageType* cielabImage);
 
 // Convert the first 3 channels of an ITK image to the CIELAB colorspace.
 void ITKImageToCIELabImage(const FloatVectorImageType* rgbImage, FloatVectorImageType* cielabImage);
@@ -115,7 +115,7 @@ void BlankImage(vtkImageData*);
 
 // Extract the non-zero pixels of a "vector image" and convert them to vectors in a vtkPolyData. This is useful because glyphing a vector image is too slow to use as a visualization,
 // because it "draws" the vectors, even if they are zero length. In this code we are often interested in displaying vectors along a contour, so this is a very very small subset of a whole vector image.
-void KeepNonZeroVectors(const vtkImageData* image, vtkPolyData* output);
+void KeepNonZeroVectors(vtkImageData* const image, vtkPolyData* output);
 void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType* vectorImage, vtkPolyData* output);
 
 // Convert a 'number' into a zero padded string.
@@ -123,7 +123,7 @@ void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType* vectorImage, vtk
 std::string ZeroPad(const unsigned int number, const unsigned int rep);
 
 // Make pixels where the 0th channel of inputImage matches 'value' transparent in the output image.
-void MakeValueTransparent(const vtkImageData* inputImage, vtkImageData* outputImage, const unsigned char value);
+void MakeValueTransparent(vtkImageData* const inputImage, vtkImageData* outputImage, const unsigned char value);
 
 // Make an entire image transparent.
 void MakeImageTransparent(vtkImageData* image);

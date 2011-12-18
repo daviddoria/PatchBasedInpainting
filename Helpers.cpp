@@ -199,13 +199,15 @@ void ITKImageToCIELabImage(const FloatVectorImageType* image, FloatVectorImageTy
   RGBImageToCIELabImage(rgbImage, cielabImage);
 }
 
-void RGBImageToCIELabImage(const RGBImageType* rgbImage, FloatVectorImageType* cielabImage)
+void RGBImageToCIELabImage(RGBImageType* const rgbImage, FloatVectorImageType* cielabImage)
 {
+  // The adaptor expects to be able to modify the image (even though we don't in this case),
+  // so we cannot pass a const RGBImageType* const.
   // Convert RGB image to Lab color space
   typedef itk::Accessor::RGBToLabColorSpacePixelAccessor<unsigned char, float> RGBToLabColorSpaceAccessorType;
   typedef itk::ImageAdaptor<RGBImageType, RGBToLabColorSpaceAccessorType> RGBToLabAdaptorType;
   RGBToLabAdaptorType::Pointer rgbToLabAdaptor = RGBToLabAdaptorType::New();
-  rgbToLabAdaptor->SetImage(const_cast<RGBImageType*>(rgbImage)); // The adaptor expects to be able to modify the image, even though we don't.
+  rgbToLabAdaptor->SetImage(rgbImage);
 
   // Disassembler
   typedef itk::VectorIndexSelectionCastImageFilter<RGBToLabAdaptorType, FloatScalarImageType> VectorIndexSelectionFilterType;
@@ -521,17 +523,17 @@ void BlankAndOutlineImage(vtkImageData* image, const unsigned char color[3])
   image->Modified();
 }
 
-void KeepNonZeroVectors(const vtkImageData* image, vtkPolyData* output)
+void KeepNonZeroVectors(vtkImageData* const image, vtkPolyData* output)
 {
   vtkSmartPointer<vtkImageMagnitude> magnitudeFilter = vtkSmartPointer<vtkImageMagnitude>::New();
-  magnitudeFilter->SetInputConnection(const_cast<vtkImageData*>(image)->GetProducerPort());
+  magnitudeFilter->SetInputConnection(image->GetProducerPort());
   magnitudeFilter->Update(); // This filter produces a vtkImageData with an array named "Magnitude"
 
-  const_cast<vtkImageData*>(image)->GetPointData()->AddArray(magnitudeFilter->GetOutput()->GetPointData()->GetScalars());
-  const_cast<vtkImageData*>(image)->GetPointData()->SetActiveScalars("Magnitude");
+  image->GetPointData()->AddArray(magnitudeFilter->GetOutput()->GetPointData()->GetScalars());
+  image->GetPointData()->SetActiveScalars("Magnitude");
 
   vtkSmartPointer<vtkThresholdPoints> thresholdPoints = vtkSmartPointer<vtkThresholdPoints>::New();
-  thresholdPoints->SetInputConnection(const_cast<vtkImageData*>(image)->GetProducerPort());
+  thresholdPoints->SetInputConnection(image->GetProducerPort());
   thresholdPoints->ThresholdByUpper(.05);
   thresholdPoints->Update();
 
@@ -600,10 +602,10 @@ void MakeImageTransparent(vtkImageData* image)
   image->Modified();
 }
 
-void MakeValueTransparent(const vtkImageData* inputImage, vtkImageData* outputImage, const unsigned char value)
+void MakeValueTransparent(vtkImageData* const inputImage, vtkImageData* outputImage, const unsigned char value)
 {
   int dims[3];
-  const_cast<vtkImageData*>(inputImage)->GetDimensions(dims);
+  inputImage->GetDimensions(dims);
 
   outputImage->SetScalarTypeToUnsignedChar();
   outputImage->SetNumberOfScalarComponents(4);
@@ -614,7 +616,7 @@ void MakeValueTransparent(const vtkImageData* inputImage, vtkImageData* outputIm
     {
     for(int j = 0; j < dims[1]; ++j)
       {
-      unsigned char* inputPixel = static_cast<unsigned char*>(const_cast<vtkImageData*>(inputImage)->GetScalarPointer(i,j,0));
+      unsigned char* inputPixel = static_cast<unsigned char*>(inputImage->GetScalarPointer(i,j,0));
       unsigned char* outputPixel = static_cast<unsigned char*>(outputImage->GetScalarPointer(i,j,0));
 
       /*

@@ -227,7 +227,6 @@ void PatchBasedInpaintingGUI::on_btnDisplayNextStep_clicked()
     }
 }
 
-
 void PatchBasedInpaintingGUI::on_actionOpen_activated()
 {
   FileSelector* fileSelector(new FileSelector);
@@ -248,7 +247,6 @@ void PatchBasedInpaintingGUI::on_actionOpen_activated()
     }
 }
 
-
 void PatchBasedInpaintingGUI::on_actionSaveResult_activated()
 {
   // Get a filename to save
@@ -257,7 +255,7 @@ void PatchBasedInpaintingGUI::on_actionSaveResult_activated()
   DebugMessage<std::string>("Got filename: ", fileName.toStdString());
   if(fileName.toStdString().empty())
     {
-    std::cout << "Filename was empty." << std::endl;
+    this->statusBar()->showMessage("No file selected.");
     return;
     }
 
@@ -265,7 +263,6 @@ void PatchBasedInpaintingGUI::on_actionSaveResult_activated()
 
   this->statusBar()->showMessage("Saved result.");
 }
-
 
 void PatchBasedInpaintingGUI::on_chkDebugImages_clicked()
 {
@@ -285,7 +282,6 @@ void PatchBasedInpaintingGUI::on_actionQuit_activated()
 {
   exit(0);
 }
-
 
 void PatchBasedInpaintingGUI::slot_ForwardLookTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
 {
@@ -317,7 +313,6 @@ void PatchBasedInpaintingGUI::slot_ForwardLookTableView_changed(const QModelInde
   LeaveFunction("slot_ForwardLookTableView_changed()");
 }
 
-
 void PatchBasedInpaintingGUI::slot_TopPatchesTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
 {
   EnterFunction("slot_TopPatchesTableView_changed()");
@@ -348,7 +343,6 @@ void PatchBasedInpaintingGUI::slot_TopPatchesTableView_changed(const QModelIndex
     exit(-1);
   }
 }
-
 
 void PatchBasedInpaintingGUI::on_btnInpaint_clicked()
 {
@@ -389,7 +383,6 @@ void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
   this->Inpainting->SetDebugMessages(this->chkDebugMessages->isChecked());
   //this->Inpainting.SetDebugFunctionEnterLeave(false);
 
-
   // Setup the patch comparison function
   this->Inpainting->GetPatchCompare()->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
 
@@ -409,12 +402,10 @@ void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
   this->Inpainting->SetDebugMessages(this->chkDebugMessages->isChecked());
 
   this->InpaintingComputation->SetObject(this->Inpainting);
-
 }
 
 void PatchBasedInpaintingGUI::on_btnStep_clicked()
 {
-
   //PatchPair usedPair = this->Inpainting.Iterate();
 
   //IterationComplete(usedPair);
@@ -435,7 +426,6 @@ void PatchBasedInpaintingGUI::on_btnStop_clicked()
   this->btnStep->setEnabled(true);
   this->btnInpaint->setEnabled(true);
   this->btnReset->setEnabled(true);
-
 }
 
 void PatchBasedInpaintingGUI::on_btnReset_clicked()
@@ -467,20 +457,13 @@ void PatchBasedInpaintingGUI::slot_StartProgress()
 
 void PatchBasedInpaintingGUI::slot_StopProgress()
 {
-  //std::cout << "Form::StopProgressSlot()" << std::endl;
+  EnterFunction("slot_StopProgress()");
 
   // Re-enable some items that should not be changed while the inpainting is running.
   this->txtNumberOfForwardLook->setEnabled(false);
   this->txtNumberOfTopPatchesToSave->setEnabled(false);
 
   this->progressBar->hide();
-}
-
-void PatchBasedInpaintingGUI::slot_Refresh()
-{
-  DebugMessage("RefreshSlot()");
-
-  Refresh();
 }
 
 void PatchBasedInpaintingGUI::slot_IterationComplete(const PatchPair& patchPair)
@@ -490,6 +473,7 @@ void PatchBasedInpaintingGUI::slot_IterationComplete(const PatchPair& patchPair)
   this->btnInpaint->setEnabled(true);
   this->btnReset->setEnabled(true);
   IterationComplete(patchPair);
+  Refresh();
   LeaveFunction("IterationCompleteSlot()");
 }
 

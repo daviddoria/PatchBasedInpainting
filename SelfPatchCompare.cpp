@@ -56,9 +56,9 @@ void SelfPatchCompare::SetImage(const FloatVectorImageType* image)
 }
 
 // Provide the membership image (used in some difference functions).
-void SelfPatchCompare::SetMembershipImage(const IntImageType* membershipImage)
+void SelfPatchCompare::SetMembershipImage(IntImageType* const membershipImage)
 {
-  this->MembershipImage = const_cast<IntImageType*>(membershipImage);
+  this->MembershipImage = membershipImage;
 }
 
 void SelfPatchCompare::SetMask(const Mask* mask)

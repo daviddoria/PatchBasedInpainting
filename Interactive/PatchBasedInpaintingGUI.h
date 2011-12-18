@@ -145,8 +145,6 @@ public slots:
   void slot_StartProgress();
   void slot_StopProgress();
 
-  void slot_Refresh();
-
   void slot_IterationComplete(const PatchPair&);
 
   void on_txtPatchRadius_textEdited ( const QString & text );

@@ -35,10 +35,10 @@ namespace HelpersOutput
 {
 
 // Write a vtkPolyData to a .vtp file.
-void WritePolyData(const vtkPolyData* polyData, const std::string& fileName);
+void WritePolyData(vtkPolyData* const polyData, const std::string& fileName);
 
 // Write a vtkImageData to a .vti file.
-void WriteImageData(const vtkImageData* imageData, const std::string& fileName);
+void WriteImageData(vtkImageData* const imageData, const std::string& fileName);
 
 
 // Paraview requires 3D vectors to display glyphs, even if the vectors are really 2D. These functions appends a 0 to each vectors of a 2D vector image so that it can be easily visualized with Paraview.

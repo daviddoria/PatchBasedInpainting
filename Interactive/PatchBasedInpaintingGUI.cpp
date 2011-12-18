@@ -186,6 +186,8 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->UserImage = FloatVectorImageType::New();
   this->UserMaskImage = Mask::New();
 
+  this->ComputationThread = new QThread;
+  this->InpaintingComputation = new InpaintingComputationObject;
   this->InpaintingComputation->moveToThread(this->ComputationThread);
 
   SetupConnections();
@@ -258,12 +260,8 @@ void PatchBasedInpaintingGUI::SetupConnections()
   // We are assuming that the computation takes longer than the drawing.
   //connect(&ComputationThread, SIGNAL(IterationCompleteSignal()), this, SLOT(IterationCompleteSlot()), Qt::QueuedConnection);
 
-  connect(this->InpaintingComputation, SIGNAL(IterationCompleteSignal(const PatchPair&)),
-          this, SLOT(slot_IterationComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
-  connect(this->InpaintingComputation, SIGNAL(StepCompleteSignal(const PatchPair&)),
-          this, SLOT(slot_StepComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
   connect(this->InpaintingComputation, SIGNAL(IterationComplete(const PatchPair&)),
-          this, SLOT(slot_Refresh()), Qt::QueuedConnection);
+          this, SLOT(slot_IterationComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
 
 }
 
@@ -381,15 +379,6 @@ void PatchBasedInpaintingGUI::OpenMask(const std::string& fileName, const bool i
 
 void PatchBasedInpaintingGUI::OpenImage(const std::string& fileName)
 {
-  //std::cout << "OpenImage()" << std::endl;
-  /*
-  // The non static version of the above is something like this:
-  QFileDialog myDialog;
-  QDir fileFilter("Image Files (*.jpg *.jpeg *.bmp *.png *.mha);;PNG Files (*.png)");
-  myDialog.setFilter(fileFilter);
-  QString fileName = myDialog.exec();
-  */
-
   typedef itk::ImageFileReader<FloatVectorImageType> ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName(fileName);
@@ -522,7 +511,6 @@ void PatchBasedInpaintingGUI::RefreshVTK()
   EnterFunction("RefreshVTK()");
   try
   {
-//
     // The following are valid for all iterations
     if(this->chkDisplayUserPatch->isChecked())
       {
@@ -617,8 +605,8 @@ void PatchBasedInpaintingGUI::Initialize()
 
   // The PatchSortFunction has already been set by the radio buttons.
 
-  std::cout << "User Image: " << this->UserImage->GetLargestPossibleRegion().GetSize() << std::endl;
-  std::cout << "User Mask: " << this->UserMaskImage->GetLargestPossibleRegion().GetSize() << std::endl;
+  std::cout << "User Image size: " << this->UserImage->GetLargestPossibleRegion().GetSize() << std::endl;
+  std::cout << "User Mask size: " << this->UserMaskImage->GetLargestPossibleRegion().GetSize() << std::endl;
   HelpersOutput::WriteImage<Mask>(this->UserMaskImage, "mask.mha");
 
 //   CreateInitialRecord();
@@ -627,7 +615,6 @@ void PatchBasedInpaintingGUI::Initialize()
 // 
 //   SetCheckboxVisibility(true);
 
-  Refresh();
   LeaveFunction("PatchBasedInpaintingGUI::Initialize()");
 }
 

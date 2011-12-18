@@ -61,7 +61,7 @@ public:
   void SetImage(const FloatVectorImageType*);
 
   // Provide the membership image (used in some difference functions).
-  void SetMembershipImage(const IntImageType*);
+  void SetMembershipImage(IntImageType* const membershipImage);
 
   // Provide the mask to work with.
   void SetMask(const Mask* mask);

@@ -24,7 +24,7 @@
 
 namespace HelpersOutput
 {
-void WritePolyData(const vtkPolyData* polyData, const std::string& fileName)
+void WritePolyData(vtkPolyData* const polyData, const std::string& fileName)
 {
   std::string extension = fileName.substr(fileName.size() - 3, fileName.size());
   if(extension.compare("vtp") != 0)
@@ -35,11 +35,11 @@ void WritePolyData(const vtkPolyData* polyData, const std::string& fileName)
 
   vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
   polyDataWriter->SetFileName(fileName.c_str());
-  polyDataWriter->SetInputConnection(const_cast<vtkPolyData*>(polyData)->GetProducerPort());
+  polyDataWriter->SetInputConnection(polyData->GetProducerPort());
   polyDataWriter->Write();
 }
 
-void WriteImageData(const vtkImageData* imageData, const std::string& fileName)
+void WriteImageData(vtkImageData* const imageData, const std::string& fileName)
 {
   std::string extension = fileName.substr(fileName.size() - 3, fileName.size());
   if(extension.compare("vti") != 0)
@@ -50,7 +50,7 @@ void WriteImageData(const vtkImageData* imageData, const std::string& fileName)
 
   vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
   writer->SetFileName(fileName.c_str());
-  writer->SetInputConnection(const_cast<vtkImageData*>(imageData)->GetProducerPort());
+  writer->SetInputConnection(imageData->GetProducerPort());
   writer->Write();
 }
 
