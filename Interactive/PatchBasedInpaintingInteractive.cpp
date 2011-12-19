@@ -57,20 +57,24 @@ int main( int argc, char** argv )
       }
     patchBasedInpaintingGUI = new PatchBasedInpaintingGUI(imageFileName, maskFileName, enterLeave);
 
-//     std::string blurredFileName;
-//     bool blurredFileNameProvided = parser->GetCommandLineArgument( "-blurredImage", blurredFileName );
-//     if(blurredFileNameProvided)
-//       {
-//       patchBasedInpaintingGUI->txtBlurredImage->setText(blurredFileName.c_str());
-//       }
-// 
-//     std::string membershipFileName;
-//     bool membershipFileNameProvided = parser->GetCommandLineArgument( "-membershipImage", membershipFileName );
-//     if(membershipFileNameProvided)
-//       {
-//       patchBasedInpaintingGUI->txtMembershipImage->setText(membershipFileName.c_str());
-//       }
+    std::vector<std::string> extraFileNames;
+    bool extraFileNamesProvided = parser->GetCommandLineArgument( "-extraImages", extraFileNames);
 
+    if(extraFileNamesProvided)
+      {
+      if(extraFileNames.size() % 2 != 0)
+        {
+        std::cerr << "There must be an even number of values for the 'extraImages' key (name, file, name, file....)" << std::endl;
+        return EXIT_FAILURE;
+        }
+      std::cout << "extraFileNames has " << extraFileNames.size() << " values." << std::endl;
+      for(unsigned int i = 0; i < extraFileNames.size(); i += 2)
+        {
+        std::cout << "Extra file name value " << i << " " << extraFileNames[i] << " " << i + 1 << " " << extraFileNames[i + 1] << std::endl;
+        ImageInput imageInput(extraFileNames[i].c_str(), extraFileNames[i + 1].c_str(), Qt::Unchecked, Qt::Unchecked, NULL);
+        patchBasedInpaintingGUI->AddImageInput(imageInput);
+        }
+      }
     }
   else
     {

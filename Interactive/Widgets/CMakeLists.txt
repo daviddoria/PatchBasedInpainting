@@ -4,6 +4,3 @@ QT4_WRAP_UI(WidgetUISrcs FileSelectionWidget.ui)
 QT4_WRAP_CPP(WidgetMOCSrcs FileSelectionWidget.h)
 
 add_library(libWidgets FileSelectionWidget.cpp ${WidgetUISrcs} ${WidgetMOCSrcs})
-
-#TARGET_LINK_LIBRARIES(PatchBasedInpaintingInteractive PatchBasedInpainting ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
-

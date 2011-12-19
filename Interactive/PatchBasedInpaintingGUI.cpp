@@ -1478,3 +1478,8 @@ void PatchBasedInpaintingGUI::SetPriorityFromGUI()
 
   //this->Inpainting.GetPriorityFunction()->SetDebugFunctionEnterLeave(true);
 }
+
+void PatchBasedInpaintingGUI::AddImageInput(const ImageInput& imageInput)
+{
+  this->ImageInputs.push_back(imageInput);
+}

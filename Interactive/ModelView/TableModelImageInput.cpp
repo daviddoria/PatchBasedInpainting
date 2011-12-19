@@ -59,7 +59,7 @@ QVariant TableModelImageInput::data (const QModelIndex  &index , int role ) cons
 
   if (role == Qt::DisplayRole || role == Qt::EditRole)
     {
-    std::cout << "Name: " << this->Items->at(index.row()).Name.toStdString() << " FileName: " << this->Items->at(index.row()).FileName.toStdString() << std::endl;
+    //std::cout << "TableModelImageInput Name: " << this->Items->at(index.row()).Name.toStdString() << " FileName: " << this->Items->at(index.row()).FileName.toStdString() << std::endl;
     if(index.column() == NAME_COLUMN)
       {
       return this->Items->at(index.row()).Name;

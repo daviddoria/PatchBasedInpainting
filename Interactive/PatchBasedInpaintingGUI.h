@@ -83,6 +83,8 @@ public:
   void RefreshVTK();
   void Refresh();
 
+  void AddImageInput(const ImageInput&);
+
 public slots:
 
   void slot_ChangeFileName(QModelIndex);

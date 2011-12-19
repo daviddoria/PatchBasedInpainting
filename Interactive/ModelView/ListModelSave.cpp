@@ -11,7 +11,7 @@ QVariant ListModelSave::data (const QModelIndex  &index , int role ) const
 
   if (role == Qt::DisplayRole || role == Qt::EditRole)
     {
-    std::cout << "ListModelSave Name " << index.row() << " " << this->Items->at(index.row()).Name.toStdString() << std::endl;
+    //std::cout << "ListModelSave Name " << index.row() << " " << this->Items->at(index.row()).Name.toStdString() << std::endl;
     return this->Items->at(index.row()).Name;
     }
 
