@@ -162,7 +162,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->UserPatchLayer.ImageSlice->SetPickable(true);
 
   this->ImageLayer.ImageSlice->SetPickable(false);
-  this->BoundaryLayer.ImageSlice->SetPickable(false);
   this->MaskLayer.ImageSlice->SetPickable(false);
   this->UsedTargetPatchLayer.ImageSlice->SetPickable(false);
   this->UsedSourcePatchLayer.ImageSlice->SetPickable(false);
@@ -170,7 +169,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->AllForwardLookOutlinesLayer.ImageSlice->SetPickable(false);
 
   this->Renderer->AddViewProp(this->ImageLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->BoundaryLayer.ImageSlice);
   this->Renderer->AddViewProp(this->MaskLayer.ImageSlice);
   this->Renderer->AddViewProp(this->UsedTargetPatchLayer.ImageSlice);
   this->Renderer->AddViewProp(this->UsedSourcePatchLayer.ImageSlice);
@@ -244,10 +242,11 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->ModelSave = new ListModelSave;
   this->ModelSave->setItems(&this->ImageInputs);
   this->listViewSave->setModel(this->ModelSave);
-  
+
   this->ModelDisplay = new ListModelDisplay;
-  this->ModelDisplay->setItems(&this->ImageInputs);
+  //this->ModelDisplay->setItems(&this->ImageInputs);
   this->listViewDisplay->setModel(this->ModelDisplay);
+  connect (this->listViewDisplay, SIGNAL(clicked(QModelIndex)), this, SLOT(slot_ChangeDisplayedImages(QModelIndex)));
 
   this->ModelImages = new TableModelImageInput;
   this->ModelImages->setItems(&this->ImageInputs);
@@ -329,8 +328,8 @@ void PatchBasedInpaintingGUI::UserPatchMoved()
 
   unsigned int iterationToCompare = this->IterationToDisplay - 1;
   SelfPatchCompare* patchCompare = new SelfPatchCompare;
-  patchCompare->SetImage(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[iterationToCompare].Images.FindImageByName("Image").Image.GetPointer()));
-  patchCompare->SetMask(dynamic_cast<Mask*>(this->IterationRecords[iterationToCompare].Images.FindImageByName("Mask").Image.GetPointer()));
+  patchCompare->SetImage(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[iterationToCompare].GetImageByName("Image").Image.GetPointer()));
+  patchCompare->SetMask(dynamic_cast<Mask*>(this->IterationRecords[iterationToCompare].GetImageByName("Mask").Image.GetPointer()));
   patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
   patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
   CandidatePairs candidatePairs(this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplayId].TargetPatch);
@@ -388,7 +387,7 @@ void PatchBasedInpaintingGUI::OpenMask(const std::string& fileName, const bool i
     this->UserMaskImage->Invert();
     }
 
-  this->ImageInputs.push_back(ImageInput("Mask", fileName.c_str(), Qt::Checked, Qt::Checked, &this->MaskLayer));
+  this->ImageInputs.push_back(ImageInput("Mask", fileName.c_str(), Qt::Checked, Qt::Checked));
 
   UpdateAllImageInputModels();
   //Helpers::DebugWriteImageConditional<Mask>(this->UserMaskImage, "Debug/InvertedMask.png", this->DebugImages);
@@ -397,7 +396,7 @@ void PatchBasedInpaintingGUI::OpenMask(const std::string& fileName, const bool i
 void PatchBasedInpaintingGUI::UpdateAllImageInputModels()
 {
   this->ModelSave->Refresh();
-  this->ModelDisplay->Refresh();
+  //this->ModelDisplay->Refresh();
   this->ModelImages->Refresh();
 }
 
@@ -436,7 +435,7 @@ void PatchBasedInpaintingGUI::OpenImage(const std::string& fileName)
                                                              this->UserImage->GetLargestPossibleRegion().GetSize()[1], 1);
   this->AllSourcePatchOutlinesLayer.ImageData->AllocateScalars();
 
-  this->ImageInputs.push_back(ImageInput("Image", fileName.c_str(), Qt::Checked, Qt::Checked, &this->ImageLayer));
+  this->ImageInputs.push_back(ImageInput("Image", fileName.c_str(), Qt::Checked, Qt::Checked));
 
   UpdateAllImageInputModels();
 }
@@ -463,7 +462,7 @@ void PatchBasedInpaintingGUI::DisplayMask()
   //Helpers::ITKScalarImageToScaledVTKImage<Mask>(this->IntermediateImages[this->IterationToDisplay].MaskImage, temp);
   //Helpers::MakeValidPixelsTransparent(temp, this->MaskLayer.ImageData, 0); // Set the zero pixels of the mask to transparent
 
-  dynamic_cast<Mask*>(this->IterationRecords[this->IterationToDisplay].Images.FindImageByName("Mask").Image.GetPointer())->MakeVTKImage(this->MaskLayer.ImageData, QColor(Qt::white), this->HoleColor, false, true); // (..., holeTransparent, validTransparent);
+  dynamic_cast<Mask*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Mask").Image.GetPointer())->MakeVTKImage(this->MaskLayer.ImageData, QColor(Qt::white), this->HoleColor, false, true); // (..., holeTransparent, validTransparent);
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
@@ -485,7 +484,7 @@ void PatchBasedInpaintingGUI::DisplayUserPatch()
   EnterFunction("DisplayUserPatch");
 
   ComputeUserPatchRegion();
-  QImage userPatch = HelpersQt::GetQImage<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].Images.FindImageByName("Image").Image.GetPointer()),
+  QImage userPatch = HelpersQt::GetQImage<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer()),
                                                                 this->UserPatchRegion, this->ImageDisplayStyle);
   //userPatch = HelpersQt::FitToGraphicsView(userPatch, gfxTarget);
   QGraphicsPixmapItem* item = this->UserPatchScene->addPixmap(QPixmap::fromImage(userPatch));
@@ -496,42 +495,42 @@ void PatchBasedInpaintingGUI::DisplayUserPatch()
 void PatchBasedInpaintingGUI::DisplayImage()
 {
   EnterFunction("DisplayImage");
-  HelpersDisplay::ITKVectorImageToVTKImage(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].Images.FindImageByName("Image").Image.GetPointer()), this->ImageLayer.ImageData, this->ImageDisplayStyle);
+  HelpersDisplay::ITKVectorImageToVTKImage(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer()), this->ImageLayer.ImageData, this->ImageDisplayStyle);
 
   this->qvtkWidget->GetRenderWindow()->Render();
   LeaveFunction("DisplayImage");
 }
 
-void PatchBasedInpaintingGUI::DisplayBoundary()
-{
-  EnterFunction("DisplayBoundary");
-  Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>(dynamic_cast<UnsignedCharScalarImageType*>(this->IterationRecords[this->IterationToDisplay].Images.FindImageByName("Boundary").Image.GetPointer()), this->BoundaryLayer.ImageData);
-  this->qvtkWidget->GetRenderWindow()->Render();
-  LeaveFunction("DisplayBoundary");
-}
+// void PatchBasedInpaintingGUI::DisplayBoundary()
+// {
+//   EnterFunction("DisplayBoundary");
+//   Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>(dynamic_cast<UnsignedCharScalarImageType*>(this->IterationRecords[this->IterationToDisplay].Images.FindImageByName("Boundary").Image.GetPointer()), this->BoundaryLayer.ImageData);
+//   this->qvtkWidget->GetRenderWindow()->Render();
+//   LeaveFunction("DisplayBoundary");
+// }
 
-void PatchBasedInpaintingGUI::DisplayPriorityImages()
-{
-  EnterFunction("DisplayPriorityImages");
-
-  for(unsigned int i = 0; i < this->PriorityImageCheckBoxes.size(); ++i)
-    {
-    if(this->PriorityImageCheckBoxes[i]->isChecked())
-      {
-      std::cout << "Image name: " << this->PriorityImageCheckBoxes[i]->text().toStdString() << std::endl;
-      Layer newLayer;
-      NamedVTKImage namedImage = FindImageByName(this->Inpainting->GetPriorityFunction()->GetNamedImages(), this->PriorityImageCheckBoxes[i]->text().toStdString());
-      newLayer.ImageData = namedImage.ImageData;
-      newLayer.Setup();
-      newLayer.ImageSlice->SetPickable(false);
-
-      this->Renderer->AddViewProp(newLayer.ImageSlice);
-      }
-    }
-
-  this->qvtkWidget->GetRenderWindow()->Render();
-  LeaveFunction("DisplayPriorityImages");
-}
+// void PatchBasedInpaintingGUI::DisplayPriorityImages()
+// {
+//   EnterFunction("DisplayPriorityImages");
+// 
+//   for(unsigned int i = 0; i < this->PriorityImageCheckBoxes.size(); ++i)
+//     {
+//     if(this->PriorityImageCheckBoxes[i]->isChecked())
+//       {
+//       std::cout << "Image name: " << this->PriorityImageCheckBoxes[i]->text().toStdString() << std::endl;
+//       Layer newLayer;
+//       NamedVTKImage namedImage = FindImageByName(this->Inpainting->GetPriorityFunction()->GetNamedImages(), this->PriorityImageCheckBoxes[i]->text().toStdString());
+//       newLayer.ImageData = namedImage.ImageData;
+//       newLayer.Setup();
+//       newLayer.ImageSlice->SetPickable(false);
+// 
+//       this->Renderer->AddViewProp(newLayer.ImageSlice);
+//       }
+//     }
+// 
+//   this->qvtkWidget->GetRenderWindow()->Render();
+//   LeaveFunction("DisplayPriorityImages");
+// }
 
 void PatchBasedInpaintingGUI::RefreshVTK()
 {
@@ -559,7 +558,7 @@ void PatchBasedInpaintingGUI::RefreshVTK()
 //       DisplayBoundary();
 //       }
 
-    DisplayPriorityImages();
+    //DisplayPriorityImages();
 
     this->UsedSourcePatchLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
     this->UsedTargetPatchLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
@@ -657,7 +656,7 @@ void PatchBasedInpaintingGUI::DisplaySourcePatch()
       return;
       }
 
-    FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->Images.FindImageByName("Image").Image.GetPointer());
+    FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image.GetPointer());
 
     QImage sourceImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, this->SourcePatchToDisplay.Region, this->ImageDisplayStyle);
     //sourceImage = HelpersQt::FitToGraphicsView(sourceImage, gfxSource);
@@ -686,7 +685,7 @@ void PatchBasedInpaintingGUI::DisplayTargetPatch()
       LeaveFunction("DisplayTargetPatch()");
       return;
       }
-    FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->Images.FindImageByName("Image").Image.GetPointer());
+    FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image.GetPointer());
 
     // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration
     // (as the current mask has been cleared where the target patch was copied).
@@ -719,11 +718,11 @@ void PatchBasedInpaintingGUI::DisplayResultPatch()
       return;
       }
 
-    FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->Images.FindImageByName("Image").Image.GetPointer());
+    FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image.GetPointer());
 
     // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration
     // (as the current mask has been cleared where the target patch was copied).
-    Mask::Pointer currentMask = dynamic_cast<Mask*>(this->RecordToDisplay->Images.FindImageByName("Mask").Image.GetPointer());
+    Mask::Pointer currentMask = dynamic_cast<Mask*>(this->RecordToDisplay->GetImageByName("Mask").Image.GetPointer());
 
     itk::Size<2> regionSize = this->Inpainting->GetPatchSize();
 
@@ -1119,7 +1118,7 @@ void PatchBasedInpaintingGUI::CreateInitialRecord()
   NamedITKImage namedImage;
   namedImage.Image = image;
   namedImage.Name = "Image";
-  iterationRecord.Images.push_back(namedImage);
+  iterationRecord.AddImage(namedImage);
 
   //Helpers::DeepCopy<FloatVectorImageType>(this->UserImage, dynamic_cast<FloatVectorImageType*>(iterationRecord.Images.FindImageByName("Image")));
   //Helpers::DeepCopy<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), stack.Image);
@@ -1129,7 +1128,7 @@ void PatchBasedInpaintingGUI::CreateInitialRecord()
   NamedITKImage namedMaskImage;
   namedMaskImage.Name = "Mask";
   namedMaskImage.Image = maskImage;
-  iterationRecord.Images.push_back(namedMaskImage);
+  iterationRecord.AddImage(namedMaskImage);
   //Helpers::DeepCopy<Mask>(this->UserMaskImage, dynamic_cast<Mask*>(iterationRecord.Images.FindImageByName("Mask")));
   //Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
 
@@ -1138,7 +1137,7 @@ void PatchBasedInpaintingGUI::CreateInitialRecord()
   NamedITKImage namedPriorityImage;
   namedPriorityImage.Name = "Priority";
   namedPriorityImage.Image = priorityImage;
-  iterationRecord.Images.push_back(namedPriorityImage);
+  iterationRecord.AddImage(namedPriorityImage);
 
   //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityFunction()->GetPriorityImage(), dynamic_cast<FloatScalarImageType*>(iterationRecord.Images.FindImageByName("Priority")));
 

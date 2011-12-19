@@ -55,7 +55,6 @@ class vtkPolyDataMapper;
 #include "Layer.h"
 #include "PatchBasedInpainting.h"
 #include "Types.h"
-#include "VectorLayer.h"
 #include "ModelView/TableModelForwardLook.h"
 #include "ModelView/TableModelImageInput.h"
 #include "ModelView/TableModelTopPatches.h"
@@ -89,7 +88,7 @@ public slots:
 
   void slot_ChangeFileName(QModelIndex);
 
-  void DisplayPriorityImages();
+  //void DisplayPriorityImages();
 
   void on_chkDisplayUserPatch_clicked();
 
@@ -154,6 +153,8 @@ public slots:
 
   void slot_IterationComplete(const PatchPair&);
 
+  void slot_ChangeDisplayedImages(QModelIndex);
+
   void on_txtPatchRadius_textEdited ( const QString & text );
   void on_txtNumberOfTopPatchesToSave_textEdited ( const QString & text );
   void on_txtNumberOfForwardLook_textEdited ( const QString & text );
@@ -171,16 +172,15 @@ protected:
   void ChangeDisplayedForwardLookPatch();
 
   // These functions display the iteration indicated by the member 'IterationToDisplay'
-  void DisplayBoundary();
-  void DisplayBoundaryNormals();
+  //void DisplayBoundary();
+  //void DisplayBoundaryNormals();
   void DisplayMask();
-  void DisplayConfidence();
-  void DisplayConfidenceMap();
+  //void DisplayConfidence();
+  //void DisplayConfidenceMap();
   //void DisplayPriority();
-  void DisplayData();
+  //void DisplayData();
   void DisplayImage();
   void DisplayUserPatch();
-
 
   void OpenImage(const std::string& filename);
   void OpenMask(const std::string& filename, const bool inverted);
@@ -228,7 +228,7 @@ protected:
   Layer ImageLayer;
 
   // Boundary image display
-  Layer BoundaryLayer;
+  //Layer BoundaryLayer;
 
   // Mask image display
   Layer MaskLayer;

@@ -35,7 +35,7 @@
 
 void PatchBasedInpaintingGUI::slot_ChangeFileName(QModelIndex index)
 {
-  std::cout << "Clicked row " << index.row() << " column " << index.column() << std::endl;
+  //std::cout << "Clicked row " << index.row() << " column " << index.column() << std::endl;
   if (index.column() == TableModelImageInput::FILENAME_COLUMN)
     {
     QString fileName = QFileDialog::getOpenFileName(this, "Open", "", "Files (*.mha, *.png)");
@@ -540,29 +540,14 @@ void PatchBasedInpaintingGUI::on_sldDepthColorLambda_valueChanged()
 {
   SetDepthColorLambdaFromGUI();
 }
-/*
-void PatchBasedInpaintingGUI::on_btnChooseBlurredImage_clicked()
-{
-  QString fileName = QFileDialog::getOpenFileName(this, "Open Blurred Image", ".", "Image Files (*.png *.mha)");
 
-  DebugMessage<std::string>("Got filename: ", fileName.toStdString());
-  if(fileName.toStdString().empty())
+void PatchBasedInpaintingGUI::slot_ChangeDisplayedImages(QModelIndex)
+{
+  for(unsigned int imageId = 0; imageId < this->IterationRecords[this->IterationToDisplay].GetNumberOfImages(); ++imageId)
     {
-    std::cout << "Filename was empty." << std::endl;
-    return;
+//     Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>
+//     (dynamic_cast<UnsignedCharScalarImageType*>(this->IterationRecords[this->IterationToDisplay].Images[imageId].Image.GetPointer()), this->BoundaryLayer.ImageData);
+
     }
-  this->txtBlurredImage->setText(fileName);
+  this->qvtkWidget->GetRenderWindow()->Render();
 }
-
-void PatchBasedInpaintingGUI::on_btnChooseMembershipImage_clicked()
-{
-  QString fileName = QFileDialog::getOpenFileName(this, "Open Membership Image", ".", "Image Files (*.png *.mha)");
-
-  DebugMessage<std::string>("Got filename: ", fileName.toStdString());
-  if(fileName.toStdString().empty())
-    {
-    std::cout << "Filename was empty." << std::endl;
-    return;
-    }
-  this->txtMembershipImage->setText(fileName);
-}*/

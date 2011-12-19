@@ -22,3 +22,34 @@ InpaintingIterationRecord::InpaintingIterationRecord()
 {
 
 }
+
+void InpaintingIterationRecord::SetDisplayed(const unsigned int imageId, const bool displayed)
+{
+  this->Display[imageId] = displayed;
+}
+
+bool InpaintingIterationRecord::IsDisplayed(const unsigned int imageId)
+{
+  return this->Display[imageId];
+}
+
+void InpaintingIterationRecord::AddImage(NamedITKImage& namedImage, const bool display)
+{
+  this->Images.push_back(namedImage);
+  this->Display.push_back(display);
+}
+
+NamedITKImage InpaintingIterationRecord::GetImage(const unsigned int imageId)
+{
+  return this->Images[imageId];
+}
+
+NamedITKImage InpaintingIterationRecord::GetImageByName(const std::string& imageName)
+{
+  return this->Images.FindImageByName(imageName);
+}
+
+unsigned int InpaintingIterationRecord::GetNumberOfImages()
+{
+  return this->Images.size();
+}

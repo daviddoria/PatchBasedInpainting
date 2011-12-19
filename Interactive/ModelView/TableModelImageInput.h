@@ -12,7 +12,8 @@ class TableModelImageInput : public QAbstractTableModel
 {
 public:
 
-  enum ColumnNames {NAME_COLUMN=0, FILENAME_COLUMN};
+  enum ColumnNames {NAME_COLUMN=0, FILENAME_COLUMN, DISPLAY_COLUMN, SAVE_COLUMN};
+
   QVariant data(const QModelIndex& index, int role) const;
 
   bool setData (const QModelIndex &index, const QVariant &value, int role);

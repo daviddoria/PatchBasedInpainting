@@ -33,17 +33,24 @@ class InpaintingIterationRecord
 public:
   InpaintingIterationRecord();
 
-//   FloatVectorImageType::Pointer Image;
-//   Mask::Pointer MaskImage;
-//   UnsignedCharScalarImageType::Pointer Boundary;
-//   FloatScalarImageType::Pointer Priority;
-  NamedITKImageCollection Images;
-
   // Store the sets of pairs that were considered.
   std::vector<CandidatePairs> PotentialPairSets;
 
   // Store the pairs of patches that were actually used.
   PatchPair UsedPatchPair;
+
+  void AddImage(NamedITKImage&, const bool display = false);
+
+  NamedITKImage GetImage(const unsigned int);
+  NamedITKImage GetImageByName(const std::string&);
+  unsigned int GetNumberOfImages();
+
+  bool IsDisplayed(const unsigned int);
+  void SetDisplayed(const unsigned int, const bool displayed);
+
+private:
+  NamedITKImageCollection Images;
+  std::vector<bool> Display; // This vector is always the same length as the number of images.
 
 };
 

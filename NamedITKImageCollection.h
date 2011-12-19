@@ -30,6 +30,8 @@ class NamedITKImageCollection : public std::vector<NamedITKImage>
 public:
   // Apply Helpers::CopySelfPatchIntoHoleOfTargetRegion to all images in the collection.
   void CopySelfPatchIntoHoleOfTargetRegion(const Mask* mask, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
+
+  // Search the collection for an image with the specified name.
   NamedITKImage FindImageByName(const std::string&);
 };
 

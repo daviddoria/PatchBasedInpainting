@@ -25,13 +25,12 @@ class ListModelSave;
 #include <QString>
 #include <iostream>
 
-class Layer;
-
 class ImageInput
 {
 public:
   ImageInput(const QString& name = QString(), const QString& fileName = QString(), const Qt::CheckState display = Qt::Unchecked,
-             const Qt::CheckState save = Qt::Unchecked, Layer* const layer = NULL);
+             const Qt::CheckState save = Qt::Unchecked);
+             //const Qt::CheckState save = Qt::Unchecked, Layer* const layer = new Layer);
 
 private:
 
@@ -45,7 +44,6 @@ private:
   Qt::CheckState Display;
   Qt::CheckState Save;
 
-  Layer* ImageLayer;
 };
 
 #endif

@@ -37,6 +37,12 @@ Qt::ItemFlags TableModelImageInput::flags (const QModelIndex  &index ) const
     {
     return Qt::NoItemFlags;
     }
+    
+  if(index.column() == DISPLAY_COLUMN || index.column() == SAVE_COLUMN)
+    {
+    return Qt::ItemIsEnabled | Qt::ItemIsUserCheckable;
+    }
+
   return Qt::ItemIsEnabled;
 }
 
@@ -68,6 +74,14 @@ QVariant TableModelImageInput::data (const QModelIndex  &index , int role ) cons
       {
       return this->Items->at(index.row()).FileName;
       }
+//     else if(index.column() == DISPLAY_COLUMN)
+//       {
+//       return this->Items->at(index.row()).Display;
+//       }
+//     else if(index.column() == SAVE_COLUMN)
+//       {
+//       return this->Items->at(index.row()).Save;
+//       }
     }
 
   return QVariant();
