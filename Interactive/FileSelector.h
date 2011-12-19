@@ -21,7 +21,7 @@
 
 #include "ui_FileSelector.h"
 
-#include "FileSelectionWidget.h"
+#include "Widgets/FileSelectionWidget.h"
 #include "Mask.h"
 #include "Types.h"
 

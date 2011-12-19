@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
   HelpersOutput::WriteImage<FloatScalarImageType>(blurredLuminance, "Test/TestIsophotes.blurred.mha");
 
 
-  PatchBasedInpainting inpainting;
-  inpainting.SetMask(maskReader->GetOutput());
+  PatchBasedInpainting inpainting(NULL, maskReader->GetOutput());
+  //inpainting.SetMask(maskReader->GetOutput());
   //inpainting.SetImage(imageReader->GetOutput());
 
   //inpainting.FindBoundary();

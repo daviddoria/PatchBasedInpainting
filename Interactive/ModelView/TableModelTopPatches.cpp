@@ -16,7 +16,7 @@
  *
  *=========================================================================*/
 
-#include "TopPatchesTableModel.h"
+#include "TableModelTopPatches.h"
 
 // Qt
 #include <QLabel>
@@ -26,39 +26,39 @@
 #include "Helpers.h"
 #include "HelpersQt.h"
 
-TopPatchesTableModel::TopPatchesTableModel(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& displayStyle) :
+TableModelTopPatches::TableModelTopPatches(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& displayStyle) :
     QAbstractTableModel(), IterationRecords(iterationRecords), IterationToDisplay(0),
     ForwardLookToDisplay(0), PatchDisplaySize(100), NumberOfTopPatchesToDisplay(10), ImageDisplayStyle(displayStyle)
 {
 }
 
-void TopPatchesTableModel::SetPatchDisplaySize(const unsigned int value)
+void TableModelTopPatches::SetPatchDisplaySize(const unsigned int value)
 {
   this->PatchDisplaySize = value;
 }
 
-Qt::ItemFlags TopPatchesTableModel::flags(const QModelIndex& index) const
+Qt::ItemFlags TableModelTopPatches::flags(const QModelIndex& index) const
 {
   //Qt::ItemFlags itemFlags = (!Qt::ItemIsEditable) | Qt::ItemIsSelectable | Qt::ItemIsEnabled | (!Qt::ItemIsUserCheckable) | (!Qt::ItemIsTristate);
   Qt::ItemFlags itemFlags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
   return itemFlags;
 }
 
-void TopPatchesTableModel::SetIterationToDisplay(const unsigned int iteration)
+void TableModelTopPatches::SetIterationToDisplay(const unsigned int iteration)
 {
   this->IterationToDisplay = iteration;
   Refresh();
 }
 
-void TopPatchesTableModel::SetForwardLookToDisplay(const unsigned int forwardLook)
+void TableModelTopPatches::SetForwardLookToDisplay(const unsigned int forwardLook)
 {
   this->ForwardLookToDisplay = forwardLook;
   Refresh();
 }
 
-int TopPatchesTableModel::rowCount(const QModelIndex& parent) const
+int TableModelTopPatches::rowCount(const QModelIndex& parent) const
 {
-  EnterFunction("TopPatchesTableModel::rowCount()");
+  EnterFunction("TableModelTopPatches::rowCount()");
   if(this->IterationRecords.size() < this->IterationToDisplay ||
     this->IterationRecords.size() == 0 ||
     this->IterationRecords[this->IterationToDisplay].PotentialPairSets.size() == 0 ||
@@ -69,24 +69,24 @@ int TopPatchesTableModel::rowCount(const QModelIndex& parent) const
   unsigned int rows = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay].size();
   unsigned int numberOfRowsToDisplay = std::min(rows, this->NumberOfTopPatchesToDisplay);
   //std::cout << "Displaying " << numberOfRowsToDisplay << " rows." << std::endl;
-  LeaveFunction("TopPatchesTableModel::rowCount()");
+  LeaveFunction("TableModelTopPatches::rowCount()");
   return numberOfRowsToDisplay;
 }
 
-int TopPatchesTableModel::columnCount(const QModelIndex& parent) const
+int TableModelTopPatches::columnCount(const QModelIndex& parent) const
 {
   // We have the patch itelf, the location, the id, and then all of the computed values.
   return 3 + this->ComputedKeys.size();
 }
 
-void TopPatchesTableModel::SetNumberOfTopPatchesToDisplay(const unsigned int number)
+void TableModelTopPatches::SetNumberOfTopPatchesToDisplay(const unsigned int number)
 {
   this->NumberOfTopPatchesToDisplay = number;
 }
 
-QVariant TopPatchesTableModel::data(const QModelIndex& index, int role) const
+QVariant TableModelTopPatches::data(const QModelIndex& index, int role) const
 {
-  EnterFunction("TopPatchesTableModel::data()");
+  EnterFunction("TableModelTopPatches::data()");
   QVariant returnValue;
   if(role == Qt::DisplayRole && index.row() >= 0)
     {
@@ -128,7 +128,7 @@ QVariant TopPatchesTableModel::data(const QModelIndex& index, int role) const
   return returnValue;
 }
 
-QVariant TopPatchesTableModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant TableModelTopPatches::headerData(int section, Qt::Orientation orientation, int role) const
 {
   QVariant returnValue;
   if(role == Qt::DisplayRole)
@@ -158,9 +158,9 @@ QVariant TopPatchesTableModel::headerData(int section, Qt::Orientation orientati
   return returnValue;
 }
 
-void TopPatchesTableModel::Refresh()
+void TableModelTopPatches::Refresh()
 {
-  //std::cout << "TopPatchesTableModel::Refresh(): Displaying iteration: " << this->IterationToDisplay << std::endl;
+  //std::cout << "TableModelTopPatches::Refresh(): Displaying iteration: " << this->IterationToDisplay << std::endl;
   this->ComputedKeys.clear();
   // Store the keys that have been computed.
   if(this->IterationRecords.size() > 0)
@@ -179,7 +179,7 @@ void TopPatchesTableModel::Refresh()
   endResetModel();
 }
 
-void TopPatchesTableModel::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+void TableModelTopPatches::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
   //std::cout << "TopPatchesTableModel::selectionChanged()" << std::endl;
 }

@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-int ListModelImageInput::setItems(QVector<ImageInput>* const items)
+void ListModelImageInput::setItems(QVector<ImageInput>* const items)
 {
   emit beginResetModel();
   this->Items = items;

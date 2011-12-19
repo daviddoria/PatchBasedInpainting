@@ -72,8 +72,8 @@
 #include "HelpersOutput.h"
 #include "HelpersQt.h"
 #include "InteractorStyleImageWithDrag.h"
-#include "ListModelDisplay.h"
-#include "ListModelSave.h"
+#include "ModelView/ListModelDisplay.h"
+#include "ModelView/ListModelSave.h"
 #include "Mask.h"
 #include "PatchSorting.h"
 #include "PixmapDelegate.h"
@@ -205,7 +205,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   InitializeGUIElements();
 
   // Setup forwardLook table
-  this->ForwardLookModel = new ForwardLookTableModel(this->IterationRecords, this->ImageDisplayStyle);
+  this->ForwardLookModel = new TableModelForwardLook(this->IterationRecords, this->ImageDisplayStyle);
   this->ForwardLookTableView->setModel(this->ForwardLookModel);
   this->ForwardLookTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 
@@ -216,7 +216,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
                 SLOT(slot_ForwardLookTableView_changed(const QModelIndex & , const QModelIndex & )));
 
   // Setup top patches table
-  this->TopPatchesModel = new TopPatchesTableModel(this->IterationRecords, this->ImageDisplayStyle);
+  this->TopPatchesModel = new TableModelTopPatches(this->IterationRecords, this->ImageDisplayStyle);
   this->TopPatchesTableView->setModel(this->TopPatchesModel);
   this->TopPatchesTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 

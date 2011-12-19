@@ -49,16 +49,16 @@ class vtkPolyDataMapper;
 // Custom
 #include "DebugOutputs.h"
 #include "DisplayStyle.h"
-#include "ForwardLookTableModel.h"
 #include "ImageInput.h"
 #include "InpaintingComputationObject.h"
 #include "InpaintingIterationRecord.h"
 #include "Layer.h"
 #include "PatchBasedInpainting.h"
-#include "TableModelImageInput.h"
-#include "TopPatchesTableModel.h"
 #include "Types.h"
 #include "VectorLayer.h"
+#include "ModelView/TableModelForwardLook.h"
+#include "ModelView/TableModelImageInput.h"
+#include "ModelView/TableModelTopPatches.h"
 
 class ListModelDisplay;
 class ListModelSave;
@@ -304,8 +304,8 @@ protected:
   QColor SceneBackgroundColor;
   QColor UserPatchColor;
 
-  ForwardLookTableModel* ForwardLookModel;
-  TopPatchesTableModel* TopPatchesModel;
+  TableModelForwardLook* ForwardLookModel;
+  TableModelTopPatches* TopPatchesModel;
 
   // The size to display the patches.
   unsigned int PatchDisplaySize;

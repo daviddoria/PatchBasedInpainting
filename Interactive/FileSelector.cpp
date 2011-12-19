@@ -20,7 +20,7 @@
 
 // Custom
 #include "FileSelector.h"
-#include "FileSelectionWidget.h"
+#include "Widgets/FileSelectionWidget.h"
 #include "Helpers.h"
 #include "HelpersQt.h"
 #include "Mask.h"

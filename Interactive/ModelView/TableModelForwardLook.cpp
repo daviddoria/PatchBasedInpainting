@@ -16,7 +16,7 @@
  *
  *=========================================================================*/
 
-#include "ForwardLookTableModel.h"
+#include "TableModelForwardLook.h"
 
 // Qt
 #include <QLabel>
@@ -27,30 +27,30 @@
 #include "Helpers.h"
 #include "HelpersQt.h"
 
-ForwardLookTableModel::ForwardLookTableModel(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& style) :
+TableModelForwardLook::TableModelForwardLook(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& style) :
     QAbstractTableModel(), IterationRecords(iterationRecords), IterationToDisplay(0), PatchDisplaySize(100), ImageDisplayStyle(style)
 {
 }
 
-void ForwardLookTableModel::SetPatchDisplaySize(const unsigned int value)
+void TableModelForwardLook::SetPatchDisplaySize(const unsigned int value)
 {
   this->PatchDisplaySize = value;
 }
 
-Qt::ItemFlags ForwardLookTableModel::flags(const QModelIndex& index) const
+Qt::ItemFlags TableModelForwardLook::flags(const QModelIndex& index) const
 {
   //Qt::ItemFlags itemFlags = (!Qt::ItemIsEditable) | Qt::ItemIsSelectable | Qt::ItemIsEnabled | (!Qt::ItemIsUserCheckable) | (!Qt::ItemIsTristate);
   Qt::ItemFlags itemFlags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
   return itemFlags;
 }
 
-void ForwardLookTableModel::SetIterationToDisplay(const unsigned int iteration)
+void TableModelForwardLook::SetIterationToDisplay(const unsigned int iteration)
 {
   this->IterationToDisplay = iteration;
   Refresh();
 }
 
-int ForwardLookTableModel::rowCount(const QModelIndex& parent) const
+int TableModelForwardLook::rowCount(const QModelIndex& parent) const
 {
   EnterFunction("ForwardLookTableModel::rowCount()");
   if(this->IterationRecords.size() < this->IterationToDisplay ||
@@ -63,14 +63,14 @@ int ForwardLookTableModel::rowCount(const QModelIndex& parent) const
   return rows;
 }
 
-int ForwardLookTableModel::columnCount(const QModelIndex& parent) const
+int TableModelForwardLook::columnCount(const QModelIndex& parent) const
 {
   return 3;
 }
 
-QVariant ForwardLookTableModel::data(const QModelIndex& index, int role) const
+QVariant TableModelForwardLook::data(const QModelIndex& index, int role) const
 {
-  EnterFunction("ForwardLookTableModel::data()");
+  EnterFunction("TableModelForwardLook::data()");
   QVariant returnValue;
   if(role == Qt::DisplayRole && index.row() >= 0)
     {
@@ -109,7 +109,7 @@ QVariant ForwardLookTableModel::data(const QModelIndex& index, int role) const
   return returnValue;
 }
 
-QVariant ForwardLookTableModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant TableModelForwardLook::headerData(int section, Qt::Orientation orientation, int role) const
 {
   QVariant returnValue;
   if(role == Qt::DisplayRole)
@@ -134,14 +134,14 @@ QVariant ForwardLookTableModel::headerData(int section, Qt::Orientation orientat
   return returnValue;
 }
 
-void ForwardLookTableModel::Refresh()
+void TableModelForwardLook::Refresh()
 {
   //std::cout << "ForwardLookTableModel::Refresh(): Displaying iteration: " << this->IterationToDisplay << std::endl;
   beginResetModel();
   endResetModel();
 }
 
-void ForwardLookTableModel::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+void TableModelForwardLook::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
   //std::cout << "ForwardLookTableModel::selectionChanged()" << std::endl;
 }

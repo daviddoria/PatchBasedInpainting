@@ -18,7 +18,7 @@ public:
 
   int rowCount(const QModelIndex  &parent=QModelIndex() ) const;
 
-  int setItems(QVector<ImageInput>* const items);
+  void setItems(QVector<ImageInput>* const items);
 
   Qt::ItemFlags flags (const QModelIndex &index ) const;
 

@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef TopPatchesTableModel_H
-#define TopPatchesTableModel_H
+#ifndef TableModelTopPatches_H
+#define TableModelTopPatches_H
 
 // Qt
 #include <QAbstractTableModel>
@@ -32,10 +32,10 @@
 #include "DisplayStyle.h"
 #include "InpaintingIterationRecord.h"
 
-class TopPatchesTableModel : public QAbstractTableModel, public DebugOutputs
+class TableModelTopPatches : public QAbstractTableModel, public DebugOutputs
 {
 public:
-  TopPatchesTableModel(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& displayStyle);
+  TableModelTopPatches(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& displayStyle);
 
   int rowCount(const QModelIndex& parent) const;
   int columnCount(const QModelIndex& parent) const;
