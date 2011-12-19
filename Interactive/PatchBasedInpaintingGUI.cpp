@@ -72,6 +72,8 @@
 #include "HelpersOutput.h"
 #include "HelpersQt.h"
 #include "InteractorStyleImageWithDrag.h"
+#include "ListModelDisplay.h"
+#include "ListModelSave.h"
 #include "Mask.h"
 #include "PatchSorting.h"
 #include "PixmapDelegate.h"
@@ -239,6 +241,19 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->txtGoToIteration->setValidator(this->IntValidator);
   this->txtNumberOfTopPatchesToDisplay->setValidator(this->IntValidator);
 
+  this->ModelSave = new ListModelSave;
+  this->ModelSave->setItems(&this->ImageInputs);
+  this->listViewSave->setModel(this->ModelSave);
+  
+  this->ModelDisplay = new ListModelDisplay;
+  this->ModelDisplay->setItems(&this->ImageInputs);
+  this->listViewDisplay->setModel(this->ModelDisplay);
+
+  this->ModelImages = new TableModelImageInput;
+  this->ModelImages->setItems(&this->ImageInputs);
+  this->tableViewImages->setModel(this->ModelImages);
+  connect (this->tableViewImages, SIGNAL(clicked(QModelIndex)), this, SLOT(slot_ChangeFileName(QModelIndex)));
+
   LeaveFunction("PatchBasedInpaintingGUI::DefaultConstructor()");
 }
 
@@ -281,6 +296,8 @@ PatchBasedInpaintingGUI::PatchBasedInpaintingGUI(const std::string& imageFileNam
 
   OpenImage(imageFileName);
   OpenMask(maskFileName, false);
+
+  
   Initialize();
   LeaveFunction("PatchBasedInpaintingGUI(string, string, bool)");
 }
@@ -371,9 +388,18 @@ void PatchBasedInpaintingGUI::OpenMask(const std::string& fileName, const bool i
     this->UserMaskImage->Invert();
     }
 
+  this->ImageInputs.push_back(ImageInput("Mask", fileName.c_str(), Qt::Checked, Qt::Checked, &this->MaskLayer));
+
+  UpdateAllImageInputModels();
   //Helpers::DebugWriteImageConditional<Mask>(this->UserMaskImage, "Debug/InvertedMask.png", this->DebugImages);
 }
 
+void PatchBasedInpaintingGUI::UpdateAllImageInputModels()
+{
+  this->ModelSave->Refresh();
+  this->ModelDisplay->Refresh();
+  this->ModelImages->Refresh();
+}
 
 void PatchBasedInpaintingGUI::OpenImage(const std::string& fileName)
 {
@@ -410,6 +436,9 @@ void PatchBasedInpaintingGUI::OpenImage(const std::string& fileName)
                                                              this->UserImage->GetLargestPossibleRegion().GetSize()[1], 1);
   this->AllSourcePatchOutlinesLayer.ImageData->AllocateScalars();
 
+  this->ImageInputs.push_back(ImageInput("Image", fileName.c_str(), Qt::Checked, Qt::Checked, &this->ImageLayer));
+
+  UpdateAllImageInputModels();
 }
 
 void PatchBasedInpaintingGUI::Reset()

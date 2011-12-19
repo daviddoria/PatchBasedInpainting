@@ -15,6 +15,7 @@ FileSelectionWidget.cpp
 ForwardLookTableModel.cpp
 HelpersDisplay.cpp
 HelpersQt.cpp
+ImageInput.cpp
 InpaintingComputationObject.cpp
 InpaintingIterationRecord.cpp
 InteractorStyleImageWithDrag.cpp
@@ -26,6 +27,7 @@ PatchBasedInpaintingGUI.cpp
 PatchBasedInpaintingGUISlots.cpp
 PatchBasedInpaintingInteractive.cpp #driver (contains main())
 PixmapDelegate.cpp
+TableModelImageInput.cpp
 TopPatchesTableModel.cpp
 VectorLayer.cpp
 ${UISrcs} ${MOCSrcs})

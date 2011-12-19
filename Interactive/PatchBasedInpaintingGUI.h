@@ -55,9 +55,13 @@ class vtkPolyDataMapper;
 #include "InpaintingIterationRecord.h"
 #include "Layer.h"
 #include "PatchBasedInpainting.h"
+#include "TableModelImageInput.h"
 #include "TopPatchesTableModel.h"
 #include "Types.h"
 #include "VectorLayer.h"
+
+class ListModelDisplay;
+class ListModelSave;
 
 class InteractorStyleImageWithDrag;
 
@@ -80,6 +84,9 @@ public:
   void Refresh();
 
 public slots:
+
+  void slot_ChangeFileName(QModelIndex);
+
   void DisplayPriorityImages();
 
   void on_chkDisplayUserPatch_clicked();
@@ -333,6 +340,12 @@ protected:
   void SetupConnections();
 
   QVector<ImageInput> ImageInputs;
+
+  ListModelSave* ModelSave;
+  ListModelDisplay* ModelDisplay;
+  TableModelImageInput* ModelImages;
+
+  void UpdateAllImageInputModels();
 };
 
 #endif // PatchBasedInpaintingGUI_H

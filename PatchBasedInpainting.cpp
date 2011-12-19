@@ -394,8 +394,8 @@ void PatchBasedInpainting::FindBestPatch(PatchPair& bestPatchPair)
 
 unsigned int PatchBasedInpainting::GetRequiredHistogramIntersection(const unsigned int bestForwardLookId)
 {
-  float histogramIntersection = 0.0f;
-  unsigned int sourcePatchId = 0;
+//   float histogramIntersection = 0.0f;
+//   unsigned int sourcePatchId = 0;
 
   //this->ColorFrequency.SetDebugFunctionEnterLeave(true);
 //   float requiredHistogramIntersection = 0.75f;
@@ -419,7 +419,8 @@ unsigned int PatchBasedInpainting::GetRequiredHistogramIntersection(const unsign
 //     //Histograms::WriteHistogram(histogram2, ssTarget.str());
 //   } while (histogramIntersection < requiredHistogramIntersection && sourcePatchId < this->PotentialCandidatePairs[bestForwardLookId].size());
 
-  return sourcePatchId;
+//   return sourcePatchId;
+return 0;
 }
 
 unsigned int PatchBasedInpainting::ComputeMinimumScoreLookAhead()

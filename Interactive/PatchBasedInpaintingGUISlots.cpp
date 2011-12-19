@@ -33,6 +33,19 @@
 #include <QFileDialog>
 #include <QTextEdit>
 
+void PatchBasedInpaintingGUI::slot_ChangeFileName(QModelIndex index)
+{
+  std::cout << "Clicked row " << index.row() << " column " << index.column() << std::endl;
+  if (index.column() == TableModelImageInput::FILENAME_COLUMN)
+    {
+    QString fileName = QFileDialog::getOpenFileName(this, "Open", "", "Files (*.mha, *.png)");
+    if(!fileName.isEmpty())
+      {
+      this->ModelImages->setData(index, fileName, Qt::EditRole);
+      }
+    }
+}
+
 void PatchBasedInpaintingGUI::on_chkDisplayUserPatch_clicked()
 {
   this->UserPatchLayer.ImageSlice->SetVisibility(this->chkDisplayUserPatch->isChecked());

@@ -11,6 +11,7 @@ QVariant ListModelDisplay::data (const QModelIndex  &index , int role ) const
 
   if (role == Qt::DisplayRole || role == Qt::EditRole)
     {
+    std::cout << "ListModelDisplay Name " << index.row() << " " << this->Items->at(index.row()).Name.toStdString() << std::endl;
     return this->Items->at(index.row()).Name;
     }
 
@@ -31,7 +32,7 @@ bool ListModelDisplay::setData (const QModelIndex &index, const QVariant &value,
 
   if(role == Qt::CheckStateRole)
     {
-    (*this->Items)[index.row()].Display= static_cast<Qt::CheckState>(value.toUInt());
+    (*this->Items)[index.row()].Display = static_cast<Qt::CheckState>(value.toUInt());
     }
 
   emit dataChanged(index, index);

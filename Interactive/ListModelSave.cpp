@@ -11,12 +11,13 @@ QVariant ListModelSave::data (const QModelIndex  &index , int role ) const
 
   if (role == Qt::DisplayRole || role == Qt::EditRole)
     {
+    std::cout << "ListModelSave Name " << index.row() << " " << this->Items->at(index.row()).Name.toStdString() << std::endl;
     return this->Items->at(index.row()).Name;
     }
 
   if(role == Qt::CheckStateRole)
     {
-    return this->Items->at(index.row()).Display;
+    return this->Items->at(index.row()).Save;
     }
 
   return QVariant();
@@ -31,7 +32,7 @@ bool ListModelSave::setData (const QModelIndex &index, const QVariant &value, in
 
   if(role == Qt::CheckStateRole)
     {
-    (*this->Items)[index.row()].Display = static_cast<Qt::CheckState>(value.toUInt());
+    (*this->Items)[index.row()].Save = static_cast<Qt::CheckState>(value.toUInt());
     }
 
   emit dataChanged(index, index);
