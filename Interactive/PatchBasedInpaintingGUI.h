@@ -88,8 +88,6 @@ public slots:
 
   void slot_ChangeFileName(QModelIndex);
 
-  //void DisplayPriorityImages();
-
   void on_chkDisplayUserPatch_clicked();
 
   void on_cmbCompareImage_activated(int value);
@@ -162,6 +160,8 @@ public slots:
   void on_txtNumberOfTopPatchesToDisplay_textEdited ( const QString & text );
 
 protected:
+
+  void showEvent ( QShowEvent * event );
 
   void Reset();
 
@@ -337,8 +337,6 @@ protected:
   void SetDepthColorLambdaFromGUI();
   void SetParametersFromGUI();
 
-  std::vector<QCheckBox*> PriorityImageCheckBoxes;
-
   void SetupConnections();
 
   QVector<ImageInput> ImageInputs;
@@ -348,6 +346,12 @@ protected:
   TableModelImageInput* ModelImages;
 
   void UpdateAllImageInputModels();
+
+  void OpenInputImages();
+
+  NamedITKImageCollection InputImages;
+
+  void SetupSaveModel();
 };
 
 #endif // PatchBasedInpaintingGUI_H

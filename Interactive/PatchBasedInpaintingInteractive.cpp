@@ -71,7 +71,7 @@ int main( int argc, char** argv )
       for(unsigned int i = 0; i < extraFileNames.size(); i += 2)
         {
         std::cout << "Extra file name value " << i << " " << extraFileNames[i] << " " << i + 1 << " " << extraFileNames[i + 1] << std::endl;
-        ImageInput imageInput(extraFileNames[i].c_str(), extraFileNames[i + 1].c_str(), Qt::Unchecked, Qt::Unchecked);
+        ImageInput imageInput(extraFileNames[i].c_str(), extraFileNames[i + 1].c_str());
         patchBasedInpaintingGUI->AddImageInput(imageInput);
         }
       }

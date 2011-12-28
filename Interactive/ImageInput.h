@@ -19,31 +19,24 @@
 #ifndef ImageInput_H
 #define ImageInput_H
 
-class ListModelDisplay;
-class ListModelSave;
-
 #include <QString>
+#include <QVector>
 #include <iostream>
 
 class ImageInput
 {
 public:
-  ImageInput(const QString& name = QString(), const QString& fileName = QString(), const Qt::CheckState display = Qt::Unchecked,
-             const Qt::CheckState save = Qt::Unchecked);
-             //const Qt::CheckState save = Qt::Unchecked, Layer* const layer = new Layer);
+  ImageInput(const QString& name = QString(), const QString& fileName = QString());
 
-private:
+//private:
 
-  friend class ListModelDisplay;
-  friend class ListModelSave;
-  friend class TableModelImageInput;
+  //friend class TableModelImageInput;
 
   QString Name;
   QString FileName;
 
-  Qt::CheckState Display;
-  Qt::CheckState Save;
-
 };
+
+bool ImageExists(const QVector<ImageInput>&, const QString& name);
 
 #endif

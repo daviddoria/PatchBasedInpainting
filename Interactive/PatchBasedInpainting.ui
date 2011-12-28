@@ -35,7 +35,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>3</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tabCompute">
          <attribute name="title">
@@ -124,7 +124,11 @@
              </widget>
             </item>
             <item>
-             <widget class="QListView" name="listViewDisplay"/>
+             <widget class="QListView" name="listViewDisplay">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>

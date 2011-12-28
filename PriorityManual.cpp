@@ -45,7 +45,7 @@ float PriorityManual::ComputePriority(const itk::Index<2>& queryPixel)
   return priority;
 }
 
-void PriorityManual::SetManualPriorityImage(UnsignedCharScalarImageType::Pointer image)
+void PriorityManual::SetManualPriorityImage(UnsignedCharScalarImageType* const image)
 {
   //this->ManualPriorityImage = image;
   Helpers::DeepCopy<UnsignedCharScalarImageType>(image, this->ManualPriorityImage);

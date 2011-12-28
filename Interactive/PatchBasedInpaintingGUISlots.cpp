@@ -503,42 +503,42 @@ void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToDisplay_textEdited ( con
 
 void PatchBasedInpaintingGUI::on_cmbPriority_activated(int value)
 {
-  SetPriorityFromGUI();
+  SetupSaveModel();
 }
 
 void PatchBasedInpaintingGUI::on_cmbSortBy_activated(int value)
 {
-  SetSortFunctionFromGUI();
+  
 }
 
 void PatchBasedInpaintingGUI::on_chkCompareHistogramIntersection_clicked()
 {
-  SetComparisonFunctionsFromGUI();
+  
 }
 
 void PatchBasedInpaintingGUI::on_chkCompareMembership_clicked()
 {
-  SetComparisonFunctionsFromGUI();
+  
 }
 
 void PatchBasedInpaintingGUI::on_chkCompareFull_clicked()
 {
-  SetComparisonFunctionsFromGUI();
+  
 }
 
 void PatchBasedInpaintingGUI::on_chkCompareColor_clicked()
 {
-  SetComparisonFunctionsFromGUI();
+  
 }
 
 void PatchBasedInpaintingGUI::on_chkCompareDepth_clicked()
 {
-  SetComparisonFunctionsFromGUI();
+  
 }
 
 void PatchBasedInpaintingGUI::on_sldDepthColorLambda_valueChanged()
 {
-  SetDepthColorLambdaFromGUI();
+  
 }
 
 void PatchBasedInpaintingGUI::slot_ChangeDisplayedImages(QModelIndex)

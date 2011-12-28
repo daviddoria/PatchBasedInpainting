@@ -240,7 +240,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->txtNumberOfTopPatchesToDisplay->setValidator(this->IntValidator);
 
   this->ModelSave = new ListModelSave;
-  this->ModelSave->setItems(&this->ImageInputs);
+  //this->ModelSave->setItems(&this->ImageInputs);
   this->listViewSave->setModel(this->ModelSave);
 
   this->ModelDisplay = new ListModelDisplay;
@@ -275,6 +275,11 @@ void PatchBasedInpaintingGUI::SetupConnections()
   connect(this->InpaintingComputation, SIGNAL(IterationComplete(const PatchPair&)),
           this, SLOT(slot_IterationComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
 
+}
+
+void PatchBasedInpaintingGUI::showEvent ( QShowEvent * event )
+{
+  SetupSaveModel();
 }
 
 // Default constructor
@@ -387,7 +392,7 @@ void PatchBasedInpaintingGUI::OpenMask(const std::string& fileName, const bool i
     this->UserMaskImage->Invert();
     }
 
-  this->ImageInputs.push_back(ImageInput("Mask", fileName.c_str(), Qt::Checked, Qt::Checked));
+  this->ImageInputs.push_back(ImageInput("Mask", fileName.c_str()));
 
   UpdateAllImageInputModels();
   //Helpers::DebugWriteImageConditional<Mask>(this->UserMaskImage, "Debug/InvertedMask.png", this->DebugImages);
@@ -435,7 +440,7 @@ void PatchBasedInpaintingGUI::OpenImage(const std::string& fileName)
                                                              this->UserImage->GetLargestPossibleRegion().GetSize()[1], 1);
   this->AllSourcePatchOutlinesLayer.ImageData->AllocateScalars();
 
-  this->ImageInputs.push_back(ImageInput("Image", fileName.c_str(), Qt::Checked, Qt::Checked));
+  this->ImageInputs.push_back(ImageInput("Image", fileName.c_str()));
 
   UpdateAllImageInputModels();
 }
@@ -1078,6 +1083,8 @@ void PatchBasedInpaintingGUI::ChangeDisplayedIteration()
 
   this->RecordToDisplay = &IterationRecords[this->IterationToDisplay];
 
+  this->ModelDisplay->SetIterationRecord(this->RecordToDisplay);
+
   this->SourcePatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->ForwardLookToDisplayId][this->SourcePatchToDisplayId].SourcePatch;
   this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->ForwardLookToDisplayId].TargetPatch;
 
@@ -1427,13 +1434,14 @@ void PatchBasedInpaintingGUI::SetPriorityFromGUI()
   if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Manual"))
     {
     this->Inpainting->SetPriorityFunction<PriorityManual>();
-
-    UnsignedCharScalarImageType::Pointer manualPriorityImage = UnsignedCharScalarImageType::New();
-    std::string manualPriorityImageFileName = "/media/portable/Data/LidarImageCompletion/PaperDataSets/trashcan/trashcan_medium/trashcan_manualPriority.mha";
-    Helpers::ReadImage<UnsignedCharScalarImageType>(manualPriorityImageFileName, manualPriorityImage);
-    std::cout << "manualPriorityImage non-zero pixels: " << Helpers::CountNonZeroPixels<UnsignedCharScalarImageType>(manualPriorityImage) << std::endl;
-
-    reinterpret_cast<PriorityManual*>(this->Inpainting->GetPriorityFunction())->SetManualPriorityImage(manualPriorityImage);
+    if(!ImageExists(this->ImageInputs, "ManualPriority"))
+      {
+      std::cerr << "Must have a ManualPriority input image to use this priority mode!" << std::endl;
+      exit(-1);
+      }
+    std::cerr << "Setting PriorityManual not yet implemented!" << std::endl; // TODO
+    exit(-1);
+    //reinterpret_cast<PriorityManual*>(this->Inpainting->GetPriorityFunction())->SetManualPriorityImage(this->InputImages.FindImageByName("ManualPriority").Image.GetPointer());
     }
   else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "OnionPeel"))
     {
@@ -1452,33 +1460,67 @@ void PatchBasedInpaintingGUI::SetPriorityFromGUI()
     this->Inpainting->SetPriorityFunction<PriorityCriminisi>();
     }
 
-  // Delete the old checkboxes
-  for(unsigned int i = 0; i < PriorityImageCheckBoxes.size(); ++i)
-    {
-    std::cout << "Removing " << this->PriorityImageCheckBoxes[i]->text().toStdString() << std::endl;
-    this->verticalLayoutPriority->removeWidget(this->PriorityImageCheckBoxes[i]);
-    delete this->PriorityImageCheckBoxes[i];
-    this->PriorityImageCheckBoxes.resize(this->PriorityImageCheckBoxes.size() - 1);
-    }
-
-  this->PriorityImageCheckBoxes.clear();
-
-  // Add the new checkboxes
+  // Add priority images to save and display models
   std::vector<NamedVTKImage> namedImages = this->Inpainting->GetPriorityFunction()->GetNamedImages();
 
   for(unsigned int i = 0; i < namedImages.size(); ++i)
     {
-    std::cout << "Adding " << namedImages[i].Name << std::endl;
-    QCheckBox* extraCheckBox = new QCheckBox(namedImages[i].Name.c_str(), this );
-    connect(extraCheckBox, SIGNAL(clicked()), this, SLOT(DisplayPriorityImages()));
-    this->PriorityImageCheckBoxes.push_back(extraCheckBox);
-    this->verticalLayoutPriority->addWidget(extraCheckBox);
+    std::cout << "SetPriorityFromGUI: Adding " << namedImages[i].Name << std::endl;
+    
     }
 
-  //this->Inpainting.GetPriorityFunction()->SetDebugFunctionEnterLeave(true);
 }
 
 void PatchBasedInpaintingGUI::AddImageInput(const ImageInput& imageInput)
 {
   this->ImageInputs.push_back(imageInput);
+}
+
+void PatchBasedInpaintingGUI::OpenInputImages()
+{
+  for(int i = 0; i < this->ImageInputs.size(); ++i)
+    {
+    typedef itk::ImageFileReader<FloatVectorImageType> ImageReaderType;
+    ImageReaderType::Pointer reader = ImageReaderType::New();
+    reader->SetFileName(this->ImageInputs[i].FileName.toStdString());
+    reader->Update();
+    this->InputImages.push_back(NamedITKImage(reader->GetOutput(), false, this->ImageInputs[i].Name.toStdString()));
+    }
+}
+
+void PatchBasedInpaintingGUI::SetupSaveModel()
+{
+  this->ModelSave->Clear();
+  for(unsigned int i = 0; i < this->InputImages.size(); ++i)
+    {
+    this->ModelSave->Add(this->InputImages[i].Name.c_str(), Qt::Checked);
+    }
+
+  std::vector<std::string> priorityImageNames;
+  if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Manual"))
+    {
+    priorityImageNames = PriorityManual::GetImageNames();
+    }
+  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "OnionPeel"))
+    {
+    priorityImageNames = PriorityOnionPeel::GetImageNames();
+    }
+  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Random"))
+    {
+    priorityImageNames = PriorityRandom::GetImageNames();
+    }
+  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Depth"))
+    {
+    priorityImageNames = PriorityDepth::GetImageNames();
+    }
+  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Criminisi"))
+    {
+    priorityImageNames = PriorityCriminisi::GetImageNames();
+    }
+
+  for(unsigned int i = 0; i < priorityImageNames.size(); ++i)
+    {
+    this->ModelSave->Add(priorityImageNames[i].c_str(), Qt::Checked);
+    }
+
 }

@@ -23,6 +23,12 @@ PriorityRandom::PriorityRandom(FloatVectorImageType* image, Mask* maskImage, con
 
 }
 
+std::vector<std::string> PriorityRandom::GetImageNames()
+{
+  std::vector<std::string> imageNames = Priority::GetImageNames();
+  return imageNames;
+}
+
 float PriorityRandom::ComputePriority(const itk::Index<2>& queryPixel)
 {
   return drand48();

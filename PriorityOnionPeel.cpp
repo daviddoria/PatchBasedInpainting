@@ -36,6 +36,13 @@ PriorityOnionPeel::PriorityOnionPeel(const FloatVectorImageType* image, const Ma
   InitializeConfidenceMap();
 }
 
+std::vector<std::string> PriorityOnionPeel::GetImageNames()
+{
+  std::vector<std::string> imageNames = Priority::GetImageNames();
+  imageNames.push_back("ConfidenceMap");
+  return imageNames;
+}
+
 std::vector<NamedVTKImage> PriorityOnionPeel::GetNamedImages()
 {
   std::vector<NamedVTKImage> namedImages = Priority::GetNamedImages();

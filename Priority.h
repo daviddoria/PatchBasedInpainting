@@ -46,6 +46,7 @@ public:
   void UpdateBoundary();
 
   virtual std::vector<NamedVTKImage> GetNamedImages();
+  static std::vector<std::string> GetImageNames();
 
 protected:
 

@@ -49,6 +49,14 @@ PriorityCriminisi::PriorityCriminisi(const FloatVectorImageType* image, const Ma
 
 }
 
+std::vector<std::string> PriorityCriminisi::GetImageNames()
+{
+  std::vector<std::string> imageNames = PriorityOnionPeel::GetImageNames();
+  imageNames.push_back("Isophotes");
+  imageNames.push_back("BoundaryNormals");
+  return imageNames;
+}
+
 std::vector<NamedVTKImage> PriorityCriminisi::GetNamedImages()
 {
   std::vector<NamedVTKImage> namedImages = PriorityOnionPeel::GetNamedImages();

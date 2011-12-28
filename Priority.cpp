@@ -54,6 +54,13 @@ std::vector<NamedVTKImage> Priority::GetNamedImages()
   return namedImages;
 }
 
+std::vector<std::string> Priority::GetImageNames()
+{
+  std::vector<std::string> imageNames;
+  imageNames.push_back("Priority");
+  return imageNames;
+}
+
 void Priority::Update(const itk::ImageRegion<2>& filledRegion)
 {
   // Do nothing in the default implementation.

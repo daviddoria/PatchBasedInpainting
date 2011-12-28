@@ -32,7 +32,7 @@ public:
   float ComputePriority(const itk::Index<2>& queryPixel);
 
   // New functions
-  void SetManualPriorityImage(UnsignedCharScalarImageType::Pointer);
+  void SetManualPriorityImage(UnsignedCharScalarImageType* const);
 
 protected:
   UnsignedCharScalarImageType::Pointer ManualPriorityImage;

@@ -38,7 +38,7 @@
 
 struct NamedITKImage
 {
-  NamedITKImage() : Image(NULL), Vectors(false), Name("Unnamed") {}
+  NamedITKImage(itk::ImageBase<2>* const image = NULL, const bool vectors = false, const std::string& name = "Unnamed") : Image(image), Vectors(vectors), Name(name) {}
 
   //itk::ImageBase<2>* Image;
   itk::ImageBase<2>::Pointer Image;

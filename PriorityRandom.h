@@ -27,6 +27,8 @@ public:
   PriorityRandom(FloatVectorImageType* image, Mask* maskImage, const unsigned int patchRadius);
 
   float ComputePriority(const itk::Index<2>& queryPixel);
+
+  static std::vector<std::string> GetImageNames();
 };
 
 #endif

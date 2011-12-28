@@ -44,6 +44,7 @@ public:
   FloatScalarImageType::Pointer GetConfidenceMapImage();
 
   std::vector<NamedVTKImage> GetNamedImages();
+  static std::vector<std::string> GetImageNames();
 
 protected:
 
