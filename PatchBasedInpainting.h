@@ -112,6 +112,7 @@ public:
 private:
 
   void SetupHistograms();
+  void ColorImageInsideHole();
 
   void RecomputeScoresWithNewPatches(std::vector<Patch>& newPatches, PatchPair& usedPatchPair);
 

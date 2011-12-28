@@ -46,25 +46,20 @@
 #include "itkVectorImageToImageAdaptor.h"
 #include "itkVectorIndexSelectionCastImageFilter.h"
 
-//PatchBasedInpainting::PatchBasedInpainting()
 PatchBasedInpainting::PatchBasedInpainting(const FloatVectorImageType* image, const Mask* mask)
 {
   EnterFunction("CriminisiInpainting()");
 
   this->PatchRadius.Fill(3);
 
-  // We don't want to modify the input images.
+  // We don't want to modify the input images, so we copy them.
   this->MaskImage = Mask::New();
   this->MaskImage->DeepCopyFrom(mask);
 
-  // The target image is colored bright green inside the hole. This is helpful when watching the inpainting proceed.
   this->CurrentInpaintedImage = FloatVectorImageType::New();
   Helpers::DeepCopy<FloatVectorImageType>(image, this->CurrentInpaintedImage);
-  FloatVectorImageType::PixelType fillColor;
-  fillColor.SetSize(this->CurrentInpaintedImage->GetNumberOfComponentsPerPixel());
-  fillColor.Fill(0);
-  fillColor[0] = 255;
-  this->MaskImage->ApplyToImage<FloatVectorImageType>(this->CurrentInpaintedImage, fillColor);
+
+  ColorImageInsideHole();
 
   this->FullImageRegion = image->GetLargestPossibleRegion();
   if(this->MaskImage->GetLargestPossibleRegion() != this->FullImageRegion)
@@ -74,20 +69,34 @@ PatchBasedInpainting::PatchBasedInpainting(const FloatVectorImageType* image, co
     exit(-1);
     }
 
+  // We definitely want to update the image and the mask. We can add more images to the list to update later if necessary.
   ImagesToUpdate.push_back(this->CurrentInpaintedImage);
   ImagesToUpdate.push_back(this->MaskImage); // We MUST update the mask LAST, because it is used to know where to update everything else!
 
   // Set the image to use for pixel to pixel comparisons.
   this->CompareImage = this->CurrentInpaintedImage;
 
+  // Set defaults
   this->NumberOfCompletedIterations = 0;
 
   this->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
 
   this->PatchCompare = new SelfPatchCompare;
-  //this->PatchCompare->ColorFrequency = &(this->ColorFrequency); // Give access to the histograms
 
   this->PriorityFunction = NULL; // Can't initialize this here, must wait until the image and mask are opened
+}
+
+void PatchBasedInpainting::ColorImageInsideHole()
+{
+  // Color the target image bright green inside the hole. This is helpful when watching the inpainting proceed, as you can clearly see
+  // the region that is being filled.
+  
+  FloatVectorImageType::PixelType fillColor;
+  fillColor.SetSize(this->CurrentInpaintedImage->GetNumberOfComponentsPerPixel());
+  fillColor.Fill(0);
+  fillColor[0] = 255;
+  // We could use MaskImage->ApplyColorToImage here to use a predefined QColor, but this would introduce a dependency on Qt in the non-GUI part of the code.
+  this->MaskImage->ApplyToImage<FloatVectorImageType>(this->CurrentInpaintedImage, fillColor);
 }
 
 bool PatchBasedInpainting::PatchExists(const itk::ImageRegion<2>& region)
@@ -247,21 +256,6 @@ PatchPair PatchBasedInpainting::Iterate()
 
   std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
 
-//   if(this->DebugImages)
-//     {
-//     std::stringstream ssSource;
-//     ssSource << "Debug/source_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
-//     HelpersOutput::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.SourcePatch, ssSource.str());
-//
-//     std::stringstream ssTargetMHA;
-//     ssTargetMHA << "Debug/target_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".mha";
-//     HelpersOutput::WritePatch<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch, ssTargetMHA.str());
-//
-//     std::stringstream ssTargetPNG;
-//     ssTargetPNG << "Debug/target_" << Helpers::ZeroPad(this->NumberOfCompletedIterations, 3) << ".png";
-//     Helpers::WriteRegionUnsignedChar<FloatVectorImageType>(this->CurrentOutputImage, usedPatchPair.TargetPatch.Region, ssTargetPNG.str());
-//     }
-
   // Copy the patch. This is the actual inpainting step.
   ImagesToUpdate.CopySelfPatchIntoHoleOfTargetRegion(this->MaskImage, usedPatchPair.SourcePatch.Region, usedPatchPair.TargetPatch.Region);
   std::cout << "Image size: " << this->CurrentInpaintedImage->GetLargestPossibleRegion().GetSize() << std::endl;
@@ -278,9 +272,6 @@ PatchPair PatchBasedInpainting::Iterate()
     DebugWriteAllImages();
     }
 
-  // Add new source patches
-  // Get the region of pixels which were previous touching the hole which was the target region.
-
   // Shift the top left corner to a position where the same size patch would overlap only the top left pixel.
   itk::Index<2> previousInvalidRegionIndex;
   previousInvalidRegionIndex[0] = usedPatchPair.TargetPatch.Region.GetIndex()[0] - this->PatchRadius[0];
@@ -294,18 +285,9 @@ PatchPair PatchBasedInpainting::Iterate()
 
   itk::ImageRegion<2> previousInvalidRegion(previousInvalidRegionIndex, previousInvalidRegionSize);
 
-  //std::cout << "Used target region: " << usedPatchPair.TargetPatch.Region << std::endl;
-  //std::cout << "Previously invalid region: " << previousInvalidRegion << std::endl;
-
   std::vector<Patch> newPatches = AddNewSourcePatchesInRegion(previousInvalidRegion);
 
   RecomputeScoresWithNewPatches(newPatches, usedPatchPair);
-
-  // At the end of an iteration, things would be slightly out of sync. The boundary is computed at the beginning of the iteration (before the patch is filled),
-  // so at the end of the iteration, the boundary image will not correspond to the boundary of the remaining hole in the image - it will be off by 1 iteration.
-  // We fix this by computing the boundary and boundary normals again at the end of the iteration.
-  //FindBoundary();
-  //ComputeBoundaryNormals(blurVariance);
 
   this->NumberOfCompletedIterations++;
 
@@ -376,10 +358,6 @@ void PatchBasedInpainting::FindBestPatch(PatchPair& bestPatchPair)
   this->PatchCompare->SetMembershipImage(this->MembershipImage);
   this->PatchCompare->ComputeAllSourceDifferences();
 
-  //std::cout << "FindBestPatch: Finished ComputeAllSourceDifferences()" << std::endl;
-
-  //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByAverageAbsoluteDifference);
-  //std::sort(candidatePairs.begin(), candidatePairs.end(), SortByDepthAndColor);
   std::sort(candidatePairs.begin(), candidatePairs.end(), SortFunctorWrapper(this->PatchSortFunction));
 
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
@@ -473,7 +451,6 @@ bool PatchBasedInpainting::HasMoreToInpaint()
   EnterFunction("HasMoreToInpaint()");
   try
   {
-
     HelpersOutput::WriteImageConditional<Mask>(this->MaskImage, "Debug/HasMoreToInpaint.input.png", this->DebugImages);
 
     itk::ImageRegionIterator<Mask> maskIterator(this->MaskImage, this->MaskImage->GetLargestPossibleRegion());
@@ -481,9 +458,9 @@ bool PatchBasedInpainting::HasMoreToInpaint()
     while(!maskIterator.IsAtEnd())
       {
       if(this->MaskImage->IsHole(maskIterator.GetIndex()))
-	{
-	return true;
-	}
+        {
+        return true;
+        }
 
       ++maskIterator;
       }

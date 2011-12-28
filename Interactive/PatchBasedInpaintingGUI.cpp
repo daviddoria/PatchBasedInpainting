@@ -97,60 +97,14 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   this->setupUi(this);
 
-  this->PatchRadius = 10;
-  this->NumberOfTopPatchesToSave = 0;
-  this->NumberOfForwardLook = 0;
-  this->GoToIteration = 0;
-  this->NumberOfTopPatchesToDisplay = 0;
-
-  this->CameraLeftToRightVector.resize(3);
-  this->CameraLeftToRightVector[0] = -1;
-  this->CameraLeftToRightVector[1] = 0;
-  this->CameraLeftToRightVector[2] = 0;
-
-  this->CameraBottomToTopVector.resize(3);
-  this->CameraBottomToTopVector[0] = 0;
-  this->CameraBottomToTopVector[1] = 1;
-  this->CameraBottomToTopVector[2] = 0;
-
-  this->PatchDisplaySize = 100;
+  SetDefaultValues();
+  SetupCamera();
 
   SetupColors();
 
-  QBrush brush;
-  brush.setStyle(Qt::SolidPattern);
-  brush.setColor(this->SceneBackgroundColor);
+  SetupScenes();
 
-  this->TargetPatchScene = new QGraphicsScene();
-  this->TargetPatchScene->setBackgroundBrush(brush);
-  this->gfxTarget->setScene(TargetPatchScene);
-
-  this->SourcePatchScene = new QGraphicsScene();
-  this->SourcePatchScene->setBackgroundBrush(brush);
-  this->gfxSource->setScene(SourcePatchScene);
-
-  this->ResultPatchScene = new QGraphicsScene();
-  this->ResultPatchScene->setBackgroundBrush(brush);
-  this->gfxResult->setScene(ResultPatchScene);
-
-  this->UserPatchScene = new QGraphicsScene();
-  this->UserPatchScene->setBackgroundBrush(brush);
-  this->gfxUserPatch->setScene(UserPatchScene);
-
-  this->IterationToDisplay = 0;
-  this->ForwardLookToDisplayId = 0;
-  this->SourcePatchToDisplayId = 0;
-
-  // Setup icons
-  QIcon openIcon = QIcon::fromTheme("document-open");
-  QIcon saveIcon = QIcon::fromTheme("document-save");
-
-  // Setup toolbar
-  actionOpen->setIcon(openIcon);
-  this->toolBar->addAction(actionOpen);
-
-  actionSaveResult->setIcon(saveIcon);
-  this->toolBar->addAction(actionSaveResult);
+  SetupToolbar();
 
   this->InteractorStyle = vtkSmartPointer<InteractorStyleImageWithDrag>::New();
   this->InteractorStyle->TrackballStyle->AddObserver(CustomTrackballStyle::PatchesMovedEvent, this, &PatchBasedInpaintingGUI::UserPatchMoved);
@@ -159,6 +113,99 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->Renderer = vtkSmartPointer<vtkRenderer>::New();
   this->qvtkWidget->GetRenderWindow()->AddRenderer(this->Renderer);
 
+  SetupLayers();
+  
+  this->InteractorStyle->SetCurrentRenderer(this->Renderer);
+  this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
+  this->InteractorStyle->Init();
+
+  this->UserImage = FloatVectorImageType::New();
+  this->UserMaskImage = Mask::New();
+
+  SetupComputationThread();
+
+  SetupConnections();
+
+  SetProgressBarToMarquee();
+
+  InitializeGUIElements();
+
+  ConnectForwardLookModelToView();
+  ConnectTopPatchesModelToView();
+  
+  SetupUserPatch();
+
+  SetupValidators();
+
+  SetupImageModels();
+
+  LeaveFunction("PatchBasedInpaintingGUI::DefaultConstructor()");
+}
+
+void PatchBasedInpaintingGUI::SetDefaultValues()
+{
+  this->PatchRadius = 10;
+  this->NumberOfTopPatchesToSave = 0;
+  this->NumberOfForwardLook = 0;
+  this->GoToIteration = 0;
+  this->NumberOfTopPatchesToDisplay = 0;
+
+  this->PatchDisplaySize = 100;
+
+  this->IterationToDisplay = 0;
+  this->ForwardLookToDisplayId = 0;
+  this->SourcePatchToDisplayId = 0;
+}
+
+void PatchBasedInpaintingGUI::SetupImageModels()
+{
+  this->ModelSave = new ListModelSave;
+  this->listViewSave->setModel(this->ModelSave);
+
+  this->ModelDisplay = new ListModelDisplay;
+  this->listViewDisplay->setModel(this->ModelDisplay);
+  connect (this->listViewDisplay, SIGNAL(clicked(QModelIndex)), this, SLOT(slot_ChangeDisplayedImages(QModelIndex)));
+
+  this->ModelImages = new TableModelImageInput;
+  this->ModelImages->setItems(&this->ImageInputs);
+  this->tableViewImages->setModel(this->ModelImages);
+  connect (this->tableViewImages, SIGNAL(clicked(QModelIndex)), this, SLOT(slot_ChangeFileName(QModelIndex)));
+}
+
+void PatchBasedInpaintingGUI::SetupComputationThread()
+{
+  this->ComputationThread = new QThread;
+  this->InpaintingComputation = new InpaintingComputationObject;
+  this->InpaintingComputation->moveToThread(this->ComputationThread);
+}
+
+void PatchBasedInpaintingGUI::SetupToolbar()
+{
+  // Setup icons
+  QIcon openIcon = QIcon::fromTheme("document-open");
+  QIcon saveIcon = QIcon::fromTheme("document-save");
+
+  // Attach icons to actions
+  actionOpen->setIcon(openIcon);
+  this->toolBar->addAction(actionOpen);
+
+  actionSaveResult->setIcon(saveIcon);
+  this->toolBar->addAction(actionSaveResult);
+}
+
+void PatchBasedInpaintingGUI::SetupUserPatch()
+{
+  Helpers::CreateTransparentVTKImage(Helpers::SizeFromRadius(this->PatchRadius), this->UserPatchLayer.ImageData);
+  unsigned char userPatchColor[3];
+  HelpersQt::QColorToUCharColor(this->UserPatchColor, userPatchColor);
+  Helpers::BlankAndOutlineImage(this->UserPatchLayer.ImageData, userPatchColor);
+
+  itk::Size<2> patchSize = Helpers::SizeFromRadius(this->PatchRadius);
+  this->UserPatchRegion.SetSize(patchSize);
+}
+
+void PatchBasedInpaintingGUI::SetupLayers()
+{
   this->UserPatchLayer.ImageSlice->SetPickable(true);
 
   this->ImageLayer.ImageSlice->SetPickable(false);
@@ -176,33 +223,27 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->Renderer->AddViewProp(this->AllForwardLookOutlinesLayer.ImageSlice);
 
   this->Renderer->AddViewProp(this->UserPatchLayer.ImageSlice);
+}
 
-  this->InteractorStyle->SetCurrentRenderer(this->Renderer);
-  this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
-  this->InteractorStyle->Init();
+void PatchBasedInpaintingGUI::SetupValidators()
+{
+  this->IntValidator = new QIntValidator(0, 10000, this);
+  this->txtPatchRadius->setValidator(this->IntValidator);
+  this->txtNumberOfTopPatchesToSave->setValidator(this->IntValidator);
+  this->txtNumberOfForwardLook->setValidator(this->IntValidator);
+  this->txtGoToIteration->setValidator(this->IntValidator);
+  this->txtNumberOfTopPatchesToDisplay->setValidator(this->IntValidator);
+}
 
-  this->UserImage = FloatVectorImageType::New();
-  this->UserMaskImage = Mask::New();
-
-  this->ComputationThread = new QThread;
-  this->InpaintingComputation = new InpaintingComputationObject;
-  this->InpaintingComputation->moveToThread(this->ComputationThread);
-
-  SetupConnections();
-  
-  //disconnect(this->topPatchesTableWidget, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_topPatchesTableWidget_currentCellChanged(int,int,int,int)), Qt::AutoConnection);
-  //this->topPatchesTableWidget->disconnect(SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_topPatchesTableWidget_currentCellChanged(int,int,int,int)));
-  //this->topPatchesTableWidget->disconnect();
-  //connect(this->topPatchesTableWidget, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(on_topPatchesTableWidget_currentCellChanged(int,int,int,int)), Qt::BlockingQueuedConnection);
-
-  // Set the progress bar to marquee mode
+void PatchBasedInpaintingGUI::SetProgressBarToMarquee()
+{
   this->progressBar->setMinimum(0);
   this->progressBar->setMaximum(0);
   this->progressBar->hide();
+}
 
-  InitializeGUIElements();
-
-  // Setup forwardLook table
+void PatchBasedInpaintingGUI::ConnectForwardLookModelToView()
+{
   this->ForwardLookModel = new TableModelForwardLook(this->IterationRecords, this->ImageDisplayStyle);
   this->ForwardLookTableView->setModel(this->ForwardLookModel);
   this->ForwardLookTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
@@ -212,8 +253,10 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   this->connect(this->ForwardLookTableView->selectionModel(), SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
                 SLOT(slot_ForwardLookTableView_changed(const QModelIndex & , const QModelIndex & )));
+}
 
-  // Setup top patches table
+void PatchBasedInpaintingGUI::ConnectTopPatchesModelToView()
+{
   this->TopPatchesModel = new TableModelTopPatches(this->IterationRecords, this->ImageDisplayStyle);
   this->TopPatchesTableView->setModel(this->TopPatchesModel);
   this->TopPatchesTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
@@ -223,37 +266,42 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   this->connect(this->TopPatchesTableView->selectionModel(), SIGNAL(currentChanged (const QModelIndex & , const QModelIndex & )),
                 SLOT(slot_TopPatchesTableView_changed(const QModelIndex & , const QModelIndex & )));
+}
 
-  Helpers::CreateTransparentVTKImage(Helpers::SizeFromRadius(this->PatchRadius), this->UserPatchLayer.ImageData);
-  unsigned char userPatchColor[3];
-  HelpersQt::QColorToUCharColor(this->UserPatchColor, userPatchColor);
-  Helpers::BlankAndOutlineImage(this->UserPatchLayer.ImageData, userPatchColor);
+void PatchBasedInpaintingGUI::SetupScenes()
+{
+  QBrush brush;
+  brush.setStyle(Qt::SolidPattern);
+  brush.setColor(this->SceneBackgroundColor);
+  
+  this->TargetPatchScene = new QGraphicsScene();
+  this->TargetPatchScene->setBackgroundBrush(brush);
+  this->gfxTarget->setScene(TargetPatchScene);
 
-  itk::Size<2> patchSize = Helpers::SizeFromRadius(this->PatchRadius);
-  this->UserPatchRegion.SetSize(patchSize);
+  this->SourcePatchScene = new QGraphicsScene();
+  this->SourcePatchScene->setBackgroundBrush(brush);
+  this->gfxSource->setScene(SourcePatchScene);
 
-  this->IntValidator = new QIntValidator(0, 10000, this);
-  this->txtPatchRadius->setValidator(this->IntValidator);
-  this->txtNumberOfTopPatchesToSave->setValidator(this->IntValidator);
-  this->txtNumberOfForwardLook->setValidator(this->IntValidator);
-  this->txtGoToIteration->setValidator(this->IntValidator);
-  this->txtNumberOfTopPatchesToDisplay->setValidator(this->IntValidator);
+  this->ResultPatchScene = new QGraphicsScene();
+  this->ResultPatchScene->setBackgroundBrush(brush);
+  this->gfxResult->setScene(ResultPatchScene);
 
-  this->ModelSave = new ListModelSave;
-  //this->ModelSave->setItems(&this->ImageInputs);
-  this->listViewSave->setModel(this->ModelSave);
+  this->UserPatchScene = new QGraphicsScene();
+  this->UserPatchScene->setBackgroundBrush(brush);
+  this->gfxUserPatch->setScene(UserPatchScene);
+}
 
-  this->ModelDisplay = new ListModelDisplay;
-  //this->ModelDisplay->setItems(&this->ImageInputs);
-  this->listViewDisplay->setModel(this->ModelDisplay);
-  connect (this->listViewDisplay, SIGNAL(clicked(QModelIndex)), this, SLOT(slot_ChangeDisplayedImages(QModelIndex)));
+void PatchBasedInpaintingGUI::SetupCamera()
+{
+  this->CameraLeftToRightVector.resize(3);
+  this->CameraLeftToRightVector[0] = -1;
+  this->CameraLeftToRightVector[1] = 0;
+  this->CameraLeftToRightVector[2] = 0;
 
-  this->ModelImages = new TableModelImageInput;
-  this->ModelImages->setItems(&this->ImageInputs);
-  this->tableViewImages->setModel(this->ModelImages);
-  connect (this->tableViewImages, SIGNAL(clicked(QModelIndex)), this, SLOT(slot_ChangeFileName(QModelIndex)));
-
-  LeaveFunction("PatchBasedInpaintingGUI::DefaultConstructor()");
+  this->CameraBottomToTopVector.resize(3);
+  this->CameraBottomToTopVector[0] = 0;
+  this->CameraBottomToTopVector[1] = 1;
+  this->CameraBottomToTopVector[2] = 0;
 }
 
 void PatchBasedInpaintingGUI::SetupConnections()

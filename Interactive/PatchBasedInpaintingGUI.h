@@ -138,8 +138,6 @@ public slots:
   void on_btnStop_clicked();
   void on_btnReset_clicked();
 
-  //void on_btnResort_clicked();
-
   void on_actionHelp_activated();
   void on_actionQuit_activated();
 
@@ -160,6 +158,25 @@ public slots:
   void on_txtNumberOfTopPatchesToDisplay_textEdited ( const QString & text );
 
 protected:
+
+  void SetupCamera();
+  void SetupScenes();
+  
+  void ConnectForwardLookModelToView();
+  void ConnectTopPatchesModelToView();
+  void SetupForwardLookingTable();
+  void SetupTopPatchesTable();
+  
+  void SetProgressBarToMarquee();
+  void SetupValidators();
+  void SetupLayers();
+  void SetupUserPatch();
+  void SetupToolbar();
+  void SetupComputationThread();
+  
+  void SetupImageModels();
+  
+  void SetDefaultValues();
 
   void showEvent ( QShowEvent * event );
 
@@ -184,9 +201,6 @@ protected:
 
   void OpenImage(const std::string& filename);
   void OpenMask(const std::string& filename, const bool inverted);
-
-  void SetupForwardLookingTable();
-  void SetupTopPatchesTable();
 
   // Initialize everything.
   void Initialize();
