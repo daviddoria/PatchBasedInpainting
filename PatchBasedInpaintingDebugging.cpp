@@ -140,7 +140,7 @@ void PatchBasedInpainting::DebugWritePatch(const itk::Index<2>& pixel, const std
   try
   {
     typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
-					      FloatVectorImageType> ExtractFilterType;
+                                              FloatVectorImageType> ExtractFilterType;
 
     itk::ImageRegion<2> region = Helpers::GetRegionInRadiusAroundPixel(pixel, this->PatchRadius[0]);
     region.Crop(this->CurrentInpaintedImage->GetLargestPossibleRegion());

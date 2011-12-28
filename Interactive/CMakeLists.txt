@@ -13,6 +13,7 @@ QT4_WRAP_UI(UISrcs PatchBasedInpainting.ui FileSelector.ui)
 QT4_WRAP_CPP(MOCSrcs PatchBasedInpaintingGUI.h InpaintingComputationObject.h FileSelector.h PixmapDelegate.h)
 
 add_executable(PatchBasedInpaintingInteractive
+ColorPalette.cpp
 FileSelector.cpp
 HelpersDisplay.cpp
 HelpersQt.cpp

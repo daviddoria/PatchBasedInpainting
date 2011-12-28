@@ -100,8 +100,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   SetDefaultValues();
   SetupCamera();
 
-  SetupColors();
-
   SetupScenes();
 
   SetupToolbar();
@@ -197,7 +195,7 @@ void PatchBasedInpaintingGUI::SetupUserPatch()
 {
   Helpers::CreateTransparentVTKImage(Helpers::SizeFromRadius(this->PatchRadius), this->UserPatchLayer.ImageData);
   unsigned char userPatchColor[3];
-  HelpersQt::QColorToUCharColor(this->UserPatchColor, userPatchColor);
+  HelpersQt::QColorToUCharColor(this->Colors.UserPatch, userPatchColor);
   Helpers::BlankAndOutlineImage(this->UserPatchLayer.ImageData, userPatchColor);
 
   itk::Size<2> patchSize = Helpers::SizeFromRadius(this->PatchRadius);
@@ -272,7 +270,7 @@ void PatchBasedInpaintingGUI::SetupScenes()
 {
   QBrush brush;
   brush.setStyle(Qt::SolidPattern);
-  brush.setColor(this->SceneBackgroundColor);
+  brush.setColor(this->Colors.SceneBackground);
   
   this->TargetPatchScene = new QGraphicsScene();
   this->TargetPatchScene->setBackgroundBrush(brush);
@@ -398,22 +396,6 @@ void PatchBasedInpaintingGUI::UserPatchMoved()
   LeaveFunction("UserPatchMoved()");
 }
 
-void PatchBasedInpaintingGUI::SetupColors()
-{
-  this->UsedTargetPatchColor = Qt::red;
-  this->UsedSourcePatchColor = Qt::green;
-  this->AllForwardLookPatchColor = Qt::darkCyan;
-  this->SelectedForwardLookPatchColor = Qt::cyan;
-  this->AllSourcePatchColor = Qt::darkMagenta;
-  this->SelectedSourcePatchColor = Qt::magenta;
-  this->CenterPixelColor = Qt::blue;
-  this->MaskColor = Qt::darkGray;
-  this->UserPatchColor = Qt::yellow;
-  //this->HoleColor = Qt::gray;
-  this->HoleColor.setRgb(255, 153, 0); // Orange
-  this->SceneBackgroundColor.setRgb(153, 255, 0); // Lime green
-}
-
 void PatchBasedInpaintingGUI::OpenMask(const std::string& fileName, const bool inverted)
 {
   //std::cout << "OpenMask()" << std::endl;
@@ -515,7 +497,7 @@ void PatchBasedInpaintingGUI::DisplayMask()
   //Helpers::ITKScalarImageToScaledVTKImage<Mask>(this->IntermediateImages[this->IterationToDisplay].MaskImage, temp);
   //Helpers::MakeValidPixelsTransparent(temp, this->MaskLayer.ImageData, 0); // Set the zero pixels of the mask to transparent
 
-  dynamic_cast<Mask*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Mask").Image.GetPointer())->MakeVTKImage(this->MaskLayer.ImageData, QColor(Qt::white), this->HoleColor, false, true); // (..., holeTransparent, validTransparent);
+  dynamic_cast<Mask*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Mask").Image.GetPointer())->MakeVTKImage(this->MaskLayer.ImageData, QColor(Qt::white), this->Colors.Hole, false, true); // (..., holeTransparent, validTransparent);
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
@@ -892,18 +874,18 @@ void PatchBasedInpaintingGUI::HighlightForwardLookPatches()
     const std::vector<CandidatePairs>& candidatePairs = this->RecordToDisplay->PotentialPairSets;
 
     unsigned char centerPixelColor[3];
-    HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
+    HelpersQt::QColorToUCharColor(this->Colors.CenterPixel, centerPixelColor);
 
     for(unsigned int candidateId = 0; candidateId < candidatePairs.size(); ++candidateId)
       {
       unsigned char borderColor[3];
       if(candidateId == this->ForwardLookToDisplayId)
         {
-        HelpersQt::QColorToUCharColor(this->SelectedForwardLookPatchColor, borderColor);
+        HelpersQt::QColorToUCharColor(this->Colors.SelectedForwardLookPatch, borderColor);
         }
       else
         {
-        HelpersQt::QColorToUCharColor(this->AllForwardLookPatchColor, borderColor);
+        HelpersQt::QColorToUCharColor(this->Colors.AllForwardLookPatch, borderColor);
         }
 
       const Patch& currentPatch = candidatePairs[candidateId].TargetPatch;
@@ -953,7 +935,7 @@ void PatchBasedInpaintingGUI::HighlightSourcePatches()
       }
 
     unsigned char centerPixelColor[3];
-    HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
+    HelpersQt::QColorToUCharColor(this->Colors.CenterPixel, centerPixelColor);
 
     const CandidatePairs& candidatePairs = this->RecordToDisplay->PotentialPairSets[this->ForwardLookToDisplayId];
     unsigned int numberToDisplay = std::min(candidatePairs.size(), NumberOfTopPatchesToDisplay);
@@ -964,11 +946,11 @@ void PatchBasedInpaintingGUI::HighlightSourcePatches()
       {
       if(candidateId == this->SourcePatchToDisplayId)
         {
-        HelpersQt::QColorToUCharColor(this->SelectedSourcePatchColor, borderColor);
+        HelpersQt::QColorToUCharColor(this->Colors.SelectedSourcePatch, borderColor);
         }
       else
         {
-        HelpersQt::QColorToUCharColor(this->AllSourcePatchColor, borderColor);
+        HelpersQt::QColorToUCharColor(this->Colors.AllSourcePatch, borderColor);
         }
 
       const Patch& currentPatch = candidatePairs[candidateId].SourcePatch;
@@ -1570,5 +1552,4 @@ void PatchBasedInpaintingGUI::SetupSaveModel()
     {
     this->ModelSave->Add(priorityImageNames[i].c_str(), Qt::Checked);
     }
-
 }

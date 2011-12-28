@@ -47,6 +47,7 @@ class vtkPolyDataMapper;
 #include <QThread>
 
 // Custom
+#include "ColorPalette.h"
 #include "DebugOutputs.h"
 #include "DisplayStyle.h"
 #include "ImageInput.h"
@@ -307,18 +308,8 @@ protected:
   std::vector<InpaintingIterationRecord> IterationRecords;
 
   // Colors
-  void SetupColors();
-  QColor UsedTargetPatchColor;
-  QColor UsedSourcePatchColor;
-  QColor AllForwardLookPatchColor;
-  QColor SelectedForwardLookPatchColor;
-  QColor AllSourcePatchColor;
-  QColor SelectedSourcePatchColor;
-  QColor CenterPixelColor;
-  QColor MaskColor;
-  QColor HoleColor;
-  QColor SceneBackgroundColor;
-  QColor UserPatchColor;
+  ColorPalette Colors;
+
 
   TableModelForwardLook* ForwardLookModel;
   TableModelTopPatches* TopPatchesModel;

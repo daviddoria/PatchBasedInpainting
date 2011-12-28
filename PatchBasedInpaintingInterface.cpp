@@ -24,68 +24,16 @@
 
 // Boost
 #include <boost/bind.hpp>
-/*
-void PatchBasedInpainting::SetPatchSearchFunctionToScaleConsistent()
-{
-  this->PatchSearchFunction = boost::bind(&PatchBasedInpainting::FindBestPatchScaleConsistent,this,_1,_2);
-}
-
-void PatchBasedInpainting::SetPatchSearchFunctionToNormal()
-{
-  this->PatchSearchFunction = boost::bind(&PatchBasedInpainting::FindBestPatchNormal,this,_1,_2);
-}
-
-void PatchBasedInpainting::SetPatchSearchFunctionToTwoStepDepth()
-{
-  this->PatchSearchFunction = boost::bind(&PatchBasedInpainting::FindBestPatchTwoStepDepth,this,_1,_2);
-}
-*/
 
 FloatVectorImageType::Pointer PatchBasedInpainting::GetCurrentOutputImage()
 {
   return this->CurrentInpaintedImage;
 }
-/*
-FloatScalarImageType::Pointer PatchBasedInpainting::GetPriorityImage()
-{
-    return this->PriorityImage;
-}
-
-FloatScalarImageType::Pointer PatchBasedInpainting::GetConfidenceImage()
-{
-  return this->ConfidenceImage;
-}
-
-FloatScalarImageType::Pointer PatchBasedInpainting::GetConfidenceMapImage()
-{
-  return this->ConfidenceMapImage;
-}*/
-
-// UnsignedCharScalarImageType::Pointer PatchBasedInpainting::GetBoundaryImage()
-// {
-//   return this->BoundaryImage;
-// }
 
 Mask* PatchBasedInpainting::GetMaskImage()
 {
   return this->MaskImage;
 }
-
-// FloatVector2ImageType::Pointer PatchBasedInpainting::GetBoundaryNormalsImage()
-// {
-//   return this->BoundaryNormals;
-// }
-//
-// FloatVector2ImageType::Pointer PatchBasedInpainting::GetIsophoteImage()
-// {
-//   return this->IsophoteImage;
-// }
-
-/*
-FloatScalarImageType::Pointer PatchBasedInpainting::GetDataImage()
-{
-  return this->DataImage;
-}*/
 
 void PatchBasedInpainting::SetPatchRadius(const unsigned int radius)
 {
