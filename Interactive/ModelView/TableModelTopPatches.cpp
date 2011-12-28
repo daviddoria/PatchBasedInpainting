@@ -96,7 +96,7 @@ QVariant TableModelTopPatches::data(const QModelIndex& index, int role) const
       {
       case 0:
 	{
-	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].Images.FindImageByName("Image").Image.GetPointer()),
+	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer()),
                                                                        currentCandidateSet[index.row()].SourcePatch.Region, this->ImageDisplayStyle);
 
 	patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);

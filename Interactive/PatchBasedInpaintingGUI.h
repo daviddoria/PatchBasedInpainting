@@ -97,12 +97,6 @@ public slots:
 
   void on_sldDepthColorLambda_valueChanged();
 
-  void on_chkCompareFull_clicked();
-  void on_chkCompareColor_clicked();
-  void on_chkCompareDepth_clicked();
-  void on_chkCompareMembership_clicked();
-  void on_chkCompareHistogramIntersection_clicked();
-
   void on_radDisplayColorImage_clicked();
   void on_radDisplayMagnitudeImage_clicked();
   void on_radDisplayChannel_clicked();

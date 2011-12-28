@@ -45,6 +45,15 @@
 namespace Helpers
 {
 
+bool IsValidRGB(const int r, const int g, const int b)
+{
+  if(r > 255 || r < 0 || g > 255 || g < 0 || b > 255 || b < 0)
+  {
+    return false;
+  }
+  return true;
+}
+
 FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors)
 {
   FloatVector2Type totalVector;
@@ -68,10 +77,6 @@ FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors)
 
   return averageVector;
 }
-
-
-
-
 
 std::string GetSequentialFileName(const std::string& filePrefix, const unsigned int iteration, const std::string& fileExtension)
 {
@@ -505,19 +510,19 @@ void BlankAndOutlineImage(vtkImageData* image, const unsigned char color[3])
       {
       unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(i,j,0));
       if(i == 0 || i == dims[0] - 1 || j == 0 || j == dims[1] - 1)
-	{
-	pixel[0] = color[0];
-	pixel[1] = color[1];
-	pixel[2] = color[2];
-	pixel[3] = 255; // visible
-	}
+        {
+        pixel[0] = color[0];
+        pixel[1] = color[1];
+        pixel[2] = color[2];
+        pixel[3] = 255; // visible
+        }
       else
-	{
-	pixel[0] = 0;
-	pixel[1] = 0;
-	pixel[2] = 0;
-	pixel[3] = 0; // transparent
-	}
+        {
+        pixel[0] = 0;
+        pixel[1] = 0;
+        pixel[2] = 0;
+        pixel[3] = 0; // transparent
+        }
       }
     }
   image->Modified();
@@ -706,37 +711,14 @@ void OutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const
     pixel[3] = 255; // visible
     }
 
-
-//   for(unsigned int i = region.GetIndex()[0]; i < region.GetIndex()[0] + region.GetSize()[0]; ++i)
-//     {
-//     for(unsigned int j = region.GetIndex()[1]; j < region.GetIndex()[1] + region.GetSize()[1]; ++j)
-//       {
-//       unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(i,j,0));
-//       if(i == region.GetIndex()[0] ||
-//          i == region.GetIndex()[0] + region.GetSize()[0] - 1||
-//          j == region.GetIndex()[1] ||
-//          j == region.GetIndex()[1] + region.GetSize()[1] - 1)
-//         {
-//         pixel[0] = color[0];
-//         pixel[1] = color[1];
-//         pixel[2] = color[2];
-//         pixel[3] = 255; // visible
-//         }
-//       }
-//     }
-
   image->Modified();
 }
 
 void BlankAndOutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char value[3])
 {
-
   BlankRegion(image, region);
   OutlineRegion(image, region, value);
 }
-
-
-
 
 // This is a specialization that ensures that the number of pixels per component also matches.
 template<>
@@ -762,7 +744,6 @@ void DeepCopy<FloatVectorImageType>(const FloatVectorImageType* input, FloatVect
     }
 
   DeepCopyInRegion<FloatVectorImageType>(input, input->GetLargestPossibleRegion(), output);
-
 }
 
 std::string ReplaceFileExtension(const std::string& fileName, const std::string& newExtension)
@@ -773,22 +754,20 @@ std::string ReplaceFileExtension(const std::string& fileName, const std::string&
 
   std::string newFileName = fileName;
   //newFileName.replace(newFileName.end() - 3, 3, newExtension);
-  newFileName.replace(newFileName.size() - 3, 3, newExtension);
+  const unsigned int fileExtensionLength = 3;
+  newFileName.replace(newFileName.size() - fileExtensionLength, fileExtensionLength, newExtension);
   return newFileName;
 }
-
 
 itk::ImageRegion<2> CropToRegion(const itk::ImageRegion<2>& inputRegion, const itk::ImageRegion<2>& targetRegion)
 {
   // Returns the overlap of the inputRegion with the targetRegion.
 
-  //itk::ImageRegion<2> region = this->FullImageRegion;
   itk::ImageRegion<2> region = targetRegion;
   region.Crop(inputRegion);
 
   return region;
 }
-
 
 itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType* image, float& maxValue, UnsignedCharScalarImageType* maskImage)
 {

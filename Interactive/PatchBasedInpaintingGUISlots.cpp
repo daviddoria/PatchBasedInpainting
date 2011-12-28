@@ -511,30 +511,6 @@ void PatchBasedInpaintingGUI::on_cmbSortBy_activated(int value)
   
 }
 
-void PatchBasedInpaintingGUI::on_chkCompareHistogramIntersection_clicked()
-{
-  
-}
-
-void PatchBasedInpaintingGUI::on_chkCompareMembership_clicked()
-{
-  
-}
-
-void PatchBasedInpaintingGUI::on_chkCompareFull_clicked()
-{
-  
-}
-
-void PatchBasedInpaintingGUI::on_chkCompareColor_clicked()
-{
-  
-}
-
-void PatchBasedInpaintingGUI::on_chkCompareDepth_clicked()
-{
-  
-}
 
 void PatchBasedInpaintingGUI::on_sldDepthColorLambda_valueChanged()
 {

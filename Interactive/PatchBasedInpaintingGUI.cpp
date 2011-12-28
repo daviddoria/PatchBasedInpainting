@@ -347,7 +347,6 @@ PatchBasedInpaintingGUI::PatchBasedInpaintingGUI(const std::string& imageFileNam
   OpenImage(imageFileName);
   OpenMask(maskFileName, false);
 
-  
   Initialize();
   LeaveFunction("PatchBasedInpaintingGUI(string, string, bool)");
 }
@@ -378,11 +377,11 @@ void PatchBasedInpaintingGUI::UserPatchMoved()
     }
 
   unsigned int iterationToCompare = this->IterationToDisplay - 1;
-  SelfPatchCompare* patchCompare = new SelfPatchCompare;
+  std::auto_ptr<SelfPatchCompare> patchCompare(new SelfPatchCompare);
   patchCompare->SetImage(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[iterationToCompare].GetImageByName("Image").Image.GetPointer()));
   patchCompare->SetMask(dynamic_cast<Mask*>(this->IterationRecords[iterationToCompare].GetImageByName("Mask").Image.GetPointer()));
   patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
-  patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
+  patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare.get(),_1));
   CandidatePairs candidatePairs(this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplayId].TargetPatch);
   Patch userPatch(this->UserPatchRegion);
   candidatePairs.AddPairFromPatch(userPatch);

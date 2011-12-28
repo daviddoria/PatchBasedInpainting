@@ -62,6 +62,7 @@ QImage GetQImage(const TImage* image, const itk::ImageRegion<2>& region, const D
 template <typename TImage>
 QImage GetQImageColor(const TImage* image, const itk::ImageRegion<2>& region)
 {
+  // Get a color QImage from an ITK image.
   QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888);
 
   typedef itk::RegionOfInterestImageFilter< TImage, TImage > RegionOfInterestImageFilterType;
@@ -80,12 +81,18 @@ QImage GetQImageColor(const TImage* image, const itk::ImageRegion<2>& region)
     int r = static_cast<int>(pixel[0]);
     int g = static_cast<int>(pixel[1]);
     int b = static_cast<int>(pixel[2]);
-    QColor pixelColor(r,g,b);
-    if(r > 255 || r < 0 || g > 255 || g < 0 || b > 255 || b < 0)
+    
+    if(Helpers::IsValidRGB(r,g,b))
       {
-      std::cout << "Can't set r,g,b to " << r << " " << g << " " << b << std::endl;
+      QColor pixelColor(r,g,b);
+      qimage.setPixel(index[0], index[1], pixelColor.rgb());
       }
-    qimage.setPixel(index[0], index[1], pixelColor.rgb());
+    else
+      {
+      std::cerr << "Can't set r,g,b to " << r << " " << g << " " << b << std::endl;
+      QColor pixelColor(0,0,0);
+      qimage.setPixel(index[0], index[1], pixelColor.rgb());
+      }
 
     ++imageIterator;
     }
@@ -100,6 +107,7 @@ QImage GetQImageColor(const TImage* image, const itk::ImageRegion<2>& region)
 template <typename TImage>
 QImage GetQImageMagnitude(const TImage* image, const itk::ImageRegion<2>& region)
 {
+  // Get a QImage from a single channel ITK image. Each channel of the output image is the same.
   QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888);
 
   typedef itk::Image<typename TImage::InternalPixelType, 2> ScalarImageType;

@@ -34,6 +34,8 @@ namespace Helpers
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+bool IsValidRGB(const int r, const int g, const int b);
+
 void OutputImageType(const itk::ImageBase<2>* input);
 
 void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double center[3]);
