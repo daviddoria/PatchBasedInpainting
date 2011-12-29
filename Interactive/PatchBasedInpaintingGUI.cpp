@@ -109,8 +109,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->Renderer = vtkSmartPointer<vtkRenderer>::New();
   this->qvtkWidget->GetRenderWindow()->AddRenderer(this->Renderer);
 
-  SetupLayers();
-
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
   this->InteractorStyle->Init();
@@ -118,6 +116,9 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   this->UserImage = FloatVectorImageType::New();
   
   this->UserPatch = std::make_shared<MovablePatch>(this->Settings.PatchRadius, this->Renderer, this->gfxUserPatch);
+  
+  this->Canvas = std::make_shared<VTKCanvas>(this->Renderer);
+
   // TODO set the image to use in the MovablePatch
   //QImage userPatch = HelpersQt::GetQImage<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer()),
   //                                                              this->UserPatchRegion, this->ImageDisplayStyle);
@@ -144,7 +145,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
 void PatchBasedInpaintingGUI::SetDefaultValues()
 {
-  this->PatchDisplaySize = 100;
+  this->Settings.PatchDisplaySize = 100;
 
   this->IterationToDisplay = 0;
   this->ForwardLookToDisplayId = 0;
@@ -185,23 +186,6 @@ void PatchBasedInpaintingGUI::SetupToolbar()
 
   actionSaveResult->setIcon(saveIcon);
   this->toolBar->addAction(actionSaveResult);
-}
-
-void PatchBasedInpaintingGUI::SetupLayers()
-{
-  this->ImageLayer.ImageSlice->SetPickable(false);
-  this->MaskLayer.ImageSlice->SetPickable(false);
-  this->UsedTargetPatchLayer.ImageSlice->SetPickable(false);
-  this->UsedSourcePatchLayer.ImageSlice->SetPickable(false);
-  this->AllSourcePatchOutlinesLayer.ImageSlice->SetPickable(false);
-  this->AllForwardLookOutlinesLayer.ImageSlice->SetPickable(false);
-
-  this->Renderer->AddViewProp(this->ImageLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->MaskLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->UsedTargetPatchLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->UsedSourcePatchLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->AllSourcePatchOutlinesLayer.ImageSlice);
-  this->Renderer->AddViewProp(this->AllForwardLookOutlinesLayer.ImageSlice);
 }
 
 void PatchBasedInpaintingGUI::SetupValidators()
@@ -389,7 +373,7 @@ void PatchBasedInpaintingGUI::OpenImage(const std::string& fileName)
 
   //std::cout << "UserImage region: " << this->UserImage->GetLargestPossibleRegion() << std::endl;
 
-  HelpersDisplay::ITKVectorImageToVTKImage(this->UserImage, this->ImageLayer.ImageData, this->ImageDisplayStyle);
+  HelpersDisplay::ITKVectorImageToVTKImage(this->UserImage, this->Canvas->ImageLayer.ImageData, this->ImageDisplayStyle);
 
   this->Renderer->ResetCamera();
   this->qvtkWidget->GetRenderWindow()->Render();
@@ -397,12 +381,12 @@ void PatchBasedInpaintingGUI::OpenImage(const std::string& fileName)
   this->statusBar()->showMessage("Opened image.");
   actionOpenMask->setEnabled(true);
 
-  this->AllForwardLookOutlinesLayer.ImageData->SetDimensions(this->UserImage->GetLargestPossibleRegion().GetSize()[0],
+  this->Canvas->AllForwardLookOutlinesLayer.ImageData->SetDimensions(this->UserImage->GetLargestPossibleRegion().GetSize()[0],
                                                              this->UserImage->GetLargestPossibleRegion().GetSize()[1], 1);
-  this->AllForwardLookOutlinesLayer.ImageData->AllocateScalars();
-  this->AllSourcePatchOutlinesLayer.ImageData->SetDimensions(this->UserImage->GetLargestPossibleRegion().GetSize()[0],
+  this->Canvas->AllForwardLookOutlinesLayer.ImageData->AllocateScalars();
+  this->Canvas->AllSourcePatchOutlinesLayer.ImageData->SetDimensions(this->UserImage->GetLargestPossibleRegion().GetSize()[0],
                                                              this->UserImage->GetLargestPossibleRegion().GetSize()[1], 1);
-  this->AllSourcePatchOutlinesLayer.ImageData->AllocateScalars();
+  this->Canvas->AllSourcePatchOutlinesLayer.ImageData->AllocateScalars();
 
   this->ImageInputs.push_back(ImageInput("Image", fileName.c_str()));
 
@@ -431,14 +415,14 @@ void PatchBasedInpaintingGUI::DisplayMask()
   //Helpers::ITKScalarImageToScaledVTKImage<Mask>(this->IntermediateImages[this->IterationToDisplay].MaskImage, temp);
   //Helpers::MakeValidPixelsTransparent(temp, this->MaskLayer.ImageData, 0); // Set the zero pixels of the mask to transparent
 
-  dynamic_cast<Mask*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Mask").Image.GetPointer())->MakeVTKImage(this->MaskLayer.ImageData, QColor(Qt::white), this->Colors.Hole, false, true); // (..., holeTransparent, validTransparent);
+  dynamic_cast<Mask*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Mask").Image.GetPointer())->MakeVTKImage(this->Canvas->MaskLayer.ImageData, QColor(Qt::white), this->Colors.Hole, false, true); // (..., holeTransparent, validTransparent);
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 void PatchBasedInpaintingGUI::DisplayImage()
 {
   EnterFunction("DisplayImage");
-  HelpersDisplay::ITKVectorImageToVTKImage(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer()), this->ImageLayer.ImageData, this->ImageDisplayStyle);
+  HelpersDisplay::ITKVectorImageToVTKImage(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer()), this->Canvas->ImageLayer.ImageData, this->ImageDisplayStyle);
 
   this->qvtkWidget->GetRenderWindow()->Render();
   LeaveFunction("DisplayImage");
@@ -503,16 +487,16 @@ void PatchBasedInpaintingGUI::RefreshVTK()
 
     //DisplayPriorityImages();
 
-    this->UsedSourcePatchLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
-    this->UsedTargetPatchLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
+    this->Canvas->UsedSourcePatchLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
+    this->Canvas->UsedTargetPatchLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
 
-    this->AllForwardLookOutlinesLayer.ImageSlice->SetVisibility(this->chkDisplayForwardLookPatchLocations->isChecked());
+    this->Canvas->AllForwardLookOutlinesLayer.ImageSlice->SetVisibility(this->chkDisplayForwardLookPatchLocations->isChecked());
     if(this->chkDisplayForwardLookPatchLocations->isChecked())
       {
       HighlightForwardLookPatches();
       }
 
-    this->AllSourcePatchOutlinesLayer.ImageSlice->SetVisibility(this->chkDisplaySourcePatchLocations->isChecked());
+    this->Canvas->AllSourcePatchOutlinesLayer.ImageSlice->SetVisibility(this->chkDisplaySourcePatchLocations->isChecked());
     if(this->chkDisplaySourcePatchLocations->isChecked())
       {
       HighlightSourcePatches();
@@ -765,7 +749,7 @@ void PatchBasedInpaintingGUI::HighlightForwardLookPatches()
   {
     // Delete any current highlight patches. We want to delete these (if they exist) no matter what because
     // then they won't be displayed if the box is not checked (they will respect the check box).
-    Helpers::BlankImage(this->AllForwardLookOutlinesLayer.ImageData);
+    Helpers::BlankImage(this->Canvas->AllForwardLookOutlinesLayer.ImageData);
 
     if(!RecordToDisplay)
       {
@@ -800,9 +784,9 @@ void PatchBasedInpaintingGUI::HighlightForwardLookPatches()
       //std::cout << "Outlining " << currentPatch.Region << std::endl;
       //DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
 
-      Helpers::BlankAndOutlineRegion(this->AllForwardLookOutlinesLayer.ImageData, currentPatch.Region, borderColor);
+      Helpers::BlankAndOutlineRegion(this->Canvas->AllForwardLookOutlinesLayer.ImageData, currentPatch.Region, borderColor);
 
-      Helpers::SetRegionCenterPixel(this->AllForwardLookOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
+      Helpers::SetRegionCenterPixel(this->Canvas->AllForwardLookOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
       }
 
     this->qvtkWidget->GetRenderWindow()->Render();
@@ -826,7 +810,7 @@ void PatchBasedInpaintingGUI::HighlightSourcePatches()
 
     // Delete any current highlight patches. We want to delete these (if they exist) no matter what because then
     // they won't be displayed if the box is not checked (they will respect the check box).
-    Helpers::BlankImage(this->AllSourcePatchOutlinesLayer.ImageData);
+    Helpers::BlankImage(this->Canvas->AllSourcePatchOutlinesLayer.ImageData);
 
     if(!this->RecordToDisplay)
       {
@@ -863,8 +847,8 @@ void PatchBasedInpaintingGUI::HighlightSourcePatches()
 
       const Patch& currentPatch = candidatePairs[candidateId].SourcePatch;
       //DebugMessage<itk::ImageRegion<2> >("HighlightSourcePatches: Display patch: ", currentPatch.Region);
-      Helpers::BlankAndOutlineRegion(this->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, borderColor);
-      Helpers::SetRegionCenterPixel(this->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
+      Helpers::BlankAndOutlineRegion(this->Canvas->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, borderColor);
+      Helpers::SetRegionCenterPixel(this->Canvas->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
       }
 
     this->qvtkWidget->GetRenderWindow()->Render();
@@ -1183,14 +1167,14 @@ void PatchBasedInpaintingGUI::SetupForwardLookingTable()
     }
 
   this->ForwardLookModel->SetIterationToDisplay(this->IterationToDisplay);
-  this->ForwardLookModel->SetPatchDisplaySize(this->PatchDisplaySize);
+  this->ForwardLookModel->SetPatchDisplaySize(this->Settings.PatchDisplaySize);
   this->ForwardLookModel->Refresh();
 
   this->SourcePatchToDisplayId = 0;
 
-  this->ForwardLookTableView->setColumnWidth(0, this->PatchDisplaySize);
+  this->ForwardLookTableView->setColumnWidth(0, this->Settings.PatchDisplaySize);
   this->ForwardLookTableView->verticalHeader()->setResizeMode(QHeaderView::Fixed);
-  this->ForwardLookTableView->verticalHeader()->setDefaultSectionSize(this->PatchDisplaySize);
+  this->ForwardLookTableView->verticalHeader()->setDefaultSectionSize(this->Settings.PatchDisplaySize);
   LeaveFunction("SetupForwardLookingTable()");
 }
 
@@ -1242,7 +1226,7 @@ void PatchBasedInpaintingGUI::SetupTopPatchesTable()
 
   this->TopPatchesModel->SetIterationToDisplay(this->IterationToDisplay);
   this->TopPatchesModel->SetForwardLookToDisplay(this->ForwardLookToDisplayId);
-  this->TopPatchesModel->SetPatchDisplaySize(this->PatchDisplaySize);
+  this->TopPatchesModel->SetPatchDisplaySize(this->Settings.PatchDisplaySize);
   this->TopPatchesModel->SetNumberOfTopPatchesToDisplay(this->Settings.NumberOfTopPatchesToDisplay);
   this->TopPatchesModel->Refresh();
 
@@ -1255,9 +1239,9 @@ void PatchBasedInpaintingGUI::SetupTopPatchesTable()
   //this->TopPatchesTableView->resizeColumnsToContents();
   //this->TopPatchesTableView->resizeRowsToContents();
 
-  this->TopPatchesTableView->setColumnWidth(0, this->PatchDisplaySize);
+  this->TopPatchesTableView->setColumnWidth(0, this->Settings.PatchDisplaySize);
   this->TopPatchesTableView->verticalHeader()->setResizeMode(QHeaderView::Fixed);
-  this->TopPatchesTableView->verticalHeader()->setDefaultSectionSize(this->PatchDisplaySize);
+  this->TopPatchesTableView->verticalHeader()->setDefaultSectionSize(this->Settings.PatchDisplaySize);
   LeaveFunction("SetupTopPatchesTable()");
 }
 

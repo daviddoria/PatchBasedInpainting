@@ -47,13 +47,13 @@ class vtkPolyDataMapper;
 #include <QThread>
 
 // Custom
+#include "Canvas.h"
 #include "ColorPalette.h"
 #include "DebugOutputs.h"
 #include "DisplayStyle.h"
 #include "ImageInput.h"
 #include "InpaintingComputationObject.h"
 #include "InpaintingIterationRecord.h"
-#include "Layer.h"
 #include "MovablePatch.h"
 #include "PatchBasedInpainting.h"
 #include "Settings.h"
@@ -150,7 +150,7 @@ public slots:
   void on_txtNumberOfForwardLook_textEdited ( const QString & text );
   void on_txtNumberOfTopPatchesToDisplay_textEdited ( const QString & text );
 
-protected:
+private:
 
   void SetupCamera();
   void SetupScenes();
@@ -162,7 +162,6 @@ protected:
   
   void SetProgressBarToMarquee();
   void SetupValidators();
-  void SetupLayers();
   void SetupToolbar();
   void SetupComputationThread();
   
@@ -211,26 +210,7 @@ protected:
   // A patch that the user can move around freely.
   std::shared_ptr<MovablePatch> UserPatch;
 
-  // Source patch outline display
-  Layer UsedSourcePatchLayer;
-
-  // Target patch outline display
-  Layer UsedTargetPatchLayer;
-
-  // Outline display of all forward look patches
-  Layer AllForwardLookOutlinesLayer;
-
-  // Outline display of all source patches
-  Layer AllSourcePatchOutlinesLayer;
-
-  // Image display
-  Layer ImageLayer;
-
-  // Boundary image display
-  //Layer BoundaryLayer;
-
-  // Mask image display
-  Layer MaskLayer;
+  std::shared_ptr<VTKCanvas> Canvas;
 
   // The image that the user loads
   FloatVectorImageType::Pointer UserImage;
@@ -287,12 +267,17 @@ protected:
   // Colors
   ColorPalette Colors;
 
-
+  // Models and views
   QSharedPointer<TableModelForwardLook> ForwardLookModel;
   QSharedPointer<TableModelTopPatches> TopPatchesModel;
 
-  // The size to display the patches.
-  unsigned int PatchDisplaySize;
+  QSharedPointer<ListModelSave> ModelSave;
+  QSharedPointer<ListModelDisplay> ModelDisplay;
+  QSharedPointer<TableModelImageInput> ModelImages;
+
+  void UpdateAllImageInputModels();
+
+  void SetupSaveModel();
 
   // A Validator to make sure only positive integers can be typed into the text boxes.
   // Since we provide a parent, this does not need to be a smart pointer.
@@ -316,17 +301,10 @@ protected:
 
   QVector<ImageInput> ImageInputs;
 
-  QSharedPointer<ListModelSave> ModelSave;
-  QSharedPointer<ListModelDisplay> ModelDisplay;
-  QSharedPointer<TableModelImageInput> ModelImages;
-
-  void UpdateAllImageInputModels();
-
   void OpenInputImages();
 
   NamedITKImageCollection InputImages;
 
-  void SetupSaveModel();
 };
 
 #endif // PatchBasedInpaintingGUI_H

@@ -37,6 +37,11 @@ void TableModelForwardLook::SetPatchDisplaySize(const unsigned int value)
   this->PatchDisplaySize = value;
 }
 
+unsigned int TableModelForwardLook::GetPatchDisplaySize()
+{
+  return this->PatchDisplaySize;
+}
+
 Qt::ItemFlags TableModelForwardLook::flags(const QModelIndex& index) const
 {
   //Qt::ItemFlags itemFlags = (!Qt::ItemIsEditable) | Qt::ItemIsSelectable | Qt::ItemIsEnabled | (!Qt::ItemIsUserCheckable) | (!Qt::ItemIsTristate);

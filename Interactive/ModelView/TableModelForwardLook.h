@@ -50,6 +50,7 @@ public:
   void Refresh();
 
   void SetPatchDisplaySize(const unsigned int value);
+  unsigned int GetPatchDisplaySize();
 
 protected:
 

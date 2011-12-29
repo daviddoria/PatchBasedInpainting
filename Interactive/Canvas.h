@@ -21,23 +21,40 @@
  * is not created until the Initialize button is clicked.
 */
 
-#ifndef Settings_H
-#define Settings_H
+#ifndef Canvas_H
+#define Canvas_H
 
-class SettingsContainer
+// Custom
+#include "Layer.h"
+
+// VTK
+class vtkRenderer;
+
+class VTKCanvas
 {
 public:
-  SettingsContainer();
+  VTKCanvas(vtkRenderer* const renderer);
 
-  unsigned int PatchRadius;
-  unsigned int NumberOfTopPatchesToSave;
-  unsigned int NumberOfForwardLook;
-  unsigned int GoToIteration;
-  unsigned int NumberOfTopPatchesToDisplay;
+  // Source patch outline display
+  Layer UsedSourcePatchLayer;
 
-  // The size to display the patches. This is stored here because it is used in multiple models.
-  unsigned int PatchDisplaySize;
+  // Target patch outline display
+  Layer UsedTargetPatchLayer;
 
+  // Outline display of all forward look patches
+  Layer AllForwardLookOutlinesLayer;
+
+  // Outline display of all source patches
+  Layer AllSourcePatchOutlinesLayer;
+
+  // Image display
+  Layer ImageLayer;
+
+  // Mask image display
+  Layer MaskLayer;
+
+private:
+  vtkRenderer* Renderer;
 };
 
 #endif
