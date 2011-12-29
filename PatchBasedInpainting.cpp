@@ -48,7 +48,7 @@
 
 PatchBasedInpainting::PatchBasedInpainting(const FloatVectorImageType* image, const Mask* mask)
 {
-  EnterFunction("CriminisiInpainting()");
+  EnterFunction("PatchBasedInpainting()");
 
   this->PatchRadius.Fill(3);
 
@@ -391,7 +391,6 @@ void PatchBasedInpainting::Inpaint()
 {
   EnterFunction("Inpaint()");
   // This function is intended to be used by the command line version. It will do the complete inpainting without updating any UI or the ability to stop before it is complete.
-  //std::cout << "CriminisiInpainting::Inpaint()" << std::endl;
   try
   {
     // Start the procedure

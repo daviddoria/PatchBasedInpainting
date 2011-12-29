@@ -79,6 +79,7 @@
 #include "PixmapDelegate.h"
 #include "PriorityCriminisi.h"
 #include "PriorityDepth.h"
+#include "PriorityFactory.h"
 #include "PriorityManual.h"
 #include "PriorityOnionPeel.h"
 #include "PriorityRandom.h"
@@ -131,9 +132,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   SetProgressBarToMarquee();
 
   InitializeGUIElements();
-
-  ConnectForwardLookModelToView();
-  ConnectTopPatchesModelToView();
 
   SetupValidators();
 
@@ -242,7 +240,6 @@ void PatchBasedInpaintingGUI::SetupScenes()
   this->gfxResult->setScene(ResultPatchScene);
 }
 
-
 void PatchBasedInpaintingGUI::SetupConnections()
 {
   qRegisterMetaType<PatchPair>("PatchPair");
@@ -254,14 +251,11 @@ void PatchBasedInpaintingGUI::SetupConnections()
   connect(this->InpaintingComputation, SIGNAL(InpaintingComplete()), this, SLOT(slot_StopProgress()), Qt::QueuedConnection);
   connect(this->InpaintingComputation, SIGNAL(IterationComplete(const PatchPair&)), this, SLOT(slot_StopProgress()), Qt::QueuedConnection);
 
-  // Using a blocking connection allows everything (computation and drawing) to be performed sequentially which is helpful for debugging,
-  // but makes the interface very very choppy.
-  // We are assuming that the computation takes longer than the drawing.
-  //connect(&ComputationThread, SIGNAL(IterationCompleteSignal()), this, SLOT(IterationCompleteSlot()), Qt::QueuedConnection);
-
   connect(this->InpaintingComputation, SIGNAL(IterationComplete(const PatchPair&)),
           this, SLOT(slot_IterationComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
 
+  ConnectForwardLookModelToView();
+  ConnectTopPatchesModelToView();
 }
 
 void PatchBasedInpaintingGUI::showEvent ( QShowEvent * event )
@@ -1380,27 +1374,7 @@ void PatchBasedInpaintingGUI::SetupSaveModel()
     this->ModelSave->Add(this->InputImages[i].Name.c_str(), Qt::Checked);
     }
 
-  std::vector<std::string> priorityImageNames;
-  if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Manual"))
-    {
-    priorityImageNames = PriorityManual::GetImageNames();
-    }
-  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "OnionPeel"))
-    {
-    priorityImageNames = PriorityOnionPeel::GetImageNames();
-    }
-  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Random"))
-    {
-    priorityImageNames = PriorityRandom::GetImageNames();
-    }
-  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Depth"))
-    {
-    priorityImageNames = PriorityDepth::GetImageNames();
-    }
-  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Criminisi"))
-    {
-    priorityImageNames = PriorityCriminisi::GetImageNames();
-    }
+  std::vector<std::string> priorityImageNames = PriorityFactory::GetImageNames(this->cmbPriority->currentText().toStdString());
 
   for(unsigned int i = 0; i < priorityImageNames.size(); ++i)
     {

@@ -15,9 +15,18 @@
  *  limitations under the License.
  *
  *=========================================================================*/
-#include "DisplayState.h"
 
-DisplayStateContainer::DisplayStateContainer() : Iteration(0), ForwardLookId(0), SourcePatchId(0)
+#ifndef PriorityFactory_H
+#define PriorityFactory_H
+
+#include <string>
+#include <vector>
+
+class PriorityFactory
 {
-  
-}
+public:
+  //static Priority* Create(const std::string& priorityType, const FloatVectorImageType* image, const Mask* maskImage, const unsigned int patchRadius);
+  static std::vector<std::string> GetImageNames(const std::string& priorityType);
+};
+
+#endif

@@ -51,6 +51,7 @@ PatchSorting.cpp
 Priority.cpp
 PriorityCriminisi.cpp
 PriorityDepth.cpp
+PriorityFactory.cpp
 PriorityManual.cpp
 PriorityOnionPeel.cpp
 PriorityRandom.cpp
