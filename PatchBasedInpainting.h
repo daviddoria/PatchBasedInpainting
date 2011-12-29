@@ -99,8 +99,9 @@ public:
 
   std::shared_ptr<PatchSortFunctor> PatchSortFunction;
 
-  template <typename T>
-  void SetPriorityFunction();
+//   template <typename T>
+//   void SetPriorityFunction();
+  void SetPriorityFunction(const std::string& priorityType);
 
   Priority* GetPriorityFunction();
 

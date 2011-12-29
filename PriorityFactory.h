@@ -22,10 +22,12 @@
 #include <string>
 #include <vector>
 
+#include "Priority.h"
+
 class PriorityFactory
 {
 public:
-  //static Priority* Create(const std::string& priorityType, const FloatVectorImageType* image, const Mask* maskImage, const unsigned int patchRadius);
+  static Priority* Create(const std::string& priorityType, FloatVectorImageType* const image, Mask* const maskImage, const unsigned int patchRadius);
   static std::vector<std::string> GetImageNames(const std::string& priorityType);
 };
 

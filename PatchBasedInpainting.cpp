@@ -24,6 +24,7 @@
 #include "HelpersOutput.h"
 #include "Histograms.h"
 #include "PatchSorting.h"
+#include "PriorityFactory.h"
 #include "PriorityRandom.h"
 #include "SelfPatchCompare.h"
 #include "Types.h"
@@ -86,11 +87,16 @@ PatchBasedInpainting::PatchBasedInpainting(const FloatVectorImageType* image, co
   this->PriorityFunction = NULL; // Can't initialize this here, must wait until the image and mask are opened
 }
 
+void PatchBasedInpainting::SetPriorityFunction(const std::string& priorityType)
+{
+  this->PriorityFunction = std::shared_ptr<Priority>(PriorityFactory::Create(priorityType, this->CompareImage, this->MaskImage.GetPointer(), this->PatchRadius[0]));
+}
+
 void PatchBasedInpainting::ColorImageInsideHole()
 {
   // Color the target image bright green inside the hole. This is helpful when watching the inpainting proceed, as you can clearly see
   // the region that is being filled.
-  
+
   FloatVectorImageType::PixelType fillColor;
   fillColor.SetSize(this->CurrentInpaintedImage->GetNumberOfComponentsPerPixel());
   fillColor.Fill(0);

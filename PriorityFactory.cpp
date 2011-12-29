@@ -24,30 +24,37 @@
 #include "PriorityManual.h"
 #include "PriorityOnionPeel.h"
 #include "PriorityRandom.h"
+#include "Types.h"
 
-// Priority* PriorityFactory::Create(const std::string& priorityType)
-// {
-//   if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Manual"))
-//     {
-//     this->Inpainting->SetPriorityFunction<PriorityManual>();
-//     }
-//   else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "OnionPeel"))
-//     {
-//     this->Inpainting->SetPriorityFunction<PriorityOnionPeel>();
-//     }
-//   else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Random"))
-//     {
-//     this->Inpainting->SetPriorityFunction<PriorityRandom>();
-//     }
-//   else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Depth"))
-//     {
-//     this->Inpainting->SetPriorityFunction<PriorityDepth>();
-//     }
-//   else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Criminisi"))
-//     {
-//     this->Inpainting->SetPriorityFunction<PriorityCriminisi>();
-//     }
-// }
+Priority* PriorityFactory::Create(const std::string& priorityType, FloatVectorImageType* const image, Mask* const maskImage, const unsigned int patchRadius)
+{
+  if(Helpers::StringsMatch(priorityType, "Manual"))
+    {
+    return new PriorityManual(image, maskImage, patchRadius);
+    }
+  else if(Helpers::StringsMatch(priorityType, "OnionPeel"))
+    {
+    return new PriorityOnionPeel(image, maskImage, patchRadius);
+    }
+  else if(Helpers::StringsMatch(priorityType, "Random"))
+    {
+    return new PriorityRandom(image, maskImage, patchRadius);
+    }
+  else if(Helpers::StringsMatch(priorityType, "Depth"))
+    {
+    return new PriorityDepth(image, maskImage, patchRadius);
+    }
+  else if(Helpers::StringsMatch(priorityType, "Criminisi"))
+    {
+    return new PriorityCriminisi(image, maskImage, patchRadius);
+    }
+  else
+    {
+    std::cerr << "Priority type " << priorityType << " is unknown!" << std::endl;
+    exit(-1);
+    return NULL;
+    }
+}
 
 std::vector<std::string> PriorityFactory::GetImageNames(const std::string& priorityType)
 {

@@ -77,10 +77,7 @@
 #include "Mask.h"
 #include "PatchSorting.h"
 #include "PixmapDelegate.h"
-#include "PriorityCriminisi.h"
-#include "PriorityDepth.h"
 #include "PriorityFactory.h"
-#include "PriorityManual.h"
 #include "PriorityOnionPeel.h"
 #include "PriorityRandom.h"
 #include "SelfPatchCompare.h"
@@ -1311,35 +1308,19 @@ void PatchBasedInpaintingGUI::SetSortFunctionFromGUI()
 
 void PatchBasedInpaintingGUI::SetPriorityFromGUI()
 {
-  if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Manual"))
-    {
-    this->Inpainting->SetPriorityFunction<PriorityManual>();
-    if(!ImageExists(this->ImageInputs, "ManualPriority"))
-      {
-      std::cerr << "Must have a ManualPriority input image to use this priority mode!" << std::endl;
-      exit(-1);
-      }
-    std::cerr << "Setting PriorityManual not yet implemented!" << std::endl; // TODO
-    exit(-1);
-    //reinterpret_cast<PriorityManual*>(this->Inpainting->GetPriorityFunction())->SetManualPriorityImage(this->InputImages.FindImageByName("ManualPriority").Image.GetPointer());
-    }
-  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "OnionPeel"))
-    {
-    this->Inpainting->SetPriorityFunction<PriorityOnionPeel>();
-    }
-  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Random"))
-    {
-    this->Inpainting->SetPriorityFunction<PriorityRandom>();
-    }
-  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Depth"))
-    {
-    this->Inpainting->SetPriorityFunction<PriorityDepth>();
-    }
-  else if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Criminisi"))
-    {
-    this->Inpainting->SetPriorityFunction<PriorityCriminisi>();
-    }
-
+  this->Inpainting->SetPriorityFunction(this->cmbPriority->currentText().toStdString());
+//   if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Manual"))
+//     {
+//     if(!ImageExists(this->ImageInputs, "ManualPriority"))
+//       {
+//       std::cerr << "Must have a ManualPriority input image to use this priority mode!" << std::endl;
+//       exit(-1);
+//       }
+//     std::cerr << "Setting PriorityManual not yet implemented!" << std::endl; // TODO
+//     exit(-1);
+//     //reinterpret_cast<PriorityManual*>(this->Inpainting->GetPriorityFunction())->SetManualPriorityImage(this->InputImages.FindImageByName("ManualPriority").Image.GetPointer());
+//     }
+  
   // Add priority images to save and display models
   std::vector<NamedVTKImage> namedImages = this->Inpainting->GetPriorityFunction()->GetNamedImages();
 

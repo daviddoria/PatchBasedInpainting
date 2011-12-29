@@ -29,6 +29,7 @@ class Priority : public DebugOutputs
 public:
   Priority(const FloatVectorImageType* image, const Mask* maskImage, const unsigned int patchRadius);
 
+  virtual ~Priority(){}
   // Compute the priorities at all boundary pixels.
   virtual void ComputeAllPriorities();
 

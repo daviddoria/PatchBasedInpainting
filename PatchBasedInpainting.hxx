@@ -15,7 +15,7 @@
  *  limitations under the License.
  *
  *=========================================================================*/
-
+/*
 template <typename T>
 void PatchBasedInpainting::SetPriorityFunction()
 {
@@ -25,4 +25,4 @@ void PatchBasedInpainting::SetPriorityFunction()
 //     delete this->PriorityFunction;
 //     }
   this->PriorityFunction = std::make_shared<T>(this->CurrentInpaintedImage, this->MaskImage, this->PatchRadius[0]);
-}
+}*/

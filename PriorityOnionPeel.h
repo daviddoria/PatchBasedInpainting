@@ -31,6 +31,7 @@ public:
   ///////////////////////////////////////////
 
   PriorityOnionPeel(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius);
+  virtual ~PriorityOnionPeel(){}
 
   float ComputePriority(const itk::Index<2>& queryPixel);
 
