@@ -48,7 +48,7 @@ void PatchBasedInpaintingGUI::slot_ChangeFileName(QModelIndex index)
 
 void PatchBasedInpaintingGUI::on_chkDisplayUserPatch_clicked()
 {
-  this->UserPatchLayer.ImageSlice->SetVisibility(this->chkDisplayUserPatch->isChecked());
+  this->UserPatch->SetVisibility(this->chkDisplayUserPatch->isChecked());
   Refresh();
 }
 
@@ -98,11 +98,8 @@ void PatchBasedInpaintingGUI::on_chkLive_clicked()
 
 void PatchBasedInpaintingGUI::on_btnGoToIteration_clicked()
 {
-  if(this->GoToIteration < this->IterationRecords.size() && this->GoToIteration >= 0)
-    {
-    this->IterationToDisplay = this->GoToIteration;
-    ChangeDisplayedIteration();
-    }
+  this->IterationToDisplay = this->txtGoToIteration->text().toUInt();
+  ChangeDisplayedIteration();
 }
 /*
 void PatchBasedInpaintingGUI::on_btnResort_clicked()
@@ -371,7 +368,7 @@ void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
     delete this->Inpainting;
     }
   this->Inpainting = new PatchBasedInpainting(this->UserImage, this->UserMaskImage);
-  this->Inpainting->SetPatchRadius(this->PatchRadius);
+  this->Inpainting->SetPatchRadius(this->Settings.PatchRadius);
 
   this->Inpainting->SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting->SetDebugMessages(this->chkDebugMessages->isChecked());
@@ -464,6 +461,8 @@ void PatchBasedInpaintingGUI::slot_StopProgress()
 void PatchBasedInpaintingGUI::slot_IterationComplete(const PatchPair& patchPair)
 {
   EnterFunction("IterationCompleteSlot()");
+  this->IterationValidator->setTop(this->IterationValidator->top() + 1);
+
   this->btnStep->setEnabled(true);
   this->btnInpaint->setEnabled(true);
   this->btnReset->setEnabled(true);
@@ -474,29 +473,24 @@ void PatchBasedInpaintingGUI::slot_IterationComplete(const PatchPair& patchPair)
 
 void PatchBasedInpaintingGUI::on_txtPatchRadius_textEdited ( const QString & text )
 {
-  this->PatchRadius = text.toUInt();
+  this->Settings.PatchRadius = text.toUInt();
 }
 
 void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToSave_textEdited ( const QString & text )
 {
-  this->NumberOfTopPatchesToSave = text.toUInt();
+  this->Settings.NumberOfTopPatchesToSave = text.toUInt();
 }
 
 void PatchBasedInpaintingGUI::on_txtNumberOfForwardLook_textEdited ( const QString & text )
 {
-  this->NumberOfForwardLook = text.toUInt();
-}
-
-void PatchBasedInpaintingGUI::on_txtGoToIteration_textEdited ( const QString & text )
-{
-  this->GoToIteration = text.toUInt();
+  this->Settings.NumberOfForwardLook = text.toUInt();
 }
 
 void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToDisplay_textEdited ( const QString & text )
 {
   EnterFunction("on_txtNumberOfTopPatchesToDisplay_textEdited()");
-  this->NumberOfTopPatchesToDisplay = text.toUInt();
-  this->TopPatchesModel->SetNumberOfTopPatchesToDisplay(this->NumberOfTopPatchesToDisplay);
+  this->Settings.NumberOfTopPatchesToDisplay = text.toUInt();
+  this->TopPatchesModel->SetNumberOfTopPatchesToDisplay(this->Settings.NumberOfTopPatchesToDisplay);
   this->TopPatchesModel->Refresh();
   HighlightSourcePatches();
   LeaveFunction("on_txtNumberOfTopPatchesToDisplay_textEdited()");
@@ -505,17 +499,6 @@ void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToDisplay_textEdited ( con
 void PatchBasedInpaintingGUI::on_cmbPriority_activated(int value)
 {
   SetupSaveModel();
-}
-
-void PatchBasedInpaintingGUI::on_cmbSortBy_activated(int value)
-{
-  
-}
-
-
-void PatchBasedInpaintingGUI::on_sldDepthColorLambda_valueChanged()
-{
-  
 }
 
 void PatchBasedInpaintingGUI::slot_ChangeDisplayedImages(QModelIndex)

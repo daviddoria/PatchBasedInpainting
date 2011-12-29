@@ -105,19 +105,23 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   SetupToolbar();
 
   this->InteractorStyle = vtkSmartPointer<InteractorStyleImageWithDrag>::New();
-  this->InteractorStyle->TrackballStyle->AddObserver(CustomTrackballStyle::PatchesMovedEvent, this, &PatchBasedInpaintingGUI::UserPatchMoved);
 
-  // Add objects to the renderer
   this->Renderer = vtkSmartPointer<vtkRenderer>::New();
   this->qvtkWidget->GetRenderWindow()->AddRenderer(this->Renderer);
 
   SetupLayers();
-  
+
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
   this->InteractorStyle->Init();
 
   this->UserImage = FloatVectorImageType::New();
+  
+  this->UserPatch = std::make_shared<MovablePatch>(this->Settings.PatchRadius, this->Renderer, this->gfxUserPatch);
+  // TODO set the image to use in the MovablePatch
+  //QImage userPatch = HelpersQt::GetQImage<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer()),
+  //                                                              this->UserPatchRegion, this->ImageDisplayStyle);
+
   this->UserMaskImage = Mask::New();
 
   SetupComputationThread();
@@ -130,8 +134,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   ConnectForwardLookModelToView();
   ConnectTopPatchesModelToView();
-  
-  SetupUserPatch();
 
   SetupValidators();
 
@@ -142,12 +144,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
 void PatchBasedInpaintingGUI::SetDefaultValues()
 {
-  this->PatchRadius = 10;
-  this->NumberOfTopPatchesToSave = 0;
-  this->NumberOfForwardLook = 0;
-  this->GoToIteration = 0;
-  this->NumberOfTopPatchesToDisplay = 0;
-
   this->PatchDisplaySize = 100;
 
   this->IterationToDisplay = 0;
@@ -157,16 +153,16 @@ void PatchBasedInpaintingGUI::SetDefaultValues()
 
 void PatchBasedInpaintingGUI::SetupImageModels()
 {
-  this->ModelSave = new ListModelSave;
-  this->listViewSave->setModel(this->ModelSave);
+  this->ModelSave = QSharedPointer<ListModelSave>(new ListModelSave);
+  this->listViewSave->setModel(this->ModelSave.data());
 
-  this->ModelDisplay = new ListModelDisplay;
-  this->listViewDisplay->setModel(this->ModelDisplay);
+  this->ModelDisplay = QSharedPointer<ListModelDisplay>(new ListModelDisplay);
+  this->listViewDisplay->setModel(this->ModelDisplay.data());
   connect (this->listViewDisplay, SIGNAL(clicked(QModelIndex)), this, SLOT(slot_ChangeDisplayedImages(QModelIndex)));
 
-  this->ModelImages = new TableModelImageInput;
+  this->ModelImages = QSharedPointer<TableModelImageInput>(new TableModelImageInput);
   this->ModelImages->setItems(&this->ImageInputs);
-  this->tableViewImages->setModel(this->ModelImages);
+  this->tableViewImages->setModel(this->ModelImages.data());
   connect (this->tableViewImages, SIGNAL(clicked(QModelIndex)), this, SLOT(slot_ChangeFileName(QModelIndex)));
 }
 
@@ -191,21 +187,8 @@ void PatchBasedInpaintingGUI::SetupToolbar()
   this->toolBar->addAction(actionSaveResult);
 }
 
-void PatchBasedInpaintingGUI::SetupUserPatch()
-{
-  Helpers::CreateTransparentVTKImage(Helpers::SizeFromRadius(this->PatchRadius), this->UserPatchLayer.ImageData);
-  unsigned char userPatchColor[3];
-  HelpersQt::QColorToUCharColor(this->Colors.UserPatch, userPatchColor);
-  Helpers::BlankAndOutlineImage(this->UserPatchLayer.ImageData, userPatchColor);
-
-  itk::Size<2> patchSize = Helpers::SizeFromRadius(this->PatchRadius);
-  this->UserPatchRegion.SetSize(patchSize);
-}
-
 void PatchBasedInpaintingGUI::SetupLayers()
 {
-  this->UserPatchLayer.ImageSlice->SetPickable(true);
-
   this->ImageLayer.ImageSlice->SetPickable(false);
   this->MaskLayer.ImageSlice->SetPickable(false);
   this->UsedTargetPatchLayer.ImageSlice->SetPickable(false);
@@ -219,8 +202,6 @@ void PatchBasedInpaintingGUI::SetupLayers()
   this->Renderer->AddViewProp(this->UsedSourcePatchLayer.ImageSlice);
   this->Renderer->AddViewProp(this->AllSourcePatchOutlinesLayer.ImageSlice);
   this->Renderer->AddViewProp(this->AllForwardLookOutlinesLayer.ImageSlice);
-
-  this->Renderer->AddViewProp(this->UserPatchLayer.ImageSlice);
 }
 
 void PatchBasedInpaintingGUI::SetupValidators()
@@ -229,8 +210,10 @@ void PatchBasedInpaintingGUI::SetupValidators()
   this->txtPatchRadius->setValidator(this->IntValidator);
   this->txtNumberOfTopPatchesToSave->setValidator(this->IntValidator);
   this->txtNumberOfForwardLook->setValidator(this->IntValidator);
-  this->txtGoToIteration->setValidator(this->IntValidator);
   this->txtNumberOfTopPatchesToDisplay->setValidator(this->IntValidator);
+
+  this->IterationValidator = new QIntValidator(0, 0, this);
+  this->txtGoToIteration->setValidator(this->IterationValidator);
 }
 
 void PatchBasedInpaintingGUI::SetProgressBarToMarquee()
@@ -283,10 +266,6 @@ void PatchBasedInpaintingGUI::SetupScenes()
   this->ResultPatchScene = new QGraphicsScene();
   this->ResultPatchScene->setBackgroundBrush(brush);
   this->gfxResult->setScene(ResultPatchScene);
-
-  this->UserPatchScene = new QGraphicsScene();
-  this->UserPatchScene->setBackgroundBrush(brush);
-  this->gfxUserPatch->setScene(UserPatchScene);
 }
 
 void PatchBasedInpaintingGUI::SetupCamera()
@@ -349,50 +328,6 @@ PatchBasedInpaintingGUI::PatchBasedInpaintingGUI(const std::string& imageFileNam
 
   Initialize();
   LeaveFunction("PatchBasedInpaintingGUI(string, string, bool)");
-}
-
-
-void PatchBasedInpaintingGUI::UserPatchMoved()
-{
-  EnterFunction("UserPatchMoved()");
-  // Snap user patch to integer pixels
-  double position[3];
-  this->UserPatchLayer.ImageSlice->GetPosition(position);
-  position[0] = round(position[0]);
-  position[1] = round(position[1]);
-  this->UserPatchLayer.ImageSlice->SetPosition(position);
-  this->qvtkWidget->GetRenderWindow()->Render();
-
-  ComputeUserPatchRegion();
-
-  if(this->chkDisplayUserPatch->isChecked())
-    {
-    DisplayUserPatch();
-    }
-
-  if(this->IterationToDisplay < 1)
-    {
-    LeaveFunction("UserPatchMoved()");
-    return;
-    }
-
-  unsigned int iterationToCompare = this->IterationToDisplay - 1;
-  std::shared_ptr<SelfPatchCompare> patchCompare(new SelfPatchCompare);
-  patchCompare->SetImage(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[iterationToCompare].GetImageByName("Image").Image.GetPointer()));
-  patchCompare->SetMask(dynamic_cast<Mask*>(this->IterationRecords[iterationToCompare].GetImageByName("Mask").Image.GetPointer()));
-  patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
-  patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare.get(),_1));
-  CandidatePairs candidatePairs(this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplayId].TargetPatch);
-  Patch userPatch(this->UserPatchRegion);
-  candidatePairs.AddPairFromPatch(userPatch);
-  patchCompare->SetPairs(&candidatePairs);
-  patchCompare->ComputeAllSourceDifferences();
-
-  std::stringstream ss;
-  ss << candidatePairs[0].DifferenceMap[PatchPair::AverageAbsoluteDifference];
-  lblUserPatchError->setText(ss.str().c_str());
-
-  LeaveFunction("UserPatchMoved()");
 }
 
 void PatchBasedInpaintingGUI::OpenMask(const std::string& fileName, const bool inverted)
@@ -500,32 +435,6 @@ void PatchBasedInpaintingGUI::DisplayMask()
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-void PatchBasedInpaintingGUI::ComputeUserPatchRegion()
-{
-  double position[3];
-  this->UserPatchLayer.ImageSlice->GetPosition(position);
-  itk::Index<2> positionIndex;
-  positionIndex[0] = position[0];
-  positionIndex[1] = position[1];
-  this->UserPatchRegion.SetIndex(positionIndex);
-
-  itk::Size<2> patchSize = Helpers::SizeFromRadius(this->PatchRadius);
-  this->UserPatchRegion.SetSize(patchSize);
-}
-
-void PatchBasedInpaintingGUI::DisplayUserPatch()
-{
-  EnterFunction("DisplayUserPatch");
-
-  ComputeUserPatchRegion();
-  QImage userPatch = HelpersQt::GetQImage<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer()),
-                                                                this->UserPatchRegion, this->ImageDisplayStyle);
-  //userPatch = HelpersQt::FitToGraphicsView(userPatch, gfxTarget);
-  QGraphicsPixmapItem* item = this->UserPatchScene->addPixmap(QPixmap::fromImage(userPatch));
-  gfxTarget->fitInView(item);
-  LeaveFunction("DisplayUserPatch");
-}
-
 void PatchBasedInpaintingGUI::DisplayImage()
 {
   EnterFunction("DisplayImage");
@@ -574,7 +483,7 @@ void PatchBasedInpaintingGUI::RefreshVTK()
     // The following are valid for all iterations
     if(this->chkDisplayUserPatch->isChecked())
       {
-      DisplayUserPatch();
+      this->UserPatch->Display();
       }
 
 //     if(this->chkDisplayImage->isChecked())
@@ -768,7 +677,7 @@ void PatchBasedInpaintingGUI::DisplayResultPatch()
 
     FloatVectorImageType::Pointer resultPatch = FloatVectorImageType::New();
     resultPatch->SetNumberOfComponentsPerPixel(currentImage->GetNumberOfComponentsPerPixel());
-    itk::Size<2> patchSize = Helpers::SizeFromRadius(this->PatchRadius);
+    itk::Size<2> patchSize = Helpers::SizeFromRadius(this->Settings.PatchRadius);
     itk::ImageRegion<2> region;
     region.SetSize(patchSize);
     resultPatch->SetRegions(region);
@@ -937,7 +846,7 @@ void PatchBasedInpaintingGUI::HighlightSourcePatches()
     HelpersQt::QColorToUCharColor(this->Colors.CenterPixel, centerPixelColor);
 
     const CandidatePairs& candidatePairs = this->RecordToDisplay->PotentialPairSets[this->ForwardLookToDisplayId];
-    unsigned int numberToDisplay = std::min(candidatePairs.size(), NumberOfTopPatchesToDisplay);
+    unsigned int numberToDisplay = std::min(candidatePairs.size(), this->Settings.NumberOfTopPatchesToDisplay);
     DebugMessage<unsigned int>("HighlightSourcePatches: Displaying patches: ", numberToDisplay);
     unsigned char borderColor[3];
 
@@ -1220,7 +1129,7 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
     // Chop to the desired length
     for(unsigned int i = 0; i < this->Inpainting->GetPotentialCandidatePairsReference().size(); ++i)
       {
-      unsigned int numberToKeep = std::min(this->Inpainting->GetPotentialCandidatePairsReference()[i].size(), this->NumberOfTopPatchesToSave);
+      unsigned int numberToKeep = std::min(this->Inpainting->GetPotentialCandidatePairsReference()[i].size(), this->Settings.NumberOfTopPatchesToSave);
       //std::cout << "numberToKeep: " << numberToKeep << std::endl;
       this->Inpainting->GetPotentialCandidatePairsReference()[i].erase(this->Inpainting->GetPotentialCandidatePairsReference()[i].begin() + numberToKeep,
                                                                        this->Inpainting->GetPotentialCandidatePairsReference()[i].end());
@@ -1334,7 +1243,7 @@ void PatchBasedInpaintingGUI::SetupTopPatchesTable()
   this->TopPatchesModel->SetIterationToDisplay(this->IterationToDisplay);
   this->TopPatchesModel->SetForwardLookToDisplay(this->ForwardLookToDisplayId);
   this->TopPatchesModel->SetPatchDisplaySize(this->PatchDisplaySize);
-  this->TopPatchesModel->SetNumberOfTopPatchesToDisplay(this->NumberOfTopPatchesToDisplay);
+  this->TopPatchesModel->SetNumberOfTopPatchesToDisplay(this->Settings.NumberOfTopPatchesToDisplay);
   this->TopPatchesModel->Refresh();
 
   this->SourcePatchToDisplayId = 0;
@@ -1356,17 +1265,13 @@ void PatchBasedInpaintingGUI::InitializeGUIElements()
 {
   on_chkLive_clicked();
 
-  this->PatchRadius = this->txtPatchRadius->text().toUInt();
+  this->Settings.PatchRadius = this->txtPatchRadius->text().toUInt();
 
-  this->NumberOfTopPatchesToSave = this->txtNumberOfTopPatchesToSave->text().toUInt();
+  this->Settings.NumberOfTopPatchesToSave = this->txtNumberOfTopPatchesToSave->text().toUInt();
 
-  this->NumberOfForwardLook = this->txtNumberOfForwardLook->text().toUInt();
+  this->Settings.NumberOfForwardLook = this->txtNumberOfForwardLook->text().toUInt();
 
-  this->GoToIteration = this->txtGoToIteration->text().toUInt();
-
-  this->NumberOfTopPatchesToDisplay = this->txtNumberOfTopPatchesToDisplay->text().toUInt();
-
-  this->UserPatchLayer.ImageSlice->SetVisibility(this->chkDisplayUserPatch->isChecked());
+  this->Settings.NumberOfTopPatchesToDisplay = this->txtNumberOfTopPatchesToDisplay->text().toUInt();
 }
 
 void PatchBasedInpaintingGUI::SetParametersFromGUI()
@@ -1448,14 +1353,6 @@ void PatchBasedInpaintingGUI::SetSortFunctionFromGUI()
     }
 }
 
-void PatchBasedInpaintingGUI::SetDepthColorLambdaFromGUI()
-{
-//   this->Inpainting->PatchSortFunction = std::make_shared<SortByDepthAndColor>(PatchPair::ColorDifference);
-//   this->Inpainting->PatchSortFunction->DepthColorLambda = static_cast<float>(sldDepthColorLambda->value())/100.0f;
-// 
-//   std::cout << "DepthColorLambda set to " << this->Inpainting->PatchSortFunction->DepthColorLambda << std::endl;
-}
-
 void PatchBasedInpaintingGUI::SetPriorityFromGUI()
 {
   if(Helpers::StringsMatch(this->cmbPriority->currentText().toStdString(), "Manual"))
@@ -1493,9 +1390,7 @@ void PatchBasedInpaintingGUI::SetPriorityFromGUI()
   for(unsigned int i = 0; i < namedImages.size(); ++i)
     {
     std::cout << "SetPriorityFromGUI: Adding " << namedImages[i].Name << std::endl;
-    
     }
-
 }
 
 void PatchBasedInpaintingGUI::AddImageInput(const ImageInput& imageInput)

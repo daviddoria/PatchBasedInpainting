@@ -194,9 +194,6 @@ private:
 
   std::shared_ptr<Priority> PriorityFunction;
 
-  IntImageType::Pointer MembershipImage;
-
-  unsigned int GetRequiredHistogramIntersection(const unsigned int bestForwardLookId);
 };
 
 #include "PatchBasedInpainting.hxx"

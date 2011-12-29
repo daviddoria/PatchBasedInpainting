@@ -186,12 +186,12 @@ void PatchBasedInpainting::AddAllSourcePatchesInRegion(const itk::ImageRegion<2>
       itk::ImageRegion<2> currentPatchRegion = Helpers::GetRegionInRadiusAroundPixel(currentPixel, this->PatchRadius[0]);
 
       if(this->MaskImage->GetLargestPossibleRegion().IsInside(currentPatchRegion))
-	{
-	if(this->MaskImage->IsValid(currentPatchRegion))
-	  {
-	  this->SourcePatches.push_back(Patch(currentPatchRegion));
-	  }
-	}
+        {
+        if(this->MaskImage->IsValid(currentPatchRegion))
+          {
+          this->SourcePatches.push_back(Patch(currentPatchRegion));
+          }
+        }
 
       ++imageIterator;
       }
@@ -322,7 +322,7 @@ void PatchBasedInpainting::RecomputeScoresWithNewPatches(std::vector<Patch>& new
     this->PatchCompare->SetPairs(&newPairs);
     this->PatchCompare->SetImage(this->CompareImage);
     this->PatchCompare->SetMask(this->MaskImage);
-    this->PatchCompare->SetMembershipImage(this->MembershipImage);
+    //this->PatchCompare->SetMembershipImage(this->MembershipImage);
     this->PatchCompare->ComputeAllSourceDifferences();
 
     this->PotentialCandidatePairs[candidateId].Combine(newPairs);
@@ -355,7 +355,7 @@ void PatchBasedInpainting::FindBestPatch(PatchPair& bestPatchPair)
   this->PatchCompare->SetPairs(&candidatePairs);
   this->PatchCompare->SetImage(this->CompareImage);
   this->PatchCompare->SetMask(this->MaskImage);
-  this->PatchCompare->SetMembershipImage(this->MembershipImage);
+  //this->PatchCompare->SetMembershipImage(this->MembershipImage);
   this->PatchCompare->ComputeAllSourceDifferences();
 
   std::sort(candidatePairs.begin(), candidatePairs.end(), SortFunctorWrapper(this->PatchSortFunction.get()));
@@ -367,38 +367,6 @@ void PatchBasedInpainting::FindBestPatch(PatchPair& bestPatchPair)
 
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatch()." << std::endl;
   LeaveFunction("PatchBasedInpainting::FindBestPatch()");
-}
-
-
-unsigned int PatchBasedInpainting::GetRequiredHistogramIntersection(const unsigned int bestForwardLookId)
-{
-//   float histogramIntersection = 0.0f;
-//   unsigned int sourcePatchId = 0;
-
-  //this->ColorFrequency.SetDebugFunctionEnterLeave(true);
-//   float requiredHistogramIntersection = 0.75f;
-//   do
-//   {
-//     PatchPair patchPair = this->PotentialCandidatePairs[bestForwardLookId][sourcePatchId];
-//     //std::vector<float> histogram1 = Histograms::Compute1DHistogramOfMultiChannelMaskedImage(this->CurrentOutputImage, bestPatchPair.TargetPatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region, 50);
-//     //std::vector<float> histogram2 = Histograms::Compute1DHistogramOfMultiChannelMaskedImage(this->CurrentOutputImage, bestPatchPair.SourcePatch.Region, inverseMask, bestPatchPair.TargetPatch.Region, 50);
-//     std::vector<float> histogram1 = this->ColorFrequency.HistogramRegion(this->MembershipImage,
-//                                                                          patchPair.TargetPatch.Region, this->MaskImage, patchPair.TargetPatch.Region);
-//     std::vector<float> histogram2 = this->ColorFrequency.HistogramRegion(this->MembershipImage,
-//                                                                          patchPair.SourcePatch.Region, this->MaskImage, patchPair.TargetPatch.Region, true);
-//     sourcePatchId++; // Note at the end of the loop bestPatchPair will have been set to the previous patchId.
-//     histogramIntersection = Histograms::HistogramIntersection(histogram2, histogram1);
-//     //std::cout << "histogramIntersection: " << histogramIntersection << std::endl;
-//     std::stringstream ssSource;
-//     ssSource << "/home/doriad/Debug/" << this->NumberOfCompletedIterations << "_" << Helpers::ZeroPad(sourcePatchId, 4) << "_source.txt";
-//     std::stringstream ssTarget;
-//     ssTarget << "/home/doriad/Debug/" << this->NumberOfCompletedIterations << "_" << Helpers::ZeroPad(sourcePatchId, 4) << "_target.txt";
-//     //Histograms::WriteHistogram(histogram1, ssSource.str());
-//     //Histograms::WriteHistogram(histogram2, ssTarget.str());
-//   } while (histogramIntersection < requiredHistogramIntersection && sourcePatchId < this->PotentialCandidatePairs[bestForwardLookId].size());
-
-//   return sourcePatchId;
-return 0;
 }
 
 unsigned int PatchBasedInpainting::ComputeMinimumScoreLookAhead()

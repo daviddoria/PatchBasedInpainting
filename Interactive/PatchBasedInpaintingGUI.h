@@ -54,14 +54,16 @@ class vtkPolyDataMapper;
 #include "InpaintingComputationObject.h"
 #include "InpaintingIterationRecord.h"
 #include "Layer.h"
+#include "MovablePatch.h"
 #include "PatchBasedInpainting.h"
+#include "Settings.h"
 #include "Types.h"
+
 #include "ModelView/TableModelForwardLook.h"
 #include "ModelView/TableModelImageInput.h"
 #include "ModelView/TableModelTopPatches.h"
-
-class ListModelDisplay;
-class ListModelSave;
+#include "ModelView/ListModelDisplay.h"
+#include "ModelView/ListModelSave.h"
 
 class InteractorStyleImageWithDrag;
 
@@ -92,10 +94,7 @@ public slots:
   void on_chkDisplayUserPatch_clicked();
 
   void on_cmbCompareImage_activated(int value);
-  void on_cmbSortBy_activated(int value);
   void on_cmbPriority_activated(int value);
-
-  void on_sldDepthColorLambda_valueChanged();
 
   void on_radDisplayColorImage_clicked();
   void on_radDisplayMagnitudeImage_clicked();
@@ -149,7 +148,6 @@ public slots:
   void on_txtPatchRadius_textEdited ( const QString & text );
   void on_txtNumberOfTopPatchesToSave_textEdited ( const QString & text );
   void on_txtNumberOfForwardLook_textEdited ( const QString & text );
-  void on_txtGoToIteration_textEdited ( const QString & text );
   void on_txtNumberOfTopPatchesToDisplay_textEdited ( const QString & text );
 
 protected:
@@ -165,7 +163,6 @@ protected:
   void SetProgressBarToMarquee();
   void SetupValidators();
   void SetupLayers();
-  void SetupUserPatch();
   void SetupToolbar();
   void SetupComputationThread();
   
@@ -184,15 +181,8 @@ protected:
   void ChangeDisplayedForwardLookPatch();
 
   // These functions display the iteration indicated by the member 'IterationToDisplay'
-  //void DisplayBoundary();
-  //void DisplayBoundaryNormals();
   void DisplayMask();
-  //void DisplayConfidence();
-  //void DisplayConfidenceMap();
-  //void DisplayPriority();
-  //void DisplayData();
   void DisplayImage();
-  void DisplayUserPatch();
 
   void OpenImage(const std::string& filename);
   void OpenMask(const std::string& filename, const bool inverted);
@@ -219,7 +209,7 @@ protected:
   vtkSmartPointer<vtkRenderer> Renderer;
 
   // A patch that the user can move around freely.
-  Layer UserPatchLayer;
+  std::shared_ptr<MovablePatch> UserPatch;
 
   // Source patch outline display
   Layer UsedSourcePatchLayer;
@@ -255,12 +245,6 @@ protected:
   InpaintingComputationObject* InpaintingComputation;
   QThread* ComputationThread;
 
-  // A flag that determines if debugging images should be output to files.
-  bool DebugImages;
-
-  // A flag that determines if debugging messages should be output.
-  bool DebugMessages;
-
   // If IterationToDisplay == 0, then we are just displaying the initial images.
   unsigned int IterationToDisplay;
   unsigned int ForwardLookToDisplayId;
@@ -293,7 +277,6 @@ protected:
   QGraphicsScene* SourcePatchScene;
   QGraphicsScene* TargetPatchScene;
   QGraphicsScene* ResultPatchScene;
-  QGraphicsScene* UserPatchScene;
 
   void OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename);
 
@@ -311,38 +294,31 @@ protected:
   // The size to display the patches.
   unsigned int PatchDisplaySize;
 
-  // The position of the freely movable patch.
-  itk::ImageRegion<2> UserPatchRegion;
-
   // A Validator to make sure only positive integers can be typed into the text boxes.
+  // Since we provide a parent, this does not need to be a smart pointer.
   QIntValidator* IntValidator;
 
-  // The radius of the patches.
-  unsigned int PatchRadius;
-  unsigned int NumberOfTopPatchesToSave;
-  unsigned int NumberOfForwardLook;
-  unsigned int GoToIteration;
-  unsigned int NumberOfTopPatchesToDisplay;
+  // Make sure only valid iterations can be typed.
+  // Since we provide a parent, this does not need to be a smart pointer.
+  QIntValidator* IterationValidator;
+
+  SettingsContainer Settings;
 
   DisplayStyle ImageDisplayStyle;
-
-  void UserPatchMoved();
-  void ComputeUserPatchRegion();
 
   void SetPriorityFromGUI();
   void SetCompareImageFromGUI();
   void SetComparisonFunctionsFromGUI();
   void SetSortFunctionFromGUI();
-  void SetDepthColorLambdaFromGUI();
   void SetParametersFromGUI();
 
   void SetupConnections();
 
   QVector<ImageInput> ImageInputs;
 
-  ListModelSave* ModelSave;
-  ListModelDisplay* ModelDisplay;
-  TableModelImageInput* ModelImages;
+  QSharedPointer<ListModelSave> ModelSave;
+  QSharedPointer<ListModelDisplay> ModelDisplay;
+  QSharedPointer<TableModelImageInput> ModelImages;
 
   void UpdateAllImageInputModels();
 

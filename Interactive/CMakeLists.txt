@@ -22,10 +22,12 @@ InpaintingComputationObject.cpp
 InpaintingIterationRecord.cpp
 InteractorStyleImageWithDrag.cpp
 Layer.cpp
+MovablePatch.cpp
 PatchBasedInpaintingGUI.cpp
 PatchBasedInpaintingGUISlots.cpp
 PatchBasedInpaintingInteractive.cpp #driver (contains main())
 PixmapDelegate.cpp
+Settings.cpp
 VectorLayer.cpp
 ${UISrcs} ${MOCSrcs})
 
