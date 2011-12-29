@@ -15,6 +15,7 @@ QT4_WRAP_CPP(MOCSrcs PatchBasedInpaintingGUI.h InpaintingComputationObject.h Fil
 add_executable(PatchBasedInpaintingInteractive
 Canvas.cpp
 ColorPalette.cpp
+DisplayState.cpp
 FileSelector.cpp
 HelpersDisplay.cpp
 HelpersQt.cpp

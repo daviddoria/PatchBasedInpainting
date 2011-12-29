@@ -50,6 +50,7 @@ class vtkPolyDataMapper;
 #include "Canvas.h"
 #include "ColorPalette.h"
 #include "DebugOutputs.h"
+#include "DisplayState.h"
 #include "DisplayStyle.h"
 #include "ImageInput.h"
 #include "InpaintingComputationObject.h"
@@ -164,10 +165,8 @@ private:
   void SetupValidators();
   void SetupToolbar();
   void SetupComputationThread();
-  
+
   void SetupImageModels();
-  
-  void SetDefaultValues();
 
   void showEvent ( QShowEvent * event );
 
@@ -225,10 +224,6 @@ private:
   InpaintingComputationObject* InpaintingComputation;
   QThread* ComputationThread;
 
-  // If IterationToDisplay == 0, then we are just displaying the initial images.
-  unsigned int IterationToDisplay;
-  unsigned int ForwardLookToDisplayId;
-  unsigned int SourcePatchToDisplayId;
   Patch SourcePatchToDisplay;
   Patch TargetPatchToDisplay;
   InpaintingIterationRecord* RecordToDisplay;
@@ -291,12 +286,18 @@ private:
 
   DisplayStyle ImageDisplayStyle;
 
+  DisplayStateContainer DisplayState;
+
+  // This function calls several functions that set parameters from GUI values.
+  void SetParametersFromGUI();
+
+  // These functions set specific parameters from GUI values.
   void SetPriorityFromGUI();
   void SetCompareImageFromGUI();
   void SetComparisonFunctionsFromGUI();
   void SetSortFunctionFromGUI();
-  void SetParametersFromGUI();
 
+  // Connect all signals and slots.
   void SetupConnections();
 
   QVector<ImageInput> ImageInputs;

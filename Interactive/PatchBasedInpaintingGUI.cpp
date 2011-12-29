@@ -97,7 +97,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   this->setupUi(this);
 
-  SetDefaultValues();
   SetupCamera();
 
   SetupScenes();
@@ -141,15 +140,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   SetupImageModels();
 
   LeaveFunction("PatchBasedInpaintingGUI::DefaultConstructor()");
-}
-
-void PatchBasedInpaintingGUI::SetDefaultValues()
-{
-  this->Settings.PatchDisplaySize = 100;
-
-  this->IterationToDisplay = 0;
-  this->ForwardLookToDisplayId = 0;
-  this->SourcePatchToDisplayId = 0;
 }
 
 void PatchBasedInpaintingGUI::SetupImageModels()
@@ -415,14 +405,14 @@ void PatchBasedInpaintingGUI::DisplayMask()
   //Helpers::ITKScalarImageToScaledVTKImage<Mask>(this->IntermediateImages[this->IterationToDisplay].MaskImage, temp);
   //Helpers::MakeValidPixelsTransparent(temp, this->MaskLayer.ImageData, 0); // Set the zero pixels of the mask to transparent
 
-  dynamic_cast<Mask*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Mask").Image.GetPointer())->MakeVTKImage(this->Canvas->MaskLayer.ImageData, QColor(Qt::white), this->Colors.Hole, false, true); // (..., holeTransparent, validTransparent);
+  dynamic_cast<Mask*>(this->IterationRecords[this->DisplayState.Iteration].GetImageByName("Mask").Image.GetPointer())->MakeVTKImage(this->Canvas->MaskLayer.ImageData, QColor(Qt::white), this->Colors.Hole, false, true); // (..., holeTransparent, validTransparent);
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 void PatchBasedInpaintingGUI::DisplayImage()
 {
   EnterFunction("DisplayImage");
-  HelpersDisplay::ITKVectorImageToVTKImage(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer()), this->Canvas->ImageLayer.ImageData, this->ImageDisplayStyle);
+  HelpersDisplay::ITKVectorImageToVTKImage(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->DisplayState.Iteration].GetImageByName("Image").Image.GetPointer()), this->Canvas->ImageLayer.ImageData, this->ImageDisplayStyle);
 
   this->qvtkWidget->GetRenderWindow()->Render();
   LeaveFunction("DisplayImage");
@@ -720,7 +710,7 @@ void PatchBasedInpaintingGUI::DisplayUsedPatches()
   {
     // There are no patches used in the 0th iteration (initial conditions) so it doesn't make sense to display them.
     // Instead we display blank images.
-    if(this->IterationToDisplay < 1)
+    if(this->DisplayState.Iteration < 1)
       {
       this->TargetPatchScene->clear();
       this->SourcePatchScene->clear();
@@ -771,7 +761,7 @@ void PatchBasedInpaintingGUI::HighlightForwardLookPatches()
     for(unsigned int candidateId = 0; candidateId < candidatePairs.size(); ++candidateId)
       {
       unsigned char borderColor[3];
-      if(candidateId == this->ForwardLookToDisplayId)
+      if(candidateId == this->DisplayState.ForwardLookId)
         {
         HelpersQt::QColorToUCharColor(this->Colors.SelectedForwardLookPatch, borderColor);
         }
@@ -829,14 +819,14 @@ void PatchBasedInpaintingGUI::HighlightSourcePatches()
     unsigned char centerPixelColor[3];
     HelpersQt::QColorToUCharColor(this->Colors.CenterPixel, centerPixelColor);
 
-    const CandidatePairs& candidatePairs = this->RecordToDisplay->PotentialPairSets[this->ForwardLookToDisplayId];
+    const CandidatePairs& candidatePairs = this->RecordToDisplay->PotentialPairSets[this->DisplayState.ForwardLookId];
     unsigned int numberToDisplay = std::min(candidatePairs.size(), this->Settings.NumberOfTopPatchesToDisplay);
     DebugMessage<unsigned int>("HighlightSourcePatches: Displaying patches: ", numberToDisplay);
     unsigned char borderColor[3];
 
     for(unsigned int candidateId = 0; candidateId < numberToDisplay; ++candidateId)
       {
-      if(candidateId == this->SourcePatchToDisplayId)
+      if(candidateId == this->DisplayState.SourcePatchId)
         {
         HelpersQt::QColorToUCharColor(this->Colors.SelectedSourcePatch, borderColor);
         }
@@ -923,7 +913,7 @@ void PatchBasedInpaintingGUI::DisplayUsedPatchInformation()
   {
     EnterFunction("DisplayUsedPatchInformation()");
 
-    if(this->IterationToDisplay < 1)
+    if(this->DisplayState.Iteration < 1)
       {
       //std::cerr << "Can only display used patch information for iterations >= 1" << std::endl;
       return;
@@ -986,10 +976,10 @@ void PatchBasedInpaintingGUI::ChangeDisplayedIteration()
 
   EnterFunction("ChangeDisplayedIteration()");
 
-  if(this->IterationToDisplay > this->IterationRecords.size())
+  if(this->DisplayState.Iteration > this->IterationRecords.size())
     {
     std::cout << "this->IterationToDisplay > this->IterationRecords.size()" << std::endl;
-    std::cout << "this->IterationToDisplay: " << this->IterationToDisplay << std::endl;
+    std::cout << "this->IterationToDisplay: " << this->DisplayState.Iteration << std::endl;
     std::cout << "this->IterationRecords.size(): " << this->IterationRecords.size() << std::endl;
     this->RecordToDisplay = NULL;
     LeaveFunction("ChangeDisplayedIteration()");
@@ -997,24 +987,24 @@ void PatchBasedInpaintingGUI::ChangeDisplayedIteration()
     }
 
   // If there are no PotentialPairSets, we can't display them.
-  if(this->IterationRecords[this->IterationToDisplay].PotentialPairSets.size() == 0)
+  if(this->IterationRecords[this->DisplayState.Iteration].PotentialPairSets.size() == 0)
     {
     LeaveFunction("ChangeDisplayedIteration()");
     return;
     }
 
-  this->RecordToDisplay = &IterationRecords[this->IterationToDisplay];
+  this->RecordToDisplay = &IterationRecords[this->DisplayState.Iteration];
 
   this->ModelDisplay->SetIterationRecord(this->RecordToDisplay);
 
-  this->SourcePatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->ForwardLookToDisplayId][this->SourcePatchToDisplayId].SourcePatch;
-  this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->ForwardLookToDisplayId].TargetPatch;
+  this->SourcePatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->DisplayState.ForwardLookId][this->DisplayState.SourcePatchId].SourcePatch;
+  this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->DisplayState.ForwardLookId].TargetPatch;
 
   std::stringstream ss;
-  ss << this->IterationToDisplay << " out of " << this->Inpainting->GetNumberOfCompletedIterations();
+  ss << this->DisplayState.Iteration << " out of " << this->Inpainting->GetNumberOfCompletedIterations();
   this->lblCurrentIteration->setText(ss.str().c_str());
 
-  if(this->IterationToDisplay > 0)
+  if(this->DisplayState.Iteration > 0)
     {
     DisplayUsedPatches();
     HighlightUsedPatches();
@@ -1139,7 +1129,7 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
     {
     std::cout << "Switching to live iteration." << std::endl;
     //this->IterationToDisplay = this->Inpainting.GetNumberOfCompletedIterations();
-    this->IterationToDisplay = this->Inpainting->GetNumberOfCompletedIterations() - 1;
+    this->DisplayState.Iteration = this->Inpainting->GetNumberOfCompletedIterations() - 1;
     //std::cout << "Switch to display iteration " << this->IterationToDisplay << std::endl;
     ChangeDisplayedIteration();
 
@@ -1148,7 +1138,7 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
   else
     {
     std::stringstream ss;
-    ss << this->IterationToDisplay << " out of " << this->Inpainting->GetNumberOfCompletedIterations();
+    ss << this->DisplayState.Iteration << " out of " << this->Inpainting->GetNumberOfCompletedIterations();
     this->lblCurrentIteration->setText(ss.str().c_str());
     }
 
@@ -1158,7 +1148,7 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
 void PatchBasedInpaintingGUI::SetupForwardLookingTable()
 {
   EnterFunction("SetupForwardLookingTable()");
-  if(this->IterationToDisplay < 1)
+  if(this->DisplayState.Iteration < 1)
     {
     //std::cout << "Can only display result patch for iterations > 0." << std::endl;
     this->ForwardLookModel->SetIterationToDisplay(0);
@@ -1166,11 +1156,11 @@ void PatchBasedInpaintingGUI::SetupForwardLookingTable()
     return;
     }
 
-  this->ForwardLookModel->SetIterationToDisplay(this->IterationToDisplay);
+  this->ForwardLookModel->SetIterationToDisplay(this->DisplayState.Iteration);
   this->ForwardLookModel->SetPatchDisplaySize(this->Settings.PatchDisplaySize);
   this->ForwardLookModel->Refresh();
 
-  this->SourcePatchToDisplayId = 0;
+  this->DisplayState.SourcePatchId = 0;
 
   this->ForwardLookTableView->setColumnWidth(0, this->Settings.PatchDisplaySize);
   this->ForwardLookTableView->verticalHeader()->setResizeMode(QHeaderView::Fixed);
@@ -1182,14 +1172,14 @@ void PatchBasedInpaintingGUI::ChangeDisplayedTopPatch()
 {
   EnterFunction("ChangeDisplayedTopPatch()");
 
-  if(this->IterationRecords[this->IterationToDisplay].PotentialPairSets.size() == 0)
+  if(this->IterationRecords[this->DisplayState.Iteration].PotentialPairSets.size() == 0)
     {
     LeaveFunction("ChangeDisplayedTopPatch()");
     return;
     }
 
-  this->SourcePatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->ForwardLookToDisplayId][this->SourcePatchToDisplayId].SourcePatch;
-  this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->ForwardLookToDisplayId].TargetPatch;
+  this->SourcePatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->DisplayState.ForwardLookId][this->DisplayState.SourcePatchId].SourcePatch;
+  this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->DisplayState.ForwardLookId].TargetPatch;
 
   DisplaySourcePatch();
   DisplayResultPatch();
@@ -1203,12 +1193,12 @@ void PatchBasedInpaintingGUI::ChangeDisplayedForwardLookPatch()
 {
   EnterFunction("ChangeDisplayedForwardLookPatch()");
 
-  if(this->IterationRecords[this->IterationToDisplay].PotentialPairSets.size() == 0)
+  if(this->IterationRecords[this->DisplayState.Iteration].PotentialPairSets.size() == 0)
     {
     LeaveFunction("ChangeDisplayedForwardLookPatch()");
     return;
     }
-  this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->ForwardLookToDisplayId].TargetPatch;
+  this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->DisplayState.ForwardLookId].TargetPatch;
   DisplayTargetPatch();
 
   // Once the target patch is set, setup the TopPatches table, which will also display the result patch
@@ -1224,13 +1214,13 @@ void PatchBasedInpaintingGUI::SetupTopPatchesTable()
 {
   EnterFunction("SetupTopPatchesTable()");
 
-  this->TopPatchesModel->SetIterationToDisplay(this->IterationToDisplay);
-  this->TopPatchesModel->SetForwardLookToDisplay(this->ForwardLookToDisplayId);
+  this->TopPatchesModel->SetIterationToDisplay(this->DisplayState.Iteration);
+  this->TopPatchesModel->SetForwardLookToDisplay(this->DisplayState.ForwardLookId);
   this->TopPatchesModel->SetPatchDisplaySize(this->Settings.PatchDisplaySize);
   this->TopPatchesModel->SetNumberOfTopPatchesToDisplay(this->Settings.NumberOfTopPatchesToDisplay);
   this->TopPatchesModel->Refresh();
 
-  this->SourcePatchToDisplayId = 0;
+  this->DisplayState.SourcePatchId = 0;
   HighlightSourcePatches();
 
   DisplaySourcePatch();

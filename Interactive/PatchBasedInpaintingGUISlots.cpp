@@ -48,7 +48,7 @@ void PatchBasedInpaintingGUI::slot_ChangeFileName(QModelIndex index)
 
 void PatchBasedInpaintingGUI::on_chkDisplayUserPatch_clicked()
 {
-  this->UserPatch->SetVisibility(this->chkDisplayUserPatch->isChecked());
+  //this->UserPatchSetVisibility(this->chkDisplayUserPatch->isChecked());
   Refresh();
 }
 
@@ -98,7 +98,7 @@ void PatchBasedInpaintingGUI::on_chkLive_clicked()
 
 void PatchBasedInpaintingGUI::on_btnGoToIteration_clicked()
 {
-  this->IterationToDisplay = this->txtGoToIteration->text().toUInt();
+  this->DisplayState.Iteration = this->txtGoToIteration->text().toUInt();
   ChangeDisplayedIteration();
 }
 /*
@@ -187,10 +187,10 @@ void PatchBasedInpaintingGUI::on_actionFlipImageHorizontally_activated()
 
 void PatchBasedInpaintingGUI::on_btnDisplayPreviousStep_clicked()
 {
-  if(this->IterationToDisplay > 0)
+  if(this->DisplayState.Iteration > 0)
     {
-    this->IterationToDisplay--;
-    DebugMessage<unsigned int>("Displaying iteration: ", this->IterationToDisplay);
+    this->DisplayState.Iteration--;
+    DebugMessage<unsigned int>("Displaying iteration: ", this->DisplayState.Iteration);
     ChangeDisplayedIteration();
     }
   else
@@ -206,10 +206,10 @@ void PatchBasedInpaintingGUI::on_btnDisplayNextStep_clicked()
     //        << " Inpainting iteration: " <<  static_cast<int>(this->Inpainting.GetIteration()) << std::endl;
 
   //if(this->IterationToDisplay < this->Inpainting.GetNumberOfCompletedIterations() - 1)
-  if(this->IterationToDisplay < this->IterationRecords.size() - 1)
+  if(this->DisplayState.Iteration < this->IterationRecords.size() - 1)
     {
-    this->IterationToDisplay++;
-    DebugMessage<unsigned int>("Displaying iteration: ", this->IterationToDisplay);
+    this->DisplayState.Iteration++;
+    DebugMessage<unsigned int>("Displaying iteration: ", this->DisplayState.Iteration);
     ChangeDisplayedIteration();
     }
   else
@@ -294,10 +294,10 @@ void PatchBasedInpaintingGUI::slot_ForwardLookTableView_changed(const QModelInde
 
   std::cerr << "Requested display of forward look patch " << currentIndex.row() << std::endl;
 
-  this->ForwardLookToDisplayId = currentIndex.row();
-  std::cout << "Set this->ForwardLookToDisplay to " << this->ForwardLookToDisplayId << std::endl;
+  this->DisplayState.ForwardLookId = currentIndex.row();
+  std::cout << "Set this->ForwardLookToDisplay to " << this->DisplayState.ForwardLookId << std::endl;
   // When we select a different forward look patch, there is no way to know which source patch the user wants to see, so show the 0th.
-  this->SourcePatchToDisplayId = 0;
+  this->DisplayState.SourcePatchId = 0;
 
   ChangeDisplayedForwardLookPatch();
 
@@ -321,8 +321,8 @@ void PatchBasedInpaintingGUI::slot_TopPatchesTableView_changed(const QModelIndex
       return;
       }
 
-    this->SourcePatchToDisplayId = currentIndex.row();
-    std::cout << "Set this->SourcePatchToDisplay to " << this->SourcePatchToDisplayId << std::endl;
+    this->DisplayState.SourcePatchId = currentIndex.row();
+    std::cout << "Set this->SourcePatchToDisplay to " << this->DisplayState.SourcePatchId << std::endl;
     ChangeDisplayedTopPatch();
 
     LeaveFunction("slot_TopPatchesTableView_changed()");
@@ -503,7 +503,7 @@ void PatchBasedInpaintingGUI::on_cmbPriority_activated(int value)
 
 void PatchBasedInpaintingGUI::slot_ChangeDisplayedImages(QModelIndex)
 {
-  for(unsigned int imageId = 0; imageId < this->IterationRecords[this->IterationToDisplay].GetNumberOfImages(); ++imageId)
+  for(unsigned int imageId = 0; imageId < this->IterationRecords[this->DisplayState.Iteration].GetNumberOfImages(); ++imageId)
     {
 //     Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>
 //     (dynamic_cast<UnsignedCharScalarImageType*>(this->IterationRecords[this->IterationToDisplay].Images[imageId].Image.GetPointer()), this->BoundaryLayer.ImageData);
