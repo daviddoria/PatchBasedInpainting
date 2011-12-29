@@ -19,6 +19,7 @@ DisplayState.cpp
 FileSelector.cpp
 HelpersDisplay.cpp
 HelpersQt.cpp
+ImageCamera.cpp
 ImageInput.cpp
 InpaintingComputationObject.cpp
 InpaintingIterationRecord.cpp

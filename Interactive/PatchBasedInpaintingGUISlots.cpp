@@ -162,27 +162,14 @@ void PatchBasedInpaintingGUI::on_chkDisplaySourcePatchLocations_clicked()
   RefreshVTK();
 }
 
-void PatchBasedInpaintingGUI::SetCameraPosition()
-{
-  double leftToRight[3] = {this->CameraLeftToRightVector[0], this->CameraLeftToRightVector[1], this->CameraLeftToRightVector[2]};
-  double bottomToTop[3] = {this->CameraBottomToTopVector[0], this->CameraBottomToTopVector[1], this->CameraBottomToTopVector[2]};
-  this->InteractorStyle->SetImageOrientation(leftToRight, bottomToTop);
-
-  this->Renderer->ResetCamera();
-  this->Renderer->ResetCameraClippingRange();
-  this->qvtkWidget->GetRenderWindow()->Render();
-}
-
 void PatchBasedInpaintingGUI::on_actionFlipImageVertically_activated()
 {
-  this->CameraBottomToTopVector[1] *= -1;
-  SetCameraPosition();
+  this->Camera->FlipVertically();
 }
 
 void PatchBasedInpaintingGUI::on_actionFlipImageHorizontally_activated()
 {
-  this->CameraLeftToRightVector[0] *= -1;
-  SetCameraPosition();
+  this->Camera->FlipHorizontally();
 }
 
 void PatchBasedInpaintingGUI::on_btnDisplayPreviousStep_clicked()

@@ -28,16 +28,6 @@
 
 // VTK
 #include <vtkSmartPointer.h>
-#include <vtkSeedWidget.h>
-#include <vtkPointHandleRepresentation2D.h>
-
-class vtkActor;
-class vtkBorderWidget;
-class vtkImageData;
-class vtkImageSlice;
-class vtkImageSliceMapper;
-class vtkPolyData;
-class vtkPolyDataMapper;
 
 // ITK
 #include "itkImage.h"
@@ -52,6 +42,7 @@ class vtkPolyDataMapper;
 #include "DebugOutputs.h"
 #include "DisplayState.h"
 #include "DisplayStyle.h"
+#include "ImageCamera.h"
 #include "ImageInput.h"
 #include "InpaintingComputationObject.h"
 #include "InpaintingIterationRecord.h"
@@ -79,9 +70,6 @@ public:
   PatchBasedInpaintingGUI(const std::string& imageFileName, const std::string& maskFileName, const bool debugEnterLeave);
   ~PatchBasedInpaintingGUI() {};
 
-  // Change the camera position to produce the effect of flipping the image.
-  void SetCameraPosition();
-
   void RefreshQt();
   void RefreshVTK();
   void Refresh();
@@ -102,9 +90,6 @@ public slots:
   void on_radDisplayChannel_clicked();
   void on_spinChannelToDisplay_valueChanged(int unused);
 
-//   void on_btnChooseBlurredImage_clicked();
-//   void on_btnChooseMembershipImage_clicked();
-
   void on_btnGoToIteration_clicked();
 
   void on_btnDisplayPreviousStep_clicked();
@@ -123,7 +108,6 @@ public slots:
   void slot_ForwardLookTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
   void slot_TopPatchesTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
 
-  // Defined in FormGUIElements.cxx
   void on_chkDisplayForwardLookPatchLocations_clicked();
   void on_chkDisplaySourcePatchLocations_clicked();
 
@@ -153,14 +137,13 @@ public slots:
 
 private:
 
-  void SetupCamera();
   void SetupScenes();
-  
+
   void ConnectForwardLookModelToView();
   void ConnectTopPatchesModelToView();
   void SetupForwardLookingTable();
   void SetupTopPatchesTable();
-  
+
   void SetProgressBarToMarquee();
   void SetupValidators();
   void SetupToolbar();
@@ -171,9 +154,6 @@ private:
   void showEvent ( QShowEvent * event );
 
   void Reset();
-
-  std::vector<float> CameraLeftToRightVector;
-  std::vector<float> CameraBottomToTopVector;
 
   void ChangeDisplayedTopPatch();
   void ChangeDisplayedForwardLookPatch();
@@ -306,6 +286,7 @@ private:
 
   NamedITKImageCollection InputImages;
 
+  ImageCamera* Camera;
 };
 
 #endif // PatchBasedInpaintingGUI_H

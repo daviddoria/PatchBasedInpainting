@@ -97,8 +97,6 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
 
   this->setupUi(this);
 
-  SetupCamera();
-
   SetupScenes();
 
   SetupToolbar();
@@ -121,6 +119,8 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   // TODO set the image to use in the MovablePatch
   //QImage userPatch = HelpersQt::GetQImage<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer()),
   //                                                              this->UserPatchRegion, this->ImageDisplayStyle);
+
+  this->Camera = new ImageCamera(this->Renderer);
 
   this->UserMaskImage = Mask::New();
 
@@ -242,18 +242,6 @@ void PatchBasedInpaintingGUI::SetupScenes()
   this->gfxResult->setScene(ResultPatchScene);
 }
 
-void PatchBasedInpaintingGUI::SetupCamera()
-{
-  this->CameraLeftToRightVector.resize(3);
-  this->CameraLeftToRightVector[0] = -1;
-  this->CameraLeftToRightVector[1] = 0;
-  this->CameraLeftToRightVector[2] = 0;
-
-  this->CameraBottomToTopVector.resize(3);
-  this->CameraBottomToTopVector[0] = 0;
-  this->CameraBottomToTopVector[1] = 1;
-  this->CameraBottomToTopVector[2] = 0;
-}
 
 void PatchBasedInpaintingGUI::SetupConnections()
 {
