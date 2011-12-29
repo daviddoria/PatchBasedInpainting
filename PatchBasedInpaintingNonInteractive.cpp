@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 
-  PatchBasedInpainting* inpainting = new PatchBasedInpainting(imageReader->GetOutput(), maskReader->GetOutput());
+  std::shared_ptr<PatchBasedInpainting> inpainting(new PatchBasedInpainting(imageReader->GetOutput(), maskReader->GetOutput()));
   inpainting->SetPatchRadius(patchRadius);
   inpainting->Initialize();
   inpainting->Inpaint();

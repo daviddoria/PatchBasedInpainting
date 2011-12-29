@@ -305,8 +305,8 @@ protected:
   ColorPalette Colors;
 
 
-  TableModelForwardLook* ForwardLookModel;
-  TableModelTopPatches* TopPatchesModel;
+  QSharedPointer<TableModelForwardLook> ForwardLookModel;
+  QSharedPointer<TableModelTopPatches> TopPatchesModel;
 
   // The size to display the patches.
   unsigned int PatchDisplaySize;

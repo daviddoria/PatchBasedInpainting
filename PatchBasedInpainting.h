@@ -97,7 +97,7 @@ public:
   //void SetPatchCompare(SelfPatchCompare* PatchCompare);
   SelfPatchCompare* GetPatchCompare() const;
 
-  PatchSortFunctor* PatchSortFunction;
+  std::shared_ptr<PatchSortFunctor> PatchSortFunction;
 
   template <typename T>
   void SetPriorityFunction();
@@ -190,9 +190,9 @@ private:
 
   unsigned int ComputeMinimumScoreLookAhead();
 
-  SelfPatchCompare* PatchCompare;
+  std::shared_ptr<SelfPatchCompare> PatchCompare;
 
-  Priority* PriorityFunction;
+  std::shared_ptr<Priority> PriorityFunction;
 
   IntImageType::Pointer MembershipImage;
 

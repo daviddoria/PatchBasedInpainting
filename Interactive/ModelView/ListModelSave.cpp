@@ -3,7 +3,7 @@
 #include <iostream>
 
 
-ListModelSave::ListModelSave()
+ListModelSave::ListModelSave( QObject * parent) : QAbstractListModel(parent)
 {
 
 }

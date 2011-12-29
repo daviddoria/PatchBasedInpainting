@@ -847,8 +847,7 @@ void CriminisiInpainting::FindBestPatchForHighestPriority(PatchPair& bestPatchPa
   DebugMessage("Finding best patch...");
 
   CandidatePairs candidatePairs;
-  SelfPatchCompare* patchCompare;
-  patchCompare = new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel(), candidatePairs);
+  std::shared_ptr<SelfPatchCompare> patchCompare(new SelfPatchCompareColor(this->CompareImage->GetNumberOfComponentsPerPixel(), candidatePairs));
   patchCompare->SetImage(this->CompareImage);
   patchCompare->SetMask(this->CurrentMask);
 

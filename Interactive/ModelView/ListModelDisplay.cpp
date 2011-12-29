@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-ListModelDisplay::ListModelDisplay() : IterationRecord(NULL)
+ListModelDisplay::ListModelDisplay(QObject * parent) : QAbstractListModel(parent), IterationRecord(NULL)
 {
   
 }

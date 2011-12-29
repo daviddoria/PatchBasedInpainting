@@ -2,6 +2,10 @@
 
 #include <iostream>
 
+TableModelImageInput::TableModelImageInput(QObject * parent) : QAbstractTableModel(parent)
+{
+}
+
 QVariant TableModelImageInput::headerData (int section , Qt::Orientation orientation, int role) const
 {
   if(role == Qt::DisplayRole && orientation == Qt::Horizontal)

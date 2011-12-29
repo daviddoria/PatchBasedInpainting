@@ -79,9 +79,9 @@ PatchBasedInpainting::PatchBasedInpainting(const FloatVectorImageType* image, co
   // Set defaults
   this->NumberOfCompletedIterations = 0;
 
-  this->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
+  this->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
 
-  this->PatchCompare = new SelfPatchCompare;
+  this->PatchCompare = std::make_shared<SelfPatchCompare>();
 
   this->PriorityFunction = NULL; // Can't initialize this here, must wait until the image and mask are opened
 }
@@ -217,7 +217,7 @@ void PatchBasedInpainting::Initialize()
     if(!this->PriorityFunction)
       {
       std::cout << "Using default Priority function." << std::endl;
-      this->PriorityFunction = new PriorityRandom(this->CurrentInpaintedImage, this->MaskImage, this->PatchRadius[0]);
+      this->PriorityFunction = std::make_shared<PriorityRandom>(this->CurrentInpaintedImage, this->MaskImage, this->PatchRadius[0]);
       }
 
     this->NumberOfCompletedIterations = 0;
@@ -333,7 +333,7 @@ void PatchBasedInpainting::RecomputeScoresWithNewPatches(std::vector<Patch>& new
 
 Priority* PatchBasedInpainting::GetPriorityFunction()
 {
-  return this->PriorityFunction;
+  return this->PriorityFunction.get();
 }
 
 void PatchBasedInpainting::FindBestPatch(PatchPair& bestPatchPair)
@@ -358,7 +358,7 @@ void PatchBasedInpainting::FindBestPatch(PatchPair& bestPatchPair)
   this->PatchCompare->SetMembershipImage(this->MembershipImage);
   this->PatchCompare->ComputeAllSourceDifferences();
 
-  std::sort(candidatePairs.begin(), candidatePairs.end(), SortFunctorWrapper(this->PatchSortFunction));
+  std::sort(candidatePairs.begin(), candidatePairs.end(), SortFunctorWrapper(this->PatchSortFunction.get()));
 
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
 

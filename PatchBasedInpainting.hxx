@@ -20,9 +20,9 @@ template <typename T>
 void PatchBasedInpainting::SetPriorityFunction()
 {
   // std::cout << "SetPriorityFunction() image size: " << CurrentOutputImage->GetLargestPossibleRegion().GetSize() << std::endl;
-  if(this->PriorityFunction)
-    {
-    delete this->PriorityFunction;
-    }
-  this->PriorityFunction = new T(this->CurrentInpaintedImage, this->MaskImage, this->PatchRadius[0]);
+//   if(this->PriorityFunction)
+//     {
+//     delete this->PriorityFunction;
+//     }
+  this->PriorityFunction = std::make_shared<T>(this->CurrentInpaintedImage, this->MaskImage, this->PatchRadius[0]);
 }

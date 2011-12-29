@@ -381,7 +381,8 @@ void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
   this->Inpainting->GetPatchCompare()->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
 
   // Setup the sorting function
-  this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
+  //this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
+  this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
 
   // Finish initializing
   this->Inpainting->Initialize();
@@ -429,7 +430,7 @@ void PatchBasedInpaintingGUI::on_btnReset_clicked()
 
 void PatchBasedInpaintingGUI::on_actionHelp_activated()
 {
-  QTextEdit* help=new QTextEdit();
+  QScopedPointer<QTextEdit> help(new QTextEdit);
 
   help->setReadOnly(true);
   help->append("<h1>Patch Based Inpainting</h1>\

@@ -35,7 +35,7 @@
 class TableModelForwardLook : public QAbstractTableModel, public DebugOutputs
 {
 public:
-  TableModelForwardLook(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& style);
+  TableModelForwardLook(QObject * parent, std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& style);
 
   int rowCount(const QModelIndex& parent) const;
   int columnCount(const QModelIndex& parent) const;

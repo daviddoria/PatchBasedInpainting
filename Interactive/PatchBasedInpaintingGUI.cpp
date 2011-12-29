@@ -242,8 +242,8 @@ void PatchBasedInpaintingGUI::SetProgressBarToMarquee()
 
 void PatchBasedInpaintingGUI::ConnectForwardLookModelToView()
 {
-  this->ForwardLookModel = new TableModelForwardLook(this->IterationRecords, this->ImageDisplayStyle);
-  this->ForwardLookTableView->setModel(this->ForwardLookModel);
+  this->ForwardLookModel = QSharedPointer<TableModelForwardLook>(new TableModelForwardLook(this, this->IterationRecords, this->ImageDisplayStyle));
+  this->ForwardLookTableView->setModel(this->ForwardLookModel.data());
   this->ForwardLookTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 
   PixmapDelegate* forwardLookPixmapDelegate = new PixmapDelegate;
@@ -255,8 +255,8 @@ void PatchBasedInpaintingGUI::ConnectForwardLookModelToView()
 
 void PatchBasedInpaintingGUI::ConnectTopPatchesModelToView()
 {
-  this->TopPatchesModel = new TableModelTopPatches(this->IterationRecords, this->ImageDisplayStyle);
-  this->TopPatchesTableView->setModel(this->TopPatchesModel);
+  this->TopPatchesModel = QSharedPointer<TableModelTopPatches>(new TableModelTopPatches(this, this->IterationRecords, this->ImageDisplayStyle));
+  this->TopPatchesTableView->setModel(this->TopPatchesModel.data());
   this->TopPatchesTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 
   PixmapDelegate* topPatchesPixmapDelegate = new PixmapDelegate;
@@ -377,7 +377,7 @@ void PatchBasedInpaintingGUI::UserPatchMoved()
     }
 
   unsigned int iterationToCompare = this->IterationToDisplay - 1;
-  std::auto_ptr<SelfPatchCompare> patchCompare(new SelfPatchCompare);
+  std::shared_ptr<SelfPatchCompare> patchCompare(new SelfPatchCompare);
   patchCompare->SetImage(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[iterationToCompare].GetImageByName("Image").Image.GetPointer()));
   patchCompare->SetMask(dynamic_cast<Mask*>(this->IterationRecords[iterationToCompare].GetImageByName("Mask").Image.GetPointer()));
   patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
@@ -1424,38 +1424,36 @@ void PatchBasedInpaintingGUI::SetSortFunctionFromGUI()
 {
   if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Full Difference"))
     {
-    this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
+    this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
     }
   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Color Difference"))
     {
-    this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::ColorDifference, PatchSortFunctor::ASCENDING);
+    this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::ColorDifference, PatchSortFunctor::ASCENDING);
     }
   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Depth Difference"))
     {
-    this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::DepthDifference, PatchSortFunctor::ASCENDING);
+    this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::DepthDifference, PatchSortFunctor::ASCENDING);
     }
   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Depth + Color Difference"))
     {
-    this->Inpainting->PatchSortFunction = new SortByDepthAndColor(PatchPair::CombinedDifference);
+    this->Inpainting->PatchSortFunction = std::make_shared<SortByDepthAndColor>(PatchPair::CombinedDifference);
     }
   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Histogram Intersection"))
     {
-    this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::HistogramIntersection, PatchSortFunctor::DESCENDING);
+    this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::HistogramIntersection, PatchSortFunctor::DESCENDING);
     }
   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Membership Difference"))
     {
-    this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::MembershipDifference, PatchSortFunctor::DESCENDING);
+    this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::MembershipDifference, PatchSortFunctor::DESCENDING);
     }
 }
 
 void PatchBasedInpaintingGUI::SetDepthColorLambdaFromGUI()
 {
-  SortByDepthAndColor* functor = new SortByDepthAndColor(PatchPair::ColorDifference);
-  functor->DepthColorLambda = static_cast<float>(sldDepthColorLambda->value())/100.0f;
-
-  this->Inpainting->PatchSortFunction = functor;
-
-  std::cout << "DepthColorLambda set to " << functor->DepthColorLambda << std::endl;
+//   this->Inpainting->PatchSortFunction = std::make_shared<SortByDepthAndColor>(PatchPair::ColorDifference);
+//   this->Inpainting->PatchSortFunction->DepthColorLambda = static_cast<float>(sldDepthColorLambda->value())/100.0f;
+// 
+//   std::cout << "DepthColorLambda set to " << this->Inpainting->PatchSortFunction->DepthColorLambda << std::endl;
 }
 
 void PatchBasedInpaintingGUI::SetPriorityFromGUI()

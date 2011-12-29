@@ -59,7 +59,7 @@ std::vector<CandidatePairs>& PatchBasedInpainting::GetPotentialCandidatePairsRef
 
 SelfPatchCompare* PatchBasedInpainting::GetPatchCompare() const
 {
-  return this->PatchCompare;
+  return this->PatchCompare.get();
 }
 
 // void PatchBasedInpainting::SetPatchCompare(SelfPatchCompare* patchCompare)

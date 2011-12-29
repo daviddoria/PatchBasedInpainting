@@ -53,11 +53,11 @@ int main(int argc, char *argv[])
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 
-  SelfPatchCompare* patchCompare = new SelfPatchCompare;
+  std::shared_ptr<SelfPatchCompare> patchCompare(new SelfPatchCompare);
   patchCompare->SetNumberOfComponentsPerPixel(imageReader->GetOutput()->GetNumberOfComponentsPerPixel());
   //patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
   //patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchColorDifference,patchCompare,_1));
-  patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,patchCompare,_1));
+  patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,patchCompare.get(),_1));
   //patchCompare->SetImage(imageReader->GetOutput());
   //patchCompare->SetMask(maskReader->GetOutput());
 

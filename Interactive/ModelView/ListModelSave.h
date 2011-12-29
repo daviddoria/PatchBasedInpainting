@@ -9,7 +9,7 @@ class ListModelSave : public QAbstractListModel
 {
 public:
 
-  ListModelSave();
+  ListModelSave(QObject * parent = 0);
 
   // QAbstractListModel interface
   QVariant data(const QModelIndex& index, int role) const;

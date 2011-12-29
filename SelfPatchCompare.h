@@ -96,7 +96,7 @@ public:
 protected:
   // If a channel of one pixel was white (255) and the corresponding channel of the other pixel
   // was black (0), the difference would be 255, so the difference squared would be 255*255
-  static const float MaxColorDifference = 255*255;
+  static const float MaxColorDifference;
 
   // These are the offsets of the target region which we with to compare
   std::vector<FloatVectorImageType::OffsetValueType> ValidTargetPatchOffsets;

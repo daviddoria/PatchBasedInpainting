@@ -27,9 +27,8 @@ int main( int argc, char** argv )
 {
   QApplication app( argc, argv );
 
-  //QApplication::setStyle(new QCleanlooksStyle);
+  QScopedPointer<PatchBasedInpaintingGUI> patchBasedInpaintingGUI;
 
-  PatchBasedInpaintingGUI* patchBasedInpaintingGUI;
   if(argc >= 3)
     {
     std::cout << "Using filename arguments." << std::endl;
@@ -55,7 +54,7 @@ int main( int argc, char** argv )
       {
       enterLeave = false;
       }
-    patchBasedInpaintingGUI = new PatchBasedInpaintingGUI(imageFileName, maskFileName, enterLeave);
+    patchBasedInpaintingGUI.reset(new PatchBasedInpaintingGUI(imageFileName, maskFileName, enterLeave));
 
     std::vector<std::string> extraFileNames;
     bool extraFileNamesProvided = parser->GetCommandLineArgument( "-extraImages", extraFileNames);
@@ -79,7 +78,7 @@ int main( int argc, char** argv )
   else
     {
     //std::cout << "Not using filename arguments." << std::endl;
-    patchBasedInpaintingGUI = new PatchBasedInpaintingGUI;
+    patchBasedInpaintingGUI.reset(new PatchBasedInpaintingGUI);
     }
 
   //patchBasedInpaintingGUI->SetDebugFunctionEnterLeave(true); // This should be set in the constructor instead

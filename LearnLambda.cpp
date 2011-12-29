@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     std::cout << "Using lambda " << lambdas[i] << std::endl;
     }
 
-  SelfPatchCompare* patchCompare = new SelfPatchCompare;
+  std::shared_ptr<SelfPatchCompare> patchCompare(new SelfPatchCompare);
   patchCompare->SetNumberOfComponentsPerPixel(imageReader->GetOutput()->GetNumberOfComponentsPerPixel());
   //patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare,_1));
   patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchColorDifference,patchCompare,_1));

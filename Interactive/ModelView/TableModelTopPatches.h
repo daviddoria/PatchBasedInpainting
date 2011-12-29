@@ -35,7 +35,7 @@
 class TableModelTopPatches : public QAbstractTableModel, public DebugOutputs
 {
 public:
-  TableModelTopPatches(std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& displayStyle);
+  TableModelTopPatches(QObject * parent, std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& displayStyle);
 
   int rowCount(const QModelIndex& parent) const;
   int columnCount(const QModelIndex& parent) const;

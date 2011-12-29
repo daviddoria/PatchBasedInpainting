@@ -301,3 +301,5 @@ void SelfPatchCompare::SetNumberOfComponentsPerPixel(const unsigned int numberOf
 {
   this->NumberOfComponentsPerPixel = numberOfComponentsPerPixel;
 }
+
+const float SelfPatchCompare::MaxColorDifference = 255*255;

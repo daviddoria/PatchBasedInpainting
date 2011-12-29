@@ -11,6 +11,7 @@
 class TableModelImageInput : public QAbstractTableModel
 {
 public:
+  TableModelImageInput(QObject * parent = 0);
 
   enum ColumnNames {NAME_COLUMN=0, FILENAME_COLUMN, DISPLAY_COLUMN, SAVE_COLUMN};
 

@@ -13,7 +13,7 @@ class ListModelDisplay : public QAbstractListModel
 {
 public:
 
-  ListModelDisplay();
+  ListModelDisplay(QObject * parent = 0);
 
   // QAbstractListModel interface
   QVariant data(const QModelIndex& index, int role) const;

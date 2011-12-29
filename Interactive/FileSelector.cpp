@@ -48,22 +48,12 @@ FileSelector::FileSelector()
   this->FileSelectionLayout->addWidget(this->FileSelectionWidgetImage);
   this->FileSelectionLayout->addWidget(this->FileSelectionWidgetMask);
 
-  this->ImageGraphicsScene = new QGraphicsScene;
+  this->ImageGraphicsScene = new QGraphicsScene(this);
   this->graphicsViewImage->setScene(this->ImageGraphicsScene);
 
-  this->MaskGraphicsScene = new QGraphicsScene;
+  this->MaskGraphicsScene = new QGraphicsScene(this);
   this->graphicsViewMask->setScene(this->MaskGraphicsScene);
-  /*
-  QFileSystemModel *imageModel = new QFileSystemModel;
-  imageModel->setRootPath(QDir::currentPath());
-  this->FileSelectionWidgetImage->setModel(imageModel);
-  this->FileSelectionWidgetImage->setCurrentIndex(imageModel->index(QDir::currentPath()));
 
-  QFileSystemModel *maskModel = new QFileSystemModel;
-  maskModel->setRootPath(QDir::currentPath());
-  this->FileSelectionWidgetMask->setModel(maskModel);
-  this->FileSelectionWidgetMask->setCurrentIndex(maskModel->index(QDir::currentPath()));
-  */
   connect(this->FileSelectionWidgetImage, SIGNAL(selectionChanged()), this, SLOT(LoadAndDisplayImage()));
   connect(this->FileSelectionWidgetMask, SIGNAL(selectionChanged()), this, SLOT(LoadAndDisplayMask()));
 };

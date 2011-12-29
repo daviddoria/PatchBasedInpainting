@@ -753,7 +753,6 @@ std::string ReplaceFileExtension(const std::string& fileName, const std::string&
   // To produce "oldfile.jpg"
 
   std::string newFileName = fileName;
-  //newFileName.replace(newFileName.end() - 3, 3, newExtension);
   const unsigned int fileExtensionLength = 3;
   newFileName.replace(newFileName.size() - fileExtensionLength, fileExtensionLength, newExtension);
   return newFileName;
@@ -879,10 +878,10 @@ void CreateTransparentVTKImage(const itk::Size<2>& size, vtkImageData* outputIma
 void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double center[3])
 {
   double pcoords[3] = {0,0,0};
-  double *weights = new double [imageData->GetMaxCellSize()];
+  std::shared_ptr<double> weights(new double [imageData->GetMaxCellSize()]);
   vtkCell* cell = imageData->GetCell(cellId);
   int subId = cell->GetParametricCenter(pcoords);
-  cell->EvaluateLocation(subId, pcoords, center, weights);
+  cell->EvaluateLocation(subId, pcoords, center, weights.get());
 }
 
 bool StringsMatch(const std::string& a, const std::string& b)
