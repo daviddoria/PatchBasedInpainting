@@ -66,7 +66,7 @@ int TableModelTopPatches::rowCount(const QModelIndex& parent) const
     {
     return 0;
     }
-  unsigned int rows = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay].size();
+  unsigned int rows = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay].GetNumberOfSourcePatches();
   unsigned int numberOfRowsToDisplay = std::min(rows, this->NumberOfTopPatchesToDisplay);
   //std::cout << "Displaying " << numberOfRowsToDisplay << " rows." << std::endl;
   LeaveFunction("TableModelTopPatches::rowCount()");
@@ -76,12 +76,17 @@ int TableModelTopPatches::rowCount(const QModelIndex& parent) const
 int TableModelTopPatches::columnCount(const QModelIndex& parent) const
 {
   // We have the patch itelf, the location, the id, and then all of the computed values.
-  return 3 + this->ComputedKeys.size();
+  return 3 + this->GetNumberOfDifferences();
 }
 
 void TableModelTopPatches::SetNumberOfTopPatchesToDisplay(const unsigned int number)
 {
   this->NumberOfTopPatchesToDisplay = number;
+}
+
+unsigned int TableModelTopPatches::GetNumberOfDifferences() const
+{
+  return this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay].GetPair(0).GetDifferences().GetNumberOfDifferences();
 }
 
 QVariant TableModelTopPatches::data(const QModelIndex& index, int role) const
@@ -95,33 +100,31 @@ QVariant TableModelTopPatches::data(const QModelIndex& index, int role) const
     switch(index.column())
       {
       case 0:
-	{
-	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer()),
-                                                                       currentCandidateSet[index.row()].SourcePatch.Region, this->ImageDisplayStyle);
+        {
+        FloatVectorImageType* image = dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer());
+        QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(image, currentCandidateSet.GetPair(index.row()).GetSourcePatch()->GetRegion(), this->ImageDisplayStyle);
 
-	patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
+        patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
 
-	returnValue = QPixmap::fromImage(patchImage);
-	break;
-	}
+        returnValue = QPixmap::fromImage(patchImage);
+        break;
+        }
       case 1:
-	{
-	returnValue = index.row();
-	break;
-	}
+        {
+        returnValue = index.row();
+        break;
+        }
       case 2:
-	{
-	std::stringstream ss;
-	ss << "(" << currentCandidateSet[index.row()].SourcePatch.Region.GetIndex()[0] << ", " << currentCandidateSet[index.row()].SourcePatch.Region.GetIndex()[1] << ")";
-	returnValue = ss.str().c_str();
-	break;
-	}
+        {
+        returnValue = Helpers::GetString(currentCandidateSet.GetPair(index.row()).GetSourcePatch()->GetRegion().GetIndex()).c_str();
+        break;
+        }
       } // end switch
 
     if(index.column() > 2)
       {
       unsigned int keyId = index.column() - 3; // There are 3 fixed columns
-      returnValue = currentCandidateSet[index.row()].DifferenceMap.find(this->ComputedKeys[keyId])->second;
+      returnValue = currentCandidateSet.GetPair(index.row()).GetDifferences().GetDifferenceNames()[keyId].c_str(); // TODO: this is not safe - there is no reason to believe the underlying map stores the strings in the same order each time.
       }
     } // end if DisplayRole
   LeaveFunction("TopPatchesTableModel::data()");
@@ -136,21 +139,22 @@ QVariant TableModelTopPatches::headerData(int section, Qt::Orientation orientati
     if(orientation == Qt::Horizontal)
       {
       switch(section)
-	{
-	case 0:
-	  returnValue = "Patch";
-	  break;
-	case 1:
-	  returnValue = "Id";
-	  break;
-	case 2:
-	  returnValue = "Location";
-	  break;
-	} // end switch
+        {
+        case 0:
+          returnValue = "Patch";
+          break;
+        case 1:
+          returnValue = "Id";
+          break;
+        case 2:
+          returnValue = "Location";
+          break;
+        } // end switch
       if(section > 2)
         {
-        PatchPair::PatchDifferenceTypes key = this->ComputedKeys[section-3];
-        returnValue = PatchPair::NameOfDifference(key).c_str();
+        // TODO: Fix this
+        //PairDifferences::PatchDifferenceTypes key = this->ComputedKeys[section-3];
+        //returnValue = PairDifferences::NameOfDifference(key).c_str();
         }
       }// end Horizontal orientation
     } // end DisplayRole
@@ -160,21 +164,6 @@ QVariant TableModelTopPatches::headerData(int section, Qt::Orientation orientati
 
 void TableModelTopPatches::Refresh()
 {
-  //std::cout << "TableModelTopPatches::Refresh(): Displaying iteration: " << this->IterationToDisplay << std::endl;
-  this->ComputedKeys.clear();
-  // Store the keys that have been computed.
-  if(this->IterationRecords.size() > 0)
-  {
-    if(this->IterationRecords[this->IterationToDisplay].PotentialPairSets.size() > 0)
-      {
-      for(PatchPair::DifferenceMapType::const_iterator it = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay][0].DifferenceMap.begin();
-          it != this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay][0].DifferenceMap.end(); it++)
-        {
-        this->ComputedKeys.push_back(it->first);
-        }
-      }
-  }
-
   beginResetModel();
   endResetModel();
 }

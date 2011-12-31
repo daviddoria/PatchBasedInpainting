@@ -121,11 +121,11 @@ protected:
 
   // This function takes a template paramter of a class which has a Difference(pixel, pixel) function.
   template<typename TDifferenceFunction>
-  float PatchAverageSourceDifference(const Patch& sourcePatch);
+  float PatchAverageSourceDifference(const Patch* sourcePatch);
 
   // This function takes a template paramter of a class which has a Difference(pixel, pixel) function and a scalar image type.
   template<typename TScalarImage, typename TDifferenceFunction>
-  float PatchAverageSourceDifference(const typename TScalarImage::Pointer image, const Patch& sourcePatch);
+  float PatchAverageSourceDifference(TScalarImage* const image, const Patch* sourcePatch);
 
 };
 

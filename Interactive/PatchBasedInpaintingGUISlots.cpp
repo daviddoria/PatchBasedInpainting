@@ -48,8 +48,7 @@ void PatchBasedInpaintingGUI::slot_ChangeFileName(QModelIndex index)
 
 void PatchBasedInpaintingGUI::on_chkDisplayUserPatch_clicked()
 {
-  //this->UserPatchSetVisibility(this->chkDisplayUserPatch->isChecked());
-  Refresh();
+  this->UserPatch->SetVisibility(this->chkDisplayUserPatch->isChecked());
 }
 
 void PatchBasedInpaintingGUI::on_radDisplayColorImage_clicked()

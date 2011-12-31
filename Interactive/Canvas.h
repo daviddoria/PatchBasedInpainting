@@ -25,7 +25,14 @@
 #define Canvas_H
 
 // Custom
+#include "ColorPalette.h"
+#include "DisplayStyle.h"
 #include "Layer.h"
+#include "Mask.h"
+#include "PatchPair.h"
+
+// STL
+#include <vector>
 
 // VTK
 class vtkRenderer;
@@ -36,16 +43,13 @@ public:
   VTKCanvas(vtkRenderer* const renderer);
 
   // Source patch outline display
-  Layer UsedSourcePatchLayer;
-
-  // Target patch outline display
-  Layer UsedTargetPatchLayer;
+  Layer UsedPatchPairLayer;
 
   // Outline display of all forward look patches
-  Layer AllForwardLookOutlinesLayer;
+  Layer ForwardLookPatchLayer;
 
   // Outline display of all source patches
-  Layer AllSourcePatchOutlinesLayer;
+  Layer SourcePatchLayer;
 
   // Image display
   Layer ImageLayer;
@@ -53,8 +57,23 @@ public:
   // Mask image display
   Layer MaskLayer;
 
+  void HighlightUsedPatchPair(const PatchPair& patchPair);
+  void HighlightForwardLookPatches(const std::vector<Patch>& patches);
+  void HighlightSourcePatches(const std::vector<Patch>& patches);
+
 private:
+  void DisplayImage(const FloatVectorImageType* const image);
+  void DisplayMask(const Mask* const mask);
+
+  void ITKVectorImageToVTKImage(const FloatVectorImageType* const image, vtkImageData* outputImage, const DisplayStyle& style);
+
+  void HighlightPatches(const std::vector<Patch>& patches, const QColor& color, vtkImageData* outputImage);
+
   vtkRenderer* Renderer;
+
+  DisplayStyle ImageDisplayStyle;
+
+  ColorPalette Colors;
 };
 
 #endif

@@ -7,17 +7,19 @@ class ColorPalette
 {
 public:
   ColorPalette();
-  
+
   QColor UsedTargetPatch;
   QColor UsedSourcePatch;
-  QColor AllForwardLookPatch;
+
+  QColor SourcePatch;
+  QColor ForwardLookPatch;
+
   QColor SelectedForwardLookPatch;
-  QColor AllSourcePatch;
   QColor SelectedSourcePatch;
+
   QColor CenterPixel;
-  QColor Mask;
+
   QColor Hole;
-  QColor SceneBackground;
   QColor UserPatch;
 };
 

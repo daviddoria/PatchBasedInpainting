@@ -19,42 +19,34 @@
 #ifndef PATCHPAIR_H
 #define PATCHPAIR_H
 
+#include "PairDifferences.h"
 #include "Patch.h"
 
-struct PatchPair
+class PatchPair
 {
-  void DefaultConstructor();
-  PatchPair();
-  PatchPair(const Patch& sourcePatch, const Patch& targetPatch);
+public:
 
-  Patch SourcePatch;
-  Patch TargetPatch;
+  PatchPair(const Patch* const sourcePatch, const Patch* const targetPatch);
 
-//   enum PatchDifferenceTypes {AverageSquaredDifference, AverageAbsoluteDifference, BoundaryGradientDifference,
-//                              BoundaryPixelDifference, BoundaryIsophoteAngleDifference, BoundaryIsophoteStrengthDifference,
-//                              ColorDifference, DepthDifference, CombinedDifference};
-  enum PatchDifferenceTypes {AverageAbsoluteDifference, ColorDifference, DepthDifference, CombinedDifference, MembershipDifference, HistogramIntersection};
-  static std::string NameOfDifference(PatchDifferenceTypes);
-
-  typedef std::map <PatchDifferenceTypes, float> DifferenceMapType;
-  DifferenceMapType DifferenceMap;
-
-  // These differences are computed as combinations of other differences
-  float GetDepthAndColorDifference() const;
+  // PatchPair(const PatchPair& other);
+  // PatchPair& operator= (const PatchPair& other);
 
   // Store the relative location of the source and target patch corners
   itk::Offset<2> GetTargetToSourceOffset() const;
   itk::Offset<2> GetSourceToTargetOffset() const;
 
+  void Invalidate();
+
+  const Patch* GetSourcePatch() const;
+  const Patch* GetTargetPatch() const;
+
+  PairDifferences& GetDifferences();
+  const PairDifferences& GetDifferences() const;
+
 private:
-
-  struct ComputeDepthAndColorDifferenceFunctor
-  {
-    ComputeDepthAndColorDifferenceFunctor() : DepthColorLambda(0.5f){}
-    float operator()(const float depthDifference, const float colorDifference) const;
-    float DepthColorLambda;
-  } ComputeDepthAndColorDifference;
-
+  PairDifferences Differences;
+  const Patch* const SourcePatch;
+  const Patch* const TargetPatch;
 };
 
 #endif

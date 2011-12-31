@@ -42,6 +42,7 @@ Mask.cpp
 NamedITKImageCollection.cpp
 NamedITKImage.cpp
 NamedVTKImage.cpp
+PairDifferences.cpp
 Patch.cpp
 PatchBasedInpainting.cpp
 PatchBasedInpaintingDebugging.cpp
@@ -56,6 +57,7 @@ PriorityManual.cpp
 PriorityOnionPeel.cpp
 PriorityRandom.cpp
 SelfPatchCompare.cpp
+SourcePatchCollection.cpp
 )
 set_target_properties(PatchBasedInpainting PROPERTIES COMPILE_DEFINITIONS "${compileflags}")
 

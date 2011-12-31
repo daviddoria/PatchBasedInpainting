@@ -45,6 +45,20 @@
 namespace Helpers
 {
 
+std::string GetString(const itk::Index<2>& index)
+{
+  std::stringstream ss;
+  ss << "(" << index[0] << ", " << index[1] << ")";
+  return ss.str();
+}
+
+std::string GetString(const itk::Size<2>& size)
+{
+  std::stringstream ss;
+  ss << "(" << size[0] << ", " << size[1] << ")";
+  return ss.str();
+}
+
 bool IsValidRGB(const int r, const int g, const int b)
 {
   if(r > 255 || r < 0 || g > 255 || g < 0 || b > 255 || b < 0)

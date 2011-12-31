@@ -64,11 +64,8 @@ bool PatchBasedInpainting::GetAdjacentBoundaryPixel(const itk::Index<2>& targetP
   return valid;
 }
 
-
+  
 // Compute the continuation difference for every pair. Store the values in the PatchPair objects inside of the CandidatePairs object.
-void ComputeAllContinuationDifferences(CandidatePairs& candidatePairs);
-
-
 void PatchBasedInpainting::ComputeAllContinuationDifferences(CandidatePairs& candidatePairs)
 {
   EnterFunction("ComputeAllContinuationDifferences()");

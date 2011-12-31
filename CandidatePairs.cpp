@@ -20,104 +20,97 @@
 
 #include <fstream>
 
-CandidatePairs::CandidatePairs(const Patch& targetPatch)
+CandidatePairs::CandidatePairs()
 {
-  this->TargetPatch = targetPatch;
-
   this->Priority = 0.0f;
 }
 
-void CandidatePairs::CopyFrom(const CandidatePairs& pairs)
+PatchPair CandidatePairs::GetPair(const unsigned int pairId) const
 {
-  this->TargetPatch = pairs.TargetPatch;
-  this->Priority = pairs.Priority;
-  this->clear();
-  for(unsigned int i = 0; i < pairs.size(); ++i)
-    {
-    this->push_back(pairs[i]);
-    }
+  return *(this->PatchPairs[pairId]);
 }
 
-void CandidatePairs::CopyMetaOnly(const CandidatePairs& pairs)
+const Patch* CandidatePairs::GetSourcePatch(const unsigned int pairId) const
 {
-  this->TargetPatch = pairs.TargetPatch;
-  this->Priority = pairs.Priority;
+  return this->PatchPairs[pairId]->GetSourcePatch();
+}
+
+const Patch* CandidatePairs::GetTargetPatch() const
+{
+  return this->PatchPairs[0]->GetTargetPatch();
+}
+
+unsigned int CandidatePairs::GetNumberOfSourcePatches() const
+{
+  return this->PatchPairs.size();
 }
 
 void CandidatePairs::AddCandidatePair(const PatchPair& patchPair)
 {
-  if(patchPair.TargetPatch.Region == this->TargetPatch.Region)
-    {
-    this->push_back(patchPair);
-    }
-  else
-    {
-    std::cerr << "Trying to add a pair to the list of candidate pairs that does not match the target patch!" << std::endl;
-    }
+  assert(patchPair.GetTargetPatch() == this->PatchPairs[0]->GetTargetPatch());
+
+  this->PatchPairs.push_back(std::shared_ptr<PatchPair>(new PatchPair(patchPair)));
 }
 
-void CandidatePairs::AddPairsFromPatches(const std::vector<Patch>& patches)
+float CandidatePairs::GetPriority() const
 {
-  for(unsigned int i = 0; i < patches.size(); ++i)
-    {
-    PatchPair patchPair;
-    patchPair.TargetPatch = this->TargetPatch;
-    patchPair.SourcePatch = patches[i];
-    this->push_back(patchPair);
-    }
-  //std::cout << "AddPairsFromPatches(): Added " << patches.size() << " pairs." << std::endl;
+  return this->Priority;
 }
 
-void CandidatePairs::AddPairFromPatch(const Patch& patch)
+void CandidatePairs::SetPriority(const float priority)
 {
-  PatchPair patchPair;
-  patchPair.TargetPatch = this->TargetPatch;
-  patchPair.SourcePatch = patch;
-  this->push_back(patchPair);
-}
-
-void CandidatePairs::CopyFrom(const std::vector<PatchPair>& v)
-{
-  this->clear();
-  for(unsigned int i = 0; i < v.size(); ++i)
-    {
-    this->push_back(v[i]);
-    }
-}
-
-bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2)
-{
-  return (candidatePairs1.Priority < candidatePairs2.Priority);
+  this->Priority = priority;
 }
 
 void CandidatePairs::InvalidateAll()
 {
-  for(unsigned int i = 0; i < (*this).size(); ++i)
+  for(unsigned int pairId = 0; pairId < this->PatchPairs.size(); ++pairId)
     {
-    (*this)[i].DifferenceMap.clear();
+    this->PatchPairs[pairId]->Invalidate();
     }
 }
 
-void CandidatePairs::Combine(CandidatePairs& pairs)
+// std::vector<PatchPair> CandidatePairs::GetAllPairs() const
+// {
+//   std::vector<PatchPair> pairs;
+//   for(unsigned int patchId = 0; patchId < this->PatchPairs.size(); ++patchId)
+//     {
+//     pairs.push_back(PatchPair(this->GetTargetPatch(), this->GetSourcePatch(patchId)));
+//     }
+//   return pairs;
+// }
+
+std::vector<std::shared_ptr<PatchPair> > CandidatePairs::GetPatchPairs()
 {
-  if(pairs.TargetPatch.Region != this->TargetPatch.Region)
+  return this->PatchPairs;
+}
+
+void CandidatePairs::Combine(CandidatePairs& candidatePairs)
+{
+  if(candidatePairs.GetPair(0).GetTargetPatch() != this->PatchPairs[0]->GetTargetPatch())
     {
     std::cerr << "Cannot combine CandidatePairs that are not of the same TargetPatch!" << std::endl;
     exit(-1);
     }
-  for(unsigned int i = 0; i < pairs.size(); ++i)
+  for(unsigned int patchId = 0; patchId < candidatePairs.GetNumberOfSourcePatches(); ++patchId)
     {
-    this->push_back(pairs[i]);
+    this->PatchPairs.push_back(std::shared_ptr<PatchPair>(new PatchPair(candidatePairs.GetPair(patchId))));
     }
 }
-
+/*
 void CandidatePairs::WriteDepthScoresToFile(const std::string& fileName)
 {
   std::ofstream fout(fileName.c_str());
-  for(unsigned int i = 0; i < this->size(); ++i)
+  for(unsigned int i = 0; i < this->SourcePatches.size(); ++i)
     {
     fout << (*this)[i].DifferenceMap[PatchPair::DepthDifference] << std::endl;
     }
 
   fout.close();
+}*/
+
+// Non-member functions
+bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2)
+{
+  return (candidatePairs1.GetPriority() < candidatePairs2.GetPriority());
 }

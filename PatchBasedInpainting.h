@@ -27,6 +27,7 @@
 #include "Patch.h"
 #include "PatchPair.h"
 #include "PatchSorting.h"
+#include "SourcePatchCollection.h"
 #include "Types.h"
 
 class Priority;
@@ -119,10 +120,7 @@ private:
 
   void BlurImage();
 
-  PatchPair PreviousIterationUsedPatchPair;
-
-  // This function is called multiple times from FindBestPatchLookAhead (based on the value of PatchSearchFunction)
-  virtual void FindBestPatch(PatchPair& bestPatchPair);
+  virtual PatchPair FindBestPatch();
 
   // The intermediate steps and eventually the result of the inpainting.
   FloatVectorImageType::Pointer CurrentInpaintedImage;
@@ -150,16 +148,9 @@ private:
   // Compute the number of pixels in a patch of the specified size.
   unsigned int GetNumberOfPixelsInPatch();
 
-  // Locate all patches centered at pixels in 'region' that are completely inside of the image and completely inside of the
-  // source region and add them to the current list of source patches.
-  void AddAllSourcePatchesInRegion(const itk::ImageRegion<2>& region);
-
   bool PatchExists(const itk::ImageRegion<2>& region);
 
-  std::vector<Patch> AddNewSourcePatchesInRegion(const itk::ImageRegion<2>& region);
-
-  // Store the list of source patches computed with ComputeSourcePatches()
-  std::vector<Patch> SourcePatches;
+  SourcePatchCollection* SourcePatches;
 
   // This tracks the number of iterations that have been completed.
   unsigned int NumberOfCompletedIterations;
@@ -189,8 +180,6 @@ private:
   void DebugWritePixelToFill(const itk::Index<2>& pixelToFill, const unsigned int iteration);
   void DebugWritePatchToFillLocation(const itk::Index<2>& pixelToFill, const unsigned int iteration);
 
-  unsigned int ComputeMinimumScoreLookAhead();
-
   std::shared_ptr<SelfPatchCompare> PatchCompare;
 
   std::shared_ptr<Priority> PriorityFunction;
@@ -199,6 +188,6 @@ private:
 
 #include "PatchBasedInpainting.hxx"
 
-void WriteImageOfScores(const CandidatePairs& pairs, const itk::ImageRegion<2>& imageRegion, const std::string& fileName);
+//void WriteImageOfScores(const CandidatePairs& pairs, const itk::ImageRegion<2>& imageRegion, const std::string& fileName);
 
 #endif

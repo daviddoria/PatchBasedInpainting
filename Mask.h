@@ -136,7 +136,7 @@ public:
   void ApplyToVectorImage(TImage* image, const TColor& color);
 
   template<typename TColor>
-  void MakeVTKImage(vtkImageData* image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent);
+  void MakeVTKImage(vtkImageData* image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent) const;
 
   // Create a mask from a mask image.
   template<typename TImage>

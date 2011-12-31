@@ -23,36 +23,41 @@
 
 #include <vector>
 
-// This class stores a target patch and a list of the top N (user specified) pairs of patches based on the user specified comparison criteria.
-// All patch pairs must have the same target patch.
+// This class stores a target patch (a pointer to one of the source patches in PatchBasedInpainting)
+// and a list of N (user specified) source patches (also pointers to source patches in PatchBasedInpainting)
 
-class CandidatePairs : public std::vector<PatchPair>
+class CandidatePairs
 {
 public:
-  CandidatePairs(){} // This is so that we can construct a CandidatePairs to be filled by an accessor.
-
-  CandidatePairs(const Patch& targetPatch);
+  CandidatePairs();
 
   void AddCandidatePair(const PatchPair& patchPair);
 
-  Patch TargetPatch;
+  void AddSourcePatches(const std::vector<Patch*>& patches);
 
-  void AddPairsFromPatches(const std::vector<Patch>& patches);
-
-  void AddPairFromPatch(const Patch& patch);
-
-  void CopyFrom(const std::vector<PatchPair>& v);
-
-  float Priority;
+  void AddSourcePatch(const Patch* patch);
 
   void InvalidateAll();
 
   void Combine(CandidatePairs& pairs);
 
-  void CopyFrom(const CandidatePairs& pairs);
-  void CopyMetaOnly(const CandidatePairs& pairs);
+  //void WriteDepthScoresToFile(const std::string& fileName);
 
-  void WriteDepthScoresToFile(const std::string& fileName);
+  //std::vector<PatchPair> GetAllPairs() const;
+
+  std::vector<std::shared_ptr<PatchPair> > GetPatchPairs();
+
+  PatchPair GetPair(const unsigned int pairId) const;
+  const Patch* GetSourcePatch(const unsigned int pairId) const;
+  const Patch* GetTargetPatch() const;
+  float GetPriority() const;
+  void SetPriority(const float priority);
+  unsigned int GetNumberOfSourcePatches() const;
+
+private:
+  std::vector<std::shared_ptr<PatchPair> > PatchPairs;
+
+  float Priority;
 };
 
 bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2);

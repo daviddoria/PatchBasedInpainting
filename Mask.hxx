@@ -121,7 +121,7 @@ void Mask::ApplyToImage(TImage* image, const typename TImage::PixelType& holeVal
 }
 
 template <typename TColor>
-void Mask::MakeVTKImage(vtkImageData* image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent)
+void Mask::MakeVTKImage(vtkImageData* image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent) const
 {
   int dims[3];
   dims[0] = this->GetLargestPossibleRegion().GetSize()[0];

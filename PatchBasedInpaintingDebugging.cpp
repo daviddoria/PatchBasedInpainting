@@ -213,7 +213,7 @@ void PatchBasedInpainting::DebugWritePatchToFillLocation(const itk::Index<2>& pi
   padded << "PatchToFillLocation_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";
   HelpersOutput::WriteImage<UnsignedCharScalarImageType>(patchImage, padded.str());
 }
-
+/*
 void WriteImageOfScores(const CandidatePairs& candidatePairs, const itk::ImageRegion<2>& imageRegion, const std::string& fileName)
 {
   // Create the score-colored image
@@ -222,21 +222,22 @@ void WriteImageOfScores(const CandidatePairs& candidatePairs, const itk::ImageRe
 
   // Find max value (worst score)
   float worstScore = 0.0f;
-  for(unsigned int i = 0; i < candidatePairs.size(); ++i)
+  for(unsigned int pairId = 0; pairId < candidatePairs.GetNumberOfSourcePatches(); ++pairId)
     {
-    float depthDifference = candidatePairs[i].DifferenceMap.find(PatchPair::DepthDifference)->second;
+    float depthDifference = candidatePairs.GetPair(pairId).GetDifferenceMap.find(PatchPair::DepthDifference)->second;
     if(depthDifference > worstScore)
       {
-      worstScore = candidatePairs[i].DifferenceMap.find(PatchPair::DepthDifference)->second;
+      worstScore = candidatePairs[pairId].DifferenceMap.find(PatchPair::DepthDifference)->second;
       }
     }
   Helpers::SetImageToConstant<FloatScalarImageType>(scoreColoredImage, worstScore);
-  Helpers::SetRegionToConstant<FloatScalarImageType>(scoreColoredImage, candidatePairs.TargetPatch.Region, 0.0f);
+  Helpers::SetRegionToConstant<FloatScalarImageType>(scoreColoredImage, candidatePairs.GetTargetPatch().Region, 0.0f);
 
-  for(unsigned int i = 0; i < candidatePairs.size(); ++i)
+  for(unsigned int pairId = 0; pairId < candidatePairs.GetNumberOfSourcePatches(); ++pairId)
     {
-    scoreColoredImage->SetPixel(Helpers::GetRegionCenter(candidatePairs[i].SourcePatch.Region), candidatePairs[i].DifferenceMap.find(PatchPair::DepthDifference)->second);
+    scoreColoredImage->SetPixel(Helpers::GetRegionCenter(candidatePairs[pairId].SourcePatch.Region),
+                                candidatePairs[pairId].DifferenceMap.find(PatchPair::DepthDifference)->second);
     }
 
   HelpersOutput::WriteImage<FloatScalarImageType>(scoreColoredImage, fileName);
-}
+}*/

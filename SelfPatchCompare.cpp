@@ -82,7 +82,7 @@ void SelfPatchCompare::ComputeOffsets()
       exit(-1);
       }
     // Iterate over the target region of the mask. Add the linear offset of valid pixels to the offsets to be used later in the comparison.
-    itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, this->Pairs->TargetPatch.Region);
+    itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, this->Pairs->GetTargetPatch()->GetRegion());
 
     while(!maskIterator.IsAtEnd())
       {
@@ -131,8 +131,8 @@ void SelfPatchCompare::SetPatchAverageSquaredDifference(PatchPair& patchPair)
 */
 void SelfPatchCompare::SetPatchColorDifference(PatchPair& patchPair)
 {
-  float colorDifference = PatchAverageSourceDifference<ColorPixelDifference>(patchPair.SourcePatch);
-  patchPair.DifferenceMap[PatchPair::ColorDifference] = colorDifference;
+  float colorDifference = PatchAverageSourceDifference<ColorPixelDifference>(patchPair.GetSourcePatch());
+  patchPair.GetDifferences().SetDifferenceByType(PairDifferences::ColorDifference, colorDifference);
 }
 /*
 void SelfPatchCompare::SetPatchMembershipDifference(PatchPair& patchPair)
@@ -169,21 +169,21 @@ void SelfPatchCompare::SetPatchHistogramIntersection(PatchPair& patchPair)
 
 void SelfPatchCompare::SetPatchDepthDifference(PatchPair& patchPair)
 {
-  float depthDifference = PatchAverageSourceDifference<DepthPixelDifference>(patchPair.SourcePatch);
-  patchPair.DifferenceMap[PatchPair::DepthDifference] = depthDifference;
+  float depthDifference = PatchAverageSourceDifference<DepthPixelDifference>(patchPair.GetSourcePatch());
+  patchPair.GetDifferences().SetDifferenceByType(PairDifferences::DepthDifference, depthDifference);
 }
 
 
 void SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference(PatchPair& patchPair)
 {
-  float averageAbsoluteDifference = PatchAverageSourceDifference<FullPixelDifference>(patchPair.SourcePatch);
-  patchPair.DifferenceMap[PatchPair::AverageAbsoluteDifference] = averageAbsoluteDifference;
+  float averageAbsoluteDifference = PatchAverageSourceDifference<FullPixelDifference>(patchPair.GetSourcePatch());
+  patchPair.GetDifferences().SetDifferenceByType(PairDifferences::AverageAbsoluteDifference, averageAbsoluteDifference);
 }
 
 void SelfPatchCompare::SetPatchAverageAbsoluteFullDifference(PatchPair& patchPair)
 {
-  itk::ImageRegionConstIterator<FloatVectorImageType> sourcePatchIterator(this->Image, patchPair.SourcePatch.Region);
-  itk::ImageRegionConstIterator<FloatVectorImageType> targetPatchIterator(this->Image, patchPair.TargetPatch.Region);
+  itk::ImageRegionConstIterator<FloatVectorImageType> sourcePatchIterator(this->Image, patchPair.GetSourcePatch()->GetRegion());
+  itk::ImageRegionConstIterator<FloatVectorImageType> targetPatchIterator(this->Image, patchPair.GetTargetPatch()->GetRegion());
 
   float totalAbsoluteDifference = 0.0f;
 
@@ -196,8 +196,8 @@ void SelfPatchCompare::SetPatchAverageAbsoluteFullDifference(PatchPair& patchPai
     ++targetPatchIterator;
     }
 
-  float averageAbsoluteDifference = totalAbsoluteDifference / static_cast<float>(patchPair.SourcePatch.Region.GetNumberOfPixels());
-  patchPair.DifferenceMap[PatchPair::AverageAbsoluteDifference] = averageAbsoluteDifference;
+  float averageAbsoluteDifference = totalAbsoluteDifference / static_cast<float>(patchPair.GetSourcePatch()->GetRegion().GetNumberOfPixels());
+  patchPair.GetDifferences().SetDifferenceByType(PairDifferences::AverageAbsoluteDifference, averageAbsoluteDifference);
 }
 
 void SelfPatchCompare::SetPatchAllDifferences(PatchPair& patchPair)
@@ -229,17 +229,18 @@ void SelfPatchCompare::ComputeAllSourceAndTargetDifferences()
   try
   {
     // Force the target region to be entirely inside the image
-    this->Pairs->TargetPatch.Region.Crop(this->Image->GetLargestPossibleRegion());
+    this->Pairs->GetTargetPatch()->GetRegion().Crop(this->Image->GetLargestPossibleRegion());
 
     ComputeOffsets();
     #ifdef USE_QT_PARALLEL
       #pragma message("Using QtConcurrent!")
-      QtConcurrent::blockingMap<std::vector<PatchPair> >(*(this->Pairs), boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteFullDifference, this, _1));
+
+      //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs->GetAllPairs(), boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteFullDifference, this, _1));
     #else
       #pragma message("NOT using QtConcurrent!")
-      for(unsigned int i = 0; i < this->Pairs->size(); ++i)
+      for(unsigned int pairId = 0; pairId < this->Pairs->GetNumberOfSourcePatches(); ++pairId)
         {
-        SetPatchAverageAbsoluteFullDifference((*this->Pairs)[i]);
+        SetPatchAverageAbsoluteFullDifference(this->Pairs->GetPair(pairId));
         }
     #endif
     //LeaveFunction("SelfPatchCompare::ComputeAllSourceAndTargetDifferences()");
@@ -265,20 +266,15 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
     std::cout << "SelfPatchCompare::ComputeAllSourceDifferences had: " << this->ValidTargetPatchOffsets.size() << " ValidTargetPatchOffsets on which to operate!" << std::endl;
     #ifdef USE_QT_PARALLEL
       #pragma message("Using QtConcurrent!")
-      QtConcurrent::blockingMap<std::vector<PatchPair> >((*this->Pairs), boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
+      // TODO: Figure out how to dereference the thing that is passed
+      //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs->GetAllPairs(), boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
     #else
       #pragma message("NOT using QtConcurrent!")
-      for(unsigned int i = 0; i < this->Pairs->size(); ++i)
+      for(unsigned int pairId = 0; pairId < this->Pairs->GetNumberOfSourcePatches(); ++pairId)
         {
-        SetPatchAllDifferences((*this->Pairs)[i]);
+        SetPatchAllDifferences(this->Pairs->GetPair(pairId));
         }
     #endif
-
-    // Serial only - for testing
-//       for(unsigned int i = 0; i < this->Pairs->size(); ++i)
-//         {
-//         SetPatchAllDifferences((*this->Pairs)[i]);
-//         }
 
     //std::cout << "Leave SelfPatchCompare::ComputeAllSourceDifferences()" << std::endl;
   }

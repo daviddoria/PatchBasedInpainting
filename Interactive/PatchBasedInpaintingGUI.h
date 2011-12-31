@@ -38,7 +38,7 @@
 
 // Custom
 #include "Canvas.h"
-#include "ColorPalette.h"
+
 #include "DebugOutputs.h"
 #include "DisplayState.h"
 #include "DisplayStyle.h"
@@ -239,8 +239,8 @@ private:
   // That is, the image at index 0 is the image after 0 iterations (the original image). At index 1 is the image after the first target region has been filled, etc.
   std::vector<InpaintingIterationRecord> IterationRecords;
 
-  // Colors
-  ColorPalette Colors;
+  // The color to use as the background of the QGraphicsScenes
+  QColor SceneBackground;
 
   // Models and views
   QSharedPointer<TableModelForwardLook> ForwardLookModel;
@@ -263,8 +263,6 @@ private:
   QIntValidator* IterationValidator;
 
   SettingsContainer Settings;
-
-  DisplayStyle ImageDisplayStyle;
 
   DisplayStateContainer DisplayState;
 

@@ -30,7 +30,7 @@ namespace HelpersDisplay
 {
 
 // This function simply drives ITKImagetoVTKRGBImage, ITKImagetoVTKMagnitudeImage, or ITKImageChannelToVTKImage.
-void ITKVectorImageToVTKImage(const FloatVectorImageType::Pointer image, vtkImageData* outputImage, const DisplayStyle& style);
+
 
 } // end namespace
 

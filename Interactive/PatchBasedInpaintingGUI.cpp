@@ -378,24 +378,7 @@ void PatchBasedInpaintingGUI::Reset()
   Refresh();
 }
 
-void PatchBasedInpaintingGUI::DisplayMask()
-{
-  //vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
-  //Helpers::ITKScalarImageToScaledVTKImage<Mask>(this->IntermediateImages[this->IterationToDisplay].MaskImage, temp);
-  //Helpers::MakeValidPixelsTransparent(temp, this->MaskLayer.ImageData, 0); // Set the zero pixels of the mask to transparent
 
-  dynamic_cast<Mask*>(this->IterationRecords[this->DisplayState.Iteration].GetImageByName("Mask").Image.GetPointer())->MakeVTKImage(this->Canvas->MaskLayer.ImageData, QColor(Qt::white), this->Colors.Hole, false, true); // (..., holeTransparent, validTransparent);
-  this->qvtkWidget->GetRenderWindow()->Render();
-}
-
-void PatchBasedInpaintingGUI::DisplayImage()
-{
-  EnterFunction("DisplayImage");
-  HelpersDisplay::ITKVectorImageToVTKImage(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->DisplayState.Iteration].GetImageByName("Image").Image.GetPointer()), this->Canvas->ImageLayer.ImageData, this->ImageDisplayStyle);
-
-  this->qvtkWidget->GetRenderWindow()->Render();
-  LeaveFunction("DisplayImage");
-}
 
 // void PatchBasedInpaintingGUI::DisplayBoundary()
 // {
@@ -713,24 +696,8 @@ void PatchBasedInpaintingGUI::DisplayUsedPatches()
 
 void PatchBasedInpaintingGUI::HighlightForwardLookPatches()
 {
-  EnterFunction("HighlightForwardLookPatches()");
   try
   {
-    // Delete any current highlight patches. We want to delete these (if they exist) no matter what because
-    // then they won't be displayed if the box is not checked (they will respect the check box).
-    Helpers::BlankImage(this->Canvas->AllForwardLookOutlinesLayer.ImageData);
-
-    if(!RecordToDisplay)
-      {
-      return;
-      }
-    // If the user has not requested to display the patches, quit.
-    if(!this->chkDisplayForwardLookPatchLocations->isChecked())
-      {
-      DebugMessage("HighlightForwardLookPatches: chkDisplayForwardLookPatchLocations not checked!");
-      return;
-      }
-
     // Get the candidate patches and make sure we have requested a valid set.
     const std::vector<CandidatePairs>& candidatePairs = this->RecordToDisplay->PotentialPairSets;
 
@@ -770,117 +737,16 @@ void PatchBasedInpaintingGUI::HighlightForwardLookPatches()
   }
 }
 
-
 void PatchBasedInpaintingGUI::HighlightSourcePatches()
 {
   try
   {
-    EnterFunction("HighlightSourcePatches()");
-
-    // Delete any current highlight patches. We want to delete these (if they exist) no matter what because then
-    // they won't be displayed if the box is not checked (they will respect the check box).
-    Helpers::BlankImage(this->Canvas->AllSourcePatchOutlinesLayer.ImageData);
-
-    if(!this->RecordToDisplay)
-      {
-      DebugMessage("HighlightSourcePatches: !this->RecordToDisplay");
-      LeaveFunction("HighlightSourcePatches()");
-      return;
-      }
-
-    if(!this->chkDisplaySourcePatchLocations->isChecked())
-      {
-      DebugMessage("HighlightSourcePatches: !this->chkDisplaySourcePatchLocations->isChecked()");
-      LeaveFunction("HighlightSourcePatches()");
-      return;
-      }
-
-    unsigned char centerPixelColor[3];
-    HelpersQt::QColorToUCharColor(this->Colors.CenterPixel, centerPixelColor);
-
     const CandidatePairs& candidatePairs = this->RecordToDisplay->PotentialPairSets[this->DisplayState.ForwardLookId];
     unsigned int numberToDisplay = std::min(candidatePairs.size(), this->Settings.NumberOfTopPatchesToDisplay);
-    DebugMessage<unsigned int>("HighlightSourcePatches: Displaying patches: ", numberToDisplay);
-    unsigned char borderColor[3];
-
-    for(unsigned int candidateId = 0; candidateId < numberToDisplay; ++candidateId)
-      {
-      if(candidateId == this->DisplayState.SourcePatchId)
-        {
-        HelpersQt::QColorToUCharColor(this->Colors.SelectedSourcePatch, borderColor);
-        }
-      else
-        {
-        HelpersQt::QColorToUCharColor(this->Colors.AllSourcePatch, borderColor);
-        }
-
-      const Patch& currentPatch = candidatePairs[candidateId].SourcePatch;
-      //DebugMessage<itk::ImageRegion<2> >("HighlightSourcePatches: Display patch: ", currentPatch.Region);
-      Helpers::BlankAndOutlineRegion(this->Canvas->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, borderColor);
-      Helpers::SetRegionCenterPixel(this->Canvas->AllSourcePatchOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
-      }
-
-    this->qvtkWidget->GetRenderWindow()->Render();
-    LeaveFunction("HighlightSourcePatches()");
   }// end try
   catch( itk::ExceptionObject & err )
   {
     std::cerr << "ExceptionObject caught in HighlightSourcePatches!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
-
-void PatchBasedInpaintingGUI::HighlightUsedPatches()
-{
-  EnterFunction("HighlightUsedPatches()");
-  try
-  {
-//     // The last iteration record will not have any potential patches, because there is nothing left to inpaint!
-//     if(!this->RecordToDisplay->PotentialPairSets.size())
-//       {
-//       LeaveFunction("HighlightUsedPatches()");
-//       return;
-//       }
-//
-//     PatchPair patchPair = this->RecordToDisplay->UsedPatchPair;
-//
-//     unsigned char centerPixelColor[3];
-//     HelpersQt::QColorToUCharColor(this->CenterPixelColor, centerPixelColor);
-//
-//     // Target
-//     DebugMessage("Target...");
-//     Patch targetPatch = patchPair.TargetPatch;
-//
-//     unsigned int patchSize = targetPatch.Region.GetSize()[0];
-//     //std::cout << "Displaying used target patch " << this->CurrentUsedPatchDisplayed << " : " << targetPatch.Region << std::endl;
-//     DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
-//     this->UsedTargetPatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
-//     unsigned char targetPatchColor[3];
-//     HelpersQt::QColorToUCharColor(this->UsedTargetPatchColor, targetPatchColor);
-//     Helpers::BlankAndOutlineImage(this->UsedTargetPatchLayer.ImageData, targetPatchColor);
-//     Helpers::SetImageCenterPixel(this->UsedTargetPatchLayer.ImageData, centerPixelColor);
-//     this->UsedTargetPatchLayer.ImageSlice->SetPosition(targetPatch.Region.GetIndex()[0], targetPatch.Region.GetIndex()[1], 0);
-//
-//     // Source
-//     DebugMessage("Source...");
-//     Patch sourcePatch = patchPair.SourcePatch;
-//
-//     //std::cout << "Displaying used source patch " << this->CurrentUsedPatchDisplayed << " : " << sourcePatch.Region << std::endl;
-//     DebugMessage<itk::ImageRegion<2> >("Source patch region: ", sourcePatch.Region);
-//     this->UsedSourcePatchLayer.ImageData->SetDimensions(patchSize, patchSize, 1);
-//     unsigned char sourcePatchColor[3];
-//     HelpersQt::QColorToUCharColor(this->UsedSourcePatchColor, sourcePatchColor);
-//     Helpers::BlankAndOutlineImage(this->UsedSourcePatchLayer.ImageData, sourcePatchColor);
-//     Helpers::SetImageCenterPixel(this->UsedSourcePatchLayer.ImageData, centerPixelColor);
-//     this->UsedSourcePatchLayer.ImageSlice->SetPosition(sourcePatch.Region.GetIndex()[0], sourcePatch.Region.GetIndex()[1], 0);
-//
-//     Refresh();
-    LeaveFunction("HighlightUsedPatches()");
-    }// end try
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in HighlightUsedPatches!" << std::endl;
     std::cerr << err << std::endl;
     exit(-1);
   }

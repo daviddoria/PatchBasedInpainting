@@ -19,7 +19,7 @@
 #include "CandidatePairs.h"
 
 template<typename TDifferenceFunction>
-float SelfPatchCompare::PatchAverageSourceDifference(const Patch& sourcePatch)
+float SelfPatchCompare::PatchAverageSourceDifference(const Patch* sourcePatch)
 {
   EnterFunction("SelfPatchCompare::PatchAverageSourceDifference<TDifferenceFunction>()");
   if(this->ValidTargetPatchOffsets.size() <= 0)
@@ -33,8 +33,8 @@ float SelfPatchCompare::PatchAverageSourceDifference(const Patch& sourcePatch)
   const FloatVectorImageType::InternalPixelType* bufferPointer = this->Image->GetBufferPointer();
 
   // Get the locations of the corners of both patches.
-  int sourceCornerOffset = this->Image->ComputeOffset(sourcePatch.Region.GetIndex());
-  int targetCornerOffset = this->Image->ComputeOffset(this->Pairs->TargetPatch.Region.GetIndex());
+  int sourceCornerOffset = this->Image->ComputeOffset(sourcePatch->GetRegion().GetIndex());
+  int targetCornerOffset = this->Image->ComputeOffset(this->Pairs->GetTargetPatch()->GetRegion().GetIndex());
 
   // Compute the difference between the corners (from the target to the source).
   int targetToSourceOffsetPixels = sourceCornerOffset - targetCornerOffset;
@@ -72,7 +72,7 @@ float SelfPatchCompare::PatchAverageSourceDifference(const Patch& sourcePatch)
 }
 
 template<typename TScalarImage, typename TDifferenceFunction>
-float SelfPatchCompare::PatchAverageSourceDifference(const typename TScalarImage::Pointer image, const Patch& sourcePatch)
+float SelfPatchCompare::PatchAverageSourceDifference(TScalarImage* const image, const Patch* sourcePatch)
 {
   EnterFunction("SelfPatchCompare::PatchAverageSourceDifference<TScalarImage, TDifferenceFunction>()");
   if(this->ValidTargetPatchOffsets.size() <= 0)
@@ -86,8 +86,8 @@ float SelfPatchCompare::PatchAverageSourceDifference(const typename TScalarImage
   typename TScalarImage::PixelType* bufferPointer = image->GetBufferPointer();
 
   // Get the locations of the corners of both patches.
-  int sourceCornerOffset = image->ComputeOffset(sourcePatch.Region.GetIndex());
-  int targetCornerOffset = image->ComputeOffset(this->Pairs->TargetPatch.Region.GetIndex());
+  int sourceCornerOffset = image->ComputeOffset(sourcePatch->GetRegion().GetIndex());
+  int targetCornerOffset = image->ComputeOffset(this->Pairs->GetTargetPatch()->GetRegion().GetIndex());
 
   // Compute the difference between the corners (from the target to the source).
   int targetToSourceOffsetPixels = sourceCornerOffset - targetCornerOffset;

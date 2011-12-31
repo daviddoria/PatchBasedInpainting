@@ -34,6 +34,9 @@ namespace Helpers
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+std::string GetString(const itk::Index<2>& index);
+std::string GetString(const itk::Size<2>& size);
+
 bool IsValidRGB(const int r, const int g, const int b);
 
 void OutputImageType(const itk::ImageBase<2>* input);

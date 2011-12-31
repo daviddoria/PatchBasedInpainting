@@ -40,6 +40,8 @@ public:
 
 protected:
 
+  unsigned int ComputeMinimumScoreLookAhead();
+
   // The maximum number of patch pairs to examine in deciding which one to actually fill.
   // The number compared could actually be less than this near the end of the inpainting because there may
   // not be enough non-zero priority values outside of one patch region.

@@ -19,15 +19,16 @@
 #ifndef PATCHSORTING_H
 #define PATCHSORTING_H
 
+#include "PairDifferences.h"
 #include "PatchPair.h"
 
 // This is a pure virtual functor that defines the required interface.
 struct PatchSortFunctor
 {
   enum SortOrderEnum {ASCENDING, DESCENDING};
-  PatchSortFunctor(PatchPair::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder);
+  PatchSortFunctor(const PairDifferences::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder);
   virtual bool operator()(const PatchPair &T1, const PatchPair &T2) = 0;
-  PatchPair::PatchDifferenceTypes DifferenceType;
+  PairDifferences::PatchDifferenceTypes DifferenceType;
   SortOrderEnum SortOrder;
 };
 
@@ -36,17 +37,17 @@ struct PatchSortFunctor
 // std::sort(testVector.begin(), testVector.end(), SortFunctorWrapper(test));
 struct SortFunctorWrapper
 {
-    SortFunctorWrapper(PatchSortFunctor* func) : func_(func) {}
-    bool operator()(const PatchPair &T1, const PatchPair &T2)
-    {
-        return (*func_)(T1, T2);
-    }
-    PatchSortFunctor* func_;
+  SortFunctorWrapper(PatchSortFunctor* func) : func_(func) {}
+  bool operator()(const PatchPair &T1, const PatchPair &T2)
+  {
+      return (*func_)(T1, T2);
+  }
+  PatchSortFunctor* func_;
 };
 
 struct SortByDifference : public PatchSortFunctor
 {
-  SortByDifference(PatchPair::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder) : PatchSortFunctor(differenceType, sortOrder){}
+  SortByDifference(PairDifferences::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder) : PatchSortFunctor(differenceType, sortOrder){}
   bool operator()(const PatchPair& pair1, const PatchPair& pair2);
 };
 
@@ -56,11 +57,11 @@ struct SortByDifference : public PatchSortFunctor
 //   bool operator()(const PatchPair& pair1, const PatchPair& pair2);
 // };
 
-struct SortByDepthAndColor : public PatchSortFunctor
-{
-  bool operator()(const PatchPair& pair1, const PatchPair& pair2);
-  SortByDepthAndColor(PatchPair::PatchDifferenceTypes differenceType) : PatchSortFunctor(differenceType, ASCENDING), DepthColorLambda(0.5f){}
-  float DepthColorLambda;
-};
+// struct SortByDepthAndColor : public PatchSortFunctor
+// {
+//   bool operator()(const PatchPair& pair1, const PatchPair& pair2);
+//   SortByDepthAndColor(PairDifferences::PatchDifferenceTypes differenceType) : PatchSortFunctor(differenceType, ASCENDING), DepthColorLambda(0.5f){}
+//   float DepthColorLambda;
+// };
 
 #endif

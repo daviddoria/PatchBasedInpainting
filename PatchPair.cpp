@@ -18,70 +18,58 @@
 
 #include "PatchPair.h"
 
-void PatchPair::DefaultConstructor()
+PatchPair::PatchPair(const Patch* sourcePatch, const Patch* targetPatch) : SourcePatch(sourcePatch), TargetPatch(targetPatch)
 {
 
 }
 
-PatchPair::PatchPair()
+
+// 
+// PatchPair& PatchPair::operator= (const PatchPair& other)
+// {
+//   if (this != &other)
+//   {
+//     this->SourcePatch = other.SourcePatch;
+//   }
+// 
+//   return *this;
+// }
+
+PairDifferences& PatchPair::GetDifferences()
 {
-  DefaultConstructor();
+  return Differences;
 }
 
-PatchPair::PatchPair(const Patch& sourcePatch, const Patch& targetPatch)
+const PairDifferences& PatchPair::GetDifferences() const
 {
-  DefaultConstructor();
-
-  this->SourcePatch = sourcePatch;
-  this->TargetPatch = targetPatch;
+  return Differences;
 }
 
-std::string PatchPair::NameOfDifference(PatchDifferenceTypes enumValue)
+void PatchPair::Invalidate()
 {
-  std::string namedDifference;
-  switch(enumValue)
-  {
-    case AverageAbsoluteDifference:
-      //namedDifference = "AverageAbsoluteDifference";
-      namedDifference = "Av.Abs.";
-      break;
-    case ColorDifference:
-      //namedDifference = "ColorDifference";
-      namedDifference = "Color";
-      break;
-    case DepthDifference:
-      //namedDifference = "DepthDifference";
-      namedDifference = "Depth";
-      break;
-    case MembershipDifference:
-      //namedDifference = "MembershipDifference";
-      namedDifference = "Membership";
-      break;
-    case CombinedDifference:
-      //namedDifference = "CombinedDifference";
-      namedDifference = "Combined";
-      break;
-    case HistogramIntersection:
-      namedDifference = "Hist.Int.";
-      break;
-    default:
-      namedDifference = "INVALID";
-      break;
-  }
-
-  return namedDifference;
+  this->Differences.Invalidate();
 }
 
 itk::Offset<2> PatchPair::GetTargetToSourceOffset() const
 {
-  return this->SourcePatch.Region.GetIndex() - this->TargetPatch.Region.GetIndex();
+  return this->SourcePatch->GetRegion().GetIndex() - this->TargetPatch->GetRegion().GetIndex();
 }
 
 itk::Offset<2> PatchPair::GetSourceToTargetOffset() const
 {
-  return this->TargetPatch.Region.GetIndex() - this->SourcePatch.Region.GetIndex();
+  return this->TargetPatch->GetRegion().GetIndex() - this->SourcePatch->GetRegion().GetIndex();
 }
 
+const Patch* PatchPair::GetSourcePatch() const
+{
+  return this->SourcePatch;
+}
+
+const Patch* PatchPair::GetTargetPatch() const
+{
+  return this->TargetPatch;
+}
+/*
 float PatchPair::GetDepthAndColorDifference() const
 {
   DifferenceMapType::const_iterator colorIter = this->DifferenceMap.find(ColorDifference);
@@ -101,14 +89,14 @@ float PatchPair::GetDepthAndColorDifference() const
     }
 
   return ComputeDepthAndColorDifference(this->DifferenceMap.find(DepthDifference)->second, this->DifferenceMap.find(ColorDifference)->second);
-}
+}*/
 
 //////////////////////////////////////////
 /////// Computations (functions of more than one difference) //////////////
 //////////////////////////////////////////
-
+/*
 float PatchPair::ComputeDepthAndColorDifferenceFunctor::operator()(const float depthDifference, const float colorDifference) const
 {
   //this->DepthAndColorDifference = this->ColorDifference * DepthColorLambda + (1.0 - DepthColorLambda) * this->DepthDifference;
   return depthDifference + this->DepthColorLambda * colorDifference;
-}
+}*/

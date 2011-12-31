@@ -53,10 +53,13 @@ public:
   void Refresh();
 
   void SetPatchDisplaySize(const unsigned int value);
-protected:
+
+private:
 
   // The outer vector is the iteration, and the inner vector is the look ahead patch.
   std::vector<InpaintingIterationRecord>& IterationRecords;
+
+  unsigned int GetNumberOfDifferences() const;
 
   unsigned int IterationToDisplay;
   unsigned int ForwardLookToDisplay;
@@ -67,7 +70,6 @@ protected:
 
   DisplayStyle& ImageDisplayStyle;
 
-  std::vector<PatchPair::PatchDifferenceTypes> ComputedKeys;
 };
 
 #endif

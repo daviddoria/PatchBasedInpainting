@@ -18,7 +18,8 @@
 
 #include "PatchSorting.h"
 
-PatchSortFunctor::PatchSortFunctor(PatchPair::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder) : DifferenceType(differenceType), SortOrder(sortOrder)
+PatchSortFunctor::PatchSortFunctor(const PairDifferences::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder) :
+DifferenceType(differenceType), SortOrder(sortOrder)
 {
 
 }
@@ -27,11 +28,11 @@ bool SortByDifference::operator()(const PatchPair& pair1, const PatchPair& pair2
 {
   if(SortOrder == ASCENDING)
     {
-    return (pair1.DifferenceMap.find(DifferenceType)->second < pair2.DifferenceMap.find(DifferenceType)->second);
+    return (pair1.GetDifferences().GetDifferenceByType(DifferenceType) < pair2.GetDifferences().GetDifferenceByType(DifferenceType));
     }
   else
     {
-    return !(pair1.DifferenceMap.find(DifferenceType)->second < pair2.DifferenceMap.find(DifferenceType)->second);
+    return !(pair1.GetDifferences().GetDifferenceByType(DifferenceType) < pair2.GetDifferences().GetDifferenceByType(DifferenceType));
     }
 }
 
@@ -40,8 +41,8 @@ bool SortByDifference::operator()(const PatchPair& pair1, const PatchPair& pair2
 // {
 //   return (pair1.GetTotalScore() < pair2.GetTotalScore());
 // }
-
+/*
 bool SortByDepthAndColor::operator()(const PatchPair& pair1, const PatchPair& pair2)
 {
   return (pair1.GetDepthAndColorDifference() < pair2.GetDepthAndColorDifference());
-}
+}*/

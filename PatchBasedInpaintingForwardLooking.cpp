@@ -134,6 +134,24 @@ void PatchBasedInpaintingForwardLooking::FindBestPatch(CandidatePairs& candidate
 }
 
 
+unsigned int PatchBasedInpaintingForwardLooking::ComputeMinimumScoreLookAhead()
+{
+  EnterFunction("ComputeMinimumScoreLookAhead()");
+  // Choose the look ahead with the lowest score to actually fill rather than simply returning the best source patch of the first look ahead target patch.
+  float lowestScore = std::numeric_limits< float >::max();
+  unsigned int lowestLookAhead = 0;
+  for(unsigned int i = 0; i < this->PotentialCandidatePairs.size(); ++i)
+    {
+    if(this->PotentialCandidatePairs[i][0].DifferenceMap[PatchPair::AverageAbsoluteDifference] < lowestScore)
+      {
+      lowestScore = this->PotentialCandidatePairs[i][0].DifferenceMap[PatchPair::AverageAbsoluteDifference];
+      lowestLookAhead = i;
+      }
+    }
+  LeaveFunction("ComputeMinimumScoreLookAhead()");
+  return lowestLookAhead;
+}
+
 void PatchBasedInpaintingForwardLooking::SetMaxForwardLookPatches(const unsigned int numberOfPatches)
 {
   this->MaxForwardLookPatches = numberOfPatches;
