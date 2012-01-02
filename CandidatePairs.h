@@ -41,7 +41,7 @@ private:
   typedef std::vector<std::shared_ptr<PatchPair> > PatchContainer;
 
 public:
-  CandidatePairs(const Patch* targetPatch);
+  CandidatePairs(const Patch& targetPatch);
 
   void Sort(SortFunctorWrapper sortFunctor);
 
@@ -57,9 +57,7 @@ public:
 
   //void AddSourcePatch(const Patch* patch);
 
-  void InvalidateAll();
-
-  void Combine(CandidatePairs& pairs);
+  void Combine(const CandidatePairs& pairs);
 
   //void WriteDepthScoresToFile(const std::string& fileName);
 
@@ -69,8 +67,8 @@ public:
 
   const PatchPair& GetPair(const unsigned int pairId) const;
   PatchPair& GetPair(const unsigned int pairId);
-  const Patch* GetSourcePatch(const unsigned int pairId) const;
-  const Patch* GetTargetPatch() const;
+  const Patch* const GetSourcePatch(const unsigned int pairId) const;
+  const Patch& GetTargetPatch() const;
   float GetPriority() const;
   void SetPriority(const float priority);
   unsigned int GetNumberOfSourcePatches() const;
@@ -81,7 +79,7 @@ private:
 
   float Priority;
 
-  const Patch* TargetPatch;
+  const Patch TargetPatch;
 };
 
 bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2);

@@ -18,7 +18,7 @@
 
 #include "PatchPair.h"
 
-PatchPair::PatchPair(const Patch* sourcePatch, const Patch* targetPatch) : SourcePatch(sourcePatch), TargetPatch(targetPatch)
+PatchPair::PatchPair(const Patch* const sourcePatch, const Patch& targetPatch) : SourcePatch(sourcePatch), TargetPatch(targetPatch)
 {
 
 }
@@ -45,19 +45,14 @@ const PairDifferences& PatchPair::GetDifferences() const
   return Differences;
 }
 
-void PatchPair::Invalidate()
-{
-  this->Differences.Invalidate();
-}
-
 itk::Offset<2> PatchPair::GetTargetToSourceOffset() const
 {
-  return this->SourcePatch->GetRegion().GetIndex() - this->TargetPatch->GetRegion().GetIndex();
+  return this->SourcePatch->GetRegion().GetIndex() - this->TargetPatch.GetRegion().GetIndex();
 }
 
 itk::Offset<2> PatchPair::GetSourceToTargetOffset() const
 {
-  return this->TargetPatch->GetRegion().GetIndex() - this->SourcePatch->GetRegion().GetIndex();
+  return this->TargetPatch.GetRegion().GetIndex() - this->SourcePatch->GetRegion().GetIndex();
 }
 
 const Patch* PatchPair::GetSourcePatch() const
@@ -65,7 +60,7 @@ const Patch* PatchPair::GetSourcePatch() const
   return this->SourcePatch;
 }
 
-const Patch* PatchPair::GetTargetPatch() const
+const Patch& PatchPair::GetTargetPatch() const
 {
   return this->TargetPatch;
 }

@@ -28,6 +28,7 @@ public:
   Patch(const itk::ImageRegion<2>& region);
 
   bool operator==(const Patch& other) const;
+  bool operator!=(const Patch& other) const;
 
   itk::ImageRegion<2> GetRegion() const;
 

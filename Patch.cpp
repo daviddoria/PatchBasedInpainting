@@ -37,6 +37,10 @@ bool Patch::operator==(const Patch& other) const
   return false;
 }
 
+bool Patch::operator!=(const Patch& other) const
+{
+  return !operator==(other);
+}
 
 bool Patch::operator<(const Patch &other) const
 {

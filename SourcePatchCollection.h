@@ -26,25 +26,32 @@
 
 class SourcePatchCollection
 {
+
 public:
+
   SourcePatchCollection(Mask* const maskImage, const unsigned int patchRadius);
 
+  typedef std::set<Patch> PatchContainer;
+
   // Iterator interface
-  typedef std::set<Patch>::iterator iterator;
+  typedef PatchContainer::iterator Iterator;
   //typedef std::set<Patch>::const_iterator const_iterator;
-  iterator begin() const;
-  iterator end() const;
+  Iterator begin() const;
+  Iterator end() const;
 
   // Locate all patches centered at pixels in 'region' that are completely inside of the image and completely inside of the
   // source region and add them to the current list of source patches.
   // This function returns the set of newly added patches.
-  std::set<Patch> AddSourcePatchesInRegion(const itk::ImageRegion<2>& region);
+  void AddPatches(const PatchContainer& region);
+  PatchContainer FindSourcePatchesInRegion(const itk::ImageRegion<2>& region);
 
   void Clear();
 
+  const Patch* GetPatch(const itk::ImageRegion<2>& region);
+
 private:
 
-  std::set<Patch> SourcePatches;
+  PatchContainer SourcePatches;
   Mask* MaskImage;
   unsigned int PatchRadius;
 };

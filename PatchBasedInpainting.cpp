@@ -105,7 +105,6 @@ void PatchBasedInpainting::ColorImageInsideHole()
   this->MaskImage->ApplyToImage<FloatVectorImageType>(this->CurrentInpaintedImage, fillColor);
 }
 
-
 void PatchBasedInpainting::Initialize()
 {
   EnterFunction("PatchBasedInpainting::Initialize()");
@@ -119,7 +118,6 @@ void PatchBasedInpainting::Initialize()
       }
 
     this->NumberOfCompletedIterations = 0;
-    this->PotentialCandidatePairs.clear();
 
     HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CurrentInpaintedImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
 
@@ -130,7 +128,6 @@ void PatchBasedInpainting::Initialize()
     // Clear the source patches, as additional patches are added each iteration. When we reset the inpainter, we want to start over from only patches that are
     // valid in the original mask.
     this->SourcePatches->Clear();
-    this->SourcePatches->AddSourcePatchesInRegion(this->FullImageRegion);
 
     this->PatchCompare->SetNumberOfComponentsPerPixel(this->CompareImage->GetNumberOfComponentsPerPixel());
 
@@ -150,15 +147,18 @@ PatchPair PatchBasedInpainting::Iterate()
 
   PriorityFunction->ComputeAllPriorities();
 
+  SourcePatchCollection::PatchContainer sourcePatches = this->SourcePatches->FindSourcePatchesInRegion(this->FullImageRegion);
+  this->SourcePatches->AddPatches(sourcePatches);
+
   PatchPair usedPatchPair = FindBestPatch();
 
-  std::cout << "Used target region: " << usedPatchPair.GetTargetPatch()->GetRegion() << std::endl;
+  std::cout << "Used target region: " << usedPatchPair.GetTargetPatch().GetRegion() << std::endl;
 
   // Copy the patch. This is the actual inpainting step.
-  ImagesToUpdate.CopySelfPatchIntoHoleOfTargetRegion(this->MaskImage, usedPatchPair.GetSourcePatch()->GetRegion(), usedPatchPair.GetTargetPatch()->GetRegion());
+  ImagesToUpdate.CopySelfPatchIntoHoleOfTargetRegion(this->MaskImage, usedPatchPair.GetSourcePatch()->GetRegion(), usedPatchPair.GetTargetPatch().GetRegion());
   std::cout << "Image size: " << this->CurrentInpaintedImage->GetLargestPossibleRegion().GetSize() << std::endl;
 
-  this->PriorityFunction->Update(usedPatchPair.GetTargetPatch()->GetRegion());
+  this->PriorityFunction->Update(usedPatchPair.GetTargetPatch().GetRegion());
 
   HelpersOutput::WriteImage<UnsignedCharScalarImageType>(this->PriorityFunction->GetBoundaryImage(), "Debug/BoundaryImageBeforeUpdate.mha");
   this->PriorityFunction->UpdateBoundary();
@@ -172,20 +172,16 @@ PatchPair PatchBasedInpainting::Iterate()
 
   // Shift the top left corner to a position where the same size patch would overlap only the top left pixel.
   itk::Index<2> previousInvalidRegionIndex;
-  previousInvalidRegionIndex[0] = usedPatchPair.GetTargetPatch()->GetRegion().GetIndex()[0] - this->PatchRadius[0];
-  previousInvalidRegionIndex[1] = usedPatchPair.GetTargetPatch()->GetRegion().GetIndex()[1] - this->PatchRadius[1];
+  previousInvalidRegionIndex[0] = usedPatchPair.GetTargetPatch().GetRegion().GetIndex()[0] - this->PatchRadius[0];
+  previousInvalidRegionIndex[1] = usedPatchPair.GetTargetPatch().GetRegion().GetIndex()[1] - this->PatchRadius[1];
 
   // The region from which patches overlap the used target patch has a radius 2x bigger than the original patch.
   // The computation could be written as (2 * this->PatchRadius[0]) * 2 + 1, or simply this->PatchRadius[0] * 4 + 1
-  itk::Size<2> previousInvalidRegionSize;
-  previousInvalidRegionSize[0] = this->PatchRadius[0] * 4 + 1;
-  previousInvalidRegionSize[1] = this->PatchRadius[1] * 4 + 1;
-
-  itk::ImageRegion<2> previousInvalidRegion(previousInvalidRegionIndex, previousInvalidRegionSize);
-
-  // TODO Fix this
-  std::set<Patch> newPatches = this->SourcePatches->AddSourcePatchesInRegion(previousInvalidRegion);
-  ComputeScores(newPatches, usedPatchPair);
+//   itk::Size<2> previousInvalidRegionSize;
+//   previousInvalidRegionSize[0] = this->PatchRadius[0] * 4 + 1;
+//   previousInvalidRegionSize[1] = this->PatchRadius[1] * 4 + 1;
+// 
+//   itk::ImageRegion<2> previousInvalidRegion(previousInvalidRegionIndex, previousInvalidRegionSize);
 
   this->NumberOfCompletedIterations++;
 
@@ -193,41 +189,6 @@ PatchPair PatchBasedInpainting::Iterate()
 
   LeaveFunction("Iterate()");
   return usedPatchPair;
-}
-
-void PatchBasedInpainting::RecomputeScoresWithNewPatches(std::vector<Patch>& newPatches, PatchPair& usedPatchPair)
-{
-  // TODO: This should not be a special function. There should just be one function to compute the score of a set of patches.
-  EnterFunction("RecomputeScoresWithNewPatches()");
-
-  if(newPatches.size() <= 0)
-    {
-    //std::cout << "There were 0 new patches to recompute!" << std::endl;
-    return;
-    }
-  // Recompute for all forward look candidates except the one that was used. Otherwise there would be an exact match!
-  for(unsigned int candidateId = 0; candidateId < this->PotentialCandidatePairs.size(); ++candidateId)
-    {
-    // Don't bother recomputing for the target patch that was used - it will not be used again.
-    if(usedPatchPair.GetTargetPatch()->GetRegion() == this->PotentialCandidatePairs[candidateId].GetTargetPatch()->GetRegion())
-      {
-      continue;
-      }
-    CandidatePairs newPairs;
-    // TODO: Form these into pairs
-    // this->PotentialCandidatePairs[candidateId].GetTargetPatch()
-    // newPairs.AddSourcePatches(newPatches);
-
-    this->PatchCompare->SetPairs(&newPairs);
-    this->PatchCompare->SetImage(this->CompareImage);
-    this->PatchCompare->SetMask(this->MaskImage);
-    //this->PatchCompare->SetMembershipImage(this->MembershipImage);
-    this->PatchCompare->ComputeAllSourceDifferences();
-
-    this->PotentialCandidatePairs[candidateId].Combine(newPairs);
-    }
-
-  LeaveFunction("RecomputeScoresWithNewPatches()");
 }
 
 Priority* PatchBasedInpainting::GetPriorityFunction()
@@ -254,11 +215,8 @@ PatchPair PatchBasedInpainting::FindBestPatch()
 
   itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
   Patch targetPatch(targetRegion);
-
-  CandidatePairs candidatePairs;
-  // TODO: Form these into PatchPairs
-  // targetPatch
-  // candidatePairs.AddSourcePatches(this->SourcePatches->GetSourcePatches());
+  CandidatePairs candidatePairs(targetPatch);
+  //candidatePairs.AddSourcePatches(*(this->SourcePatches));
   candidatePairs.SetPriority(highestPriority);
 
   ComputeScores(candidatePairs);
@@ -357,16 +315,6 @@ itk::Size<2> PatchBasedInpainting::GetPatchSize()
   patchSize[1] = Helpers::SideLengthFromRadius(this->PatchRadius[1]);
 
   return patchSize;
-}
-
-CandidatePairs& PatchBasedInpainting::GetPotentialCandidatePairReference(const unsigned int forwardLookId)
-{
-  return this->PotentialCandidatePairs[forwardLookId];
-}
-
-std::vector<CandidatePairs> PatchBasedInpainting::GetPotentialCandidatePairs()
-{
-  return this->PotentialCandidatePairs;
 }
 
 unsigned int PatchBasedInpainting::GetNumberOfCompletedIterations()

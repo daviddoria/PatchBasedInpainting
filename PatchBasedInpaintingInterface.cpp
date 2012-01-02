@@ -51,12 +51,6 @@ itk::ImageRegion<2> PatchBasedInpainting::GetFullRegion()
   return this->FullImageRegion;
 }
 
-std::vector<CandidatePairs>& PatchBasedInpainting::GetPotentialCandidatePairsReference()
-{
-  // Return a reference to the whole set of forward look pairs.
-  return PotentialCandidatePairs;
-}
-
 SelfPatchCompare* PatchBasedInpainting::GetPatchCompare() const
 {
   return this->PatchCompare.get();

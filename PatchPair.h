@@ -26,27 +26,22 @@ class PatchPair
 {
 public:
 
-  PatchPair(const Patch* const sourcePatch, const Patch* const targetPatch);
+  PatchPair(const Patch* const sourcePatch, const Patch& targetPatch);
 
-  // PatchPair(const PatchPair& other);
-  // PatchPair& operator= (const PatchPair& other);
-
-  // Store the relative location of the source and target patch corners
+  // Compute the relative location of the source and target patch corners
   itk::Offset<2> GetTargetToSourceOffset() const;
   itk::Offset<2> GetSourceToTargetOffset() const;
 
-  void Invalidate();
-
   const Patch* GetSourcePatch() const;
-  const Patch* GetTargetPatch() const;
+  const Patch& GetTargetPatch() const;
 
   PairDifferences& GetDifferences();
   const PairDifferences& GetDifferences() const;
 
 private:
   PairDifferences Differences;
-  const Patch* const SourcePatch;
-  const Patch* const TargetPatch;
+  const Patch* const SourcePatch; // This is a pointer to a patch in the main (only) SourcePatchCollection.
+  Patch TargetPatch; // This is not a pointer to a patch in the main SourcePatchCollection, because it is not valid yet (we are going to copy pixels here)!
 };
 
 #endif

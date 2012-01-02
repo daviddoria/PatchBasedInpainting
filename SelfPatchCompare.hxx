@@ -34,7 +34,7 @@ float SelfPatchCompare::PatchAverageSourceDifference(const Patch* sourcePatch)
 
   // Get the locations of the corners of both patches.
   int sourceCornerOffset = this->Image->ComputeOffset(sourcePatch->GetRegion().GetIndex());
-  int targetCornerOffset = this->Image->ComputeOffset(this->Pairs->GetTargetPatch()->GetRegion().GetIndex());
+  int targetCornerOffset = this->Image->ComputeOffset(this->Pairs->GetTargetPatch().GetRegion().GetIndex());
 
   // Compute the difference between the corners (from the target to the source).
   int targetToSourceOffsetPixels = sourceCornerOffset - targetCornerOffset;
@@ -87,7 +87,7 @@ float SelfPatchCompare::PatchAverageSourceDifference(TScalarImage* const image, 
 
   // Get the locations of the corners of both patches.
   int sourceCornerOffset = image->ComputeOffset(sourcePatch->GetRegion().GetIndex());
-  int targetCornerOffset = image->ComputeOffset(this->Pairs->GetTargetPatch()->GetRegion().GetIndex());
+  int targetCornerOffset = image->ComputeOffset(this->Pairs->GetTargetPatch().GetRegion().GetIndex());
 
   // Compute the difference between the corners (from the target to the source).
   int targetToSourceOffsetPixels = sourceCornerOffset - targetCornerOffset;

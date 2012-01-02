@@ -80,10 +80,6 @@ public:
   // Determine whether or not the inpainting is completed by seeing if there are any pixels in the mask that still need to be filled.
   bool HasMoreToInpaint();
 
-  CandidatePairs& GetPotentialCandidatePairReference(const unsigned int forwardLookId);
-
-  std::vector<CandidatePairs> GetPotentialCandidatePairs();
-
   // Return the number of completed iterations
   unsigned int GetNumberOfCompletedIterations();
 
@@ -158,9 +154,6 @@ private:
   // This is set when the image is loaded so that the region of all of the images can be addressed without referencing any specific image.
   itk::ImageRegion<2> FullImageRegion;
 
-  // Store the current list of CandidatePatches.
-  std::vector<CandidatePairs> PotentialCandidatePairs;
-
   // The number of bins to use per dimension in the histogram computations.
   unsigned int HistogramBinsPerDimension;
 
@@ -187,7 +180,5 @@ private:
 };
 
 #include "PatchBasedInpainting.hxx"
-
-//void WriteImageOfScores(const CandidatePairs& pairs, const itk::ImageRegion<2>& imageRegion, const std::string& fileName);
 
 #endif

@@ -82,7 +82,7 @@ void SelfPatchCompare::ComputeOffsets()
       exit(-1);
       }
     // Iterate over the target region of the mask. Add the linear offset of valid pixels to the offsets to be used later in the comparison.
-    itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, this->Pairs->GetTargetPatch()->GetRegion());
+    itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, this->Pairs->GetTargetPatch().GetRegion());
 
     while(!maskIterator.IsAtEnd())
       {
@@ -183,7 +183,7 @@ void SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference(PatchPair& patchP
 void SelfPatchCompare::SetPatchAverageAbsoluteFullDifference(PatchPair& patchPair)
 {
   itk::ImageRegionConstIterator<FloatVectorImageType> sourcePatchIterator(this->Image, patchPair.GetSourcePatch()->GetRegion());
-  itk::ImageRegionConstIterator<FloatVectorImageType> targetPatchIterator(this->Image, patchPair.GetTargetPatch()->GetRegion());
+  itk::ImageRegionConstIterator<FloatVectorImageType> targetPatchIterator(this->Image, patchPair.GetTargetPatch().GetRegion());
 
   float totalAbsoluteDifference = 0.0f;
 
@@ -229,7 +229,7 @@ void SelfPatchCompare::ComputeAllSourceAndTargetDifferences()
   try
   {
     // Force the target region to be entirely inside the image
-    this->Pairs->GetTargetPatch()->GetRegion().Crop(this->Image->GetLargestPossibleRegion());
+    this->Pairs->GetTargetPatch().GetRegion().Crop(this->Image->GetLargestPossibleRegion());
 
     ComputeOffsets();
     #ifdef USE_QT_PARALLEL

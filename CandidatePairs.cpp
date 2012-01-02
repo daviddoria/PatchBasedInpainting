@@ -20,14 +20,14 @@
 
 #include <memory>
 
-CandidatePairs::CandidatePairs(const Patch* targetPatch) : Priority(0.0f), TargetPatch(targetPatch)
+CandidatePairs::CandidatePairs(const Patch& targetPatch) : Priority(0.0f), TargetPatch(targetPatch)
 {
 
 }
 
 void CandidatePairs::AddSourcePatches(const SourcePatchCollection& patches)
 {
-  for(SourcePatchCollection::iterator patchIterator = patches.begin(); patchIterator != patches.end(); ++patchIterator)
+  for(SourcePatchCollection::Iterator patchIterator = patches.begin(); patchIterator != patches.end(); ++patchIterator)
     {
     const Patch* sourcePatch = &(*patchIterator);
     std::shared_ptr<PatchPair> patchPair = std::shared_ptr<PatchPair>(new PatchPair(sourcePatch, this->TargetPatch));
@@ -51,12 +51,12 @@ PatchPair& CandidatePairs::GetPair(const unsigned int pairId)
   return *(this->PatchPairs[pairId]);
 }
 
-const Patch* CandidatePairs::GetSourcePatch(const unsigned int pairId) const
+const Patch* const CandidatePairs::GetSourcePatch(const unsigned int pairId) const
 {
   return this->PatchPairs[pairId]->GetSourcePatch();
 }
 
-const Patch* CandidatePairs::GetTargetPatch() const
+const Patch& CandidatePairs::GetTargetPatch() const
 {
   return this->TargetPatch;
 }
@@ -83,14 +83,6 @@ void CandidatePairs::SetPriority(const float priority)
   this->Priority = priority;
 }
 
-void CandidatePairs::InvalidateAll()
-{
-  for(unsigned int pairId = 0; pairId < this->PatchPairs.size(); ++pairId)
-    {
-    this->PatchPairs[pairId]->Invalidate();
-    }
-}
-
 // std::vector<PatchPair> CandidatePairs::GetAllPairs() const
 // {
 //   std::vector<PatchPair> pairs;
@@ -106,9 +98,9 @@ std::vector<std::shared_ptr<PatchPair> > CandidatePairs::GetPatchPairs()
   return this->PatchPairs;
 }
 
-void CandidatePairs::Combine(CandidatePairs& candidatePairs)
+void CandidatePairs::Combine(const CandidatePairs& candidatePairs)
 {
-  if(candidatePairs.GetPair(0).GetTargetPatch() != this->PatchPairs[0]->GetTargetPatch())
+  if(candidatePairs.GetTargetPatch() != this->GetTargetPatch())
     {
     std::cerr << "Cannot combine CandidatePairs that are not of the same TargetPatch!" << std::endl;
     exit(-1);
