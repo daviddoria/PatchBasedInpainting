@@ -230,7 +230,6 @@ void Mask::ExpandHole()
 
 void Mask::FindBoundary(UnsignedCharScalarImageType* boundaryImage) const
 {
-  EnterFunction("Mask::FindBoundary()");
   try
   {
     // Compute the "outer" boundary of the region to fill. That is, we want the boundary pixels to be in the source region.
@@ -286,7 +285,6 @@ void Mask::FindBoundary(UnsignedCharScalarImageType* boundaryImage) const
     Helpers::DeepCopy<UnsignedCharScalarImageType>(invertIntensityFilter->GetOutput(), boundaryImage);
 
     //HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/FindBoundary.BoundaryImage.mha", this->DebugImages);
-    LeaveFunction("FindBoundary()");
   }
   catch( itk::ExceptionObject & err )
   {

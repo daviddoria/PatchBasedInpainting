@@ -19,8 +19,15 @@
 #ifndef CANDIDATEPAIRS_H
 #define CANDIDATEPAIRS_H
 
+// Custom
 #include "PatchPair.h"
+#include "PatchSorting.h"
+#include "SourcePatchCollection.h"
 
+// Boost
+#include <boost/iterator/indirect_iterator.hpp>
+
+// STL
 #include <vector>
 
 // This class stores a target patch (a pointer to one of the source patches in PatchBasedInpainting)
@@ -28,14 +35,27 @@
 
 class CandidatePairs
 {
+private:
+  // This is a vector because the pairs are ordered - they can be sorted by any of their Distance
+  // values.
+  typedef std::vector<std::shared_ptr<PatchPair> > PatchContainer;
+
 public:
-  CandidatePairs();
+  CandidatePairs(const Patch* targetPatch);
 
-  void AddCandidatePair(const PatchPair& patchPair);
+  void Sort(SortFunctorWrapper sortFunctor);
 
-  void AddSourcePatches(const std::vector<Patch*>& patches);
+  // Iterator interface
+  typedef boost::indirect_iterator<PatchContainer::iterator> iterator;
+  iterator begin() { return PatchPairs.begin(); }
+  iterator end() { return PatchPairs.end(); }
 
-  void AddSourcePatch(const Patch* patch);
+  // Functions
+  //void AddCandidatePair(const PatchPair& patchPair);
+
+  void AddSourcePatches(const SourcePatchCollection& patches);
+
+  //void AddSourcePatch(const Patch* patch);
 
   void InvalidateAll();
 
@@ -47,7 +67,8 @@ public:
 
   std::vector<std::shared_ptr<PatchPair> > GetPatchPairs();
 
-  PatchPair GetPair(const unsigned int pairId) const;
+  const PatchPair& GetPair(const unsigned int pairId) const;
+  PatchPair& GetPair(const unsigned int pairId);
   const Patch* GetSourcePatch(const unsigned int pairId) const;
   const Patch* GetTargetPatch() const;
   float GetPriority() const;
@@ -55,9 +76,12 @@ public:
   unsigned int GetNumberOfSourcePatches() const;
 
 private:
-  std::vector<std::shared_ptr<PatchPair> > PatchPairs;
+
+  PatchContainer PatchPairs;
 
   float Priority;
+
+  const Patch* TargetPatch;
 };
 
 bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2);

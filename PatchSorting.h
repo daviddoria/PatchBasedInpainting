@@ -38,10 +38,10 @@ struct PatchSortFunctor
 struct SortFunctorWrapper
 {
   SortFunctorWrapper(PatchSortFunctor* func) : func_(func) {}
-  bool operator()(const PatchPair &T1, const PatchPair &T2)
-  {
-      return (*func_)(T1, T2);
-  }
+  bool operator()(const PatchPair &T1, const PatchPair &T2);
+  bool operator()(PatchPair* const pair1, PatchPair* const pair2);
+  bool operator()(const std::shared_ptr<PatchPair>& pair1, const std::shared_ptr<PatchPair>& pair2);
+
   PatchSortFunctor* func_;
 };
 

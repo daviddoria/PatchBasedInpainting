@@ -266,8 +266,7 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
     std::cout << "SelfPatchCompare::ComputeAllSourceDifferences had: " << this->ValidTargetPatchOffsets.size() << " ValidTargetPatchOffsets on which to operate!" << std::endl;
     #ifdef USE_QT_PARALLEL
       #pragma message("Using QtConcurrent!")
-      // TODO: Figure out how to dereference the thing that is passed
-      //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs->GetAllPairs(), boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
+      QtConcurrent::blockingMap(this->Pairs->begin(), this->Pairs->end(), boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
     #else
       #pragma message("NOT using QtConcurrent!")
       for(unsigned int pairId = 0; pairId < this->Pairs->GetNumberOfSourcePatches(); ++pairId)

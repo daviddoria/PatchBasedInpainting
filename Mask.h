@@ -35,10 +35,9 @@
 class vtkImageData;
 
 // Custom
-#include "DebugOutputs.h"
 #include "Types.h"
 
-class Mask : public itk::Image< unsigned char, 2>, public DebugOutputs
+class Mask : public itk::Image< unsigned char, 2>
 {
 public:
   /** Standard typedefs. */

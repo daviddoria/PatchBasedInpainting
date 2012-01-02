@@ -116,9 +116,9 @@ private:
   void SetupHistograms();
   void ColorImageInsideHole();
 
-  void RecomputeScoresWithNewPatches(std::vector<Patch>& newPatches, PatchPair& usedPatchPair);
-
   void BlurImage();
+
+  void ComputeScores(CandidatePairs& candidatePairs);
 
   virtual PatchPair FindBestPatch();
 

@@ -36,3 +36,27 @@ bool Patch::operator==(const Patch& other) const
     }
   return false;
 }
+
+
+bool Patch::operator<(const Patch &other) const
+{
+  if(this->Region.GetIndex()[0] < other.Region.GetIndex()[0])
+    {
+    return true;
+    }
+  else if (other.Region.GetIndex()[0] < this->Region.GetIndex()[0])
+    {
+    return false;
+    }
+
+  if (this->Region.GetIndex()[1] < other.Region.GetIndex()[1])
+    {
+    return true;
+    }
+  else if (other.Region.GetIndex()[1] < this->Region.GetIndex()[1])
+    {
+    return false;
+    }
+  assert(0); // This should never be reached
+  return true;
+}

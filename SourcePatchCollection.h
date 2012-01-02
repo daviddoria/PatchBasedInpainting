@@ -22,27 +22,29 @@
 #include "Mask.h"
 #include "Patch.h"
 
-#include <vector>
+#include <set>
 
 class SourcePatchCollection
 {
 public:
   SourcePatchCollection(Mask* const maskImage, const unsigned int patchRadius);
 
+  // Iterator interface
+  typedef std::set<Patch>::iterator iterator;
+  //typedef std::set<Patch>::const_iterator const_iterator;
+  iterator begin() const;
+  iterator end() const;
+
   // Locate all patches centered at pixels in 'region' that are completely inside of the image and completely inside of the
   // source region and add them to the current list of source patches.
-  void AddAllSourcePatchesInRegion(const itk::ImageRegion<2>& region);
-
-  std::vector<Patch> AddNewSourcePatchesInRegion(const itk::ImageRegion<2>& region);
-
-  std::vector<Patch*> GetSourcePatches();
+  // This function returns the set of newly added patches.
+  std::set<Patch> AddSourcePatchesInRegion(const itk::ImageRegion<2>& region);
 
   void Clear();
 
 private:
-  bool PatchExists(const itk::ImageRegion<2>& region);
-  bool PatchExists(const Patch* const patch);
-  std::vector<Patch*> SourcePatches; // TODO: why is this vector<pointer> instead of vector<object> ?
+
+  std::set<Patch> SourcePatches;
   Mask* MaskImage;
   unsigned int PatchRadius;
 };

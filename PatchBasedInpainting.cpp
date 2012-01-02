@@ -130,7 +130,7 @@ void PatchBasedInpainting::Initialize()
     // Clear the source patches, as additional patches are added each iteration. When we reset the inpainter, we want to start over from only patches that are
     // valid in the original mask.
     this->SourcePatches->Clear();
-    this->SourcePatches->AddAllSourcePatchesInRegion(this->FullImageRegion);
+    this->SourcePatches->AddSourcePatchesInRegion(this->FullImageRegion);
 
     this->PatchCompare->SetNumberOfComponentsPerPixel(this->CompareImage->GetNumberOfComponentsPerPixel());
 
@@ -183,9 +183,9 @@ PatchPair PatchBasedInpainting::Iterate()
 
   itk::ImageRegion<2> previousInvalidRegion(previousInvalidRegionIndex, previousInvalidRegionSize);
 
-  std::vector<Patch> newPatches = this->SourcePatches->AddNewSourcePatchesInRegion(previousInvalidRegion);
-
-  RecomputeScoresWithNewPatches(newPatches, usedPatchPair);
+  // TODO Fix this
+  std::set<Patch> newPatches = this->SourcePatches->AddSourcePatchesInRegion(previousInvalidRegion);
+  ComputeScores(newPatches, usedPatchPair);
 
   this->NumberOfCompletedIterations++;
 
@@ -197,6 +197,7 @@ PatchPair PatchBasedInpainting::Iterate()
 
 void PatchBasedInpainting::RecomputeScoresWithNewPatches(std::vector<Patch>& newPatches, PatchPair& usedPatchPair)
 {
+  // TODO: This should not be a special function. There should just be one function to compute the score of a set of patches.
   EnterFunction("RecomputeScoresWithNewPatches()");
 
   if(newPatches.size() <= 0)
@@ -234,6 +235,15 @@ Priority* PatchBasedInpainting::GetPriorityFunction()
   return this->PriorityFunction.get();
 }
 
+void PatchBasedInpainting::ComputeScores(CandidatePairs& candidatePairs)
+{
+  //std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
+  this->PatchCompare->SetPairs(&candidatePairs);
+  this->PatchCompare->SetImage(this->CompareImage);
+  this->PatchCompare->SetMask(this->MaskImage);
+  this->PatchCompare->ComputeAllSourceDifferences();
+}
+
 PatchPair PatchBasedInpainting::FindBestPatch()
 {
   EnterFunction("PatchBasedInpainting::FindBestPatch()");
@@ -251,15 +261,9 @@ PatchPair PatchBasedInpainting::FindBestPatch()
   // candidatePairs.AddSourcePatches(this->SourcePatches->GetSourcePatches());
   candidatePairs.SetPriority(highestPriority);
 
-  //std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
-  this->PatchCompare->SetPairs(&candidatePairs);
-  this->PatchCompare->SetImage(this->CompareImage);
-  this->PatchCompare->SetMask(this->MaskImage);
-  //this->PatchCompare->SetMembershipImage(this->MembershipImage);
-  this->PatchCompare->ComputeAllSourceDifferences();
+  ComputeScores(candidatePairs);
 
-  // TODO fix this
-  //std::sort(candidatePairs.begin(), candidatePairs.end(), SortFunctorWrapper(this->PatchSortFunction.get()));
+  candidatePairs.Sort(SortFunctorWrapper(this->PatchSortFunction.get()));
 
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
 
