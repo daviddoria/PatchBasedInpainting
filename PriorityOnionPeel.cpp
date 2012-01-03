@@ -20,12 +20,14 @@
 
 // Custom
 #include "Helpers.h"
+#include "ITKHelpers.h"
 
 // VXL
 #include <vnl/vnl_double_2.h>
 
 // ITK
 #include "itkInvertIntensityImageFilter.h"
+#include "itkRescaleIntensityImageFilter.h"
 
 // VTK
 #include <vtkSmartPointer.h>
@@ -50,7 +52,7 @@ std::vector<NamedVTKImage> PriorityOnionPeel::GetNamedImages()
   NamedVTKImage confidenceMapImage;
   confidenceMapImage.Name = "ConfidenceMap";
   vtkSmartPointer<vtkImageData> confidenceMapImageVTK = vtkSmartPointer<vtkImageData>::New();
-  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->ConfidenceMapImage, confidenceMapImageVTK);
+  ITKHelpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->ConfidenceMapImage, confidenceMapImageVTK);
   confidenceMapImage.ImageData = confidenceMapImageVTK;
   namedImages.push_back(confidenceMapImage);
 
@@ -61,7 +63,7 @@ void PriorityOnionPeel::Update(const itk::ImageRegion<2>& filledRegion)
 {
   EnterFunction("PriorityOnionPeel::Update()");
   // Get the center pixel (the pixel around which the region was filled)
-  itk::Index<2> centerPixel = Helpers::GetRegionCenter(filledRegion);
+  itk::Index<2> centerPixel = ITKHelpers::GetRegionCenter(filledRegion);
   float value = ComputeConfidenceTerm(centerPixel);
   UpdateConfidences(filledRegion, value);
 
@@ -84,7 +86,7 @@ void PriorityOnionPeel::UpdateConfidences(const itk::ImageRegion<2>& targetRegio
   try
   {
     // Force the region to update to be entirely inside the image
-    itk::ImageRegion<2> region = Helpers::CropToRegion(targetRegion, this->Image->GetLargestPossibleRegion());
+    itk::ImageRegion<2> region = ITKHelpers::CropToRegion(targetRegion, this->Image->GetLargestPossibleRegion());
 
     // Use an iterator to find masked pixels. Compute their new value, and save it in a vector of pixels and their new values.
     // Do not update the pixels until after all new values have been computed, because we want to use the old values in all of
@@ -135,7 +137,7 @@ void PriorityOnionPeel::InitializeConfidenceMap()
   rescaleFilter->SetOutputMaximum(1);
   rescaleFilter->Update();
 
-  Helpers::DeepCopy<FloatScalarImageType>(rescaleFilter->GetOutput(), this->ConfidenceMapImage);
+  ITKHelpers::DeepCopy<FloatScalarImageType>(rescaleFilter->GetOutput(), this->ConfidenceMapImage);
   LeaveFunction("PriorityOnionPeel::InitializeConfidenceMap()");
 }
 
@@ -150,8 +152,8 @@ float PriorityOnionPeel::ComputeConfidenceTerm(const itk::Index<2>& queryPixel)
 
     //itk::ImageRegion<2> region = this->CurrentMask->GetLargestPossibleRegion();
     //region.Crop(Helpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius[0]));
-    itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius);
-    itk::ImageRegion<2> region = Helpers::CropToRegion(targetRegion, this->Image->GetLargestPossibleRegion());
+    itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius);
+    itk::ImageRegion<2> region = ITKHelpers::CropToRegion(targetRegion, this->Image->GetLargestPossibleRegion());
 
     itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, region);
 

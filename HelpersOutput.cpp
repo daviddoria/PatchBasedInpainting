@@ -17,6 +17,7 @@
  *=========================================================================*/
 
 #include "HelpersOutput.h"
+#include "ITKHelpers.h"
 
 #include <vtkSmartPointer.h>
 #include <vtkXMLImageDataWriter.h>
@@ -105,7 +106,7 @@ void Write2DVectorRegion(const FloatVector2ImageType* image, const itk::ImageReg
 void WriteVectorImageAsRGB(const FloatVectorImageType* image, const std::string& fileName)
 {
   RGBImageType::Pointer rgbImage = RGBImageType::New();
-  Helpers::VectorImageToRGBImage(image, rgbImage);
+  ITKHelpers::VectorImageToRGBImage(image, rgbImage);
   WriteImage<RGBImageType>(rgbImage, fileName);
 }
 

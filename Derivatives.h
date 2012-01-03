@@ -25,7 +25,9 @@ class Mask;
 
 namespace Derivatives
 {
-
+// Compute the derivative of an image in a specified 'direction' only using pixels that are Valid in the 'mask'.
+// This is NOT the same as finding the unmasked derivative and then extracting only the valid pixels - the result
+// can be very different depending on the 'image' values under the masked region.
 template <typename TImage>
 void MaskedDerivative(const TImage* image, const Mask* mask, const unsigned int direction, FloatScalarImageType* output);
 

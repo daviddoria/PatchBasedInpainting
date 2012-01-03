@@ -16,14 +16,20 @@
  *
  *=========================================================================*/
 
-#include "SelfPatchCompare.h"
-#include "Helpers.h"
+#include "TestHelpers.h"
 
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
+#include <cmath>
 
-int main(int argc, char*argv[])
+namespace TestHelpers
 {
-  return EXIT_FAILURE;
+
+bool ValuesEqual(const float a, const float b)
+{
+  if(fabs(a-b) < 1e-6)
+    {
+    return true;
+    }
+  return false;
 }
+
+} // end namespace

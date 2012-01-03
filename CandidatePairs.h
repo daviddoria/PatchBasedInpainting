@@ -58,7 +58,7 @@ public:
 
   const PatchPair& GetPair(const unsigned int pairId) const;
   PatchPair& GetPair(const unsigned int pairId);
-  const Patch* const GetSourcePatch(const unsigned int pairId) const;
+  //const Patch* const GetSourcePatch(const unsigned int pairId) const;
   const Patch& GetTargetPatch() const;
   float GetPriority() const;
   void SetPriority(const float priority);

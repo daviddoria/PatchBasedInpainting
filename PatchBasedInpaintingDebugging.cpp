@@ -22,6 +22,7 @@
 // Custom
 #include "Helpers.h"
 #include "HelpersOutput.h"
+#include "ITKHelpers.h"
 
 // STL
 #include <iomanip> // setfill, setw
@@ -65,7 +66,7 @@ void PatchBasedInpainting::DebugWriteAllImages()
   HelpersOutput::WriteSequentialImage<FloatVectorImageType>(this->CurrentInpaintedImage, "Debug/CurrentImage", this->NumberOfCompletedIterations);
 
   RGBImageType::Pointer rgbImage = RGBImageType::New();
-  Helpers::VectorImageToRGBImage(this->CurrentInpaintedImage, rgbImage);
+  ITKHelpers::VectorImageToRGBImage(this->CurrentInpaintedImage, rgbImage);
   HelpersOutput::WriteSequentialImage<RGBImageType>(rgbImage, "Debug/CurrentImage_RGB", this->NumberOfCompletedIterations);
 }
 
@@ -142,7 +143,7 @@ void PatchBasedInpainting::DebugWritePatch(const itk::Index<2>& pixel, const std
     typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
                                               FloatVectorImageType> ExtractFilterType;
 
-    itk::ImageRegion<2> region = Helpers::GetRegionInRadiusAroundPixel(pixel, this->PatchRadius[0]);
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(pixel, this->PatchRadius[0]);
     region.Crop(this->CurrentInpaintedImage->GetLargestPossibleRegion());
 
     ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
@@ -205,9 +206,9 @@ void PatchBasedInpainting::DebugWritePatchToFillLocation(const itk::Index<2>& pi
     }
 
   UnsignedCharScalarImageType::Pointer patch = UnsignedCharScalarImageType::New();
-  Helpers::CreateConstantPatch<UnsignedCharScalarImageType>(patch, 255, this->PatchRadius[0]);
+  ITKHelpers::CreateConstantPatch<UnsignedCharScalarImageType>(patch, 255, this->PatchRadius[0]);
 
-  Helpers::CopyPatchIntoImage<UnsignedCharScalarImageType>(patch, patchImage, pixelToFill);
+  ITKHelpers::CopyPatchIntoImage<UnsignedCharScalarImageType>(patch, patchImage, pixelToFill);
 
   std::stringstream padded;
   padded << "PatchToFillLocation_" << std::setfill('0') << std::setw(4) << iteration << ".mhd";

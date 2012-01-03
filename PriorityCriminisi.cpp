@@ -22,6 +22,7 @@
 #include "Helpers.h"
 #include "HelpersOutput.h"
 #include "Isophotes.h"
+#include "ITKHelpers.h"
 
 // VXL
 #include <vnl/vnl_double_2.h>
@@ -39,13 +40,13 @@ PriorityCriminisi::PriorityCriminisi(const FloatVectorImageType* image, const Ma
                                      PriorityOnionPeel(image, maskImage, patchRadius)
 {
   this->BoundaryNormalsImage = FloatVector2ImageType::New();
-  Helpers::InitializeImage<FloatVector2ImageType>(this->BoundaryNormalsImage, image->GetLargestPossibleRegion());
+  ITKHelpers::InitializeImage<FloatVector2ImageType>(this->BoundaryNormalsImage, image->GetLargestPossibleRegion());
 
   unsigned int blurVariance = 2;
   ComputeBoundaryNormals(blurVariance);
 
   this->IsophoteImage = FloatVector2ImageType::New();
-  Helpers::InitializeImage<FloatVector2ImageType>(this->IsophoteImage, image->GetLargestPossibleRegion());
+  ITKHelpers::InitializeImage<FloatVector2ImageType>(this->IsophoteImage, image->GetLargestPossibleRegion());
   Isophotes::ComputeColorIsophotesInRegion(image, maskImage, image->GetLargestPossibleRegion(), this->IsophoteImage);
 
 }
@@ -65,7 +66,7 @@ std::vector<NamedVTKImage> PriorityCriminisi::GetNamedImages()
   NamedVTKImage isophoteNamedImage;
   isophoteNamedImage.Name = "Isophotes";
   vtkSmartPointer<vtkImageData> isophoteImageVTK = vtkSmartPointer<vtkImageData>::New();
-  Helpers::ITKImageToVTKVectorFieldImage(this->IsophoteImage, isophoteImageVTK);
+  ITKHelpers::ITKImageToVTKVectorFieldImage(this->IsophoteImage, isophoteImageVTK);
   isophoteNamedImage.ImageData = isophoteImageVTK;
   isophoteNamedImage.Vectors = true;
   namedImages.push_back(isophoteNamedImage);
@@ -73,7 +74,7 @@ std::vector<NamedVTKImage> PriorityCriminisi::GetNamedImages()
   NamedVTKImage boundaryNormalsNamedImage;
   boundaryNormalsNamedImage.Name = "BoundaryNormals";
   vtkSmartPointer<vtkImageData> boundaryNormalsImageVTK = vtkSmartPointer<vtkImageData>::New();
-  Helpers::ITKImageToVTKVectorFieldImage(this->BoundaryNormalsImage, boundaryNormalsImageVTK);
+  ITKHelpers::ITKImageToVTKVectorFieldImage(this->BoundaryNormalsImage, boundaryNormalsImageVTK);
   boundaryNormalsNamedImage.ImageData = isophoteImageVTK;
   boundaryNormalsNamedImage.Vectors = true;
   namedImages.push_back(boundaryNormalsNamedImage);
@@ -216,7 +217,7 @@ void PriorityCriminisi::ComputeBoundaryNormals(const float blurVariance)
     HelpersOutput::WriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(),
                                                                 "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha", this->DebugImages);
 
-    Helpers::DeepCopy<FloatVector2ImageType>(maskFilter->GetOutput(), this->BoundaryNormalsImage);
+    ITKHelpers::DeepCopy<FloatVector2ImageType>(maskFilter->GetOutput(), this->BoundaryNormalsImage);
 
     // Normalize the vectors because we just care about their direction (the Data term computation calls for the normalized boundary normal)
     itk::ImageRegionIterator<FloatVector2ImageType> boundaryNormalsIterator(this->BoundaryNormalsImage, this->BoundaryNormalsImage->GetLargestPossibleRegion());

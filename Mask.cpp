@@ -20,6 +20,7 @@
 
 // Custom
 #include "Helpers.h"
+#include "ITKHelpers.h"
 
 #include <vtkImageData.h>
 
@@ -279,7 +280,7 @@ void Mask::FindBoundary(UnsignedCharScalarImageType* boundaryImage) const
 
     //this->BoundaryImage = binaryContourFilter->GetOutput();
     //this->BoundaryImage->Graft(binaryContourFilter->GetOutput());
-    Helpers::DeepCopy<UnsignedCharScalarImageType>(invertIntensityFilter->GetOutput(), boundaryImage);
+    ITKHelpers::DeepCopy<UnsignedCharScalarImageType>(invertIntensityFilter->GetOutput(), boundaryImage);
 
     //HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/FindBoundary.BoundaryImage.mha", this->DebugImages);
   }

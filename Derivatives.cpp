@@ -30,7 +30,7 @@ void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* image, const Mas
     //Helpers::WriteImageConditional<FloatScalarImageType>(image, "Debug/ComputeMaskedIsophotes.luminance.mha", this->DebugImages);
 
     FloatVector2ImageType::Pointer gradient = FloatVector2ImageType::New();
-    Helpers::InitializeImage<FloatVector2ImageType>(gradient, image->GetLargestPossibleRegion());
+    ITKHelpers::InitializeImage<FloatVector2ImageType>(gradient, image->GetLargestPossibleRegion());
     MaskedGradientInRegion<FloatScalarImageType>(image, mask, region, gradient);
 
     //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha", this->DebugImages);
@@ -48,7 +48,7 @@ void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* image, const Mas
     //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.Isophotes.mha", this->DebugImages);
     //Helpers::Write2DVectorImage(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.Isophotes.mha");
 
-    Helpers::CopyPatch<FloatVector2ImageType>(rotateFilter->GetOutput(), outputIsophotes, region, region);
+    ITKHelpers::CopyPatch<FloatVector2ImageType>(rotateFilter->GetOutput(), outputIsophotes, region, region);
   }
   catch( itk::ExceptionObject & err )
   {

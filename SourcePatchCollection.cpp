@@ -1,12 +1,12 @@
 #include "SourcePatchCollection.h"
 
 #include "Helpers.h"
+#include "ITKHelpers.h"
 
 SourcePatchCollection::SourcePatchCollection(Mask* const maskImage, const unsigned int patchRadius) : MaskImage(maskImage), PatchRadius(patchRadius)
 {
 
 }
-
 
 void SourcePatchCollection::Clear()
 {
@@ -43,14 +43,14 @@ SourcePatchCollection::PatchContainer SourcePatchCollection::FindSourcePatchesIn
   {
     PatchContainer patches;
     // Clearly we cannot add source patches from regions that are outside the image, so crop the desired region to be inside the image.
-    itk::ImageRegion<2> newRegion = Helpers::CropToRegion(region, this->MaskImage->GetLargestPossibleRegion());
+    itk::ImageRegion<2> newRegion = ITKHelpers::CropToRegion(region, this->MaskImage->GetLargestPossibleRegion());
 
     itk::ImageRegionConstIterator<Mask> iterator(this->MaskImage, newRegion);
 
     while(!iterator.IsAtEnd())
       {
       itk::Index<2> currentPixel = iterator.GetIndex();
-      itk::ImageRegion<2> currentPatchRegion = Helpers::GetRegionInRadiusAroundPixel(currentPixel, this->PatchRadius);
+      itk::ImageRegion<2> currentPatchRegion = ITKHelpers::GetRegionInRadiusAroundPixel(currentPixel, this->PatchRadius);
 
       if(this->MaskImage->GetLargestPossibleRegion().IsInside(currentPatchRegion))
         {

@@ -61,10 +61,10 @@ PatchPair& CandidatePairs::GetPair(const unsigned int pairId)
   return *(this->PatchPairs[pairId]);
 }
 
-const Patch* const CandidatePairs::GetSourcePatch(const unsigned int pairId) const
-{
-  return this->PatchPairs[pairId]->GetSourcePatch();
-}
+// const Patch* const CandidatePairs::GetSourcePatch(const unsigned int pairId) const
+// {
+//   return this->PatchPairs[pairId]->GetSourcePatch();
+// }
 
 const Patch& CandidatePairs::GetTargetPatch() const
 {

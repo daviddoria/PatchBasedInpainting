@@ -19,6 +19,7 @@
 #include "CandidatePairs.h"
 #include "Mask.h"
 #include "SourcePatchCollection.h"
+#include "TestHelpers.h"
 
 static void CreateMask(Mask* mask);
 
@@ -76,15 +77,15 @@ int main(int argc, char*argv[])
 
   // Test priority
   candidatePairs.SetPriority(1.2);
-  if(candidatePairs.GetPriority() != 1.2)
+  if(!TestHelpers::ValuesEqual(candidatePairs.GetPriority(), 1.2))
     {
-    std::cerr << "SetPriority or GetPriority failed!" << std::endl;
+    std::cerr << "SetPriority or GetPriority failed! Was " << candidatePairs.GetPriority() << " but was supposed to be " << 1.2 << std::endl;
     return EXIT_FAILURE;
     }
   
   const PatchPair patchPair = candidatePairs.GetPair(0);
 
-  const Patch* sourcePatch = candidatePairs.GetSourcePatch(0);
+  //const Patch* sourcePatch = candidatePairs.GetSourcePatch(0);
   
   Patch retrievedTargetPatch = candidatePairs.GetTargetPatch();
   if(retrievedTargetPatch != targetPatch)

@@ -18,7 +18,13 @@
 
 #include "Helpers.h"
 
+// VTK
 #include <vtkPolyData.h>
+
+// ITK
+#include "itkRescaleIntensityImageFilter.h"
+#include "itkRegionOfInterestImageFilter.h"
+#include "itkImageFileWriter.h"
 
 namespace HelpersOutput
 {

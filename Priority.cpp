@@ -18,9 +18,12 @@
 
 #include "Priority.h"
 
+// Custom
 #include "Helpers.h"
 #include "HelpersOutput.h"
+#include "ITKHelpers.h"
 
+// VTK
 #include <vtkSmartPointer.h>
 
 Priority::Priority(const FloatVectorImageType* image, const Mask* maskImage, const unsigned int patchRadius) :
@@ -30,12 +33,12 @@ Priority::Priority(const FloatVectorImageType* image, const Mask* maskImage, con
 
   EnterFunction("Priority()");
   this->PriorityImage = FloatScalarImageType::New();
-  Helpers::InitializeImage<FloatScalarImageType>(this->PriorityImage, image->GetLargestPossibleRegion());
-  Helpers::SetImageToConstant<FloatScalarImageType>(this->PriorityImage, 0.0f);
+  ITKHelpers::InitializeImage<FloatScalarImageType>(this->PriorityImage, image->GetLargestPossibleRegion());
+  ITKHelpers::SetImageToConstant<FloatScalarImageType>(this->PriorityImage, 0.0f);
 
   this->BoundaryImage = UnsignedCharScalarImageType::New();
-  Helpers::InitializeImage<UnsignedCharScalarImageType>(this->BoundaryImage, image->GetLargestPossibleRegion());
-  Helpers::SetImageToConstant<UnsignedCharScalarImageType>(this->BoundaryImage, 0u);
+  ITKHelpers::InitializeImage<UnsignedCharScalarImageType>(this->BoundaryImage, image->GetLargestPossibleRegion());
+  ITKHelpers::SetImageToConstant<UnsignedCharScalarImageType>(this->BoundaryImage, 0u);
   LeaveFunction("Priority()");
 }
 
@@ -46,7 +49,7 @@ std::vector<NamedVTKImage> Priority::GetNamedImages()
   NamedVTKImage priorityImage;
   priorityImage.Name = "Priority";
   vtkSmartPointer<vtkImageData> priorityImageVTK = vtkSmartPointer<vtkImageData>::New();
-  Helpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->PriorityImage, priorityImageVTK);
+  ITKHelpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->PriorityImage, priorityImageVTK);
   priorityImage.ImageData = priorityImageVTK;
 
   namedImages.push_back(priorityImage);
@@ -101,9 +104,9 @@ void Priority::ComputeAllPriorities()
 
   this->MaskImage->FindBoundary(this->BoundaryImage);
 
-  Helpers::SetImageToConstant<FloatScalarImageType>(this->PriorityImage, 0.0f);
+  ITKHelpers::SetImageToConstant<FloatScalarImageType>(this->PriorityImage, 0.0f);
 
-  std::vector<itk::Index<2> > boundaryPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage);
+  std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetNonZeroPixels<UnsignedCharScalarImageType>(this->BoundaryImage);
   //std::cout << "There are " << boundaryPixels.size() << " boundaryPixels." << std::endl;
   for(unsigned int pixelId = 0; pixelId < boundaryPixels.size(); ++pixelId)
     {

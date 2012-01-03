@@ -58,7 +58,7 @@ PatchBasedInpainting::PatchBasedInpainting(const FloatVectorImageType* image, co
   this->MaskImage->DeepCopyFrom(mask);
 
   this->CurrentInpaintedImage = FloatVectorImageType::New();
-  Helpers::DeepCopy<FloatVectorImageType>(image, this->CurrentInpaintedImage);
+  ITKHelpers::DeepCopy<FloatVectorImageType>(image, this->CurrentInpaintedImage);
 
   ColorImageInsideHole();
 
@@ -210,10 +210,10 @@ PatchPair PatchBasedInpainting::FindBestPatch()
   EnterFunction("PatchBasedInpainting::FindBestPatch()");
 
   float highestPriority = 0.0f;
-  itk::Index<2> pixelToFill = Helpers::FindHighestValueInMaskedRegion(this->PriorityFunction->GetPriorityImage(),
+  itk::Index<2> pixelToFill = ITKHelpers::FindHighestValueInMaskedRegion(this->PriorityFunction->GetPriorityImage(),
                                                                       highestPriority, this->PriorityFunction->GetBoundaryImage());
 
-  itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
+  itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
   Patch targetPatch(targetRegion);
   CandidatePairs candidatePairs(targetPatch);
   //candidatePairs.AddSourcePatches(*(this->SourcePatches));
@@ -293,7 +293,7 @@ bool PatchBasedInpainting::IsValidPatch(const itk::Index<2>& queryPixel, const u
 {
   // This function checks if a patch is completely inside the image and not intersecting the mask
 
-  itk::ImageRegion<2> region = Helpers::GetRegionInRadiusAroundPixel(queryPixel, radius);
+  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, radius);
   return IsValidRegion(region);
 }
 

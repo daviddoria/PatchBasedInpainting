@@ -18,7 +18,11 @@
 
 // Custom
 #include "Helpers.h"
+#include "ITKHelpers.h"
 #include "Mask.h"
+
+// ITK
+#include "itkGaussianOperator.h"
 
 namespace Derivatives
 {
@@ -31,7 +35,7 @@ void MaskedDerivative(const TImage* image, const Mask* mask, const unsigned int 
   output->Allocate();
   output->FillBuffer(0);
 
-  itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
+  itk::ImageRegionConstIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
     {
@@ -96,7 +100,7 @@ void MaskedDerivativePrewitt(const TImage* image, const Mask* mask, const unsign
     }
 
   // Setup the output
-  Helpers::InitializeImage<FloatScalarImageType>(output, image->GetLargestPossibleRegion());
+  ITKHelpers::InitializeImage<FloatScalarImageType>(output, image->GetLargestPossibleRegion());
 
   itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
 
@@ -195,7 +199,7 @@ void MaskedDerivativeSobel(const TImage* image, const Mask* mask, const unsigned
     }
 
   // Setup the output
-  Helpers::InitializeImage<FloatScalarImageType>(output, image->GetLargestPossibleRegion());
+  ITKHelpers::InitializeImage<FloatScalarImageType>(output, image->GetLargestPossibleRegion());
 
   itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
 
@@ -427,7 +431,7 @@ void MaskedGradientInRegion(const TImage* image, const Mask* mask, const itk::Im
   // Compute the derivatives
   // X derivative
   FloatScalarImageType::Pointer xDerivative = FloatScalarImageType::New();
-  Helpers::InitializeImage<FloatScalarImageType>(xDerivative, image->GetLargestPossibleRegion());
+  ITKHelpers::InitializeImage<FloatScalarImageType>(xDerivative, image->GetLargestPossibleRegion());
 
   //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 0, xDerivative);
   //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 0, xDerivative);
@@ -437,7 +441,7 @@ void MaskedGradientInRegion(const TImage* image, const Mask* mask, const itk::Im
 
   // Y derivative
   FloatScalarImageType::Pointer yDerivative = FloatScalarImageType::New();
-  Helpers::InitializeImage<FloatScalarImageType>(yDerivative, image->GetLargestPossibleRegion());
+  ITKHelpers::InitializeImage<FloatScalarImageType>(yDerivative, image->GetLargestPossibleRegion());
 
   //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 1, yDerivative);
   //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 1, yDerivative);

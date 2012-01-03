@@ -30,7 +30,7 @@ PriorityDepth::PriorityDepth(const FloatVectorImageType* image, const Mask* mask
     }
 
   this->DepthIsophoteImage = FloatVector2ImageType::New();
-  Helpers::InitializeImage<FloatVector2ImageType>(this->DepthIsophoteImage, image->GetLargestPossibleRegion());
+  ITKHelpers::InitializeImage<FloatVector2ImageType>(this->DepthIsophoteImage, image->GetLargestPossibleRegion());
 
   typedef itk::VectorIndexSelectionCastImageFilter<FloatVectorImageType, FloatScalarImageType> IndexSelectionType;
   IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
@@ -52,7 +52,7 @@ PriorityDepth::PriorityDepth(const FloatVectorImageType* image, const Mask* mask
   bilateralImageFilter->SetRangeSigma(rangeSigma);
   bilateralImageFilter->Update();
 
-  Helpers::DeepCopy<FloatScalarImageType>(bilateralImageFilter->GetOutput(), this->BlurredDepth);
+  ITKHelpers::DeepCopy<FloatScalarImageType>(bilateralImageFilter->GetOutput(), this->BlurredDepth);
 
   HelpersOutput::WriteImage<FloatScalarImageType>(this->BlurredDepth, "Debug/BlurredDepth.mha");
 
@@ -72,7 +72,7 @@ float PriorityDepth::ComputePriority(const itk::Index<2>& queryPixel)
   FloatVector2Type isophote = this->DepthIsophoteImage->GetPixel(queryPixel);
   isophote.Normalize();
 
-  itk::Index<2> pixelAcrossHole = Helpers::FindPixelAcrossHole(queryPixel, isophote, this->MaskImage);
+  itk::Index<2> pixelAcrossHole = ITKHelpers::FindPixelAcrossHole(queryPixel, isophote, this->MaskImage);
 
   FloatVector2Type acrossIsophote = this->DepthIsophoteImage->GetPixel(pixelAcrossHole);
 
@@ -95,6 +95,6 @@ void PriorityDepth::Update(const itk::ImageRegion<2>& filledRegion)
   indexSelectionFilter->SetInput(this->Image);
   indexSelectionFilter->Update();
 
-  Helpers::MaskedBlur<FloatScalarImageType>(indexSelectionFilter->GetOutput(), this->MaskImage, 2.0f, this->BlurredDepth);
+  ITKHelpers::MaskedBlur<FloatScalarImageType>(indexSelectionFilter->GetOutput(), this->MaskImage, 2.0f, this->BlurredDepth);
   Derivatives::ComputeMaskedIsophotesInRegion(indexSelectionFilter->GetOutput(), this->MaskImage, filledRegion, this->DepthIsophoteImage);
 }
