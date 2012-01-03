@@ -46,9 +46,6 @@ void OutputImageType(const itk::ImageBase<2>* input);
 
 void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double center[3]);
 
-void ComputeColorIsophotesInRegion(const FloatVectorImageType* image, const Mask* mask,
-                                   const itk::ImageRegion<2>& region , FloatVector2ImageType* isophotes);
-
 // Return the highest value of the specified image out of the pixels under a specified BoundaryImage.
 itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType* image, float& maxValue, UnsignedCharScalarImageType* maskImage);
 

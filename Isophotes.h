@@ -16,34 +16,11 @@
  *
  *=========================================================================*/
 
-#ifndef PATCH_H
-#define PATCH_H
-
+#include "Mask.h"
 #include "Types.h"
 
-struct Patch
+namespace Isophotes
 {
-public:
-
-  Patch(const itk::ImageRegion<2>& region);
-
-  bool operator==(const Patch& other) const;
-  bool operator!=(const Patch& other) const;
-
-  itk::ImageRegion<2> GetRegion() const;
-
-  // Sort the patches by index (so they can be stored in a container such as std::set).
-  bool operator<(const Patch &other) const;
-
-  friend std::ostream& operator<<(std::ostream& output,  const Patch& patch);
-private:
-  // The region in the image defining the patch.
-  itk::ImageRegion<2> Region;
-
-  //float SortValue; // This simply allows patches to be sorted by any criterion currently being evaluated.
-  //unsigned int Id; // This is used for parallel sorting of patches.
-};
-
-//bool SortBySortValue(const Patch& patch1, const Patch& patch2);
-
-#endif
+void ComputeColorIsophotesInRegion(const FloatVectorImageType* image, const Mask* mask,
+                                   const itk::ImageRegion<2>& region , FloatVector2ImageType* isophotes);
+}

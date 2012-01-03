@@ -50,18 +50,9 @@ public:
   Iterator begin();
   Iterator end();
 
-  // Functions
-  //void AddCandidatePair(const PatchPair& patchPair);
-
   void AddSourcePatches(const SourcePatchCollection& patches);
 
-  //void AddSourcePatch(const Patch* patch);
-
   void Combine(const CandidatePairs& pairs);
-
-  //void WriteDepthScoresToFile(const std::string& fileName);
-
-  //std::vector<PatchPair> GetAllPairs() const;
 
   std::vector<std::shared_ptr<PatchPair> > GetPatchPairs();
 

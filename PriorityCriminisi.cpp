@@ -21,6 +21,7 @@
 // Custom
 #include "Helpers.h"
 #include "HelpersOutput.h"
+#include "Isophotes.h"
 
 // VXL
 #include <vnl/vnl_double_2.h>
@@ -45,7 +46,7 @@ PriorityCriminisi::PriorityCriminisi(const FloatVectorImageType* image, const Ma
 
   this->IsophoteImage = FloatVector2ImageType::New();
   Helpers::InitializeImage<FloatVector2ImageType>(this->IsophoteImage, image->GetLargestPossibleRegion());
-  Helpers::ComputeColorIsophotesInRegion(image, maskImage, image->GetLargestPossibleRegion(), this->IsophoteImage);
+  Isophotes::ComputeColorIsophotesInRegion(image, maskImage, image->GetLargestPossibleRegion(), this->IsophoteImage);
 
 }
 
@@ -85,7 +86,7 @@ void PriorityCriminisi::Update(const itk::ImageRegion<2>& filledRegion)
 {
   PriorityOnionPeel::Update(filledRegion);
 
-  Helpers::ComputeColorIsophotesInRegion(this->Image, this->MaskImage, filledRegion, this->IsophoteImage);
+  Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage, filledRegion, this->IsophoteImage);
 
   unsigned int blurVariance = 2;
   ComputeBoundaryNormals(blurVariance);

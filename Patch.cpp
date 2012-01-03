@@ -28,6 +28,12 @@ itk::ImageRegion<2> Patch::GetRegion() const
   return this->Region;
 }
 
+std::ostream& operator<<(std::ostream& output, const Patch &patch)
+{
+  output << "Patch: " << patch.GetRegion() << std::endl;
+  return output;
+}
+
 bool Patch::operator==(const Patch& other) const
 {
   if(this->Region == other.Region)

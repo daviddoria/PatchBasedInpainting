@@ -38,6 +38,7 @@ HelpersOutput.cpp
 Histograms.cpp
 itkCommandLineArgumentParser.cxx
 ITKImageCollection.cpp
+Isophotes.cpp
 Mask.cpp
 NamedITKImageCollection.cpp
 NamedITKImage.cpp

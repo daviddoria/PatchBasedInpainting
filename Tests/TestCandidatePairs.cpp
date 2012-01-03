@@ -16,61 +16,90 @@
  *
  *=========================================================================*/
 
-#include "SourcePatchCollection.h"
-
+#include "CandidatePairs.h"
 #include "Mask.h"
+#include "SourcePatchCollection.h"
 
 static void CreateMask(Mask* mask);
 
 int main(int argc, char*argv[])
 {
+  // Setup target patch
+  itk::Index<2> targetCorner;
+  targetCorner.Fill(0);
+
+  itk::Size<2> patchSize;
+  patchSize.Fill(10);
+
+  itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
+  Patch targetPatch(targetRegion);
+
   Mask::Pointer mask = Mask::New();
   CreateMask(mask);
-
   const unsigned int patchRadius = 5;
   SourcePatchCollection sourcePatchCollection(mask, patchRadius);
-
-  if(sourcePatchCollection.GetNumberOfPatches() != 0)
-    {
-    std::cerr << "Should be 0 patches after construction!" << std::endl;
-    return EXIT_FAILURE;
-    }
 
   SourcePatchCollection::PatchContainer patches = sourcePatchCollection.FindSourcePatchesInRegion(mask->GetLargestPossibleRegion());
 
   sourcePatchCollection.AddPatches(patches);
-  unsigned int correctNumberOfPatches = 2160;
-  if(sourcePatchCollection.GetNumberOfPatches() != correctNumberOfPatches)
+  
+  CandidatePairs candidatePairs(targetPatch);
+
+  if(candidatePairs.GetTargetPatch() != targetPatch)
     {
-    std::cerr << "Should be " << correctNumberOfPatches << " patches after construction, but there are " << sourcePatchCollection.GetNumberOfPatches() << std::endl;
+    std::cerr << "TargetPatch not set or retrieved correctly! Retrieved as " << candidatePairs.GetTargetPatch()
+              << " but should be " << targetPatch << std::endl;
     return EXIT_FAILURE;
     }
 
-  // Iterate over all patches
-  unsigned int patchCounter = 0;
-  for(SourcePatchCollection::Iterator patchIterator = sourcePatchCollection.begin(); patchIterator != sourcePatchCollection.end(); ++patchIterator)
+  candidatePairs.AddSourcePatches(sourcePatchCollection);
+
+  unsigned int counter = 0;
+
+  for(CandidatePairs::Iterator pairsIterator = candidatePairs.begin(); pairsIterator != candidatePairs.end(); ++pairsIterator)
     {
-    patchCounter++;
+    counter++;
     }
 
-  if(sourcePatchCollection.GetNumberOfPatches() != patchCounter)
+  if(counter != candidatePairs.GetNumberOfSourcePatches())
     {
-    std::cerr << "Iterated over " << patchCounter << " patches but should have been " << sourcePatchCollection.GetNumberOfPatches() << std::endl;
+    std::cerr << "Should have iterated over " << candidatePairs.GetNumberOfSourcePatches() << " but only reached " << counter << std::endl;
     return EXIT_FAILURE;
     }
 
-  sourcePatchCollection.Clear();
-
-  if(sourcePatchCollection.GetNumberOfPatches() != 0)
+  std::vector<std::shared_ptr<PatchPair> > pairs = candidatePairs.GetPatchPairs();
+  if(pairs.size() != candidatePairs.GetNumberOfSourcePatches())
     {
-    std::cerr << "Should be 0 patches after clearing." << std::endl;
+    std::cerr << "GetPatchPairs() failed!" << std::endl;
     return EXIT_FAILURE;
     }
 
-  // TODO Test this.
-  // const Patch* patch = sourcePatchCollection.GetPatch(const itk::ImageRegion<2>& region);
+  // Test priority
+  candidatePairs.SetPriority(1.2);
+  if(candidatePairs.GetPriority() != 1.2)
+    {
+    std::cerr << "SetPriority or GetPriority failed!" << std::endl;
+    return EXIT_FAILURE;
+    }
+  
+  const PatchPair patchPair = candidatePairs.GetPair(0);
+
+  const Patch* sourcePatch = candidatePairs.GetSourcePatch(0);
+  
+  Patch retrievedTargetPatch = candidatePairs.GetTargetPatch();
+  if(retrievedTargetPatch != targetPatch)
+    {
+    std::cerr << "Target patch set or retrieved improperly!" << std::endl;
+    return EXIT_FAILURE;
+    }
+
+  // TODO: Test these
+  // void Sort(SortFunctorWrapper sortFunctor);
+  // void Combine(const CandidatePairs& pairs);
+
   return EXIT_SUCCESS;
 }
+
 
 void CreateMask(Mask* mask)
 {
