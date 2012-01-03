@@ -49,6 +49,8 @@ public:
 
   const Patch* GetPatch(const itk::ImageRegion<2>& region);
 
+  unsigned int GetNumberOfPatches() const;
+
 private:
 
   PatchContainer SourcePatches;

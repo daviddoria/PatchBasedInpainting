@@ -78,3 +78,8 @@ void SourcePatchCollection::AddPatches(const SourcePatchCollection::PatchContain
   std::set_union(this->SourcePatches.begin(), this->SourcePatches.end(), patches.begin(), patches.end(),
                  std::inserter<PatchContainer>(this->SourcePatches, this->SourcePatches.end()));
 }
+
+unsigned int SourcePatchCollection::GetNumberOfPatches() const
+{
+  return this->SourcePatches.size();
+}
