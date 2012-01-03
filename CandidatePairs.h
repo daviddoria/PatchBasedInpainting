@@ -46,9 +46,9 @@ public:
   void Sort(SortFunctorWrapper sortFunctor);
 
   // Iterator interface
-  typedef boost::indirect_iterator<PatchContainer::iterator> iterator;
-  iterator begin() { return PatchPairs.begin(); }
-  iterator end() { return PatchPairs.end(); }
+  typedef boost::indirect_iterator<PatchContainer::iterator> Iterator;
+  Iterator begin();
+  Iterator end();
 
   // Functions
   //void AddCandidatePair(const PatchPair& patchPair);

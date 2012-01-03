@@ -27,12 +27,14 @@ unsigned int PairDifferences::GetNumberOfDifferences() const
 
 void PairDifferences::SetDifferenceByName(const std::string& differenceName, const float value)
 {
-  this->DifferenceMap.find(TypeOfDifference(differenceName))->second = value;
+  //this->DifferenceMap.find(TypeOfDifference(differenceName))->second = value;
+  this->DifferenceMap[TypeOfDifference(differenceName)] = value;
 }
 
 void PairDifferences::SetDifferenceByType(const PatchDifferenceTypes differenceType, const float value)
 {
-  this->DifferenceMap.find(differenceType)->second = value;
+  //this->DifferenceMap.find(differenceType)->second = value;
+  this->DifferenceMap[differenceType] = value;
 }
 
 float PairDifferences::GetDifferenceByName(const std::string& nameOfDifference) const
@@ -48,9 +50,9 @@ float PairDifferences::GetDifferenceByType(const PatchDifferenceTypes difference
 std::vector<std::string> PairDifferences::GetDifferenceNames() const
 {
   std::vector<std::string> names;
-  for(DifferenceMapType::const_iterator it = this->DifferenceMap.begin(); it != this->DifferenceMap.end(); ++it)
+  for(DifferenceMapType::const_iterator differenceIterator = this->DifferenceMap.begin(); differenceIterator != this->DifferenceMap.end(); ++differenceIterator)
     {
-    names.push_back(NameOfDifference(it->first));
+    names.push_back(NameOfDifference(differenceIterator->first));
     }
   return names;
 }

@@ -45,6 +45,22 @@
 namespace Helpers
 {
 
+template<typename TImage>
+bool HasNeighborWithValue(const itk::Index<2>& pixel, const TImage* const image, const typename TImage::PixelType& value)
+{
+  std::vector<itk::Offset<2> > offsets = Get8NeighborOffsets();
+
+  for(unsigned int neighborId = 0; neighborId < offsets.size(); ++neighborId)
+    {
+    if(image->GetPixel(pixel + offsets[neighborId]) == value)
+      {
+      return true;
+      }
+    }
+
+  return false;
+}
+
 /** Copy the input to the output*/
 template<typename TImage>
 void DeepCopy(const TImage* input, TImage* output)

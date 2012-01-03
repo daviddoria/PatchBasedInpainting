@@ -72,7 +72,7 @@ float PriorityDepth::ComputePriority(const itk::Index<2>& queryPixel)
   FloatVector2Type isophote = this->DepthIsophoteImage->GetPixel(queryPixel);
   isophote.Normalize();
 
-  itk::Index<2> pixelAcrossHole = this->MaskImage->FindPixelAcrossHole(queryPixel, isophote);
+  itk::Index<2> pixelAcrossHole = Helpers::FindPixelAcrossHole(queryPixel, isophote, this->MaskImage);
 
   FloatVector2Type acrossIsophote = this->DepthIsophoteImage->GetPixel(pixelAcrossHole);
 

@@ -35,6 +35,16 @@ void CandidatePairs::AddSourcePatches(const SourcePatchCollection& patches)
     }
 }
 
+CandidatePairs::Iterator CandidatePairs::begin()
+{
+  return this->PatchPairs.begin();
+}
+
+CandidatePairs::Iterator CandidatePairs::end()
+{
+  return this->PatchPairs.end();
+}
+
 void CandidatePairs::Sort(SortFunctorWrapper sortFunctor)
 {
   //std::sort(this->begin(), this->end(), sortFunctor);

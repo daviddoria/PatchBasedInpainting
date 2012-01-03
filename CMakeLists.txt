@@ -78,6 +78,7 @@ endif()
 
 SET(BuildTests CACHE BOOL "Build tests.")
 if(BuildTests)
+  message ("Building tests.")
   add_subdirectory(Tests)
 ENDIF(BuildTests)
 

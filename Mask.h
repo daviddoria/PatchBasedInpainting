@@ -27,11 +27,6 @@
 // ITK
 #include "itkImage.h"
 
-// Qt
-//#include <QColor>
-
-// VTK
-//#include <vtkImageData.h>
 class vtkImageData;
 
 // Custom
@@ -85,12 +80,6 @@ public:
 
   // Determine if a pixel is valid.
   bool IsValid(const itk::Index<2>& index) const;
-
-  // Determine if any of a pixels 8 neighbors are holes.
-  bool HasHoleNeighbor(const itk::Index<2>& pixel);
-
-  // Look from a pixel across the hole in a specified direction and return the pixel that exists on the other side of the hole.
-  itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVector2Type& direction) const;
 
   // Invert the mask by switching the hole and valid pixel values.
   void Invert();

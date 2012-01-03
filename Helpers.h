@@ -34,6 +34,9 @@ namespace Helpers
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Look from a pixel across the hole in a specified direction and return the pixel that exists on the other side of the hole.
+itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVector2Type& direction, const Mask* const mask);
+
 std::string GetString(const itk::Index<2>& index);
 std::string GetString(const itk::Size<2>& size);
 
@@ -109,9 +112,6 @@ unsigned int SideLengthFromRadius(const unsigned int radius);
 
 itk::Size<2> SizeFromRadius(const unsigned int radius);
 
-// Determine if any of a pixels 8 neighbors is a hole pixel.
-bool HasHoleNeighbor(const itk::Index<2>& pixel, const Mask* mask);
-
 // Set an image to black except for its border, which is set to 'color'.
 void BlankAndOutlineImage(vtkImageData*, const unsigned char color[3]);
 
@@ -175,6 +175,10 @@ itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* inpu
 
 // template<typename TImage>
 // void ApplyToAllChannels(typename TImage::Pointer image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value);
+
+// Determine if any of the 8 neighbors pixels has the specified value.
+template<typename TImage>
+bool HasNeighborWithValue(const itk::Index<2>& pixel, const TImage* const image, const typename TImage::PixelType& value);
 
 template<typename TVectorImage>
 void AnisotropicBlurAllChannels(const TVectorImage* image, TVectorImage* output, const float sigma);
