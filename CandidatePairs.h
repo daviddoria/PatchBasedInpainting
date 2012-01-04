@@ -47,8 +47,11 @@ public:
 
   // Iterator interface
   typedef boost::indirect_iterator<PatchContainer::iterator> Iterator;
+  typedef boost::indirect_iterator<PatchContainer::const_iterator> ConstIterator;
   Iterator begin();
   Iterator end();
+  ConstIterator begin() const;
+  ConstIterator end() const;
 
   void AddSourcePatches(const SourcePatchCollection& patches);
 
@@ -56,8 +59,8 @@ public:
 
   std::vector<std::shared_ptr<PatchPair> > GetPatchPairs();
 
-  const PatchPair& GetPair(const unsigned int pairId) const;
-  PatchPair& GetPair(const unsigned int pairId);
+//   const PatchPair& GetPair(const unsigned int pairId) const;
+//   PatchPair& GetPair(const unsigned int pairId);
   //const Patch* const GetSourcePatch(const unsigned int pairId) const;
   const Patch& GetTargetPatch() const;
   float GetPriority() const;

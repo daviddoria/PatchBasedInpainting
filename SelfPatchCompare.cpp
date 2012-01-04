@@ -204,20 +204,11 @@ void SelfPatchCompare::SetPatchAllDifferences(PatchPair& patchPair)
 {
   //std::cout << "Enter SelfPatchCompare::SetPatchAllDifferences()" << std::endl;
   //SetPatchAverageSquaredDifference(patchPair);
-  try
-  {
-    for(unsigned int i = 0; i < this->FunctionsToCompute.size(); ++i)
-      {
-      this->FunctionsToCompute[i](patchPair);
-      }
-    //std::cout << "Leave SelfPatchCompare::SetPatchAllDifferences()" << std::endl;
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in SetPatchAllDifferences!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+  for(unsigned int i = 0; i < this->FunctionsToCompute.size(); ++i)
+    {
+    this->FunctionsToCompute[i](patchPair);
+    }
+  //std::cout << "Leave SelfPatchCompare::SetPatchAllDifferences()" << std::endl;
 }
 
 void SelfPatchCompare::ComputeAllSourceAndTargetDifferences()
@@ -226,31 +217,22 @@ void SelfPatchCompare::ComputeAllSourceAndTargetDifferences()
   // Source patches are always full and entirely valid, so there are two cases - when the target patch is fully inside the image,
   // and when it is not.
   //std::cout << "ComputeAllSourceAndTargetDifferences()" << std::endl;
-  try
-  {
-    // Force the target region to be entirely inside the image
-    this->Pairs->GetTargetPatch().GetRegion().Crop(this->Image->GetLargestPossibleRegion());
 
-    ComputeOffsets();
-    #ifdef USE_QT_PARALLEL
-      #pragma message("Using QtConcurrent!")
+  // Force the target region to be entirely inside the image
+  this->Pairs->GetTargetPatch().GetRegion().Crop(this->Image->GetLargestPossibleRegion());
 
-      //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs->GetAllPairs(), boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteFullDifference, this, _1));
-    #else
-      #pragma message("NOT using QtConcurrent!")
-      for(unsigned int pairId = 0; pairId < this->Pairs->GetNumberOfSourcePatches(); ++pairId)
-        {
-        SetPatchAverageAbsoluteFullDifference(this->Pairs->GetPair(pairId));
-        }
-    #endif
-    //LeaveFunction("SelfPatchCompare::ComputeAllSourceAndTargetDifferences()");
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in ComputeAllSourceAndTargetDifferences!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+  ComputeOffsets();
+  #ifdef USE_QT_PARALLEL
+    #pragma message("Using QtConcurrent!")
+
+    //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs->GetAllPairs(), boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteFullDifference, this, _1));
+  #else
+    #pragma message("NOT using QtConcurrent!")
+    for(CandidatePairs::Iterator pairIterator = this->Pairs->begin(); pairIterator != this->Pairs->end(); ++pairIterator)
+      {
+      SetPatchAverageAbsoluteFullDifference(*pairIterator);
+      }
+  #endif
 }
 
 void SelfPatchCompare::ComputeAllSourceDifferences()
@@ -258,31 +240,20 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
   // EnterFunction("SelfPatchCompare::ComputeAllSourceDifferences()");
   // Source patches are always full and entirely valid, so there are two cases - when the target patch is fully inside the image,
   // and when it is not.
-  try
-  {
-
-    ComputeOffsets();
-    //std::cout << "Enter SelfPatchCompare::ComputeAllSourceDifferences parallel SetPatchAllDifferences" << std::endl;
-    std::cout << "SelfPatchCompare::ComputeAllSourceDifferences had: " << this->ValidTargetPatchOffsets.size() << " ValidTargetPatchOffsets on which to operate!" << std::endl;
-    #ifdef USE_QT_PARALLEL
-      #pragma message("Using QtConcurrent!")
-      QtConcurrent::blockingMap(this->Pairs->begin(), this->Pairs->end(), boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
-    #else
-      #pragma message("NOT using QtConcurrent!")
-      for(unsigned int pairId = 0; pairId < this->Pairs->GetNumberOfSourcePatches(); ++pairId)
-        {
-        SetPatchAllDifferences(this->Pairs->GetPair(pairId));
-        }
-    #endif
-
-    //std::cout << "Leave SelfPatchCompare::ComputeAllSourceDifferences()" << std::endl;
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in ComputeAllDifferences!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+  ComputeOffsets();
+  //std::cout << "Enter SelfPatchCompare::ComputeAllSourceDifferences parallel SetPatchAllDifferences" << std::endl;
+  std::cout << "SelfPatchCompare::ComputeAllSourceDifferences had: " << this->ValidTargetPatchOffsets.size()
+            << " ValidTargetPatchOffsets on which to operate!" << std::endl;
+  #ifdef USE_QT_PARALLEL
+    #pragma message("Using QtConcurrent!")
+    QtConcurrent::blockingMap(this->Pairs->begin(), this->Pairs->end(), boost::bind(&SelfPatchCompare::SetPatchAllDifferences, this, _1));
+  #else
+    #pragma message("NOT using QtConcurrent!")
+    for(CandidatePairs::Iterator pairIterator = this->Pairs->begin(); pairIterator != this->Pairs->end(); ++pairIterator)
+      {
+      SetPatchAllDifferences(*pairIterator);
+      }
+  #endif
 }
 
 void SelfPatchCompare::SetPairs(CandidatePairs* pairs)

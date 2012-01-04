@@ -27,8 +27,8 @@
 #include "Helpers.h"
 #include "HelpersQt.h"
 
-TableModelForwardLook::TableModelForwardLook(QObject * parent, std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& style) :
-    QAbstractTableModel(parent), IterationRecords(iterationRecords), IterationToDisplay(0), PatchDisplaySize(100), ImageDisplayStyle(style)
+TableModelForwardLook::TableModelForwardLook(QObject * parent, std::vector<InpaintingIterationRecord> const& iterationRecords, DisplayStyle const& style) :
+    QAbstractTableModel(parent), IterationRecords(iterationRecords), ImageDisplayStyle(style), IterationToDisplay(0), PatchDisplaySize(100)
 {
 }
 
@@ -80,7 +80,7 @@ QVariant TableModelForwardLook::data(const QModelIndex& index, int role) const
   if(role == Qt::DisplayRole && index.row() >= 0)
     {
     const CandidatePairs& currentCandidateSet = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[index.row()];
-    const Patch* currentForwardLookPatch = currentCandidateSet.GetTargetPatch();
+    const Patch currentForwardLookPatch = currentCandidateSet.GetTargetPatch();
     switch(index.column())
       {
       case 0:
@@ -88,7 +88,7 @@ QVariant TableModelForwardLook::data(const QModelIndex& index, int role) const
 	// Display the target patch in the table
 	InpaintingIterationRecord currentRecord = this->IterationRecords[this->IterationToDisplay];
 	FloatVectorImageType* image = dynamic_cast<FloatVectorImageType*>(currentRecord.GetImageByName("Image").Image.GetPointer());
-	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(image, currentForwardLookPatch->GetRegion(), this->ImageDisplayStyle);
+	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(image, currentForwardLookPatch.GetRegion(), this->ImageDisplayStyle);
 
 	patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
 
@@ -105,7 +105,7 @@ QVariant TableModelForwardLook::data(const QModelIndex& index, int role) const
 	{
 	// Display the target patch location in the table
 	std::stringstream ssLocation;
-	ssLocation << "(" << currentForwardLookPatch->GetRegion().GetIndex()[0] << ", " << currentForwardLookPatch->GetRegion().GetIndex()[1] << ")";
+	ssLocation << "(" << currentForwardLookPatch.GetRegion().GetIndex()[0] << ", " << currentForwardLookPatch.GetRegion().GetIndex()[1] << ")";
 	returnValue = ssLocation.str().c_str();
 	break;
 	}

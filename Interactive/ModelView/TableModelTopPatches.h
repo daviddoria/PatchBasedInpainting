@@ -35,7 +35,7 @@
 class TableModelTopPatches : public QAbstractTableModel, public DebugOutputs
 {
 public:
-  TableModelTopPatches(QObject * parent, std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& displayStyle);
+  TableModelTopPatches(QObject * parent, std::vector<InpaintingIterationRecord> const& iterationRecords, DisplayStyle const& displayStyle);
 
   int rowCount(const QModelIndex& parent) const;
   int columnCount(const QModelIndex& parent) const;
@@ -57,7 +57,7 @@ public:
 private:
 
   // The outer vector is the iteration, and the inner vector is the look ahead patch.
-  std::vector<InpaintingIterationRecord>& IterationRecords;
+  std::vector<InpaintingIterationRecord> const& IterationRecords;
 
   unsigned int GetNumberOfDifferences() const;
 
@@ -68,7 +68,7 @@ private:
 
   unsigned int NumberOfTopPatchesToDisplay;
 
-  DisplayStyle& ImageDisplayStyle;
+  DisplayStyle const& ImageDisplayStyle;
 
 };
 

@@ -27,6 +27,7 @@
 // Custom
 #include "ColorPalette.h"
 #include "DisplayStyle.h"
+#include "InpaintingIterationRecord.h"
 #include "Layer.h"
 #include "Mask.h"
 #include "PatchPair.h"
@@ -41,6 +42,31 @@ class VTKCanvas
 {
 public:
   VTKCanvas(vtkRenderer* const renderer);
+
+  DisplayStyle const& GetImageDisplayStyle() const;
+
+  ColorPalette const& GetColorPalette() const;
+
+  void SetDisplayStyle(const DisplayStyle& style);
+
+  void DisplayRecord(const InpaintingIterationRecord& record);
+
+private:
+
+  InpaintingIterationRecord RecordToDisplay;
+
+  // Display outlines of where the source patch came from and the target patch to which it was copied
+  void HighlightUsedPatches();
+
+  // Display outlines of the forward look target patches
+  void HighlightForwardLookPatches();
+
+  // Display outlines of the source patches
+  void HighlightSourcePatches();
+
+  void HighlightUsedPatchPair(const PatchPair& patchPair);
+  void HighlightForwardLookPatches(const std::vector<Patch>& patches);
+  void HighlightSourcePatches(const std::vector<Patch>& patches);
 
   // Source patch outline display
   Layer UsedPatchPairLayer;
@@ -57,15 +83,10 @@ public:
   // Mask image display
   Layer MaskLayer;
 
-  void HighlightUsedPatchPair(const PatchPair& patchPair);
-  void HighlightForwardLookPatches(const std::vector<Patch>& patches);
-  void HighlightSourcePatches(const std::vector<Patch>& patches);
-
-private:
   void DisplayImage(const FloatVectorImageType* const image);
   void DisplayMask(const Mask* const mask);
 
-  void ITKVectorImageToVTKImage(const FloatVectorImageType* const image, vtkImageData* outputImage, const DisplayStyle& style);
+  void ITKVectorImageToVTKImage(const FloatVectorImageType* const image, vtkImageData* outputImage);
 
   void HighlightPatches(const std::vector<Patch>& patches, const QColor& color, vtkImageData* outputImage);
 

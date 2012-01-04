@@ -83,7 +83,7 @@ int main(int argc, char*argv[])
     return EXIT_FAILURE;
     }
   
-  const PatchPair patchPair = candidatePairs.GetPair(0);
+  //const PatchPair patchPair = candidatePairs.GetPair(0);
 
   //const Patch* sourcePatch = candidatePairs.GetSourcePatch(0);
   

@@ -32,7 +32,7 @@ public:
   void CopySelfPatchIntoHoleOfTargetRegion(const Mask* mask, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
 
   // Search the collection for an image with the specified name.
-  NamedITKImage FindImageByName(const std::string&);
+  NamedITKImage FindImageByName(const std::string&) const;
 };
 
 #endif

@@ -26,7 +26,7 @@
 #include "Helpers.h"
 #include "HelpersQt.h"
 
-TableModelTopPatches::TableModelTopPatches(QObject * parent, std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& displayStyle) :
+TableModelTopPatches::TableModelTopPatches(QObject * parent, std::vector<InpaintingIterationRecord> const& iterationRecords, DisplayStyle const& displayStyle) :
     QAbstractTableModel(parent), IterationRecords(iterationRecords), IterationToDisplay(0),
     ForwardLookToDisplay(0), PatchDisplaySize(100), NumberOfTopPatchesToDisplay(10), ImageDisplayStyle(displayStyle)
 {
@@ -86,7 +86,7 @@ void TableModelTopPatches::SetNumberOfTopPatchesToDisplay(const unsigned int num
 
 unsigned int TableModelTopPatches::GetNumberOfDifferences() const
 {
-  return this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay].GetPair(0).GetDifferences().GetNumberOfDifferences();
+  return this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay].begin()->GetDifferences().GetNumberOfDifferences();
 }
 
 QVariant TableModelTopPatches::data(const QModelIndex& index, int role) const
@@ -97,12 +97,18 @@ QVariant TableModelTopPatches::data(const QModelIndex& index, int role) const
     {
     const CandidatePairs& currentCandidateSet = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay];
 
+    CandidatePairs::ConstIterator pairIterator = currentCandidateSet.begin();
+    std::advance(pairIterator, index.row());
+    PatchPair patchPair = *pairIterator;
+    const Patch* sourcePatch = patchPair.GetSourcePatch();
+
     switch(index.column())
       {
       case 0:
         {
         FloatVectorImageType* image = dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer());
-        QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(image, currentCandidateSet.GetPair(index.row()).GetSourcePatch()->GetRegion(), this->ImageDisplayStyle);
+
+        QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(image, sourcePatch->GetRegion(), this->ImageDisplayStyle);
 
         patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
 
@@ -116,7 +122,7 @@ QVariant TableModelTopPatches::data(const QModelIndex& index, int role) const
         }
       case 2:
         {
-        returnValue = Helpers::GetString(currentCandidateSet.GetPair(index.row()).GetSourcePatch()->GetRegion().GetIndex()).c_str();
+        returnValue = Helpers::GetString(sourcePatch->GetRegion().GetIndex()).c_str();
         break;
         }
       } // end switch
@@ -124,7 +130,7 @@ QVariant TableModelTopPatches::data(const QModelIndex& index, int role) const
     if(index.column() > 2)
       {
       unsigned int keyId = index.column() - 3; // There are 3 fixed columns
-      returnValue = currentCandidateSet.GetPair(index.row()).GetDifferences().GetDifferenceNames()[keyId].c_str(); // TODO: this is not safe - there is no reason to believe the underlying map stores the strings in the same order each time.
+      returnValue = patchPair.GetDifferences().GetDifferenceNames()[keyId].c_str(); // TODO: this is not safe - there is no reason to believe the underlying map stores the strings in the same order each time.
       }
     } // end if DisplayRole
   LeaveFunction("TopPatchesTableModel::data()");

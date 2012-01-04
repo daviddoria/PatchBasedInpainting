@@ -225,7 +225,7 @@ PatchPair PatchBasedInpainting::FindBestPatch()
 
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
 
-  PatchPair bestPatchPair = candidatePairs.GetPair(0);
+  PatchPair bestPatchPair = *(candidatePairs.begin());
 
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatch()." << std::endl;
   //LeaveFunction("PatchBasedInpainting::FindBestPatch()");

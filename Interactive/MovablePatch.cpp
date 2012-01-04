@@ -21,7 +21,7 @@ MovablePatch::MovablePatch(const unsigned int radius, vtkRenderer* const rendere
   this->PatchLayer.ImageSlice->SetPickable(true);
   //this->PatchLayer.ImageSlice->SetVisibility(this->chkDisplayUserPatch->isChecked());
 
-  Helpers::CreateTransparentVTKImage(Helpers::SizeFromRadius(radius), this->PatchLayer.ImageData);
+  Helpers::CreateTransparentVTKImage(ITKHelpers::SizeFromRadius(radius), this->PatchLayer.ImageData);
   unsigned char userPatchColor[3];
   HelpersQt::QColorToUCharColor(color, userPatchColor);
   Helpers::BlankAndOutlineImage(this->PatchLayer.ImageData, userPatchColor);
@@ -53,7 +53,7 @@ itk::ImageRegion<2> MovablePatch::GetRegion()
   patchCorner[0] = position[0];
   patchCorner[1] = position[1];
 
-  itk::Size<2> patchSize = Helpers::SizeFromRadius(this->Radius);
+  itk::Size<2> patchSize = ITKHelpers::SizeFromRadius(this->Radius);
 
   itk::ImageRegion<2> region(patchCorner, patchSize);
 

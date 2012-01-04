@@ -35,7 +35,8 @@
 class TableModelForwardLook : public QAbstractTableModel, public DebugOutputs
 {
 public:
-  TableModelForwardLook(QObject * parent, std::vector<InpaintingIterationRecord>& iterationRecords, DisplayStyle& style);
+  // These are not const because you cannot initialize a non-const reference from a const reference
+  TableModelForwardLook(QObject * parent, std::vector<InpaintingIterationRecord> const& iterationRecords, DisplayStyle const& style);
 
   int rowCount(const QModelIndex& parent) const;
   int columnCount(const QModelIndex& parent) const;
@@ -54,13 +55,16 @@ public:
 
 protected:
 
-  std::vector<InpaintingIterationRecord>& IterationRecords;
+  // This is a reference so it automatically updates as the real data (in PatchBasedInpaintingGUI) updates
+  std::vector<InpaintingIterationRecord> const& IterationRecords;
+
+  // This is a reference so it automatically updates as the real data (in PatchBasedInpaintingGUI) updates
+  DisplayStyle const& ImageDisplayStyle;
 
   unsigned int IterationToDisplay;
 
   unsigned int PatchDisplaySize;
 
-  DisplayStyle& ImageDisplayStyle;
 };
 
 #endif

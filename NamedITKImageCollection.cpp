@@ -66,7 +66,7 @@ void NamedITKImageCollection::CopySelfPatchIntoHoleOfTargetRegion(const Mask* ma
     }
 }
 
-NamedITKImage NamedITKImageCollection::FindImageByName(const std::string& imageName)
+NamedITKImage NamedITKImageCollection::FindImageByName(const std::string& imageName) const
 {
   for(unsigned int i = 0; i < this->size(); ++i)
     {

@@ -45,21 +45,31 @@ CandidatePairs::Iterator CandidatePairs::end()
   return this->PatchPairs.end();
 }
 
+CandidatePairs::ConstIterator CandidatePairs::begin() const
+{
+  return this->PatchPairs.begin();
+}
+
+CandidatePairs::ConstIterator CandidatePairs::end() const
+{
+  return this->PatchPairs.end();
+}
+
 void CandidatePairs::Sort(SortFunctorWrapper sortFunctor)
 {
   //std::sort(this->begin(), this->end(), sortFunctor);
   std::sort(this->PatchPairs.begin(), this->PatchPairs.end(), sortFunctor);
 }
 
-const PatchPair& CandidatePairs::GetPair(const unsigned int pairId) const
-{
-  return *(this->PatchPairs[pairId]);
-}
-
-PatchPair& CandidatePairs::GetPair(const unsigned int pairId)
-{
-  return *(this->PatchPairs[pairId]);
-}
+// const PatchPair& CandidatePairs::GetPair(const unsigned int pairId) const
+// {
+//   return *(this->PatchPairs[pairId]);
+// }
+// 
+// PatchPair& CandidatePairs::GetPair(const unsigned int pairId)
+// {
+//   return *(this->PatchPairs[pairId]);
+// }
 
 // const Patch* const CandidatePairs::GetSourcePatch(const unsigned int pairId) const
 // {
@@ -115,11 +125,31 @@ void CandidatePairs::Combine(const CandidatePairs& candidatePairs)
     std::cerr << "Cannot combine CandidatePairs that are not of the same TargetPatch!" << std::endl;
     exit(-1);
     }
-  for(unsigned int patchId = 0; patchId < candidatePairs.GetNumberOfSourcePatches(); ++patchId)
+//   for(unsigned int patchId = 0; patchId < candidatePairs.GetNumberOfSourcePatches(); ++patchId)
+//     {
+//     this->PatchPairs.push_back(std::shared_ptr<PatchPair>(new PatchPair(candidatePairs.GetPair(patchId))));
+//     }
+  for(ConstIterator patchIterator = candidatePairs.begin(); patchIterator != candidatePairs.end(); ++patchIterator)
     {
-    this->PatchPairs.push_back(std::shared_ptr<PatchPair>(new PatchPair(candidatePairs.GetPair(patchId))));
+    this->PatchPairs.push_back(std::shared_ptr<PatchPair>(new PatchPair(*patchIterator)));
     }
 }
+
+
+// void CandidatePairs::OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename)
+// {
+//   std::ofstream fout(filename.c_str());
+// 
+//   for(unsigned int i = 0; i < patchPairs.size(); ++i)
+//     {
+//     fout << "Potential patch " << i << ": " << std::endl
+//         << "target index: " << patchPairs[i].TargetPatch.Region.GetIndex() << std::endl;
+//         //<< "ssd score: " << patchPairs[i].GetAverageSSD() << std::endl;
+//         //<< "histogram score: " << patchPairs[i].HistogramDifference << std::endl;
+//     }
+// 
+//   fout.close();
+// }
 
 // Non-member functions
 bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2)

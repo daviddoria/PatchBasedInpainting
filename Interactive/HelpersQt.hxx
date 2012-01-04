@@ -23,6 +23,7 @@
 
 // Custom
 #include "Helpers.h"
+#include "ITKHelpers.h"
 #include "Types.h"
 
 // Qt
@@ -48,7 +49,7 @@ QImage GetQImage(const TImage* image, const itk::ImageRegion<2>& region, const D
       {
       typedef itk::Image<typename TImage::InternalPixelType, 2> ScalarImageType;
       typename ScalarImageType::Pointer channelImage = ScalarImageType::New();
-      Helpers::ExtractChannel<typename TImage::InternalPixelType>(image, style.Channel, channelImage);
+      ITKHelpers::ExtractChannel<typename TImage::InternalPixelType>(image, style.Channel, channelImage);
       return GetQImageScalar<ScalarImageType>(channelImage, region);
       break;
       }

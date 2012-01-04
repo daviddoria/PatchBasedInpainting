@@ -189,6 +189,7 @@ private:
   // A patch that the user can move around freely.
   std::shared_ptr<MovablePatch> UserPatch;
 
+  // This is a pointer because it must be initialized with a Renderer
   std::shared_ptr<VTKCanvas> Canvas;
 
   // The image that the user loads
@@ -204,8 +205,6 @@ private:
   InpaintingComputationObject* InpaintingComputation;
   QThread* ComputationThread;
 
-  Patch SourcePatchToDisplay;
-  Patch TargetPatchToDisplay;
   InpaintingIterationRecord* RecordToDisplay;
 
   // Display zoomed in versions of the patches used at the current iteration
@@ -220,20 +219,9 @@ private:
   // Display the text information (scores, etc) of the patches used at the current information
   void DisplayUsedPatchInformation();
 
-  // Display outlines of where the source patch came from and the target patch to which it was copied
-  void HighlightUsedPatches();
-
-  // Display outlines of the forward look target patches
-  void HighlightForwardLookPatches();
-
-  // Display outlines of the source patches
-  void HighlightSourcePatches();
-
   QGraphicsScene* SourcePatchScene;
   QGraphicsScene* TargetPatchScene;
   QGraphicsScene* ResultPatchScene;
-
-  void OutputPairs(const std::vector<PatchPair>& patchPairs, const std::string& filename);
 
   // This stores the state of the completion at every step. The index represents the image AFTER the index'th step.
   // That is, the image at index 0 is the image after 0 iterations (the original image). At index 1 is the image after the first target region has been filled, etc.

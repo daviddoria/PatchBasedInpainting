@@ -187,15 +187,11 @@ float MaxValueLocation(const TImage* image);
 template <class TImage>
 float MinValue(const TImage* image);
 
-
 template <class TImage>
 itk::Index<2> MinValueLocation(const TImage* image);
 
 template <typename TImage>
 void ColorToGrayscale(const TImage* colorImage, UnsignedCharScalarImageType* grayscaleImage);
-
-// template <typename TPixelType>
-// float PixelSquaredDifference(const TPixelType&, const TPixelType&);
 
 template<typename TImage>
 void BlankAndOutlineRegion(TImage* image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& blankValue, const typename TImage::PixelType& outlineValue);
@@ -223,7 +219,6 @@ void InitializeImage(TImage* image, const itk::ImageRegion<2>& region);
 
 template<typename TImage>
 void CreatePatchImage(TImage* image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion, const Mask* mask, TImage* result);
-
 
 template<typename TImage>
 void DilateImage(const TImage* image, TImage* dilatedImage, const unsigned int radius);

@@ -40,6 +40,26 @@ VTKCanvas::VTKCanvas(vtkRenderer* const renderer) : Renderer(renderer)
   this->Renderer->AddViewProp(this->ForwardLookPatchLayer.ImageSlice);
 }
 
+void VTKCanvas::DisplayRecord(const InpaintingIterationRecord& record)
+{
+  this->RecordToDisplay = record;
+  HighlightUsedPatchPair();
+  HighlightSourcePatches();
+  HighlightForwardLookPatches();
+  DisplayImage();
+  DisplayMask();
+}
+
+DisplayStyle const& VTKCanvas::GetImageDisplayStyle() const
+{
+  return this->ImageDisplayStyle;
+}
+
+ColorPalette const& VTKCanvas::GetColorPalette() const
+{
+  return this->Colors;
+}
+
 void VTKCanvas::DisplayMask(const Mask* const mask)
 {
   //vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
@@ -51,22 +71,27 @@ void VTKCanvas::DisplayMask(const Mask* const mask)
 
 void VTKCanvas::DisplayImage(const FloatVectorImageType* const image)
 {
-  ITKVectorImageToVTKImage(image, this->ImageLayer.ImageData, this->ImageDisplayStyle);
+  ITKVectorImageToVTKImage(image, this->ImageLayer.ImageData);
+}
+
+void VTKCanvas::SetDisplayStyle(const DisplayStyle& style)
+{
+  this->ImageDisplayStyle = style;
 }
 
 // Convert a vector ITK image to a VTK image for display
-void VTKCanvas::ITKVectorImageToVTKImage(const FloatVectorImageType* const image, vtkImageData* outputImage, const DisplayStyle& style)
+void VTKCanvas::ITKVectorImageToVTKImage(const FloatVectorImageType* const image, vtkImageData* outputImage)
 {
-  switch(style.Style)
+  switch(this->ImageDisplayStyle.Style)
     {
     case DisplayStyle::COLOR:
-      Helpers::ITKImageToVTKRGBImage(image, outputImage);
+      ITKHelpers::ITKImageToVTKRGBImage(image, outputImage);
       break;
     case DisplayStyle::MAGNITUDE:
-      Helpers::ITKImageToVTKMagnitudeImage(image, outputImage);
+      ITKHelpers::ITKImageToVTKMagnitudeImage(image, outputImage);
       break;
     case DisplayStyle::CHANNEL:
-      Helpers::ITKImageChannelToVTKImage(image, style.Channel, outputImage);
+      ITKHelpers::ITKImageChannelToVTKImage(image, this->ImageDisplayStyle.Channel, outputImage);
       break;
     default:
       std::cerr << "No valid style to display!" << std::endl;
@@ -80,7 +105,7 @@ void VTKCanvas::HighlightUsedPatchPair(const PatchPair& patchPair)
 {
   std::vector<Patch> patches;
   patches.push_back(*(patchPair.GetSourcePatch()));
-  patches.push_back(*(patchPair.GetTargetPatch()));
+  patches.push_back(patchPair.GetTargetPatch());
 
   HighlightPatches(patches, this->Colors.UsedSourcePatch, this->UsedPatchPairLayer.ImageData);
   // TODO: These should be different colors.
@@ -111,8 +136,47 @@ void VTKCanvas::HighlightPatches(const std::vector<Patch>& patches, const QColor
     unsigned char borderColor[3];
     HelpersQt::QColorToUCharColor(color, borderColor);
 
-    Helpers::BlankAndOutlineRegion(outputImage, currentPatch.GetRegion(), borderColor);
+    ITKHelpers::BlankAndOutlineRegion(outputImage, currentPatch.GetRegion(), borderColor);
 
     //Helpers::SetRegionCenterPixel(outputImage, currentPatch.Region, centerPixelColor);
     }
+}
+
+void VTKCanvas::HighlightSourcePatches()
+{
+  const CandidatePairs& candidatePairs = this->RecordToDisplay->PotentialPairSets[this->DisplayState.ForwardLookId];
+  unsigned int numberToDisplay = std::min(candidatePairs.GetNumberOfSourcePatches(), this->Settings.NumberOfTopPatchesToDisplay);
+}
+
+void VTKCanvas::HighlightForwardLookPatches()
+{
+  // Get the candidate patches and make sure we have requested a valid set.
+  const std::vector<CandidatePairs>& candidatePairs = this->RecordToDisplay->PotentialPairSets;
+
+  unsigned char centerPixelColor[3];
+  HelpersQt::QColorToUCharColor(this->Colors.CenterPixel, centerPixelColor);
+
+  for(unsigned int candidateId = 0; candidateId < candidatePairs.size(); ++candidateId)
+    {
+    unsigned char borderColor[3];
+    if(candidateId == this->DisplayState.ForwardLookId)
+      {
+      HelpersQt::QColorToUCharColor(this->Colors.SelectedForwardLookPatch, borderColor);
+      }
+    else
+      {
+      HelpersQt::QColorToUCharColor(this->Colors.AllForwardLookPatch, borderColor);
+      }
+
+    const Patch& currentPatch = candidatePairs[candidateId].TargetPatch;
+    //std::cout << "Outlining " << currentPatch.Region << std::endl;
+    //DebugMessage<itk::ImageRegion<2> >("Target patch region: ", targetPatch.Region);
+
+    Helpers::BlankAndOutlineRegion(this->Canvas->AllForwardLookOutlinesLayer.ImageData, currentPatch.Region, borderColor);
+
+    Helpers::SetRegionCenterPixel(this->Canvas->AllForwardLookOutlinesLayer.ImageData, currentPatch.Region, centerPixelColor);
+    }
+
+  this->qvtkWidget->GetRenderWindow()->Render();
+  LeaveFunction("HighlightForwardLookPatches()");
 }
