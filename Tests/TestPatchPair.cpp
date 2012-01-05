@@ -70,11 +70,11 @@ int main(int argc, char*argv[])
     return EXIT_FAILURE;
     }
 
-  patchPair.GetDifferences().SetDifferenceByType(PairDifferences::AverageAbsoluteDifference, 1.2f);
-  if(patchPair.GetDifferences().GetDifferenceByType(PairDifferences::AverageAbsoluteDifference) != 1.2f)
+  patchPair.GetDifferences().SetDifferenceByType(PairDifferences::AveragePixelDifference, 1.2f);
+  if(patchPair.GetDifferences().GetDifferenceByType(PairDifferences::AveragePixelDifference) != 1.2f)
     {
     std::cerr << "Difference was not set or retrieved correctly! Set as 1.2 but retrived as "
-              << patchPair.GetDifferences().GetDifferenceByType(PairDifferences::AverageAbsoluteDifference) << std::endl;
+              << patchPair.GetDifferences().GetDifferenceByType(PairDifferences::AveragePixelDifference) << std::endl;
     return EXIT_FAILURE;
     }
 

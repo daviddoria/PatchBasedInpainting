@@ -32,6 +32,7 @@ class CandidatePairs;
 class Mask;
 
 #include "DebugOutputs.h"
+#include "PairDifferences.h"
 #include "Patch.h"
 #include "PatchPair.h"
 #include "Types.h"
@@ -67,6 +68,8 @@ public:
 
   void SetPairs(CandidatePairs* const pairs);
 
+  void SetDifferenceType(const PairDifferences::PatchDifferenceTypes& differenceType);
+
 protected:
 
   // These are the pixel offsets of the target region which we with to compare.
@@ -82,6 +85,7 @@ protected:
   // This is the mask to check the validity of target pixels
   const Mask* MaskImage;
 
+  PairDifferences::PatchDifferenceTypes DifferenceType;
 };
 
 #include "SelfPatchCompare.hxx"

@@ -26,7 +26,7 @@
 class PairDifferences
 {
 public:
-  enum PatchDifferenceTypes {AverageAbsoluteDifference, ColorDifference, DepthDifference, CombinedDifference, MembershipDifference, HistogramIntersection, Invalid};
+  enum PatchDifferenceTypes {SumPixelDifference, AveragePixelDifference, ColorDifference, DepthDifference, Invalid};
 
   static std::string NameOfDifference(const PatchDifferenceTypes);
   static PatchDifferenceTypes TypeOfDifference(const std::string&);
@@ -42,19 +42,14 @@ public:
   void SetDifferenceByType(const PatchDifferenceTypes differenceType, const float value);
 
   void Invalidate();
+
 private:
   typedef std::map <PatchDifferenceTypes, float> DifferenceMapType;
   DifferenceMapType DifferenceMap;
 
-  // These differences are computed as combinations of other differences
-  //float GetDepthAndColorDifference() const;
-
-//   struct ComputeDepthAndColorDifferenceFunctor
-//   {
-//     ComputeDepthAndColorDifferenceFunctor() : DepthColorLambda(0.5f){}
-//     float operator()(const float depthDifference, const float colorDifference) const;
-//     float DepthColorLambda;
-//   } ComputeDepthAndColorDifference;
+  typedef std::map <PatchDifferenceTypes, std::string> DifferenceNameMapType;
+  static DifferenceNameMapType DifferenceNameMap;
+  static DifferenceNameMapType CreateNameMap();
 
 };
 

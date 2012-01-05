@@ -96,7 +96,7 @@ void ScalarComparison()
 
   for(CandidatePairs::Iterator pairsIterator = candidatePairs.begin(); pairsIterator != candidatePairs.end(); ++pairsIterator)
     {
-    std::cout << (*pairsIterator).GetDifferences().GetDifferenceByType(PairDifferences::AverageAbsoluteDifference) << std::endl;
+    std::cout << (*pairsIterator).GetDifferences().GetDifferenceByType(PairDifferences::SumPixelDifference) << std::endl;
 //     if(difference != correctDifference)
 //       {
 //       std::stringstream ss;

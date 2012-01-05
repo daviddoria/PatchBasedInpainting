@@ -25,6 +25,18 @@ unsigned int PairDifferences::GetNumberOfDifferences() const
   return this->DifferenceMap.size();
 }
 
+PairDifferences::DifferenceNameMapType PairDifferences::CreateNameMap()
+{
+  DifferenceNameMapType nameMap;
+  nameMap[SumPixelDifference] = "SumPixelDifference";
+  nameMap[AveragePixelDifference] = "AveragePixelDifference";
+  nameMap[ColorDifference] = "ColorDifference";
+  nameMap[DepthDifference] = "DepthDifference";
+  return nameMap;
+}
+
+PairDifferences::DifferenceNameMapType PairDifferences::DifferenceNameMap = CreateNameMap();
+
 void PairDifferences::SetDifferenceByName(const std::string& differenceName, const float value)
 {
   //this->DifferenceMap.find(TypeOfDifference(differenceName))->second = value;
@@ -64,68 +76,29 @@ void PairDifferences::Invalidate()
 
 PairDifferences::PatchDifferenceTypes PairDifferences::TypeOfDifference(const std::string& nameOfDifference)
 {
-  if(nameOfDifference == "Av.Abs.")
+  DifferenceNameMapType::const_iterator iterator;
+  for (iterator = DifferenceNameMap.begin(); iterator != DifferenceNameMap.end(); ++iterator)
     {
-    return AverageAbsoluteDifference;
+    if (iterator->second == nameOfDifference)
+      {
+      return iterator->first;
+      break;
+      }
     }
-  else if(nameOfDifference == "Color")
+  return Invalid;
+}
+
+std::string PairDifferences::NameOfDifference(const PatchDifferenceTypes typeOfDifference)
+{
+  DifferenceNameMapType::const_iterator iterator;
+
+  iterator = DifferenceNameMap.find(typeOfDifference);
+  if(iterator != DifferenceNameMap.end())
     {
-    return ColorDifference;
-    }
-  else if(nameOfDifference == "Depth")
-    {
-    return DepthDifference;
-    }
-  else if(nameOfDifference == "Membership")
-    {
-    return MembershipDifference;
-    }
-  else if(nameOfDifference == "Combined")
-    {
-    return CombinedDifference;
-    }
-  else if(nameOfDifference == "Hist.Int.")
-    {
-    return HistogramIntersection;
+    return iterator->second;
     }
   else
     {
-    return Invalid;
+    return "Invalid";
     }
-}
-
-std::string PairDifferences::NameOfDifference(const PatchDifferenceTypes enumValue)
-{
-  std::string namedDifference;
-  switch(enumValue)
-  {
-    case AverageAbsoluteDifference:
-      //namedDifference = "AverageAbsoluteDifference";
-      namedDifference = "Av.Abs.";
-      break;
-    case ColorDifference:
-      //namedDifference = "ColorDifference";
-      namedDifference = "Color";
-      break;
-    case DepthDifference:
-      //namedDifference = "DepthDifference";
-      namedDifference = "Depth";
-      break;
-    case MembershipDifference:
-      //namedDifference = "MembershipDifference";
-      namedDifference = "Membership";
-      break;
-    case CombinedDifference:
-      //namedDifference = "CombinedDifference";
-      namedDifference = "Combined";
-      break;
-    case HistogramIntersection:
-      namedDifference = "Hist.Int.";
-      break;
-    default:
-      namedDifference = "INVALID";
-      break;
-  }
-
-  return namedDifference;
 }

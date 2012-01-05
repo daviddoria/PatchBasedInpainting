@@ -19,53 +19,40 @@
 #include "PairDifferences.h"
 
 #include <iostream>
+#include <stdexcept>
 
 int main(int argc, char*argv[])
 {
   // Explicitly test the names.
-  if(PairDifferences::NameOfDifference(PairDifferences::AverageAbsoluteDifference) != "Av.Abs.")
+  if(PairDifferences::NameOfDifference(PairDifferences::AveragePixelDifference) != "AveragePixelDifference")
     {
-    std::cerr << "AverageAbsoluteDifference name incorrect! Is " << PairDifferences::NameOfDifference(PairDifferences::AverageAbsoluteDifference)
-              << " but should be 'Av.Abs.'" << std::endl;
+    std::cerr << "AveragePixelDifference name incorrect! Is " << PairDifferences::NameOfDifference(PairDifferences::AveragePixelDifference)
+              << " but should be 'AveragePixelDifference'" << std::endl;
     return EXIT_FAILURE;
     }
 
-  if(PairDifferences::NameOfDifference(PairDifferences::ColorDifference) != "Color")
+  if(PairDifferences::NameOfDifference(PairDifferences::SumPixelDifference) != "SumPixelDifference")
+    {
+    std::cerr << "SumPixelDifference name incorrect! Is " << PairDifferences::NameOfDifference(PairDifferences::SumPixelDifference)
+              << " but should be 'SumPixelDifference'" << std::endl;
+    return EXIT_FAILURE;
+    }
+
+  if(PairDifferences::NameOfDifference(PairDifferences::ColorDifference) != "ColorDifference")
     {
     std::cerr << "ColorDifference name incorrect! Is " << PairDifferences::NameOfDifference(PairDifferences::ColorDifference)
               << " but should be 'Color'" << std::endl;
     return EXIT_FAILURE;
     }
 
-  if(PairDifferences::NameOfDifference(PairDifferences::DepthDifference) != "Depth")
+  if(PairDifferences::NameOfDifference(PairDifferences::DepthDifference) != "DepthDifference")
     {
     std::cerr << "DepthDifference name incorrect! Is " << PairDifferences::NameOfDifference(PairDifferences::DepthDifference)
               << " but should be 'Depth'" << std::endl;
     return EXIT_FAILURE;
     }
 
-  if(PairDifferences::NameOfDifference(PairDifferences::CombinedDifference) != "Combined")
-    {
-    std::cerr << "CombinedDifference name incorrect! Is " << PairDifferences::NameOfDifference(PairDifferences::CombinedDifference)
-              << " but should be 'Combined'" << std::endl;
-    return EXIT_FAILURE;
-    }
-
-  if(PairDifferences::NameOfDifference(PairDifferences::MembershipDifference) != "Membership")
-    {
-    std::cerr << "MembershipDifference name incorrect! Is " << PairDifferences::NameOfDifference(PairDifferences::MembershipDifference)
-              << " but should be 'Membership'" << std::endl;
-    return EXIT_FAILURE;
-    }
-
-  if(PairDifferences::NameOfDifference(PairDifferences::HistogramIntersection) != "Hist.Int.")
-    {
-    std::cerr << "HistogramIntersection name incorrect! Is " << PairDifferences::NameOfDifference(PairDifferences::HistogramIntersection)
-              << " but should be 'Hist.Int.'" << std::endl;
-    return EXIT_FAILURE;
-    }
-
-  if(PairDifferences::NameOfDifference(PairDifferences::Invalid) != "INVALID")
+  if(PairDifferences::NameOfDifference(PairDifferences::Invalid) != "Invalid")
     {
     std::cerr << "'Invalid' name incorrect! Is " << PairDifferences::NameOfDifference(PairDifferences::Invalid)
               << " but should be 'INVALID'" << std::endl;
@@ -73,112 +60,63 @@ int main(int argc, char*argv[])
     }
 
   // Explicitly test the types
-  if(PairDifferences::TypeOfDifference("Av.Abs.") != PairDifferences::AverageAbsoluteDifference)
+  if(PairDifferences::TypeOfDifference("AveragePixelDifference") != PairDifferences::AveragePixelDifference)
     {
-    std::cerr << "Av.Abs. type incorrect! Is " << PairDifferences::TypeOfDifference("Av.Abs.")
-              << " but should be 'Av.Abs.'" << std::endl;
+    std::cerr << "AveragePixelDifference type incorrect! Is " << PairDifferences::TypeOfDifference("AveragePixelDifference")
+              << " but should be 'AveragePixelDifference'" << std::endl;
     return EXIT_FAILURE;
     }
 
-  if(PairDifferences::TypeOfDifference("Color") != PairDifferences::ColorDifference)
+  if(PairDifferences::TypeOfDifference("SumPixelDifference") != PairDifferences::SumPixelDifference)
     {
-    std::cerr << "Color type incorrect! Is " << PairDifferences::TypeOfDifference("Color")
-              << " but should be 'Color'" << std::endl;
+    std::cerr << "SumPixelDifference type incorrect! Is " << PairDifferences::TypeOfDifference("SumPixelDifference")
+              << " but should be 'SumPixelDifference'" << std::endl;
     return EXIT_FAILURE;
     }
 
-  if(PairDifferences::TypeOfDifference("Depth") != PairDifferences::DepthDifference)
+  if(PairDifferences::TypeOfDifference("ColorDifference") != PairDifferences::ColorDifference)
     {
-    std::cerr << "DepthDifference type incorrect! Is " << PairDifferences::TypeOfDifference("Depth")
-              << " but should be 'Depth'" << std::endl;
+    std::cerr << "Color type incorrect! Is " << PairDifferences::TypeOfDifference("ColorDifference")
+              << " but should be 'ColorDifference'" << std::endl;
     return EXIT_FAILURE;
     }
 
-  if(PairDifferences::TypeOfDifference("Combined") != PairDifferences::CombinedDifference)
+  if(PairDifferences::TypeOfDifference("DepthDifference") != PairDifferences::DepthDifference)
     {
-    std::cerr << "CombinedDifference type incorrect! Is " << PairDifferences::TypeOfDifference("Combined")
-              << " but should be 'Combined'" << std::endl;
-    return EXIT_FAILURE;
-    }
-
-  if(PairDifferences::TypeOfDifference("Membership") != PairDifferences::MembershipDifference)
-    {
-    std::cerr << "MembershipDifference type incorrect! Is " << PairDifferences::TypeOfDifference("Membership")
-              << " but should be 'Membership'" << std::endl;
-    return EXIT_FAILURE;
-    }
-
-  if(PairDifferences::TypeOfDifference("Hist.Int.") != PairDifferences::HistogramIntersection)
-    {
-    std::cerr << "HistogramIntersection type incorrect! Is " << PairDifferences::TypeOfDifference("Hist.Int.")
-              << " but should be 'Hist.Int.'" << std::endl;
+    std::cerr << "DepthDifference type incorrect! Is " << PairDifferences::TypeOfDifference("DepthDifference")
+              << " but should be 'DepthDifference'" << std::endl;
     return EXIT_FAILURE;
     }
 
   if(PairDifferences::TypeOfDifference("INVALID") != PairDifferences::Invalid)
     {
     std::cerr << "'Invalid' type incorrect! Is " << PairDifferences::TypeOfDifference("INVALID")
-              << " but should be 'INVALID'" << std::endl;
+              << " but should be " << PairDifferences::Invalid << std::endl;
     return EXIT_FAILURE;
     }
 
   // Test the names and types by ensuring they are inverses
-//   if(PairDifferences::NameOfDifference(PairDifferences::TypeOfDifference) != "Av.Abs.")
-//     {
-//     std::cerr << "AverageAbsoluteDifference name incorrect! Is " << PairDifferences::NameOfDifference(AverageAbsoluteDifference)
-//               << " but should be 'Av. Abs.'" << std::endl;
-//     return EXIT_FAILURE;
-//     }
-// 
-//   if(PairDifferences::NameOfDifference(ColorDifference) != "Color")
-//     {
-//     std::cerr << "ColorDifference name incorrect! Is " << PairDifferences::NameOfDifference(ColorDifference)
-//               << " but should be 'Color'" << std::endl;
-//     return EXIT_FAILURE;
-//     }
-// 
-//   if(PairDifferences::NameOfDifference(DepthDifference) != "Depth")
-//     {
-//     std::cerr << "DepthDifference name incorrect! Is " << PairDifferences::NameOfDifference(DepthDifference)
-//               << " but should be 'Depth'" << std::endl;
-//     return EXIT_FAILURE;
-//     }
-// 
-//   if(PairDifferences::NameOfDifference(CombinedDifference) != "Combined")
-//     {
-//     std::cerr << "CombinedDifference name incorrect! Is " << PairDifferences::NameOfDifference(CombinedDifference)
-//               << " but should be 'Combined'" << std::endl;
-//     return EXIT_FAILURE;
-//     }
-// 
-//   if(PairDifferences::NameOfDifference(MembershipDifference) != "Membership")
-//     {
-//     std::cerr << "MembershipDifference name incorrect! Is " << PairDifferences::NameOfDifference(MembershipDifference)
-//               << " but should be 'Membership'" << std::endl;
-//     return EXIT_FAILURE;
-//     }
-// 
-//   if(PairDifferences::NameOfDifference(HistogramIntersection) != "Av.Abs.")
-//     {
-//     std::cerr << "HistogramIntersection name incorrect! Is " << PairDifferences::NameOfDifference(HistogramIntersection)
-//               << " but should be 'Hist.Int.'" << std::endl;
-//     return EXIT_FAILURE;
-//     }
-// 
-//   if(PairDifferences::NameOfDifference(Invalid) != "INVALID")
-//     {
-//     std::cerr << "'Invalid' name incorrect! Is " << PairDifferences::NameOfDifference(Invalid)
-//               << " but should be 'INVALID'" << std::endl;
-//     return EXIT_FAILURE;
-//     }
-// 
-//   if(PairDifferences::NameOfDifference(123) != "INVALID")
-//     {
-//     std::cerr << "'123' name incorrect! Is " << PairDifferences::NameOfDifference(123)
-//               << " but should be 'INVALID'" << std::endl;
-//     return EXIT_FAILURE;
-//     }
+  if(PairDifferences::NameOfDifference(PairDifferences::TypeOfDifference("TotalPixelDifference")) != "TotalPixelDifference")
+    {
+    std::runtime_error("TotalPixelDifference is not invertible!");
+    }
 
+  if(PairDifferences::NameOfDifference(PairDifferences::TypeOfDifference("AveragePixelDifference")) != "AveragePixelDifference")
+    {
+    std::runtime_error("AveragePixelDifference is not invertible!");
+    }
+
+  if(PairDifferences::NameOfDifference(PairDifferences::TypeOfDifference("ColorDifference")) != "ColorDifference")
+    {
+    std::runtime_error("ColorDifference is not invertible!");
+    }
+
+  if(PairDifferences::NameOfDifference(PairDifferences::TypeOfDifference("DepthDifference")) != "DepthDifference")
+    {
+    std::runtime_error("DepthDifference is not invertible!");
+    }
+
+  // Test other functions
 
   PairDifferences pairDifferences;
   if(pairDifferences.GetNumberOfDifferences() != 0)
@@ -187,7 +125,7 @@ int main(int argc, char*argv[])
     return EXIT_FAILURE;
     }
 
-  pairDifferences.SetDifferenceByType(PairDifferences::AverageAbsoluteDifference, 1.0f);
+  pairDifferences.SetDifferenceByType(PairDifferences::AveragePixelDifference, 1.0f);
   
   std::vector<std::string> differenceNames = pairDifferences.GetDifferenceNames();
   if(differenceNames.size() != 1)
@@ -196,16 +134,16 @@ int main(int argc, char*argv[])
     return EXIT_FAILURE;
     }
 
-  if(differenceNames[0] != "Av.Abs.")
+  if(differenceNames[0] != "AveragePixelDifference")
     {
     std::cerr << "Difference name retrieved incorrectly! Is " << differenceNames[0]
-              << " but should be 'Av.Abs.'" << std::endl;
+              << " but should be 'AveragePixelDifference'" << std::endl;
     return EXIT_FAILURE;
     }
 
-  if(pairDifferences.GetDifferenceByType(PairDifferences::AverageAbsoluteDifference) != 1.0f)
+  if(pairDifferences.GetDifferenceByType(PairDifferences::AveragePixelDifference) != 1.0f)
     {
-    std::cerr << "Difference value retrieved incorrectly! Is " << pairDifferences.GetDifferenceByType(PairDifferences::AverageAbsoluteDifference)
+    std::cerr << "Difference value retrieved incorrectly! Is " << pairDifferences.GetDifferenceByType(PairDifferences::AveragePixelDifference)
               << " but should be 1.0" << std::endl;
     return EXIT_FAILURE;
     }

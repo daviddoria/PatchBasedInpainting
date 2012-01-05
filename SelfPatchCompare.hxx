@@ -35,7 +35,7 @@
 #include <boost/bind.hpp>
 
 template <typename TImage, typename TPatchDifference>
-SelfPatchCompare<TImage, TPatchDifference>::SelfPatchCompare() : Image(NULL), MaskImage(NULL)
+SelfPatchCompare<TImage, TPatchDifference>::SelfPatchCompare() : Image(NULL), MaskImage(NULL), DifferenceType(PairDifferences::Invalid)
 {
 
 }
@@ -105,12 +105,17 @@ void SelfPatchCompare<TImage, TPatchDifference>::Compute()
             << " ValidTargetPatchOffsets on which to operate!" << std::endl;
   #ifdef USE_QT_PARALLEL
     #pragma message("Using QtConcurrent!")
-    QtConcurrent::blockingMap(this->Pairs->begin(), this->Pairs->end(), boost::bind(&TPatchDifference::Difference, _1));
+    QVector<float> differences = QtConcurrent::blockingMap(this->Pairs->begin(), this->Pairs->end(), boost::bind(&TPatchDifference::Difference, _1));
+    unsigned int differenceId = 0;
+    for(CandidatePairs::Iterator pairIterator = this->Pairs->begin(); pairIterator != this->Pairs->end(); ++pairIterator)
+      {
+      (*pairIterator).GetDifferences().SetDifferenceByType(this->DifferenceType, differences[differenceId]);
+      }
   #else
     #pragma message("NOT using QtConcurrent!")
     for(CandidatePairs::Iterator pairIterator = this->Pairs->begin(); pairIterator != this->Pairs->end(); ++pairIterator)
       {
-      TPatchDifference::Difference(*pairIterator);
+      (*pairIterator).GetDifferences().SetDifferenceByType(this->DifferenceType, TPatchDifference::Difference(*pairIterator));
       }
   #endif
 }
@@ -119,4 +124,10 @@ template <typename TImage, typename TPatchDifference>
 void SelfPatchCompare<TImage, TPatchDifference>::SetPairs(CandidatePairs* const pairs)
 {
   this->Pairs = pairs;
+}
+
+template <typename TImage, typename TPatchDifference>
+void SelfPatchCompare<TImage, TPatchDifference>::SetDifferenceType(const PairDifferences::PatchDifferenceTypes& differenceType)
+{
+  this->DifferenceType = differenceType;
 }
