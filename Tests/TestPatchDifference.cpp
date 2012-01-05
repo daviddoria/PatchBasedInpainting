@@ -26,7 +26,7 @@
 
 int main(int argc, char*argv[])
 {
-  PatchDifferencePixelWiseSum<FloatScalarImageType, PixelDifference<FloatScalarImageType::PixelType> > scalar_patchDifferencePixelWiseSum;
+  PatchDifferencePixelWiseSum<FloatScalarImageType, PixelDifference> scalar_patchDifferencePixelWiseSum;
 
   //PatchDifferencePixelWiseSum<FloatVectorImageType, PixelDifferenceFull<FloatVectorImageType::PixelType> > vector_patchDifferencePixelWiseSum;
   return EXIT_SUCCESS;

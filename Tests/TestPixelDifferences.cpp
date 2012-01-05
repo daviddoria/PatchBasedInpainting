@@ -52,10 +52,10 @@ int main(int argc, char*argv[])
 void TestPixelDifference()
 {
   // Scalar
-  if(!TestHelpers::ValuesEqual(PixelDifference<float>::Difference(2.5, 1.1), 1.4))
+  if(!TestHelpers::ValuesEqual(PixelDifference::Difference(2.5, 1.1), 1.4))
     {
     std::stringstream ss;
-    ss << "Difference should be 1.4 but is: " << PixelDifference<float>::Difference(2.5, 1.1);
+    ss << "Difference should be 1.4 but is: " << PixelDifference::Difference(2.5, 1.1);
     throw std::runtime_error(ss.str());
     }
 
@@ -74,7 +74,8 @@ void TestPixelDifference()
 
   {
   // Static
-  float difference = PixelDifference<FloatVectorImageType::PixelType>::Difference(a, b);
+  //float difference = PixelDifference<FloatVectorImageType::PixelType>::Difference(a, b);
+  float difference = PixelDifference::Difference(a, b);
   float correctDifference = 9.0f;
   if(!TestHelpers::ValuesEqual(difference, correctDifference))
     {
@@ -86,9 +87,65 @@ void TestPixelDifference()
 
   {
   // Object
-  PixelDifference<FloatVectorImageType::PixelType> differenceFunction;
+  PixelDifference differenceFunction;
   float difference = differenceFunction.Difference(a, b);
   float correctDifference = 9.0f;
+  if(!TestHelpers::ValuesEqual(difference, correctDifference))
+    {
+    std::stringstream ss;
+    ss << "PixelDifferenceFullSquared: Object specified pixel length: Difference should be " << correctDifference << " but is: " << difference;
+    throw std::runtime_error(ss.str());
+    }
+  }
+}
+
+
+void TestPixelDifferenceSquared()
+{
+  // Scalar
+  {
+  float correctDifference = 1.96f;
+  float difference = PixelDifferenceSquared::Difference(2.5, 1.1);
+  
+  if(!TestHelpers::ValuesEqual(difference, correctDifference))
+    {
+    std::stringstream ss;
+    ss << "Difference should be " << correctDifference << " but is: " << difference << std::endl;
+    throw std::runtime_error(ss.str());
+    }
+  }
+
+  // Vector
+  FloatVectorImageType::PixelType a;
+  a.SetSize(3);
+  a[0] = 0;
+  a[1] = 1;
+  a[2] = 2;
+
+  FloatVectorImageType::PixelType b;
+  b.SetSize(3);
+  b[0] = 3;
+  b[1] = 4;
+  b[2] = 5;
+
+  {
+  // Static
+  //float difference = PixelDifference<FloatVectorImageType::PixelType>::Difference(a, b);
+  float difference = PixelDifferenceSquared::Difference(a, b);
+  float correctDifference = 81.0f;
+  if(!TestHelpers::ValuesEqual(difference, correctDifference))
+    {
+    std::stringstream ss;
+    ss << "PixelDifferenceFullSquared: Static specified pixel length: Difference should be " << correctDifference << " but is: " << difference;
+    throw std::runtime_error(ss.str());
+    }
+  }
+
+  {
+  // Object
+  PixelDifferenceSquared differenceFunction;
+  float difference = differenceFunction.Difference(a, b);
+  float correctDifference = 81.0f;
   if(!TestHelpers::ValuesEqual(difference, correctDifference))
     {
     std::stringstream ss;

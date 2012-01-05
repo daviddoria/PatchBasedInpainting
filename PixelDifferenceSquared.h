@@ -21,34 +21,24 @@
 
 #include "PixelDifference.h"
 
-template <typename TPixel>
 struct PixelDifferenceSquared
 {
 public:
-  PixelDifferenceSquared(const TPixel& examplePixel)
-  {
-    this->NumberOfComponentsPerPixel = examplePixel.GetNumberOfElements();
-  }
 
-  PixelDifferenceSquared(const unsigned int numberOfComponents)
+  template <typename TPixel>
+  static float Difference(const TPixel& a, const TPixel& b)
   {
-    this->NumberOfComponentsPerPixel = numberOfComponents;
-    //std::cout << "FullSquaredPixelDifference set NumberOfComponentsPerPixel to " << this->NumberOfComponentsPerPixel << std::endl;
-  }
-
-  float Difference(const TPixel& a, const TPixel& b)
-  {
-    return Difference(a, b, this->NumberOfComponentsPerPixel);
-  }
-
-  static float Difference(const TPixel& a, const TPixel& b, const unsigned int numberOfComponents)
-  {
-    float difference = PixelDifference<TPixel>::Difference(a, b, numberOfComponents);
+    float difference = PixelDifference::Difference(a,b);
     return difference*difference;
   }
 
-private:
-  unsigned int NumberOfComponentsPerPixel;
+
+  template<typename TPixel>
+  static float Difference(const itk::VariableLengthVector<TPixel>& a, const itk::VariableLengthVector<TPixel>& b)
+  {
+    float difference = PixelDifference::Difference(a,b);
+    return difference*difference;
+  }
 };
 
 #endif
