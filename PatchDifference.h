@@ -19,6 +19,10 @@
 #ifndef PatchDifference_H
 #define PatchDifference_H
 
+#include <vector>
+
+#include "itkOffset.h"
+
 // Custom
 class Mask;
 #include "PatchPair.h"
@@ -28,16 +32,17 @@ template <typename TImage, typename TPixelDifference>
 class PatchDifference
 {
 public:
-  float ComputeDifference(const PatchPair& patchPair);
-  virtual float ComputeDifference(const PatchPair& patchPair, const std::vector<itk::Offset<2> >& offsetsToCompare) = 0;
+  PatchDifference();
+  float Difference(const PatchPair& patchPair) const;
+  virtual float Difference(const PatchPair& patchPair, const std::vector<itk::Offset<2> >& offsetsToCompare) const = 0;
 
   // Provide the image to work with.
-  void SetImage(const TImage* const image);
+  void SetImage(TImage* const image);
 
 protected:
   TImage* Image;
 };
 
-#include "PatchDifference.h"
+#include "PatchDifference.hxx"
 
 #endif

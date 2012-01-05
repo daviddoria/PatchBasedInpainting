@@ -25,7 +25,9 @@ template <typename TImage, typename TPixelDifference>
 class PatchDifferencePixelWiseSum : public PatchDifference<TImage, TPixelDifference>
 {
 public:
-  float ComputeDifference(const PatchPair& patchPair, const std::vector<itk::Offset<2> >& offsetsToCompare);
+  PatchDifferencePixelWiseSum();
+  using PatchDifference<TImage, TPixelDifference>::Difference;
+  float Difference(const PatchPair& patchPair, const std::vector<itk::Offset<2> >& offsetsToCompare) const;
 };
 
 #include "PatchDifferencePixelWiseSum.hxx"

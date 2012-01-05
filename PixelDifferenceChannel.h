@@ -19,6 +19,8 @@
 #ifndef PixelDifferenceChannel_H
 #define PixelDifferenceChannel_H
 
+// #include "Helpers.h"
+
 template <typename TPixel, unsigned int Channel>
 struct PixelDifferenceChannel
 {
@@ -26,6 +28,11 @@ struct PixelDifferenceChannel
   {
     return fabs(a[Channel] - b[Channel]);
   }
+  // Could use this to be more general
+//   static float Difference(const TPixel& a, const TPixel& b)
+//   {
+//     return fabs(Helpers::index(a, Channel) - Helpers::index(b, Channel));
+//   }
 };
 
 #endif

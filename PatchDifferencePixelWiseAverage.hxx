@@ -17,7 +17,7 @@
  *=========================================================================*/
 
 template <typename TImage, typename TPixelDifference>
-float PatchDifferencePixelWiseAverage<TImage, TPixelDifference>::ComputeDifference(const PatchPair& patchPair)
+float PatchDifferencePixelWiseAverage<TImage, TPixelDifference>::Difference(const PatchPair& patchPair)
 {
   return 0.0;
 }

@@ -23,6 +23,11 @@ Patch::Patch(const itk::ImageRegion<2>& region)
   this->Region = region;
 }
 
+itk::Index<2> Patch::GetCorner() const
+{
+  return this->Region.GetIndex();
+}
+
 itk::ImageRegion<2> Patch::GetRegion() const
 {
   return this->Region;

@@ -25,7 +25,7 @@ template <typename TImage, typename TPixelDifference>
 class PatchDifferencePixelWiseAverage : public PatchDifference<TImage, TPixelDifference>
 {
 public:
-  float ComputeDifference(const PatchPair& patchPair);
+  float Difference(const PatchPair& patchPair);
 };
 
 #include "PatchDifferencePixelWiseAverage.hxx"

@@ -32,4 +32,19 @@ bool ValuesEqual(const float a, const float b)
   return false;
 }
 
+void GetMask(Mask* const mask)
+{
+  // This function produces a fully valid mask.
+  itk::Index<2> corner;
+  corner.Fill(0);
+
+  itk::Size<2> size;
+  size.Fill(100);
+
+  itk::ImageRegion<2> region(corner,size);
+  mask->SetRegions(region);
+  mask->Allocate();
+  mask->FillBuffer(mask->GetValidValue());
+}
+
 } // end namespace

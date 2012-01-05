@@ -43,4 +43,35 @@ bool ImagesEqual(const TImage* const image1, const TImage* const image2)
   return true;
 }
 
+template<typename TImage>
+void GetBlankImage(TImage* const image)
+{
+  itk::Index<2> corner;
+  corner.Fill(0);
+
+  itk::Size<2> size;
+  size.Fill(100);
+
+  itk::ImageRegion<2> region(corner,size);
+  image->SetRegions(region);
+  image->Allocate();
+}
+
+template<typename TImage>
+void GetBlankImage(TImage* image, const unsigned int numberOfComponents)
+{
+  itk::Index<2> corner;
+  corner.Fill(0);
+
+  itk::Size<2> size;
+  size.Fill(100);
+
+  itk::ImageRegion<2> region(corner,size);
+  image->SetRegions(region);
+  image->SetNumberOfComponentsPerPixel(numberOfComponents);
+  image->Allocate();
+}
+
+
+
 }// end namespace

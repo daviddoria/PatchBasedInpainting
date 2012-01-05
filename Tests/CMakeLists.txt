@@ -6,7 +6,8 @@ ENABLE_TESTING()
 
 include_directories(../)
 
-add_library(libTestHelpers TestHelpers.cpp)
+add_library(libTestHelpers TestHelpers.cpp ../Mask.cpp)
+target_link_libraries(libTestHelpers ${ITK_LIBRARIES})
 
 add_executable(TestPatch TestPatch.cpp ../Patch.cpp)
 target_link_libraries(TestPatch ${VTK_LIBRARIES} ${ITK_LIBRARIES})
@@ -21,7 +22,7 @@ target_link_libraries(TestPairDifferences ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 add_test(TestPairDifferences TestPairDifferences)
 
 add_executable(TestCandidatePairs TestCandidatePairs.cpp ../CandidatePairs.cpp
-../PatchPair.cpp ../Patch.cpp ../SourcePatchCollection.cpp ../Mask.cpp ../PatchSorting.cpp ../Helpers.cpp ../ITKHelpers.cpp ../PairDifferences.cpp)
+../PatchPair.cpp ../Patch.cpp ../SourcePatchCollection.cpp ../Mask.cpp ../Helpers.cpp ../ITKHelpers.cpp ../PairDifferences.cpp)
 target_link_libraries(TestCandidatePairs ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTestHelpers)
 add_test(TestCandidatePairs TestCandidatePairs)
 
@@ -42,12 +43,11 @@ target_link_libraries(TestPatchDifference ${VTK_LIBRARIES} ${ITK_LIBRARIES} libT
 add_test(TestPatchDifference TestPatchDifference)
 
 ######## Failing tests ##########
-# add_executable(TestSelfPatchCompare TestSelfPatchCompare.cpp ../SelfPatchCompare.cpp
-# ../DebugOutputs.cpp
-# ../Derivatives.cpp ../Mask.cpp ../PatchPair.cpp ../PairDifferences.cpp ../Patch.cpp ../CandidatePairs.cpp ../Helpers.cpp ../ITKHelpers.cpp ../SourcePatchCollection.cpp
-# ../PatchSorting.cpp)
-# target_link_libraries(TestSelfPatchCompare ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-# add_test(TestSelfPatchCompare TestSelfPatchCompare)
+add_executable(TestSelfPatchCompare TestSelfPatchCompare.cpp ../SelfPatchCompare.cpp
+../DebugOutputs.cpp ../Helpers.cpp ../ITKHelpers.cpp
+../Derivatives.cpp ../Mask.cpp ../PatchPair.cpp ../PairDifferences.cpp ../Patch.cpp ../CandidatePairs.cpp ../SourcePatchCollection.cpp)
+target_link_libraries(TestSelfPatchCompare ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTestHelpers)
+add_test(TestSelfPatchCompare TestSelfPatchCompare)
 
 add_executable(TestDerivatives TestDerivatives.cpp ../Derivatives.cpp ../Mask.cpp ../Helpers.cpp)
 target_link_libraries(TestDerivatives ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTestHelpers)

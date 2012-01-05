@@ -32,8 +32,12 @@ int main(int argc, char*argv[])
 
   if(patch0.GetRegion() != region0)
     {
-    std::cerr << "Region was not set or retrieved correctly!" << std::endl;
-    return EXIT_FAILURE;
+    throw std::runtime_error("Region was not set or retrieved correctly!");
+    }
+
+  if(patch0.GetCorner() != corner0)
+    {
+    throw std::runtime_error("Corner was not retrieved correctly!");
     }
 
   if(patch0 == patch0)
@@ -42,14 +46,12 @@ int main(int argc, char*argv[])
     }
   else
     {
-    std::cerr << "patch0 should == patch0 but does not!" << std::endl;
-    return EXIT_FAILURE;
+    throw std::runtime_error("patch0 should == patch0 but does not!");
     }
 
   if(patch0 != patch0)
     {
-    std::cerr << "patch0 != patch0 but it should!" << std::endl;
-    return EXIT_FAILURE;
+    throw std::runtime_error("patch0 != patch0 but it should!");
     }
 
   // Create another patch
@@ -61,8 +63,7 @@ int main(int argc, char*argv[])
 
   if(patch0 == patch1)
     {
-    std::cerr << "patch0 == patch1 but should not!" << std::endl;
-    return EXIT_FAILURE;
+    throw std::runtime_error("patch0 == patch1 but should not!");
     }
 
   if(patch0 != patch1)
@@ -71,8 +72,7 @@ int main(int argc, char*argv[])
     }
   else
     {
-    std::cerr << "patch0 != patch1 failed - they should not be equal!" << std::endl;
-    return EXIT_FAILURE;
+    throw std::runtime_error("patch0 != patch1 failed - they should not be equal!");
     }
 
   if(patch0 < patch1)
@@ -81,8 +81,7 @@ int main(int argc, char*argv[])
     }
   else
     {
-    std::cerr << "patch0 < patch1 failed!" << std::endl;
-    return EXIT_FAILURE;
+    throw std::runtime_error("patch0 < patch1 failed!");
     }
 
   return EXIT_SUCCESS;

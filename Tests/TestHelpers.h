@@ -19,12 +19,23 @@
 #ifndef TestHelpers_H
 #define TestHelpers_H
 
+#include "Mask.h"
+
 namespace TestHelpers
 {
   bool ValuesEqual(const float a, const float b);
 
   template<typename TImage>
   bool ImagesEqual(const TImage* const image1, const TImage* const image2);
+
+  template<typename TImage>
+  void GetBlankImage(TImage* const image1);
+
+  template<typename TImage>
+  void GetBlankImage(TImage* const image1, const unsigned int numberOfChannels);
+
+  void GetMask(Mask* const mask);
+
 } // end namespace
 
 #include "TestHelpers.hxx"

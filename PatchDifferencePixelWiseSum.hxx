@@ -17,7 +17,13 @@
  *=========================================================================*/
 
 template <typename TImage, typename TPixelDifference>
-float PatchDifferencePixelWiseSum<TImage, TPixelDifference>::ComputeDifference(const PatchPair& patchPair, const std::vector<itk::Offset<2> >& offsetsToCompare)
+PatchDifferencePixelWiseSum<TImage, TPixelDifference>::PatchDifferencePixelWiseSum() : PatchDifference<TImage, TPixelDifference>()
+{
+
+}
+
+template <typename TImage, typename TPixelDifference>
+float PatchDifferencePixelWiseSum<TImage, TPixelDifference>::Difference(const PatchPair& patchPair, const std::vector<itk::Offset<2> >& offsetsToCompare)  const
 {
   float totalDifference = 0.0f;
   float numberOfComponentsPerPixel = this->Image->GetNumberOfComponentsPerPixel();
@@ -30,7 +36,6 @@ float PatchDifferencePixelWiseSum<TImage, TPixelDifference>::ComputeDifference(c
   typename TImage::PixelType targetPixel(numberOfComponentsPerPixel);
 
   // Instantiate the distance function that has been specified as a template parameter.
-  TPixelDifference differenceFunction;
   float difference = 0;
 
   for(unsigned int pixelId = 0; pixelId < offsetsToCompare.size(); ++pixelId)
@@ -38,7 +43,7 @@ float PatchDifferencePixelWiseSum<TImage, TPixelDifference>::ComputeDifference(c
     sourcePixel = this->Image->GetPixel(sourceCorner + offsetsToCompare[pixelId]);
     targetPixel = this->Image->GetPixel(targetCorner + offsetsToCompare[pixelId]);
 
-    difference = differenceFunction.Difference(sourcePixel, targetPixel);
+    difference = TPixelDifference::Difference(sourcePixel, targetPixel);
 
     totalDifference += difference;
     } // end pixel loop

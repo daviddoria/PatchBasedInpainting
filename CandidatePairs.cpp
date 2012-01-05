@@ -55,12 +55,6 @@ CandidatePairs::ConstIterator CandidatePairs::end() const
   return this->PatchPairs.end();
 }
 
-void CandidatePairs::Sort(SortFunctorWrapper sortFunctor)
-{
-  //std::sort(this->begin(), this->end(), sortFunctor);
-  std::sort(this->PatchPairs.begin(), this->PatchPairs.end(), sortFunctor);
-}
-
 // const PatchPair& CandidatePairs::GetPair(const unsigned int pairId) const
 // {
 //   return *(this->PatchPairs[pairId]);
@@ -150,9 +144,3 @@ void CandidatePairs::Combine(const CandidatePairs& candidatePairs)
 // 
 //   fout.close();
 // }
-
-// Non-member functions
-bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2)
-{
-  return (candidatePairs1.GetPriority() < candidatePairs2.GetPriority());
-}

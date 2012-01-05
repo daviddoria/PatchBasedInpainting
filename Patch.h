@@ -32,6 +32,8 @@ public:
 
   itk::ImageRegion<2> GetRegion() const;
 
+  itk::Index<2> GetCorner() const;
+
   // Sort the patches by index (so they can be stored in a container such as std::set).
   bool operator<(const Patch &other) const;
 

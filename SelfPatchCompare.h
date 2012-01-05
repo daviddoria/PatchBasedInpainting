@@ -45,41 +45,22 @@ class Mask;
 // Boost
 #include <boost/function.hpp>
 
-template <typename TPatchDifferenceFunction>
+template <typename TImage, typename TPatchDifference>
 class SelfPatchCompare : public DebugOutputs
 {
 public:
   //SelfPatchCompare(const FloatVectorImageType* image, const Mask* mask);
   SelfPatchCompare();
 
-  // Compute the SSD for all of the pairs. Store the values in the PatchPair objects inside of the CandidatePairs object.
-  void ComputeAllSourceDifferences();
-
-  void ComputeAllSourceAndTargetDifferences();
+  // Compute the specified patch difference for all of the pairs.
+  // Store the values in the PatchPair objects inside of the CandidatePairs object.
+  void Compute();
 
   // Provide the image to work with.
-  void SetImage(const FloatVectorImageType*);
+  void SetImage(const TImage* const image);
 
   // Provide the mask to work with.
-  void SetMask(const Mask* mask);
-
-  float SlowDifference(const Patch& sourcePatch);
-  float PatchDifferenceManual(const Patch& sourcePatch);
-
-  float PatchAverageAbsoluteSourceDifference(const Patch& sourcePatch);
-  //float PatchAverageSquaredDifference(const Patch& sourcePatch);
-
-  // This function loops through FunctionsToCompute and calls them all.
-  void SetPatchAllDifferences(PatchPair& patchPair);
-
-  // This is the potential list of FunctionsToCompute
-  void SetPatchAverageAbsoluteSourceDifference(PatchPair& patchPair);
-  void SetPatchAverageAbsoluteFullDifference(PatchPair& patchPair);
-  //void SetPatchAverageSquaredDifference(PatchPair& patchPair);
-  void SetPatchDepthDifference(PatchPair& patchPair);
-  void SetPatchColorDifference(PatchPair& patchPair);
-  
-  void SetPatchHistogramIntersection(PatchPair& patchPair);
+  void SetMask(const Mask* const mask);
 
   // Prepare to do some comparisons by finding all of the valid pixels in the target region
   void ComputeOffsets();
@@ -96,7 +77,7 @@ protected:
   CandidatePairs* Pairs;
 
   // This is the image from which to take the patches
-  const FloatVectorImageType* Image;
+  const TImage* Image;
 
   // This is the mask to check the validity of target pixels
   const Mask* MaskImage;

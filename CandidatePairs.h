@@ -21,7 +21,6 @@
 
 // Custom
 #include "PatchPair.h"
-#include "PatchSorting.h"
 #include "SourcePatchCollection.h"
 
 // Boost
@@ -42,8 +41,6 @@ private:
 
 public:
   CandidatePairs(const Patch& targetPatch);
-
-  void Sort(SortFunctorWrapper sortFunctor);
 
   // Iterator interface
   typedef boost::indirect_iterator<PatchContainer::iterator> Iterator;
@@ -75,7 +72,5 @@ private:
 
   const Patch TargetPatch;
 };
-
-bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2);
 
 #endif

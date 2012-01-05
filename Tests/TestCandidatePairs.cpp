@@ -82,11 +82,7 @@ int main(int argc, char*argv[])
     std::cerr << "SetPriority or GetPriority failed! Was " << candidatePairs.GetPriority() << " but was supposed to be " << 1.2 << std::endl;
     return EXIT_FAILURE;
     }
-  
-  //const PatchPair patchPair = candidatePairs.GetPair(0);
 
-  //const Patch* sourcePatch = candidatePairs.GetSourcePatch(0);
-  
   Patch retrievedTargetPatch = candidatePairs.GetTargetPatch();
   if(retrievedTargetPatch != targetPatch)
     {
@@ -94,8 +90,7 @@ int main(int argc, char*argv[])
     return EXIT_FAILURE;
     }
 
-  // TODO: Test these
-  // void Sort(SortFunctorWrapper sortFunctor);
+  // TODO: Test this
   // void Combine(const CandidatePairs& pairs);
 
   return EXIT_SUCCESS;

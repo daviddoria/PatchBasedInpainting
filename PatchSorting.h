@@ -19,8 +19,26 @@
 #ifndef PATCHSORTING_H
 #define PATCHSORTING_H
 
+#include "CandidatePairs.h"
 #include "PairDifferences.h"
 #include "PatchPair.h"
+
+  void Sort(SortFunctorWrapper sortFunctor);
+
+  bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2);
+
+  void CandidatePairs::Sort(SortFunctorWrapper sortFunctor)
+{
+  //std::sort(this->begin(), this->end(), sortFunctor);
+  std::sort(this->PatchPairs.begin(), this->PatchPairs.end(), sortFunctor);
+}
+
+
+// Non-member functions
+bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2)
+{
+  return (candidatePairs1.GetPriority() < candidatePairs2.GetPriority());
+}
 
 // This is a pure virtual functor that defines the required interface.
 struct PatchSortFunctor

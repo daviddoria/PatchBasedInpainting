@@ -17,33 +17,37 @@
  *=========================================================================*/
 
 template <typename TImage, typename TPixelDifference>
-void PatchDifference<TImage, TPixelDifference>::SetImage(const TImage* const image)
+PatchDifference<TImage, TPixelDifference>::PatchDifference() : Image(NULL)
+{
+
+}
+
+template <typename TImage, typename TPixelDifference>
+void PatchDifference<TImage, TPixelDifference>::SetImage(TImage* const image)
 {
   this->Image = image;
 }
 
 template <typename TImage, typename TPixelDifference>
-float PatchDifference<TImage, TPixelDifference>::ComputeDifference(const PatchPair& patchPair)
+float PatchDifference<TImage, TPixelDifference>::Difference(const PatchPair& patchPair) const
 {
+  assert(this->Image);
+
   std::vector<itk::Offset<2> > targetOffsetsToCompare;
 
   itk::ImageRegionConstIterator<TImage> iterator(this->Image, patchPair.GetTargetPatch().GetRegion());
 
-  itk::Index<2> targetCorner = patchPair.GetTargetPatch().GetIndex();
+  itk::Index<2> targetCorner = patchPair.GetTargetPatch().GetCorner();
 
   // Add all pixels to the list to be compared
   while(!iterator.IsAtEnd())
     {
-    if(this->Image->IsValid(iterator.GetIndex()))
-      {
-      // The ComputeOffset function returns the linear index of the pixel.
-      // To compute the memory address of the pixel, we must multiply by the number of components per pixel.
-      itk::Offset<2> offset = iterator.GetIndex() - targetCorner;
+    itk::Offset<2> offset = iterator.GetIndex() - targetCorner;
 
-      targetOffsetsToCompare.push_back(offset); // We have to multiply the linear offset by the number of components per pixel for the VectorImage type
-      }
+    targetOffsetsToCompare.push_back(offset); // We have to multiply the linear offset by the number of components per pixel for the VectorImage type
 
     ++iterator;
     }
-  return ComputeDifference(patchPair, targetOffsetsToCompare);
+  //std::cout << "Full difference has " << targetOffsetsToCompare.size() << " offsets." << std::endl;
+  return Difference(patchPair, targetOffsetsToCompare);
 }
