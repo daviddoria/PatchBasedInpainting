@@ -18,7 +18,6 @@
 
 #include "PatchDifferencePixelWiseSum.h"
 #include "PixelDifference.h"
-#include "PixelDifferenceFull.h"
 
 #include "TestHelpers.h"
 #include "Types.h"
@@ -29,6 +28,6 @@ int main(int argc, char*argv[])
 {
   PatchDifferencePixelWiseSum<FloatScalarImageType, PixelDifference<FloatScalarImageType::PixelType> > scalar_patchDifferencePixelWiseSum;
 
-  PatchDifferencePixelWiseSum<FloatVectorImageType, PixelDifferenceFull<FloatVectorImageType::PixelType> > vector_patchDifferencePixelWiseSum;
+  //PatchDifferencePixelWiseSum<FloatVectorImageType, PixelDifferenceFull<FloatVectorImageType::PixelType> > vector_patchDifferencePixelWiseSum;
   return EXIT_SUCCESS;
 }

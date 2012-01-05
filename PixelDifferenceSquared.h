@@ -16,23 +16,24 @@
  *
  *=========================================================================*/
 
-#ifndef PixelDifferenceFull_H
-#define PixelDifferenceFull_H
+#ifndef PixelDifferenceSquared_H
+#define PixelDifferenceSquared_H
+
+#include "PixelDifference.h"
 
 template <typename TPixel>
-class PixelDifferenceFull
+struct PixelDifferenceSquared
 {
 public:
-  PixelDifferenceFull(const TPixel& examplePixel)
+  PixelDifferenceSquared(const TPixel& examplePixel)
   {
     this->NumberOfComponentsPerPixel = examplePixel.GetNumberOfElements();
-    //std::cout << "FullPixelDifference set NumberOfComponentsPerPixel to " << this->NumberOfComponentsPerPixel << std::endl;
   }
 
-  PixelDifferenceFull(const unsigned int numberOfComponents)
+  PixelDifferenceSquared(const unsigned int numberOfComponents)
   {
     this->NumberOfComponentsPerPixel = numberOfComponents;
-    //std::cout << "FullPixelDifference set NumberOfComponentsPerPixel to " << this->NumberOfComponentsPerPixel << std::endl;
+    //std::cout << "FullSquaredPixelDifference set NumberOfComponentsPerPixel to " << this->NumberOfComponentsPerPixel << std::endl;
   }
 
   float Difference(const TPixel& a, const TPixel& b)
@@ -42,17 +43,12 @@ public:
 
   static float Difference(const TPixel& a, const TPixel& b, const unsigned int numberOfComponents)
   {
-    float difference = 0;
-
-    float diff = 0;
-    for(unsigned int i = 0; i < numberOfComponents; ++i)
-      {
-      diff = fabs(a[i] - b[i]);
-      difference += diff;
-      }
-    return difference;
+    float difference = PixelDifference<TPixel>::Difference(a, b, numberOfComponents);
+    return difference*difference;
   }
 
+private:
+  unsigned int NumberOfComponentsPerPixel;
 };
 
 #endif

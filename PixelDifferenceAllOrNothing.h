@@ -16,14 +16,28 @@
  *
  *=========================================================================*/
 
-#ifndef PixelDifferenceScalar_H
-#define PixelDifferenceScalar_H
+#ifndef PixelDifferenceAllOrNothing_H
+#define PixelDifferenceAllOrNothing_H
 
-#include <cmath>
+#include "PixelDifference.h"
 
-// Unlike PixelDifference, the pixels are casted to float before the subtraction
-// ensuring there are no overflows.
+template <typename TScalar>
+struct PixelDifferenceAllOrNothing
+{
+  // Using this class will count how many pixels are not identically the same.
+  // This should clearly only be used when comparing int/char-valued images (like a membership image).
+  static float Difference(const TScalar& a, const TScalar& b)
+  {
+    if(a == b) // If the pixels are the same, the difference is 0.
+      {
+      return 0.0f;
+      }
+    else // If the pixels are different, the difference is set to 1.
+      {
+      return 1.0f;
+      }
 
-
+  }
+};
 
 #endif
