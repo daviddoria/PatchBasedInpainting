@@ -30,7 +30,17 @@
 namespace Helpers
 {
 
+template<typename T>
+typename std::enable_if<std::is_fundamental<T>::value, T&>::type index(T& t, size_t)
+{
+  return t;
+}
 
+template<typename T>
+typename T::value_type& index(T& v, size_t i)
+{
+  return v[i];
+}
 
 template <class T>
 unsigned int argmin(const typename std::vector<T>& vec)

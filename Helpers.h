@@ -34,7 +34,10 @@ namespace Helpers
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Get a short string of an itk::Index
 std::string GetString(const itk::Index<2>& index);
+
+// Get a short string of an itk::Size
 std::string GetString(const itk::Size<2>& size);
 
 bool IsValidRGB(const int r, const int g, const int b);
@@ -100,6 +103,13 @@ void NormalizeVector(std::vector<T>& v);
 
 template<typename T>
 T VectorMedian(std::vector<T> v);
+
+// This pair of functions allows a scalar to be treated as the 0th component of a vector.
+template<typename T>
+typename std::enable_if<std::is_fundamental<T>::value, T&>::type index(T& t, size_t);
+
+template<typename T>
+typename T::value_type& index(T& v, size_t i);
 
 }// end namespace
 

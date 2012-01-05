@@ -16,42 +16,29 @@
  *
  *=========================================================================*/
 
-#ifndef PixelDifference_H
-#define PixelDifference_H
-
-// This class uses the built in operator-() to compute the difference.
-// With certain input types, this could cause overflow problems (e.g
-// subtracting 10u from 5u is undefined (unsigned char can't have negative
-// values. See PixelDifferenceScalar for a difference that accounts for this.
-template<typename PixelType>
-struct PixelDifference
-{
-  static float Difference(const PixelType& a, const PixelType& b)
-  {
-    return static_cast<float>(std::max(a,b) - std::min(a,b));
-  }
-};
+#ifndef PixelDifferenceFull_H
+#define PixelDifferenceFull_H
 
 template <typename TPixel>
-struct PixelDifference
+class PixelDifferenceFull
 {
-  static float Difference(const TPixel& a, const TPixel& b)
+public:
+  PixelDifferenceFull(const TPixel& examplePixel)
   {
-    return fabs(static_cast<float>(a) - static_cast<float>(b));
+    this->NumberOfComponentsPerPixel = examplePixel.GetNumberOfElements();
+    //std::cout << "FullPixelDifference set NumberOfComponentsPerPixel to " << this->NumberOfComponentsPerPixel << std::endl;
   }
-};
 
-template<typename T>
-typename std::enable_if<std::is_fundamental<T>::value, T>::type index(T& t, size_t)
-{
-  return t;
-}
+  PixelDifferenceFull(const unsigned int numberOfComponents)
+  {
+    this->NumberOfComponentsPerPixel = numberOfComponents;
+    //std::cout << "FullPixelDifference set NumberOfComponentsPerPixel to " << this->NumberOfComponentsPerPixel << std::endl;
+  }
 
-template<typename T>
-typename T::value_type& index(T& v, size_t i)
-{
-  return v[i];
-}
+  float Difference(const TPixel& a, const TPixel& b)
+  {
+    return Difference(a, b, this->NumberOfComponentsPerPixel);
+  }
 
   static float Difference(const TPixel& a, const TPixel& b, const unsigned int numberOfComponents)
   {
@@ -65,5 +52,7 @@ typename T::value_type& index(T& v, size_t i)
       }
     return difference;
   }
+
+};
 
 #endif

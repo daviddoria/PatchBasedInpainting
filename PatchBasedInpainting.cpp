@@ -145,7 +145,7 @@ PatchPair PatchBasedInpainting::Iterate()
 {
   EnterFunction("Iterate()");
 
-  PriorityFunction->ComputeAllPriorities();
+  this->PriorityFunction->ComputeAllPriorities();
 
   SourcePatchCollection::PatchContainer sourcePatches = this->SourcePatches->FindSourcePatchesInRegion(this->FullImageRegion);
   this->SourcePatches->AddPatches(sourcePatches);
@@ -216,7 +216,7 @@ PatchPair PatchBasedInpainting::FindBestPatch()
   itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
   Patch targetPatch(targetRegion);
   CandidatePairs candidatePairs(targetPatch);
-  //candidatePairs.AddSourcePatches(*(this->SourcePatches));
+  candidatePairs.AddSourcePatches(*(this->SourcePatches));
   candidatePairs.SetPriority(highestPriority);
 
   ComputeScores(candidatePairs);

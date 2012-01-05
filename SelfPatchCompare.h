@@ -45,9 +45,9 @@ class Mask;
 // Boost
 #include <boost/function.hpp>
 
+template <typename TPatchDifferenceFunction>
 class SelfPatchCompare : public DebugOutputs
 {
-
 public:
   //SelfPatchCompare(const FloatVectorImageType* image, const Mask* mask);
   SelfPatchCompare();
@@ -59,9 +59,6 @@ public:
 
   // Provide the image to work with.
   void SetImage(const FloatVectorImageType*);
-
-  // Provide the membership image (used in some difference functions).
-  void SetMembershipImage(IntImageType* const membershipImage);
 
   // Provide the mask to work with.
   void SetMask(const Mask* mask);
@@ -87,22 +84,12 @@ public:
   // Prepare to do some comparisons by finding all of the valid pixels in the target region
   void ComputeOffsets();
 
-  void SetPairs(CandidatePairs* pairs);
-
-  void SetNumberOfComponentsPerPixel(const unsigned int numberOfComponentsPerPixel);
-
-  std::vector<boost::function< void(PatchPair&) > > FunctionsToCompute;
+  void SetPairs(CandidatePairs* const pairs);
 
 protected:
-  // If a channel of one pixel was white (255) and the corresponding channel of the other pixel
-  // was black (0), the difference would be 255, so the difference squared would be 255*255
-  static const float MaxColorDifference;
 
-  // These are the offsets of the target region which we with to compare
-  std::vector<FloatVectorImageType::OffsetValueType> ValidTargetPatchOffsets;
-
-  // This is the target region we wish to compare. It may be partially invalid.
-  //Patch TargetPatch;
+  // These are the pixel offsets of the target region which we with to compare.
+  std::vector<itk::Offset<2> > ValidTargetPatchPixelOffsets;
 
   // Provide the pairs of target/source patches. All target patches are exactly the same patch. The source regions are assumed to all be fully valid.
   // We modify the original data directory to add the computed values.
@@ -111,21 +98,8 @@ protected:
   // This is the image from which to take the patches
   const FloatVectorImageType* Image;
 
-  // Membership image
-  IntImageType* MembershipImage;
-
   // This is the mask to check the validity of target pixels
   const Mask* MaskImage;
-
-  unsigned int NumberOfComponentsPerPixel;
-
-  // This function takes a template paramter of a class which has a Difference(pixel, pixel) function.
-  template<typename TDifferenceFunction>
-  float PatchAverageSourceDifference(const Patch* sourcePatch);
-
-  // This function takes a template paramter of a class which has a Difference(pixel, pixel) function and a scalar image type.
-  template<typename TScalarImage, typename TDifferenceFunction>
-  float PatchAverageSourceDifference(TScalarImage* const image, const Patch* sourcePatch);
 
 };
 

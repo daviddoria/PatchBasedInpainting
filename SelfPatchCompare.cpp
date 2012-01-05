@@ -35,14 +35,7 @@
 // Boost
 #include <boost/bind.hpp>
 
-// SelfPatchCompare::SelfPatchCompare(const FloatVectorImageType* image, const Mask* mask) :
-// ColorFrequency(NULL), Image(NULL), MembershipImage(NULL), MaskImage(NULL), NumberOfComponentsPerPixel(1), Image(image), Mask(mask)
-// {
-//   this->NumberOfComponentsPerPixel = image->GetNumberOfComponentsPerPixel();
-// }
-
-SelfPatchCompare::SelfPatchCompare() :
-Image(NULL), MembershipImage(NULL), MaskImage(NULL), NumberOfComponentsPerPixel(1)
+SelfPatchCompare::SelfPatchCompare() : Image(NULL), MaskImage(NULL)
 {
 
 }
@@ -53,12 +46,6 @@ void SelfPatchCompare::SetImage(const FloatVectorImageType* image)
   this->Image = image;
   this->NumberOfComponentsPerPixel = image->GetNumberOfComponentsPerPixel();
   //std::cout << "Leave SelfPatchCompare::SetImage()" << std::endl;
-}
-
-// Provide the membership image (used in some difference functions).
-void SelfPatchCompare::SetMembershipImage(IntImageType* const membershipImage)
-{
-  this->MembershipImage = membershipImage;
 }
 
 void SelfPatchCompare::SetMask(const Mask* mask)
@@ -74,36 +61,32 @@ void SelfPatchCompare::ComputeOffsets()
   try
   {
     //std::cout << "Computing offsets for TargetPatch: " << this->Pairs->TargetPatch.Region.GetIndex() << std::endl;
-    this->ValidTargetPatchOffsets.clear();
+    this->ValidTargetPatchPixelOffsets.clear();
 
-    if(this->Image->GetNumberOfComponentsPerPixel() != this->NumberOfComponentsPerPixel)
-      {
-      std::cerr << "this->Image->GetNumberOfComponentsPerPixel() does not match this->NumberOfComponentsPerPixel!" << std::endl;
-      exit(-1);
-      }
     // Iterate over the target region of the mask. Add the linear offset of valid pixels to the offsets to be used later in the comparison.
     itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, this->Pairs->GetTargetPatch().GetRegion());
-
+    itk::Index<2> targetCorner = this->Pairs->GetTargetPatch().GetIndex();
     while(!maskIterator.IsAtEnd())
       {
       if(this->MaskImage->IsValid(maskIterator.GetIndex()))
-	{
-	//FloatVectorImageType::OffsetValueType offset = this->Image->ComputeOffset(maskIterator.GetIndex()) * componentsPerPixel;
-	if(!this->Image->GetLargestPossibleRegion().IsInside(maskIterator.GetIndex()))
-	  {
-	  std::cerr << "SelfPatchCompare::ComputeOffsets - Something is wrong!" << std::endl;
-	  exit(-1);
-	  }
-	// The ComputeOffset function returns the linear index of the pixel. To compute the memory address of the pixel, we must multiply by the number of components per pixel.
-	FloatVectorImageType::OffsetValueType offset = this->Image->ComputeOffset(maskIterator.GetIndex()) * this->NumberOfComponentsPerPixel;
-	if(offset < 0)
-	  {
-	  std::cerr << "SelfPatchCompare::ComputeOffsets - offset is negative!" << std::endl;
-	  exit(-1);
-	  }
-	//std::cout << "Using offset: " << offset << std::endl;
-	this->ValidTargetPatchOffsets.push_back(offset); // We have to multiply the linear offset by the number of components per pixel for the VectorImage type
-	}
+        {
+        //FloatVectorImageType::OffsetValueType offset = this->Image->ComputeOffset(maskIterator.GetIndex()) * componentsPerPixel;
+        if(!this->Image->GetLargestPossibleRegion().IsInside(maskIterator.GetIndex()))
+          {
+          std::cerr << "SelfPatchCompare::ComputeOffsets - Something is wrong!" << std::endl;
+          exit(-1);
+          }
+        // The ComputeOffset function returns the linear index of the pixel.
+        // To compute the memory address of the pixel, we must multiply by the number of components per pixel.
+        itk::Offset<2> offset = maskIterator.GetIndex() - targetCorner;
+        if(offset < 0)
+          {
+          std::cerr << "SelfPatchCompare::ComputeOffsets - offset is negative!" << std::endl;
+          exit(-1);
+          }
+        //std::cout << "Using offset: " << offset << std::endl;
+        this->ValidTargetPatchOffsets.push_back(offset); // We have to multiply the linear offset by the number of components per pixel for the VectorImage type
+        }
 
       ++maskIterator;
       }
@@ -131,108 +114,21 @@ void SelfPatchCompare::SetPatchAverageSquaredDifference(PatchPair& patchPair)
 */
 void SelfPatchCompare::SetPatchColorDifference(PatchPair& patchPair)
 {
-  float colorDifference = PatchAverageSourceDifference<ColorPixelDifference>(patchPair.GetSourcePatch());
+  float colorDifference = PatchAverageSourceDifference<PixelDifferenceColor>(patchPair.GetSourcePatch());
   patchPair.GetDifferences().SetDifferenceByType(PairDifferences::ColorDifference, colorDifference);
-}
-/*
-void SelfPatchCompare::SetPatchMembershipDifference(PatchPair& patchPair)
-{
-  if(!this->MembershipImage)
-    {
-    std::cerr << "No membership image set!" << std::endl;
-    exit(-1);
-    }
-  float membershipDifference = PatchAverageSourceDifference<IntImageType, ScalarPixelDifference<IntImageType::PixelType> >(this->MembershipImage, patchPair.SourcePatch);
-  //float membershipDifference = PatchAverageSourceDifference<IntImageType, ScalarAllOrNothingPixelDifference<IntImageType::PixelType> >(this->MembershipImage, patchPair.SourcePatch);
-  patchPair.DifferenceMap[PatchPair::MembershipDifference] = membershipDifference;
-}
-*/
-
-void SelfPatchCompare::SetPatchHistogramIntersection(PatchPair& patchPair)
-{
-//   if(!this->ColorFrequency)
-//     {
-//     std::cerr << "No ClusterColors/ColorFrequency set!" << std::endl;
-//     exit(-1);
-//     }
-// //   std::vector<float> histogram1 = this->ColorFrequency->HistogramRegion(this->ColorBinMembershipImage,
-// //                                                                         bestPatchPair.TargetPatch.Region, this->MaskImage, bestPatchPair.TargetPatch.Region);
-// //   std::vector<float> histogram2 = this->ColorFrequency->HistogramRegion(this->ColorBinMembershipImage,
-// //                                                                         bestPatchPair.SourcePatch.Region, inverseMask, bestPatchPair.TargetPatch.Region);
-//   std::vector<float> histogram1 = this->ColorFrequency->HistogramRegion(this->Image, patchPair.TargetPatch.Region, this->MaskImage, patchPair.TargetPatch.Region);
-//    std::vector<float> histogram2 = this->ColorFrequency->HistogramRegion(this->Image, patchPair.SourcePatch.Region,
-//                                                                          this->MaskImage, patchPair.TargetPatch.Region, true);
-// 
-//   float histogramIntersection = Histograms::HistogramIntersection(histogram2, histogram1);
-//   patchPair.DifferenceMap[PatchPair::HistogramIntersection] = histogramIntersection;
 }
 
 void SelfPatchCompare::SetPatchDepthDifference(PatchPair& patchPair)
 {
-  float depthDifference = PatchAverageSourceDifference<DepthPixelDifference>(patchPair.GetSourcePatch());
+  float depthDifference = PatchAverageSourceDifference<PixelDifferenceDepth>(patchPair.GetSourcePatch());
   patchPair.GetDifferences().SetDifferenceByType(PairDifferences::DepthDifference, depthDifference);
 }
 
 
 void SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference(PatchPair& patchPair)
 {
-  float averageAbsoluteDifference = PatchAverageSourceDifference<FullPixelDifference>(patchPair.GetSourcePatch());
+  float averageAbsoluteDifference = PatchAverageSourceDifference<PixelDifferenceFull>(patchPair.GetSourcePatch());
   patchPair.GetDifferences().SetDifferenceByType(PairDifferences::AverageAbsoluteDifference, averageAbsoluteDifference);
-}
-
-void SelfPatchCompare::SetPatchAverageAbsoluteFullDifference(PatchPair& patchPair)
-{
-  itk::ImageRegionConstIterator<FloatVectorImageType> sourcePatchIterator(this->Image, patchPair.GetSourcePatch()->GetRegion());
-  itk::ImageRegionConstIterator<FloatVectorImageType> targetPatchIterator(this->Image, patchPair.GetTargetPatch().GetRegion());
-
-  float totalAbsoluteDifference = 0.0f;
-
-  FullPixelDifference differenceFunction(this->Image->GetNumberOfComponentsPerPixel());
-  while(!sourcePatchIterator.IsAtEnd())
-    {
-    totalAbsoluteDifference += differenceFunction.Difference(sourcePatchIterator.Get(), targetPatchIterator.Get());
-
-    ++sourcePatchIterator;
-    ++targetPatchIterator;
-    }
-
-  float averageAbsoluteDifference = totalAbsoluteDifference / static_cast<float>(patchPair.GetSourcePatch()->GetRegion().GetNumberOfPixels());
-  patchPair.GetDifferences().SetDifferenceByType(PairDifferences::AverageAbsoluteDifference, averageAbsoluteDifference);
-}
-
-void SelfPatchCompare::SetPatchAllDifferences(PatchPair& patchPair)
-{
-  //std::cout << "Enter SelfPatchCompare::SetPatchAllDifferences()" << std::endl;
-  //SetPatchAverageSquaredDifference(patchPair);
-  for(unsigned int i = 0; i < this->FunctionsToCompute.size(); ++i)
-    {
-    this->FunctionsToCompute[i](patchPair);
-    }
-  //std::cout << "Leave SelfPatchCompare::SetPatchAllDifferences()" << std::endl;
-}
-
-void SelfPatchCompare::ComputeAllSourceAndTargetDifferences()
-{
-  //std::cout << "Enter SelfPatchCompare::ComputeAllSourceAndTargetDifferences()" << std::endl;
-  // Source patches are always full and entirely valid, so there are two cases - when the target patch is fully inside the image,
-  // and when it is not.
-  //std::cout << "ComputeAllSourceAndTargetDifferences()" << std::endl;
-
-  // Force the target region to be entirely inside the image
-  this->Pairs->GetTargetPatch().GetRegion().Crop(this->Image->GetLargestPossibleRegion());
-
-  ComputeOffsets();
-  #ifdef USE_QT_PARALLEL
-    #pragma message("Using QtConcurrent!")
-
-    //QtConcurrent::blockingMap<std::vector<PatchPair> >(this->Pairs->GetAllPairs(), boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteFullDifference, this, _1));
-  #else
-    #pragma message("NOT using QtConcurrent!")
-    for(CandidatePairs::Iterator pairIterator = this->Pairs->begin(); pairIterator != this->Pairs->end(); ++pairIterator)
-      {
-      SetPatchAverageAbsoluteFullDifference(*pairIterator);
-      }
-  #endif
 }
 
 void SelfPatchCompare::ComputeAllSourceDifferences()
@@ -256,7 +152,7 @@ void SelfPatchCompare::ComputeAllSourceDifferences()
   #endif
 }
 
-void SelfPatchCompare::SetPairs(CandidatePairs* pairs)
+void SelfPatchCompare::SetPairs(CandidatePairs* const pairs)
 {
   //std::cout << "Enter SelfPatchCompare::SetPairs()" << std::endl;
   this->Pairs = pairs;
@@ -267,5 +163,3 @@ void SelfPatchCompare::SetNumberOfComponentsPerPixel(const unsigned int numberOf
 {
   this->NumberOfComponentsPerPixel = numberOfComponentsPerPixel;
 }
-
-const float SelfPatchCompare::MaxColorDifference = 255*255;

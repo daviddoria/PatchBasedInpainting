@@ -5,7 +5,7 @@ PROJECT(PatchBasedInpainting)
 SET(INSTALL_DIR ${CMAKE_INSTALL_PREFIX} )
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) #fix the dynamic linking error (RPATH) that would occur without this
 
-# This is needed for shared_ptr
+# This is needed for shared_ptr and the trick using enable_if and if_fundamental to allow scalars to be treated as the 0th component of a vector.
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
@@ -26,42 +26,42 @@ else ( QT4_FOUND )
   message ( "QT4 NOT found successfully." )
 endif ( QT4_FOUND )
 
-add_library(PatchBasedInpainting
-CandidatePairs.cpp
-# ClusterColors.cpp
-# ClusterColorsAdaptive.cpp
-# ClusterColorsUniform.cpp
-DebugOutputs.cpp
-Derivatives.cpp
-Helpers.cpp
-HelpersOutput.cpp
-Histograms.cpp
-itkCommandLineArgumentParser.cxx
-ITKHelpers.cpp
-ITKImageCollection.cpp
-Isophotes.cpp
-Mask.cpp
-NamedITKImageCollection.cpp
-NamedITKImage.cpp
-NamedVTKImage.cpp
-PairDifferences.cpp
-Patch.cpp
-PatchBasedInpainting.cpp
-PatchBasedInpaintingDebugging.cpp
-PatchBasedInpaintingInterface.cpp
-PatchPair.cpp
-PatchSorting.cpp
-Priority.cpp
-PriorityCriminisi.cpp
-PriorityDepth.cpp
-PriorityFactory.cpp
-PriorityManual.cpp
-PriorityOnionPeel.cpp
-PriorityRandom.cpp
-SelfPatchCompare.cpp
-SourcePatchCollection.cpp
-)
-set_target_properties(PatchBasedInpainting PROPERTIES COMPILE_DEFINITIONS "${compileflags}")
+SET(BuildLibrary CACHE BOOL "Build the library.")
+if(BuildLibrary)
+  add_library(PatchBasedInpainting
+  CandidatePairs.cpp
+  DebugOutputs.cpp
+  Derivatives.cpp
+  Helpers.cpp
+  HelpersOutput.cpp
+  Histograms.cpp
+  itkCommandLineArgumentParser.cxx
+  ITKHelpers.cpp
+  ITKImageCollection.cpp
+  Isophotes.cpp
+  Mask.cpp
+  NamedITKImageCollection.cpp
+  NamedITKImage.cpp
+  NamedVTKImage.cpp
+  PairDifferences.cpp
+  Patch.cpp
+  PatchBasedInpainting.cpp
+  PatchBasedInpaintingDebugging.cpp
+  PatchBasedInpaintingInterface.cpp
+  PatchPair.cpp
+  PatchSorting.cpp
+  Priority.cpp
+  PriorityCriminisi.cpp
+  PriorityDepth.cpp
+  PriorityFactory.cpp
+  PriorityManual.cpp
+  PriorityOnionPeel.cpp
+  PriorityRandom.cpp
+  SelfPatchCompare.cpp
+  SourcePatchCollection.cpp
+  )
+  set_target_properties(PatchBasedInpainting PROPERTIES COMPILE_DEFINITIONS "${compileflags}")
+endif()
 
 # Interactive
 SET(BuildInteractive CACHE BOOL "Build the interactive version.")
