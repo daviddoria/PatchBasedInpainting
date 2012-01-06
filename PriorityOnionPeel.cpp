@@ -21,6 +21,7 @@
 // Custom
 #include "Helpers.h"
 #include "ITKHelpers.h"
+#include "ITKVTKHelpers.h"
 
 // VXL
 #include <vnl/vnl_double_2.h>
@@ -52,7 +53,7 @@ std::vector<NamedVTKImage> PriorityOnionPeel::GetNamedImages()
   NamedVTKImage confidenceMapImage;
   confidenceMapImage.Name = "ConfidenceMap";
   vtkSmartPointer<vtkImageData> confidenceMapImageVTK = vtkSmartPointer<vtkImageData>::New();
-  ITKHelpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->ConfidenceMapImage, confidenceMapImageVTK);
+  ITKVTKHelpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->ConfidenceMapImage, confidenceMapImageVTK);
   confidenceMapImage.ImageData = confidenceMapImageVTK;
   namedImages.push_back(confidenceMapImage);
 

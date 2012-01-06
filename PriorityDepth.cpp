@@ -20,6 +20,7 @@
 
 #include "Derivatives.h"
 #include "HelpersOutput.h"
+#include "MaskOperations.h"
 
 PriorityDepth::PriorityDepth(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius) : Priority(image, maskImage, patchRadius)
 {
@@ -72,7 +73,7 @@ float PriorityDepth::ComputePriority(const itk::Index<2>& queryPixel)
   FloatVector2Type isophote = this->DepthIsophoteImage->GetPixel(queryPixel);
   isophote.Normalize();
 
-  itk::Index<2> pixelAcrossHole = ITKHelpers::FindPixelAcrossHole(queryPixel, isophote, this->MaskImage);
+  itk::Index<2> pixelAcrossHole = MaskOperations::FindPixelAcrossHole(queryPixel, isophote, this->MaskImage);
 
   FloatVector2Type acrossIsophote = this->DepthIsophoteImage->GetPixel(pixelAcrossHole);
 
@@ -95,6 +96,6 @@ void PriorityDepth::Update(const itk::ImageRegion<2>& filledRegion)
   indexSelectionFilter->SetInput(this->Image);
   indexSelectionFilter->Update();
 
-  ITKHelpers::MaskedBlur<FloatScalarImageType>(indexSelectionFilter->GetOutput(), this->MaskImage, 2.0f, this->BlurredDepth);
+  MaskOperations::MaskedBlur<FloatScalarImageType>(indexSelectionFilter->GetOutput(), this->MaskImage, 2.0f, this->BlurredDepth);
   Derivatives::ComputeMaskedIsophotesInRegion(indexSelectionFilter->GetOutput(), this->MaskImage, filledRegion, this->DepthIsophoteImage);
 }

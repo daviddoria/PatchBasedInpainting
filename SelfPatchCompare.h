@@ -45,7 +45,7 @@ class Mask;
 // Boost
 #include <boost/function.hpp>
 
-template <typename TImage, typename TPatchDifference>
+template <typename TImage>
 class SelfPatchCompare : public DebugOutputs
 {
 public:
@@ -54,6 +54,7 @@ public:
 
   // Compute the specified patch difference for all of the pairs.
   // Store the values in the PatchPair objects inside of the CandidatePairs object.
+  template<typename TPatchDifference>
   void Compute();
 
   // Provide the image to work with.
@@ -88,7 +89,7 @@ protected:
   // This is the mask to check the validity of target pixels
   const Mask* MaskImage;
 
-  std::vector<PairDifferences::PatchDifferenceTypes> DifferenceType;
+  std::vector<PairDifferences::PatchDifferenceTypes> DifferenceTypes;
 };
 
 #include "SelfPatchCompare.hxx"

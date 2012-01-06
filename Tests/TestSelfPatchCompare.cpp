@@ -91,12 +91,12 @@ void ScalarComparison()
 
   CandidatePairs candidatePairs(targetPatch);
 
-  SelfPatchCompare<FloatScalarImageType, PatchDifferencePixelWiseSum<FloatScalarImageType, PixelDifference> > selfPatchCompare;
+  SelfPatchCompare<FloatScalarImageType> selfPatchCompare;
   selfPatchCompare.SetImage(scalarImage);
   selfPatchCompare.SetMask(mask);
   selfPatchCompare.SetDifferenceType(PairDifferences::SumPixelDifference);
   selfPatchCompare.SetPairs(&candidatePairs);
-  selfPatchCompare.Compute();
+  selfPatchCompare.Compute<PatchDifferencePixelWiseSum<FloatScalarImageType, PixelDifference> >();
 
   for(CandidatePairs::Iterator pairsIterator = candidatePairs.begin(); pairsIterator != candidatePairs.end(); ++pairsIterator)
     {

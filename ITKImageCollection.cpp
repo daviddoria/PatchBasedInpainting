@@ -21,6 +21,7 @@
 #include "Helpers.h"
 #include "ITKHelpers.h"
 #include "Mask.h"
+#include "MaskOperations.h"
 
 void ITKImageCollection::CopySelfPatchIntoHoleOfTargetRegion(const Mask* mask, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
 {
@@ -32,32 +33,32 @@ void ITKImageCollection::CopySelfPatchIntoHoleOfTargetRegion(const Mask* mask, c
     if(dynamic_cast<FloatScalarImageType*>(image))
       {
       std::cout << "Image " << imageId << " is FloatScalarImageType" << std::endl;
-      ITKHelpers::CopySelfPatchIntoHoleOfTargetRegion<FloatScalarImageType>(dynamic_cast<FloatScalarImageType*>(image), mask, sourceRegion, targetRegion);
+      MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<FloatScalarImageType>(dynamic_cast<FloatScalarImageType*>(image), mask, sourceRegion, targetRegion);
       }
     else if(dynamic_cast<Mask*>(image)) // This should come before UnsignedCharScalarImageType
       {
       std::cout << "Image " << imageId << " is Mask" << std::endl;
-      ITKHelpers::CopySelfPatchIntoHoleOfTargetRegion<Mask>(dynamic_cast<Mask*>(image), mask, sourceRegion, targetRegion);
+      MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<Mask>(dynamic_cast<Mask*>(image), mask, sourceRegion, targetRegion);
       }
     else if(dynamic_cast<UnsignedCharScalarImageType*>(image))
       {
       std::cout << "Image " << imageId << " is UnsignedCharScalarImageType" << std::endl;
-      ITKHelpers::CopySelfPatchIntoHoleOfTargetRegion<UnsignedCharScalarImageType>(dynamic_cast<UnsignedCharScalarImageType*>(image), mask, sourceRegion, targetRegion);
+      MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<UnsignedCharScalarImageType>(dynamic_cast<UnsignedCharScalarImageType*>(image), mask, sourceRegion, targetRegion);
       }
     else if(dynamic_cast<FloatVectorImageType*>(image))
       {
       std::cout << "Image " << imageId << " is FloatVectorImageType" << std::endl;
-      ITKHelpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(image), mask, sourceRegion, targetRegion);
+      MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(image), mask, sourceRegion, targetRegion);
       }
     else if(dynamic_cast<FloatVector2ImageType*>(image))
       {
       std::cout << "Image " << imageId << " is FloatVector2ImageType" << std::endl;
-      ITKHelpers::CopySelfPatchIntoHoleOfTargetRegion<FloatVector2ImageType>(dynamic_cast<FloatVector2ImageType*>(image), mask, sourceRegion, targetRegion);
+      MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<FloatVector2ImageType>(dynamic_cast<FloatVector2ImageType*>(image), mask, sourceRegion, targetRegion);
       }
     else if(dynamic_cast<IntImageType*>(image))
       {
       std::cout << "Image " << imageId << " is IntImageType" << std::endl;
-      ITKHelpers::CopySelfPatchIntoHoleOfTargetRegion<IntImageType>(dynamic_cast<IntImageType*>(image), mask, sourceRegion, targetRegion);
+      MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<IntImageType>(dynamic_cast<IntImageType*>(image), mask, sourceRegion, targetRegion);
       }
     else
       {

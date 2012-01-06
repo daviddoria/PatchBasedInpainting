@@ -22,7 +22,8 @@
 #include "Derivatives.h"
 #include "Helpers.h"
 #include "HelpersOutput.h"
-#include "Histograms.h"
+#include "MaskOperations.h"
+#include "PatchDifferencePixelWiseSum.h"
 #include "PriorityFactory.h"
 #include "PriorityRandom.h"
 #include "SelfPatchCompare.h"
@@ -230,10 +231,11 @@ Priority* PatchBasedInpainting::GetPriorityFunction()
 void PatchBasedInpainting::ComputeScores(CandidatePairs& candidatePairs)
 {
   //std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
-  this->PatchCompare->SetPairs(&candidatePairs);
-  this->PatchCompare->SetImage(this->CompareImage);
-  this->PatchCompare->SetMask(this->MaskImage);
-  this->PatchCompare->ComputeAllSourceDifferences();
+  this->PatchCompare.SetPairs(&candidatePairs);
+  this->PatchCompare.SetImage(this->CompareImage);
+  this->PatchCompare.SetMask(this->MaskImage);
+  this->PatchCompare.AddDifferenceType(PairDifferences::AveragePixelDifference);
+  this->PatchCompare.Compute<PatchDifferencePixelWiseSum<FloatVectorImageType, PixelDifference> >();
 }
 
 PatchPair PatchBasedInpainting::FindBestPatch()
@@ -241,8 +243,8 @@ PatchPair PatchBasedInpainting::FindBestPatch()
   EnterFunction("PatchBasedInpainting::FindBestPatch()");
 
   float highestPriority = 0.0f;
-  itk::Index<2> pixelToFill = ITKHelpers::FindHighestValueInMaskedRegion(this->PriorityFunction->GetPriorityImage(),
-                                                                      highestPriority, this->PriorityFunction->GetBoundaryImage());
+  itk::Index<2> pixelToFill = MaskOperations::FindHighestValueInNonZeroRegion(this->PriorityFunction->GetPriorityImage().GetPointer(),
+                                                                      highestPriority, this->PriorityFunction->GetBoundaryImage().GetPointer());
 
   itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
   Patch targetPatch(targetRegion);
@@ -252,7 +254,7 @@ PatchPair PatchBasedInpainting::FindBestPatch()
 
   ComputeScores(candidatePairs);
 
-  candidatePairs.Sort(SortFunctorWrapper(this->PatchSortFunction.get()));
+  candidatePairs.Sort(PairDifferences::AveragePixelDifference);
 
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
 

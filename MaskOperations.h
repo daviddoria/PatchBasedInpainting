@@ -26,6 +26,8 @@ class Mask;
 // ITK
 #include "itkIndex.h"
 
+namespace MaskOperations
+{
 // Look from a pixel across the hole in a specified direction and return the pixel that exists on the other side of the hole.
 itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVector2Type& direction, const Mask* const mask);
 
@@ -55,6 +57,10 @@ void CreatePatchImage(TImage* image, const itk::ImageRegion<2>& sourceRegion, co
 template<typename TImage>
 itk::Index<2> FindHighestValueInMaskedRegion(const TImage* const image, float& maxValue, const Mask* const maskImage);
 
+template<typename TImage, typename TRegionIndicatorImage>
+itk::Index<2> FindHighestValueInNonZero(const TImage* const image, float& maxValue, const TRegionIndicatorImage* const maskImage);
+
+} // end namespace
 
 #include "MaskOperations.hxx"
 

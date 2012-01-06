@@ -22,6 +22,7 @@
 #include "Helpers.h"
 #include "HelpersOutput.h"
 #include "ITKHelpers.h"
+#include "ITKVTKHelpers.h"
 
 // VTK
 #include <vtkSmartPointer.h>
@@ -49,7 +50,7 @@ std::vector<NamedVTKImage> Priority::GetNamedImages()
   NamedVTKImage priorityImage;
   priorityImage.Name = "Priority";
   vtkSmartPointer<vtkImageData> priorityImageVTK = vtkSmartPointer<vtkImageData>::New();
-  ITKHelpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->PriorityImage, priorityImageVTK);
+  ITKVTKHelpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->PriorityImage, priorityImageVTK);
   priorityImage.ImageData = priorityImageVTK;
 
   namedImages.push_back(priorityImage);

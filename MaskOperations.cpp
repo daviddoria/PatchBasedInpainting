@@ -18,6 +18,9 @@
 
 #include "MaskOperations.h"
 
+namespace MaskOperations
+{
+  
 itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVector2Type& inputDirection, const Mask* const mask)
 {
   if(!mask->IsValid(queryPixel))
@@ -88,3 +91,5 @@ void VectorMaskedBlur(const FloatVectorImageType* const inputImage, const Mask::
 
   ITKHelpers::DeepCopy<FloatVectorImageType>(imageToVectorImageFilter->GetOutput(), output);
 }
+
+} // end namespace

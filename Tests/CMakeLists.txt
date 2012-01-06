@@ -43,7 +43,7 @@ add_executable(TestPixelDifferences TestPixelDifferences.cpp)
 target_link_libraries(TestPixelDifferences ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTestHelpers)
 add_test(TestPixelDifferences TestPixelDifferences)
 
-add_executable(TestPatchDifference TestPatchDifference.cpp ../Patch.cpp ../PatchPair.cpp)
+add_executable(TestPatchDifference TestPatchDifference.cpp ../Patch.cpp ../PatchPair.cpp ../PairDifferences.cpp)
 target_link_libraries(TestPatchDifference ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTestHelpers)
 add_test(TestPatchDifference TestPatchDifference)
 
@@ -70,7 +70,58 @@ add_executable(TestITKVTKHelpers TestITKVTKHelpers.cpp)
 target_link_libraries(TestITKVTKHelpers ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libTestHelpers)
 add_test(TestITKVTKHelpers TestITKVTKHelpers)
 
-add_executable(TestPatchBasedInpainting TestPatchBasedInpainting.cpp ../PatchBasedInpainting.cpp)
+# add_executable(TestPriority TestPriority.cpp ../Priority.cpp)
+# target_link_libraries(TestPriority)
+# add_test(TestPriority TestPriority)
+# 
+# add_executable(TestPriorityFactor TestPriorityFactor.cpp ../PriorityFactor.cpp)
+# target_link_libraries(TestPriorityFactor)
+# add_test(TestPriorityFactor TestPriorityFactor)
+# 
+# add_executable(TestPriorityDepth TestPriorityDepth.cpp ../PriorityDepth.cpp)
+# target_link_libraries(TestPriorityDepth)
+# add_test(TestPriorityDepth TestPriorityDepth)
+# 
+# add_executable(TestPriorityManual TestPriorityManual.cpp ../PriorityManual.cpp)
+# target_link_libraries(TestPriorityManual)
+# add_test(TestPriorityManual TestPriorityManual)
+# 
+# add_executable(TestPriorityOnionPeel TestPriorityOnionPeel.cpp ../PriorityOnionPeel.cpp)
+# target_link_libraries(TestPriorityOnionPeel)
+# add_test(TestPriorityOnionPeel TestPriorityOnionPeel)
+# 
+# add_executable(TestPriorityRandom TestPriorityRandom.cpp ../PriorityRandom.cpp)
+# target_link_libraries(TestPriorityRandom)
+# add_test(TestPriorityRandom TestPriorityRandom)
+# 
+# add_executable(TestPriorityCriminisi TestPriorityCriminisi.cpp ../PriorityCriminisi.cpp)
+# target_link_libraries(TestPriorityCriminisi)
+# add_test(TestPriorityCriminisi TestPriorityCriminisi)
+
+# add_executable(TestITKImageCollection TestITKImageCollection.cpp ../ITKImageCollection.cpp)
+# target_link_libraries(TestITKImageCollection)
+# add_test(TestITKImageCollection TestITKImageCollection)
+
+# add_executable(TestNamedITKImage TestNamedITKImage.cpp ../TestNamedITKImage.cpp)
+# target_link_libraries(TestNamedITKImage)
+# add_test(TestNamedITKImage TestNamedITKImage)
+
+# add_executable(TestNamedVTKImage TestNamedVTKImage.cpp ../TestNamedVTKImage.cpp)
+# target_link_libraries(TestNamedVTKImage)
+# add_test(TestNamedVTKImage TestNamedVTKImage)
+
+# add_executable(TestNamedITKImageCollection TestNamedITKImageCollection.cpp ../TestNamedITKImageCollection.cpp)
+# target_link_libraries(TestNamedITKImageCollection)
+# add_test(TestNamedITKImageCollection TestNamedITKImageCollection)
+
+add_executable(TestPatchBasedInpainting TestPatchBasedInpainting.cpp ../PatchBasedInpainting.cpp ../PatchBasedInpaintingDebugging.cpp
+../HelpersOutput.cpp
+../DebugOutputs.cpp ../CandidatePairs.cpp ../PairDifferences.cpp
+../Priority.cpp ../PriorityFactory.cpp ../PriorityCriminisi.cpp ../PriorityOnionPeel.cpp ../PriorityRandom.cpp ../PriorityManual.cpp ../PriorityDepth.cpp
+../SourcePatchCollection.cpp ../Patch.cpp ../PatchPair.cpp
+../ITKHelpers.cpp ../Helpers.cpp ../ITKImageCollection.cpp
+../Mask.cpp ../MaskOperations.cpp
+../Isophotes.cpp ../Derivatives.cpp)
 target_link_libraries(TestPatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libTestHelpers)
 add_test(TestPatchBasedInpainting TestPatchBasedInpainting)
 

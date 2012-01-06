@@ -23,6 +23,7 @@
 #include "HelpersOutput.h"
 #include "Isophotes.h"
 #include "ITKHelpers.h"
+#include "ITKVTKHelpers.h"
 
 // VXL
 #include <vnl/vnl_double_2.h>
@@ -66,7 +67,7 @@ std::vector<NamedVTKImage> PriorityCriminisi::GetNamedImages()
   NamedVTKImage isophoteNamedImage;
   isophoteNamedImage.Name = "Isophotes";
   vtkSmartPointer<vtkImageData> isophoteImageVTK = vtkSmartPointer<vtkImageData>::New();
-  ITKHelpers::ITKImageToVTKVectorFieldImage(this->IsophoteImage, isophoteImageVTK);
+  ITKVTKHelpers::ITKImageToVTKVectorFieldImage(this->IsophoteImage, isophoteImageVTK);
   isophoteNamedImage.ImageData = isophoteImageVTK;
   isophoteNamedImage.Vectors = true;
   namedImages.push_back(isophoteNamedImage);
@@ -74,7 +75,7 @@ std::vector<NamedVTKImage> PriorityCriminisi::GetNamedImages()
   NamedVTKImage boundaryNormalsNamedImage;
   boundaryNormalsNamedImage.Name = "BoundaryNormals";
   vtkSmartPointer<vtkImageData> boundaryNormalsImageVTK = vtkSmartPointer<vtkImageData>::New();
-  ITKHelpers::ITKImageToVTKVectorFieldImage(this->BoundaryNormalsImage, boundaryNormalsImageVTK);
+  ITKVTKHelpers::ITKImageToVTKVectorFieldImage(this->BoundaryNormalsImage, boundaryNormalsImageVTK);
   boundaryNormalsNamedImage.ImageData = isophoteImageVTK;
   boundaryNormalsNamedImage.Vectors = true;
   namedImages.push_back(boundaryNormalsNamedImage);

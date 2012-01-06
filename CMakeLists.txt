@@ -37,9 +37,11 @@ if(BuildLibrary)
   Histograms.cpp
   itkCommandLineArgumentParser.cxx
   ITKHelpers.cpp
+  ITKVTKHelpers.cpp
   ITKImageCollection.cpp
   Isophotes.cpp
   Mask.cpp
+  MaskOperations.cpp
   NamedITKImageCollection.cpp
   NamedITKImage.cpp
   NamedVTKImage.cpp
@@ -48,7 +50,6 @@ if(BuildLibrary)
   PatchBasedInpainting.cpp
   PatchBasedInpaintingDebugging.cpp
   PatchPair.cpp
-  PatchSorting.cpp
   Priority.cpp
   PriorityCriminisi.cpp
   PriorityDepth.cpp

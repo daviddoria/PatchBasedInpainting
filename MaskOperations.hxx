@@ -6,6 +6,9 @@
 #include "itkGaussianOperator.h"
 #include "itkImageRegionIterator.h"
 
+namespace MaskOperations
+{
+  
 template <class TImage>
 void CopySelfPatchIntoHoleOfTargetRegion(TImage* image, const Mask* mask,
                                   const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput)
@@ -235,3 +238,14 @@ itk::Index<2> FindHighestValueInMaskedRegion(const TImage* const image, float& m
     exit(-1);
   }
 }
+
+template<typename TImage, typename TRegionIndicatorImage>
+itk::Index<2> FindHighestValueInNonZeroRegion(const TImage* const image, float& maxValue, const TRegionIndicatorImage* const indicatorImage)
+{
+  // Create a mask from the indicator image
+  Mask::Pointer mask = Mask::New();
+  mask->CreateFromImage(image, itk::NumericTraits<typename TRegionIndicatorImage::PixelType>::Zero);
+  return FindHighestValueInMaskedRegion(image, maxValue, mask);
+}
+
+} // end namespace

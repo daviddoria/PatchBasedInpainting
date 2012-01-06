@@ -102,6 +102,8 @@ public:
 
   ITKImageCollection& GetImagesToUpdate();
 
+  SelfPatchCompare<FloatVectorImageType> PatchCompare;
+
 private:
 
   void SetupHistograms();

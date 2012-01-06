@@ -16,6 +16,9 @@
  *
  *=========================================================================*/
 
+#ifdef IN_KDEVELOP_PARSER
+#include "SelfPatchCompare.h"
+#endif
 
 // Custom
 #include "CandidatePairs.h"
@@ -34,27 +37,27 @@
 // Boost
 #include <boost/bind.hpp>
 
-template <typename TImage, typename TPatchDifference>
-SelfPatchCompare<TImage, TPatchDifference>::SelfPatchCompare() :
-Pairs(NULL), Image(NULL), MaskImage(NULL), DifferenceType(PairDifferences::Invalid)
+template <typename TImage>
+SelfPatchCompare<TImage>::SelfPatchCompare() :
+Pairs(NULL), Image(NULL), MaskImage(NULL)
 {
 
 }
 
-template <typename TImage, typename TPatchDifference>
-void SelfPatchCompare<TImage, TPatchDifference>::SetImage(const TImage* const image)
+template <typename TImage>
+void SelfPatchCompare<TImage>::SetImage(const TImage* const image)
 {
   this->Image = image;
 }
 
-template <typename TImage, typename TPatchDifference>
-void SelfPatchCompare<TImage, TPatchDifference>::SetMask(const Mask* const mask)
+template <typename TImage>
+void SelfPatchCompare<TImage>::SetMask(const Mask* const mask)
 {
   this->MaskImage = mask;
 }
 
-template <typename TImage, typename TPatchDifference>
-void SelfPatchCompare<TImage, TPatchDifference>::ComputeOffsets()
+template <typename TImage>
+void SelfPatchCompare<TImage>::ComputeOffsets()
 {
   // This function computes the list of offsets that are from the source region of the target patch.
   try
@@ -89,8 +92,9 @@ void SelfPatchCompare<TImage, TPatchDifference>::ComputeOffsets()
   }
 }
 
-template <typename TImage, typename TPatchDifference>
-void SelfPatchCompare<TImage, TPatchDifference>::Compute()
+template <typename TImage>
+template<typename TPatchDifference>
+void SelfPatchCompare<TImage>::Compute()
 {
   assert(this->Image);
   assert(this->MaskImage);
@@ -101,6 +105,8 @@ void SelfPatchCompare<TImage, TPatchDifference>::Compute()
   //std::cout << "Enter SelfPatchCompare::ComputeAllSourceDifferences parallel SetPatchAllDifferences" << std::endl;
   std::cout << "SelfPatchCompare::Compute() had: " << this->ValidTargetPatchPixelOffsets.size()
             << " ValidTargetPatchOffsets on which to operate!" << std::endl;
+
+  TPatchDifference patchDifferenceFunction;
   for(unsigned int differenceTypeId = 0; differenceTypeId < this->DifferenceTypes.size(); ++differenceTypeId)
     {
     PairDifferences::PatchDifferenceTypes currentDifferenceType = this->DifferenceTypes[differenceTypeId];
@@ -110,47 +116,49 @@ void SelfPatchCompare<TImage, TPatchDifference>::Compute()
       }
     #ifdef USE_QT_PARALLEL
       #pragma message("Using QtConcurrent!")
-      QVector<float> differences = QtConcurrent::blockingMap(this->Pairs->begin(), this->Pairs->end(), boost::bind(&TPatchDifference::Difference, _1));
+      QVector<float> differences = QtConcurrent::blockingMapped<QVector<float> >(this->Pairs->begin(), this->Pairs->end(),
+                                                                              boost::bind(&TPatchDifference::Difference, &patchDifferenceFunction, _1));
+
       unsigned int differenceId = 0;
       for(CandidatePairs::Iterator pairIterator = this->Pairs->begin(); pairIterator != this->Pairs->end(); ++pairIterator)
         {
-        (*pairIterator).GetDifferences().SetDifferenceByType(this->DifferenceType, differences[differenceId]);
+        (*pairIterator).GetDifferences().SetDifferenceByType(currentDifferenceType, differences[differenceId]);
         }
     #else
       #pragma message("NOT using QtConcurrent!")
-      TPatchDifference patchDifferenceFunction;
+
       patchDifferenceFunction.SetImage(this->Image);
 
       for(CandidatePairs::Iterator pairIterator = this->Pairs->begin(); pairIterator != this->Pairs->end(); ++pairIterator)
         {
         float difference = patchDifferenceFunction.Difference(*pairIterator, this->ValidTargetPatchPixelOffsets);
-        (*pairIterator).GetDifferences().SetDifferenceByType(this->DifferenceType, difference);
+        (*pairIterator).GetDifferences().SetDifferenceByType(currentDifferenceType, difference);
         }
     #endif
     }
 }
 
-template <typename TImage, typename TPatchDifference>
-void SelfPatchCompare<TImage, TPatchDifference>::SetPairs(CandidatePairs* const pairs)
+template <typename TImage>
+void SelfPatchCompare<TImage>::SetPairs(CandidatePairs* const pairs)
 {
   this->Pairs = pairs;
 }
 
-template <typename TImage, typename TPatchDifference>
-void SelfPatchCompare<TImage, TPatchDifference>::SetDifferenceType(const PairDifferences::PatchDifferenceTypes& differenceType)
+template <typename TImage>
+void SelfPatchCompare<TImage>::SetDifferenceType(const PairDifferences::PatchDifferenceTypes& differenceType)
 {
   this->DifferenceTypes.clear();
   this->DifferenceTypes.push_back(differenceType);
 }
 
-template <typename TImage, typename TPatchDifference>
-void SelfPatchCompare<TImage, TPatchDifference>::SetDifferenceTypes(const std::vector<PairDifferences::PatchDifferenceTypes>& differenceTypes)
+template <typename TImage>
+void SelfPatchCompare<TImage>::SetDifferenceTypes(const std::vector<PairDifferences::PatchDifferenceTypes>& differenceTypes)
 {
   this->DifferenceTypes = differenceTypes;
 }
 
-template <typename TImage, typename TPatchDifference>
-void SelfPatchCompare<TImage, TPatchDifference>::AddDifferenceType(const PairDifferences::PatchDifferenceTypes& differenceType)
+template <typename TImage>
+void SelfPatchCompare<TImage>::AddDifferenceType(const PairDifferences::PatchDifferenceTypes& differenceType)
 {
   this->DifferenceTypes.push_back(differenceType);
 }
