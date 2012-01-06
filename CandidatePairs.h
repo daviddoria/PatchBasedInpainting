@@ -20,6 +20,7 @@
 #define CANDIDATEPAIRS_H
 
 // Custom
+#include "PairDifferences.h"
 #include "PatchPair.h"
 #include "SourcePatchCollection.h"
 
@@ -56,6 +57,10 @@ public:
 
   std::vector<std::shared_ptr<PatchPair> > GetPatchPairs();
 
+  enum SortOrderEnum {ASCENDING, DESCENDING};
+
+  void Sort(const PairDifferences::PatchDifferenceTypes sortBy, const SortOrderEnum ordering = DESCENDING);
+  
 //   const PatchPair& GetPair(const unsigned int pairId) const;
 //   PatchPair& GetPair(const unsigned int pairId);
   //const Patch* const GetSourcePatch(const unsigned int pairId) const;

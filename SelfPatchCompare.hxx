@@ -101,29 +101,33 @@ void SelfPatchCompare<TImage, TPatchDifference>::Compute()
   //std::cout << "Enter SelfPatchCompare::ComputeAllSourceDifferences parallel SetPatchAllDifferences" << std::endl;
   std::cout << "SelfPatchCompare::Compute() had: " << this->ValidTargetPatchPixelOffsets.size()
             << " ValidTargetPatchOffsets on which to operate!" << std::endl;
-  if(this->ValidTargetPatchPixelOffsets.size() == 0)
+  for(unsigned int differenceTypeId = 0; differenceTypeId < this->DifferenceTypes.size(); ++differenceTypeId)
     {
-    throw std::runtime_error("SelfPatchCompare::Compute() had no ValidTargetPatchOffsets!");
-    }
-  #ifdef USE_QT_PARALLEL
-    #pragma message("Using QtConcurrent!")
-    QVector<float> differences = QtConcurrent::blockingMap(this->Pairs->begin(), this->Pairs->end(), boost::bind(&TPatchDifference::Difference, _1));
-    unsigned int differenceId = 0;
-    for(CandidatePairs::Iterator pairIterator = this->Pairs->begin(); pairIterator != this->Pairs->end(); ++pairIterator)
+    PairDifferences::PatchDifferenceTypes currentDifferenceType = this->DifferenceTypes[differenceTypeId];
+    if(this->ValidTargetPatchPixelOffsets.size() == 0)
       {
-      (*pairIterator).GetDifferences().SetDifferenceByType(this->DifferenceType, differences[differenceId]);
+      throw std::runtime_error("SelfPatchCompare::Compute() had no ValidTargetPatchOffsets!");
       }
-  #else
-    #pragma message("NOT using QtConcurrent!")
-    TPatchDifference patchDifferenceFunction;
-    patchDifferenceFunction.SetImage(this->Image);
+    #ifdef USE_QT_PARALLEL
+      #pragma message("Using QtConcurrent!")
+      QVector<float> differences = QtConcurrent::blockingMap(this->Pairs->begin(), this->Pairs->end(), boost::bind(&TPatchDifference::Difference, _1));
+      unsigned int differenceId = 0;
+      for(CandidatePairs::Iterator pairIterator = this->Pairs->begin(); pairIterator != this->Pairs->end(); ++pairIterator)
+        {
+        (*pairIterator).GetDifferences().SetDifferenceByType(this->DifferenceType, differences[differenceId]);
+        }
+    #else
+      #pragma message("NOT using QtConcurrent!")
+      TPatchDifference patchDifferenceFunction;
+      patchDifferenceFunction.SetImage(this->Image);
 
-    for(CandidatePairs::Iterator pairIterator = this->Pairs->begin(); pairIterator != this->Pairs->end(); ++pairIterator)
-      {
-      float difference = patchDifferenceFunction.Difference(*pairIterator, this->ValidTargetPatchPixelOffsets);
-      (*pairIterator).GetDifferences().SetDifferenceByType(this->DifferenceType, difference);
-      }
-  #endif
+      for(CandidatePairs::Iterator pairIterator = this->Pairs->begin(); pairIterator != this->Pairs->end(); ++pairIterator)
+        {
+        float difference = patchDifferenceFunction.Difference(*pairIterator, this->ValidTargetPatchPixelOffsets);
+        (*pairIterator).GetDifferences().SetDifferenceByType(this->DifferenceType, difference);
+        }
+    #endif
+    }
 }
 
 template <typename TImage, typename TPatchDifference>
@@ -135,5 +139,18 @@ void SelfPatchCompare<TImage, TPatchDifference>::SetPairs(CandidatePairs* const 
 template <typename TImage, typename TPatchDifference>
 void SelfPatchCompare<TImage, TPatchDifference>::SetDifferenceType(const PairDifferences::PatchDifferenceTypes& differenceType)
 {
-  this->DifferenceType = differenceType;
+  this->DifferenceTypes.clear();
+  this->DifferenceTypes.push_back(differenceType);
+}
+
+template <typename TImage, typename TPatchDifference>
+void SelfPatchCompare<TImage, TPatchDifference>::SetDifferenceTypes(const std::vector<PairDifferences::PatchDifferenceTypes>& differenceTypes)
+{
+  this->DifferenceTypes = differenceTypes;
+}
+
+template <typename TImage, typename TPatchDifference>
+void SelfPatchCompare<TImage, TPatchDifference>::AddDifferenceType(const PairDifferences::PatchDifferenceTypes& differenceType)
+{
+  this->DifferenceTypes.push_back(differenceType);
 }

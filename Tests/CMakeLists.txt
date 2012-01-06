@@ -70,6 +70,10 @@ add_executable(TestITKVTKHelpers TestITKVTKHelpers.cpp)
 target_link_libraries(TestITKVTKHelpers ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libTestHelpers)
 add_test(TestITKVTKHelpers TestITKVTKHelpers)
 
+add_executable(TestPatchBasedInpainting TestPatchBasedInpainting.cpp ../PatchBasedInpainting.cpp)
+target_link_libraries(TestPatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libTestHelpers)
+add_test(TestPatchBasedInpainting TestPatchBasedInpainting)
+
 ######## Missing tests ##########
 
 add_executable(TestDerivatives TestDerivatives.cpp ../Derivatives.cpp ../Mask.cpp)

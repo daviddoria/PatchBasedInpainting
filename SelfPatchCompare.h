@@ -28,7 +28,6 @@
 
 // Custom
 class CandidatePairs;
-
 class Mask;
 
 #include "DebugOutputs.h"
@@ -67,6 +66,10 @@ public:
 
   void SetDifferenceType(const PairDifferences::PatchDifferenceTypes& differenceType);
 
+  void AddDifferenceType(const PairDifferences::PatchDifferenceTypes& differenceType);
+
+  void SetDifferenceTypes(const std::vector<PairDifferences::PatchDifferenceTypes>& differenceTypes);
+
 protected:
 
   // Prepare to do some comparisons by finding all of the valid pixels in the target region
@@ -85,7 +88,7 @@ protected:
   // This is the mask to check the validity of target pixels
   const Mask* MaskImage;
 
-  PairDifferences::PatchDifferenceTypes DifferenceType;
+  std::vector<PairDifferences::PatchDifferenceTypes> DifferenceType;
 };
 
 #include "SelfPatchCompare.hxx"

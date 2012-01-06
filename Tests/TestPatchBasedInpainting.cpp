@@ -16,10 +16,12 @@
  *
  *=========================================================================*/
 
-#include "PatchSorting.h"
+#include "PatchBasedInpainting.h"
 
-int main(int argc, char*argv[])
+int main()
 {
-  return EXIT_FAILURE;
-  
+  FloatVectorImageType::Pointer image = FloatVectorImageType::New();
+  Mask::Pointer mask = Mask::New();
+  PatchBasedInpainting(image, mask);
+  return EXIT_SUCCESS;
 }

@@ -26,12 +26,11 @@
 #include "Mask.h"
 #include "Patch.h"
 #include "PatchPair.h"
-#include "PatchSorting.h"
+#include "SelfPatchCompare.h"
 #include "SourcePatchCollection.h"
 #include "Types.h"
 
 class Priority;
-class SelfPatchCompare;
 
 // ITK
 #include "itkCovariantVector.h"
@@ -48,14 +47,12 @@ public:
   /////////////////// CriminisiInpaintingInterface.cpp //////////////////
   ///////////////////////////////////////////////////////////////////////
 
-  void SetDifferenceType(const int);
-
   // Specify the size of the patches to copy.
-  void SetPatchRadius(const unsigned int);
-  unsigned int GetPatchRadius();
+  void SetPatchRadius(const unsigned int radius);
+  unsigned int GetPatchRadius() const;
 
   // Get the result/output of the inpainting so far. When the algorithm is complete, this will be the final output.
-  FloatVectorImageType::Pointer GetCurrentOutputImage();
+  FloatVectorImageType* GetCurrentOutputImage();
 
   // Get the current mask image
   Mask* GetMaskImage();
@@ -66,7 +63,7 @@ public:
 
   // Constructor
   //PatchBasedInpainting();
-  PatchBasedInpainting(const FloatVectorImageType* image, const Mask* mask);
+  PatchBasedInpainting(const FloatVectorImageType* const image, const Mask* const mask);
 
   // A single step of the algorithm. The real work is done here.
   PatchPair Iterate();
@@ -86,15 +83,13 @@ public:
   // When an image is loaded, it's size is taken as the size that everything else should be. We don't want to keep referring to Image->GetLargestPossibleRegion,
   // so we store the region in a member variable. For the same reason, if we want to know the size of the images that this class is operating on, the user should
   // not have to query a specific image, but rather access this more global region definition.
-  itk::ImageRegion<2> GetFullRegion();
+  const itk::ImageRegion<2>& GetFullRegion() const;
 
   // Return a pointer to all forward look sets.
   std::vector<CandidatePairs>& GetPotentialCandidatePairsReference();
 
   //void SetPatchCompare(SelfPatchCompare* PatchCompare);
-  SelfPatchCompare* GetPatchCompare() const;
-
-  std::shared_ptr<PatchSortFunctor> PatchSortFunction;
+  //SelfPatchCompare<FloatVectorImageType, PatchDifference<PixelDifference> >* GetPatchCompare() const;
 
 //   template <typename T>
 //   void SetPriorityFunction();
@@ -173,7 +168,7 @@ private:
   void DebugWritePixelToFill(const itk::Index<2>& pixelToFill, const unsigned int iteration);
   void DebugWritePatchToFillLocation(const itk::Index<2>& pixelToFill, const unsigned int iteration);
 
-  std::shared_ptr<SelfPatchCompare> PatchCompare;
+  //std::shared_ptr<SelfPatchCompare> PatchCompare;
 
   std::shared_ptr<Priority> PriorityFunction;
 

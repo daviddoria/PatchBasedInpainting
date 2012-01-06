@@ -22,6 +22,8 @@
 #include "PairDifferences.h"
 #include "Patch.h"
 
+#include <memory>
+
 class PatchPair
 {
 public:
@@ -42,6 +44,16 @@ private:
   PairDifferences Differences;
   const Patch* const SourcePatch; // This is a pointer to a patch in the main (only) SourcePatchCollection.
   Patch TargetPatch; // This is not a pointer to a patch in the main SourcePatchCollection, because it is not valid yet (we are going to copy pixels here)!
+};
+
+struct PairSortFunctor
+{
+  PairSortFunctor(const PairDifferences::PatchDifferenceTypes sortBy) : SortBy(sortBy) {}
+  bool operator()(const PatchPair& pair1, const PatchPair& pair2);
+
+  bool operator()(const std::shared_ptr<PatchPair>& pair1, const std::shared_ptr<PatchPair>& pair2);
+
+  PairDifferences::PatchDifferenceTypes SortBy;
 };
 
 #endif

@@ -23,7 +23,6 @@
 #include "Helpers.h"
 #include "HelpersOutput.h"
 #include "Histograms.h"
-#include "PatchSorting.h"
 #include "PriorityFactory.h"
 #include "PriorityRandom.h"
 #include "SelfPatchCompare.h"
@@ -47,7 +46,7 @@
 #include "itkVectorImageToImageAdaptor.h"
 #include "itkVectorIndexSelectionCastImageFilter.h"
 
-PatchBasedInpainting::PatchBasedInpainting(const FloatVectorImageType* image, const Mask* mask)
+PatchBasedInpainting::PatchBasedInpainting(const FloatVectorImageType* const image, const Mask* const mask)
 {
   EnterFunction("PatchBasedInpainting()");
 
@@ -80,12 +79,46 @@ PatchBasedInpainting::PatchBasedInpainting(const FloatVectorImageType* image, co
   // Set defaults
   this->NumberOfCompletedIterations = 0;
 
-  this->PatchSortFunction = std::make_shared<SortByDifference>(PairDifferences::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
-
-  this->PatchCompare = std::make_shared<SelfPatchCompare>();
-
   this->PriorityFunction = NULL; // Can't initialize this here, must wait until the image and mask are opened
 }
+
+
+FloatVectorImageType* PatchBasedInpainting::GetCurrentOutputImage()
+{
+  return this->CurrentInpaintedImage;
+}
+
+Mask* PatchBasedInpainting::GetMaskImage()
+{
+  return this->MaskImage;
+}
+
+void PatchBasedInpainting::SetPatchRadius(const unsigned int radius)
+{
+  // Since this is the radius of the patch, there are no restrictions for the radius to be odd or even.
+  this->PatchRadius.Fill(radius);
+}
+
+unsigned int PatchBasedInpainting::GetPatchRadius() const
+{
+  return this->PatchRadius[0];
+}
+
+const itk::ImageRegion<2>& PatchBasedInpainting::GetFullRegion() const
+{
+  return this->FullImageRegion;
+}
+
+// SelfPatchCompare* PatchBasedInpainting::GetPatchCompare() const
+// {
+//   return this->PatchCompare.get();
+// }
+
+// void PatchBasedInpainting::SetPatchCompare(SelfPatchCompare* patchCompare)
+// {
+//   delete this->PatchCompare;
+//   this->PatchCompare = patchCompare;
+// }
 
 void PatchBasedInpainting::SetPriorityFunction(const std::string& priorityType)
 {
@@ -128,8 +161,6 @@ void PatchBasedInpainting::Initialize()
     // Clear the source patches, as additional patches are added each iteration. When we reset the inpainter, we want to start over from only patches that are
     // valid in the original mask.
     this->SourcePatches->Clear();
-
-    this->PatchCompare->SetNumberOfComponentsPerPixel(this->CompareImage->GetNumberOfComponentsPerPixel());
 
     LeaveFunction("PatchBasedInpainting::Initialize()");
   }

@@ -23,22 +23,16 @@
 #include "PairDifferences.h"
 #include "PatchPair.h"
 
-  void Sort(SortFunctorWrapper sortFunctor);
-
-  bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2);
-
-  void CandidatePairs::Sort(SortFunctorWrapper sortFunctor)
-{
-  //std::sort(this->begin(), this->end(), sortFunctor);
-  std::sort(this->PatchPairs.begin(), this->PatchPairs.end(), sortFunctor);
-}
+//   void Sort(SortFunctorWrapper sortFunctor);
+//
+//   bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2);
 
 
 // Non-member functions
-bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2)
-{
-  return (candidatePairs1.GetPriority() < candidatePairs2.GetPriority());
-}
+// bool SortByPriority(const CandidatePairs& candidatePairs1, const CandidatePairs& candidatePairs2)
+// {
+//   return (candidatePairs1.GetPriority() < candidatePairs2.GetPriority());
+// }
 
 // This is a pure virtual functor that defines the required interface.
 struct PatchSortFunctor
@@ -68,18 +62,5 @@ struct SortByDifference : public PatchSortFunctor
   SortByDifference(PairDifferences::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder) : PatchSortFunctor(differenceType, sortOrder){}
   bool operator()(const PatchPair& pair1, const PatchPair& pair2);
 };
-
-// struct SortByTotalScore : public PatchSortFunctor
-// {
-//   SortByTotalScore(PatchPair::PatchDifferenceTypes differenceType) : PatchSortFunctor(differenceType){}
-//   bool operator()(const PatchPair& pair1, const PatchPair& pair2);
-// };
-
-// struct SortByDepthAndColor : public PatchSortFunctor
-// {
-//   bool operator()(const PatchPair& pair1, const PatchPair& pair2);
-//   SortByDepthAndColor(PairDifferences::PatchDifferenceTypes differenceType) : PatchSortFunctor(differenceType, ASCENDING), DepthColorLambda(0.5f){}
-//   float DepthColorLambda;
-// };
 
 #endif

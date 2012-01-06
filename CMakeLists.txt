@@ -47,7 +47,6 @@ if(BuildLibrary)
   Patch.cpp
   PatchBasedInpainting.cpp
   PatchBasedInpaintingDebugging.cpp
-  PatchBasedInpaintingInterface.cpp
   PatchPair.cpp
   PatchSorting.cpp
   Priority.cpp

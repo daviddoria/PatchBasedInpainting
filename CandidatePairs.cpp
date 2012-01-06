@@ -17,12 +17,19 @@
  *=========================================================================*/
 
 #include "CandidatePairs.h"
+#include "PatchPair.h"
 
 #include <memory>
 
 CandidatePairs::CandidatePairs(const Patch& targetPatch) : Priority(0.0f), TargetPatch(targetPatch)
 {
 
+}
+
+void CandidatePairs::Sort(const PairDifferences::PatchDifferenceTypes sortBy, const SortOrderEnum ordering)
+{
+  PairSortFunctor sortFunctor(sortBy);
+  std::sort(this->PatchPairs.begin(), this->PatchPairs.end(), sortFunctor);
 }
 
 void CandidatePairs::AddSourcePatches(const SourcePatchCollection& patches)

@@ -23,8 +23,6 @@ PatchPair::PatchPair(const Patch* const sourcePatch, const Patch& targetPatch) :
 
 }
 
-
-// 
 // PatchPair& PatchPair::operator= (const PatchPair& other)
 // {
 //   if (this != &other)
@@ -86,12 +84,21 @@ float PatchPair::GetDepthAndColorDifference() const
   return ComputeDepthAndColorDifference(this->DifferenceMap.find(DepthDifference)->second, this->DifferenceMap.find(ColorDifference)->second);
 }*/
 
-//////////////////////////////////////////
-/////// Computations (functions of more than one difference) //////////////
-//////////////////////////////////////////
-/*
-float PatchPair::ComputeDepthAndColorDifferenceFunctor::operator()(const float depthDifference, const float colorDifference) const
+bool PairSortFunctor::operator()(const PatchPair& pair1, const PatchPair& pair2)
 {
-  //this->DepthAndColorDifference = this->ColorDifference * DepthColorLambda + (1.0 - DepthColorLambda) * this->DepthDifference;
-  return depthDifference + this->DepthColorLambda * colorDifference;
-}*/
+//   if(SortOrder == ASCENDING)
+//     {
+//     return (pair1.GetDifferences().GetDifferenceByType(DifferenceType) < pair2.GetDifferences().GetDifferenceByType(DifferenceType));
+//     }
+//   else
+//     {
+//     return !(pair1.GetDifferences().GetDifferenceByType(DifferenceType) < pair2.GetDifferences().GetDifferenceByType(DifferenceType));
+//     }
+  return !(pair1.GetDifferences().GetDifferenceByType(SortBy) < pair2.GetDifferences().GetDifferenceByType(SortBy));
+}
+
+bool PairSortFunctor::operator()(const std::shared_ptr<PatchPair>& pair1, const std::shared_ptr<PatchPair>& pair2)
+{
+  return !(pair1->GetDifferences().GetDifferenceByType(SortBy) < pair2->GetDifferences().GetDifferenceByType(SortBy));
+}
+

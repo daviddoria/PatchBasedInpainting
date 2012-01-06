@@ -18,25 +18,10 @@
 
 #include "PatchSorting.h"
 
-bool SortFunctorWrapper::operator()(const PatchPair &T1, const PatchPair &T2)
+void SortCandidatePairs(CandidatePairs& candidatePairs)
 {
-  return (*func_)(T1, T2);
-}
-
-bool SortFunctorWrapper::operator()(PatchPair* const pair1, PatchPair* const pair2)
-{
-  return (*func_)(*pair1, *pair2);
-}
-
-bool SortFunctorWrapper::operator()(const std::shared_ptr<PatchPair>& pair1, const std::shared_ptr<PatchPair>& pair2)
-{
-  return (*func_)(*pair1, *pair2);
-}
-
-PatchSortFunctor::PatchSortFunctor(const PairDifferences::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder) :
-DifferenceType(differenceType), SortOrder(sortOrder)
-{
-
+  //std::sort(this->begin(), this->end(), sortFunctor);
+  std::sort(this->PatchPairs.begin(), this->PatchPairs.end(), sortFunctor);
 }
 
 bool SortByDifference::operator()(const PatchPair& pair1, const PatchPair& pair2)
@@ -50,15 +35,3 @@ bool SortByDifference::operator()(const PatchPair& pair1, const PatchPair& pair2
     return !(pair1.GetDifferences().GetDifferenceByType(DifferenceType) < pair2.GetDifferences().GetDifferenceByType(DifferenceType));
     }
 }
-
-
-
-// bool SortByTotalScore::operator()(const PatchPair& pair1, const PatchPair& pair2)
-// {
-//   return (pair1.GetTotalScore() < pair2.GetTotalScore());
-// }
-/*
-bool SortByDepthAndColor::operator()(const PatchPair& pair1, const PatchPair& pair2)
-{
-  return (pair1.GetDepthAndColorDifference() < pair2.GetDepthAndColorDifference());
-}*/
