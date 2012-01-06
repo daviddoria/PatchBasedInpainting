@@ -63,14 +63,14 @@ public:
   // Provide the mask to work with.
   void SetMask(const Mask* const mask);
 
-  // Prepare to do some comparisons by finding all of the valid pixels in the target region
-  void ComputeOffsets();
-
   void SetPairs(CandidatePairs* const pairs);
 
   void SetDifferenceType(const PairDifferences::PatchDifferenceTypes& differenceType);
 
 protected:
+
+  // Prepare to do some comparisons by finding all of the valid pixels in the target region
+  void ComputeOffsets();
 
   // These are the pixel offsets of the target region which we with to compare.
   std::vector<itk::Offset<2> > ValidTargetPatchPixelOffsets;

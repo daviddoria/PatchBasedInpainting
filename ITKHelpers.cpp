@@ -46,6 +46,19 @@
 namespace ITKHelpers
 {
 
+std::string GetString(const itk::Index<2>& index)
+{
+  std::stringstream ss;
+  ss << "(" << index[0] << ", " << index[1] << ")";
+  return ss.str();
+}
+
+std::string GetString(const itk::Size<2>& size)
+{
+  std::stringstream ss;
+  ss << "(" << size[0] << ", " << size[1] << ")";
+  return ss.str();
+}
 
 FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors)
 {
@@ -72,35 +85,6 @@ FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors)
 }
 
 
-void VectorMaskedBlur(const FloatVectorImageType* const inputImage, const Mask::Pointer mask, const float blurVariance, FloatVectorImageType::Pointer output)
-{
-  // Disassembler
-  typedef itk::VectorIndexSelectionCastImageFilter<FloatVectorImageType, FloatScalarImageType> IndexSelectionType;
-  IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
-  indexSelectionFilter->SetInput(inputImage);
-
-  // Reassembler
-  typedef itk::ComposeImageFilter<FloatScalarImageType> ImageToVectorImageFilterType;
-  ImageToVectorImageFilterType::Pointer imageToVectorImageFilter = ImageToVectorImageFilterType::New();
-
-  std::vector< FloatScalarImageType::Pointer > filteredImages;
-
-  for(unsigned int i = 0; i < inputImage->GetNumberOfComponentsPerPixel(); ++i)
-    {
-    indexSelectionFilter->SetIndex(i);
-    indexSelectionFilter->Update();
-
-    FloatScalarImageType::Pointer blurred = FloatScalarImageType::New();
-    MaskedBlur<FloatScalarImageType>(indexSelectionFilter->GetOutput(), mask, blurVariance, blurred);
-
-    filteredImages.push_back(blurred);
-    imageToVectorImageFilter->SetInput(i, filteredImages[i]);
-    }
-
-  imageToVectorImageFilter->Update();
-
-  DeepCopy<FloatVectorImageType>(imageToVectorImageFilter->GetOutput(), output);
-}
 
 
 float AngleBetween(const FloatVector2Type v1, const FloatVector2Type v2)
@@ -250,199 +234,6 @@ void NormalizeVectorImage(FloatVector2ImageType* image)
     }
 }
 
-void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType* image, vtkImageData* outputImage)
-{
-  //std::cout << "ITKImagetoVTKVectorFieldImage()" << std::endl;
-
-  // Setup and allocate the image data
-  outputImage->SetNumberOfScalarComponents(3); // We really want this to be 2, but VTK complains, so we must add a 3rd component (0) to every pixel
-  outputImage->SetScalarTypeToFloat();
-  outputImage->SetDimensions(image->GetLargestPossibleRegion().GetSize()[0],
-                             image->GetLargestPossibleRegion().GetSize()[1],
-                             1);
-
-  outputImage->AllocateScalars();
-
-  // Copy all of the input image pixels to the output image
-  itk::ImageRegionConstIteratorWithIndex<FloatVector2ImageType> imageIterator(image, image->GetLargestPossibleRegion());
-
-  while(!imageIterator.IsAtEnd())
-    {
-    float* pixel = static_cast<float*>(outputImage->GetScalarPointer(imageIterator.GetIndex()[0],
-                                                                     imageIterator.GetIndex()[1],0));
-
-    FloatVector2ImageType::PixelType inputPixel = imageIterator.Get();
-    pixel[0] = inputPixel[0];
-    pixel[1] = inputPixel[1];
-    pixel[2] = 0;
-
-    ++imageIterator;
-    }
-
-  outputImage->GetPointData()->SetActiveVectors("ImageScalars");
-  outputImage->Modified();
-}
-
-void ITKImageChannelToVTKImage(const FloatVectorImageType* image, const unsigned int channel, vtkImageData* outputImage)
-{
-  FloatScalarImageType::Pointer channelImage = FloatScalarImageType::New();
-  ExtractChannel<float>(image, channel, channelImage);
-  ITKScalarImageToScaledVTKImage<FloatScalarImageType>(channelImage, outputImage);
-}
-
-// Convert a vector ITK image to a VTK image for display
-void ITKVectorImageToVTKImageFromDimension(const FloatVectorImageType* image, vtkImageData* outputImage)
-{
-  // If the image has 3 channels, assume it is RGB.
-  if(image->GetNumberOfComponentsPerPixel() == 3)
-    {
-    ITKImageToVTKRGBImage(image, outputImage);
-    }
-  else
-    {
-    ITKImageToVTKMagnitudeImage(image, outputImage);
-    }
-
-  outputImage->Modified();
-}
-
-// Convert a vector ITK image to a VTK image for display
-void ITKImageToVTKRGBImage(const FloatVectorImageType* image, vtkImageData* outputImage)
-{
-  // This function assumes an ND (with N>3) image has the first 3 channels as RGB and extra information in the remaining channels.
-
-  //std::cout << "ITKImagetoVTKRGBImage()" << std::endl;
-  if(image->GetNumberOfComponentsPerPixel() < 3)
-    {
-    std::cerr << "The input image has " << image->GetNumberOfComponentsPerPixel() << " components, but at least 3 are required." << std::endl;
-    return;
-    }
-
-  // Setup and allocate the image data
-  outputImage->SetNumberOfScalarComponents(3);
-  outputImage->SetScalarTypeToUnsignedChar();
-  outputImage->SetDimensions(image->GetLargestPossibleRegion().GetSize()[0],
-                             image->GetLargestPossibleRegion().GetSize()[1],
-                             1);
-
-  outputImage->AllocateScalars();
-
-  // Copy all of the input image pixels to the output image
-  itk::ImageRegionConstIteratorWithIndex<FloatVectorImageType> imageIterator(image,image->GetLargestPossibleRegion());
-  imageIterator.GoToBegin();
-
-  while(!imageIterator.IsAtEnd())
-    {
-    unsigned char* pixel = static_cast<unsigned char*>(outputImage->GetScalarPointer(imageIterator.GetIndex()[0],
-                                                                                     imageIterator.GetIndex()[1],0));
-    for(unsigned int component = 0; component < 3; component++)
-      {
-      pixel[component] = static_cast<unsigned char>(imageIterator.Get()[component]);
-      }
-
-    ++imageIterator;
-    }
-
-  outputImage->Modified();
-}
-
-
-// Convert a vector ITK image to a VTK image for display
-void ITKImageToVTKMagnitudeImage(const FloatVectorImageType* image, vtkImageData* outputImage)
-{
-  //std::cout << "ITKImagetoVTKMagnitudeImage()" << std::endl;
-  // Compute the magnitude of the ITK image
-  typedef itk::VectorMagnitudeImageFilter<
-                  FloatVectorImageType, FloatScalarImageType >  VectorMagnitudeFilterType;
-
-  // Create and setup a magnitude filter
-  VectorMagnitudeFilterType::Pointer magnitudeFilter = VectorMagnitudeFilterType::New();
-  magnitudeFilter->SetInput( image );
-  magnitudeFilter->Update();
-
-  // Rescale and cast for display
-  typedef itk::RescaleIntensityImageFilter<
-                  FloatScalarImageType, UnsignedCharScalarImageType > RescaleFilterType;
-
-  RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
-  rescaleFilter->SetOutputMinimum(0);
-  rescaleFilter->SetOutputMaximum(255);
-  rescaleFilter->SetInput( magnitudeFilter->GetOutput() );
-  rescaleFilter->Update();
-
-  // Setup and allocate the VTK image
-  outputImage->SetNumberOfScalarComponents(1);
-  outputImage->SetScalarTypeToUnsignedChar();
-  outputImage->SetDimensions(image->GetLargestPossibleRegion().GetSize()[0],
-                             image->GetLargestPossibleRegion().GetSize()[1],
-                             1);
-
-  outputImage->AllocateScalars();
-
-  // Copy all of the scaled magnitudes to the output image
-  itk::ImageRegionConstIteratorWithIndex<UnsignedCharScalarImageType> imageIterator(rescaleFilter->GetOutput(), rescaleFilter->GetOutput()->GetLargestPossibleRegion());
-  imageIterator.GoToBegin();
-
-  while(!imageIterator.IsAtEnd())
-    {
-    unsigned char* pixel = static_cast<unsigned char*>(outputImage->GetScalarPointer(imageIterator.GetIndex()[0],
-                                                                                     imageIterator.GetIndex()[1],0));
-    pixel[0] = imageIterator.Get();
-
-    ++imageIterator;
-    }
-
-  outputImage->Modified();
-}
-
-void SetRegionCenterPixel(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char color[3])
-{
-  int dims[3];
-  image->GetDimensions(dims);
-
-  unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(region.GetIndex()[0] + region.GetSize()[0]/2,
-                                                                             region.GetIndex()[1] + region.GetSize()[1]/2, 0));
-  pixel[0] = color[0];
-  pixel[1] = color[1];
-  pixel[2] = color[2];
-  pixel[3] = 255; // visible
-}
-
-
-void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType* vectorImage, vtkPolyData* output)
-{
-  vtkSmartPointer<vtkFloatArray> vectors = vtkSmartPointer<vtkFloatArray>::New();
-  vectors->SetNumberOfComponents(3);
-  vectors->SetName("Vectors");
-
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-
-  // Copy all of the input image pixels to the output image
-  itk::ImageRegionConstIteratorWithIndex<FloatVector2ImageType> imageIterator(vectorImage, vectorImage->GetLargestPossibleRegion());
-
-  while(!imageIterator.IsAtEnd())
-    {
-    FloatVector2ImageType::PixelType inputPixel = imageIterator.Get();
-    if(inputPixel.GetNorm() > .05)
-      {
-      float v[3];
-      v[0] = inputPixel[0];
-      v[1] = inputPixel[1];
-      v[2] = 0;
-      vectors->InsertNextTupleValue(v);
-
-      points->InsertNextPoint(imageIterator.GetIndex()[0], imageIterator.GetIndex()[1], 0);
-      }
-
-    ++imageIterator;
-    }
-
-  output->SetPoints(points);
-  output->GetPointData()->SetVectors(vectors);
-  output->Modified();
-}
-
-
 itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned int dimension)
 {
   // Manually construct a 2D offset with 0 in all dimensions except the specified dimension
@@ -453,74 +244,10 @@ itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned
   return offset;
 }
 
-void BlankRegion(vtkImageData* image, const itk::ImageRegion<2>& region)
-{
-  // Blank the image
-  for(unsigned int i = region.GetIndex()[0]; i < region.GetIndex()[0] + region.GetSize()[0]; ++i)
-    {
-    for(unsigned int j = region.GetIndex()[1]; j < region.GetIndex()[1] + region.GetSize()[1]; ++j)
-      {
-      unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(i, region.GetIndex()[1], 0));
-      pixel[0] = 0;
-      pixel[1] = 0;
-      pixel[2] = 0;
-      pixel[3] = 0; // transparent
-      }
-    }
-  image->Modified();
-}
-
-void OutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char color[3])
-{
-//   std::cout << "Outlining region: " << region << std::endl;
-//   std::cout << "Outline color: " << static_cast<int>(value[0]) << " " << static_cast<int>(value[1]) << " " << static_cast<int>(value[2]) << std::endl;
-//   std::cout << "Image components: " << image->GetNumberOfScalarComponents() << std::endl;
-
-
-  // Move along the top and bottom of the region, setting the border pixels.
-  for(unsigned int i = region.GetIndex()[0]; i < region.GetIndex()[0] + region.GetSize()[0]; ++i)
-    {
-    unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(i, region.GetIndex()[1], 0));
-    pixel[0] = color[0];
-    pixel[1] = color[1];
-    pixel[2] = color[2];
-    pixel[3] = 255; // visible
-
-    pixel = static_cast<unsigned char*>(image->GetScalarPointer(i, region.GetIndex()[1] + region.GetSize()[1] - 1, 0));
-    pixel[0] = color[0];
-    pixel[1] = color[1];
-    pixel[2] = color[2];
-    pixel[3] = 255; // visible
-    }
-
-  // Move along the left and right of the region, setting the border pixels.
-  for(unsigned int j = region.GetIndex()[1]; j < region.GetIndex()[1] + region.GetSize()[1]; ++j)
-    {
-    unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(region.GetIndex()[0], j, 0));
-    pixel[0] = color[0];
-    pixel[1] = color[1];
-    pixel[2] = color[2];
-    pixel[3] = 255; // visible
-
-    pixel = static_cast<unsigned char*>(image->GetScalarPointer(region.GetIndex()[0] + region.GetSize()[0] - 1, j, 0));
-    pixel[0] = color[0];
-    pixel[1] = color[1];
-    pixel[2] = color[2];
-    pixel[3] = 255; // visible
-    }
-
-  image->Modified();
-}
-
-void BlankAndOutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char value[3])
-{
-  BlankRegion(image, region);
-  OutlineRegion(image, region, value);
-}
 
 // This is a specialization that ensures that the number of pixels per component also matches.
 template<>
-void DeepCopy<FloatVectorImageType>(const FloatVectorImageType* input, FloatVectorImageType* output)
+void DeepCopy<FloatVectorImageType>(const FloatVectorImageType* const input, FloatVectorImageType* const output)
 {
   //std::cout << "DeepCopy<FloatVectorImageType>()" << std::endl;
   bool changed = false;
@@ -554,78 +281,6 @@ itk::ImageRegion<2> CropToRegion(const itk::ImageRegion<2>& inputRegion, const i
 
   return region;
 }
-
-itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType* image, float& maxValue, UnsignedCharScalarImageType* maskImage)
-{
-  //EnterFunction("FindHighestValueOnBoundary()");
-  // Return the location of the highest pixel in 'image' out of the non-zero pixels in 'boundaryImage'. Return the value of that pixel by reference.
-  try
-  {
-    // Explicity find the maximum on the boundary
-    maxValue = 0.0f; // priorities are non-negative, so anything better than 0 will win
-
-    std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetNonZeroPixels<UnsignedCharScalarImageType>(maskImage);
-
-    if(boundaryPixels.size() <= 0)
-      {
-      std::cerr << "FindHighestValueOnBoundary(): No boundary pixels!" << std::endl;
-      exit(-1);
-      }
-
-    itk::Index<2> locationOfMaxValue = boundaryPixels[0];
-
-    for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
-      {
-      if(image->GetPixel(boundaryPixels[i]) > maxValue)
-        {
-        maxValue = image->GetPixel(boundaryPixels[i]);
-        locationOfMaxValue = boundaryPixels[i];
-        }
-      }
-    //DebugMessage<float>("Highest value: ", maxValue);
-    //LeaveFunction("FindHighestValueOnBoundary()");
-    return locationOfMaxValue;
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in FindHighestValueOnBoundary!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
-
-void CreatePatchVTKImage(const FloatVectorImageType* image, const itk::ImageRegion<2>& region, vtkImageData* outputImage)
-{
-  typedef itk::RegionOfInterestImageFilter<FloatVectorImageType,FloatVectorImageType> ExtractFilterType;
-  typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
-  extractFilter->SetRegionOfInterest(region);
-  extractFilter->SetInput(image);
-  extractFilter->Update();
-
-  ITKHelpers::ITKVectorImageToVTKImageFromDimension(extractFilter->GetOutput(), outputImage);
-}
-
-void CreateTransparentVTKImage(const itk::Size<2>& size, vtkImageData* outputImage)
-{
-  outputImage->SetNumberOfScalarComponents(4);
-  outputImage->SetScalarTypeToUnsignedChar();
-  outputImage->SetDimensions(size[0], size[1], 1);
-  outputImage->AllocateScalars();
-
-  for(unsigned int i = 0; i < size[0]; ++i)
-    {
-    for(unsigned int j = 0; j < size[0]; ++j)
-      {
-      unsigned char* pixel = static_cast<unsigned char*>(outputImage->GetScalarPointer(i, j ,0));
-      pixel[0] = 0;
-      pixel[1] = 0;
-      pixel[2] = 0;
-      pixel[3] = 0; // transparent
-      }
-    }
-  outputImage->Modified();
-}
-
 
 void OutputImageType(const itk::ImageBase<2>* input)
 {
@@ -668,8 +323,8 @@ itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* inpu
 
   return objectCopy;
 }
-
-void DeepCopy(const itk::ImageBase<2>* input, itk::ImageBase<2>* output)
+/*
+void DeepCopyUnknownType(const itk::ImageBase<2>* input, itk::ImageBase<2>* output)
 {
   if(dynamic_cast<const FloatScalarImageType*>(input))
     {
@@ -706,49 +361,7 @@ void DeepCopy(const itk::ImageBase<2>* input, itk::ImageBase<2>* output)
     std::cout << "Image is Invalid type!" << std::endl;
     std::cerr << "Cannot cast to any of the specified types!" << std::endl;
     }
-}
-
-
-itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVector2Type& inputDirection, const Mask* const mask)
-{
-  if(!mask->IsValid(queryPixel))
-    {
-    std::cerr << "Can only follow valid pixel+vector across a hole." << std::endl;
-    exit(-1);
-    }
-
-  // Determine if 'direction' is pointing inside or outside the hole
-
-  FloatVector2Type direction = inputDirection;
-
-  itk::Index<2> nextPixelAlongVector = GetNextPixelAlongVector(queryPixel, direction);
-
-  // If the next pixel along the isophote is in bounds and in the hole region of the patch, procede.
-  if(mask->GetLargestPossibleRegion().IsInside(nextPixelAlongVector) && mask->IsHole(nextPixelAlongVector))
-    {
-    // do nothing
-    }
-  else
-    {
-    // There is no requirement for the isophote to be pointing a particular orientation, so try to step along the negative isophote.
-    direction *= -1.0;
-    nextPixelAlongVector = GetNextPixelAlongVector(queryPixel, direction);
-    }
-
-  // Trace across the hole
-  while(mask->IsHole(nextPixelAlongVector))
-    {
-    nextPixelAlongVector = GetNextPixelAlongVector(nextPixelAlongVector, direction);
-    if(!mask->GetLargestPossibleRegion().IsInside(nextPixelAlongVector))
-      {
-      std::cerr << "Helpers::FindPixelAcrossHole could not find a valid neighbor!" << std::endl;
-      exit(-1);
-      }
-    }
-
-  return nextPixelAlongVector;
-}
-
+}*/
 
 std::vector<itk::Offset<2> > Get8NeighborOffsets()
 {

@@ -21,6 +21,23 @@
 namespace TestHelpers
 {
 
+template<typename T>
+bool VectorsEqual(const std::vector<T>& a, const std::vector<T>& b)
+{
+  if(a.size() != b.size())
+    {
+    return false;
+    }
+  for(unsigned int i = 0; i < a.size(); ++i)
+    {
+    if(!ValuesEqual(a[i], b[i]))
+      {
+      return false;
+      }
+    }
+  return true;
+}
+
 template<typename TImage>
 bool ImagesEqual(const TImage* const image1, const TImage* const image2)
 {
@@ -35,6 +52,7 @@ bool ImagesEqual(const TImage* const image1, const TImage* const image2)
     // We should not compute derivatives for pixels in the hole.
     if(iterator1.Get() != iterator2.Get())
       {
+      std::cout << "image 1 pixel: " << iterator1.Get() << " image 2 pixel: " << iterator2.Get() << std::endl;
       return false;
       }
     ++iterator1;
@@ -52,9 +70,10 @@ void GetBlankImage(TImage* const image)
   itk::Size<2> size;
   size.Fill(100);
 
-  itk::ImageRegion<2> region(corner,size);
+  itk::ImageRegion<2> region(corner, size);
   image->SetRegions(region);
   image->Allocate();
+  image->FillBuffer(itk::NumericTraits<typename TImage::PixelType>::Zero);
 }
 
 template<typename TImage>
@@ -66,10 +85,14 @@ void GetBlankImage(TImage* image, const unsigned int numberOfComponents)
   itk::Size<2> size;
   size.Fill(100);
 
-  itk::ImageRegion<2> region(corner,size);
+  itk::ImageRegion<2> region(corner, size);
   image->SetRegions(region);
   image->SetNumberOfComponentsPerPixel(numberOfComponents);
   image->Allocate();
+  itk::VariableLengthVector<typename TImage::InternalPixelType> v(numberOfComponents);
+  v.Fill(0);
+  //image->FillBuffer(itk::NumericTraits<typename TImage::PixelType>::Zero);
+  image->FillBuffer(v);
 }
 
 

@@ -43,9 +43,9 @@ typename T::value_type& index(T& v, size_t i)
 }
 
 template <class T>
-unsigned int argmin(const typename std::vector<T>& vec)
+unsigned int argmin(const T& vec)
 {
-  T minValue = std::numeric_limits<T>::max();
+  typename T::value_type minValue = std::numeric_limits<typename T::value_type>::max();
   unsigned int minLocation = 0;
   for(unsigned int i = 0; i < vec.size(); ++i)
     {
@@ -77,7 +77,7 @@ void NormalizeVector(std::vector<T>& v)
 
 
 template<typename T>
-T VectorMedian(std::vector<T> v)
+typename T::value_type VectorMedian(T v)
 {
   // Don't want to pass by reference because the elements are shuffled around.
 

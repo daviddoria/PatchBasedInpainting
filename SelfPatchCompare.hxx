@@ -35,7 +35,8 @@
 #include <boost/bind.hpp>
 
 template <typename TImage, typename TPatchDifference>
-SelfPatchCompare<TImage, TPatchDifference>::SelfPatchCompare() : Image(NULL), MaskImage(NULL), DifferenceType(PairDifferences::Invalid)
+SelfPatchCompare<TImage, TPatchDifference>::SelfPatchCompare() :
+Pairs(NULL), Image(NULL), MaskImage(NULL), DifferenceType(PairDifferences::Invalid)
 {
 
 }
@@ -63,16 +64,11 @@ void SelfPatchCompare<TImage, TPatchDifference>::ComputeOffsets()
 
     // Iterate over the target region of the mask. Add the linear offset of valid pixels to the offsets to be used later in the comparison.
     itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, this->Pairs->GetTargetPatch().GetRegion());
-    itk::Index<2> targetCorner = this->Pairs->GetTargetPatch().GetIndex();
+    itk::Index<2> targetCorner = this->Pairs->GetTargetPatch().GetCorner();
     while(!maskIterator.IsAtEnd())
       {
       if(this->MaskImage->IsValid(maskIterator.GetIndex()))
         {
-        if(!this->Image->GetLargestPossibleRegion().IsInside(maskIterator.GetIndex()))
-          {
-          std::cerr << "SelfPatchCompare::ComputeOffsets - Something is wrong!" << std::endl;
-          exit(-1);
-          }
         // The ComputeOffset function returns the linear index of the pixel.
         // To compute the memory address of the pixel, we must multiply by the number of components per pixel.
         itk::Offset<2> offset = maskIterator.GetIndex() - targetCorner;
@@ -96,13 +92,19 @@ void SelfPatchCompare<TImage, TPatchDifference>::ComputeOffsets()
 template <typename TImage, typename TPatchDifference>
 void SelfPatchCompare<TImage, TPatchDifference>::Compute()
 {
-  // EnterFunction("SelfPatchCompare::ComputeAllSourceDifferences()");
-  // Source patches are always full and entirely valid, so there are two cases - when the target patch is fully inside the image,
-  // and when it is not.
+  assert(this->Image);
+  assert(this->MaskImage);
+  assert(this->MaskImage->GetLargestPossibleRegion() == this->Image->GetLargestPossibleRegion());
+  assert(this->Pairs);
+
   ComputeOffsets();
   //std::cout << "Enter SelfPatchCompare::ComputeAllSourceDifferences parallel SetPatchAllDifferences" << std::endl;
-  std::cout << "SelfPatchCompare::Comput() had: " << this->ValidTargetPatchPixelOffsets.size()
+  std::cout << "SelfPatchCompare::Compute() had: " << this->ValidTargetPatchPixelOffsets.size()
             << " ValidTargetPatchOffsets on which to operate!" << std::endl;
+  if(this->ValidTargetPatchPixelOffsets.size() == 0)
+    {
+    throw std::runtime_error("SelfPatchCompare::Compute() had no ValidTargetPatchOffsets!");
+    }
   #ifdef USE_QT_PARALLEL
     #pragma message("Using QtConcurrent!")
     QVector<float> differences = QtConcurrent::blockingMap(this->Pairs->begin(), this->Pairs->end(), boost::bind(&TPatchDifference::Difference, _1));
@@ -113,9 +115,13 @@ void SelfPatchCompare<TImage, TPatchDifference>::Compute()
       }
   #else
     #pragma message("NOT using QtConcurrent!")
+    TPatchDifference patchDifferenceFunction;
+    patchDifferenceFunction.SetImage(this->Image);
+
     for(CandidatePairs::Iterator pairIterator = this->Pairs->begin(); pairIterator != this->Pairs->end(); ++pairIterator)
       {
-      (*pairIterator).GetDifferences().SetDifferenceByType(this->DifferenceType, TPatchDifference::Difference(*pairIterator));
+      float difference = patchDifferenceFunction.Difference(*pairIterator, this->ValidTargetPatchPixelOffsets);
+      (*pairIterator).GetDifferences().SetDifferenceByType(this->DifferenceType, difference);
       }
   #endif
 }

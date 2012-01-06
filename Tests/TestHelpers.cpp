@@ -23,9 +23,9 @@
 namespace TestHelpers
 {
 
-bool ValuesEqual(const float a, const float b)
+bool ValuesEqual(const float a, const float b, const float epsilon)
 {
-  if(fabs(a-b) < 1e-6)
+  if(fabs(a-b) < epsilon)
     {
     return true;
     }

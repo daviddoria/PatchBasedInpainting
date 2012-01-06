@@ -224,7 +224,7 @@ itk::Index<2> MinValueLocation(const TImage* const image)
 }
 
 template <class TImage>
-void CopyPatchIntoImage(const TImage* const patch, TImage* image, const Mask* const mask, const itk::Index<2>& position)
+void CopyPatchIntoImage(const TImage* const patch, TImage* const image, const Mask* const mask, const itk::Index<2>& position)
 {
   try
   {
@@ -267,67 +267,9 @@ void CopyPatchIntoImage(const TImage* const patch, TImage* image, const Mask* co
   }
 }
 
-template <class TImage>
-void CopySourcePatchIntoHoleOfTargetRegion(const TImage* sourceImage, TImage* targetImage, const Mask* mask,
-                             const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput)
-{
-  try
-  {
-    itk::ImageRegion<2> fullImageRegion = sourceImage->GetLargestPossibleRegion();
-//     if(targetImage->GetLargestPossibleRegion() != fullImageRegion)
-//       {
-//       std::cerr << "CopyPatchIntoValidRegion::Images must be the same size!" << std::endl;
-//       exit(-1);
-//       }
-
-    // We pass the regions by const reference, so copy them here before they are mutated
-    itk::ImageRegion<2> sourceRegion = sourceRegionInput;
-    itk::ImageRegion<2> destinationRegion = destinationRegionInput;
-
-    // Move the source region to the desintation region
-    itk::Offset<2> offset = destinationRegion.GetIndex() - sourceRegion.GetIndex();
-    sourceRegion.SetIndex(sourceRegion.GetIndex() + offset);
-
-    // Make the destination be entirely inside the image
-    destinationRegion.Crop(fullImageRegion);
-    sourceRegion.Crop(fullImageRegion);
-
-    // Move the source region back
-    sourceRegion.SetIndex(sourceRegion.GetIndex() - offset);
-
-    itk::ImageRegionConstIterator<TImage> sourceIterator(sourceImage, sourceRegion);
-    itk::ImageRegionIterator<TImage> destinationIterator(targetImage, destinationRegion);
-    itk::ImageRegionConstIterator<Mask> maskIterator(mask, destinationRegion);
-
-    while(!sourceIterator.IsAtEnd())
-      {
-      if(mask->IsHole(maskIterator.GetIndex())) // we are in the target region
-        {
-        destinationIterator.Set(sourceIterator.Get());
-        }
-      ++sourceIterator;
-      ++maskIterator;
-      ++destinationIterator;
-      }
-
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in CopySelfPatchIntoValidRegion!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
-}
 
 template <class TImage>
-void CopySelfPatchIntoHoleOfTargetRegion(TImage* image, const Mask* mask,
-                                  const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput)
-{
-  CopySourcePatchIntoHoleOfTargetRegion<TImage>(image, image, mask, sourceRegionInput, destinationRegionInput);
-}
-
-template <class TImage>
-void CopyPatchIntoImage(const TImage* patch, TImage* image, const itk::Index<2>& centerPixel)
+void CopyPatchIntoImage(const TImage* patch, TImage* const image, const itk::Index<2>& centerPixel)
 {
   try
   {
@@ -427,43 +369,6 @@ void ColorToGrayscale(const TImage* colorImage, UnsignedCharScalarImageType* gra
     }
 }
 
-template <typename TImage>
-void ITKScalarImageToScaledVTKImage(const TImage* image, vtkImageData* outputImage)
-{
-  //std::cout << "ITKScalarImagetoVTKImage()" << std::endl;
-
-  // Rescale and cast for display
-  typedef itk::RescaleIntensityImageFilter<TImage, UnsignedCharScalarImageType > RescaleFilterType;
-  typename RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
-  rescaleFilter->SetOutputMinimum(0);
-  rescaleFilter->SetOutputMaximum(255);
-  rescaleFilter->SetInput(image);
-  rescaleFilter->Update();
-
-  // Setup and allocate the VTK image
-  outputImage->SetNumberOfScalarComponents(1);
-  outputImage->SetScalarTypeToUnsignedChar();
-  outputImage->SetDimensions(image->GetLargestPossibleRegion().GetSize()[0],
-                             image->GetLargestPossibleRegion().GetSize()[1],
-                             1);
-
-  outputImage->AllocateScalars();
-
-  // Copy all of the scaled magnitudes to the output image
-  itk::ImageRegionConstIteratorWithIndex<UnsignedCharScalarImageType> imageIterator(rescaleFilter->GetOutput(), rescaleFilter->GetOutput()->GetLargestPossibleRegion());
-  imageIterator.GoToBegin();
-
-  while(!imageIterator.IsAtEnd())
-    {
-    unsigned char* pixel = static_cast<unsigned char*>(outputImage->GetScalarPointer(imageIterator.GetIndex()[0],
-                                                                                     imageIterator.GetIndex()[1],0));
-    pixel[0] = imageIterator.Get();
-
-    ++imageIterator;
-    }
-
-  outputImage->Modified();
-}
 
 template<typename TImage>
 void SetRegionToConstant(TImage* image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value)
@@ -620,142 +525,23 @@ void OutlineRegion(TImage* image, const itk::ImageRegion<2>& region, const typen
     }
 }
 
-
-// This struct is used inside MaskedBlur()
-struct Contribution
-{
-  float weight;
-  unsigned char value;
-  itk::Offset<2> offset;
-};
-
-template <typename TImage>
-void MaskedBlur(const TImage* inputImage, const Mask* mask, const float blurVariance, TImage* output)
-{
-  // Create a Gaussian kernel
-  typedef itk::GaussianOperator<float, 1> GaussianOperatorType;
-
-  // Make a (2*kernelRadius+1)x1 kernel
-  itk::Size<1> radius;
-  radius.Fill(20); // Make a length 41 kernel
-
-  GaussianOperatorType gaussianOperator;
-  gaussianOperator.SetDirection(0); // It doesn't matter which direction we set - we will be interpreting the kernel as 1D (no direction)
-  gaussianOperator.SetVariance(blurVariance);
-  gaussianOperator.CreateToRadius(radius);
-
-//   {
-//   // Debugging only
-//   std::cout << "gaussianOperator: " << gaussianOperator << std::endl;
-//   for(unsigned int i = 0; i < gaussianOperator.Size(); i++)
-//     {
-//     //std::cout << i << " : " << gaussianOperator.GetOffset(i) << std::endl;
-//     std::cout << i << " : " << gaussianOperator.GetElement(i) << std::endl;
-//     }
-//   }
-
-  // Create the output image - data will be deep copied into it
-  typename TImage::Pointer blurredImage = TImage::New();
-  InitializeImage<TImage>(blurredImage, inputImage->GetLargestPossibleRegion());
-
-  // Initialize
-  typename TImage::Pointer operatingImage = TImage::New();
-  DeepCopy<TImage>(inputImage, operatingImage);
-
-  for(unsigned int dimensionPass = 0; dimensionPass < 2; dimensionPass++) // The image is 2D
-    {
-    itk::ImageRegionIterator<TImage> imageIterator(operatingImage, operatingImage->GetLargestPossibleRegion());
-
-    while(!imageIterator.IsAtEnd())
-      {
-      itk::Index<2> centerPixel = imageIterator.GetIndex();
-
-      // We should not compute derivatives for pixels in the hole.
-      if(mask->IsHole(centerPixel))
-        {
-        ++imageIterator;
-        continue;
-        }
-
-      // Loop over all of the pixels in the kernel and use the ones that fit a criteria
-      std::vector<Contribution> contributions;
-      for(unsigned int i = 0; i < gaussianOperator.Size(); i++)
-        {
-        // Since we use 1D kernels, we must manually construct a 2D offset with 0 in all dimensions except the dimension of the current pass
-        itk::Offset<2> offset = OffsetFrom1DOffset(gaussianOperator.GetOffset(i), dimensionPass);
-
-        itk::Index<2> pixel = centerPixel + offset;
-        if(blurredImage->GetLargestPossibleRegion().IsInside(pixel) && mask->IsValid(pixel))
-          {
-          Contribution contribution;
-          contribution.weight = gaussianOperator.GetElement(i);
-          contribution.value = operatingImage->GetPixel(pixel);
-          contribution.offset = OffsetFrom1DOffset(gaussianOperator.GetOffset(i), dimensionPass);
-          contributions.push_back(contribution);
-          }
-        }
-
-      float total = 0.0f;
-      for(unsigned int i = 0; i < contributions.size(); i++)
-        {
-        total += contributions[i].weight;
-        }
-
-      // Determine the new pixel value
-      float newPixelValue = 0.0f;
-      for(unsigned int i = 0; i < contributions.size(); i++)
-        {
-        itk::Index<2> pixel = centerPixel + contributions[i].offset;
-        newPixelValue += contributions[i].weight/total * operatingImage->GetPixel(pixel);
-        }
-
-      blurredImage->SetPixel(centerPixel, newPixelValue);
-      ++imageIterator;
-      }
-
-    // For the separable Gaussian filtering concept to work, the next pass must operate on the output of the current pass.
-    DeepCopy<TImage>(blurredImage, operatingImage);
-    }
-
-  // Copy the final image to the output.
-  DeepCopy<TImage>(blurredImage, output);
-}
-
-
-
 template<typename TImage>
 void InitializeImage(TImage* image, const itk::ImageRegion<2>& region)
 {
   image->SetRegions(region);
   image->Allocate();
+  //image->FillBuffer(0);
+  image->FillBuffer(itk::NumericTraits<typename TImage::PixelType>::Zero);
 }
 
 template<typename TImage>
-void CreatePatchImage(TImage* image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion, const Mask* mask, TImage* result)
+void InitializeImage(const itk::VectorImage<TImage>* const image, const itk::ImageRegion<2>& region)
 {
-  // The input 'result' is expected to already be sized and initialized.
+  image->SetRegions(region);
+  image->Allocate();
 
-  itk::ImageRegionConstIterator<TImage> sourceRegionIterator(image, sourceRegion);
-  itk::ImageRegionConstIterator<TImage> targetRegionIterator(image, targetRegion);
-
-  itk::ImageRegionIterator<TImage> resultIterator(result, result->GetLargestPossibleRegion());
-
-  while(!sourceRegionIterator.IsAtEnd())
-    {
-
-    if(mask->IsHole(targetRegionIterator.GetIndex()))
-      {
-      resultIterator.Set(sourceRegionIterator.Get());
-      }
-    else
-      {
-      resultIterator.Set(targetRegionIterator.Get());
-      }
-
-    ++sourceRegionIterator;
-    ++targetRegionIterator;
-    ++resultIterator;
-    }
+  itk::VariableLengthVector<typename TImage::InternalPixelType> v(image->GetNumberOfComponentsPerPixel());
+  image->FillBuffer(v);
 }
 
 template<typename TVectorImage>
@@ -943,12 +729,6 @@ void ReadImage(const std::string& fileName, TImage* const image)
   reader->Update();
 
   ITKHelpers::DeepCopy<TImage>(reader->GetOutput(), image);
-}
-
-template<typename TImage>
-void MaskedMedianFilter(const TImage* const inputImage, const Mask* const mask, const unsigned int kernelRadius, TImage* const output)
-{
-
 }
 
 

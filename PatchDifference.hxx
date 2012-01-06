@@ -23,7 +23,7 @@ PatchDifference<TImage, TPixelDifference>::PatchDifference() : Image(NULL)
 }
 
 template <typename TImage, typename TPixelDifference>
-void PatchDifference<TImage, TPixelDifference>::SetImage(TImage* const image)
+void PatchDifference<TImage, TPixelDifference>::SetImage(const TImage* const image)
 {
   this->Image = image;
 }

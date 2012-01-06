@@ -37,10 +37,10 @@ public:
   virtual float Difference(const PatchPair& patchPair, const std::vector<itk::Offset<2> >& offsetsToCompare) const = 0;
 
   // Provide the image to work with.
-  void SetImage(TImage* const image);
+  void SetImage(const TImage* const image);
 
 protected:
-  TImage* Image;
+  const TImage* Image;
 };
 
 #include "PatchDifference.hxx"

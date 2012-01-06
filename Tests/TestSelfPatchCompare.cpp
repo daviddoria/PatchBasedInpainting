@@ -93,16 +93,21 @@ void ScalarComparison()
 
   SelfPatchCompare<FloatScalarImageType, PatchDifferencePixelWiseSum<FloatScalarImageType, PixelDifference> > selfPatchCompare;
   selfPatchCompare.SetImage(scalarImage);
+  selfPatchCompare.SetMask(mask);
+  selfPatchCompare.SetDifferenceType(PairDifferences::SumPixelDifference);
+  selfPatchCompare.SetPairs(&candidatePairs);
+  selfPatchCompare.Compute();
 
   for(CandidatePairs::Iterator pairsIterator = candidatePairs.begin(); pairsIterator != candidatePairs.end(); ++pairsIterator)
     {
-    std::cout << (*pairsIterator).GetDifferences().GetDifferenceByType(PairDifferences::SumPixelDifference) << std::endl;
-//     if(difference != correctDifference)
-//       {
-//       std::stringstream ss;
-//       ss << "Difference " << difference << " does not match correctDifference " << correctDifference;
-//       throw std::runtime_error(ss.str());
-//       }
+    PatchPair currentPatchPair = *pairsIterator;
+    if(currentPatchPair.GetTargetPatch() == targetPatch)
+      {
+      if(currentPatchPair.GetDifferences().GetDifferenceByType(PairDifferences::SumPixelDifference) != 0)
+        {
+        throw std::runtime_error("Difference of target patch with itself should be 0!");
+        }
+      }
     }
 
 }

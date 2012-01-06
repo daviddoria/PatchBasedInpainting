@@ -16,31 +16,13 @@
  *
  *=========================================================================*/
 
-#ifndef TestHelpers_H
-#define TestHelpers_H
+#include "MaskOperations.h"
 
-#include "Mask.h"
+// STL
+#include <iostream>
+#include <stdexcept>
 
-namespace TestHelpers
+int main()
 {
-  bool ValuesEqual(const float a, const float b, const float epsilon = 1e-6);
-
-  template<typename T>
-  bool VectorsEqual(const std::vector<T>& a, const std::vector<T>& b);
-
-  template<typename TImage>
-  bool ImagesEqual(const TImage* const image1, const TImage* const image2);
-
-  template<typename TImage>
-  void GetBlankImage(TImage* const image1);
-
-  template<typename TImage>
-  void GetBlankImage(TImage* const image1, const unsigned int numberOfChannels);
-
-  void GetMask(Mask* const mask);
-
-} // end namespace
-
-#include "TestHelpers.hxx"
-
-#endif
+  return EXIT_FAILURE;
+}
