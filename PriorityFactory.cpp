@@ -18,7 +18,7 @@
 
 #include "PriorityFactory.h"
 
-#include "Helpers.h"
+#include "Helpers/Helpers.h"
 #include "PriorityCriminisi.h"
 #include "PriorityDepth.h"
 #include "PriorityManual.h"

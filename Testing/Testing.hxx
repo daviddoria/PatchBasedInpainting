@@ -18,7 +18,7 @@
 
 #include "itkImageRegionConstIterator.h"
 
-namespace TestHelpers
+namespace Testing
 {
 
 template<typename T>

@@ -19,7 +19,7 @@
 #include "Derivatives.h"
 #include "Types.h"
 #include "Mask.h"
-#include "TestHelpers.h"
+#include "Testing.h"
 
 static void CreateMask(Mask* mask);
 
@@ -38,7 +38,7 @@ int main(int argc, char*argv[])
   Derivatives::MaskedDerivative<UnsignedCharScalarImageType>(image, mask, direction, output);
 
   FloatScalarImageType::Pointer correctDerivative = FloatScalarImageType::New();
-  if(!TestHelpers::ImagesEqual<FloatScalarImageType>(output, correctDerivative))
+  if(!Testing::ImagesEqual<FloatScalarImageType>(output, correctDerivative))
     {
     return EXIT_FAILURE;
     }

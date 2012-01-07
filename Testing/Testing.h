@@ -16,12 +16,12 @@
  *
  *=========================================================================*/
 
-#ifndef TestHelpers_H
-#define TestHelpers_H
+#ifndef Testing_H
+#define Testing_H
 
 #include "Mask.h"
 
-namespace TestHelpers
+namespace Testing
 {
   bool ValuesEqual(const float a, const float b, const float epsilon = 1e-6);
 
@@ -41,6 +41,6 @@ namespace TestHelpers
 
 } // end namespace
 
-#include "TestHelpers.hxx"
+#include "Testing.hxx"
 
 #endif

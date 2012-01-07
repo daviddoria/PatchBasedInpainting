@@ -19,11 +19,11 @@
 #include "PriorityCriminisi.h"
 
 // Custom
-#include "Helpers.h"
-#include "HelpersOutput.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/HelpersOutput.h"
 #include "Isophotes.h"
-#include "ITKHelpers.h"
-#include "ITKVTKHelpers.h"
+#include "Helpers/ITKHelpers.h"
+#include "Helpers/ITKVTKHelpers.h"
 
 // VXL
 #include <vnl/vnl_double_2.h>

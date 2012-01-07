@@ -19,12 +19,12 @@
 #include "PriorityOnionPeel.h"
 
 // Custom
-#include "Helpers.h"
-#include "ITKHelpers.h"
-#include "ITKVTKHelpers.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/ITKHelpers.h"
+#include "Helpers/ITKVTKHelpers.h"
 
 // VXL
-#include <vnl/vnl_double_2.h>
+//#include <vnl/vnl_double_2.h>
 
 // ITK
 #include "itkInvertIntensityImageFilter.h"

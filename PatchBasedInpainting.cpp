@@ -20,8 +20,8 @@
 
 // Custom
 #include "Derivatives.h"
-#include "Helpers.h"
-#include "HelpersOutput.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/HelpersOutput.h"
 #include "MaskOperations.h"
 #include "PatchDifferencePixelWiseSum.h"
 #include "PriorityFactory.h"

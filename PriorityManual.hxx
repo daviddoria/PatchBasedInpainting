@@ -16,7 +16,7 @@
  *
  *=========================================================================*/
 
-#include "ITKHelpers.h"
+#include "Helpers/ITKHelpers.h"
 
 template <typename TPriority>
 PriorityManual<TPriority>::PriorityManual(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius) :

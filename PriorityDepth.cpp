@@ -19,7 +19,7 @@
 #include "PriorityDepth.h"
 
 #include "Derivatives.h"
-#include "HelpersOutput.h"
+#include "Helpers/HelpersOutput.h"
 #include "MaskOperations.h"
 
 PriorityDepth::PriorityDepth(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius) : Priority(image, maskImage, patchRadius)

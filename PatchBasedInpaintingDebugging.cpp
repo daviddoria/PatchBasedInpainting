@@ -20,9 +20,9 @@
 #include "PatchBasedInpainting.h"
 
 // Custom
-#include "Helpers.h"
-#include "HelpersOutput.h"
-#include "ITKHelpers.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/HelpersOutput.h"
+#include "Helpers/ITKHelpers.h"
 
 // STL
 #include <iomanip> // setfill, setw

@@ -18,7 +18,7 @@
 
 #include "ITKHelpers.h"
 
-#include "TestHelpers.h"
+#include "Testing.h"
 
 #include <iostream>
 
@@ -160,7 +160,7 @@ int main()
 
   {
   FloatVector2ImageType::Pointer image = FloatVector2ImageType::New();
-  TestHelpers::GetBlankImage(image.GetPointer());
+  Testing::GetBlankImage(image.GetPointer());
   itk::Index<2> corner = {{0,0}};
   FloatVector2Type v;
   v[0] = 5;
@@ -171,7 +171,7 @@ int main()
   correct_norm[0] = 0.98058;
   correct_norm[1] = 0.19612;
   FloatVector2Type norm = image->GetPixel(corner);
-  if(!TestHelpers::ValuesEqual(norm[0], correct_norm[0], 1e-4) || !TestHelpers::ValuesEqual(norm[1], correct_norm[1], 1e-4))
+  if(!Testing::ValuesEqual(norm[0], correct_norm[0], 1e-4) || !Testing::ValuesEqual(norm[1], correct_norm[1], 1e-4))
     {
     std::stringstream ss;
     ss << "NormalizeVectorImage: norm is " << norm << " but should be " << correct_norm;
@@ -188,7 +188,7 @@ int main()
   diagonal[1] = 1;
   float angleBetween = ITKHelpers::AngleBetween(up, diagonal);
   float correct_angleBetween = 0.78539816; // this is 45 degrees in radians
-  if(!TestHelpers::ValuesEqual(angleBetween, correct_angleBetween))
+  if(!Testing::ValuesEqual(angleBetween, correct_angleBetween))
     {
     std::stringstream ss;
     ss << "angleBetween is " << angleBetween << " but should be " << correct_angleBetween;
@@ -254,7 +254,7 @@ int main()
   {
   itk::Index<2> pixel = {{5,5}};
   FloatScalarImageType::Pointer image = FloatScalarImageType::New();
-  TestHelpers::GetBlankImage(image.GetPointer());
+  Testing::GetBlankImage(image.GetPointer());
   float value = 2;
   bool hasNeighbor = ITKHelpers::HasNeighborWithValue(pixel, image.GetPointer(), value);
   if(hasNeighbor)
@@ -273,10 +273,10 @@ int main()
 
   {
   FloatScalarImageType::Pointer image1 = FloatScalarImageType::New();
-  TestHelpers::GetBlankImage(image1.GetPointer());
+  Testing::GetBlankImage(image1.GetPointer());
   FloatScalarImageType::Pointer image2 = FloatScalarImageType::New();
   ITKHelpers::DeepCopy<FloatScalarImageType>(image1, image2);
-  if(!TestHelpers::ImagesEqual(image1.GetPointer(), image2.GetPointer()))
+  if(!Testing::ImagesEqual(image1.GetPointer(), image2.GetPointer()))
     {
     throw std::runtime_error("DeepCopy FloatScalarImageType: Images are not equal!");
     }
@@ -284,7 +284,7 @@ int main()
 
   {
   FloatVectorImageType::Pointer image1 = FloatVectorImageType::New();
-  TestHelpers::GetBlankImage(image1.GetPointer(), 3);
+  Testing::GetBlankImage(image1.GetPointer(), 3);
   itk::Index<2> corner = {{0,0}};
   FloatVectorImageType::PixelType image1pixel = image1->GetPixel(corner);
   std::cout << "Image1 pixel: " << image1pixel << std::endl;
@@ -294,7 +294,7 @@ int main()
   ITKHelpers::DeepCopy(image1.GetPointer(), image2.GetPointer());
   FloatVectorImageType::PixelType image2pixel = image2->GetPixel(corner);
   std::cout << "Image2 pixel: " << image2pixel << std::endl;
-  if(!TestHelpers::ImagesEqual(image1.GetPointer(), image2.GetPointer()))
+  if(!Testing::ImagesEqual(image1.GetPointer(), image2.GetPointer()))
     {
     throw std::runtime_error("DeepCopy FloatVectorImageType: Images are not equal!");
     }

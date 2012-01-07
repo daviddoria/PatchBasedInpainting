@@ -16,11 +16,11 @@
  *
  *=========================================================================*/
 
-#include "TestHelpers.h"
+#include "Testing.h"
 
 #include <cmath>
 
-namespace TestHelpers
+namespace Testing
 {
 
 bool ValuesEqual(const float a, const float b, const float epsilon)

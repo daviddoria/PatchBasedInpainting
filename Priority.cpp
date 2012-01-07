@@ -19,10 +19,10 @@
 #include "Priority.h"
 
 // Custom
-#include "Helpers.h"
-#include "HelpersOutput.h"
-#include "ITKHelpers.h"
-#include "ITKVTKHelpers.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/HelpersOutput.h"
+#include "Helpers/ITKHelpers.h"
+#include "Helpers/ITKVTKHelpers.h"
 
 // VTK
 #include <vtkSmartPointer.h>

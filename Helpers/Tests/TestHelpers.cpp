@@ -17,7 +17,7 @@
  *=========================================================================*/
 
 #include "Helpers.h"
-#include "TestHelpers.h"
+#include "Testing.h"
 
 int main(int argc, char*argv[])
 {
@@ -157,7 +157,7 @@ int main(int argc, char*argv[])
   correctNormalized.push_back(0.80178);
 
   Helpers::NormalizeVector(v);
-  if(!TestHelpers::VectorsEqual(v, correctNormalized))
+  if(!Testing::VectorsEqual(v, correctNormalized))
     {
     std::stringstream ss;
     ss << "Vector not correctly normalized!";

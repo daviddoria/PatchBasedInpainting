@@ -19,8 +19,8 @@
 #include "Mask.h"
 
 // Custom
-#include "Helpers.h"
-#include "ITKHelpers.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/ITKHelpers.h"
 
 #include <vtkImageData.h>
 

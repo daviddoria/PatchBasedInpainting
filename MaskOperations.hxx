@@ -1,5 +1,5 @@
 // Custom
-#include "ITKHelpers.h"
+#include "Helpers/ITKHelpers.h"
 #include "Mask.h"
 
 // ITK

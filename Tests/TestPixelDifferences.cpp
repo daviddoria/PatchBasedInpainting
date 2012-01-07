@@ -21,10 +21,11 @@
 #include "PixelDifferenceSquared.h"
 #include "PixelDifferenceAllOrNothing.h"
 
-#include "TestHelpers.h"
+#include "Testing.h"
 #include "Types.h"
 
 #include <iostream>
+#include <stdexcept>
 
 static void TestPixelDifference();
 static void TestPixelDifferenceSquared();
@@ -52,7 +53,7 @@ int main(int argc, char*argv[])
 void TestPixelDifference()
 {
   // Scalar
-  if(!TestHelpers::ValuesEqual(PixelDifference::Difference(2.5, 1.1), 1.4))
+  if(!Testing::ValuesEqual(PixelDifference::Difference(2.5, 1.1), 1.4))
     {
     std::stringstream ss;
     ss << "Difference should be 1.4 but is: " << PixelDifference::Difference(2.5, 1.1);
@@ -77,7 +78,7 @@ void TestPixelDifference()
   //float difference = PixelDifference<FloatVectorImageType::PixelType>::Difference(a, b);
   float difference = PixelDifference::Difference(a, b);
   float correctDifference = 9.0f;
-  if(!TestHelpers::ValuesEqual(difference, correctDifference))
+  if(!Testing::ValuesEqual(difference, correctDifference))
     {
     std::stringstream ss;
     ss << "PixelDifferenceFullSquared: Static specified pixel length: Difference should be " << correctDifference << " but is: " << difference;
@@ -90,7 +91,7 @@ void TestPixelDifference()
   PixelDifference differenceFunction;
   float difference = differenceFunction.Difference(a, b);
   float correctDifference = 9.0f;
-  if(!TestHelpers::ValuesEqual(difference, correctDifference))
+  if(!Testing::ValuesEqual(difference, correctDifference))
     {
     std::stringstream ss;
     ss << "PixelDifferenceFullSquared: Object specified pixel length: Difference should be " << correctDifference << " but is: " << difference;
@@ -107,7 +108,7 @@ void TestPixelDifferenceSquared()
   float correctDifference = 1.96f;
   float difference = PixelDifferenceSquared::Difference(2.5, 1.1);
   
-  if(!TestHelpers::ValuesEqual(difference, correctDifference))
+  if(!Testing::ValuesEqual(difference, correctDifference))
     {
     std::stringstream ss;
     ss << "Difference should be " << correctDifference << " but is: " << difference << std::endl;
@@ -133,7 +134,7 @@ void TestPixelDifferenceSquared()
   //float difference = PixelDifference<FloatVectorImageType::PixelType>::Difference(a, b);
   float difference = PixelDifferenceSquared::Difference(a, b);
   float correctDifference = 81.0f;
-  if(!TestHelpers::ValuesEqual(difference, correctDifference))
+  if(!Testing::ValuesEqual(difference, correctDifference))
     {
     std::stringstream ss;
     ss << "PixelDifferenceFullSquared: Static specified pixel length: Difference should be " << correctDifference << " but is: " << difference;
@@ -146,7 +147,7 @@ void TestPixelDifferenceSquared()
   PixelDifferenceSquared differenceFunction;
   float difference = differenceFunction.Difference(a, b);
   float correctDifference = 81.0f;
-  if(!TestHelpers::ValuesEqual(difference, correctDifference))
+  if(!Testing::ValuesEqual(difference, correctDifference))
     {
     std::stringstream ss;
     ss << "PixelDifferenceFullSquared: Object specified pixel length: Difference should be " << correctDifference << " but is: " << difference;
@@ -160,7 +161,7 @@ void TestPixelDifferenceAllOrNothing()
   {
   float correctDifference = 1;
   float difference = PixelDifferenceAllOrNothing<unsigned char>::Difference(2, 7);
-  if(!TestHelpers::ValuesEqual(difference, correctDifference))
+  if(!Testing::ValuesEqual(difference, correctDifference))
     {
     std::stringstream ss;
     ss << "Difference should be " << correctDifference << " but is: " << difference;
@@ -171,7 +172,7 @@ void TestPixelDifferenceAllOrNothing()
   {
   float correctDifference = 0;
   float difference = PixelDifferenceAllOrNothing<unsigned char>::Difference(2, 2);
-  if(!TestHelpers::ValuesEqual(difference, correctDifference))
+  if(!Testing::ValuesEqual(difference, correctDifference))
     {
     std::stringstream ss;
     ss << "Difference should be " << correctDifference << " but is: " << difference;
@@ -196,7 +197,7 @@ void TestPixelDifferenceChannel()
   // Static specified pixel length
   float difference = PixelDifferenceChannel<FloatVectorImageType::PixelType, 0>::Difference(a, b);
   float correctDifference = 3.0f;
-  if(!TestHelpers::ValuesEqual(difference, correctDifference))
+  if(!Testing::ValuesEqual(difference, correctDifference))
     {
     std::stringstream ss;
     ss << "PixelDifferenceChannel 0: Difference should be " << correctDifference << " but is: " << difference;
@@ -208,7 +209,7 @@ void TestPixelDifferenceChannel()
   // Static specified pixel length
   float difference = PixelDifferenceChannel<FloatVectorImageType::PixelType, 1>::Difference(a, b);
   float correctDifference = 4.0f;
-  if(!TestHelpers::ValuesEqual(difference, correctDifference))
+  if(!Testing::ValuesEqual(difference, correctDifference))
     {
     std::stringstream ss;
     ss << "PixelDifferenceChannel 1: Difference should be " << correctDifference << " but is: " << difference;

@@ -6,11 +6,8 @@ ENABLE_TESTING()
 
 include_directories(../)
 
-add_library(libTestHelpers TestHelpers.cpp ../Mask.cpp)
-target_link_libraries(libTestHelpers ${ITK_LIBRARIES})
-
-add_library(libHelpers ../Helpers.cpp ../ITKHelpers.cpp ../VTKHelpers.cpp ../ITKVTKHelpers.cpp ../HelpersOutput.cpp)
-target_link_libraries(libTestHelpers ${ITK_LIBRARIES})
+add_library(libHelpers ../Helpers/Helpers.cpp ../Helpers/ITKHelpers.cpp ../Helpers/VTKHelpers.cpp ../Helpers/ITKVTKHelpers.cpp ../Helpers/HelpersOutput.cpp)
+target_link_libraries(libHelpers ${ITK_LIBRARIES})
 
 #####################
 
@@ -52,24 +49,6 @@ add_executable(TestSelfPatchCompare TestSelfPatchCompare.cpp ../SelfPatchCompare
 ../Derivatives.cpp ../Mask.cpp ../PatchPair.cpp ../PairDifferences.cpp ../Patch.cpp ../CandidatePairs.cpp ../SourcePatchCollection.cpp)
 target_link_libraries(TestSelfPatchCompare ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTestHelpers libHelpers)
 add_test(TestSelfPatchCompare TestSelfPatchCompare)
-
-# Note this has nothing to do with the TestHelpers namespace, but rather is the Test for the Helpers namespace.
-add_executable(TestHelpersClass TestHelpersClass.cpp ../Helpers.cpp)
-target_link_libraries(TestHelpersClass libTestHelpers)
-add_test(TestHelpersClass TestHelpersClass)
-
-add_executable(TestITKHelpers TestITKHelpers.cpp)
-target_link_libraries(TestITKHelpers ${ITK_LIBRARIES} libTestHelpers libHelpers)
-add_test(TestITKHelpers TestITKHelpers)
-
-add_executable(TestVTKHelpers TestVTKHelpers.cpp)
-target_link_libraries(TestVTKHelpers ${VTK_LIBRARIES} libTestHelpers libHelpers)
-add_test(TestVTKHelpers TestVTKHelpers)
-
-add_executable(TestITKVTKHelpers TestITKVTKHelpers.cpp)
-target_link_libraries(TestITKVTKHelpers ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libTestHelpers)
-add_test(TestITKVTKHelpers TestITKVTKHelpers)
-
 
 add_executable(TestPriorityFactory TestPriorityFactory.cpp ../PriorityFactory.cpp ../Priority.cpp ../PriorityCriminisi.cpp ../PriorityDepth.cpp ../PriorityManual.cpp
 ../PriorityOnionPeel.cpp ../DebugOutputs.cpp ../Mask.cpp ../PriorityRandom.cpp ../Isophotes.cpp ../Derivatives.cpp ../MaskOperations.cpp)
@@ -116,11 +95,10 @@ add_test(TestPriorityCriminisi TestPriorityCriminisi)
 # add_test(TestNamedITKImageCollection TestNamedITKImageCollection)
 
 add_executable(TestPatchBasedInpainting TestPatchBasedInpainting.cpp ../PatchBasedInpainting.cpp ../PatchBasedInpaintingDebugging.cpp
-../HelpersOutput.cpp
 ../DebugOutputs.cpp ../CandidatePairs.cpp ../PairDifferences.cpp
 ../Priority.cpp ../PriorityFactory.cpp ../PriorityCriminisi.cpp ../PriorityOnionPeel.cpp ../PriorityRandom.cpp ../PriorityManual.cpp ../PriorityDepth.cpp
 ../SourcePatchCollection.cpp ../Patch.cpp ../PatchPair.cpp
-../ITKHelpers.cpp ../Helpers.cpp ../ITKImageCollection.cpp
+../ITKImageCollection.cpp
 ../Mask.cpp ../MaskOperations.cpp
 ../Isophotes.cpp ../Derivatives.cpp)
 target_link_libraries(TestPatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libTestHelpers)

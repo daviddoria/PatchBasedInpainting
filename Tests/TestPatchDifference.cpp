@@ -19,7 +19,7 @@
 #include "PatchDifferencePixelWiseSum.h"
 #include "PixelDifference.h"
 
-#include "TestHelpers.h"
+#include "Testing.h"
 #include "Types.h"
 
 #include "itkImageRegionIterator.h"
@@ -54,7 +54,7 @@ void FullPatchScalarComparison()
 {
   std::cout << "FullPatchScalarComparison()" << std::endl;
   FloatScalarImageType::Pointer scalarImage = FloatScalarImageType::New();
-  TestHelpers::GetBlankImage<FloatScalarImageType>(scalarImage);
+  Testing::GetBlankImage<FloatScalarImageType>(scalarImage);
 
   // Make the left half of the image 0, and the right half 5
   itk::ImageRegionIterator<FloatScalarImageType> imageIterator(scalarImage, scalarImage->GetLargestPossibleRegion());
@@ -139,7 +139,7 @@ void FullPatchVectorComparison()
 
   const unsigned int dimension = 3;
   FloatVectorImageType::Pointer vectorImage = FloatVectorImageType::New();
-  TestHelpers::GetBlankImage<FloatVectorImageType>(vectorImage, dimension);
+  Testing::GetBlankImage<FloatVectorImageType>(vectorImage, dimension);
 
   // Make the left half of the image (0,0,0) and the right half (5,6,7)
   itk::ImageRegionIterator<FloatVectorImageType> imageIterator(vectorImage, vectorImage->GetLargestPossibleRegion());
@@ -231,7 +231,7 @@ void PartialPatchScalarComparison()
 {
   std::cout << "PartialPatchScalarComparison()" << std::endl;
   FloatScalarImageType::Pointer scalarImage = FloatScalarImageType::New();
-  TestHelpers::GetBlankImage<FloatScalarImageType>(scalarImage);
+  Testing::GetBlankImage<FloatScalarImageType>(scalarImage);
 
   // Make the left half of the image 0, and the right half 5
   itk::ImageRegionIterator<FloatScalarImageType> imageIterator(scalarImage, scalarImage->GetLargestPossibleRegion());
@@ -323,7 +323,7 @@ void PartialPatchVectorComparison()
 
   const unsigned int dimension = 3;
   FloatVectorImageType::Pointer vectorImage = FloatVectorImageType::New();
-  TestHelpers::GetBlankImage<FloatVectorImageType>(vectorImage, dimension);
+  Testing::GetBlankImage<FloatVectorImageType>(vectorImage, dimension);
 
   // Make the left half of the image (0,0,0) and the right half (5,6,7)
   itk::ImageRegionIterator<FloatVectorImageType> imageIterator(vectorImage, vectorImage->GetLargestPossibleRegion());

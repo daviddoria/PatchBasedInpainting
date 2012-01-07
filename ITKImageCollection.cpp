@@ -18,8 +18,8 @@
 
 #include "ITKImageCollection.h"
 
-#include "Helpers.h"
-#include "ITKHelpers.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/ITKHelpers.h"
 #include "Mask.h"
 #include "MaskOperations.h"
 

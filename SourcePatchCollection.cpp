@@ -1,7 +1,7 @@
 #include "SourcePatchCollection.h"
 
-#include "Helpers.h"
-#include "ITKHelpers.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/ITKHelpers.h"
 
 SourcePatchCollection::SourcePatchCollection(Mask* const maskImage, const unsigned int patchRadius) : MaskImage(maskImage), PatchRadius(patchRadius)
 {

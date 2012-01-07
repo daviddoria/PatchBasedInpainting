@@ -17,7 +17,7 @@
  *=========================================================================*/
 
 #include "VTKHelpers.h"
-#include "TestHelpers.h"
+#include "Testing.h"
 
 // STL
 #include <iostream>
@@ -43,9 +43,9 @@ int main()
   VTKHelpers::GetCellCenter(grid, 0, center);
   //std::cout << "center: " << center[0] << " " << center[1] << " " << center[2] << std::endl;
 
-  if(!TestHelpers::ValuesEqual(center[0], correct_center[0]) ||
-    !TestHelpers::ValuesEqual(center[1], correct_center[1]) ||
-    !TestHelpers::ValuesEqual(center[2], correct_center[2]))
+  if(!Testing::ValuesEqual(center[0], correct_center[0]) ||
+    !Testing::ValuesEqual(center[1], correct_center[1]) ||
+    !Testing::ValuesEqual(center[2], correct_center[2]))
     {
     std::stringstream ss;
     ss << "center computed to be: " << center[0] << " " << center[1] << " " << center[2] << std::endl

@@ -20,7 +20,7 @@
 
 // Custom
 #include "Derivatives.h"
-#include "Helpers.h"
+#include "Helpers/Helpers.h"
 #include "MaskOperations.h"
 
 // ITK

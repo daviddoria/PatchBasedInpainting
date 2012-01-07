@@ -22,7 +22,7 @@
 #include "PatchDifferencePixelWiseSum.h"
 #include "PixelDifference.h"
 
-#include "TestHelpers.h"
+#include "Testing.h"
 #include "Types.h"
 
 #include "itkImageRegionIterator.h"
@@ -52,7 +52,7 @@ void ScalarComparison()
 {
   std::cout << "ScalarComparison()" << std::endl;
   FloatScalarImageType::Pointer scalarImage = FloatScalarImageType::New();
-  TestHelpers::GetBlankImage<FloatScalarImageType>(scalarImage);
+  Testing::GetBlankImage<FloatScalarImageType>(scalarImage);
 
   // Make the left half of the image 0, and the right half 5
   itk::ImageRegionIterator<FloatScalarImageType> imageIterator(scalarImage, scalarImage->GetLargestPossibleRegion());
@@ -75,7 +75,7 @@ void ScalarComparison()
   patchSize.Fill(10);
 
   Mask::Pointer mask = Mask::New();
-  TestHelpers::GetMask(mask);
+  Testing::GetMask(mask);
   
   const unsigned int patchRadius = 5;
   SourcePatchCollection sourcePatchCollection(mask, patchRadius);
