@@ -19,11 +19,17 @@
 #ifndef PRIORITYMANUAL_H
 #define PRIORITYMANUAL_H
 
-//#include "Priority.h"
 #include "PriorityOnionPeel.h"
+#include "PriorityRandom.h"
+#include "PriorityOnionPeel.h"
+#include "PriorityDepth.h"
 
-//class PriorityManual : public Priority
-class PriorityManual : public PriorityOnionPeel
+// This class first returns values that have been specified by a user generated image
+// that contains pixels that indicate "definitely fill first". Once there are no more of
+// these pixels, the superclass's ComputePriority function is called.
+
+template <typename TPriority>
+class PriorityManual : public TPriority
 {
 public:
   // Reimplemented
@@ -34,8 +40,12 @@ public:
   // New functions
   void SetManualPriorityImage(UnsignedCharScalarImageType* const);
 
+  UnsignedCharScalarImageType* GetManualPriorityImage();
+
 protected:
   UnsignedCharScalarImageType::Pointer ManualPriorityImage;
 };
+
+#include "PriorityManual.hxx"
 
 #endif

@@ -17,36 +17,3 @@
  *=========================================================================*/
 
 #include "PriorityManual.h"
-
-#include "ITKHelpers.h"
-
-PriorityManual::PriorityManual(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius) : PriorityOnionPeel(image, maskImage, patchRadius)
-{
-  this->ManualPriorityImage = UnsignedCharScalarImageType::New();
-}
-
-float PriorityManual::ComputePriority(const itk::Index<2>& queryPixel)
-{
-  //std::cout << static_cast<float>(this->ManualPriorityImage->GetPixel(queryPixel)) << std::endl;
-
-  float priority = 0.0f;
-  float manualPriority = this->ManualPriorityImage->GetPixel(queryPixel);
-
-  float offset = 1e4;
-  if(manualPriority > 0)
-    {
-    priority = offset + PriorityOnionPeel::ComputePriority(queryPixel);
-    }
-  else
-    {
-    priority = PriorityOnionPeel::ComputePriority(queryPixel);
-    }
-
-  return priority;
-}
-
-void PriorityManual::SetManualPriorityImage(UnsignedCharScalarImageType* const image)
-{
-  //this->ManualPriorityImage = image;
-  ITKHelpers::DeepCopy<UnsignedCharScalarImageType>(image, this->ManualPriorityImage);
-}

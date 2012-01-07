@@ -121,9 +121,10 @@ const itk::ImageRegion<2>& PatchBasedInpainting::GetFullRegion() const
 //   this->PatchCompare = patchCompare;
 // }
 
-void PatchBasedInpainting::SetPriorityFunction(const std::string& priorityType)
+void PatchBasedInpainting::SetPriorityFunction(const std::string& priorityName)
 {
-  this->PriorityFunction = std::shared_ptr<Priority>(PriorityFactory::Create(priorityType, this->CompareImage, this->MaskImage.GetPointer(), this->PatchRadius[0]));
+  this->PriorityFunction = std::shared_ptr<Priority>(PriorityFactory::Create(PriorityFactory::PriorityTypeFromName(priorityName),
+                                                                             this->CompareImage, this->MaskImage.GetPointer(), this->PatchRadius[0]));
 }
 
 void PatchBasedInpainting::ColorImageInsideHole()
@@ -243,8 +244,8 @@ PatchPair PatchBasedInpainting::FindBestPatch()
   EnterFunction("PatchBasedInpainting::FindBestPatch()");
 
   float highestPriority = 0.0f;
-  itk::Index<2> pixelToFill = MaskOperations::FindHighestValueInNonZeroRegion(this->PriorityFunction->GetPriorityImage().GetPointer(),
-                                                                      highestPriority, this->PriorityFunction->GetBoundaryImage().GetPointer());
+  itk::Index<2> pixelToFill = MaskOperations::FindHighestValueInNonZeroRegion(this->PriorityFunction->GetPriorityImage(),
+                                                                      highestPriority, this->PriorityFunction->GetBoundaryImage());
 
   itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
   Patch targetPatch(targetRegion);

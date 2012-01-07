@@ -27,8 +27,18 @@
 class PriorityFactory
 {
 public:
-  static Priority* Create(const std::string& priorityType, FloatVectorImageType* const image, Mask* const maskImage, const unsigned int patchRadius);
-  static std::vector<std::string> GetImageNames(const std::string& priorityType);
+  enum PriorityTypes {DEPTH, MANUAL, ONIONPEEL, CRIMINISI, RANDOM, INVALID};
+  static Priority* Create(const PriorityTypes priorityType, const FloatVectorImageType* const image, const Mask* const maskImage, const unsigned int patchRadius);
+
+  static std::string NameOfPriority(const PriorityTypes);
+  static PriorityTypes PriorityTypeFromName(const std::string&);
+
+  static std::vector<std::string> GetImageNames(const PriorityTypes& priorityType);
+
+private:
+  typedef std::map <PriorityTypes, std::string> PriorityNameMapType;
+  static PriorityNameMapType DifferenceNameMap;
+  static PriorityNameMapType CreateNameMap();
 };
 
 #endif

@@ -39,6 +39,11 @@ PriorityOnionPeel::PriorityOnionPeel(const FloatVectorImageType* image, const Ma
   InitializeConfidenceMap();
 }
 
+FloatScalarImageType* PriorityOnionPeel::GetConfidenceMapImage()
+{
+  return this->ConfidenceMapImage;
+}
+
 std::vector<std::string> PriorityOnionPeel::GetImageNames()
 {
   std::vector<std::string> imageNames = Priority::GetImageNames();
@@ -114,7 +119,6 @@ void PriorityOnionPeel::UpdateConfidences(const itk::ImageRegion<2>& targetRegio
   }
 }
 
-
 void PriorityOnionPeel::InitializeConfidenceMap()
 {
   EnterFunction("PriorityOnionPeel::InitializeConfidenceMap()");
@@ -141,7 +145,6 @@ void PriorityOnionPeel::InitializeConfidenceMap()
   ITKHelpers::DeepCopy<FloatScalarImageType>(rescaleFilter->GetOutput(), this->ConfidenceMapImage);
   LeaveFunction("PriorityOnionPeel::InitializeConfidenceMap()");
 }
-
 
 float PriorityOnionPeel::ComputeConfidenceTerm(const itk::Index<2>& queryPixel)
 {

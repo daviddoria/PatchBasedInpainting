@@ -22,6 +22,7 @@
 #include "PriorityOnionPeel.h"
 #include "Types.h"
 
+// This class includes the isophote direction term on top of the confidence term of PriorityOnionPeel.
 class PriorityCriminisi : public PriorityOnionPeel
 {
 public:
@@ -36,15 +37,16 @@ public:
 
   void Update(const itk::ImageRegion<2>& filledRegion);
 
+  std::vector<NamedVTKImage> GetNamedImages();
+
+  static std::vector<std::string> GetImageNames();
+
   ///////////////////////////////////////////
   //////////////// New functions   //////////
   ///////////////////////////////////////////
 
   // Get the current data image
-  FloatScalarImageType::Pointer GetDataImage();
-
-  std::vector<NamedVTKImage> GetNamedImages();
-  static std::vector<std::string> GetImageNames();
+  FloatScalarImageType* GetDataImage();
 
 protected:
 

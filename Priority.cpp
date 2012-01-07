@@ -70,12 +70,12 @@ void Priority::Update(const itk::ImageRegion<2>& filledRegion)
   // Do nothing in the default implementation.
 }
 
-FloatScalarImageType::Pointer Priority::GetPriorityImage()
+FloatScalarImageType* Priority::GetPriorityImage()
 {
   return this->PriorityImage;
 }
 
-UnsignedCharScalarImageType::Pointer Priority::GetBoundaryImage()
+UnsignedCharScalarImageType* Priority::GetBoundaryImage()
 {
   return this->BoundaryImage;
 }

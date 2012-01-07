@@ -1,0 +1,1 @@
+// The Priority class is abstract.

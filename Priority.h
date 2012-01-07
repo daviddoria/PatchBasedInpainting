@@ -37,10 +37,10 @@ public:
   virtual void Update(const itk::ImageRegion<2>& filledRegion);
 
   // Get the current priority image
-  FloatScalarImageType::Pointer GetPriorityImage();
+  FloatScalarImageType* GetPriorityImage();
 
   // Get the current boundary image
-  UnsignedCharScalarImageType::Pointer GetBoundaryImage();
+  UnsignedCharScalarImageType* GetBoundaryImage();
 
   float GetPriority(const itk::Index<2>& queryPixel);
 

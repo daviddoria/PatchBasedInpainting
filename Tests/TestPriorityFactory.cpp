@@ -16,21 +16,17 @@
  *
  *=========================================================================*/
 
-#ifndef PRIORITYRANDOM_H
-#define PRIORITYRANDOM_H
-
+#include "PriorityFactory.h"
 #include "Priority.h"
+#include "Mask.h"
 
-// This class returns a random value as the priority of each boundary pixel.
-
-class PriorityRandom : public Priority
+int main()
 {
-public:
-  PriorityRandom(const FloatVectorImageType* const image, const Mask* const maskImage, const unsigned int patchRadius);
+  FloatVectorImageType::Pointer image = FloatVectorImageType::New();
+  Mask::Pointer mask = Mask::New();
+  const unsigned int patchRadius = 5;
+  Priority* priority = PriorityFactory::Create(PriorityFactory::RANDOM, image, mask, patchRadius);
+  std::vector<std::string> imageNames = PriorityFactory::GetImageNames(PriorityFactory::RANDOM);
 
-  float ComputePriority(const itk::Index<2>& queryPixel);
-
-  static std::vector<std::string> GetImageNames();
-};
-
-#endif
+  return 0;
+}

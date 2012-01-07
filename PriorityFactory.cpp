@@ -26,25 +26,69 @@
 #include "PriorityRandom.h"
 #include "Types.h"
 
-Priority* PriorityFactory::Create(const std::string& priorityType, FloatVectorImageType* const image, Mask* const maskImage, const unsigned int patchRadius)
+
+PriorityFactory::PriorityNameMapType PriorityFactory::CreateNameMap()
 {
-  if(Helpers::StringsMatch(priorityType, "Manual"))
+  PriorityNameMapType nameMap;
+  nameMap[MANUAL] = "Manual";
+  nameMap[RANDOM] = "Random";
+  nameMap[CRIMINISI] = "Criminisi";
+  nameMap[ONIONPEEL] = "OnionPeel";
+  nameMap[DEPTH] = "Depth";
+  return nameMap;
+}
+
+PriorityFactory::PriorityNameMapType PriorityFactory::DifferenceNameMap = CreateNameMap();
+
+PriorityFactory::PriorityTypes PriorityFactory::PriorityTypeFromName(const std::string& nameOfPriority)
+{
+  PriorityNameMapType::const_iterator iterator;
+  for (iterator = DifferenceNameMap.begin(); iterator != DifferenceNameMap.end(); ++iterator)
     {
-    return new PriorityManual(image, maskImage, patchRadius);
+    if (iterator->second == nameOfPriority)
+      {
+      return iterator->first;
+      break;
+      }
     }
-  else if(Helpers::StringsMatch(priorityType, "OnionPeel"))
+  return INVALID;
+}
+
+std::string PriorityFactory::NameOfPriority(const PriorityTypes typeOfPriority)
+{
+  PriorityNameMapType::const_iterator iterator;
+
+  iterator = DifferenceNameMap.find(typeOfPriority);
+  if(iterator != DifferenceNameMap.end())
+    {
+    return iterator->second;
+    }
+  else
+    {
+    return "Invalid";
+    }
+}
+
+Priority* PriorityFactory::Create(const PriorityTypes priorityType, const FloatVectorImageType* const image,
+                                  const Mask* const maskImage, const unsigned int patchRadius)
+{
+  if(priorityType == MANUAL)
+    {
+    return new PriorityManual<PriorityOnionPeel>(image, maskImage, patchRadius);
+    }
+  else if(priorityType == ONIONPEEL)
     {
     return new PriorityOnionPeel(image, maskImage, patchRadius);
     }
-  else if(Helpers::StringsMatch(priorityType, "Random"))
+  else if(priorityType == RANDOM)
     {
     return new PriorityRandom(image, maskImage, patchRadius);
     }
-  else if(Helpers::StringsMatch(priorityType, "Depth"))
+  else if(priorityType == DEPTH)
     {
     return new PriorityDepth(image, maskImage, patchRadius);
     }
-  else if(Helpers::StringsMatch(priorityType, "Criminisi"))
+  else if(priorityType == CRIMINISI)
     {
     return new PriorityCriminisi(image, maskImage, patchRadius);
     }
@@ -56,30 +100,30 @@ Priority* PriorityFactory::Create(const std::string& priorityType, FloatVectorIm
     }
 }
 
-std::vector<std::string> PriorityFactory::GetImageNames(const std::string& priorityType)
+std::vector<std::string> PriorityFactory::GetImageNames(const PriorityFactory::PriorityTypes& priorityType)
 {
   std::vector<std::string> priorityImageNames;
 
-  if(Helpers::StringsMatch(priorityType, "Manual"))
+  if(priorityType == MANUAL)
     {
-    priorityImageNames = PriorityManual::GetImageNames();
+    priorityImageNames = PriorityManual<PriorityOnionPeel>::GetImageNames();
     }
-  else if(Helpers::StringsMatch(priorityType, "OnionPeel"))
+  else if(priorityType == ONIONPEEL)
     {
     priorityImageNames = PriorityOnionPeel::GetImageNames();
     }
-  else if(Helpers::StringsMatch(priorityType, "Random"))
+  else if(priorityType == RANDOM)
     {
     priorityImageNames = PriorityRandom::GetImageNames();
     }
-  else if(Helpers::StringsMatch(priorityType, "Depth"))
+  else if(priorityType == DEPTH)
     {
     priorityImageNames = PriorityDepth::GetImageNames();
     }
-  else if(Helpers::StringsMatch(priorityType, "Criminisi"))
+  else if(priorityType == CRIMINISI)
     {
     priorityImageNames = PriorityCriminisi::GetImageNames();
     }
-    
+
   return priorityImageNames;
 }

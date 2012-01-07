@@ -246,3 +246,10 @@ void PriorityCriminisi::ComputeBoundaryNormals(const float blurVariance)
     exit(-1);
   }
 }
+
+FloatScalarImageType* PriorityCriminisi::GetDataImage()
+{
+  // TODO: Actually create the data image. This is not used for the algorithm, but just for debugging output.
+  FloatScalarImageType::Pointer dataImage = FloatScalarImageType::New();
+  return dataImage;
+}

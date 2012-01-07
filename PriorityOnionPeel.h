@@ -37,15 +37,16 @@ public:
 
   void Update(const itk::ImageRegion<2>& filledRegion);
 
+  std::vector<NamedVTKImage> GetNamedImages();
+
+  static std::vector<std::string> GetImageNames();
+
   ///////////////////////////////////////////
   //////////////// New functions   //////////
   ///////////////////////////////////////////
 
   // Get the current confidence map image
-  FloatScalarImageType::Pointer GetConfidenceMapImage();
-
-  std::vector<NamedVTKImage> GetNamedImages();
-  static std::vector<std::string> GetImageNames();
+  FloatScalarImageType* GetConfidenceMapImage();
 
 protected:
 

@@ -17,20 +17,33 @@
  *=========================================================================*/
 
 #include "PriorityRandom.h"
+#include "Mask.h"
+#include "NamedVTKImage.h"
 
-PriorityRandom::PriorityRandom(const FloatVectorImageType* const image, const Mask* const maskImage, const unsigned int patchRadius) :
-Priority(image, maskImage, patchRadius)
+int main()
 {
+  FloatVectorImageType::Pointer image = FloatVectorImageType::New();
+  Mask::Pointer mask = Mask::New();
+  unsigned int patchRadius = 5;
+  PriorityRandom priority(image, mask, patchRadius);
 
-}
+  priority.ComputeAllPriorities();
 
-std::vector<std::string> PriorityRandom::GetImageNames()
-{
-  std::vector<std::string> imageNames = Priority::GetImageNames();
-  return imageNames;
-}
+  itk::ImageRegion<2> filledRegion;
+  priority.Update(filledRegion);
 
-float PriorityRandom::ComputePriority(const itk::Index<2>& queryPixel)
-{
-  return drand48();
+  // Get the current priority image
+  FloatScalarImageType* priorityImage = priority.GetPriorityImage();
+
+  // Get the current boundary image
+  UnsignedCharScalarImageType* boundaryImage = priority.GetBoundaryImage();
+
+  itk::Index<2> queryPixel;
+  priority.GetPriority(queryPixel);
+
+  priority.UpdateBoundary();
+
+  std::vector<NamedVTKImage> namedImages = priority.GetNamedImages();
+  std::vector<std::string> imageNames = priority.GetImageNames();
+  return 0;
 }
