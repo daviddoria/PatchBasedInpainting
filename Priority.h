@@ -24,12 +24,14 @@ class Mask;
 #include "NamedVTKImage.h"
 #include "Types.h"
 
+template <typename TImage>
 class Priority : public DebugOutputs
 {
 public:
-  Priority(const FloatVectorImageType* image, const Mask* maskImage, const unsigned int patchRadius);
+  Priority(const TImage* const image, const Mask* const maskImage, const unsigned int patchRadius);
 
   virtual ~Priority(){}
+
   // Compute the priorities at all boundary pixels.
   virtual void ComputeAllPriorities();
 
@@ -58,7 +60,7 @@ protected:
   FloatScalarImageType::Pointer PriorityImage;
 
   // In most subclasses, the image and mask are needed to compute the priority.
-  const FloatVectorImageType* Image;
+  const TImage* Image;
   const Mask* MaskImage;
 
   // In most subclasses, the boundary image is needed to know where to compute the priority.
@@ -66,5 +68,7 @@ protected:
 
   unsigned int PatchRadius;
 };
+
+#include "Priority.hxx"
 
 #endif

@@ -19,13 +19,18 @@
 #include "PriorityDepth.h"
 #include "Mask.h"
 #include "NamedVTKImage.h"
+#include "Testing.h"
 
 int main()
 {
   FloatVectorImageType::Pointer image = FloatVectorImageType::New();
+  Testing::GetBlankImage(image.GetPointer(), 4);
+
   Mask::Pointer mask = Mask::New();
+  Testing::GetMask(mask.GetPointer());
+
   unsigned int patchRadius = 5;
-  PriorityDepth priority(image, mask, patchRadius);
+  PriorityDepth<FloatVectorImageType> priority(image, mask, patchRadius);
 
   priority.ComputeAllPriorities();
 

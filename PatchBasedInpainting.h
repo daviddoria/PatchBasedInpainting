@@ -26,11 +26,10 @@
 #include "Mask.h"
 #include "Patch.h"
 #include "PatchPair.h"
+#include "Priority.h"
 #include "SelfPatchCompare.h"
 #include "SourcePatchCollection.h"
 #include "Types.h"
-
-class Priority;
 
 // ITK
 #include "itkCovariantVector.h"
@@ -39,6 +38,7 @@ class Priority;
 // Boost
 #include <boost/function.hpp>
 
+template <typename TImage>
 class PatchBasedInpainting : public DebugOutputs
 {
 
@@ -52,7 +52,7 @@ public:
   unsigned int GetPatchRadius() const;
 
   // Get the result/output of the inpainting so far. When the algorithm is complete, this will be the final output.
-  FloatVectorImageType* GetCurrentOutputImage();
+  TImage* GetCurrentOutputImage();
 
   // Get the current mask image
   Mask* GetMaskImage();
@@ -63,7 +63,7 @@ public:
 
   // Constructor
   //PatchBasedInpainting();
-  PatchBasedInpainting(const FloatVectorImageType* const image, const Mask* const mask);
+  PatchBasedInpainting(const TImage* const image, const Mask* const mask);
 
   // A single step of the algorithm. The real work is done here.
   PatchPair Iterate();
@@ -95,14 +95,14 @@ public:
 //   void SetPriorityFunction();
   void SetPriorityFunction(const std::string& priorityType);
 
-  Priority* GetPriorityFunction();
+  Priority<TImage>* GetPriorityFunction();
 
   // We store the patch radius, so we need this function to compute the actual patch size from the radius.
   itk::Size<2> GetPatchSize();
 
   ITKImageCollection& GetImagesToUpdate();
 
-  SelfPatchCompare<FloatVectorImageType> PatchCompare;
+  SelfPatchCompare<TImage> PatchCompare;
 
 private:
 
@@ -116,11 +116,11 @@ private:
   virtual PatchPair FindBestPatch();
 
   // The intermediate steps and eventually the result of the inpainting.
-  FloatVectorImageType::Pointer CurrentInpaintedImage;
+  typename TImage::Pointer CurrentInpaintedImage;
 
   // This image will be used for all patch to patch comparisons.
   //itk::ImageBase<2>* CompareImage; // Ideally we would be able to compare any type of image...
-  FloatVectorImageType* CompareImage; // Currently we can only compare images of this type.
+  TImage* CompareImage; // Currently we can only compare images of this type.
 
   // The images in this collection will have the selected patch copied into them at each iteration.
   // It should at least include the image and the mask.
@@ -172,7 +172,7 @@ private:
 
   //std::shared_ptr<SelfPatchCompare> PatchCompare;
 
-  std::shared_ptr<Priority> PriorityFunction;
+  std::shared_ptr<Priority<TImage> > PriorityFunction;
 
 };
 

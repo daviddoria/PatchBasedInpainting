@@ -4,7 +4,7 @@ ENABLE_TESTING()
 # set(ExeDir ${CriminisiInpainting_BINARY_DIR})
 # set(OutDir ${CriminisiInpainting_BINARY_DIR}/Testing/)
 
-include_directories(../)
+include_directories(../ ../Testing)
 
 add_library(libHelpers ../Helpers/Helpers.cpp ../Helpers/ITKHelpers.cpp ../Helpers/VTKHelpers.cpp ../Helpers/ITKVTKHelpers.cpp ../Helpers/HelpersOutput.cpp)
 target_link_libraries(libHelpers ${ITK_LIBRARIES})
@@ -52,39 +52,39 @@ add_test(TestSelfPatchCompare TestSelfPatchCompare)
 
 add_executable(TestPriorityFactory TestPriorityFactory.cpp ../PriorityFactory.cpp ../Priority.cpp ../PriorityCriminisi.cpp ../PriorityDepth.cpp ../PriorityManual.cpp
 ../PriorityOnionPeel.cpp ../DebugOutputs.cpp ../Mask.cpp ../PriorityRandom.cpp ../Isophotes.cpp ../Derivatives.cpp ../MaskOperations.cpp)
-target_link_libraries(TestPriorityFactory ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers)
+target_link_libraries(TestPriorityFactory ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers libTestHelpers)
 add_test(TestPriorityFactory TestPriorityFactory)
 
 add_executable(TestPriorityDepth TestPriorityDepth.cpp ../PriorityDepth.cpp ../Priority.cpp ../Mask.cpp ../Derivatives.cpp ../MaskOperations.cpp
 ../DebugOutputs.cpp)
-target_link_libraries(TestPriorityDepth ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers)
+target_link_libraries(TestPriorityDepth ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers libTestHelpers)
 add_test(TestPriorityDepth TestPriorityDepth)
 
 add_executable(TestPriorityManual TestPriorityManual.cpp ../PriorityManual.cpp ../Priority.cpp ../Mask.cpp ../PriorityOnionPeel.cpp ../DebugOutputs.cpp)
-target_link_libraries(TestPriorityManual ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers)
+target_link_libraries(TestPriorityManual ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers libTestHelpers)
 add_test(TestPriorityManual TestPriorityManual)
 
 add_executable(TestPriorityOnionPeel TestPriorityOnionPeel.cpp ../PriorityOnionPeel.cpp ../Priority.cpp ../Mask.cpp ../DebugOutputs.cpp)
-target_link_libraries(TestPriorityOnionPeel ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers)
+target_link_libraries(TestPriorityOnionPeel ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers libTestHelpers)
 add_test(TestPriorityOnionPeel TestPriorityOnionPeel)
 
 add_executable(TestPriorityRandom TestPriorityRandom.cpp ../PriorityRandom.cpp ../Priority.cpp ../Mask.cpp
 ../DebugOutputs.cpp)
-target_link_libraries(TestPriorityRandom ${ITK_LIBRARIES} ${VTK_LIBRARIES})
+target_link_libraries(TestPriorityRandom ${ITK_LIBRARIES} ${VTK_LIBRARIES} libTestHelpers)
 add_test(TestPriorityRandom TestPriorityRandom)
 
 add_executable(TestPriorityCriminisi TestPriorityCriminisi.cpp ../PriorityCriminisi.cpp ../PriorityOnionPeel.cpp ../Priority.cpp
 ../Isophotes.cpp ../Mask.cpp ../DebugOutputs.cpp ../Derivatives.cpp)
-target_link_libraries(TestPriorityCriminisi ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers)
+target_link_libraries(TestPriorityCriminisi ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers libTestHelpers)
 add_test(TestPriorityCriminisi TestPriorityCriminisi)
 
 # add_executable(TestITKImageCollection TestITKImageCollection.cpp ../ITKImageCollection.cpp)
 # target_link_libraries(TestITKImageCollection)
 # add_test(TestITKImageCollection TestITKImageCollection)
 
-# add_executable(TestNamedITKImage TestNamedITKImage.cpp ../TestNamedITKImage.cpp)
-# target_link_libraries(TestNamedITKImage)
-# add_test(TestNamedITKImage TestNamedITKImage)
+add_executable(TestNamedITKImage TestNamedITKImage.cpp)
+target_link_libraries(TestNamedITKImage ${ITK_LIBRARIES})
+add_test(TestNamedITKImage TestNamedITKImage)
 
 # add_executable(TestNamedVTKImage TestNamedVTKImage.cpp ../TestNamedVTKImage.cpp)
 # target_link_libraries(TestNamedVTKImage)

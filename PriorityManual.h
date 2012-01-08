@@ -19,6 +19,7 @@
 #ifndef PRIORITYMANUAL_H
 #define PRIORITYMANUAL_H
 
+#include "Priority.h"
 #include "PriorityOnionPeel.h"
 #include "PriorityRandom.h"
 #include "PriorityOnionPeel.h"
@@ -28,12 +29,14 @@
 // that contains pixels that indicate "definitely fill first". Once there are no more of
 // these pixels, the superclass's ComputePriority function is called.
 
-template <typename TPriority>
-class PriorityManual : public TPriority
+//template <typename TImage, typename TPriority>
+// This is a "template template" class because one of the template parameters (TPriority) depends on another (TImage).
+template< class TImage, template<class> class TPriority>
+class PriorityManual : public TPriority<TImage>
 {
 public:
   // Reimplemented
-  PriorityManual(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius);
+  PriorityManual(const TImage* image, const Mask* maskImage, unsigned int patchRadius);
 
   float ComputePriority(const itk::Index<2>& queryPixel);
 

@@ -23,7 +23,8 @@
 
 // This class returns a random value as the priority of each boundary pixel.
 
-class PriorityRandom : public Priority
+template <typename TImage>
+class PriorityRandom : public Priority<TImage>
 {
 public:
   PriorityRandom(const FloatVectorImageType* const image, const Mask* const maskImage, const unsigned int patchRadius);
@@ -32,5 +33,7 @@ public:
 
   static std::vector<std::string> GetImageNames();
 };
+
+#include "PriorityRandom.hxx"
 
 #endif

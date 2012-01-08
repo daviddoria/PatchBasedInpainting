@@ -32,10 +32,10 @@ namespace Testing
   bool ImagesEqual(const TImage* const image1, const TImage* const image2);
 
   template<typename TImage>
-  void GetBlankImage(TImage* const image1);
+  void GetBlankImage(TImage* const image);
 
   template<typename TImage>
-  void GetBlankImage(TImage* const image1, const unsigned int numberOfChannels);
+  void GetBlankImage(TImage* const image, const unsigned int numberOfChannels);
 
   void GetMask(Mask* const mask);
 

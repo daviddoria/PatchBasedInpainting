@@ -18,15 +18,15 @@
 
 #include "Helpers/ITKHelpers.h"
 
-template <typename TPriority>
-PriorityManual<TPriority>::PriorityManual(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius) :
-TPriority(image, maskImage, patchRadius)
+template< typename TImage, template<class> class TPriority>
+PriorityManual<TImage, TPriority>::PriorityManual(const TImage* image, const Mask* maskImage, unsigned int patchRadius) :
+TPriority<TImage>(image, maskImage, patchRadius)
 {
   this->ManualPriorityImage = UnsignedCharScalarImageType::New();
 }
 
-template <typename TPriority>
-float PriorityManual<TPriority>::ComputePriority(const itk::Index<2>& queryPixel)
+template< typename TImage, template<class> class TPriority>
+float PriorityManual<TImage, TPriority>::ComputePriority(const itk::Index<2>& queryPixel)
 {
   //std::cout << static_cast<float>(this->ManualPriorityImage->GetPixel(queryPixel)) << std::endl;
 
@@ -36,24 +36,24 @@ float PriorityManual<TPriority>::ComputePriority(const itk::Index<2>& queryPixel
   float offset = 1e4;
   if(manualPriority > 0)
     {
-    priority = offset + PriorityOnionPeel::ComputePriority(queryPixel);
+    priority = offset + PriorityOnionPeel<TImage>::ComputePriority(queryPixel);
     }
   else
     {
-    priority = PriorityOnionPeel::ComputePriority(queryPixel);
+    priority = PriorityOnionPeel<TImage>::ComputePriority(queryPixel);
     }
 
   return priority;
 }
 
-template <typename TPriority>
-UnsignedCharScalarImageType* PriorityManual<TPriority>::GetManualPriorityImage()
+template< typename TImage, template<class> class TPriority>
+UnsignedCharScalarImageType* PriorityManual<TImage, TPriority>::GetManualPriorityImage()
 {
   return this->ManualPriorityImage;
 }
 
-template <typename TPriority>
-void PriorityManual<TPriority>::SetManualPriorityImage(UnsignedCharScalarImageType* const image)
+template< typename TImage, template<class> class TPriority>
+void PriorityManual<TImage, TPriority>::SetManualPriorityImage(UnsignedCharScalarImageType* const image)
 {
   //this->ManualPriorityImage = image;
   ITKHelpers::DeepCopy<UnsignedCharScalarImageType>(image, this->ManualPriorityImage);

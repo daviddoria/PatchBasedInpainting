@@ -17,11 +17,16 @@
  *=========================================================================*/
 
 #include "PatchBasedInpainting.h"
+#include "Testing.h"
 
 int main()
 {
   FloatVectorImageType::Pointer image = FloatVectorImageType::New();
+  Testing::GetBlankImage(image.GetPointer(), 3);
+
   Mask::Pointer mask = Mask::New();
-  PatchBasedInpainting(image, mask);
+  Testing::GetMask(mask.GetPointer());
+
+  PatchBasedInpainting<FloatVectorImageType>(image, mask);
   return EXIT_SUCCESS;
 }

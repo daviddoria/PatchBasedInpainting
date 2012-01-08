@@ -32,17 +32,19 @@
 // {
 //   NamedITKImage() : Vectors(false), Name("Unnamed") {}
 //
-//   bool Vectors; // Should the image be displayed as vectors (little lines) vs scalars (pixels).
+//   bool Vectors; // Should the image be displayed as vectors (little lines) vs scalars (dots).
 //   std::string Name;
 // };
 
 struct NamedITKImage
 {
-  NamedITKImage(itk::ImageBase<2>* const image = NULL, const bool vectors = false, const std::string& name = "Unnamed") : Image(image), Vectors(vectors), Name(name) {}
+  enum ImageDisplayTypeEnum {SCALARS, VECTORS};
+  NamedITKImage(itk::ImageBase<2>* const image = NULL, const ImageDisplayTypeEnum displayType = SCALARS, const std::string& name = "Unnamed") :
+  Image(image), ImageDisplayType(displayType), Name(name) {}
 
-  //itk::ImageBase<2>* Image;
-  itk::ImageBase<2>::Pointer Image;
-  bool Vectors; // Should the image be displayed as vectors (little lines) vs scalars (pixels).
+  itk::ImageBase<2>* Image;
+  //itk::ImageBase<2>::Pointer Image;
+  ImageDisplayTypeEnum ImageDisplayType; // Indicates if the image should be displayed as vectors (little lines) vs scalars (dots).
   std::string Name;
 };
 

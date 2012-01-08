@@ -23,7 +23,9 @@
 #include "Types.h"
 
 // This class includes the isophote direction term on top of the confidence term of PriorityOnionPeel.
-class PriorityCriminisi : public PriorityOnionPeel
+
+template <typename TImage>
+class PriorityCriminisi : public PriorityOnionPeel<TImage>
 {
 public:
 
@@ -31,7 +33,7 @@ public:
   // Functions reimplemented from Priority //
   ///////////////////////////////////////////
 
-  PriorityCriminisi(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius);
+  PriorityCriminisi(const TImage* image, const Mask* maskImage, unsigned int patchRadius);
 
   float ComputePriority(const itk::Index<2>& queryPixel);
 
@@ -41,6 +43,7 @@ public:
 
   static std::vector<std::string> GetImageNames();
 
+  using PriorityOnionPeel<TImage>::ComputeConfidenceTerm;
   ///////////////////////////////////////////
   //////////////// New functions   //////////
   ///////////////////////////////////////////
@@ -63,5 +66,7 @@ protected:
   FloatVector2ImageType::Pointer BoundaryNormalsImage;
 
 };
+
+#include "PriorityCriminisi.hxx"
 
 #endif

@@ -22,7 +22,8 @@
 #include "Priority.h"
 #include "Types.h"
 
-class PriorityOnionPeel : public Priority
+template <typename TImage>
+class PriorityOnionPeel : public Priority<TImage>
 {
 public:
 
@@ -30,7 +31,7 @@ public:
   // Functions reimplemented from Priority //
   ///////////////////////////////////////////
 
-  PriorityOnionPeel(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius);
+  PriorityOnionPeel(const TImage* const image, const Mask* const maskImage, unsigned int patchRadius);
   virtual ~PriorityOnionPeel(){}
 
   float ComputePriority(const itk::Index<2>& queryPixel);
@@ -63,5 +64,7 @@ protected:
   void InitializeConfidenceMap();
 
 };
+
+#include "PriorityOnionPeel.hxx"
 
 #endif

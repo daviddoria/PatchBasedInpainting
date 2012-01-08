@@ -16,6 +16,9 @@
  *
  *=========================================================================*/
 
+#ifndef ITKVTKHELPERS_H
+#define ITKVTKHELPERS_H
+
 #include "itkSize.h"
 
 // Custom
@@ -76,3 +79,5 @@ void ITKScalarImageToScaledVTKImage(const TImage* image, vtkImageData* outputIma
 } // end namespace
 
 #include "ITKVTKHelpers.hxx"
+
+#endif

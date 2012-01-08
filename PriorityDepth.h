@@ -21,11 +21,12 @@
 
 #include "Priority.h"
 
-class PriorityDepth : public Priority
+template <typename TImage>
+class PriorityDepth : public Priority<TImage>
 {
 public:
   // Reimplemented from Priority
-  PriorityDepth(const FloatVectorImageType* image, const Mask* maskImage, unsigned int patchRadius);
+  PriorityDepth(const TImage* image, const Mask* maskImage, unsigned int patchRadius);
 
   float ComputePriority(const itk::Index<2>& queryPixel);
 
@@ -37,5 +38,7 @@ protected:
 
   FloatScalarImageType::Pointer BlurredDepth;
 };
+
+#include "PriorityDepth.hxx"
 
 #endif

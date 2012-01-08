@@ -16,6 +16,9 @@
  *
  *=========================================================================*/
 
+#ifndef VTKHELPERS_H
+#define VTKHELPERS_H
+
 class vtkImageData;
 class vtkPolyData;
 
@@ -49,3 +52,5 @@ void MakeImageTransparent(vtkImageData* image);
 
 
 } // end namespace
+
+#endif

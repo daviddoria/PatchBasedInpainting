@@ -19,14 +19,19 @@
 #include "PriorityFactory.h"
 #include "Priority.h"
 #include "Mask.h"
+#include "Testing.h"
 
 int main()
 {
   FloatVectorImageType::Pointer image = FloatVectorImageType::New();
+  Testing::GetBlankImage(image.GetPointer(), 3);
+
   Mask::Pointer mask = Mask::New();
+  Testing::GetMask(mask.GetPointer());
+
   const unsigned int patchRadius = 5;
-  Priority* priority = PriorityFactory::Create(PriorityFactory::RANDOM, image, mask, patchRadius);
-  std::vector<std::string> imageNames = PriorityFactory::GetImageNames(PriorityFactory::RANDOM);
+  Priority<FloatVectorImageType>* priority = PriorityFactory<FloatVectorImageType>::Create(PriorityFactory<FloatVectorImageType>::RANDOM, image, mask, patchRadius);
+  std::vector<std::string> imageNames = PriorityFactory<FloatVectorImageType>::GetImageNames(PriorityFactory<FloatVectorImageType>::RANDOM);
 
   return 0;
 }

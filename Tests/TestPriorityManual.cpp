@@ -20,13 +20,18 @@
 #include "PriorityOnionPeel.h"
 #include "Mask.h"
 #include "NamedVTKImage.h"
+#include "Testing.h"
 
 int main()
 {
   FloatVectorImageType::Pointer image = FloatVectorImageType::New();
+  Testing::GetBlankImage(image.GetPointer(), 4);
+
   Mask::Pointer mask = Mask::New();
+  Testing::GetMask(mask.GetPointer());
+
   unsigned int patchRadius = 5;
-  PriorityManual<PriorityOnionPeel> priority(image, mask, patchRadius);
+  PriorityManual<FloatVectorImageType, PriorityOnionPeel> priority(image, mask, patchRadius);
 
   priority.ComputeAllPriorities();
 
@@ -40,14 +45,17 @@ int main()
   UnsignedCharScalarImageType* boundaryImage = priority.GetBoundaryImage();
 
   UnsignedCharScalarImageType::Pointer manualPriorityImage = UnsignedCharScalarImageType::New();
+  Testing::GetBlankImage(manualPriorityImage.GetPointer());
+
   priority.SetManualPriorityImage(manualPriorityImage);
 
   itk::Index<2> queryPixel;
+  queryPixel.Fill(0);
   priority.GetPriority(queryPixel);
 
   priority.UpdateBoundary();
 
   std::vector<NamedVTKImage> namedImages = priority.GetNamedImages();
   std::vector<std::string> imageNames = priority.GetImageNames();
-  return 0;
+  return EXIT_SUCCESS;
 }

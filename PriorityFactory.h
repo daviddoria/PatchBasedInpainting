@@ -24,11 +24,12 @@
 
 #include "Priority.h"
 
+template <typename TImage>
 class PriorityFactory
 {
 public:
   enum PriorityTypes {DEPTH, MANUAL, ONIONPEEL, CRIMINISI, RANDOM, INVALID};
-  static Priority* Create(const PriorityTypes priorityType, const FloatVectorImageType* const image, const Mask* const maskImage, const unsigned int patchRadius);
+  static Priority<TImage>* Create(const PriorityTypes priorityType, const TImage* const image, const Mask* const maskImage, const unsigned int patchRadius);
 
   static std::string NameOfPriority(const PriorityTypes);
   static PriorityTypes PriorityTypeFromName(const std::string&);
@@ -40,5 +41,7 @@ private:
   static PriorityNameMapType DifferenceNameMap;
   static PriorityNameMapType CreateNameMap();
 };
+
+#include "PriorityFactory.hxx"
 
 #endif
