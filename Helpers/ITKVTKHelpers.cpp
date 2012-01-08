@@ -31,7 +31,7 @@
 namespace ITKVTKHelpers
 {
 
-void CreateTransparentVTKImage(const itk::Size<2>& size, vtkImageData* outputImage)
+void CreateTransparentVTKImage(const itk::Size<2>& size, vtkImageData* const outputImage)
 {
   outputImage->SetNumberOfScalarComponents(4);
   outputImage->SetScalarTypeToUnsignedChar();
@@ -53,7 +53,7 @@ void CreateTransparentVTKImage(const itk::Size<2>& size, vtkImageData* outputIma
 }
 
 
-void SetRegionCenterPixel(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char color[3])
+void SetRegionCenterPixel(vtkImageData* const image, const itk::ImageRegion<2>& region, const unsigned char color[3])
 {
   int dims[3];
   image->GetDimensions(dims);
@@ -68,7 +68,7 @@ void SetRegionCenterPixel(vtkImageData* image, const itk::ImageRegion<2>& region
 
 
 // Convert a vector ITK image to a VTK image for display
-void ITKVectorImageToVTKImageFromDimension(const FloatVectorImageType* image, vtkImageData* outputImage)
+void ITKVectorImageToVTKImageFromDimension(const FloatVectorImageType* const image, vtkImageData* const outputImage)
 {
   // If the image has 3 channels, assume it is RGB.
   if(image->GetNumberOfComponentsPerPixel() == 3)
@@ -84,7 +84,7 @@ void ITKVectorImageToVTKImageFromDimension(const FloatVectorImageType* image, vt
 }
 
 // Convert a vector ITK image to a VTK image for display
-void ITKImageToVTKRGBImage(const FloatVectorImageType* image, vtkImageData* outputImage)
+void ITKImageToVTKRGBImage(const FloatVectorImageType* const image, vtkImageData* const outputImage)
 {
   // This function assumes an ND (with N>3) image has the first 3 channels as RGB and extra information in the remaining channels.
 
@@ -125,7 +125,7 @@ void ITKImageToVTKRGBImage(const FloatVectorImageType* image, vtkImageData* outp
 
 
 // Convert a vector ITK image to a VTK image for display
-void ITKImageToVTKMagnitudeImage(const FloatVectorImageType* image, vtkImageData* outputImage)
+void ITKImageToVTKMagnitudeImage(const FloatVectorImageType* const image, vtkImageData* const outputImage)
 {
   //std::cout << "ITKImagetoVTKMagnitudeImage()" << std::endl;
   // Compute the magnitude of the ITK image
@@ -172,7 +172,7 @@ void ITKImageToVTKMagnitudeImage(const FloatVectorImageType* image, vtkImageData
   outputImage->Modified();
 }
 
-void ITKImageChannelToVTKImage(const FloatVectorImageType* image, const unsigned int channel, vtkImageData* outputImage)
+void ITKImageChannelToVTKImage(const FloatVectorImageType* const image, const unsigned int channel, vtkImageData* const outputImage)
 {
   FloatScalarImageType::Pointer channelImage = FloatScalarImageType::New();
   ITKHelpers::ExtractChannel<float>(image, channel, channelImage);
@@ -191,7 +191,7 @@ void CreatePatchVTKImage(const FloatVectorImageType* image, const itk::ImageRegi
 }
 
 
-void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType* image, vtkImageData* outputImage)
+void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType* const image, vtkImageData* const outputImage)
 {
   //std::cout << "ITKImagetoVTKVectorFieldImage()" << std::endl;
 
@@ -225,7 +225,7 @@ void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType* image, vtkImageD
 }
 
 
-void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType* vectorImage, vtkPolyData* output)
+void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType* const vectorImage, vtkPolyData* const output)
 {
   vtkSmartPointer<vtkFloatArray> vectors = vtkSmartPointer<vtkFloatArray>::New();
   vectors->SetNumberOfComponents(3);
@@ -259,7 +259,7 @@ void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType* vectorImage, vtk
 }
 
 
-void BlankAndOutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const unsigned char value[3])
+void BlankAndOutlineRegion(vtkImageData* const image, const itk::ImageRegion<2>& region, const unsigned char value[3])
 {
   BlankRegion(image, region);
   OutlineRegion(image, region, value);

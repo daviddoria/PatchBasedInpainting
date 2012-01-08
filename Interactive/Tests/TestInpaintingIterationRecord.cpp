@@ -16,17 +16,27 @@
  *
  *=========================================================================*/
 
-#ifndef DISPLAYSTATE_H
-#define DISPLAYSTATE_H
+#include "InpaintingIterationRecord.h"
 
-struct DisplayState
+int main(int argc, char*argv[])
 {
-public:
-  DisplayState();
+//   InpaintingIterationRecord();
+// 
+//   // Store the sets of pairs that were considered.
+//   std::vector<CandidatePairs> PotentialPairSets;
+// 
+//   // Store the pairs of patches that were actually used.
+//   PatchPair* UsedPatchPair;
+// 
+//   void AddImage(NamedITKImage&, const bool display = false);
+// 
+//   NamedITKImage GetImage(const unsigned int) const;
+//   NamedITKImage GetImageByName(const std::string&) const;
+//   unsigned int GetNumberOfImages() const;
+// 
+//   bool IsDisplayed(const unsigned int) const;
+//   void SetDisplayed(const unsigned int, const bool displayed);
+  throw;
 
-  unsigned int Iteration;
-  unsigned int ForwardLookId;
-  unsigned int SourcePatchId;
-};
-
-#endif
+  return EXIT_SUCCESS;
+}

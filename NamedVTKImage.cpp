@@ -1,6 +1,6 @@
 #include "NamedVTKImage.h"
 
-#include "Helpers.h"
+#include "Helpers/Helpers.h"
 
 NamedVTKImage FindImageByName(const std::vector<NamedVTKImage>& namedImages, const std::string& imageName)
 {

@@ -67,9 +67,8 @@
 
 // Custom
 #include "FileSelector.h"
-#include "Helpers.h"
-#include "HelpersDisplay.h"
-#include "HelpersOutput.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/HelpersOutput.h"
 #include "HelpersQt.h"
 #include "InteractorStyleImageWithDrag.h"
 #include "ModelView/ListModelDisplay.h"
@@ -82,8 +81,6 @@
 #include "PriorityRandom.h"
 #include "SelfPatchCompare.h"
 #include "Types.h"
-
-Q_DECLARE_METATYPE(PatchPair)
 
 void PatchBasedInpaintingGUI::DefaultConstructor()
 {
@@ -239,17 +236,17 @@ void PatchBasedInpaintingGUI::SetupScenes()
 
 void PatchBasedInpaintingGUI::SetupConnections()
 {
-  qRegisterMetaType<PatchPair>("PatchPair");
+
   connect(this->ComputationThread, SIGNAL(started()), this->InpaintingComputation, SLOT(start()));
   connect(this->InpaintingComputation, SIGNAL(InpaintingComplete()), this->ComputationThread, SLOT(quit()));
-  connect(this->InpaintingComputation, SIGNAL(IterationComplete(const PatchPair&)), this->ComputationThread, SLOT(quit()));
+  connect(this->InpaintingComputation, SIGNAL(IterationComplete(const PatchPair*)), this->ComputationThread, SLOT(quit()));
 
   connect(this->ComputationThread, SIGNAL(started()), this, SLOT(slot_StartProgress()), Qt::QueuedConnection);
   connect(this->InpaintingComputation, SIGNAL(InpaintingComplete()), this, SLOT(slot_StopProgress()), Qt::QueuedConnection);
-  connect(this->InpaintingComputation, SIGNAL(IterationComplete(const PatchPair&)), this, SLOT(slot_StopProgress()), Qt::QueuedConnection);
+  connect(this->InpaintingComputation, SIGNAL(IterationComplete(const PatchPair*)), this, SLOT(slot_StopProgress()), Qt::QueuedConnection);
 
-  connect(this->InpaintingComputation, SIGNAL(IterationComplete(const PatchPair&)),
-          this, SLOT(slot_IterationComplete(const PatchPair&)), Qt::BlockingQueuedConnection);
+  connect(this->InpaintingComputation, SIGNAL(IterationComplete(const PatchPair*)),
+          this, SLOT(slot_IterationComplete(const PatchPair*)), Qt::BlockingQueuedConnection);
 
   ConnectForwardLookModelToView();
   ConnectTopPatchesModelToView();
@@ -342,7 +339,7 @@ void PatchBasedInpaintingGUI::OpenImage(const std::string& fileName)
 
   //std::cout << "UserImage region: " << this->UserImage->GetLargestPossibleRegion() << std::endl;
 
-  this->Canvas->DisplayImage(this->UserImage);
+  //this->Canvas->DisplayImage(this->UserImage);
 
   this->Renderer->ResetCamera();
   this->qvtkWidget->GetRenderWindow()->Render();
@@ -350,12 +347,7 @@ void PatchBasedInpaintingGUI::OpenImage(const std::string& fileName)
   this->statusBar()->showMessage("Opened image.");
   actionOpenMask->setEnabled(true);
 
-  this->Canvas->ForwardLookPatchLayer.ImageData->SetDimensions(this->UserImage->GetLargestPossibleRegion().GetSize()[0],
-                                                             this->UserImage->GetLargestPossibleRegion().GetSize()[1], 1);
-  this->Canvas->ForwardLookPatchLayer.ImageData->AllocateScalars();
-  this->Canvas->SourcePatchLayer.ImageData->SetDimensions(this->UserImage->GetLargestPossibleRegion().GetSize()[0],
-                                                             this->UserImage->GetLargestPossibleRegion().GetSize()[1], 1);
-  this->Canvas->SourcePatchLayer.ImageData->AllocateScalars();
+
 
   this->ImageInputs.push_back(ImageInput("Image", fileName.c_str()));
 
@@ -437,19 +429,19 @@ void PatchBasedInpaintingGUI::RefreshVTK()
 
   //DisplayPriorityImages();
 
-  this->Canvas->UsedPatchPairLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
-
-  this->Canvas->ForwardLookPatchLayer.ImageSlice->SetVisibility(this->chkDisplayForwardLookPatchLocations->isChecked());
-  if(this->chkDisplayForwardLookPatchLocations->isChecked())
-    {
-    HighlightForwardLookPatches();
-    }
-
-  this->Canvas->SourcePatchLayer.ImageSlice->SetVisibility(this->chkDisplaySourcePatchLocations->isChecked());
-  if(this->chkDisplaySourcePatchLocations->isChecked())
-    {
-    HighlightSourcePatches();
-    }
+//   this->Canvas->UsedPatchPairLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
+// 
+//   this->Canvas->ForwardLookPatchLayer.ImageSlice->SetVisibility(this->chkDisplayForwardLookPatchLocations->isChecked());
+//   if(this->chkDisplayForwardLookPatchLocations->isChecked())
+//     {
+//     HighlightForwardLookPatches();
+//     }
+// 
+//   this->Canvas->SourcePatchLayer.ImageSlice->SetVisibility(this->chkDisplaySourcePatchLocations->isChecked());
+//   if(this->chkDisplaySourcePatchLocations->isChecked())
+//     {
+//     HighlightSourcePatches();
+//     }
 
   this->qvtkWidget->GetRenderWindow()->Render();
   LeaveFunction("RefreshVTK()");
@@ -523,13 +515,14 @@ void PatchBasedInpaintingGUI::DisplaySourcePatch()
     return;
     }
 
-  FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image.GetPointer());
+  FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image);
 
-  QImage sourceImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, this->SourcePatchToDisplay.Region, this->ImageDisplayStyle);
-  //sourceImage = HelpersQt::FitToGraphicsView(sourceImage, gfxSource);
-  QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
-  gfxSource->fitInView(item);
-  LeaveFunction("DisplaySourcePatch()");
+  // TODO: Fix this
+//   QImage sourceImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, this->SourcePatchToDisplay.Region, this->ImageDisplayStyle);
+//   //sourceImage = HelpersQt::FitToGraphicsView(sourceImage, gfxSource);
+//   QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
+//   gfxSource->fitInView(item);
+//   LeaveFunction("DisplaySourcePatch()");
 }
 
 void PatchBasedInpaintingGUI::DisplayTargetPatch()
@@ -543,18 +536,19 @@ void PatchBasedInpaintingGUI::DisplayTargetPatch()
     LeaveFunction("DisplayTargetPatch()");
     return;
     }
-  FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image.GetPointer());
+  FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image);
 
   // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration
   // (as the current mask has been cleared where the target patch was copied).
   //Mask::Pointer currentMask = dynamic_cast<Mask*>(this->RecordToDisplay->Images.FindImageByName("Mask").Image.GetPointer());
 
   // Target
-  QImage targetImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, this->TargetPatchToDisplay.Region, this->ImageDisplayStyle);
-
-  //targetImage = HelpersQt::FitToGraphicsView(targetImage, gfxTarget);
-  QGraphicsPixmapItem* item = this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
-  gfxTarget->fitInView(item);
+  // TODO: Fix this.
+//   QImage targetImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, this->TargetPatchToDisplay.GetRegion(), this->ImageDisplayStyle);
+// 
+//   //targetImage = HelpersQt::FitToGraphicsView(targetImage, gfxTarget);
+//   QGraphicsPixmapItem* item = this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
+//   gfxTarget->fitInView(item);
   LeaveFunction("DisplayTargetPatch()");
 
 }
@@ -569,64 +563,65 @@ void PatchBasedInpaintingGUI::DisplayResultPatch()
     return;
     }
 
-  FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image.GetPointer());
+  FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image);
 
   // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration
   // (as the current mask has been cleared where the target patch was copied).
-  Mask::Pointer currentMask = dynamic_cast<Mask*>(this->RecordToDisplay->GetImageByName("Mask").Image.GetPointer());
+  Mask::Pointer currentMask = dynamic_cast<Mask*>(this->RecordToDisplay->GetImageByName("Mask").Image);
 
   itk::Size<2> regionSize = this->Inpainting->GetPatchSize();
 
   QImage qimage(regionSize[0], regionSize[1], QImage::Format_RGB888);
 
-  itk::ImageRegionIterator<FloatVectorImageType> sourceIterator(currentImage, this->SourcePatchToDisplay.Region);
-  itk::ImageRegionIterator<FloatVectorImageType> targetIterator(currentImage, this->TargetPatchToDisplay.Region);
-  itk::ImageRegionIterator<Mask> maskIterator(currentMask, this->TargetPatchToDisplay.Region);
+  // TODO: Fix this
+//   itk::ImageRegionIterator<FloatVectorImageType> sourceIterator(currentImage, this->SourcePatchToDisplay.GetRegion());
+//   itk::ImageRegionIterator<FloatVectorImageType> targetIterator(currentImage, this->TargetPatchToDisplay.GetRegion());
+//   itk::ImageRegionIterator<Mask> maskIterator(currentMask, this->TargetPatchToDisplay.GetRegion());
+// 
+//   FloatVectorImageType::Pointer resultPatch = FloatVectorImageType::New();
+//   resultPatch->SetNumberOfComponentsPerPixel(currentImage->GetNumberOfComponentsPerPixel());
+//   itk::Size<2> patchSize = ITKHelpers::SizeFromRadius(this->Settings.PatchRadius);
+//   itk::ImageRegion<2> region;
+//   region.SetSize(patchSize);
+//   resultPatch->SetRegions(region);
+//   resultPatch->Allocate();
+// 
+//   while(!maskIterator.IsAtEnd())
+//     {
+//     FloatVectorImageType::PixelType pixel;
+// 
+//     if(currentMask->IsHole(maskIterator.GetIndex()))
+//       {
+//       pixel = sourceIterator.Get();
+//       }
+//     else
+//       {
+//       pixel = targetIterator.Get();
+//       }
 
-  FloatVectorImageType::Pointer resultPatch = FloatVectorImageType::New();
-  resultPatch->SetNumberOfComponentsPerPixel(currentImage->GetNumberOfComponentsPerPixel());
-  itk::Size<2> patchSize = Helpers::SizeFromRadius(this->Settings.PatchRadius);
-  itk::ImageRegion<2> region;
-  region.SetSize(patchSize);
-  resultPatch->SetRegions(region);
-  resultPatch->Allocate();
+//     itk::Offset<2> offset = sourceIterator.GetIndex() - this->SourcePatchToDisplay.GetRegion().GetIndex();
+//     itk::Index<2> offsetIndex;
+//     offsetIndex[0] = offset[0];
+//     offsetIndex[1] = offset[1];
+//     resultPatch->SetPixel(offsetIndex, pixel);
 
-  while(!maskIterator.IsAtEnd())
-    {
-    FloatVectorImageType::PixelType pixel;
-
-    if(currentMask->IsHole(maskIterator.GetIndex()))
-      {
-      pixel = sourceIterator.Get();
-      }
-    else
-      {
-      pixel = targetIterator.Get();
-      }
-
-    itk::Offset<2> offset = sourceIterator.GetIndex() - this->SourcePatchToDisplay.Region.GetIndex();
-    itk::Index<2> offsetIndex;
-    offsetIndex[0] = offset[0];
-    offsetIndex[1] = offset[1];
-    resultPatch->SetPixel(offsetIndex, pixel);
-
-    ++sourceIterator;
-    ++targetIterator;
-    ++maskIterator;
-    }
+//     ++sourceIterator;
+//     ++targetIterator;
+//     ++maskIterator;
+//     }
 
   // Color the center pixel
   //qimage.setPixel(regionSize[0]/2, regionSize[1]/2, this->CenterPixelColor.rgb());
 
-  qimage = HelpersQt::GetQImage<FloatVectorImageType>(resultPatch, resultPatch->GetLargestPossibleRegion(), this->ImageDisplayStyle);
-
-  //qimage = HelpersQt::FitToGraphicsView(qimage, gfxResult);
-  this->ResultPatchScene->clear();
-  QGraphicsPixmapItem* item = this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
-  gfxResult->fitInView(item);
-  //this->ResultPatchScene->addPixmap(QPixmap());
-  //std::cout << "Set result patch." << std::endl;
-  LeaveFunction("DisplayResultPatch()");
+//   qimage = HelpersQt::GetQImage<FloatVectorImageType>(resultPatch, resultPatch->GetLargestPossibleRegion(), this->ImageDisplayStyle);
+// 
+//   //qimage = HelpersQt::FitToGraphicsView(qimage, gfxResult);
+//   this->ResultPatchScene->clear();
+//   QGraphicsPixmapItem* item = this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
+//   gfxResult->fitInView(item);
+//   //this->ResultPatchScene->addPixmap(QPixmap());
+//   //std::cout << "Set result patch." << std::endl;
+//   LeaveFunction("DisplayResultPatch()");
 }
 
 void PatchBasedInpaintingGUI::DisplayUsedPatches()
@@ -635,7 +630,7 @@ void PatchBasedInpaintingGUI::DisplayUsedPatches()
 
   // There are no patches used in the 0th iteration (initial conditions) so it doesn't make sense to display them.
   // Instead we display blank images.
-  if(this->DisplayState.Iteration < 1)
+  if(this->RecordDisplayState.Iteration < 1)
     {
     this->TargetPatchScene->clear();
     this->SourcePatchScene->clear();
@@ -654,7 +649,7 @@ void PatchBasedInpaintingGUI::DisplayUsedPatchInformation()
 {
   EnterFunction("DisplayUsedPatchInformation()");
 
-  if(this->DisplayState.Iteration < 1)
+  if(this->RecordDisplayState.Iteration < 1)
     {
     //std::cerr << "Can only display used patch information for iterations >= 1" << std::endl;
     return;
@@ -692,13 +687,14 @@ void PatchBasedInpaintingGUI::DisplayUsedPatchInformation()
 void PatchBasedInpaintingGUI::ChangeDisplayedIteration()
 {
   // This should be called only when the iteration actually changed.
-
+  // TODO: Fix this
+/*
   EnterFunction("ChangeDisplayedIteration()");
 
-  if(this->DisplayState.Iteration > this->IterationRecords.size())
+  if(this->RecordDisplayState.Iteration > this->IterationRecords.size())
     {
     std::cout << "this->IterationToDisplay > this->IterationRecords.size()" << std::endl;
-    std::cout << "this->IterationToDisplay: " << this->DisplayState.Iteration << std::endl;
+    std::cout << "this->IterationToDisplay: " << this->RecordDisplayState.Iteration << std::endl;
     std::cout << "this->IterationRecords.size(): " << this->IterationRecords.size() << std::endl;
     this->RecordToDisplay = NULL;
     LeaveFunction("ChangeDisplayedIteration()");
@@ -706,24 +702,24 @@ void PatchBasedInpaintingGUI::ChangeDisplayedIteration()
     }
 
   // If there are no PotentialPairSets, we can't display them.
-  if(this->IterationRecords[this->DisplayState.Iteration].PotentialPairSets.size() == 0)
+  if(this->IterationRecords[this->RecordDisplayState.Iteration].PotentialPairSets.size() == 0)
     {
     LeaveFunction("ChangeDisplayedIteration()");
     return;
     }
 
-  this->RecordToDisplay = &IterationRecords[this->DisplayState.Iteration];
+  this->RecordToDisplay = &IterationRecords[this->RecordDisplayState.Iteration];
 
   this->ModelDisplay->SetIterationRecord(this->RecordToDisplay);
 
-  this->SourcePatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->DisplayState.ForwardLookId][this->DisplayState.SourcePatchId].SourcePatch;
-  this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->DisplayState.ForwardLookId].TargetPatch;
+  this->SourcePatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->RecordDisplayState.ForwardLookId][this->RecordDisplayState.SourcePatchId].SourcePatch;
+  this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->RecordDisplayState.ForwardLookId].TargetPatch;
 
   std::stringstream ss;
-  ss << this->DisplayState.Iteration << " out of " << this->Inpainting->GetNumberOfCompletedIterations();
+  ss << this->RecordDisplayState.Iteration << " out of " << this->Inpainting->GetNumberOfCompletedIterations();
   this->lblCurrentIteration->setText(ss.str().c_str());
 
-  if(this->DisplayState.Iteration > 0)
+  if(this->RecordDisplayState.Iteration > 0)
     {
     DisplayUsedPatches();
     HighlightUsedPatches();
@@ -739,7 +735,7 @@ void PatchBasedInpaintingGUI::ChangeDisplayedIteration()
     }
 
   Refresh();
-  LeaveFunction("ChangeDisplayedIteration()");
+  LeaveFunction("ChangeDisplayedIteration()");*/
 }
 
 void PatchBasedInpaintingGUI::CreateInitialRecord()
@@ -752,7 +748,7 @@ void PatchBasedInpaintingGUI::CreateInitialRecord()
 
   //NamedITKImage::Pointer image = dynamic_cast<NamedITKImage*>(FloatVectorImageType::New().GetPointer());
   FloatVectorImageType::Pointer image = FloatVectorImageType::New();
-  Helpers::DeepCopy<FloatVectorImageType>(this->UserImage, image);
+  ITKHelpers::DeepCopy<FloatVectorImageType>(this->UserImage, image);
   NamedITKImage namedImage;
   namedImage.Image = image;
   namedImage.Name = "Image";
@@ -762,7 +758,7 @@ void PatchBasedInpaintingGUI::CreateInitialRecord()
   //Helpers::DeepCopy<FloatVectorImageType>(this->Inpainting.GetCurrentOutputImage(), stack.Image);
 
   Mask::Pointer maskImage = Mask::New();
-  Helpers::DeepCopy<Mask>(this->UserMaskImage, maskImage);
+  ITKHelpers::DeepCopy<Mask>(this->UserMaskImage, maskImage);
   NamedITKImage namedMaskImage;
   namedMaskImage.Name = "Mask";
   namedMaskImage.Image = maskImage;
@@ -771,7 +767,7 @@ void PatchBasedInpaintingGUI::CreateInitialRecord()
   //Helpers::DeepCopy<UnsignedCharScalarImageType>(this->Inpainting.GetBoundaryImage(), stack.Boundary);
 
   FloatScalarImageType::Pointer priorityImage = FloatScalarImageType::New();
-  Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting->GetPriorityFunction()->GetPriorityImage(), priorityImage);
+  ITKHelpers::DeepCopy<FloatScalarImageType>(this->Inpainting->GetPriorityFunction()->GetPriorityImage(), priorityImage);
   NamedITKImage namedPriorityImage;
   namedPriorityImage.Name = "Priority";
   namedPriorityImage.Image = priorityImage;
@@ -793,15 +789,18 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
 {
   EnterFunction("IterationComplete()");
 
+  // TODO: The interfaces used in this function have changed.
+  
   InpaintingIterationRecord iterationRecord;
   for(unsigned int i = 0; i < this->Inpainting->GetImagesToUpdate().size(); ++i)
     {
     std::cout << "Updating image " << i << std::endl;
 
-    Helpers::OutputImageType(this->Inpainting->GetImagesToUpdate()[i]);
-    itk::ImageBase<2>::Pointer newImage = Helpers::CreateImageWithSameType(this->Inpainting->GetImagesToUpdate()[i]);
-    Helpers::OutputImageType(newImage);
-    Helpers::DeepCopy(this->Inpainting->GetImagesToUpdate()[i], newImage);
+    ITKHelpers::OutputImageType(this->Inpainting->GetImagesToUpdate()[i]);
+    itk::ImageBase<2>::Pointer newImage = ITKHelpers::CreateImageWithSameType(this->Inpainting->GetImagesToUpdate()[i]);
+    ITKHelpers::OutputImageType(newImage);
+    // TODO: Make this deep copy work
+    //ITKHelpers::DeepCopy(this->Inpainting->GetImagesToUpdate()[i], newImage);
     }
   std::cout << "Finished creating record images." << std::endl;
 
@@ -814,18 +813,19 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
 //     //Helpers::DeepCopy<FloatScalarImageType>(this->Inpainting.GetPriorityFunction()->GetPriorityImage(), dynamic_cast<FloatScalarImageType*>(iterationRecord.Images.FindImageByName("Priority")));
 //     }
 
-  if(this->chkRecordSteps->isChecked())
-    {
-    std::cout << "Recording step." << std::endl;
-
-    // Chop to the desired length
-    for(unsigned int i = 0; i < this->Inpainting->GetPotentialCandidatePairsReference().size(); ++i)
-      {
-      unsigned int numberToKeep = std::min(this->Inpainting->GetPotentialCandidatePairsReference()[i].size(), this->Settings.NumberOfTopPatchesToSave);
-      //std::cout << "numberToKeep: " << numberToKeep << std::endl;
-      this->Inpainting->GetPotentialCandidatePairsReference()[i].erase(this->Inpainting->GetPotentialCandidatePairsReference()[i].begin() + numberToKeep,
-                                                                       this->Inpainting->GetPotentialCandidatePairsReference()[i].end());
-      }
+//   if(this->chkRecordSteps->isChecked())
+//     {
+//     std::cout << "Recording step." << std::endl;
+// 
+//     // Chop to the desired length
+//     for(unsigned int i = 0; i < this->Inpainting->GetPotentialCandidatePairsReference().size(); ++i)
+//       {
+//       unsigned int numberToKeep = std::min(this->Inpainting->GetPotentialCandidatePairsReference()[i].GetNumberOfSourcePatches(),
+//                                            this->Settings.NumberOfTopPatchesToSave);
+//       //std::cout << "numberToKeep: " << numberToKeep << std::endl;
+// //       this->Inpainting->GetPotentialCandidatePairsReference()[i].erase(this->Inpainting->GetPotentialCandidatePairsReference()[i].begin() + numberToKeep,
+// //                                                                        this->Inpainting->GetPotentialCandidatePairsReference()[i].end());
+//       }
 
     // Add the patch pairs to the new record. This will mean the pairs are 1 record out of sync with the images. The interpretation would be:
     // "These are the patches that were considered to get here".
@@ -833,40 +833,16 @@ void PatchBasedInpaintingGUI::IterationComplete(const PatchPair& usedPatchPair)
 
     // Add the patch pairs to the previous record. The interpretation is "these patches are considered here, to produce the next image".
     // There should always be a previous record, because an initial record is created for the initial state.
-    this->IterationRecords[this->IterationRecords.size() - 1].PotentialPairSets = this->Inpainting->GetPotentialCandidatePairs();
+    //this->IterationRecords[this->IterationRecords.size() - 1].PotentialPairSets = this->Inpainting->GetPotentialCandidatePairs();
     //std::cout << "iterationRecord.PotentialPairSets: " << iterationRecord.PotentialPairSets.size() << std::endl;
-    }
+    //}
 
-  iterationRecord.UsedPatchPair = usedPatchPair;
-  this->IterationRecords.push_back(iterationRecord);
-  //std::cout << "There are now " << this->IterationRecords.size() << " recorded iterations." << std::endl;
-
-  // After one iteration, GetNumberOfCompletedIterations will be 1. This is exactly the set of intermediate images we want to display,
-  // because the 0th intermediate images are the original inputs.
-  if(this->chkLive->isChecked())
-    {
-    std::cout << "Switching to live iteration." << std::endl;
-    //this->IterationToDisplay = this->Inpainting.GetNumberOfCompletedIterations();
-    this->DisplayState.Iteration = this->Inpainting->GetNumberOfCompletedIterations() - 1;
-    //std::cout << "Switch to display iteration " << this->IterationToDisplay << std::endl;
-    ChangeDisplayedIteration();
-
-    Refresh();
-    }
-  else
-    {
-    std::stringstream ss;
-    ss << this->DisplayState.Iteration << " out of " << this->Inpainting->GetNumberOfCompletedIterations();
-    this->lblCurrentIteration->setText(ss.str().c_str());
-    }
-
-  LeaveFunction("Leave IterationComplete()");
 }
 
 void PatchBasedInpaintingGUI::SetupForwardLookingTable()
 {
   EnterFunction("SetupForwardLookingTable()");
-  if(this->DisplayState.Iteration < 1)
+  if(this->RecordDisplayState.Iteration < 1)
     {
     //std::cout << "Can only display result patch for iterations > 0." << std::endl;
     this->ForwardLookModel->SetIterationToDisplay(0);
@@ -874,11 +850,11 @@ void PatchBasedInpaintingGUI::SetupForwardLookingTable()
     return;
     }
 
-  this->ForwardLookModel->SetIterationToDisplay(this->DisplayState.Iteration);
+  this->ForwardLookModel->SetIterationToDisplay(this->RecordDisplayState.Iteration);
   this->ForwardLookModel->SetPatchDisplaySize(this->Settings.PatchDisplaySize);
   this->ForwardLookModel->Refresh();
 
-  this->DisplayState.SourcePatchId = 0;
+  this->RecordDisplayState.SourcePatchId = 0;
 
   this->ForwardLookTableView->setColumnWidth(0, this->Settings.PatchDisplaySize);
   this->ForwardLookTableView->verticalHeader()->setResizeMode(QHeaderView::Fixed);
@@ -890,19 +866,20 @@ void PatchBasedInpaintingGUI::ChangeDisplayedTopPatch()
 {
   EnterFunction("ChangeDisplayedTopPatch()");
 
-  if(this->IterationRecords[this->DisplayState.Iteration].PotentialPairSets.size() == 0)
+  if(this->IterationRecords[this->RecordDisplayState.Iteration].PotentialPairSets.size() == 0)
     {
     LeaveFunction("ChangeDisplayedTopPatch()");
     return;
     }
 
-  this->SourcePatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->DisplayState.ForwardLookId][this->DisplayState.SourcePatchId].SourcePatch;
-  this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->DisplayState.ForwardLookId].TargetPatch;
-
-  DisplaySourcePatch();
-  DisplayResultPatch();
-
-  HighlightSourcePatches();
+    // TODO: Fix this
+//   this->SourcePatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->RecordDisplayState.ForwardLookId][this->RecordDisplayState.SourcePatchId].SourcePatch;
+//   this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->RecordDisplayState.ForwardLookId].TargetPatch;
+// 
+//   DisplaySourcePatch();
+//   DisplayResultPatch();
+// 
+//   HighlightSourcePatches();
 
   LeaveFunction("ChangeDisplayedTopPatch()");
 }
@@ -911,19 +888,20 @@ void PatchBasedInpaintingGUI::ChangeDisplayedForwardLookPatch()
 {
   EnterFunction("ChangeDisplayedForwardLookPatch()");
 
-  if(this->IterationRecords[this->DisplayState.Iteration].PotentialPairSets.size() == 0)
+  if(this->IterationRecords[this->RecordDisplayState.Iteration].PotentialPairSets.size() == 0)
     {
     LeaveFunction("ChangeDisplayedForwardLookPatch()");
     return;
     }
-  this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->DisplayState.ForwardLookId].TargetPatch;
-  DisplayTargetPatch();
-
-  // Once the target patch is set, setup the TopPatches table, which will also display the result patch
-  SetupTopPatchesTable();
-  ChangeDisplayedTopPatch();
-
-  HighlightForwardLookPatches();
+    // TODO: Fix this
+//   this->TargetPatchToDisplay = this->RecordToDisplay->PotentialPairSets[this->RecordDisplayState.ForwardLookId].TargetPatch;
+//   DisplayTargetPatch();
+// 
+//   // Once the target patch is set, setup the TopPatches table, which will also display the result patch
+//   SetupTopPatchesTable();
+//   ChangeDisplayedTopPatch();
+// 
+//   HighlightForwardLookPatches();
 
   LeaveFunction("ChangeDisplayedForwardLookPatch()");
 }
@@ -932,14 +910,14 @@ void PatchBasedInpaintingGUI::SetupTopPatchesTable()
 {
   EnterFunction("SetupTopPatchesTable()");
 
-  this->TopPatchesModel->SetIterationToDisplay(this->DisplayState.Iteration);
-  this->TopPatchesModel->SetForwardLookToDisplay(this->DisplayState.ForwardLookId);
+  this->TopPatchesModel->SetIterationToDisplay(this->RecordDisplayState.Iteration);
+  this->TopPatchesModel->SetForwardLookToDisplay(this->RecordDisplayState.ForwardLookId);
   this->TopPatchesModel->SetPatchDisplaySize(this->Settings.PatchDisplaySize);
   this->TopPatchesModel->SetNumberOfTopPatchesToDisplay(this->Settings.NumberOfTopPatchesToDisplay);
   this->TopPatchesModel->Refresh();
 
-  this->DisplayState.SourcePatchId = 0;
-  HighlightSourcePatches();
+  this->RecordDisplayState.SourcePatchId = 0;
+  //HighlightSourcePatches();
 
   DisplaySourcePatch();
   DisplayResultPatch();
@@ -989,60 +967,62 @@ void PatchBasedInpaintingGUI::SetCompareImageFromGUI()
 
 void PatchBasedInpaintingGUI::SetComparisonFunctionsFromGUI()
 {
-  this->Inpainting->GetPatchCompare()->FunctionsToCompute.clear();
-  if(this->chkCompareFull->isChecked())
-    {
-    this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,
-                                                                                  this->Inpainting->GetPatchCompare(),_1));
-    }
-  if(this->chkCompareColor->isChecked())
-    {
-    this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchColorDifference,
-                                                                                  this->Inpainting->GetPatchCompare(),_1));
-    }
-  if(this->chkCompareDepth->isChecked())
-    {
-    this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,
-                                                                                  this->Inpainting->GetPatchCompare(),_1));
-    }
-//   if(this->chkCompareMembership->isChecked())
+  // TODO: This interface has changed significantly
+//   this->Inpainting->GetPatchCompare()->FunctionsToCompute.clear();
+//   if(this->chkCompareFull->isChecked())
 //     {
-//     this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,
+//     this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,
 //                                                                                   this->Inpainting->GetPatchCompare(),_1));
 //     }
-  if(this->chkCompareHistogramIntersection->isChecked())
-    {
-    this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchHistogramIntersection,
-                                                                                  this->Inpainting->GetPatchCompare(),_1));
-    }
+//   if(this->chkCompareColor->isChecked())
+//     {
+//     this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchColorDifference,
+//                                                                                   this->Inpainting->GetPatchCompare(),_1));
+//     }
+//   if(this->chkCompareDepth->isChecked())
+//     {
+//     this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchDepthDifference,
+//                                                                                   this->Inpainting->GetPatchCompare(),_1));
+//     }
+// //   if(this->chkCompareMembership->isChecked())
+// //     {
+// //     this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,
+// //                                                                                   this->Inpainting->GetPatchCompare(),_1));
+// //     }
+//   if(this->chkCompareHistogramIntersection->isChecked())
+//     {
+//     this->Inpainting->GetPatchCompare()->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchHistogramIntersection,
+//                                                                                   this->Inpainting->GetPatchCompare(),_1));
+//     }
 }
 
 void PatchBasedInpaintingGUI::SetSortFunctionFromGUI()
 {
-  if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Full Difference"))
-    {
-    this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
-    }
-  else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Color Difference"))
-    {
-    this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::ColorDifference, PatchSortFunctor::ASCENDING);
-    }
-  else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Depth Difference"))
-    {
-    this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::DepthDifference, PatchSortFunctor::ASCENDING);
-    }
-  else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Depth + Color Difference"))
-    {
-    this->Inpainting->PatchSortFunction = std::make_shared<SortByDepthAndColor>(PatchPair::CombinedDifference);
-    }
-  else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Histogram Intersection"))
-    {
-    this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::HistogramIntersection, PatchSortFunctor::DESCENDING);
-    }
-  else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Membership Difference"))
-    {
-    this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::MembershipDifference, PatchSortFunctor::DESCENDING);
-    }
+  // TODO: This interface has changed significantly.
+//   if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Full Difference"))
+//     {
+//     this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
+//     }
+//   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Color Difference"))
+//     {
+//     this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::ColorDifference, PatchSortFunctor::ASCENDING);
+//     }
+//   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Depth Difference"))
+//     {
+//     this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::DepthDifference, PatchSortFunctor::ASCENDING);
+//     }
+//   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Depth + Color Difference"))
+//     {
+//     this->Inpainting->PatchSortFunction = std::make_shared<SortByDepthAndColor>(PatchPair::CombinedDifference);
+//     }
+//   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Histogram Intersection"))
+//     {
+//     this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::HistogramIntersection, PatchSortFunctor::DESCENDING);
+//     }
+//   else if(Helpers::StringsMatch(this->cmbSortBy->currentText().toStdString(), "Membership Difference"))
+//     {
+//     this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::MembershipDifference, PatchSortFunctor::DESCENDING);
+//     }
 }
 
 void PatchBasedInpaintingGUI::SetPriorityFromGUI()
@@ -1083,7 +1063,7 @@ void PatchBasedInpaintingGUI::OpenInputImages()
     ImageReaderType::Pointer reader = ImageReaderType::New();
     reader->SetFileName(this->ImageInputs[i].FileName.toStdString());
     reader->Update();
-    this->InputImages.push_back(NamedITKImage(reader->GetOutput(), false, this->ImageInputs[i].Name.toStdString()));
+    this->InputImages.push_back(NamedITKImage(reader->GetOutput(), NamedITKImage::SCALARS, this->ImageInputs[i].Name.toStdString()));
     }
 }
 
@@ -1095,10 +1075,11 @@ void PatchBasedInpaintingGUI::SetupSaveModel()
     this->ModelSave->Add(this->InputImages[i].Name.c_str(), Qt::Checked);
     }
 
-  std::vector<std::string> priorityImageNames = PriorityFactory::GetImageNames(this->cmbPriority->currentText().toStdString());
-
-  for(unsigned int i = 0; i < priorityImageNames.size(); ++i)
-    {
-    this->ModelSave->Add(priorityImageNames[i].c_str(), Qt::Checked);
-    }
+    // TODO: something wrong with this call (compiler error).
+//   std::vector<std::string> priorityImageNames = PriorityFactory<PriorityRandom<FloatScalarImageType> >::GetImageNames(this->cmbPriority->currentText().toStdString());
+// 
+//   for(unsigned int i = 0; i < priorityImageNames.size(); ++i)
+//     {
+//     this->ModelSave->Add(priorityImageNames[i].c_str(), Qt::Checked);
+//     }
 }

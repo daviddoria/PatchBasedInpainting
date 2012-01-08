@@ -33,7 +33,7 @@ bool InpaintingIterationRecord::IsDisplayed(const unsigned int imageId) const
   return this->Display[imageId];
 }
 
-void InpaintingIterationRecord::AddImage(NamedITKImage& namedImage, const bool display)
+void InpaintingIterationRecord::AddImage(const NamedITKImage& namedImage, const bool display)
 {
   this->Images.push_back(namedImage);
   this->Display.push_back(display);

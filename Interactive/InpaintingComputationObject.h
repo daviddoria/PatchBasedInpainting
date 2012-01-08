@@ -35,7 +35,7 @@ Q_OBJECT
 signals:
 
   // This signal is emitted when an iteration is complete.
-  void IterationComplete(const PatchPair&);
+  void IterationComplete(const PatchPair*);
 
   // This signal is emitted when the entire inpainting is complete.
   void InpaintingComplete();
@@ -61,11 +61,11 @@ public:
   void StopInpainting();
 
   // Provide the object with which to do the computation.
-  void SetObject(PatchBasedInpainting*);
+  void SetObject(PatchBasedInpainting<FloatVectorImageType>* const patchBasedInpainting);
 
 private:
   // We need a pointer to this object so we can perform the computations in this thread
-  PatchBasedInpainting* Inpainting;
+  PatchBasedInpainting<FloatVectorImageType>* Inpainting;
 
   // This flag can be set from another thread (by calling StopInpainting()) to indicate that we want to stop the computation at the next possible opportunity.
   bool Stop;

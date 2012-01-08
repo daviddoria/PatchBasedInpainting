@@ -16,17 +16,27 @@
  *
  *=========================================================================*/
 
-#ifndef DISPLAYSTATE_H
-#define DISPLAYSTATE_H
+#include "ColorPalette.h"
 
-struct DisplayState
+int main(int argc, char*argv[])
 {
-public:
-  DisplayState();
 
-  unsigned int Iteration;
-  unsigned int ForwardLookId;
-  unsigned int SourcePatchId;
-};
+//   QColor UsedTargetPatch;
+//   QColor UsedSourcePatch;
+// 
+//   QColor SourcePatch;
+//   QColor ForwardLookPatch;
+// 
+//   QColor SelectedForwardLookPatch;
+//   QColor SelectedSourcePatch;
+// 
+//   QColor CenterPixel;
+// 
+//   QColor Hole;
+//   QColor UserPatch;
+  
+  throw;
 
-#endif
+  return EXIT_SUCCESS;
+}
+

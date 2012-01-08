@@ -18,6 +18,10 @@
 
 #include "Patch.h"
 
+static void TestConstructor();
+
+// TODO: Break this into smaller tests.
+
 int main(int argc, char*argv[])
 {
   // Create a patch
@@ -85,4 +89,9 @@ int main(int argc, char*argv[])
     }
 
   return EXIT_SUCCESS;
+}
+
+void TestConstructor()
+{
+
 }

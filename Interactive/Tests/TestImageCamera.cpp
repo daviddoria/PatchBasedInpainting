@@ -16,17 +16,17 @@
  *
  *=========================================================================*/
 
-#ifndef DISPLAYSTATE_H
-#define DISPLAYSTATE_H
+#include "ImageCamera.h"
 
-struct DisplayState
+#include <iostream>
+
+int main(int argc, char*argv[])
 {
-public:
-  DisplayState();
+//   ImageCamera(vtkRenderer* const renderer);
+// 
+//   void FlipVertically();
+//   void FlipHorizontally();
+  throw;
 
-  unsigned int Iteration;
-  unsigned int ForwardLookId;
-  unsigned int SourcePatchId;
-};
-
-#endif
+  return EXIT_SUCCESS;
+}

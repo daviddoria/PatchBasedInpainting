@@ -29,33 +29,35 @@ namespace Derivatives
 // This is NOT the same as finding the unmasked derivative and then extracting only the valid pixels - the result
 // can be very different depending on the 'image' values under the masked region.
 template <typename TImage>
-void MaskedDerivative(const TImage* image, const Mask* mask, const unsigned int direction, FloatScalarImageType* output);
+void MaskedDerivative(const TImage* const image, const Mask* const mask, const unsigned int direction, FloatScalarImageType* const output);
 
 template <typename TImage>
-void MaskedDerivativePrewitt(const TImage* image, const Mask* mask, const unsigned int direction, FloatScalarImageType* output);
+void MaskedDerivativePrewitt(const TImage* const image, const Mask* const mask, const unsigned int direction, FloatScalarImageType* const output);
 
 template <typename TImage>
-void MaskedDerivativeSobel(const TImage* image, const Mask* mask, const unsigned int direction, FloatScalarImageType* output);
+void MaskedDerivativeSobel(const TImage* const image, const Mask* const mask, const unsigned int direction, FloatScalarImageType* const output);
 
 template <typename TImage>
-void MaskedDerivativeGaussian(const TImage* image, const Mask* mask, const unsigned int direction, FloatScalarImageType* output);
+void MaskedDerivativeGaussian(const TImage* const image, const Mask* const mask, const unsigned int direction, FloatScalarImageType* const output);
 
 template <typename TImage>
-void MaskedDerivativeGaussianInRegion(const TImage* image, const Mask* mask, const unsigned int direction, const itk::ImageRegion<2>& region, FloatScalarImageType* output);
+void MaskedDerivativeGaussianInRegion(const TImage* const image, const Mask* const mask, const unsigned int direction,
+                                      const itk::ImageRegion<2>& region, FloatScalarImageType* const output);
 
 template <typename TImage>
-void MaskedGradient(const TImage* image, const Mask* mask, FloatVector2ImageType* output);
+void MaskedGradient(const TImage* const image, const Mask*const  mask, FloatVector2ImageType* const output);
 
 template <typename TImage>
-void MaskedGradientInRegion(const TImage* image, const Mask* mask, const itk::ImageRegion<2>& region, FloatVector2ImageType* output);
+void MaskedGradientInRegion(const TImage* const image, const Mask* const mask, const itk::ImageRegion<2>& region, FloatVector2ImageType* const output);
 
 template<typename TPixel>
-void GradientFromDerivatives(const itk::Image<TPixel, 2>* xDerivative, const typename itk::Image<TPixel, 2>* yDerivative, itk::Image<itk::CovariantVector<TPixel, 2> >* output);
+void GradientFromDerivatives(const itk::Image<TPixel, 2>* const xDerivative,
+                             const typename itk::Image<TPixel, 2>* const yDerivative, itk::Image<itk::CovariantVector<TPixel, 2> >* const output);
 
 template<typename TPixel>
-void GradientFromDerivativesInRegion(const itk::Image<TPixel, 2>* xDerivative, const itk::Image<TPixel, 2>* yDerivative, const itk::ImageRegion<2>& region, itk::Image<itk::CovariantVector<TPixel, 2> >* output);
+void GradientFromDerivativesInRegion(const itk::Image<TPixel, 2>* const xDerivative, const itk::Image<TPixel, 2>* const yDerivative,
+                                     const itk::ImageRegion<2>& region, itk::Image<itk::CovariantVector<TPixel, 2> >* const output);
 
-void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* image, const Mask* mask, const itk::ImageRegion<2>& region, FloatVector2ImageType* outputIsophotes);
 
 } // end namespace
 

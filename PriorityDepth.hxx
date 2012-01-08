@@ -3,6 +3,7 @@
 
 #include "Derivatives.h"
 #include "Helpers/HelpersOutput.h"
+#include "Isophotes.h"
 #include "MaskOperations.h"
 
 #include <stdexcept>
@@ -42,7 +43,7 @@ PriorityDepth<TImage>::PriorityDepth(const TImage* image, const Mask* maskImage,
 
   //HelpersOutput::WriteImage<FloatScalarImageType>(this->BlurredDepth, "Debug/BlurredDepth.mha");
 
-  Derivatives::ComputeMaskedIsophotesInRegion(this->BlurredDepth, maskImage, image->GetLargestPossibleRegion(), this->DepthIsophoteImage);
+  Isophotes::ComputeMaskedIsophotesInRegion(this->BlurredDepth, maskImage, image->GetLargestPossibleRegion(), this->DepthIsophoteImage);
   //HelpersOutput::Write2DVectorImage(this->DepthIsophoteImage, "Debug/BlurredDepthIsophoteImage.mha");
 
 }
@@ -85,5 +86,5 @@ void PriorityDepth<TImage>::Update(const itk::ImageRegion<2>& filledRegion)
   indexSelectionFilter->Update();
 
   MaskOperations::MaskedBlur<FloatScalarImageType>(indexSelectionFilter->GetOutput(), this->MaskImage, 2.0f, this->BlurredDepth);
-  Derivatives::ComputeMaskedIsophotesInRegion(indexSelectionFilter->GetOutput(), this->MaskImage, filledRegion, this->DepthIsophoteImage);
+  Isophotes::ComputeMaskedIsophotesInRegion(indexSelectionFilter->GetOutput(), this->MaskImage, filledRegion, this->DepthIsophoteImage);
 }

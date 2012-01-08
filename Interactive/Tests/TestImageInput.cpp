@@ -16,17 +16,19 @@
  *
  *=========================================================================*/
 
-#ifndef DISPLAYSTATE_H
-#define DISPLAYSTATE_H
+#include "ImageInput.h"
 
-struct DisplayState
+int main(int argc, char*argv[])
 {
-public:
-  DisplayState();
+  //ImageInput(const QString& name = QString(), const QString& fileName = QString());
 
-  unsigned int Iteration;
-  unsigned int ForwardLookId;
-  unsigned int SourcePatchId;
-};
+//   QString Name;
+//   QString FileName;
+// 
+// 
+//   bool ImageExists(const QVector<ImageInput>&, const QString& name);
+//   
+  throw;
 
-#endif
+  return EXIT_SUCCESS;
+}

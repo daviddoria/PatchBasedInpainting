@@ -28,22 +28,17 @@ endif ( QT4_FOUND )
 
 SET(BuildLibrary CACHE BOOL "Build the library.")
 if(BuildLibrary)
+  add_subdirectory(Helpers)
   add_library(PatchBasedInpainting
   CandidatePairs.cpp
   DebugOutputs.cpp
   Derivatives.cpp
-  Helpers.cpp
-  HelpersOutput.cpp
-  Histograms.cpp
   itkCommandLineArgumentParser.cxx
-  ITKHelpers.cpp
-  ITKVTKHelpers.cpp
   ITKImageCollection.cpp
   Isophotes.cpp
   Mask.cpp
   MaskOperations.cpp
   NamedITKImageCollection.cpp
-  NamedITKImage.cpp
   NamedVTKImage.cpp
   PairDifferences.cpp
   Patch.cpp
@@ -74,7 +69,7 @@ SET(BuildNonInteractive CACHE BOOL "Build the non-interactive version.")
 if(BuildNonInteractive)
   ADD_EXECUTABLE(PatchBasedInpaintingNonInteractive
   PatchBasedInpaintingNonInteractive.cpp)
-  TARGET_LINK_LIBRARIES(PatchBasedInpaintingNonInteractive PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES})
+  TARGET_LINK_LIBRARIES(PatchBasedInpaintingNonInteractive PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
   INSTALL( TARGETS PatchBasedInpaintingNonInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
@@ -82,6 +77,7 @@ SET(BuildTests CACHE BOOL "Build tests.")
 if(BuildTests)
   message ("Building tests.")
   ENABLE_TESTING()
+  add_subdirectory(Helpers)
   add_subdirectory(Testing)
   add_subdirectory(Tests)
   add_subdirectory(Helpers/Tests)

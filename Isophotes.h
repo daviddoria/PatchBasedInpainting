@@ -21,6 +21,10 @@
 
 namespace Isophotes
 {
-void ComputeColorIsophotesInRegion(const FloatVectorImageType* image, const Mask* mask,
-                                   const itk::ImageRegion<2>& region , FloatVector2ImageType* isophotes);
+void ComputeColorIsophotesInRegion(const FloatVectorImageType* image, const Mask* const mask,
+                                   const itk::ImageRegion<2>& region , FloatVector2ImageType* const isophotes);
+
+void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* const image, const Mask* const mask, const itk::ImageRegion<2>& region,
+                                    FloatVector2ImageType* const outputIsophotes);
+
 }

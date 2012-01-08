@@ -22,14 +22,43 @@
 #include "Derivatives.h"
 #include "Helpers/Helpers.h"
 #include "MaskOperations.h"
+#include "RotateVectors.h"
 
 // ITK
 #include "itkRGBToLuminanceImageFilter.h"
 
 namespace Isophotes
 {
-void ComputeColorIsophotesInRegion(const FloatVectorImageType* image, const Mask* mask,
-                                   const itk::ImageRegion<2>& region , FloatVector2ImageType* isophotes)
+
+void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* const image, const Mask* const mask, const itk::ImageRegion<2>& region,
+                                    FloatVector2ImageType* const outputIsophotes)
+{
+  //Helpers::WriteImageConditional<FloatScalarImageType>(image, "Debug/ComputeMaskedIsophotes.luminance.mha", this->DebugImages);
+
+  FloatVector2ImageType::Pointer gradient = FloatVector2ImageType::New();
+  ITKHelpers::InitializeImage<FloatVector2ImageType>(gradient, image->GetLargestPossibleRegion());
+  Derivatives::MaskedGradientInRegion<FloatScalarImageType>(image, mask, region, gradient);
+
+  //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha", this->DebugImages);
+  //Helpers::Write2DVectorImage(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha");
+
+  // Rotate the gradient 90 degrees to obtain isophotes from gradient
+  typedef itk::UnaryFunctorImageFilter<FloatVector2ImageType, FloatVector2ImageType,
+  RotateVectors<FloatVector2ImageType::PixelType,
+                FloatVector2ImageType::PixelType> > FilterType;
+
+  FilterType::Pointer rotateFilter = FilterType::New();
+  rotateFilter->SetInput(gradient);
+  rotateFilter->Update();
+
+  //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.Isophotes.mha", this->DebugImages);
+  //Helpers::Write2DVectorImage(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.Isophotes.mha");
+
+  ITKHelpers::CopyPatch<FloatVector2ImageType>(rotateFilter->GetOutput(), outputIsophotes, region, region);
+}
+
+void ComputeColorIsophotesInRegion(const FloatVectorImageType* const image, const Mask* const mask,
+                                   const itk::ImageRegion<2>& region , FloatVector2ImageType* const isophotes)
 {
   //EnterFunction("ComputeIsophotes()");
   RGBImageType::Pointer rgbImage = RGBImageType::New();
@@ -53,7 +82,7 @@ void ComputeColorIsophotesInRegion(const FloatVectorImageType* image, const Mask
   //HelpersOutput::WriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/Initialize.blurredLuminance.mha", true);
 
   ITKHelpers::InitializeImage<FloatVector2ImageType>(isophotes, image->GetLargestPossibleRegion());
-  Derivatives::ComputeMaskedIsophotesInRegion(blurredLuminance, mask, region, isophotes);
+  Isophotes::ComputeMaskedIsophotesInRegion(blurredLuminance, mask, region, isophotes);
 
 //   if(this->DebugImages)
 //     {

@@ -16,17 +16,18 @@
  *
  *=========================================================================*/
 
-#ifndef DISPLAYSTATE_H
-#define DISPLAYSTATE_H
+#include "NamedVTKImage.h"
 
-struct DisplayState
+static void
+
+int main(int argc, char*argv[])
 {
-public:
-  DisplayState();
 
-  unsigned int Iteration;
-  unsigned int ForwardLookId;
-  unsigned int SourcePatchId;
+//   NamedVTKImage() : Vectors(false), Name("Unnamed"), ImageData(NULL) {}
+//   bool Vectors; // Should the image be displayed as vectors (little lines) vs scalars (pixels).
+//   std::string Name;
+//   vtkSmartPointer<vtkImageData> ImageData;
+  //NamedVTKImage FindImageByName(const std::vector<NamedVTKImage>&, const std::string&);
+  throw;
+  return EXIT_SUCCESS;
 };
-
-#endif

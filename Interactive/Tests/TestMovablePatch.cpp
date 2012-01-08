@@ -16,28 +16,35 @@
  *
  *=========================================================================*/
 
-/* This widget configures the options of a PatchBasedInpainting object
- * and visualizes the output at each iteration. The PatchBasedInpainting
- * is not created until the Initialize button is clicked.
-*/
+#include "MovablePatch.h"
 
-#ifndef Settings_H
-#define Settings_H
+// VTK
+#include <vtkRenderer.h>
+#include <vtkSmartPointer.h>
 
-class SettingsContainer
+// Qt
+#include <QColor>
+#include <QGraphicsView>
+
+int main(int argc, char*argv[])
 {
-public:
-  SettingsContainer();
+  const unsigned int radius = 5;
+  vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
 
-  unsigned int PatchRadius;
-  unsigned int NumberOfTopPatchesToSave;
-  unsigned int NumberOfForwardLook;
-  unsigned int GoToIteration;
-  unsigned int NumberOfTopPatchesToDisplay;
+  QGraphicsView* view = new QGraphicsView;
+  QColor color;
+  MovablePatch patch1(radius, renderer, view, color);
+  MovablePatch patch2(radius, renderer, view);
+/*
+  void SetVisibility(const bool);
+  bool GetVisibility();
 
-  // The size to display the patches. This is stored here because it is used in multiple models.
-  unsigned int PatchDisplaySize;
+  // The ITK region describing the position of the patch.
+  itk::ImageRegion<2> GetRegion();
 
-};
+  void Display();*/
 
-#endif
+  throw;
+
+  return EXIT_SUCCESS;
+}

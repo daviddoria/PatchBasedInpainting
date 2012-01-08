@@ -21,11 +21,82 @@
 #include "Mask.h"
 #include "Testing.h"
 
-static void CreateMask(Mask* mask);
+static void CreateMask(Mask* const mask);
+static void CreateImage(UnsignedCharScalarImageType* const image);
 
-static void CreateImage(UnsignedCharScalarImageType* image);
+static void TestMaskedDerivative();
+static void TestMaskedDerivativePrewitt();
+static void TestMaskedDerivativeSobel();
+static void TestMaskedDerivativeGaussian();
+static void TestMaskedGradientInRegion();
+static void TestMaskedDerivativeGaussianInRegion();
+static void TestGradientFromDerivatives();
+static void TestGradientFromDerivativesInRegion();
 
 int main(int argc, char*argv[])
+{
+  TestMaskedDerivative();
+  TestMaskedDerivativePrewitt();
+  TestMaskedDerivativeSobel();
+  TestMaskedDerivativeGaussian();
+  TestMaskedGradientInRegion();
+  TestMaskedDerivativeGaussianInRegion();
+  TestGradientFromDerivatives();
+  TestGradientFromDerivativesInRegion();
+
+  return EXIT_SUCCESS;
+}
+
+
+void TestMaskedDerivativePrewitt()
+{
+  //(const TImage* const image, const Mask* const mask, const unsigned int direction, FloatScalarImageType* const output);
+  throw;
+}
+
+
+void TestMaskedDerivativeSobel()
+{
+  //(const TImage* const image, const Mask* const mask, const unsigned int direction, FloatScalarImageType* const output);
+  throw;
+}
+
+void TestMaskedDerivativeGaussian()
+{
+//const TImage* const image, const Mask* const mask, const unsigned int direction, FloatScalarImageType* const output);
+throw;
+}
+
+
+void TestMaskedDerivativeGaussianInRegion()
+{
+//const TImage* const image, const Mask* const mask, const unsigned int direction,
+  //                                    const itk::ImageRegion<2>& region, FloatScalarImageType* const output);
+throw;
+}
+
+void TestMaskedGradientInRegion()
+{
+  //const TImage* const image, const Mask* const mask, const itk::ImageRegion<2>& region, FloatVector2ImageType* const output);
+  throw;
+}
+
+void TestGradientFromDerivatives()
+{
+//const itk::Image<TPixel, 2>* const xDerivative,
+ //                            const typename itk::Image<TPixel, 2>* const yDerivative, itk::Image<itk::CovariantVector<TPixel, 2> >* const output);
+ throw;
+}
+
+
+void TestGradientFromDerivativesInRegion()
+{
+  //const itk::Image<TPixel, 2>* const xDerivative, const itk::Image<TPixel, 2>* const yDerivative,
+    //                                 const itk::ImageRegion<2>& region, itk::Image<itk::CovariantVector<TPixel, 2> >* const output);
+  throw;
+}
+
+void TestMaskedDerivative()
 {
   Mask::Pointer mask = Mask::New();
   CreateMask(mask);
@@ -38,16 +109,14 @@ int main(int argc, char*argv[])
   Derivatives::MaskedDerivative<UnsignedCharScalarImageType>(image, mask, direction, output);
 
   FloatScalarImageType::Pointer correctDerivative = FloatScalarImageType::New();
+
   if(!Testing::ImagesEqual<FloatScalarImageType>(output, correctDerivative))
     {
-    return EXIT_FAILURE;
+    throw std::runtime_error("MaskedDerivative output incorrect!");
     }
-
-  return EXIT_SUCCESS;
 }
 
-
-void CreateMask(Mask* mask)
+void CreateMask(Mask* const mask)
 {
   itk::Index<2> maskCorner;
   maskCorner.Fill(0);
@@ -86,7 +155,7 @@ void CreateMask(Mask* mask)
     }
 }
 
-void CreateImage(UnsignedCharScalarImageType* image)
+void CreateImage(UnsignedCharScalarImageType* const image)
 {
   itk::Index<2> corner;
   corner.Fill(0);

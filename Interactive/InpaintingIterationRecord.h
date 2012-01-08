@@ -34,12 +34,12 @@ public:
   InpaintingIterationRecord();
 
   // Store the sets of pairs that were considered.
-  std::vector<CandidatePairs> PotentialPairSets;
+  std::vector<CandidatePairs*> PotentialPairSets;
 
   // Store the pairs of patches that were actually used.
   PatchPair* UsedPatchPair;
 
-  void AddImage(NamedITKImage&, const bool display = false);
+  void AddImage(const NamedITKImage&, const bool display = false);
 
   NamedITKImage GetImage(const unsigned int) const;
   NamedITKImage GetImageByName(const std::string&) const;
@@ -50,8 +50,8 @@ public:
 
 private:
   NamedITKImageCollection Images;
-  std::vector<bool> Display; // This vector is always the same length as the number of images.
 
+  std::vector<bool> Display; // This vector is always the same length as the number of images.
 };
 
 #endif

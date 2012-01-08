@@ -16,17 +16,17 @@
  *
  *=========================================================================*/
 
-#ifndef DISPLAYSTATE_H
-#define DISPLAYSTATE_H
+#include "DisplayStyle.h"
 
-struct DisplayState
+#include <iostream>
+
+int main(int argc, char*argv[])
 {
-public:
-  DisplayState();
+//   DisplayStyle() : Channel(0), Style(COLOR) {}
+//   enum DisplayStyleEnum{COLOR, MAGNITUDE, CHANNEL};
+//   unsigned int Channel;
+//   DisplayStyleEnum Style;
+  throw;
 
-  unsigned int Iteration;
-  unsigned int ForwardLookId;
-  unsigned int SourcePatchId;
-};
-
-#endif
+  return EXIT_SUCCESS;
+}

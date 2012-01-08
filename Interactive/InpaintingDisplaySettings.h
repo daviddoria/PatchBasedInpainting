@@ -16,17 +16,28 @@
  *
  *=========================================================================*/
 
-#ifndef DISPLAYSTATE_H
-#define DISPLAYSTATE_H
+/* This widget configures the options of a PatchBasedInpainting object
+ * and visualizes the output at each iteration. The PatchBasedInpainting
+ * is not created until the Initialize button is clicked.
+*/
 
-struct DisplayState
+#ifndef InpaintingDisplaySettings_H
+#define InpaintingDisplaySettings_H
+
+class InpaintingDisplaySettings
 {
 public:
-  DisplayState();
+  InpaintingDisplaySettings();
 
-  unsigned int Iteration;
-  unsigned int ForwardLookId;
-  unsigned int SourcePatchId;
+  unsigned int PatchRadius;
+  unsigned int NumberOfTopPatchesToSave;
+  unsigned int NumberOfForwardLook;
+  unsigned int GoToIteration;
+  unsigned int NumberOfTopPatchesToDisplay;
+
+  // The size to display the patches. This is stored here because it is used in multiple models.
+  unsigned int PatchDisplaySize;
+
 };
 
 #endif

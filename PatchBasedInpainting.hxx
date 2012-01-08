@@ -158,7 +158,7 @@ void PatchBasedInpainting<TImage>::Initialize()
   if(!this->PriorityFunction)
     {
     std::cout << "Using default Priority function." << std::endl;
-    this->PriorityFunction = std::make_shared<PriorityRandom>(this->CurrentInpaintedImage, this->MaskImage, this->PatchRadius[0]);
+    this->PriorityFunction = std::make_shared<PriorityRandom<FloatVectorImageType> >(this->CurrentInpaintedImage, this->MaskImage, this->PatchRadius[0]);
     }
 
   this->NumberOfCompletedIterations = 0;

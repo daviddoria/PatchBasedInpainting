@@ -12,7 +12,9 @@
 #include <vtkRenderWindowInteractor.h>
 
 // Custom
-#include "Helpers.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/VTKHelpers.h"
+#include "Helpers/ITKVTKHelpers.h"
 #include "HelpersQt.h"
 #include "InteractorStyleImageWithDrag.h"
 
@@ -21,10 +23,10 @@ MovablePatch::MovablePatch(const unsigned int radius, vtkRenderer* const rendere
   this->PatchLayer.ImageSlice->SetPickable(true);
   //this->PatchLayer.ImageSlice->SetVisibility(this->chkDisplayUserPatch->isChecked());
 
-  Helpers::CreateTransparentVTKImage(ITKHelpers::SizeFromRadius(radius), this->PatchLayer.ImageData);
+  ITKVTKHelpers::CreateTransparentVTKImage(ITKHelpers::SizeFromRadius(radius), this->PatchLayer.ImageData);
   unsigned char userPatchColor[3];
   HelpersQt::QColorToUCharColor(color, userPatchColor);
-  Helpers::BlankAndOutlineImage(this->PatchLayer.ImageData, userPatchColor);
+  VTKHelpers::BlankAndOutlineImage(this->PatchLayer.ImageData, userPatchColor);
 
   this->Renderer->AddViewProp(this->PatchLayer.ImageSlice);
 

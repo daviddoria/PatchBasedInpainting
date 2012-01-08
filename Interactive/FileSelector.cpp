@@ -21,7 +21,7 @@
 // Custom
 #include "FileSelector.h"
 #include "Widgets/FileSelectionWidget.h"
-#include "Helpers.h"
+#include "Helpers/Helpers.h"
 #include "HelpersQt.h"
 #include "Mask.h"
 #include "Types.h"

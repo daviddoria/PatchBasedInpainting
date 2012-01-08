@@ -16,22 +16,32 @@
  *
  *=========================================================================*/
 
-#ifndef HELPERSDISPLAY_H
-#define HELPERSDISPLAY_H
+#include "NamedITKImageCollection.h"
 
-// Custom
-#include "DisplayStyle.h"
-#include "Types.h"
+static void TestFindImageByName();
+static void TestCopySelfPatchIntoHoleOfTargetRegion();
 
-// VTK
-class vtkImageData;
+int main(int argc, char*argv[])
+{
+  TestFindImageByName();
+  TestCopySelfPatchIntoHoleOfTargetRegion();
+  
+  
+  return EXIT_SUCCESS;
+}
 
-namespace HelpersDisplay
+void TestFindImageByName()
+{
+  // Search the collection for an image with the specified name.
+  //NamedITKImage FindImageByName(const std::string&) const;
+  throw;
+
+}
+
+void TestCopySelfPatchIntoHoleOfTargetRegion()
 {
 
-// This function simply drives ITKImagetoVTKRGBImage, ITKImagetoVTKMagnitudeImage, or ITKImageChannelToVTKImage.
-
-
-} // end namespace
-
-#endif
+  // Apply Helpers::CopySelfPatchIntoHoleOfTargetRegion to all images in the collection.
+  //void CopySelfPatchIntoHoleOfTargetRegion(const Mask* mask, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
+  throw;
+}

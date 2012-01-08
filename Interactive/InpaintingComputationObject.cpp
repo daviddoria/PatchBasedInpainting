@@ -40,8 +40,9 @@ void InpaintingComputationObject::AllSteps()
 
   while(this->Inpainting->HasMoreToInpaint() && !this->Stop)
     {
+    // TODO: this object will disappear before getting to the slot!
     PatchPair usedPatchPair = this->Inpainting->Iterate();
-    emit IterationComplete(usedPatchPair);
+    emit IterationComplete(&usedPatchPair);
     }
 
   // When the function is finished, end the thread
@@ -50,8 +51,9 @@ void InpaintingComputationObject::AllSteps()
 
 void InpaintingComputationObject::SingleStep()
 {
+  // TODO: This object will be deleted before the slot receives it!
   PatchPair usedPatchPair = this->Inpainting->Iterate();
-  emit IterationComplete(usedPatchPair);
+  emit IterationComplete(&usedPatchPair);
 }
 
 void InpaintingComputationObject::start()
@@ -66,7 +68,7 @@ void InpaintingComputationObject::start()
     }
 }
 
-void InpaintingComputationObject::SetObject(PatchBasedInpainting* inpainting)
+void InpaintingComputationObject::SetObject(PatchBasedInpainting<FloatVectorImageType>* const inpainting)
 {
   this->Inpainting = inpainting;
 }

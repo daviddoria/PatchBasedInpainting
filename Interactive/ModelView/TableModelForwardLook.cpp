@@ -24,7 +24,7 @@
 
 // Custom
 #include "NamedITKImageCollection.h"
-#include "Helpers.h"
+#include "Helpers/Helpers.h"
 #include "HelpersQt.h"
 
 TableModelForwardLook::TableModelForwardLook(QObject * parent, std::vector<InpaintingIterationRecord> const& iterationRecords, DisplayStyle const& style) :
@@ -79,36 +79,36 @@ QVariant TableModelForwardLook::data(const QModelIndex& index, int role) const
   QVariant returnValue;
   if(role == Qt::DisplayRole && index.row() >= 0)
     {
-    const CandidatePairs& currentCandidateSet = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[index.row()];
+    const CandidatePairs& currentCandidateSet = *(this->IterationRecords[this->IterationToDisplay].PotentialPairSets[index.row()]);
     const Patch currentForwardLookPatch = currentCandidateSet.GetTargetPatch();
     switch(index.column())
       {
       case 0:
-	{
-	// Display the target patch in the table
-	InpaintingIterationRecord currentRecord = this->IterationRecords[this->IterationToDisplay];
-	FloatVectorImageType* image = dynamic_cast<FloatVectorImageType*>(currentRecord.GetImageByName("Image").Image.GetPointer());
-	QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(image, currentForwardLookPatch.GetRegion(), this->ImageDisplayStyle);
+        {
+        // Display the target patch in the table
+        InpaintingIterationRecord currentRecord = this->IterationRecords[this->IterationToDisplay];
+        FloatVectorImageType* image = dynamic_cast<FloatVectorImageType*>(currentRecord.GetImageByName("Image").Image);
+        QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(image, currentForwardLookPatch.GetRegion(), this->ImageDisplayStyle);
 
-	patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
+        patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
 
-	returnValue = QPixmap::fromImage(patchImage);
-	break;
-	}
+        returnValue = QPixmap::fromImage(patchImage);
+        break;
+        }
       case 1:
-	{
-	// Display priority in the table
-	returnValue = currentCandidateSet.GetPriority();
-	break;
-	}
+        {
+        // Display priority in the table
+        returnValue = currentCandidateSet.GetPriority();
+        break;
+        }
       case 2:
-	{
-	// Display the target patch location in the table
-	std::stringstream ssLocation;
-	ssLocation << "(" << currentForwardLookPatch.GetRegion().GetIndex()[0] << ", " << currentForwardLookPatch.GetRegion().GetIndex()[1] << ")";
-	returnValue = ssLocation.str().c_str();
-	break;
-	}
+        {
+        // Display the target patch location in the table
+        std::stringstream ssLocation;
+        ssLocation << "(" << currentForwardLookPatch.GetRegion().GetIndex()[0] << ", " << currentForwardLookPatch.GetRegion().GetIndex()[1] << ")";
+        returnValue = ssLocation.str().c_str();
+        break;
+        }
       } // end switch
     } // end if DisplayRole
   LeaveFunction("ForwardLookTableModel::data()");

@@ -16,17 +16,15 @@
  *
  *=========================================================================*/
 
-#ifndef DISPLAYSTATE_H
-#define DISPLAYSTATE_H
+#include "ITKImageCollection.h"
 
-struct DisplayState
+static void
+
+int main(int argc, char*argv[])
 {
-public:
-  DisplayState();
+  // Apply Helpers::CopySelfPatchIntoHoleOfTargetRegion to all images in the collection.
+  // void CopySelfPatchIntoHoleOfTargetRegion(const Mask* mask, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
 
-  unsigned int Iteration;
-  unsigned int ForwardLookId;
-  unsigned int SourcePatchId;
+  throw;
+  return EXIT_SUCCESS;
 };
-
-#endif

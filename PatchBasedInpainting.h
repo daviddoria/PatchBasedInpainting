@@ -85,9 +85,6 @@ public:
   // not have to query a specific image, but rather access this more global region definition.
   const itk::ImageRegion<2>& GetFullRegion() const;
 
-  // Return a pointer to all forward look sets.
-  std::vector<CandidatePairs>& GetPotentialCandidatePairsReference();
-
   //void SetPatchCompare(SelfPatchCompare* PatchCompare);
   //SelfPatchCompare<FloatVectorImageType, PatchDifference<PixelDifference> >* GetPatchCompare() const;
 

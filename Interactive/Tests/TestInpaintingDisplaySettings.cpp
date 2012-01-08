@@ -16,17 +16,23 @@
  *
  *=========================================================================*/
 
-#ifndef DISPLAYSTATE_H
-#define DISPLAYSTATE_H
+#include "InpaintingDisplaySettings.h"
 
-struct DisplayState
+#include <iostream>
+
+int main(int argc, char*argv[])
 {
-public:
-  DisplayState();
+//   InpaintingDisplaySettings();
+// 
+//   unsigned int PatchRadius;
+//   unsigned int NumberOfTopPatchesToSave;
+//   unsigned int NumberOfForwardLook;
+//   unsigned int GoToIteration;
+//   unsigned int NumberOfTopPatchesToDisplay;
+// 
+//   // The size to display the patches. This is stored here because it is used in multiple models.
+//   unsigned int PatchDisplaySize;
+  throw;
 
-  unsigned int Iteration;
-  unsigned int ForwardLookId;
-  unsigned int SourcePatchId;
-};
-
-#endif
+  return EXIT_SUCCESS;
+}

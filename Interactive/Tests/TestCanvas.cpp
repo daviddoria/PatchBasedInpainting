@@ -16,17 +16,23 @@
  *
  *=========================================================================*/
 
-#ifndef DISPLAYSTATE_H
-#define DISPLAYSTATE_H
+#include "Canvas.h"
 
-struct DisplayState
+int main(int argc, char*argv[])
 {
-public:
-  DisplayState();
+//   VTKCanvas(vtkRenderer* const renderer);
+// 
+//   DisplayStyle const& GetImageDisplayStyle() const;
+// 
+//   ColorPalette const& GetColorPalette() const;
+// 
+//   void SetDisplayStyle(const DisplayStyle& style);
+//   void SetDisplayState(const DisplayState& displayStyle);
+//   void SetSettings(const InpaintingDisplaySettings& settings);
+// 
+//   void DisplayRecord(const InpaintingIterationRecord& record);
 
-  unsigned int Iteration;
-  unsigned int ForwardLookId;
-  unsigned int SourcePatchId;
-};
-
-#endif
+  throw;
+  
+  return EXIT_SUCCESS;
+}

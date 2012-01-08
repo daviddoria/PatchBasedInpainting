@@ -17,7 +17,6 @@ Canvas.cpp
 ColorPalette.cpp
 DisplayState.cpp
 FileSelector.cpp
-HelpersDisplay.cpp
 HelpersQt.cpp
 ImageCamera.cpp
 ImageInput.cpp
@@ -30,9 +29,11 @@ PatchBasedInpaintingGUI.cpp
 PatchBasedInpaintingGUISlots.cpp
 PatchBasedInpaintingInteractive.cpp #driver (contains main())
 PixmapDelegate.cpp
-Settings.cpp
+InpaintingDisplaySettings.cpp
 VectorLayer.cpp
 ${UISrcs} ${MOCSrcs})
 
-TARGET_LINK_LIBRARIES(PatchBasedInpaintingInteractive PatchBasedInpainting libWidgets libModelView ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
+TARGET_LINK_LIBRARIES(PatchBasedInpaintingInteractive PatchBasedInpainting libWidgets libModelView libHelpers ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
 INSTALL( TARGETS PatchBasedInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
+
+add_subdirectory(Tests)

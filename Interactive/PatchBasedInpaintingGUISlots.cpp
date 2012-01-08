@@ -20,7 +20,7 @@
 
 // Custom
 #include "FileSelector.h"
-#include "HelpersOutput.h"
+#include "Helpers/HelpersOutput.h"
 #include "InteractorStyleImageWithDrag.h"
 #include "SelfPatchCompare.h"
 
@@ -54,28 +54,28 @@ void PatchBasedInpaintingGUI::on_chkDisplayUserPatch_clicked()
 void PatchBasedInpaintingGUI::on_radDisplayColorImage_clicked()
 {
   this->spinChannelToDisplay->setEnabled(false);
-  this->ImageDisplayStyle.Style = DisplayStyle::COLOR;
+  this->Canvas->GetImageDisplayStyle().Style = DisplayStyle::COLOR;
   Refresh();
 }
 
 void PatchBasedInpaintingGUI::on_radDisplayMagnitudeImage_clicked()
 {
   this->spinChannelToDisplay->setEnabled(false);
-  this->ImageDisplayStyle.Style = DisplayStyle::MAGNITUDE;
+  this->Canvas->GetImageDisplayStyle().Style = DisplayStyle::MAGNITUDE;
   Refresh();
 }
 
 void PatchBasedInpaintingGUI::on_radDisplayChannel_clicked()
 {
   this->spinChannelToDisplay->setEnabled(true);
-  this->ImageDisplayStyle.Style = DisplayStyle::CHANNEL;
-  this->ImageDisplayStyle.Channel = this->spinChannelToDisplay->value();
+  this->Canvas->GetImageDisplayStyle().Style = DisplayStyle::CHANNEL;
+  this->Canvas->GetImageDisplayStyle().Channel = this->spinChannelToDisplay->value();
   Refresh();
 }
 
 void PatchBasedInpaintingGUI::on_spinChannelToDisplay_valueChanged(int unused)
 {
-  this->ImageDisplayStyle.Channel = this->spinChannelToDisplay->value();
+  this->Canvas->GetImageDisplayStyle().Channel = this->spinChannelToDisplay->value();
   Refresh();
 }
 
@@ -97,7 +97,7 @@ void PatchBasedInpaintingGUI::on_chkLive_clicked()
 
 void PatchBasedInpaintingGUI::on_btnGoToIteration_clicked()
 {
-  this->DisplayState.Iteration = this->txtGoToIteration->text().toUInt();
+  this->RecordDisplayState.Iteration = this->txtGoToIteration->text().toUInt();
   ChangeDisplayedIteration();
 }
 /*
@@ -173,10 +173,10 @@ void PatchBasedInpaintingGUI::on_actionFlipImageHorizontally_activated()
 
 void PatchBasedInpaintingGUI::on_btnDisplayPreviousStep_clicked()
 {
-  if(this->DisplayState.Iteration > 0)
+  if(this->RecordDisplayState.Iteration > 0)
     {
-    this->DisplayState.Iteration--;
-    DebugMessage<unsigned int>("Displaying iteration: ", this->DisplayState.Iteration);
+    this->RecordDisplayState.Iteration--;
+    DebugMessage<unsigned int>("Displaying iteration: ", this->RecordDisplayState.Iteration);
     ChangeDisplayedIteration();
     }
   else
@@ -192,10 +192,10 @@ void PatchBasedInpaintingGUI::on_btnDisplayNextStep_clicked()
     //        << " Inpainting iteration: " <<  static_cast<int>(this->Inpainting.GetIteration()) << std::endl;
 
   //if(this->IterationToDisplay < this->Inpainting.GetNumberOfCompletedIterations() - 1)
-  if(this->DisplayState.Iteration < this->IterationRecords.size() - 1)
+  if(this->RecordDisplayState.Iteration < this->IterationRecords.size() - 1)
     {
-    this->DisplayState.Iteration++;
-    DebugMessage<unsigned int>("Displaying iteration: ", this->DisplayState.Iteration);
+    this->RecordDisplayState.Iteration++;
+    DebugMessage<unsigned int>("Displaying iteration: ", this->RecordDisplayState.Iteration);
     ChangeDisplayedIteration();
     }
   else
@@ -280,10 +280,10 @@ void PatchBasedInpaintingGUI::slot_ForwardLookTableView_changed(const QModelInde
 
   std::cerr << "Requested display of forward look patch " << currentIndex.row() << std::endl;
 
-  this->DisplayState.ForwardLookId = currentIndex.row();
-  std::cout << "Set this->ForwardLookToDisplay to " << this->DisplayState.ForwardLookId << std::endl;
+  this->RecordDisplayState.ForwardLookId = currentIndex.row();
+  std::cout << "Set this->ForwardLookToDisplay to " << this->RecordDisplayState.ForwardLookId << std::endl;
   // When we select a different forward look patch, there is no way to know which source patch the user wants to see, so show the 0th.
-  this->DisplayState.SourcePatchId = 0;
+  this->RecordDisplayState.SourcePatchId = 0;
 
   ChangeDisplayedForwardLookPatch();
 
@@ -306,8 +306,8 @@ void PatchBasedInpaintingGUI::slot_TopPatchesTableView_changed(const QModelIndex
     return;
     }
 
-  this->DisplayState.SourcePatchId = currentIndex.row();
-  std::cout << "Set this->SourcePatchToDisplay to " << this->DisplayState.SourcePatchId << std::endl;
+  this->RecordDisplayState.SourcePatchId = currentIndex.row();
+  std::cout << "Set this->SourcePatchToDisplay to " << this->RecordDisplayState.SourcePatchId << std::endl;
   ChangeDisplayedTopPatch();
 
   LeaveFunction("slot_TopPatchesTableView_changed()");
@@ -345,19 +345,22 @@ void PatchBasedInpaintingGUI::on_btnInitialize_clicked()
     {
     delete this->Inpainting;
     }
-  this->Inpainting = new PatchBasedInpainting(this->UserImage, this->UserMaskImage);
+  this->Inpainting = new PatchBasedInpainting<FloatVectorImageType>(this->UserImage, this->UserMaskImage);
   this->Inpainting->SetPatchRadius(this->Settings.PatchRadius);
 
   this->Inpainting->SetDebugImages(this->chkDebugImages->isChecked());
   this->Inpainting->SetDebugMessages(this->chkDebugMessages->isChecked());
   //this->Inpainting.SetDebugFunctionEnterLeave(false);
 
+  /*
+  // TODO: Fix this
   // Setup the patch comparison function
   this->Inpainting->GetPatchCompare()->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
 
   // Setup the sorting function
   //this->Inpainting->PatchSortFunction = new SortByDifference(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
   this->Inpainting->PatchSortFunction = std::make_shared<SortByDifference>(PatchPair::AverageAbsoluteDifference, PatchSortFunctor::ASCENDING);
+  */
 
   // Finish initializing
   this->Inpainting->Initialize();
@@ -470,7 +473,7 @@ void PatchBasedInpaintingGUI::on_txtNumberOfTopPatchesToDisplay_textEdited ( con
   this->Settings.NumberOfTopPatchesToDisplay = text.toUInt();
   this->TopPatchesModel->SetNumberOfTopPatchesToDisplay(this->Settings.NumberOfTopPatchesToDisplay);
   this->TopPatchesModel->Refresh();
-  HighlightSourcePatches();
+  //HighlightSourcePatches();
   LeaveFunction("on_txtNumberOfTopPatchesToDisplay_textEdited()");
 }
 
@@ -481,7 +484,7 @@ void PatchBasedInpaintingGUI::on_cmbPriority_activated(int value)
 
 void PatchBasedInpaintingGUI::slot_ChangeDisplayedImages(QModelIndex)
 {
-  for(unsigned int imageId = 0; imageId < this->IterationRecords[this->DisplayState.Iteration].GetNumberOfImages(); ++imageId)
+  for(unsigned int imageId = 0; imageId < this->IterationRecords[this->RecordDisplayState.Iteration].GetNumberOfImages(); ++imageId)
     {
 //     Helpers::ITKScalarImageToScaledVTKImage<UnsignedCharScalarImageType>
 //     (dynamic_cast<UnsignedCharScalarImageType*>(this->IterationRecords[this->IterationToDisplay].Images[imageId].Image.GetPointer()), this->BoundaryLayer.ImageData);

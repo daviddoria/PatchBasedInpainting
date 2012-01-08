@@ -27,10 +27,12 @@
 // Custom
 #include "ColorPalette.h"
 #include "DisplayStyle.h"
+#include "DisplayState.h"
 #include "InpaintingIterationRecord.h"
 #include "Layer.h"
 #include "Mask.h"
 #include "PatchPair.h"
+#include "InpaintingDisplaySettings.h"
 
 // STL
 #include <vector>
@@ -44,10 +46,13 @@ public:
   VTKCanvas(vtkRenderer* const renderer);
 
   DisplayStyle const& GetImageDisplayStyle() const;
+  DisplayStyle& GetImageDisplayStyle();
 
   ColorPalette const& GetColorPalette() const;
 
   void SetDisplayStyle(const DisplayStyle& style);
+  void SetDisplayState(const DisplayState& displayStyle);
+  void SetSettings(const InpaintingDisplaySettings& settings);
 
   void DisplayRecord(const InpaintingIterationRecord& record);
 
@@ -93,6 +98,10 @@ private:
   vtkRenderer* Renderer;
 
   DisplayStyle ImageDisplayStyle;
+
+  DisplayState RecordDisplayState;
+
+  InpaintingDisplaySettings DisplaySettings;
 
   ColorPalette Colors;
 };

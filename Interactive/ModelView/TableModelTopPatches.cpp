@@ -23,7 +23,7 @@
 #include <QAbstractItemView>
 
 // Custom
-#include "Helpers.h"
+#include "Helpers/Helpers.h"
 #include "HelpersQt.h"
 
 TableModelTopPatches::TableModelTopPatches(QObject * parent, std::vector<InpaintingIterationRecord> const& iterationRecords, DisplayStyle const& displayStyle) :
@@ -66,7 +66,7 @@ int TableModelTopPatches::rowCount(const QModelIndex& parent) const
     {
     return 0;
     }
-  unsigned int rows = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay].GetNumberOfSourcePatches();
+  unsigned int rows = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay]->GetNumberOfSourcePatches();
   unsigned int numberOfRowsToDisplay = std::min(rows, this->NumberOfTopPatchesToDisplay);
   //std::cout << "Displaying " << numberOfRowsToDisplay << " rows." << std::endl;
   LeaveFunction("TableModelTopPatches::rowCount()");
@@ -86,7 +86,7 @@ void TableModelTopPatches::SetNumberOfTopPatchesToDisplay(const unsigned int num
 
 unsigned int TableModelTopPatches::GetNumberOfDifferences() const
 {
-  return this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay].begin()->GetDifferences().GetNumberOfDifferences();
+  return this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay]->begin()->GetDifferences().GetNumberOfDifferences();
 }
 
 QVariant TableModelTopPatches::data(const QModelIndex& index, int role) const
@@ -95,7 +95,7 @@ QVariant TableModelTopPatches::data(const QModelIndex& index, int role) const
   QVariant returnValue;
   if(role == Qt::DisplayRole && index.row() >= 0)
     {
-    const CandidatePairs& currentCandidateSet = this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay];
+    const CandidatePairs& currentCandidateSet = *(this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplay]);
 
     CandidatePairs::ConstIterator pairIterator = currentCandidateSet.begin();
     std::advance(pairIterator, index.row());
@@ -106,7 +106,7 @@ QVariant TableModelTopPatches::data(const QModelIndex& index, int role) const
       {
       case 0:
         {
-        FloatVectorImageType* image = dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer());
+        FloatVectorImageType* image = dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image);
 
         QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(image, sourcePatch->GetRegion(), this->ImageDisplayStyle);
 
@@ -122,7 +122,7 @@ QVariant TableModelTopPatches::data(const QModelIndex& index, int role) const
         }
       case 2:
         {
-        returnValue = Helpers::GetString(sourcePatch->GetRegion().GetIndex()).c_str();
+        returnValue = ITKHelpers::GetIndexString(sourcePatch->GetRegion().GetIndex()).c_str();
         break;
         }
       } // end switch

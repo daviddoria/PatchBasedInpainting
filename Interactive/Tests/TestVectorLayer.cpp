@@ -16,17 +16,19 @@
  *
  *=========================================================================*/
 
-#ifndef DISPLAYSTATE_H
-#define DISPLAYSTATE_H
+#include "VectorLayer.h"
 
-struct DisplayState
+int main(int argc, char*argv[])
 {
-public:
-  DisplayState();
+//   VectorLayer();
+// 
+//   vtkSmartPointer<vtkPolyDataMapper> Mapper;
+//   vtkSmartPointer<vtkActor> Actor;
+//   vtkSmartPointer<vtkImageData> ImageData;
+//   vtkSmartPointer<vtkPolyData> Vectors;
+//   //vtkSmartPointer<vtkGlyph2D> GlyphFilter;
+//   vtkSmartPointer<vtkHedgeHog> GlyphFilter;
+  throw;
 
-  unsigned int Iteration;
-  unsigned int ForwardLookId;
-  unsigned int SourcePatchId;
-};
-
-#endif
+  return EXIT_SUCCESS;
+}

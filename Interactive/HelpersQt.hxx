@@ -22,8 +22,8 @@
 #include "itkRescaleIntensityImageFilter.h"
 
 // Custom
-#include "Helpers.h"
-#include "ITKHelpers.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/ITKHelpers.h"
 #include "Types.h"
 
 // Qt

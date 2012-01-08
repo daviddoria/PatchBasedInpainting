@@ -27,7 +27,7 @@ namespace ITKVTKHelpers
 {
   
 template <typename TImage>
-void ITKScalarImageToScaledVTKImage(const TImage* image, vtkImageData* outputImage)
+void ITKScalarImageToScaledVTKImage(const TImage* const image, vtkImageData* const outputImage)
 {
   //std::cout << "ITKScalarImagetoVTKImage()" << std::endl;
 

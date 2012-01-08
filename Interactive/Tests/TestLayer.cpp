@@ -16,17 +16,16 @@
  *
  *=========================================================================*/
 
-#ifndef DISPLAYSTATE_H
-#define DISPLAYSTATE_H
+#include "Layer.h"
 
-struct DisplayState
+int main(int argc, char*argv[])
 {
-public:
-  DisplayState();
+//   Layer();
+//   void Setup();
+//   vtkSmartPointer<vtkImageData> ImageData;
+//   vtkSmartPointer<vtkImageSlice> ImageSlice;
+//   vtkSmartPointer<vtkImageSliceMapper> ImageSliceMapper;
+  throw;
 
-  unsigned int Iteration;
-  unsigned int ForwardLookId;
-  unsigned int SourcePatchId;
-};
-
-#endif
+  return EXIT_SUCCESS;
+}

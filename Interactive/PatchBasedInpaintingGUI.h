@@ -41,14 +41,13 @@
 
 #include "DebugOutputs.h"
 #include "DisplayState.h"
-#include "DisplayStyle.h"
 #include "ImageCamera.h"
 #include "ImageInput.h"
 #include "InpaintingComputationObject.h"
 #include "InpaintingIterationRecord.h"
 #include "MovablePatch.h"
 #include "PatchBasedInpainting.h"
-#include "Settings.h"
+#include "InpaintingDisplaySettings.h"
 #include "Types.h"
 
 #include "ModelView/TableModelForwardLook.h"
@@ -199,7 +198,7 @@ private:
   Mask::Pointer UserMaskImage;
 
   // The class that does all the work.
-  PatchBasedInpainting* Inpainting;
+  PatchBasedInpainting<FloatVectorImageType>* Inpainting;
 
   // Perform the long inpainting operation in this thread so that the UI remains active.
   InpaintingComputationObject* InpaintingComputation;
@@ -250,9 +249,9 @@ private:
   // Since we provide a parent, this does not need to be a smart pointer.
   QIntValidator* IterationValidator;
 
-  SettingsContainer Settings;
+  InpaintingDisplaySettings Settings;
 
-  DisplayStateContainer DisplayState;
+  DisplayState RecordDisplayState;
 
   // This function calls several functions that set parameters from GUI values.
   void SetParametersFromGUI();

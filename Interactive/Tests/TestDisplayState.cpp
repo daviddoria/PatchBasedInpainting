@@ -16,17 +16,16 @@
  *
  *=========================================================================*/
 
-#ifndef DISPLAYSTATE_H
-#define DISPLAYSTATE_H
+#include "DisplayState.h"
 
-struct DisplayState
+#include <iostream>
+
+int main(int argc, char*argv[])
 {
-public:
-  DisplayState();
+//   unsigned int Iteration;
+//   unsigned int ForwardLookId;
+//   unsigned int SourcePatchId;
+  throw;
 
-  unsigned int Iteration;
-  unsigned int ForwardLookId;
-  unsigned int SourcePatchId;
-};
-
-#endif
+  return EXIT_SUCCESS;
+}
