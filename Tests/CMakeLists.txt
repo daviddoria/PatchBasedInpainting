@@ -1,9 +1,3 @@
-ENABLE_TESTING()
-# set(BaselineDir ${CriminisiInpainting_SOURCE_DIR}/../Testing/Baselines/)
-# set(DataDir ${CriminisiInpainting_SOURCE_DIR}/../Testing/Data/)
-# set(ExeDir ${CriminisiInpainting_BINARY_DIR})
-# set(OutDir ${CriminisiInpainting_BINARY_DIR}/Testing/)
-
 include_directories(../ ../Testing)
 
 add_library(libHelpers ../Helpers/Helpers.cpp ../Helpers/ITKHelpers.cpp ../Helpers/VTKHelpers.cpp ../Helpers/ITKVTKHelpers.cpp ../Helpers/HelpersOutput.cpp)

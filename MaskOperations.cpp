@@ -18,6 +18,8 @@
 
 #include "MaskOperations.h"
 
+#include <stdexcept>
+
 namespace MaskOperations
 {
   
@@ -25,8 +27,7 @@ itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVe
 {
   if(!mask->IsValid(queryPixel))
     {
-    std::cerr << "Can only follow valid pixel+vector across a hole." << std::endl;
-    exit(-1);
+    throw std::runtime_error("Can only follow valid pixel+vector across a hole.");
     }
 
   // Determine if 'direction' is pointing inside or outside the hole
@@ -53,8 +54,7 @@ itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVe
     nextPixelAlongVector = ITKHelpers::GetNextPixelAlongVector(nextPixelAlongVector, direction);
     if(!mask->GetLargestPossibleRegion().IsInside(nextPixelAlongVector))
       {
-      std::cerr << "Helpers::FindPixelAcrossHole could not find a valid neighbor!" << std::endl;
-      exit(-1);
+      throw std::runtime_error("Helpers::FindPixelAcrossHole could not find a valid neighbor!");
       }
     }
 

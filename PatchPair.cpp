@@ -69,16 +69,14 @@ float PatchPair::GetDepthAndColorDifference() const
 
   if(colorIter == this->DifferenceMap.end())
     {
-    std::cerr << "Could not compute GetDepthAndColorDifference, ColorDifference not found." << std::endl;
-    exit(-1);
+    throw std::runtime_error("Could not compute GetDepthAndColorDifference, ColorDifference not found.");
     }
 
   DifferenceMapType::const_iterator depthIter = this->DifferenceMap.find(DepthDifference);
 
   if(depthIter == this->DifferenceMap.end())
     {
-    std::cerr << "Could not compute GetDepthAndColorDifference, DepthDifference not found." << std::endl;
-    exit(-1);
+    throw std::runtime_error("Could not compute GetDepthAndColorDifference, DepthDifference not found.");
     }
 
   return ComputeDepthAndColorDifference(this->DifferenceMap.find(DepthDifference)->second, this->DifferenceMap.find(ColorDifference)->second);

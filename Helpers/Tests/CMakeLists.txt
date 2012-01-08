@@ -1,10 +1,8 @@
-ENABLE_TESTING()
-
 include_directories(../ ../../ ../../Testing)
 
 add_executable(TestHelpers TestHelpers.cpp ../Helpers.cpp)
 target_link_libraries(TestHelpers libTestHelpers)
-add_test(TestHelpersClass TestHelpersClass)
+add_test(TestHelpers TestHelpers)
 
 add_executable(TestITKHelpers TestITKHelpers.cpp ../ITKHelpers.cpp ../Helpers.cpp)
 target_link_libraries(TestITKHelpers ${ITK_LIBRARIES} libTestHelpers)

@@ -98,8 +98,7 @@ Priority<TImage>* PriorityFactory<TImage>::Create(const PriorityTypes priorityTy
     }
   else
     {
-    std::cerr << "Priority type " << priorityType << " is unknown!" << std::endl;
-    exit(-1);
+    std::cerr << "Warning: Priority type " << priorityType << " is unknown!" << std::endl;
     return NULL;
     }
 }

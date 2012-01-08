@@ -80,34 +80,27 @@ void PriorityOnionPeel<TImage>::UpdateConfidences(const itk::ImageRegion<2>& tar
 {
   //EnterFunction("PriorityOnionPeel::UpdateConfidences()");
   //std::cout << "Updating confidences with value " << value << std::endl;
-  try
-  {
-    // Force the region to update to be entirely inside the image
-    itk::ImageRegion<2> region = ITKHelpers::CropToRegion(targetRegion, this->Image->GetLargestPossibleRegion());
 
-    // Use an iterator to find masked pixels. Compute their new value, and save it in a vector of pixels and their new values.
-    // Do not update the pixels until after all new values have been computed, because we want to use the old values in all of
-    // the computations.
-    itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, region);
+  // Force the region to update to be entirely inside the image
+  itk::ImageRegion<2> region = ITKHelpers::CropToRegion(targetRegion, this->Image->GetLargestPossibleRegion());
 
-    while(!maskIterator.IsAtEnd())
+  // Use an iterator to find masked pixels. Compute their new value, and save it in a vector of pixels and their new values.
+  // Do not update the pixels until after all new values have been computed, because we want to use the old values in all of
+  // the computations.
+  itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, region);
+
+  while(!maskIterator.IsAtEnd())
+    {
+    if(this->MaskImage->IsHole(maskIterator.GetIndex()))
       {
-      if(this->MaskImage->IsHole(maskIterator.GetIndex()))
-        {
-        itk::Index<2> currentPixel = maskIterator.GetIndex();
-        this->ConfidenceMapImage->SetPixel(currentPixel, value);
-        }
+      itk::Index<2> currentPixel = maskIterator.GetIndex();
+      this->ConfidenceMapImage->SetPixel(currentPixel, value);
+      }
 
-      ++maskIterator;
-      } // end while looop with iterator
-    //LeaveFunction("PriorityOnionPeel::UpdateConfidences()");
-  } // end try
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in PriorityOnionPeel::UpdateConfidences!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+    ++maskIterator;
+    } // end while looop with iterator
+  //LeaveFunction("PriorityOnionPeel::UpdateConfidences()");
+
 }
 
 template <typename TImage>
@@ -143,42 +136,35 @@ float PriorityOnionPeel<TImage>::ComputeConfidenceTerm(const itk::Index<2>& quer
 {
   //EnterFunction("PriorityOnionPeel::ComputeConfidenceTerm()");
   //DebugMessage<itk::Index<2>>("Computing confidence for ", queryPixel);
-  try
-  {
-    // Allow for regions on/near the image border
 
-    //itk::ImageRegion<2> region = this->CurrentMask->GetLargestPossibleRegion();
-    //region.Crop(Helpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius[0]));
-    itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius);
-    itk::ImageRegion<2> region = ITKHelpers::CropToRegion(targetRegion, this->Image->GetLargestPossibleRegion());
+  // Allow for regions on/near the image border
 
-    itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, region);
+  //itk::ImageRegion<2> region = this->CurrentMask->GetLargestPossibleRegion();
+  //region.Crop(Helpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius[0]));
+  itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius);
+  itk::ImageRegion<2> region = ITKHelpers::CropToRegion(targetRegion, this->Image->GetLargestPossibleRegion());
 
-    // The confidence is computed as the sum of the confidences of patch pixels in the source region / area of the patch
+  itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, region);
 
-    float sum = 0.0f;
+  // The confidence is computed as the sum of the confidences of patch pixels in the source region / area of the patch
 
-    while(!maskIterator.IsAtEnd())
+  float sum = 0.0f;
+
+  while(!maskIterator.IsAtEnd())
+    {
+    if(this->MaskImage->IsValid(maskIterator.GetIndex()))
       {
-      if(this->MaskImage->IsValid(maskIterator.GetIndex()))
-        {
-        sum += this->ConfidenceMapImage->GetPixel(maskIterator.GetIndex());
-        }
-      ++maskIterator;
+      sum += this->ConfidenceMapImage->GetPixel(maskIterator.GetIndex());
       }
+    ++maskIterator;
+    }
 
-    unsigned int numberOfPixels = region.GetNumberOfPixels();
-    float areaOfPatch = static_cast<float>(numberOfPixels);
+  unsigned int numberOfPixels = region.GetNumberOfPixels();
+  float areaOfPatch = static_cast<float>(numberOfPixels);
 
-    float confidence = sum/areaOfPatch;
-    //DebugMessage<float>("Confidence: ", confidence);
-    //LeaveFunction("PriorityOnionPeel::ComputeConfidenceTerm()");
-    return confidence;
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in ComputeConfidenceTerm!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+  float confidence = sum/areaOfPatch;
+  //DebugMessage<float>("Confidence: ", confidence);
+  //LeaveFunction("PriorityOnionPeel::ComputeConfidenceTerm()");
+  return confidence;
+
 }

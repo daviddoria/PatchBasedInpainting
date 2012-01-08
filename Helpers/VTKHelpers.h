@@ -25,31 +25,31 @@ class vtkPolyData;
 namespace VTKHelpers
 {
 
-void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double center[3]);
+static unsigned char TRANSPARENT = 0;
+static unsigned char OPAQUE = 255;
+
+void GetCellCenter(vtkImageData* const imageData, const unsigned int cellId, double center[3]);
 
 // Set the center pixel of an 'image' to the specified 'color'. The image is assumed to have odd dimensions.
-void SetImageCenterPixel(vtkImageData* image, const unsigned char color[3]);
-
+void SetImageCenterPixel(vtkImageData* const image, const unsigned char color[3]);
 
 // Set an image to black except for its border, which is set to 'color'.
-void BlankAndOutlineImage(vtkImageData*, const unsigned char color[3]);
+void BlankAndOutlineImage(vtkImageData* const image, const unsigned char color[3]);
 
 // Set an image to black.
-void BlankImage(vtkImageData*);
-
+void ZeroImage(vtkImageData* const image, const unsigned int channels);
 
 // Extract the non-zero pixels of a "vector image" and convert them to vectors in a vtkPolyData.
 // This is useful because glyphing a vector image is too slow to use as a visualization,
 // because it "draws" the vectors, even if they are zero length. In this code we are often
 // interested in displaying vectors along a contour, so this is a very very small subset of a whole vector image.
-void KeepNonZeroVectors(vtkImageData* const image, vtkPolyData* output);
+void KeepNonZeroVectors(vtkImageData* const image, vtkPolyData* const output);
 
-// Make pixels where the 0th channel of inputImage matches 'value' transparent in the output image.
-void MakeValueTransparent(vtkImageData* const inputImage, vtkImageData* outputImage, const unsigned char value);
+// Make pixels with value 'value' transparent
+void MakeValueTransparent(vtkImageData* const inputImage, const unsigned char value[3]);
 
 // Make an entire image transparent.
-void MakeImageTransparent(vtkImageData* image);
-
+void MakeImageTransparent(vtkImageData* const image);
 
 } // end namespace
 

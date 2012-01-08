@@ -46,14 +46,14 @@
 namespace ITKHelpers
 {
 
-std::string GetString(const itk::Index<2>& index)
+std::string GetIndexString(const itk::Index<2>& index)
 {
   std::stringstream ss;
   ss << "(" << index[0] << ", " << index[1] << ")";
   return ss.str();
 }
 
-std::string GetString(const itk::Size<2>& size)
+std::string GetSizeString(const itk::Size<2>& size)
 {
   std::stringstream ss;
   ss << "(" << size[0] << ", " << size[1] << ")";

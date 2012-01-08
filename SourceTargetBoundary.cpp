@@ -16,6 +16,8 @@
  *
  *=========================================================================*/
 
+#include <stdexcept>
+
 bool GetAdjacentBoundaryPixel(const itk::Index<2>& boundaryPixel, const PatchPair& patchPair, itk::Index<2>& adjacentBoundaryPixel);
 
 bool PatchBasedInpainting::GetAdjacentBoundaryPixel(const itk::Index<2>& targetPatchSourceSideBoundaryPixel, const PatchPair& patchPair,
@@ -23,8 +25,7 @@ bool PatchBasedInpainting::GetAdjacentBoundaryPixel(const itk::Index<2>& targetP
 {
   if(this->CurrentMask->IsHole(targetPatchSourceSideBoundaryPixel) || !patchPair.TargetPatch.Region.IsInside(targetPatchSourceSideBoundaryPixel))
     {
-    std::cerr << "Error: The input boundary pixel must be on the valid side of the boundary (not in the hole)!" << std::endl;
-    exit(-1);
+    throw std::runtime_error("Error: The input boundary pixel must be on the valid side of the boundary (not in the hole)!");
     }
 
   FloatVector2Type sourceSideIsophote = this->IsophoteImage->GetPixel(targetPatchSourceSideBoundaryPixel);
@@ -308,8 +309,7 @@ void PatchBasedInpainting::ComputeMinimumBoundaryGradientChange(unsigned int& be
                                                                                                         this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region);
     if(boundaryPixels.size() < 1)
       {
-      std::cerr << "There must be at least 1 boundary pixel!" << std::endl;
-      exit(-1);
+      throw std::runtime_error("There must be at least 1 boundary pixel);
       }
 
     itk::Offset<2> patchOffset = this->CurrentMask->GetLargestPossibleRegion().GetIndex() - this->PotentialCandidatePairs[forwardLookId].TargetPatch.Region.GetIndex();

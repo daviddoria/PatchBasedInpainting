@@ -81,7 +81,10 @@ void PatchBasedInpaintingForwardLooking::FindBestPatch(CandidatePairs& candidate
       HelpersOutput::WriteImage<UnsignedCharScalarImageType>(modifiedBoundaryImage, "Debug/ModifiedBoundaryImageError.mha");
       HelpersOutput::WriteImage<FloatScalarImageType>(modifiedPriorityImage, "Debug/ModifiedPriorityImageError.mha");
       //std::cerr << "Boundary value " << static_cast<unsigned int>(this->BoundaryImage->GetPixel(pixelToFill)) << std::endl;
-      exit(-1);
+
+      std::stringstream ss;
+      ss << "pixelToFill " << pixelToFill << " does not have a hole neighbor!";
+      throw std::runtime_error(ss.str());
       }
 
     itk::ImageRegion<2> targetRegion = Helpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
@@ -110,8 +113,7 @@ void PatchBasedInpaintingForwardLooking::FindBestPatch(CandidatePairs& candidate
 
   if(this->PotentialCandidatePairs.size() == 0)
     {
-    std::cerr << "Something is wrong - there are 0 forward look candidates!" << std::endl;
-    exit(-1);
+    throw std::runtime_error("Something is wrong - there are 0 forward look candidates!");
     }
 
   // Sort the forward look patches so that the highest priority sets are first in the vector (descending order).

@@ -33,10 +33,10 @@ namespace ITKHelpers
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Get a short string of an itk::Index
-std::string GetString(const itk::Index<2>& index);
+std::string GetIndexString(const itk::Index<2>& index);
 
 // Get a short string of an itk::Size
-std::string GetString(const itk::Size<2>& size);
+std::string GetSizeString(const itk::Size<2>& size);
 
 // Return the highest value of the specified image out of the pixels under a specified BoundaryImage.
 itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType* image, float& maxValue, UnsignedCharScalarImageType* maskImage);

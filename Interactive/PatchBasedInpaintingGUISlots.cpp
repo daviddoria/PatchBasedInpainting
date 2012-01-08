@@ -293,32 +293,24 @@ void PatchBasedInpaintingGUI::slot_ForwardLookTableView_changed(const QModelInde
 void PatchBasedInpaintingGUI::slot_TopPatchesTableView_changed(const QModelIndex& currentIndex, const QModelIndex& previousIndex)
 {
   EnterFunction("slot_TopPatchesTableView_changed()");
-  try
-  {
-    if(currentIndex.row() < 0)
-      {
-      std::cout << "Selected row is < 0!" << std::endl;
-      return;
-      }
 
-    if(currentIndex.row() == previousIndex.row())
-      {
-      std::cout << "Nothing changed!" << std::endl;
-      return;
-      }
+  if(currentIndex.row() < 0)
+    {
+    std::cout << "Selected row is < 0!" << std::endl;
+    return;
+    }
 
-    this->DisplayState.SourcePatchId = currentIndex.row();
-    std::cout << "Set this->SourcePatchToDisplay to " << this->DisplayState.SourcePatchId << std::endl;
-    ChangeDisplayedTopPatch();
+  if(currentIndex.row() == previousIndex.row())
+    {
+    std::cout << "Nothing changed!" << std::endl;
+    return;
+    }
 
-    LeaveFunction("slot_TopPatchesTableView_changed()");
-  }// end try
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in on_topPatchesTableWidget_currentCellChanged!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+  this->DisplayState.SourcePatchId = currentIndex.row();
+  std::cout << "Set this->SourcePatchToDisplay to " << this->DisplayState.SourcePatchId << std::endl;
+  ChangeDisplayedTopPatch();
+
+  LeaveFunction("slot_TopPatchesTableView_changed()");
 }
 
 void PatchBasedInpaintingGUI::on_btnInpaint_clicked()

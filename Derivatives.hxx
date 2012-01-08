@@ -24,6 +24,9 @@
 // ITK
 #include "itkGaussianOperator.h"
 
+// STL
+#include <stdexcept>
+
 namespace Derivatives
 {
 
@@ -95,8 +98,7 @@ void MaskedDerivativePrewitt(const TImage* image, const Mask* mask, const unsign
 {
   if(direction > 1)
     {
-    std::cerr << "This function can only compute derivatives of 2D images!" << std::endl;
-    exit(-1);
+    throw std::runtime_error("This function can only compute derivatives of 2D images!");
     }
 
   // Setup the output
@@ -194,8 +196,7 @@ void MaskedDerivativeSobel(const TImage* image, const Mask* mask, const unsigned
 {
   if(direction > 1)
     {
-    std::cerr << "This function can only compute derivatives of 2D images!" << std::endl;
-    exit(-1);
+    throw std::runtime_error ("This function can only compute derivatives of 2D images!");
     }
 
   // Setup the output
@@ -304,8 +305,7 @@ void MaskedDerivativeGaussianInRegion(const TImage* image, const Mask* mask, con
 
   if(direction > 1)
     {
-    std::cerr << "This function can only compute derivatives of 2D images!" << std::endl;
-    exit(-1);
+    throw std::runtime_error("This function can only compute derivatives of 2D images!");
     }
 
   // Create a Gaussian kernel

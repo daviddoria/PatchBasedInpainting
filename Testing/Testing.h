@@ -26,6 +26,15 @@ namespace Testing
   bool ValuesEqual(const float a, const float b, const float epsilon = 1e-6);
 
   template<typename T>
+  bool ArraysEqual(const T* const a, const T* const b, const unsigned int length, const float epsilon = 1e-6);
+
+  template<typename T>
+  std::string ArrayString(const T* const a, const unsigned int length);
+
+  template<typename T>
+  void OutputArray(const T* const a, const unsigned int length);
+
+  template<typename T>
   bool VectorsEqual(const std::vector<T>& a, const std::vector<T>& b);
 
   template<typename TImage>

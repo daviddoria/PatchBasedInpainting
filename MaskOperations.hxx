@@ -21,52 +21,37 @@ template <class TImage>
 void CopySourcePatchIntoHoleOfTargetRegion(const TImage* sourceImage, TImage* targetImage, const Mask* mask,
                              const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput)
 {
-  try
-  {
-    itk::ImageRegion<2> fullImageRegion = sourceImage->GetLargestPossibleRegion();
-//     if(targetImage->GetLargestPossibleRegion() != fullImageRegion)
-//       {
-//       std::cerr << "CopyPatchIntoValidRegion::Images must be the same size!" << std::endl;
-//       exit(-1);
-//       }
+  itk::ImageRegion<2> fullImageRegion = sourceImage->GetLargestPossibleRegion();
 
-    // We pass the regions by const reference, so copy them here before they are mutated
-    itk::ImageRegion<2> sourceRegion = sourceRegionInput;
-    itk::ImageRegion<2> destinationRegion = destinationRegionInput;
+  // We pass the regions by const reference, so copy them here before they are mutated
+  itk::ImageRegion<2> sourceRegion = sourceRegionInput;
+  itk::ImageRegion<2> destinationRegion = destinationRegionInput;
 
-    // Move the source region to the desintation region
-    itk::Offset<2> offset = destinationRegion.GetIndex() - sourceRegion.GetIndex();
-    sourceRegion.SetIndex(sourceRegion.GetIndex() + offset);
+  // Move the source region to the desintation region
+  itk::Offset<2> offset = destinationRegion.GetIndex() - sourceRegion.GetIndex();
+  sourceRegion.SetIndex(sourceRegion.GetIndex() + offset);
 
-    // Make the destination be entirely inside the image
-    destinationRegion.Crop(fullImageRegion);
-    sourceRegion.Crop(fullImageRegion);
+  // Make the destination be entirely inside the image
+  destinationRegion.Crop(fullImageRegion);
+  sourceRegion.Crop(fullImageRegion);
 
-    // Move the source region back
-    sourceRegion.SetIndex(sourceRegion.GetIndex() - offset);
+  // Move the source region back
+  sourceRegion.SetIndex(sourceRegion.GetIndex() - offset);
 
-    itk::ImageRegionConstIterator<TImage> sourceIterator(sourceImage, sourceRegion);
-    itk::ImageRegionIterator<TImage> destinationIterator(targetImage, destinationRegion);
-    itk::ImageRegionConstIterator<Mask> maskIterator(mask, destinationRegion);
+  itk::ImageRegionConstIterator<TImage> sourceIterator(sourceImage, sourceRegion);
+  itk::ImageRegionIterator<TImage> destinationIterator(targetImage, destinationRegion);
+  itk::ImageRegionConstIterator<Mask> maskIterator(mask, destinationRegion);
 
-    while(!sourceIterator.IsAtEnd())
+  while(!sourceIterator.IsAtEnd())
+    {
+    if(mask->IsHole(maskIterator.GetIndex())) // we are in the target region
       {
-      if(mask->IsHole(maskIterator.GetIndex())) // we are in the target region
-        {
-        destinationIterator.Set(sourceIterator.Get());
-        }
-      ++sourceIterator;
-      ++maskIterator;
-      ++destinationIterator;
+      destinationIterator.Set(sourceIterator.Get());
       }
-
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in CopySelfPatchIntoValidRegion!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+    ++sourceIterator;
+    ++maskIterator;
+    ++destinationIterator;
+    }
 }
 
 
@@ -204,39 +189,30 @@ itk::Index<2> FindHighestValueInMaskedRegion(const TImage* const image, float& m
 {
   //EnterFunction("FindHighestValueOnBoundary()");
   // Return the location of the highest pixel in 'image' out of the non-zero pixels in 'boundaryImage'. Return the value of that pixel by reference.
-  try
-  {
-    // Explicity find the maximum on the boundary
-    maxValue = 0.0f; // priorities are non-negative, so anything better than 0 will win
 
-    std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetNonZeroPixels<UnsignedCharScalarImageType>(maskImage);
+  // Explicity find the maximum on the boundary
+  maxValue = 0.0f; // priorities are non-negative, so anything better than 0 will win
 
-    if(boundaryPixels.size() <= 0)
+  std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetNonZeroPixels<UnsignedCharScalarImageType>(maskImage);
+
+  if(boundaryPixels.size() <= 0)
+    {
+    throw std::runtime_error("FindHighestValueOnBoundary(): No boundary pixels!");
+    }
+
+  itk::Index<2> locationOfMaxValue = boundaryPixels[0];
+
+  for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
+    {
+    if(image->GetPixel(boundaryPixels[i]) > maxValue)
       {
-      std::cerr << "FindHighestValueOnBoundary(): No boundary pixels!" << std::endl;
-      exit(-1);
+      maxValue = image->GetPixel(boundaryPixels[i]);
+      locationOfMaxValue = boundaryPixels[i];
       }
-
-    itk::Index<2> locationOfMaxValue = boundaryPixels[0];
-
-    for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
-      {
-      if(image->GetPixel(boundaryPixels[i]) > maxValue)
-        {
-        maxValue = image->GetPixel(boundaryPixels[i]);
-        locationOfMaxValue = boundaryPixels[i];
-        }
-      }
-    //DebugMessage<float>("Highest value: ", maxValue);
-    //LeaveFunction("FindHighestValueOnBoundary()");
-    return locationOfMaxValue;
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in FindHighestValueOnBoundary!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+    }
+  //DebugMessage<float>("Highest value: ", maxValue);
+  //LeaveFunction("FindHighestValueOnBoundary()");
+  return locationOfMaxValue;
 }
 
 template<typename TImage, typename TRegionIndicatorImage>

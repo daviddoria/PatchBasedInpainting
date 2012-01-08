@@ -16,10 +16,11 @@
  *
  *=========================================================================*/
 
-#include "itkCastImageFilter.h"
+#include "ITKHelpers.h" // make syntax parser happy
 
 // STL
 #include <iomanip> // for setfill()
+#include <stdexcept>
 
 // VTK
 #include <vtkImageData.h>
@@ -28,6 +29,7 @@
 #include "itkBilateralImageFilter.h"
 #include "itkBinaryBallStructuringElement.h"
 #include "itkBinaryDilateImageFilter.h"
+#include "itkCastImageFilter.h"
 #include "itkComposeImageFilter.h"
 #include "itkGaussianOperator.h"
 #include "itkImageFileReader.h"
@@ -116,8 +118,6 @@ void CreateBlankPatch(TImage* patch, const unsigned int radius)
 template <class TImage>
 void CreateConstantPatch(TImage* patch, const typename TImage::PixelType& value, const unsigned int radius)
 {
-  try
-  {
   typename TImage::IndexType start;
   start.Fill(0);
 
@@ -136,14 +136,6 @@ void CreateConstantPatch(TImage* patch, const typename TImage::PixelType& value,
     imageIterator.Set(value);
     ++imageIterator;
     }
-
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in CreateConstantPatch!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
 }
 
 template <class T>
@@ -226,15 +218,12 @@ itk::Index<2> MinValueLocation(const TImage* const image)
 template <class TImage>
 void CopyPatchIntoImage(const TImage* const patch, TImage* const image, const Mask* const mask, const itk::Index<2>& position)
 {
-  try
-  {
   // This function copies 'patch' into 'image' centered at 'position' only where the 'mask' is non-zero
 
   // 'Mask' must be the same size as 'image'
   if(mask->GetLargestPossibleRegion().GetSize() != image->GetLargestPossibleRegion().GetSize())
     {
-    std::cerr << "mask and image must be the same size!" << std::endl;
-    exit(-1);
+    throw std::runtime_error("mask and image must be the same size!");
     }
 
   // The PasteFilter expects the lower left corner of the destination position, but we have passed the center pixel.
@@ -257,48 +246,31 @@ void CopyPatchIntoImage(const TImage* const patch, TImage* const image, const Ma
     ++maskIterator;
     ++patchIterator;
     }
-
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in CopyPatchIntoImage(patch, image, mask, position)!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
 }
 
 
 template <class TImage>
 void CopyPatchIntoImage(const TImage* patch, TImage* const image, const itk::Index<2>& centerPixel)
 {
-  try
-  {
-    // This function copies 'patch' into 'image' centered at 'position'.
+  // This function copies 'patch' into 'image' centered at 'position'.
 
-    // The PasteFilter expects the lower left corner of the destination position, but we have passed the center pixel.
-    itk::Index<2> cornerPixel;
-    cornerPixel[0] = centerPixel[0] - patch->GetLargestPossibleRegion().GetSize()[0]/2;
-    cornerPixel[1] = centerPixel[1] - patch->GetLargestPossibleRegion().GetSize()[1]/2;
+  // The PasteFilter expects the lower left corner of the destination position, but we have passed the center pixel.
+  itk::Index<2> cornerPixel;
+  cornerPixel[0] = centerPixel[0] - patch->GetLargestPossibleRegion().GetSize()[0]/2;
+  cornerPixel[1] = centerPixel[1] - patch->GetLargestPossibleRegion().GetSize()[1]/2;
 
-    typedef itk::PasteImageFilter <TImage, TImage> PasteImageFilterType;
+  typedef itk::PasteImageFilter <TImage, TImage> PasteImageFilterType;
 
-    typename PasteImageFilterType::Pointer pasteFilter = PasteImageFilterType::New();
-    pasteFilter->SetInput(0, image);
-    pasteFilter->SetInput(1, patch);
-    pasteFilter->SetSourceRegion(patch->GetLargestPossibleRegion());
-    pasteFilter->SetDestinationIndex(cornerPixel);
-    pasteFilter->InPlaceOn();
-    pasteFilter->Update();
+  typename PasteImageFilterType::Pointer pasteFilter = PasteImageFilterType::New();
+  pasteFilter->SetInput(0, image);
+  pasteFilter->SetInput(1, patch);
+  pasteFilter->SetSourceRegion(patch->GetLargestPossibleRegion());
+  pasteFilter->SetDestinationIndex(cornerPixel);
+  pasteFilter->InPlaceOn();
+  pasteFilter->Update();
 
-    image->Graft(pasteFilter->GetOutput());
+  image->Graft(pasteFilter->GetOutput());
 
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in CopyPatchIntoImage(patch, image, centerPixel)!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
 }
 
 template <class TImage>
@@ -326,8 +298,6 @@ template <class TImage>
 void CopyPatch(const TImage* sourceImage, TImage* targetImage,
                const itk::Index<2>& sourcePosition, const itk::Index<2>& targetPosition, const unsigned int radius)
 {
-  try
-  {
   // Copy a patch of radius 'radius' centered at 'sourcePosition' from 'sourceImage' to 'targetImage' centered at 'targetPosition'
   typedef itk::RegionOfInterestImageFilter<TImage, TImage> ExtractFilterType;
 
@@ -337,13 +307,6 @@ void CopyPatch(const TImage* sourceImage, TImage* targetImage,
   extractFilter->Update();
 
   CopyPatchIntoImage<TImage>(extractFilter->GetOutput(), targetImage, targetPosition);
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in CopyPatch!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
 }
 
 template <typename TImage>
@@ -662,12 +625,12 @@ void ScaleChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned
 }
 
 template<typename TPixel>
-void ReplaceChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel, const itk::Image<TPixel, 2>* const replacement, itk::VectorImage<TPixel, 2>* const output)
+void ReplaceChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel,
+                    const itk::Image<TPixel, 2>* const replacement, itk::VectorImage<TPixel, 2>* const output)
 {
   if(image->GetLargestPossibleRegion() != replacement->GetLargestPossibleRegion())
     {
-    std::cerr << "Cannot replace channel!" << std::endl;
-    exit(-1);
+    throw std::runtime_error("Image and replacement channel are not the same size!");
     }
 
   DeepCopy<typename itk::VectorImage<TPixel, 2> >(image, output);

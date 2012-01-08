@@ -25,11 +25,38 @@
 
 // VTK
 #include <vtkImageData.h>
+#include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
+
+static void TestGetCellCenter();
+
+static void TestSetImageCenterPixel();
+
+static void TestBlankAndOutlineImage();
+
+static void TestZeroImage();
+
+static void TestKeepNonZeroVectors();
+
+static void TestMakeValueTransparent();
+
+static void TestMakeImageTransparent();
 
 int main()
 {
+  TestGetCellCenter();
+  TestSetImageCenterPixel();
+  TestBlankAndOutlineImage();
+  TestZeroImage();
+  TestKeepNonZeroVectors();
+  TestMakeValueTransparent();
+  TestMakeImageTransparent();
 
+  return EXIT_SUCCESS;
+}
+
+void TestGetCellCenter()
+{
   vtkSmartPointer<vtkImageData> grid = vtkSmartPointer<vtkImageData>::New();
   grid->SetOrigin(0, 0, 0);
   int numVoxelsPerDimension = 5;
@@ -52,29 +79,169 @@ int main()
        << " but is supposed to be: " << correct_center[0] << " " << correct_center[1] << " " << correct_center[2] << std::endl;
     throw std::runtime_error(ss.str());
     }
-// Set the center pixel of an 'image' to the specified 'color'. The image is assumed to have odd dimensions.
-// void SetImageCenterPixel(vtkImageData* image, const unsigned char color[3]);
+}
 
+void TestSetImageCenterPixel()
+{
+  // Set the center pixel of an 'image' to the specified 'color'. The image is assumed to have odd dimensions.
+  vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
+  image->SetNumberOfScalarComponents(3);
+  image->SetDimensions(11,11,1);
+  image->SetScalarTypeToUnsignedChar();
+  image->AllocateScalars();
 
-// // Set an image to black except for its border, which is set to 'color'.
-// void BlankAndOutlineImage(vtkImageData*, const unsigned char color[3]);
-// 
-// // Set an image to black.
-// void BlankImage(vtkImageData*);
-// 
-// 
-// // Extract the non-zero pixels of a "vector image" and convert them to vectors in a vtkPolyData.
-// // This is useful because glyphing a vector image is too slow to use as a visualization,
-// // because it "draws" the vectors, even if they are zero length. In this code we are often
-// // interested in displaying vectors along a contour, so this is a very very small subset of a whole vector image.
-// void KeepNonZeroVectors(vtkImageData* const image, vtkPolyData* output);
-// 
-// // Make pixels where the 0th channel of inputImage matches 'value' transparent in the output image.
-// void MakeValueTransparent(vtkImageData* const inputImage, vtkImageData* outputImage, const unsigned char value);
-// 
+  unsigned char color[3] = {1,2,3};
+
+  VTKHelpers::SetImageCenterPixel(image, color);
+
+  unsigned char* retrievedColor = static_cast<unsigned char*>(image->GetScalarPointer(5,5,0));
+  if(!Testing::ArraysEqual(retrievedColor, color, 3))
+    {
+    throw std::runtime_error("retrievedColor is " + Testing::ArrayString(retrievedColor, 3) + " and should be " + Testing::ArrayString(color, 3));
+    }
+}
+
+void TestBlankAndOutlineImage()
+{
+  vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
+  image->SetNumberOfScalarComponents(3);
+  image->SetDimensions(11,11,1);
+  image->SetScalarTypeToUnsignedChar();
+  image->AllocateScalars();
+
+  unsigned char black[3] = {0,0,0};
+  unsigned char outlineColor[3] = {1,2,3};
+  VTKHelpers::BlankAndOutlineImage(image, outlineColor);
+
+  unsigned char* retrievedBoundaryColor = static_cast<unsigned char*>(image->GetScalarPointer(0,0,0));
+  if(!Testing::ArraysEqual(retrievedBoundaryColor, outlineColor, 3))
+    {
+    throw std::runtime_error("retrievedBoundaryColor is " + Testing::ArrayString(retrievedBoundaryColor, 3) + " but should be " + Testing::ArrayString(outlineColor, 3));
+    }
+
+  unsigned char* retrievedCenterColor = static_cast<unsigned char*>(image->GetScalarPointer(5,5,0));
+  if(!Testing::ArraysEqual(retrievedCenterColor, black, 3))
+    {
+    throw std::runtime_error("retrievedCenterColor is " + Testing::ArrayString(retrievedCenterColor, 3) + " but should be " + Testing::ArrayString(black, 3));
+    }
+}
+
+void TestZeroImage()
+{
+  vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
+  image->SetScalarTypeToUnsignedChar();
+  image->SetDimensions(11,11,1);
+  VTKHelpers::ZeroImage(image, 3);
+
+  unsigned char black[3] = {0,0,0};
+
+  unsigned char* retrievedCenterColor = static_cast<unsigned char*>(image->GetScalarPointer(5,5,0));
+  if(!Testing::ArraysEqual(retrievedCenterColor, black, 3))
+    {
+    throw std::runtime_error("retrievedCenterColor is " + Testing::ArrayString(retrievedCenterColor, 3) + " but should be " + Testing::ArrayString(black, 3));
+    }
+}
+
+void TestKeepNonZeroVectors()
+{
+  vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
+  image->SetNumberOfScalarComponents(3);
+  image->SetDimensions(11,11,1);
+  image->SetScalarTypeToFloat();
+  image->AllocateScalars();
+
+  
+  
+  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+  VTKHelpers::KeepNonZeroVectors(image, polyData);
+
+}
+
+void TestMakeValueTransparent()
+{
+  // Test with an image that already has 4 components
+  {
+  vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
+  image->SetScalarTypeToUnsignedChar();
+  image->SetDimensions(11,11,1);
+  VTKHelpers::ZeroImage(image, 4);
+
+  unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(0,0,0));
+  pixel[0] = 1;
+  pixel[1] = 1;
+  pixel[2] = 1;
+  unsigned char value[3] = {1,1,1};
+  VTKHelpers::MakeValueTransparent(image, value);
+
+  unsigned char* retrievedPixel = static_cast<unsigned char*>(image->GetScalarPointer(0,0,0));
+  unsigned char correctPixel[4] = {1,1,1,VTKHelpers::TRANSPARENT};
+  if(!Testing::ArraysEqual(retrievedPixel, correctPixel, 4))
+    {
+    throw std::runtime_error("TestMakeValueTransparent_4: TestMakeValueTransparent: retrievedPixel is " + Testing::ArrayString(retrievedPixel, 4) + " but should be " + Testing::ArrayString(correctPixel, 4));
+    }
+  }
+
+  // Test with a 3 component image
+  {
+  vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
+  image->SetScalarTypeToUnsignedChar();
+  image->SetDimensions(11,11,1);
+  VTKHelpers::ZeroImage(image, 3);
+
+  unsigned char value[3] = {1,1,1};
+  unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(0,0,0));
+  pixel[0] = value[0];
+  pixel[1] = value[1];
+  pixel[2] = value[2];
+  
+  VTKHelpers::MakeValueTransparent(image, value);
+
+  if(image->GetNumberOfScalarComponents() != 4)
+    {
+    throw std::runtime_error("image did not expand to 4 channels!");
+    }
+
+  unsigned char* retrievedPixel = static_cast<unsigned char*>(image->GetScalarPointer(0,0,0));
+  unsigned char correctPixel[4] = {1,1,1,VTKHelpers::TRANSPARENT};
+  if(!Testing::ArraysEqual(retrievedPixel, correctPixel, 4))
+    {
+    throw std::runtime_error("TestMakeValueTransparent_3: retrievedPixel is " + Testing::ArrayString(retrievedPixel, 4) + " but should be " + Testing::ArrayString(correctPixel, 4));
+    }
+  }
+
+  // Test with a 1 component image
+  {
+  vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
+  image->SetScalarTypeToUnsignedChar();
+  image->SetDimensions(11,11,1);
+  VTKHelpers::ZeroImage(image, 1);
+  unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(0,0,0));
+  pixel[0] = 1;
+
+  unsigned char value[1] = {1};
+  VTKHelpers::MakeValueTransparent(image, value);
+
+  if(image->GetNumberOfScalarComponents() != 4)
+    {
+    throw std::runtime_error("image did not expand to 4 channels!");
+    }
+
+  unsigned char* retrievedPixel = static_cast<unsigned char*>(image->GetScalarPointer(0,0,0));
+  unsigned char correctPixel[4] = {1,0,0,VTKHelpers::TRANSPARENT};
+  if(!Testing::ArraysEqual(retrievedPixel, correctPixel, 4))
+    {
+    throw std::runtime_error("TestMakeValueTransparent_1: retrievedPixel is " + Testing::ArrayString(retrievedPixel, 4) + " but should be " + Testing::ArrayString(correctPixel, 4));
+    }
+  }
+}
+
+void TestMakeImageTransparent()
+{
+  vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
+  image->SetNumberOfScalarComponents(3);
+  image->SetDimensions(11,11,1);
+  image->AllocateScalars();
 // // Make an entire image transparent.
 // void MakeImageTransparent(vtkImageData* image);
 
-
-  return EXIT_SUCCESS;
 }

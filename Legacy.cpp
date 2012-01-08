@@ -21,8 +21,7 @@ ColorImageType::IndexType CriminisiInpainting::FindBestPatchMatch(itk::Index<2> 
   // CIELab matching
   if(!this->Image->GetLargestPossibleRegion().IsInside(GetRegionAroundPixel(queryPixel)))
     {
-    std::cerr << "queryPixel is too close to the border!" << std::endl;
-    exit(-1);
+    throw std::runtime_error("queryPixel is too close to the border!");
     }
 
   // Setup a neighborhood iterator over the whole CIELAB image

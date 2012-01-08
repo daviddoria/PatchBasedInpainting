@@ -145,9 +145,10 @@ void ClusterColorsAdaptive::GenerateColorsVTKBin()
       int cellId = cellLocator->FindCell(p);
       if(cellId < 0 || cellId > static_cast<int>(cellOccupancy.size()))
         {
-        std::cerr << "Something is wrong, cellId = " << cellId << std::endl;
-        std::cerr << "p = " << p[0] << " " << p[1] << " " << p[2] << std::endl;
-        exit(-1);
+        std::stringstream ss;
+        ss << "Something is wrong, cellId = " << cellId << std::endl
+           << "p = " << p[0] << " " << p[1] << " " << p[2] << std::endl;
+        throw std::runtime_error(ss.str());
         }
       cellOccupancy[cellId]++;
       }
@@ -237,8 +238,7 @@ void ClusterColorsAdaptive::GenerateColorsVTKTopBins()
 
   if(cellOccupancy.size() < this->NumberOfColors)
     {
-    std::cerr << "cellOccupancy.size() < this->NumberOfColors, this doesn't make sense!" << std::endl;
-    exit(-1);
+    throw std::runtime_error("cellOccupancy.size() < this->NumberOfColors, this doesn't make sense!")
     }
 
   vtkSmartPointer<vtkCellLocator> cellLocator = vtkSmartPointer<vtkCellLocator>::New();
@@ -255,9 +255,10 @@ void ClusterColorsAdaptive::GenerateColorsVTKTopBins()
     int cellId = cellLocator->FindCell(p);
     if(cellId < 0 || cellId > static_cast<int>(cellOccupancy.size()))
       {
-      std::cerr << "Something is wrong, cellId = " << cellId << std::endl;
-      std::cerr << "p = " << p[0] << " " << p[1] << " " << p[2] << std::endl;
-      exit(-1);
+      std::stringstream ss;
+      ss << "Something is wrong, cellId = " << cellId << std::endl
+         << "p = " << p[0] << " " << p[1] << " " << p[2] << std::endl;
+      throw std::runtime_error(ss.str());
       }
     cellOccupancy[cellId]++;
     }
@@ -427,8 +428,7 @@ void ClusterColorsAdaptive::GenerateColorsVTKKMeans()
 
   if(static_cast<vtkIdType>(this->NumberOfColors) != coord0->GetNumberOfTuples())
     {
-    std::cout << "Something is wrong: this->NumberOfColors != coord0->GetNumberOfTuples()" << std::endl;
-    exit(-1);
+    throw std::runtime_error("Something is wrong: this->NumberOfColors != coord0->GetNumberOfTuples()");
     }
   this->Colors.clear();
   ColorMeasurementVectorType color;

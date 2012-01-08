@@ -39,38 +39,29 @@ const Patch* SourcePatchCollection::GetPatch(const itk::ImageRegion<2>& region)
 SourcePatchCollection::PatchContainer SourcePatchCollection::FindSourcePatchesInRegion(const itk::ImageRegion<2>& region)
 {
   // Add all patches in 'region' that are entirely valid to the list of source patches.
-  try
-  {
-    PatchContainer patches;
-    // Clearly we cannot add source patches from regions that are outside the image, so crop the desired region to be inside the image.
-    itk::ImageRegion<2> newRegion = ITKHelpers::CropToRegion(region, this->MaskImage->GetLargestPossibleRegion());
 
-    itk::ImageRegionConstIterator<Mask> iterator(this->MaskImage, newRegion);
+  PatchContainer patches;
+  // Clearly we cannot add source patches from regions that are outside the image, so crop the desired region to be inside the image.
+  itk::ImageRegion<2> newRegion = ITKHelpers::CropToRegion(region, this->MaskImage->GetLargestPossibleRegion());
 
-    while(!iterator.IsAtEnd())
+  itk::ImageRegionConstIterator<Mask> iterator(this->MaskImage, newRegion);
+
+  while(!iterator.IsAtEnd())
+    {
+    itk::Index<2> currentPixel = iterator.GetIndex();
+    itk::ImageRegion<2> currentPatchRegion = ITKHelpers::GetRegionInRadiusAroundPixel(currentPixel, this->PatchRadius);
+
+    if(this->MaskImage->GetLargestPossibleRegion().IsInside(currentPatchRegion))
       {
-      itk::Index<2> currentPixel = iterator.GetIndex();
-      itk::ImageRegion<2> currentPatchRegion = ITKHelpers::GetRegionInRadiusAroundPixel(currentPixel, this->PatchRadius);
-
-      if(this->MaskImage->GetLargestPossibleRegion().IsInside(currentPatchRegion))
+      if(this->MaskImage->IsValid(currentPatchRegion))
         {
-        if(this->MaskImage->IsValid(currentPatchRegion))
-          {
-          patches.insert(Patch(currentPatchRegion));
-          }
+        patches.insert(Patch(currentPatchRegion));
         }
-
-      ++iterator;
       }
-    return patches;
-    //DebugMessage<unsigned int>("Number of source patches: ", this->SourcePatches.size());
-  }// end try
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in AddAllSourcePatchesInRegion!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+
+    ++iterator;
+    }
+  return patches;
 }
 
 void SourcePatchCollection::AddPatches(const SourcePatchCollection::PatchContainer& patches)

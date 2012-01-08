@@ -414,54 +414,45 @@ void PatchBasedInpaintingGUI::Reset()
 void PatchBasedInpaintingGUI::RefreshVTK()
 {
   EnterFunction("RefreshVTK()");
-  try
-  {
-    // The following are valid for all iterations
-    if(this->chkDisplayUserPatch->isChecked())
-      {
-      this->UserPatch->Display();
-      }
+  // The following are valid for all iterations
+  if(this->chkDisplayUserPatch->isChecked())
+    {
+    this->UserPatch->Display();
+    }
 
 //     if(this->chkDisplayImage->isChecked())
 //       {
 //       DisplayImage();
 //       }
-// 
+//
 //     if(this->chkDisplayMask->isChecked())
 //       {
 //       DisplayMask();
 //       }
-// 
+//
 //     if(this->chkDisplayBoundary->isChecked())
 //       {
 //       DisplayBoundary();
 //       }
 
-    //DisplayPriorityImages();
+  //DisplayPriorityImages();
 
-    this->Canvas->UsedPatchPairLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
+  this->Canvas->UsedPatchPairLayer.ImageSlice->SetVisibility(this->chkHighlightUsedPatches->isChecked());
 
-    this->Canvas->ForwardLookPatchLayer.ImageSlice->SetVisibility(this->chkDisplayForwardLookPatchLocations->isChecked());
-    if(this->chkDisplayForwardLookPatchLocations->isChecked())
-      {
-      HighlightForwardLookPatches();
-      }
+  this->Canvas->ForwardLookPatchLayer.ImageSlice->SetVisibility(this->chkDisplayForwardLookPatchLocations->isChecked());
+  if(this->chkDisplayForwardLookPatchLocations->isChecked())
+    {
+    HighlightForwardLookPatches();
+    }
 
-    this->Canvas->SourcePatchLayer.ImageSlice->SetVisibility(this->chkDisplaySourcePatchLocations->isChecked());
-    if(this->chkDisplaySourcePatchLocations->isChecked())
-      {
-      HighlightSourcePatches();
-      }
+  this->Canvas->SourcePatchLayer.ImageSlice->SetVisibility(this->chkDisplaySourcePatchLocations->isChecked());
+  if(this->chkDisplaySourcePatchLocations->isChecked())
+    {
+    HighlightSourcePatches();
+    }
 
-    this->qvtkWidget->GetRenderWindow()->Render();
-    LeaveFunction("RefreshVTK()");
-    }// end try
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in Refresh!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+  this->qvtkWidget->GetRenderWindow()->Render();
+  LeaveFunction("RefreshVTK()");
 }
 
 void PatchBasedInpaintingGUI::RefreshQt()
@@ -524,173 +515,139 @@ void PatchBasedInpaintingGUI::Initialize()
 
 void PatchBasedInpaintingGUI::DisplaySourcePatch()
 {
-  try
-  {
-    EnterFunction("DisplaySourcePatch()");
+  EnterFunction("DisplaySourcePatch()");
 
-    if(!this->RecordToDisplay)
-      {
-      LeaveFunction("DisplaySourcePatch()");
-      return;
-      }
-
-    FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image.GetPointer());
-
-    QImage sourceImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, this->SourcePatchToDisplay.Region, this->ImageDisplayStyle);
-    //sourceImage = HelpersQt::FitToGraphicsView(sourceImage, gfxSource);
-    QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
-    gfxSource->fitInView(item);
+  if(!this->RecordToDisplay)
+    {
     LeaveFunction("DisplaySourcePatch()");
-    }// end try
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in DisplaySourcePatch!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+    return;
+    }
+
+  FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image.GetPointer());
+
+  QImage sourceImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, this->SourcePatchToDisplay.Region, this->ImageDisplayStyle);
+  //sourceImage = HelpersQt::FitToGraphicsView(sourceImage, gfxSource);
+  QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
+  gfxSource->fitInView(item);
+  LeaveFunction("DisplaySourcePatch()");
 }
 
 void PatchBasedInpaintingGUI::DisplayTargetPatch()
 {
   // We use the previous image and previous mask, but the current PotentialPairSets, as these are the sets that were used to get to this state.
-  try
-  {
-    EnterFunction("DisplayTargetPatch()");
+  EnterFunction("DisplayTargetPatch()");
 
-    // The last iteration record will not have any potential patches, because there is nothing left to inpaint!
-    if(!RecordToDisplay)
-      {
-      LeaveFunction("DisplayTargetPatch()");
-      return;
-      }
-    FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image.GetPointer());
-
-    // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration
-    // (as the current mask has been cleared where the target patch was copied).
-    //Mask::Pointer currentMask = dynamic_cast<Mask*>(this->RecordToDisplay->Images.FindImageByName("Mask").Image.GetPointer());
-
-    // Target
-    QImage targetImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, this->TargetPatchToDisplay.Region, this->ImageDisplayStyle);
-
-    //targetImage = HelpersQt::FitToGraphicsView(targetImage, gfxTarget);
-    QGraphicsPixmapItem* item = this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
-    gfxTarget->fitInView(item);
+  // The last iteration record will not have any potential patches, because there is nothing left to inpaint!
+  if(!RecordToDisplay)
+    {
     LeaveFunction("DisplayTargetPatch()");
-    }// end try
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in DisplayTargetPatch!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+    return;
+    }
+  FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image.GetPointer());
+
+  // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration
+  // (as the current mask has been cleared where the target patch was copied).
+  //Mask::Pointer currentMask = dynamic_cast<Mask*>(this->RecordToDisplay->Images.FindImageByName("Mask").Image.GetPointer());
+
+  // Target
+  QImage targetImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, this->TargetPatchToDisplay.Region, this->ImageDisplayStyle);
+
+  //targetImage = HelpersQt::FitToGraphicsView(targetImage, gfxTarget);
+  QGraphicsPixmapItem* item = this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
+  gfxTarget->fitInView(item);
+  LeaveFunction("DisplayTargetPatch()");
+
 }
 
 void PatchBasedInpaintingGUI::DisplayResultPatch()
 {
   EnterFunction("DisplayResultPatch()");
-  try
-  {
-    if(!RecordToDisplay)
-      {
-      LeaveFunction("DisplayResultPatch()");
-      return;
-      }
 
-    FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image.GetPointer());
-
-    // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration
-    // (as the current mask has been cleared where the target patch was copied).
-    Mask::Pointer currentMask = dynamic_cast<Mask*>(this->RecordToDisplay->GetImageByName("Mask").Image.GetPointer());
-
-    itk::Size<2> regionSize = this->Inpainting->GetPatchSize();
-
-    QImage qimage(regionSize[0], regionSize[1], QImage::Format_RGB888);
-
-    itk::ImageRegionIterator<FloatVectorImageType> sourceIterator(currentImage, this->SourcePatchToDisplay.Region);
-    itk::ImageRegionIterator<FloatVectorImageType> targetIterator(currentImage, this->TargetPatchToDisplay.Region);
-    itk::ImageRegionIterator<Mask> maskIterator(currentMask, this->TargetPatchToDisplay.Region);
-
-    FloatVectorImageType::Pointer resultPatch = FloatVectorImageType::New();
-    resultPatch->SetNumberOfComponentsPerPixel(currentImage->GetNumberOfComponentsPerPixel());
-    itk::Size<2> patchSize = Helpers::SizeFromRadius(this->Settings.PatchRadius);
-    itk::ImageRegion<2> region;
-    region.SetSize(patchSize);
-    resultPatch->SetRegions(region);
-    resultPatch->Allocate();
-
-    while(!maskIterator.IsAtEnd())
-      {
-      FloatVectorImageType::PixelType pixel;
-
-      if(currentMask->IsHole(maskIterator.GetIndex()))
-	{
-	pixel = sourceIterator.Get();
-	}
-      else
-	{
-	pixel = targetIterator.Get();
-	}
-
-      itk::Offset<2> offset = sourceIterator.GetIndex() - this->SourcePatchToDisplay.Region.GetIndex();
-      itk::Index<2> offsetIndex;
-      offsetIndex[0] = offset[0];
-      offsetIndex[1] = offset[1];
-      resultPatch->SetPixel(offsetIndex, pixel);
-
-      ++sourceIterator;
-      ++targetIterator;
-      ++maskIterator;
-      }
-
-    // Color the center pixel
-    //qimage.setPixel(regionSize[0]/2, regionSize[1]/2, this->CenterPixelColor.rgb());
-
-    qimage = HelpersQt::GetQImage<FloatVectorImageType>(resultPatch, resultPatch->GetLargestPossibleRegion(), this->ImageDisplayStyle);
-
-    //qimage = HelpersQt::FitToGraphicsView(qimage, gfxResult);
-    this->ResultPatchScene->clear();
-    QGraphicsPixmapItem* item = this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
-    gfxResult->fitInView(item);
-    //this->ResultPatchScene->addPixmap(QPixmap());
-    //std::cout << "Set result patch." << std::endl;
+  if(!RecordToDisplay)
+    {
     LeaveFunction("DisplayResultPatch()");
-    }// end try
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in DisplayResultPatch!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+    return;
+    }
+
+  FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image.GetPointer());
+
+  // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration
+  // (as the current mask has been cleared where the target patch was copied).
+  Mask::Pointer currentMask = dynamic_cast<Mask*>(this->RecordToDisplay->GetImageByName("Mask").Image.GetPointer());
+
+  itk::Size<2> regionSize = this->Inpainting->GetPatchSize();
+
+  QImage qimage(regionSize[0], regionSize[1], QImage::Format_RGB888);
+
+  itk::ImageRegionIterator<FloatVectorImageType> sourceIterator(currentImage, this->SourcePatchToDisplay.Region);
+  itk::ImageRegionIterator<FloatVectorImageType> targetIterator(currentImage, this->TargetPatchToDisplay.Region);
+  itk::ImageRegionIterator<Mask> maskIterator(currentMask, this->TargetPatchToDisplay.Region);
+
+  FloatVectorImageType::Pointer resultPatch = FloatVectorImageType::New();
+  resultPatch->SetNumberOfComponentsPerPixel(currentImage->GetNumberOfComponentsPerPixel());
+  itk::Size<2> patchSize = Helpers::SizeFromRadius(this->Settings.PatchRadius);
+  itk::ImageRegion<2> region;
+  region.SetSize(patchSize);
+  resultPatch->SetRegions(region);
+  resultPatch->Allocate();
+
+  while(!maskIterator.IsAtEnd())
+    {
+    FloatVectorImageType::PixelType pixel;
+
+    if(currentMask->IsHole(maskIterator.GetIndex()))
+      {
+      pixel = sourceIterator.Get();
+      }
+    else
+      {
+      pixel = targetIterator.Get();
+      }
+
+    itk::Offset<2> offset = sourceIterator.GetIndex() - this->SourcePatchToDisplay.Region.GetIndex();
+    itk::Index<2> offsetIndex;
+    offsetIndex[0] = offset[0];
+    offsetIndex[1] = offset[1];
+    resultPatch->SetPixel(offsetIndex, pixel);
+
+    ++sourceIterator;
+    ++targetIterator;
+    ++maskIterator;
+    }
+
+  // Color the center pixel
+  //qimage.setPixel(regionSize[0]/2, regionSize[1]/2, this->CenterPixelColor.rgb());
+
+  qimage = HelpersQt::GetQImage<FloatVectorImageType>(resultPatch, resultPatch->GetLargestPossibleRegion(), this->ImageDisplayStyle);
+
+  //qimage = HelpersQt::FitToGraphicsView(qimage, gfxResult);
+  this->ResultPatchScene->clear();
+  QGraphicsPixmapItem* item = this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
+  gfxResult->fitInView(item);
+  //this->ResultPatchScene->addPixmap(QPixmap());
+  //std::cout << "Set result patch." << std::endl;
+  LeaveFunction("DisplayResultPatch()");
 }
 
 void PatchBasedInpaintingGUI::DisplayUsedPatches()
 {
   EnterFunction("DisplayUsedPatches()");
 
-  try
-  {
-    // There are no patches used in the 0th iteration (initial conditions) so it doesn't make sense to display them.
-    // Instead we display blank images.
-    if(this->DisplayState.Iteration < 1)
-      {
-      this->TargetPatchScene->clear();
-      this->SourcePatchScene->clear();
+  // There are no patches used in the 0th iteration (initial conditions) so it doesn't make sense to display them.
+  // Instead we display blank images.
+  if(this->DisplayState.Iteration < 1)
+    {
+    this->TargetPatchScene->clear();
+    this->SourcePatchScene->clear();
 
-      return;
-      }
+    return;
+    }
 
-    DisplaySourcePatch();
-    DisplayTargetPatch();
-    DisplayResultPatch();
-    Refresh();
-    LeaveFunction("DisplayUsedPatches()");
-  }// end try
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in DisplayUsedPatches!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+  DisplaySourcePatch();
+  DisplayTargetPatch();
+  DisplayResultPatch();
+  Refresh();
+  LeaveFunction("DisplayUsedPatches()");
 }
 
 void PatchBasedInpaintingGUI::DisplayUsedPatchInformation()
@@ -827,8 +784,7 @@ void PatchBasedInpaintingGUI::CreateInitialRecord()
   this->qvtkWidget->GetRenderWindow()->Render();
   if(this->IterationRecords.size() != 1)
     {
-    std::cerr << "this->IterationRecords.size() != 1" << std::endl;
-    exit(-1);
+    throw std::runtime_error("this->IterationRecords.size() != 1");
     }
   LeaveFunction("CreateInitialRecord()");
 }
@@ -1101,7 +1057,8 @@ void PatchBasedInpaintingGUI::SetPriorityFromGUI()
 //       }
 //     std::cerr << "Setting PriorityManual not yet implemented!" << std::endl; // TODO
 //     exit(-1);
-//     //reinterpret_cast<PriorityManual*>(this->Inpainting->GetPriorityFunction())->SetManualPriorityImage(this->InputImages.FindImageByName("ManualPriority").Image.GetPointer());
+//     //reinterpret_cast<PriorityManual*>(this->Inpainting->GetPriorityFunction())->
+  //SetManualPriorityImage(this->InputImages.FindImageByName("ManualPriority").Image.GetPointer());
 //     }
   
   // Add priority images to save and display models

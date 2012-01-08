@@ -67,9 +67,10 @@ PatchBasedInpainting<TImage>::PatchBasedInpainting(const TImage* const image, co
   this->FullImageRegion = image->GetLargestPossibleRegion();
   if(this->MaskImage->GetLargestPossibleRegion() != this->FullImageRegion)
     {
-    std::cerr << "Mask and image size must match! Mask is " << this->MaskImage->GetLargestPossibleRegion().GetSize()
+    std::stringstream ss;
+    ss << "Mask and image size must match! Mask is " << this->MaskImage->GetLargestPossibleRegion().GetSize()
               << " while image is " << this->FullImageRegion << std::endl;
-    exit(-1);
+    throw std::runtime_error(ss.str());
     }
 
   // We definitely want to update the image and the mask. We can add more images to the list to update later if necessary.
@@ -152,35 +153,27 @@ template <typename TImage>
 void PatchBasedInpainting<TImage>::Initialize()
 {
   EnterFunction("PatchBasedInpainting::Initialize()");
-  try
-  {
-    // If the user hasn't specified a priority function, use the simplest one.
-    if(!this->PriorityFunction)
-      {
-      std::cout << "Using default Priority function." << std::endl;
-      this->PriorityFunction = std::make_shared<PriorityRandom>(this->CurrentInpaintedImage, this->MaskImage, this->PatchRadius[0]);
-      }
 
-    this->NumberOfCompletedIterations = 0;
+  // If the user hasn't specified a priority function, use the simplest one.
+  if(!this->PriorityFunction)
+    {
+    std::cout << "Using default Priority function." << std::endl;
+    this->PriorityFunction = std::make_shared<PriorityRandom>(this->CurrentInpaintedImage, this->MaskImage, this->PatchRadius[0]);
+    }
 
-    HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CurrentInpaintedImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
+  this->NumberOfCompletedIterations = 0;
 
-    DebugMessage("Computing source patches...");
+  HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CurrentInpaintedImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
 
-    this->SourcePatches = new SourcePatchCollection(this->MaskImage, this->PatchRadius[0]);
+  DebugMessage("Computing source patches...");
 
-    // Clear the source patches, as additional patches are added each iteration. When we reset the inpainter, we want to start over from only patches that are
-    // valid in the original mask.
-    this->SourcePatches->Clear();
+  this->SourcePatches = new SourcePatchCollection(this->MaskImage, this->PatchRadius[0]);
 
-    LeaveFunction("PatchBasedInpainting::Initialize()");
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in Initialize()!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+  // Clear the source patches, as additional patches are added each iteration. When we reset the inpainter, we want to start over from only patches that are
+  // valid in the original mask.
+  this->SourcePatches->Clear();
+
+  LeaveFunction("PatchBasedInpainting::Initialize()");
 }
 
 template <typename TImage>
@@ -283,58 +276,45 @@ template <typename TImage>
 void PatchBasedInpainting<TImage>::Inpaint()
 {
   EnterFunction("Inpaint()");
-  // This function is intended to be used by the command line version. It will do the complete inpainting without updating any UI or the ability to stop before it is complete.
-  try
-  {
-    // Start the procedure
-    //Initialize();
+  // This function is intended to be used by the command line version.
+  // It will do the complete inpainting without updating any UI or the ability to stop before it is complete.
 
-    this->NumberOfCompletedIterations = 0;
-    while(HasMoreToInpaint())
-      {
-      Iterate();
-      }
-    //std::cout << "Finished inpainting." << std::endl;
-    LeaveFunction("Inpaint()");
-  }// end try
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in Inpaint()!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+  // Start the procedure
+  //Initialize();
+
+  this->NumberOfCompletedIterations = 0;
+  while(HasMoreToInpaint())
+    {
+    Iterate();
+    }
+  //std::cout << "Finished inpainting." << std::endl;
+  LeaveFunction("Inpaint()");
+
 }
 
 template <typename TImage>
 bool PatchBasedInpainting<TImage>::HasMoreToInpaint()
 {
   EnterFunction("HasMoreToInpaint()");
-  try
-  {
-    HelpersOutput::WriteImageConditional<Mask>(this->MaskImage, "Debug/HasMoreToInpaint.input.png", this->DebugImages);
 
-    itk::ImageRegionIterator<Mask> maskIterator(this->MaskImage, this->MaskImage->GetLargestPossibleRegion());
+  HelpersOutput::WriteImageConditional<Mask>(this->MaskImage, "Debug/HasMoreToInpaint.input.png", this->DebugImages);
 
-    while(!maskIterator.IsAtEnd())
+  itk::ImageRegionIterator<Mask> maskIterator(this->MaskImage, this->MaskImage->GetLargestPossibleRegion());
+
+  while(!maskIterator.IsAtEnd())
+    {
+    if(this->MaskImage->IsHole(maskIterator.GetIndex()))
       {
-      if(this->MaskImage->IsHole(maskIterator.GetIndex()))
-        {
-        return true;
-        }
-
-      ++maskIterator;
+      return true;
       }
 
-    LeaveFunction("HasMoreToInpaint()");
-    // If no pixels were holes, then we don't have any more to inpaint.
-    return false;
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in HasMoreToInpaint!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+    ++maskIterator;
+    }
+
+  LeaveFunction("HasMoreToInpaint()");
+  // If no pixels were holes, then we don't have any more to inpaint.
+  return false;
+
 }
 
 template <typename TImage>
@@ -476,60 +456,44 @@ void PatchBasedInpainting<TImage>::DebugWritePatch(const itk::ImageRegion<2>& in
     {
     return;
     }
-  try
-  {
-    typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
-                                              FloatVectorImageType> ExtractFilterType;
-    itk::ImageRegion<2> region = inputRegion;
-    region.Crop(this->CurrentInpaintedImage->GetLargestPossibleRegion());
 
-    ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
-    extractFilter->SetRegionOfInterest(region);
-    extractFilter->SetInput(this->CurrentInpaintedImage);
-    extractFilter->Update();
-    /*
-    typedef itk::Image<itk::CovariantVector<unsigned char, TImage::PixelType::Dimension>, 2> OutputImageType;
+  typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
+                                            FloatVectorImageType> ExtractFilterType;
+  itk::ImageRegion<2> region = inputRegion;
+  region.Crop(this->CurrentInpaintedImage->GetLargestPossibleRegion());
 
-    typedef itk::CastImageFilter< TImage, OutputImageType > CastFilterType;
-    typename CastFilterType::Pointer castFilter = CastFilterType::New();
-    castFilter->SetInput(extractFilter->GetOutput());
-    castFilter->Update();
+  ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+  extractFilter->SetRegionOfInterest(region);
+  extractFilter->SetInput(this->CurrentInpaintedImage);
+  extractFilter->Update();
+  /*
+  typedef itk::Image<itk::CovariantVector<unsigned char, TImage::PixelType::Dimension>, 2> OutputImageType;
 
-    Helpers::WriteImage<OutputImageType>(castFilter->GetOutput(), filename);
-    */
-  }// end try
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in DebugWritePatch!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+  typedef itk::CastImageFilter< TImage, OutputImageType > CastFilterType;
+  typename CastFilterType::Pointer castFilter = CastFilterType::New();
+  castFilter->SetInput(extractFilter->GetOutput());
+  castFilter->Update();
+
+  Helpers::WriteImage<OutputImageType>(castFilter->GetOutput(), filename);
+  */
+
 }
 
 template <typename TImage>
 void PatchBasedInpainting<TImage>::DebugWritePatch(const itk::Index<2>& pixel, const std::string& filename)
 {
-  try
-  {
-    typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
-                                              FloatVectorImageType> ExtractFilterType;
+  typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
+                                            FloatVectorImageType> ExtractFilterType;
 
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(pixel, this->PatchRadius[0]);
-    region.Crop(this->CurrentInpaintedImage->GetLargestPossibleRegion());
+  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(pixel, this->PatchRadius[0]);
+  region.Crop(this->CurrentInpaintedImage->GetLargestPossibleRegion());
 
-    ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
-    extractFilter->SetRegionOfInterest(region);
-    extractFilter->SetInput(this->CurrentInpaintedImage);
-    extractFilter->Update();
+  ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+  extractFilter->SetRegionOfInterest(region);
+  extractFilter->SetInput(this->CurrentInpaintedImage);
+  extractFilter->Update();
 
-    HelpersOutput::WriteImage<FloatVectorImageType>(extractFilter->GetOutput(), filename);
-  }// end try
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in DebugWritePatch!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+  HelpersOutput::WriteImage<FloatVectorImageType>(extractFilter->GetOutput(), filename);
 }
 
 template <typename TImage>

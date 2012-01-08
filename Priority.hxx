@@ -90,9 +90,7 @@ void Priority<TImage>::ComputeAllPriorities()
 
   if(this->MaskImage->GetLargestPossibleRegion() != this->PriorityImage->GetLargestPossibleRegion())
     {
-    std::cerr << "Priority::ComputeAllPriorities: The priority image has not been properly initialized!"
-              << this->PriorityImage->GetLargestPossibleRegion() << std::endl;
-    exit(-1);
+    throw std::runtime_error("Priority::ComputeAllPriorities: The priority image has not been properly initialized!");
     }
 
   this->MaskImage->FindBoundary(this->BoundaryImage);

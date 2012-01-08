@@ -100,138 +100,114 @@ float PriorityCriminisi<TImage>::ComputeDataTerm(const itk::Index<2>& queryPixel
   // is that we claim there is no reason to penalize the priority of linear structures that don't have a perpendicular incident
   // angle with the boundary. Of course, we don't want to continue structures that are almost parallel with the boundary, but above
   // a threshold, the strength of the isophote should be more important than the angle of incidence.
-  try
-  {
-    FloatVector2Type isophote = this->IsophoteImage->GetPixel(queryPixel);
-    FloatVector2Type boundaryNormal = this->BoundaryNormalsImage->GetPixel(queryPixel);
 
-    DebugMessage<FloatVector2Type>("Isophote: ", isophote);
-    DebugMessage<FloatVector2Type>("Boundary normal: ", boundaryNormal);
-    // D(p) = |dot(isophote at p, normalized normal of the front at p)|/alpha
+  FloatVector2Type isophote = this->IsophoteImage->GetPixel(queryPixel);
+  FloatVector2Type boundaryNormal = this->BoundaryNormalsImage->GetPixel(queryPixel);
 
-    vnl_double_2 vnlIsophote(isophote[0], isophote[1]);
+  DebugMessage<FloatVector2Type>("Isophote: ", isophote);
+  DebugMessage<FloatVector2Type>("Boundary normal: ", boundaryNormal);
+  // D(p) = |dot(isophote at p, normalized normal of the front at p)|/alpha
 
-    vnl_double_2 vnlNormal(boundaryNormal[0], boundaryNormal[1]);
+  vnl_double_2 vnlIsophote(isophote[0], isophote[1]);
 
-    float dataTerm = 0.0f;
+  vnl_double_2 vnlNormal(boundaryNormal[0], boundaryNormal[1]);
 
-    float angleBetween = Helpers::AngleBetween(isophote, boundaryNormal);
-    if(angleBetween < 20)
-      {
-      float projectionMagnitude = isophote.GetNorm() * cos(angleBetween);
+  float dataTerm = 0.0f;
 
-      dataTerm = projectionMagnitude;
-      }
-    else
+  float angleBetween = Helpers::AngleBetween(isophote, boundaryNormal);
+  if(angleBetween < 20)
     {
-      dataTerm = isophote.GetNorm();
-    }
+    float projectionMagnitude = isophote.GetNorm() * cos(angleBetween);
 
-    return dataTerm;
-  }
-  catch( itk::ExceptionObject & err )
+    dataTerm = projectionMagnitude;
+    }
+  else
   {
-    std::cerr << "ExceptionObject caught in ComputeDataTerm!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
+    dataTerm = isophote.GetNorm();
   }
+
+  return dataTerm;
+
 }
 */
 
 template <typename TImage>
 float PriorityCriminisi<TImage>::ComputeDataTerm(const itk::Index<2>& queryPixel)
 {
-  try
-  {
-    FloatVector2Type isophote = this->IsophoteImage->GetPixel(queryPixel);
-    FloatVector2Type boundaryNormal = this->BoundaryNormalsImage->GetPixel(queryPixel);
+  FloatVector2Type isophote = this->IsophoteImage->GetPixel(queryPixel);
+  FloatVector2Type boundaryNormal = this->BoundaryNormalsImage->GetPixel(queryPixel);
 
-    //DebugMessage<FloatVector2Type>("Isophote: ", isophote);
-    //DebugMessage<FloatVector2Type>("Boundary normal: ", boundaryNormal);
-    // D(p) = |dot(isophote at p, normalized normal of the front at p)|/alpha
+  //DebugMessage<FloatVector2Type>("Isophote: ", isophote);
+  //DebugMessage<FloatVector2Type>("Boundary normal: ", boundaryNormal);
+  // D(p) = |dot(isophote at p, normalized normal of the front at p)|/alpha
 
-    vnl_double_2 vnlIsophote(isophote[0], isophote[1]);
+  vnl_double_2 vnlIsophote(isophote[0], isophote[1]);
 
-    vnl_double_2 vnlNormal(boundaryNormal[0], boundaryNormal[1]);
+  vnl_double_2 vnlNormal(boundaryNormal[0], boundaryNormal[1]);
 
-    float dot = std::abs(dot_product(vnlIsophote,vnlNormal));
+  float dot = std::abs(dot_product(vnlIsophote,vnlNormal));
 
-    float alpha = 255; // This doesn't actually contribue anything, since the argmax of the priority is all that is used, and alpha ends up just being a scaling factor since the proiority is purely multiplicative.
-    float dataTerm = dot/alpha;
+  float alpha = 255; // This doesn't actually contribue anything, since the argmax of the priority is all that is used, and alpha ends up just being a scaling factor since the proiority is purely multiplicative.
+  float dataTerm = dot/alpha;
 
-    return dataTerm;
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in ComputeDataTerm!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+  return dataTerm;
 }
 
 template <typename TImage>
 void PriorityCriminisi<TImage>::ComputeBoundaryNormals(const float blurVariance)
 {
-  try
-  {
-    // Blur the mask, compute the gradient, then keep the normals only at the original mask boundary
 
-    //HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/ComputeBoundaryNormals.BoundaryImage.mha", this->DebugImages);
-    //HelpersOutput::WriteImageConditional<Mask>(this->MaskImage, "Debug/ComputeBoundaryNormals.CurrentMask.mha", this->DebugImages);
+  // Blur the mask, compute the gradient, then keep the normals only at the original mask boundary
 
-    // Blur the mask
-    typedef itk::DiscreteGaussianImageFilter< Mask, FloatScalarImageType >  BlurFilterType;
-    BlurFilterType::Pointer gaussianFilter = BlurFilterType::New();
-    gaussianFilter->SetInput(this->MaskImage);
-    gaussianFilter->SetVariance(blurVariance);
-    gaussianFilter->Update();
+  //HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/ComputeBoundaryNormals.BoundaryImage.mha", this->DebugImages);
+  //HelpersOutput::WriteImageConditional<Mask>(this->MaskImage, "Debug/ComputeBoundaryNormals.CurrentMask.mha", this->DebugImages);
 
-    //HelpersOutput::WriteImageConditional<FloatScalarImageType>(gaussianFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMask.mha", this->DebugImages);
+  // Blur the mask
+  typedef itk::DiscreteGaussianImageFilter< Mask, FloatScalarImageType >  BlurFilterType;
+  BlurFilterType::Pointer gaussianFilter = BlurFilterType::New();
+  gaussianFilter->SetInput(this->MaskImage);
+  gaussianFilter->SetVariance(blurVariance);
+  gaussianFilter->Update();
 
-    // Compute the gradient of the blurred mask
-    typedef itk::GradientImageFilter< FloatScalarImageType, float, float>  GradientFilterType;
-    GradientFilterType::Pointer gradientFilter = GradientFilterType::New();
-    gradientFilter->SetInput(gaussianFilter->GetOutput());
-    gradientFilter->Update();
+  //HelpersOutput::WriteImageConditional<FloatScalarImageType>(gaussianFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMask.mha", this->DebugImages);
 
-    //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(gradientFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMaskGradient.mha", this->DebugImages);
+  // Compute the gradient of the blurred mask
+  typedef itk::GradientImageFilter< FloatScalarImageType, float, float>  GradientFilterType;
+  GradientFilterType::Pointer gradientFilter = GradientFilterType::New();
+  gradientFilter->SetInput(gaussianFilter->GetOutput());
+  gradientFilter->Update();
 
-    // Only keep the normals at the boundary
-    typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
-    MaskFilterType::Pointer maskFilter = MaskFilterType::New();
-    maskFilter->SetInput(gradientFilter->GetOutput());
-    maskFilter->SetMaskImage(this->BoundaryImage);
-    maskFilter->Update();
+  //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(gradientFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMaskGradient.mha", this->DebugImages);
 
-    //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(),
-      //                                                          "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha", this->DebugImages);
+  // Only keep the normals at the boundary
+  typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
+  MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+  maskFilter->SetInput(gradientFilter->GetOutput());
+  maskFilter->SetMaskImage(this->BoundaryImage);
+  maskFilter->Update();
 
-    ITKHelpers::DeepCopy<FloatVector2ImageType>(maskFilter->GetOutput(), this->BoundaryNormalsImage);
+  //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(),
+    //                                                          "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha", this->DebugImages);
 
-    // Normalize the vectors because we just care about their direction (the Data term computation calls for the normalized boundary normal)
-    itk::ImageRegionIterator<FloatVector2ImageType> boundaryNormalsIterator(this->BoundaryNormalsImage, this->BoundaryNormalsImage->GetLargestPossibleRegion());
-    itk::ImageRegionConstIterator<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
+  ITKHelpers::DeepCopy<FloatVector2ImageType>(maskFilter->GetOutput(), this->BoundaryNormalsImage);
 
-    while(!boundaryNormalsIterator.IsAtEnd())
+  // Normalize the vectors because we just care about their direction (the Data term computation calls for the normalized boundary normal)
+  itk::ImageRegionIterator<FloatVector2ImageType> boundaryNormalsIterator(this->BoundaryNormalsImage, this->BoundaryNormalsImage->GetLargestPossibleRegion());
+  itk::ImageRegionConstIterator<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
+
+  while(!boundaryNormalsIterator.IsAtEnd())
+    {
+    if(boundaryIterator.Get()) // The pixel is on the boundary
       {
-      if(boundaryIterator.Get()) // The pixel is on the boundary
-        {
-        FloatVector2ImageType::PixelType p = boundaryNormalsIterator.Get();
-        p.Normalize();
-        boundaryNormalsIterator.Set(p);
-        }
-      ++boundaryNormalsIterator;
-      ++boundaryIterator;
+      FloatVector2ImageType::PixelType p = boundaryNormalsIterator.Get();
+      p.Normalize();
+      boundaryNormalsIterator.Set(p);
       }
+    ++boundaryNormalsIterator;
+    ++boundaryIterator;
+    }
 
-    //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(this->BoundaryNormalsImage, "Debug/ComputeBoundaryNormals.BoundaryNormals.mha", this->DebugImages);
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in ComputeBoundaryNormals!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+  //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(this->BoundaryNormalsImage, "Debug/ComputeBoundaryNormals.BoundaryNormals.mha", this->DebugImages);
 }
 
 template <typename TImage>

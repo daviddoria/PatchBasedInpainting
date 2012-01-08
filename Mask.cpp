@@ -228,66 +228,58 @@ void Mask::ExpandHole()
 
 void Mask::FindBoundary(UnsignedCharScalarImageType* boundaryImage) const
 {
-  try
-  {
-    // Compute the "outer" boundary of the region to fill. That is, we want the boundary pixels to be in the source region.
+  // Compute the "outer" boundary of the region to fill. That is, we want the boundary pixels to be in the source region.
 
-    //HelpersOutput::WriteImageConditional<Mask>(this->CurrentMask, "Debug/FindBoundary.CurrentMask.mha", this->DebugImages);
-    //HelpersOutput::WriteImageConditional<Mask>(this->CurrentMask, "Debug/FindBoundary.CurrentMask.png", this->DebugImages);
+  //HelpersOutput::WriteImageConditional<Mask>(this->CurrentMask, "Debug/FindBoundary.CurrentMask.mha", this->DebugImages);
+  //HelpersOutput::WriteImageConditional<Mask>(this->CurrentMask, "Debug/FindBoundary.CurrentMask.png", this->DebugImages);
 
-    // Create a binary image (throw away the "dont use" pixels)
-    Mask::Pointer holeOnly = Mask::New();
-    holeOnly->DeepCopyFrom(this);
+  // Create a binary image (throw away the "dont use" pixels)
+  Mask::Pointer holeOnly = Mask::New();
+  holeOnly->DeepCopyFrom(this);
 
-    itk::ImageRegionIterator<Mask> maskIterator(holeOnly, holeOnly->GetLargestPossibleRegion());
-    // This should result in a white hole on a black background
-    while(!maskIterator.IsAtEnd())
+  itk::ImageRegionIterator<Mask> maskIterator(holeOnly, holeOnly->GetLargestPossibleRegion());
+  // This should result in a white hole on a black background
+  while(!maskIterator.IsAtEnd())
+    {
+    itk::Index<2> currentPixel = maskIterator.GetIndex();
+    if(!holeOnly->IsHole(currentPixel))
       {
-      itk::Index<2> currentPixel = maskIterator.GetIndex();
-      if(!holeOnly->IsHole(currentPixel))
-        {
-        holeOnly->SetPixel(currentPixel, holeOnly->GetValidValue());
-        }
-      ++maskIterator;
+      holeOnly->SetPixel(currentPixel, holeOnly->GetValidValue());
       }
+    ++maskIterator;
+    }
 
-    //HelpersOutput::WriteImageConditional<Mask>(holeOnly, "Debug/FindBoundary.HoleOnly.mha", this->DebugImages);
-    //HelpersOutput::WriteImageConditional<Mask>(holeOnly, "Debug/FindBoundary.HoleOnly.png", this->DebugImages);
+  //HelpersOutput::WriteImageConditional<Mask>(holeOnly, "Debug/FindBoundary.HoleOnly.mha", this->DebugImages);
+  //HelpersOutput::WriteImageConditional<Mask>(holeOnly, "Debug/FindBoundary.HoleOnly.png", this->DebugImages);
 
-    // Since the hole is white, we want the foreground value of the contour filter to be black. This means that the boundary will
-    // be detected in the black pixel region, which is on the outside edge of the hole like we want. However,
-    // The BinaryContourImageFilter will change all non-boundary pixels to the background color, so the resulting output will be inverted -
-    // the boundary pixels will be black and the non-boundary pixels will be white.
+  // Since the hole is white, we want the foreground value of the contour filter to be black. This means that the boundary will
+  // be detected in the black pixel region, which is on the outside edge of the hole like we want. However,
+  // The BinaryContourImageFilter will change all non-boundary pixels to the background color, so the resulting output will be inverted -
+  // the boundary pixels will be black and the non-boundary pixels will be white.
 
-    // Find the boundary
-    typedef itk::BinaryContourImageFilter <Mask, Mask> binaryContourImageFilterType;
-    binaryContourImageFilterType::Pointer binaryContourFilter = binaryContourImageFilterType::New();
-    binaryContourFilter->SetInput(holeOnly);
-    binaryContourFilter->SetFullyConnected(true);
-    binaryContourFilter->SetForegroundValue(holeOnly->GetValidValue());
-    binaryContourFilter->SetBackgroundValue(holeOnly->GetHoleValue());
-    binaryContourFilter->Update();
+  // Find the boundary
+  typedef itk::BinaryContourImageFilter <Mask, Mask> binaryContourImageFilterType;
+  binaryContourImageFilterType::Pointer binaryContourFilter = binaryContourImageFilterType::New();
+  binaryContourFilter->SetInput(holeOnly);
+  binaryContourFilter->SetFullyConnected(true);
+  binaryContourFilter->SetForegroundValue(holeOnly->GetValidValue());
+  binaryContourFilter->SetBackgroundValue(holeOnly->GetHoleValue());
+  binaryContourFilter->Update();
 
-    //HelpersOutput::WriteImageConditional<Mask>(binaryContourFilter->GetOutput(), "Debug/FindBoundary.Boundary.mha", this->DebugImages);
-    //HelpersOutput::WriteImageConditional<Mask>(binaryContourFilter->GetOutput(), "Debug/FindBoundary.Boundary.png", this->DebugImages);
+  //HelpersOutput::WriteImageConditional<Mask>(binaryContourFilter->GetOutput(), "Debug/FindBoundary.Boundary.mha", this->DebugImages);
+  //HelpersOutput::WriteImageConditional<Mask>(binaryContourFilter->GetOutput(), "Debug/FindBoundary.Boundary.png", this->DebugImages);
 
-    // Since we want to interpret non-zero pixels as boundary pixels, we must invert the image.
-    typedef itk::InvertIntensityImageFilter <Mask> InvertIntensityImageFilterType;
-    InvertIntensityImageFilterType::Pointer invertIntensityFilter = InvertIntensityImageFilterType::New();
-    invertIntensityFilter->SetInput(binaryContourFilter->GetOutput());
-    invertIntensityFilter->SetMaximum(255);
-    invertIntensityFilter->Update();
+  // Since we want to interpret non-zero pixels as boundary pixels, we must invert the image.
+  typedef itk::InvertIntensityImageFilter <Mask> InvertIntensityImageFilterType;
+  InvertIntensityImageFilterType::Pointer invertIntensityFilter = InvertIntensityImageFilterType::New();
+  invertIntensityFilter->SetInput(binaryContourFilter->GetOutput());
+  invertIntensityFilter->SetMaximum(255);
+  invertIntensityFilter->Update();
 
-    //this->BoundaryImage = binaryContourFilter->GetOutput();
-    //this->BoundaryImage->Graft(binaryContourFilter->GetOutput());
-    ITKHelpers::DeepCopy<UnsignedCharScalarImageType>(invertIntensityFilter->GetOutput(), boundaryImage);
+  //this->BoundaryImage = binaryContourFilter->GetOutput();
+  //this->BoundaryImage->Graft(binaryContourFilter->GetOutput());
+  ITKHelpers::DeepCopy<UnsignedCharScalarImageType>(invertIntensityFilter->GetOutput(), boundaryImage);
 
-    //HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/FindBoundary.BoundaryImage.mha", this->DebugImages);
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in FindBoundary!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+  //HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/FindBoundary.BoundaryImage.mha", this->DebugImages);
+
 }

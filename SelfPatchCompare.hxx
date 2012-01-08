@@ -60,36 +60,29 @@ template <typename TImage>
 void SelfPatchCompare<TImage>::ComputeOffsets()
 {
   // This function computes the list of offsets that are from the source region of the target patch.
-  try
-  {
-    //std::cout << "Computing offsets for TargetPatch: " << this->Pairs->TargetPatch.Region.GetIndex() << std::endl;
-    this->ValidTargetPatchPixelOffsets.clear();
 
-    // Iterate over the target region of the mask. Add the linear offset of valid pixels to the offsets to be used later in the comparison.
-    itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, this->Pairs->GetTargetPatch().GetRegion());
-    itk::Index<2> targetCorner = this->Pairs->GetTargetPatch().GetCorner();
-    while(!maskIterator.IsAtEnd())
+  //std::cout << "Computing offsets for TargetPatch: " << this->Pairs->TargetPatch.Region.GetIndex() << std::endl;
+  this->ValidTargetPatchPixelOffsets.clear();
+
+  // Iterate over the target region of the mask. Add the linear offset of valid pixels to the offsets to be used later in the comparison.
+  itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, this->Pairs->GetTargetPatch().GetRegion());
+  itk::Index<2> targetCorner = this->Pairs->GetTargetPatch().GetCorner();
+  while(!maskIterator.IsAtEnd())
+    {
+    if(this->MaskImage->IsValid(maskIterator.GetIndex()))
       {
-      if(this->MaskImage->IsValid(maskIterator.GetIndex()))
-        {
-        // The ComputeOffset function returns the linear index of the pixel.
-        // To compute the memory address of the pixel, we must multiply by the number of components per pixel.
-        itk::Offset<2> offset = maskIterator.GetIndex() - targetCorner;
+      // The ComputeOffset function returns the linear index of the pixel.
+      // To compute the memory address of the pixel, we must multiply by the number of components per pixel.
+      itk::Offset<2> offset = maskIterator.GetIndex() - targetCorner;
 
-        //std::cout << "Using offset: " << offset << std::endl;
-        this->ValidTargetPatchPixelOffsets.push_back(offset); // We have to multiply the linear offset by the number of components per pixel for the VectorImage type
-        }
-
-      ++maskIterator;
+      //std::cout << "Using offset: " << offset << std::endl;
+      this->ValidTargetPatchPixelOffsets.push_back(offset); // We have to multiply the linear offset by the number of components per pixel for the VectorImage type
       }
-    std::cout << "Number of valid offsets: " << this->ValidTargetPatchPixelOffsets.size() << std::endl;
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "ExceptionObject caught in ComputeOffsets!" << std::endl;
-    std::cerr << err << std::endl;
-    exit(-1);
-  }
+
+    ++maskIterator;
+    }
+  std::cout << "Number of valid offsets: " << this->ValidTargetPatchPixelOffsets.size() << std::endl;
+
 }
 
 template <typename TImage>

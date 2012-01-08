@@ -123,8 +123,7 @@ void CandidatePairs::Combine(const CandidatePairs& candidatePairs)
 {
   if(candidatePairs.GetTargetPatch() != this->GetTargetPatch())
     {
-    std::cerr << "Cannot combine CandidatePairs that are not of the same TargetPatch!" << std::endl;
-    exit(-1);
+    throw std::runtime_error("Cannot combine CandidatePairs that are not of the same TargetPatch!");
     }
 //   for(unsigned int patchId = 0; patchId < candidatePairs.GetNumberOfSourcePatches(); ++patchId)
 //     {

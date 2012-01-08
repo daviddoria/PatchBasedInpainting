@@ -20,6 +20,7 @@
 
 // STL
 #include <memory>
+#include <stdexcept>
 
 // VTK
 #include <vtkCell.h>
@@ -36,7 +37,7 @@
 namespace VTKHelpers
 {
 
-void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double center[3])
+void GetCellCenter(vtkImageData* const imageData, const unsigned int cellId, double center[3])
 {
   double pcoords[3] = {0,0,0};
   std::shared_ptr<double> weights(new double [imageData->GetMaxCellSize()]);
@@ -46,22 +47,23 @@ void GetCellCenter(vtkImageData* imageData, const unsigned int cellId, double ce
 }
 
 
-void SetImageCenterPixel(vtkImageData* image, const unsigned char color[3])
+void SetImageCenterPixel(vtkImageData* const image, const unsigned char color[3])
 {
   int dims[3];
   image->GetDimensions(dims);
 
-  unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(dims[0]/2, dims[1]/2, 0));
+  int centerPixel[3] = {dims[0]/2, dims[1]/2, 0};
+  unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(centerPixel[0], centerPixel[1], centerPixel[2]));
   pixel[0] = color[0];
   pixel[1] = color[1];
   pixel[2] = color[2];
   pixel[3] = 255; // visible
 }
 
-void BlankImage(vtkImageData* image)
+void ZeroImage(vtkImageData* const image, const unsigned int channels)
 {
   image->SetScalarTypeToUnsignedChar();
-  image->SetNumberOfScalarComponents(4);
+  image->SetNumberOfScalarComponents(channels);
   image->AllocateScalars();
 
   int dims[3];
@@ -72,17 +74,16 @@ void BlankImage(vtkImageData* image)
     for(int j = 0; j < dims[1]; ++j)
       {
       unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(i,j,0));
-
-      pixel[0] = 0;
-      pixel[1] = 0;
-      pixel[2] = 0;
-      pixel[3] = 0; // transparent
+      for(unsigned int channel = 0; channel < channels; ++channel)
+        {
+        pixel[channel] = 0;
+        }
       }
     }
   image->Modified();
 }
 
-void BlankAndOutlineImage(vtkImageData* image, const unsigned char color[3])
+void BlankAndOutlineImage(vtkImageData* const image, const unsigned char color[3])
 {
   int dims[3];
   image->GetDimensions(dims);
@@ -97,14 +98,14 @@ void BlankAndOutlineImage(vtkImageData* image, const unsigned char color[3])
         pixel[0] = color[0];
         pixel[1] = color[1];
         pixel[2] = color[2];
-        pixel[3] = 255; // visible
+        pixel[3] = OPAQUE;
         }
       else
         {
         pixel[0] = 0;
         pixel[1] = 0;
         pixel[2] = 0;
-        pixel[3] = 0; // transparent
+        pixel[3] = TRANSPARENT;
         }
       }
     }
@@ -133,58 +134,86 @@ void KeepNonZeroVectors(vtkImageData* const image, vtkPolyData* output)
 }
 
 
-void MakeImageTransparent(vtkImageData* image)
+void MakeImageTransparent(vtkImageData* const image)
 {
   int dims[3];
   image->GetDimensions(dims);
+
+  if(image->GetNumberOfScalarComponents() < 4)
+    {
+    image->SetNumberOfScalarComponents(4);
+    image->AllocateScalars();
+    }
 
   for(int i = 0; i < dims[0]; ++i)
     {
     for(int j = 0; j < dims[1]; ++j)
       {
       unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(i,j,0));
-      pixel[3] = 0; // invisible
+      pixel[3] = TRANSPARENT;
       }
     }
   image->Modified();
 }
 
-void MakeValueTransparent(vtkImageData* const inputImage, vtkImageData* outputImage, const unsigned char value)
+void MakeValueTransparent(vtkImageData* const image, const unsigned char value[3])
 {
-  int dims[3];
-  inputImage->GetDimensions(dims);
+  if(image->GetScalarType() != VTK_UNSIGNED_CHAR)
+    {
+    throw std::runtime_error("Image must be unsigned char to set values to transparent!");
+    }
 
-  outputImage->SetScalarTypeToUnsignedChar();
-  outputImage->SetNumberOfScalarComponents(4);
-  outputImage->SetDimensions(dims);
-  outputImage->AllocateScalars();
+  vtkSmartPointer<vtkImageData> originalImage = vtkSmartPointer<vtkImageData>::New();
+  originalImage->DeepCopy(image);
+
+  int dims[3];
+  image->GetDimensions(dims);
+
+  unsigned int originalNumberOfComponents = image->GetNumberOfScalarComponents();
+  if(originalNumberOfComponents < 4)
+    {
+    image->SetNumberOfScalarComponents(4);
+    image->AllocateScalars();
+    }
 
   for(int i = 0; i < dims[0]; ++i)
     {
     for(int j = 0; j < dims[1]; ++j)
       {
-      unsigned char* inputPixel = static_cast<unsigned char*>(inputImage->GetScalarPointer(i,j,0));
-      unsigned char* outputPixel = static_cast<unsigned char*>(outputImage->GetScalarPointer(i,j,0));
+      unsigned char* pixel = static_cast<unsigned char*>(image->GetScalarPointer(i,j,0));
+      unsigned char* oldPixel = static_cast<unsigned char*>(originalImage->GetScalarPointer(i,j,0));
 
-      /*
-      outputPixel[0] = 0;
-      outputPixel[1] = inputPixel[0];
-      outputPixel[2] = 0;
-      */
-      outputPixel[0] = inputPixel[0];
-      outputPixel[1] = 0;
-      outputPixel[2] = 0;
-
-      if(inputPixel[0] == value)
+      // Fill all old channels with original values
+      for(unsigned int channel = 0; channel < originalNumberOfComponents; ++channel)
         {
-        outputPixel[3] = 0; // invisible
+        pixel[channel] = oldPixel[channel];
+        }
+
+      // Fill all new channels with 0
+      for(unsigned int channel = originalNumberOfComponents; channel < 3; ++channel)
+        {
+        pixel[channel] = 0;
+        }
+
+      bool setTransparent = false;
+      for(unsigned int channel = 0; channel < originalNumberOfComponents; ++channel)
+        {
+        if(pixel[channel] == value[channel])
+          {
+          setTransparent = true;
+          }
+        }
+
+      if(setTransparent)
+        {
+        pixel[3] = TRANSPARENT;
         }
       else
         {
-        outputPixel[3] = 255; // visible
+        pixel[3] = OPAQUE;
         }
-      }
-    }
+      } // end for j
+    } // end for i
 }
 
 

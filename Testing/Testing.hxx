@@ -18,8 +18,52 @@
 
 #include "itkImageRegionConstIterator.h"
 
+#include "Testing.h" // Make syntax parser happy
+
 namespace Testing
 {
+
+template<typename T>
+void OutputArray(const T* const a, const unsigned int length)
+{
+  for(unsigned int component = 0; component < length; ++component)
+    {
+    std::cout << static_cast<float>(a[component]) << " ";
+    }
+}
+
+template<typename T>
+std::string ArrayString(const T* const a, const unsigned int length)
+{
+  std::stringstream ss;
+  ss << "(";
+  for(unsigned int component = 0; component < length; ++component)
+    {
+    ss << static_cast<float>(a[component]);
+    if(component != length - 1)
+      {
+      ss << ", ";
+      }
+    else
+      {
+      ss << ")";
+      }
+    }
+  return ss.str();
+}
+
+template<typename T>
+bool ArraysEqual(const T* const a, const T* const b, const unsigned int length, const float epsilon = 1e-6)
+{
+  for(unsigned int component = 0; component < 3; ++component)
+    {
+    if(!ValuesEqual(a[component], b[component]))
+      {
+      return false;
+      }
+    }
+  return true;
+}
 
 template<typename T>
 bool VectorsEqual(const std::vector<T>& a, const std::vector<T>& b)

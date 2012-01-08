@@ -11,6 +11,7 @@ NamedVTKImage FindImageByName(const std::vector<NamedVTKImage>& namedImages, con
       return namedImages[i];
       }
     }
-  std::cerr << "No image named " << imageName << " found!" << std::endl;
-  exit(-1);
+  std::stringstream ss;
+  ss << "No image named " << imageName << " found!";
+  throw std::runtime_error(ss.str());
 }

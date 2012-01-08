@@ -44,8 +44,7 @@ int main( int argc, char** argv )
 
     if(!imageFileNameProvided || !maskFileNameProvided)
       {
-      std::cerr << "Must provide at least an image and a mask!" << std::endl;
-      exit(-1);
+      throw std::runtime_error("Must provide at least an image and a mask!");
       }
 
     bool enterLeave;

@@ -23,6 +23,8 @@
 #include "Mask.h"
 #include "MaskOperations.h"
 
+#include <stdexcept>
+
 void NamedITKImageCollection::CopySelfPatchIntoHoleOfTargetRegion(const Mask* mask, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
 {
   for(unsigned int imageId = 0; imageId < this->size(); ++imageId)
@@ -71,11 +73,12 @@ NamedITKImage NamedITKImageCollection::FindImageByName(const std::string& imageN
 {
   for(unsigned int i = 0; i < this->size(); ++i)
     {
-    if(Helpers::StringsMatch((*this)[i].Name, imageName))
+    if((*this)[i].Name == imageName)
       {
       return (*this)[i];
       }
     }
-  std::cerr << "No image named " << imageName << " found!" << std::endl;
-  exit(-1);
+  std::stringstream ss;
+  ss << "No image named " << imageName << " found!";
+  throw std::runtime_error(ss.str());
 }
