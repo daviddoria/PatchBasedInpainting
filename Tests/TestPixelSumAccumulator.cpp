@@ -124,41 +124,44 @@ void TestVector()
   FloatVectorImageType::Pointer image = FloatVectorImageType::New();
   Testing::GetBlankImage(image.GetPointer(), dimension);
   PixelSumAccumulator<FloatVectorImageType::PixelType> pixelSumAccumulator;
+  FloatVectorImageType::PixelType representativePixel(dimension);
+  pixelSumAccumulator.Initialize(representativePixel);
   patch.VisitAllPixels<FloatVectorImageType>(image, pixelSumAccumulator);
 
   // Test blank image sum
   {
   FloatVectorImageType::PixelType pixelSum = pixelSumAccumulator.GetSum();
   FloatVectorImageType::PixelType expectedSum(dimension);
-  expectedSum.Fill = 0;
+  expectedSum.Fill(0);
   if(pixelSum != expectedSum)
     {
     std::stringstream ss;
-    ss << "Blank image sum should be " << expectedSum << " but it is " << pixelSum;
+    ss << "Vector - Blank image sum should be " << expectedSum << " but it is " << pixelSum;
     throw std::runtime_error(ss.str());
     }
   }
 
   // Test constant image sum
+  const unsigned int constantScalar = 6;
+  FloatVectorImageType::PixelType constantVector(dimension);
+  constantVector.Fill(constantScalar);
   {
-  const unsigned int constantValue = 6;
-  ITKHelpers::SetImageToConstant(image.GetPointer(), constantValue);
+  ITKHelpers::SetImageToConstant(image.GetPointer(), constantVector);
   pixelSumAccumulator.Clear();
   patch.VisitAllPixels<FloatVectorImageType>(image, pixelSumAccumulator);
   FloatVectorImageType::PixelType pixelSum = pixelSumAccumulator.GetSum();
-  FloatVectorImageType::PixelType expectedSum(dimension) = constantValue * size[0] * size[1];
+  FloatVectorImageType::PixelType expectedSum(dimension);
+  expectedSum.Fill(constantScalar * size[0] * size[1]);
   if(pixelSum != expectedSum)
     {
     std::stringstream ss;
-    ss << "Constant image sum should be " << expectedSum << " but it is " << pixelSum;
+    ss << "Vector - Constant image sum should be " << expectedSum << " but it is " << pixelSum;
     throw std::runtime_error(ss.str());
     }
   }
 
   // Test masked constant image sum
   {
-  const unsigned int constantValue = 6;
-
   itk::Index<2> centerPatchCorner;
   centerPatchCorner.Fill(Testing::TestImageSize/2 - patchRadius);
 
@@ -169,15 +172,15 @@ void TestVector()
   Mask::Pointer mask = Mask::New();
   Testing::GetHalfValidMask(mask.GetPointer());
 
-  ITKHelpers::SetImageToConstant(image.GetPointer(), constantValue);
   pixelSumAccumulator.Clear();
   centerPatch.VisitAllValidPixels<FloatVectorImageType>(image, mask, pixelSumAccumulator);
   FloatVectorImageType::PixelType pixelSum = pixelSumAccumulator.GetSum();
-  FloatVectorImageType::PixelType expectedSum = constantValue * size[1] * (size[0] / 2);
+  FloatVectorImageType::PixelType expectedSum(dimension);
+  expectedSum.Fill(constantScalar * size[1] * (size[0] / 2));
   if(pixelSum != expectedSum)
     {
     std::stringstream ss;
-    ss << "Masked sum should be " << expectedSum << " but it is " << pixelSum;
+    ss << "Vector - Masked sum should be " << expectedSum << " but it is " << pixelSum;
     throw std::runtime_error(ss.str());
     }
 

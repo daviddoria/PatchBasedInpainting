@@ -26,7 +26,9 @@ class PixelSumAccumulator : public PixelVisitor<TPixel>
 {
 public:
 
+  // If TPixel is a POD, this initialization is enough. If TPixel is a itkVariableLengthVector, Initialize() must be called to set the length of the Sum vector.
   PixelSumAccumulator() : Sum(0) {}
+
   void Visit(const TPixel &pixel)
   {
     this->Sum += pixel;
@@ -39,7 +41,14 @@ public:
 
   void Clear()
   {
-    //this->Sum = TPixel::Zero;
+    this->Sum = 0; // This calls .Fill(0) if TPixel is an itkVariableLengthVector
+  }
+
+  void Initialize(const TPixel& pixel)
+  {
+    // If TPixel is a POD type, this does nothing different than the default constructor. If TPixel is an itkVariableLengthVector
+    // This initializes its length (which must be done before operator+() calls make sense.
+    this->Sum = pixel;
     this->Sum = 0;
   }
 
