@@ -20,6 +20,8 @@
 
 #include <cmath>
 
+#include "itkImageRegionIteratorWithIndex.h"
+
 namespace Testing
 {
 
@@ -32,19 +34,48 @@ bool ValuesEqual(const float a, const float b, const float epsilon)
   return false;
 }
 
-void GetMask(Mask* const mask)
+void GetFullyValidMask(Mask* const mask)
 {
   // This function produces a fully valid mask.
   itk::Index<2> corner;
   corner.Fill(0);
 
   itk::Size<2> size;
-  size.Fill(100);
+  size.Fill(TestImageSize);
 
   itk::ImageRegion<2> region(corner,size);
   mask->SetRegions(region);
   mask->Allocate();
   mask->FillBuffer(mask->GetValidValue());
+}
+
+void GetHalfValidMask(Mask* const mask)
+{
+  // This function produces a fully valid mask.
+  itk::Index<2> corner;
+  corner.Fill(0);
+
+  itk::Size<2> size;
+  size.Fill(TestImageSize);
+
+  itk::ImageRegion<2> region(corner,size);
+  mask->SetRegions(region);
+  mask->Allocate();
+  itk::ImageRegionIteratorWithIndex<Mask> iterator(mask, mask->GetLargestPossibleRegion());
+
+  while(!iterator.IsAtEnd())
+    {
+    if(iterator.GetIndex()[0] < TestImageSize/2)
+      {
+      iterator.Set(mask->GetValidValue());
+      }
+    else
+      {
+      iterator.Set(mask->GetHoleValue());
+      }
+    ++iterator;
+    }
+
 }
 
 } // end namespace

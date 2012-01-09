@@ -16,22 +16,36 @@
  *
  *=========================================================================*/
 
-#include "PriorityFactory.h"
-#include "Priority.h"
-#include "Mask.h"
-#include "Testing.h"
+#ifndef PixelSumAccumulator_H
+#define PixelSumAccumulator_H
 
-int main()
+#include "PixelVisitor.h"
+
+template <typename TPixel>
+class PixelSumAccumulator : public PixelVisitor<TPixel>
 {
-  FloatVectorImageType::Pointer image = FloatVectorImageType::New();
-  Testing::GetBlankImage(image.GetPointer(), 3);
+public:
 
-  Mask::Pointer mask = Mask::New();
-  Testing::GetFullyValidMask(mask.GetPointer());
+  PixelSumAccumulator() : Sum(0) {}
+  void Visit(const TPixel &pixel)
+  {
+    this->Sum += pixel;
+  }
 
-  const unsigned int patchRadius = 5;
-  Priority<FloatVectorImageType>* priority = PriorityFactory<FloatVectorImageType>::Create(PriorityFactory<FloatVectorImageType>::RANDOM, image, mask, patchRadius);
-  std::vector<std::string> imageNames = PriorityFactory<FloatVectorImageType>::GetImageNames(PriorityFactory<FloatVectorImageType>::RANDOM);
+  TPixel GetSum()
+  {
+    return this->Sum;
+  }
 
-  return EXIT_SUCCESS;
-}
+  void Clear()
+  {
+    //this->Sum = TPixel::Zero;
+    this->Sum = 0;
+  }
+
+private:
+
+  TPixel Sum;
+};
+
+#endif

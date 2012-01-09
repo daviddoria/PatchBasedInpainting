@@ -20,6 +20,9 @@
 #define PATCH_H
 
 #include "Types.h"
+#include "PixelVisitor.h"
+
+class Mask;
 
 struct Patch
 {
@@ -38,14 +41,19 @@ public:
   bool operator<(const Patch &other) const;
 
   friend std::ostream& operator<<(std::ostream& output,  const Patch& patch);
+
+  template <typename TImage>
+  void VisitAllPixels(const TImage* const image, PixelVisitor<typename TImage::PixelType> &visitor);
+
+  template <typename TImage>
+  void VisitAllValidPixels(const TImage* const image, const Mask* const mask, PixelVisitor<typename TImage::PixelType> &visitor);
+
 private:
   // The region in the image defining the patch.
   itk::ImageRegion<2> Region;
 
-  //float SortValue; // This simply allows patches to be sorted by any criterion currently being evaluated.
-  //unsigned int Id; // This is used for parallel sorting of patches.
 };
 
-//bool SortBySortValue(const Patch& patch1, const Patch& patch2);
+#include "Patch.hxx"
 
 #endif

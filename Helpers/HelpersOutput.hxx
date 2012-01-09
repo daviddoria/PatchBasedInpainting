@@ -30,7 +30,7 @@ namespace HelpersOutput
 {
 
 template <typename TImage>
-void WriteSequentialImage(const TImage* image, const std::string& filePrefix, const unsigned int iteration)
+void WriteSequentialImage(const TImage* const image, const std::string& filePrefix, const unsigned int iteration)
 {
   std::string fileName = Helpers::GetSequentialFileName(filePrefix, iteration, "mha");
 
@@ -38,25 +38,17 @@ void WriteSequentialImage(const TImage* image, const std::string& filePrefix, co
 }
 
 template <typename TImage>
-void WriteImageConditional(const TImage* image, const std::string& fileName, const bool condition)
+void WriteImageConditional(const TImage* const image, const std::string& fileName, const bool condition)
 {
-  try
-  {
   if(condition)
     {
     WriteImage<TImage>(image, fileName);
     }
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    //QDir().mkdir("Debug");
-    // Do nothing, just don't write the image. Catching this exception prevents the application from crashing by producing an unhandled exception.
-  }
 }
 
 
 template <class TImage>
-void WriteScaledScalarImage(const TImage* image, const std::string& filename)
+void WriteScaledScalarImage(const TImage* const image, const std::string& filename)
 {
 //   if(T::PixelType::Dimension > 1)
 //     {
@@ -80,7 +72,7 @@ void WriteScaledScalarImage(const TImage* image, const std::string& filename)
 
 
 template<typename TImage>
-void WriteImage(const TImage* image, const std::string& filename)
+void WriteImage(const TImage* const image, const std::string& filename)
 {
   // This is a convenience function so that images can be written in 1 line instead of 4.
   typename itk::ImageFileWriter<TImage>::Pointer writer = itk::ImageFileWriter<TImage>::New();
@@ -91,7 +83,7 @@ void WriteImage(const TImage* image, const std::string& filename)
 
 
 template<typename TImage>
-void WriteRGBImage(const TImage* input, const std::string& filename)
+void WriteRGBImage(const TImage* const input, const std::string& filename)
 {
   typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> RGBImageType;
 
@@ -121,20 +113,20 @@ void WriteRGBImage(const TImage* input, const std::string& filename)
 }
 
 template<typename TImage>
-void WritePatch(const TImage* image, const Patch& patch, const std::string& filename)
+void WritePatch(const TImage* const image, const Patch& patch, const std::string& filename)
 {
   WriteRegion<TImage>(image, patch.Region, filename);
 }
 
 template<typename TImage>
-void WriteMaskedPatch(const TImage* image, const Mask* mask, const Patch& patch, const std::string& filename)
+void WriteMaskedPatch(const TImage* const image, const Mask* mask, const Patch& patch, const std::string& filename)
 {
   WriteMaskedRegion<TImage>(image, mask, patch.Region, filename);
 }
 
 
 template<typename TImage>
-void WriteMaskedRegion(const TImage* image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename)
+void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename)
 {
   typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
   typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
@@ -177,7 +169,7 @@ void WriteMaskedRegion(const TImage* image, const Mask* mask, const itk::ImageRe
 
 
 template<typename TImage>
-void WriteRegion(const TImage* image, const itk::ImageRegion<2>& region, const std::string& filename)
+void WriteRegion(const TImage* const image, const itk::ImageRegion<2>& region, const std::string& filename)
 {
   //std::cout << "WriteRegion() " << filename << std::endl;
   //std::cout << "region " << region << std::endl;

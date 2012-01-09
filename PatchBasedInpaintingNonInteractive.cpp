@@ -17,7 +17,7 @@
  *=========================================================================*/
 
 // Custom
-#include "HelpersOutput.h"
+#include "Helpers/HelpersOutput.h"
 #include "PatchBasedInpainting.h"
 
 // ITK
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
   maskReader->SetFileName(maskFilename.c_str());
   maskReader->Update();
 
-  std::shared_ptr<PatchBasedInpainting> inpainting(new PatchBasedInpainting(imageReader->GetOutput(), maskReader->GetOutput()));
+  std::shared_ptr<PatchBasedInpainting<FloatVectorImageType> > inpainting(new PatchBasedInpainting<FloatVectorImageType>(imageReader->GetOutput(), maskReader->GetOutput()));
   inpainting->SetPatchRadius(patchRadius);
   inpainting->Initialize();
   inpainting->Inpaint();

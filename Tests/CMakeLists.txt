@@ -1,10 +1,15 @@
-include_directories(../ ../Testing)
+include_directories(../) # so we can access the headers normally (e.g. #include "Patch.h") from the tests
+include_directories(../Testing ../Helpers)
 
 #####################
 
 add_executable(TestPatch TestPatch.cpp ../Patch.cpp)
 target_link_libraries(TestPatch ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 add_test(TestPatch TestPatch)
+
+add_executable(TestPixelSumAccumulator TestPixelSumAccumulator.cpp ../Patch.cpp ../Mask.cpp)
+target_link_libraries(TestPixelSumAccumulator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
+add_test(TestPixelSumAccumulator TestPixelSumAccumulator)
 
 add_executable(TestPatchPair TestPatchPair.cpp ../Patch.cpp ../PatchPair.cpp ../PairDifferences.cpp)
 target_link_libraries(TestPatchPair ${VTK_LIBRARIES} ${ITK_LIBRARIES})

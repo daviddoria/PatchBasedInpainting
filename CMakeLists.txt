@@ -8,7 +8,7 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) #fix the dynamic linking error (RPAT
 # This is needed for shared_ptr and the trick using enable_if and if_fundamental to allow scalars to be treated as the 0th component of a vector.
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 FIND_PACKAGE(VTK REQUIRED)
 INCLUDE(${VTK_USE_FILE})
@@ -26,9 +26,11 @@ else ( QT4_FOUND )
   message ( "QT4 NOT found successfully." )
 endif ( QT4_FOUND )
 
-SET(BuildLibrary CACHE BOOL "Build the library.")
-if(BuildLibrary)
+if(BuildTests OR BuildInteractive OR BuildNonInteractive)
   add_subdirectory(Helpers)
+endif(BuildTests OR BuildInteractive OR BuildNonInteractive)
+
+if(BuildInteractive OR BuildNonInteractive)
   add_library(PatchBasedInpainting
   CandidatePairs.cpp
   DebugOutputs.cpp
@@ -75,14 +77,19 @@ endif()
 
 SET(BuildTests CACHE BOOL "Build tests.")
 if(BuildTests)
-  message ("Building tests.")
   ENABLE_TESTING()
-  add_subdirectory(Helpers)
   add_subdirectory(Testing)
   add_subdirectory(Tests)
   add_subdirectory(Helpers/Tests)
   add_subdirectory(Interactive/Tests)
 ENDIF(BuildTests)
+
+SET(BuildInteractiveTests CACHE BOOL "Build interactive tests.")
+if(BuildInteractiveTests)
+  ENABLE_TESTING()
+  add_subdirectory(Interactive/Tests)
+ENDIF(BuildInteractiveTests)
+
 
 SET(BuildDemos CACHE BOOL "Build demos.")
 if(BuildDemos)

@@ -56,12 +56,12 @@ void WriteImageData(vtkImageData* const imageData, const std::string& fileName)
 }
 
 
-void Write2DVectorImage(const FloatVector2ImageType* image, const std::string& filename)
+void Write2DVectorImage(const FloatVector2ImageType* const image, const std::string& filename)
 {
   Write2DVectorRegion(image, image->GetLargestPossibleRegion(), filename);
 }
 
-void Write2DVectorRegion(const FloatVector2ImageType* image, const itk::ImageRegion<2>& region, const std::string& filename)
+void Write2DVectorRegion(const FloatVector2ImageType* const image, const itk::ImageRegion<2>& region, const std::string& filename)
 {
   // This is a separate function than WriteRegion because Paraview requires vectors to b 3D to glyph them.
 
@@ -103,7 +103,7 @@ void Write2DVectorRegion(const FloatVector2ImageType* image, const itk::ImageReg
 }
 
 
-void WriteVectorImageAsRGB(const FloatVectorImageType* image, const std::string& fileName)
+void WriteVectorImageAsRGB(const FloatVectorImageType* const image, const std::string& fileName)
 {
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   ITKHelpers::VectorImageToRGBImage(image, rgbImage);

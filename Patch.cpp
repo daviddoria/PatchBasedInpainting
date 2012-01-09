@@ -18,6 +18,8 @@
 
 #include "Patch.h"
 
+#include "itkImageRegionConstIterator.h"
+
 Patch::Patch(const itk::ImageRegion<2>& region)
 {
   this->Region = region;

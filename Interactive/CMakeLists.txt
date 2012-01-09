@@ -36,4 +36,6 @@ ${UISrcs} ${MOCSrcs})
 TARGET_LINK_LIBRARIES(PatchBasedInpaintingInteractive PatchBasedInpainting libWidgets libModelView libHelpers ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
 INSTALL( TARGETS PatchBasedInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 
-add_subdirectory(Tests)
+if(BuildTests)
+  add_subdirectory(Tests)
+endif(BuildTests)

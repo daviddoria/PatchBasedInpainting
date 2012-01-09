@@ -75,8 +75,8 @@ void ScalarComparison()
   patchSize.Fill(10);
 
   Mask::Pointer mask = Mask::New();
-  Testing::GetMask(mask);
-  
+  Testing::GetFullyValidMask(mask);
+
   const unsigned int patchRadius = 5;
   SourcePatchCollection sourcePatchCollection(mask, patchRadius);
 

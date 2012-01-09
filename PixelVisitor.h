@@ -16,22 +16,14 @@
  *
  *=========================================================================*/
 
-#include "PriorityFactory.h"
-#include "Priority.h"
-#include "Mask.h"
-#include "Testing.h"
+#ifndef PixelVisitor_H
+#define PixelVisitor_H
 
-int main()
+template <typename TPixel>
+class PixelVisitor
 {
-  FloatVectorImageType::Pointer image = FloatVectorImageType::New();
-  Testing::GetBlankImage(image.GetPointer(), 3);
+public:
+  virtual void Visit(const TPixel& pixel) = 0;
+};
 
-  Mask::Pointer mask = Mask::New();
-  Testing::GetFullyValidMask(mask.GetPointer());
-
-  const unsigned int patchRadius = 5;
-  Priority<FloatVectorImageType>* priority = PriorityFactory<FloatVectorImageType>::Create(PriorityFactory<FloatVectorImageType>::RANDOM, image, mask, patchRadius);
-  std::vector<std::string> imageNames = PriorityFactory<FloatVectorImageType>::GetImageNames(PriorityFactory<FloatVectorImageType>::RANDOM);
-
-  return EXIT_SUCCESS;
-}
+#endif

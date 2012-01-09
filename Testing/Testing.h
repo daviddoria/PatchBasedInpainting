@@ -23,8 +23,15 @@
 
 namespace Testing
 {
+  static unsigned int TestImageSize = 100;
+
   bool ValuesEqual(const float a, const float b, const float epsilon = 1e-6);
 
+  void GetFullyValidMask(Mask* const mask);
+
+  void GetHalfValidMask(Mask* const mask);
+
+  // Function templates
   template<typename T>
   bool ArraysEqual(const T* const a, const T* const b, const unsigned int length, const float epsilon = 1e-6);
 
@@ -46,7 +53,6 @@ namespace Testing
   template<typename TImage>
   void GetBlankImage(TImage* const image, const unsigned int numberOfChannels);
 
-  void GetMask(Mask* const mask);
 
 } // end namespace
 

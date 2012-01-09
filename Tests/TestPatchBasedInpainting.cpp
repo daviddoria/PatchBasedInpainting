@@ -25,7 +25,7 @@ int main()
   Testing::GetBlankImage(image.GetPointer(), 3);
 
   Mask::Pointer mask = Mask::New();
-  Testing::GetMask(mask.GetPointer());
+  Testing::GetFullyValidMask(mask.GetPointer());
 
   PatchBasedInpainting<FloatVectorImageType>(image, mask);
   return EXIT_SUCCESS;

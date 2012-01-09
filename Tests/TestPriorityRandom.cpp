@@ -27,7 +27,7 @@ int main()
   Testing::GetBlankImage(image.GetPointer(), 3);
 
   Mask::Pointer mask = Mask::New();
-  Testing::GetMask(mask.GetPointer());
+  Testing::GetFullyValidMask(mask.GetPointer());
 
   unsigned int patchRadius = 5;
   PriorityRandom<FloatVectorImageType> priority(image, mask, patchRadius);
