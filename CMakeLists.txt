@@ -81,7 +81,6 @@ if(BuildTests)
   add_subdirectory(Testing)
   add_subdirectory(Tests)
   add_subdirectory(Helpers/Tests)
-  add_subdirectory(Interactive/Tests)
 ENDIF(BuildTests)
 
 SET(BuildInteractiveTests CACHE BOOL "Build interactive tests.")

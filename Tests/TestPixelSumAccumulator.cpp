@@ -25,12 +25,13 @@
 
 static void TestScalar();
 static void TestVector();
+static void TestOffsets();
 
 int main(int argc, char*argv[])
 {
   TestScalar();
   TestVector();
-  
+  TestOffsets();
 
   return EXIT_SUCCESS;
 }
@@ -57,7 +58,7 @@ void TestScalar()
   if(pixelSum != expectedSum)
     {
     std::stringstream ss;
-    ss << "Blank image sum should be " << expectedSum << " but it is " << pixelSum;
+    ss << "Scalar: Blank image sum should be " << expectedSum << " but it is " << pixelSum;
     throw std::runtime_error(ss.str());
     }
   }
@@ -73,7 +74,7 @@ void TestScalar()
   if(pixelSum != expectedSum)
     {
     std::stringstream ss;
-    ss << "Constant image sum should be " << expectedSum << " but it is " << pixelSum;
+    ss << "Scalar: Constant image sum should be " << expectedSum << " but it is " << pixelSum;
     throw std::runtime_error(ss.str());
     }
   }
@@ -100,7 +101,7 @@ void TestScalar()
   if(pixelSum != expectedSum)
     {
     std::stringstream ss;
-    ss << "Masked sum should be " << expectedSum << " but it is " << pixelSum;
+    ss << "Scalar: Masked sum should be " << expectedSum << " but it is " << pixelSum;
     throw std::runtime_error(ss.str());
     }
 
@@ -136,7 +137,7 @@ void TestVector()
   if(pixelSum != expectedSum)
     {
     std::stringstream ss;
-    ss << "Vector - Blank image sum should be " << expectedSum << " but it is " << pixelSum;
+    ss << "Vector: Blank image sum should be " << expectedSum << " but it is " << pixelSum;
     throw std::runtime_error(ss.str());
     }
   }
@@ -155,7 +156,7 @@ void TestVector()
   if(pixelSum != expectedSum)
     {
     std::stringstream ss;
-    ss << "Vector - Constant image sum should be " << expectedSum << " but it is " << pixelSum;
+    ss << "Vector: Constant image sum should be " << expectedSum << " but it is " << pixelSum;
     throw std::runtime_error(ss.str());
     }
   }
@@ -180,7 +181,7 @@ void TestVector()
   if(pixelSum != expectedSum)
     {
     std::stringstream ss;
-    ss << "Vector - Masked sum should be " << expectedSum << " but it is " << pixelSum;
+    ss << "Vector: Masked sum should be " << expectedSum << " but it is " << pixelSum;
     throw std::runtime_error(ss.str());
     }
 
@@ -188,4 +189,44 @@ void TestVector()
   centerPatch.VisitAllValidPixels(image.GetPointer(), mask.GetPointer(), pixelSumAccumulator);
 
   }
+}
+
+void TestOffsets()
+{
+  const unsigned int patchRadius = 5;
+  itk::Index<2> corner;
+  corner.Fill(0);
+  itk::Size<2> size;
+  size.Fill(patchRadius * 2 + 1);
+  itk::ImageRegion<2> region(corner,size);
+  Patch patch(region);
+
+  FloatScalarImageType::Pointer image = FloatScalarImageType::New();
+  Testing::GetBlankImage(image.GetPointer());
+
+  PixelSumAccumulator<FloatScalarImageType::PixelType> pixelSumAccumulator;
+  
+  std::vector<itk::Offset<2> > offsets;
+  itk::Offset<2> offset1;
+  offset1.Fill(0);
+  
+  itk::Offset<2> offset2;
+  offset2.Fill(1);
+  
+  offsets.push_back(offset1);
+  offsets.push_back(offset2);
+
+  const unsigned int constantValue = 6;
+  ITKHelpers::SetImageToConstant(image.GetPointer(), constantValue);
+
+  patch.VisitOffsets<FloatScalarImageType>(image, offsets, pixelSumAccumulator);
+
+  FloatScalarImageType::PixelType pixelSum = pixelSumAccumulator.GetSum();
+  FloatScalarImageType::PixelType expectedSum = constantValue * offsets.size();
+  if(pixelSum != expectedSum)
+    {
+    std::stringstream ss;
+    ss << "TestOffsets: Sum should be " << expectedSum << " but it is " << pixelSum;
+    throw std::runtime_error(ss.str());
+    }
 }

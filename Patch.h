@@ -48,6 +48,9 @@ public:
   template <typename TImage>
   void VisitAllValidPixels(const TImage* const image, const Mask* const mask, PixelVisitor<typename TImage::PixelType> &visitor);
 
+  template <typename TImage>
+  void VisitOffsets(const TImage* const image, const std::vector<itk::Offset<2> >& offsets, PixelVisitor<typename TImage::PixelType> &visitor);
+
 private:
   // The region in the image defining the patch.
   itk::ImageRegion<2> Region;

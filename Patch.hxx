@@ -48,3 +48,14 @@ void Patch::VisitAllValidPixels(const TImage* const image, const Mask* const mas
     ++imageIterator;
     }
 }
+
+template <typename TImage>
+void Patch::VisitOffsets(const TImage* const image, const std::vector<itk::Offset<2> >& offsets, PixelVisitor<typename TImage::PixelType> &visitor)
+{
+  itk::Index<2> corner = this->Region.GetIndex();
+
+  for(unsigned int offsetId = 0; offsetId < offsets.size(); ++offsetId)
+    {
+    visitor.Visit(image->GetPixel(corner + offsets[offsetId]));
+    }
+}
