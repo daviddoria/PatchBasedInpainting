@@ -2,11 +2,22 @@
 
 #include "Helpers/Helpers.h"
 
-NamedVTKImage FindImageByName(const std::vector<NamedVTKImage>& namedImages, const std::string& imageName)
+NamedVTKImage::NamedVTKImage() : ImageData(NULL), Name("Unnamed"), DisplayType(SCALARS)
+{
+
+}
+
+NamedVTKImage::NamedVTKImage(vtkImageData* const imageData, const std::string& imageName, const ImageDisplayTypeEnum displayType) :
+ImageData(imageData), Name(imageName), DisplayType(displayType)
+{
+
+}
+
+NamedVTKImage NamedVTKImage::FindImageByName(const std::vector<NamedVTKImage>& namedImages, const std::string& imageName)
 {
   for(unsigned int i = 0; i < namedImages.size(); ++i)
     {
-    if(Helpers::StringsMatch(namedImages[i].Name, imageName))
+    if(namedImages[i].Name == imageName)
       {
       return namedImages[i];
       }

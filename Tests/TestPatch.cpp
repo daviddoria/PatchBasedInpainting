@@ -24,6 +24,8 @@ static void TestConstructor();
 
 int main(int argc, char*argv[])
 {
+  TestConstructor();
+
   // Create a patch
   itk::Index<2> corner0;
   corner0.Fill(0);
@@ -93,5 +95,5 @@ int main(int argc, char*argv[])
 
 void TestConstructor()
 {
-
+  throw;
 }

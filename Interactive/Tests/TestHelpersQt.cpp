@@ -18,37 +18,105 @@
 
 #include "HelpersQt.h"
 
+#include "Testing.h"
+
+static void TestQColorToUCharColor();
+static void TestGetColumnIdByHeader();
+static void TestFitToGraphicsView();
+static void TestGetQImage();
+static void TestGetQImageColor();
+static void TestGetQImageMagnitude();
+static void TestGetQImageScalar();
+static void TestGetQImageMasked();
+
 int main(int argc, char*argv[])
 {
+  TestQColorToUCharColor();
+  TestGetColumnIdByHeader();
+  TestFitToGraphicsView();
+  TestGetQImage();
+  TestGetQImageColor();
+  TestGetQImageMagnitude();
+  TestGetQImageScalar();
+  TestGetQImageMasked();
 
-// // Convert a QColor to an unsigned char[3]
-// void QColorToUCharColor(const QColor& color, unsigned char outputColor[3]);
-// 
+  return EXIT_SUCCESS;
+}
+
+void TestQColorToUCharColor()
+{
+  QColor qcolor;
+  qcolor.setRed(1);
+  qcolor.setGreen(2);
+  qcolor.setBlue(3);
+
+  unsigned char correctColorArray[3] = {1,2,3};
+  unsigned char retrievedColorArray[3];
+
+  HelpersQt::QColorToUCharColor(qcolor, retrievedColorArray);
+
+  if(!Testing::ArraysEqual(correctColorArray, retrievedColorArray, 3))
+    {
+    
+    }
+}
+
+void TestGetColumnIdByHeader()
+{
+
+
 // // Get a columns location in the table based on its header string
 // bool GetColumnIdByHeader(const QTableWidget* table, const std::string& header, int& columnId);
-// 
+//
+}
+
+void TestFitToGraphicsView()
+{
+
 // // Scale an image so that it fits in a QGraphicsView
 // QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx);
-// 
+//
+}
+
+void TestGetQImage()
+{
+
 // ////////////////////////////////////
 // ///////// Function templates (defined in HelpersQt.hxx) /////////
 // ////////////////////////////////////
 // template <typename TImage>
 // QImage GetQImage(const TImage* image, const itk::ImageRegion<2>& region, const DisplayStyle& style);
-// 
+
+}
+
+void TestGetQImageColor()
+{
+//
 // template <typename TImage>
 // QImage GetQImageColor(const TImage* image, const itk::ImageRegion<2>& region);
-// 
+
+}
+
+void TestGetQImageMagnitude()
+{
+//
 // template <typename TImage>
 // QImage GetQImageMagnitude(const TImage* image, const itk::ImageRegion<2>& region);
-// 
+
+}
+
+void TestGetQImageScalar()
+{
+//
 // template <typename TImage>
 // QImage GetQImageScalar(const TImage* image, const itk::ImageRegion<2>& region);
-// 
+
+}
+
+void TestGetQImageMasked()
+{
+//
 // template <typename TImage>
 // QImage GetQImageMasked(const TImage* image, const Mask::Pointer mask, const itk::ImageRegion<2>& region);
 
-  throw;
-
-  return EXIT_SUCCESS;
 }

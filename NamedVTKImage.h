@@ -29,12 +29,16 @@
 
 struct NamedVTKImage
 {
-  NamedVTKImage() : Vectors(false), Name("Unnamed"), ImageData(NULL) {}
-  bool Vectors; // Should the image be displayed as vectors (little lines) vs scalars (pixels).
-  std::string Name;
-  vtkSmartPointer<vtkImageData> ImageData;
-};
+  enum ImageDisplayTypeEnum {SCALARS, VECTORS};
 
-NamedVTKImage FindImageByName(const std::vector<NamedVTKImage>&, const std::string&);
+  NamedVTKImage();
+  NamedVTKImage(vtkImageData* const imageData, const std::string& imageName, const ImageDisplayTypeEnum displayType);
+
+  vtkSmartPointer<vtkImageData> ImageData;
+  std::string Name;
+  ImageDisplayTypeEnum DisplayType; // Should the image be displayed as vectors (little lines) vs scalars (pixels).
+
+  static NamedVTKImage FindImageByName(const std::vector<NamedVTKImage>&, const std::string&);
+};
 
 #endif

@@ -19,14 +19,21 @@
 #include "DisplayStyle.h"
 
 #include <iostream>
+#include <stdexcept>
 
 int main(int argc, char*argv[])
 {
-//   DisplayStyle() : Channel(0), Style(COLOR) {}
-//   enum DisplayStyleEnum{COLOR, MAGNITUDE, CHANNEL};
-//   unsigned int Channel;
-//   DisplayStyleEnum Style;
-  throw;
+  DisplayStyle displayStyle;
+
+  if(displayStyle.Channel != 0)
+    {
+    throw std::runtime_error("Channel initialized incorrectly!");
+    }
+
+  if(displayStyle.Style != DisplayStyle::COLOR)
+    {
+    throw std::runtime_error("Style initialized incorrectly!");
+    }
 
   return EXIT_SUCCESS;
 }

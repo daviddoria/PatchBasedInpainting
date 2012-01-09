@@ -17,14 +17,22 @@
  *=========================================================================*/
 
 #include "ITKImageCollection.h"
+#include "Mask.h"
 
-static void
+static void TestCopySelfPatchIntoHoleOfTargetRegion();
 
 int main(int argc, char*argv[])
 {
-  // Apply Helpers::CopySelfPatchIntoHoleOfTargetRegion to all images in the collection.
-  // void CopySelfPatchIntoHoleOfTargetRegion(const Mask* mask, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
-
-  throw;
+  TestCopySelfPatchIntoHoleOfTargetRegion();
   return EXIT_SUCCESS;
 };
+
+void TestCopySelfPatchIntoHoleOfTargetRegion()
+{
+  ITKImageCollection imageCollection;
+  Mask::Pointer mask = Mask::New();
+  itk::ImageRegion<2> sourceRegion;
+  itk::ImageRegion<2> targetRegion;
+  imageCollection.CopySelfPatchIntoHoleOfTargetRegion(mask, sourceRegion, targetRegion);
+  throw;
+}

@@ -26,25 +26,66 @@
 #include <QColor>
 #include <QGraphicsView>
 
+static void TestVisibility();
+static void TestGetRegion();
+static void TestConstructors();
+
 int main(int argc, char*argv[])
+{
+  TestVisibility();
+  TestGetRegion();
+  TestConstructors();
+
+  return EXIT_SUCCESS;
+}
+
+void TestConstructors()
 {
   const unsigned int radius = 5;
   vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
 
   QGraphicsView* view = new QGraphicsView;
+
+  // Default color
+  MovablePatch movablePatchDefaultColor(radius, renderer, view);
+
+  // Specified color
   QColor color;
-  MovablePatch patch1(radius, renderer, view, color);
-  MovablePatch patch2(radius, renderer, view);
-/*
-  void SetVisibility(const bool);
-  bool GetVisibility();
+  MovablePatch movablePatchSpecifiedColor(radius, renderer, view, color);
 
-  // The ITK region describing the position of the patch.
-  itk::ImageRegion<2> GetRegion();
+}
 
-  void Display();*/
+void TestVisibility()
+{
+  vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
+  QGraphicsView* view = new QGraphicsView;
+  const unsigned int radius = 5;
+  MovablePatch movablePatch(radius, renderer, view);
 
-  throw;
+  movablePatch.SetVisibility(false);
+  if(movablePatch.GetVisibility() != false)
+    {
+    throw std::runtime_error("Visibility set or retrieved incorrectly!");
+    }
+}
 
-  return EXIT_SUCCESS;
+void TestGetRegion()
+{
+  vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
+  QGraphicsView* view = new QGraphicsView;
+  const unsigned int radius = 5;
+  MovablePatch movablePatch(radius, renderer, view);
+
+  itk::ImageRegion<2> retrievedRegion = movablePatch.GetRegion();
+  itk::Index<2> correctIndex;
+  correctIndex.Fill(0);
+  itk::Size<2> correctSize;
+  itk::ImageRegion<2> correctRegion(correctIndex, correctSize);
+
+  if(retrievedRegion != correctRegion)
+    {
+    std::stringstream ss;
+    ss << "Region retrieved as " << retrievedRegion << " but is supposed to be " << correctRegion;
+    throw std::runtime_error(ss.str());
+    }
 }

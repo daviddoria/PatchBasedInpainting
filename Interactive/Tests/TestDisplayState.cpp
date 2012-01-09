@@ -19,13 +19,26 @@
 #include "DisplayState.h"
 
 #include <iostream>
+#include <stdexcept>
 
 int main(int argc, char*argv[])
 {
-//   unsigned int Iteration;
-//   unsigned int ForwardLookId;
-//   unsigned int SourcePatchId;
-  throw;
+  DisplayState displayState;
+
+  if(displayState.Iteration != 0)
+    {
+    throw std::runtime_error("Iteration initialized incorrectly!");
+    }
+
+  if(displayState.ForwardLookId != 0)
+    {
+    throw std::runtime_error("ForwardLookId initialized incorrectly!");
+    }
+
+  if(displayState.SourcePatchId != 0)
+    {
+    throw std::runtime_error("SourcePatchId initialized incorrectly!");
+    }
 
   return EXIT_SUCCESS;
 }

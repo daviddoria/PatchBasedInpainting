@@ -1,4 +1,4 @@
-#include_directories(../ ../../ ../../Testing)
+include_directories(../ ../../ ../../Testing)
 
 add_executable(TestCanvas TestCanvas.cpp)
 target_link_libraries(TestCanvas)
@@ -8,7 +8,7 @@ add_executable(TestColorPalette TestColorPalette.cpp)
 target_link_libraries(TestColorPalette)
 add_test(TestColorPalette TestColorPalette)
 
-add_executable(TestDisplayState TestDisplayState.cpp)
+add_executable(TestDisplayState TestDisplayState.cpp ../DisplayState.cpp)
 target_link_libraries(TestDisplayState)
 add_test(TestDisplayState TestDisplayState)
 
@@ -16,8 +16,8 @@ add_executable(TestDisplayStyle TestDisplayStyle.cpp)
 target_link_libraries(TestDisplayStyle)
 add_test(TestDisplayStyle TestDisplayStyle)
 
-add_executable(TestHelpersQt TestHelpersQt.cpp)
-target_link_libraries(TestHelpersQt ${ITK_LIBRARIES})
+add_executable(TestHelpersQt TestHelpersQt.cpp ../HelpersQt.cpp)
+target_link_libraries(TestHelpersQt ${ITK_LIBRARIES} ${QT_LIBRARIES} libTesting)
 add_test(TestHelpersQt TestHelpersQt)
 
 add_executable(TestImageCamera TestImageCamera.cpp)

@@ -18,16 +18,49 @@
 
 #include "NamedVTKImage.h"
 
-static void
+#include <stdexcept>
+
+static void TestFindImageByName();
+static void TestConstructor();
 
 int main(int argc, char*argv[])
 {
+  TestConstructor();
+  TestFindImageByName();
 
-//   NamedVTKImage() : Vectors(false), Name("Unnamed"), ImageData(NULL) {}
-//   bool Vectors; // Should the image be displayed as vectors (little lines) vs scalars (pixels).
-//   std::string Name;
-//   vtkSmartPointer<vtkImageData> ImageData;
-  //NamedVTKImage FindImageByName(const std::vector<NamedVTKImage>&, const std::string&);
-  throw;
   return EXIT_SUCCESS;
 };
+
+void TestConstructor()
+{
+  NamedVTKImage namedVTKImage;
+
+  if(namedVTKImage.DisplayType != NamedVTKImage::SCALARS)
+    {
+    throw std::runtime_error("DisplayType not initialized correctly!");
+    }
+
+  if(namedVTKImage.Name != "Unnamed")
+    {
+    throw std::runtime_error("Name not initialized correctly!");
+    }
+
+  if(namedVTKImage.ImageData != NULL)
+    {
+    throw std::runtime_error("ImageData not initialized correctly!");
+    }
+
+}
+
+void TestFindImageByName()
+{
+  NamedVTKImage namedImage1(NULL, "Image1", NamedVTKImage::SCALARS);
+  NamedVTKImage namedImage2(NULL, "Image2", NamedVTKImage::SCALARS);
+
+  std::vector<NamedVTKImage> namedImages;
+  namedImages.push_back(namedImage1);
+  namedImages.push_back(namedImage2);
+
+  NamedVTKImage retrievedImage = NamedVTKImage::FindImageByName(namedImages, "Image1");
+  throw;
+}
