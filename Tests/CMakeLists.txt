@@ -32,6 +32,10 @@ add_executable(TestSourcePatchCollection TestSourcePatchCollection.cpp ../Source
 target_link_libraries(TestSourcePatchCollection ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
 add_test(TestSourcePatchCollection TestSourcePatchCollection)
 
+add_executable(TestPixelPairDifferenceSum TestPixelPairDifferenceSum.cpp ../Patch.cpp ../PatchPair.cpp ../Mask.cpp ../PairDifferences.cpp)
+target_link_libraries(TestPixelPairDifferenceSum ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
+add_test(TestPixelPairDifferenceSum TestPixelPairDifferenceSum)
+
 add_executable(TestPixelDifferences TestPixelDifferences.cpp)
 target_link_libraries(TestPixelDifferences ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
 add_test(TestPixelDifferences TestPixelDifferences)

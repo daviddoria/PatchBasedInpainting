@@ -16,9 +16,10 @@
  *
  *=========================================================================*/
 
-#include "itkImageRegionConstIterator.h"
-
 #include "Testing.h" // Make syntax parser happy
+
+#include "itkImageRegionConstIterator.h"
+#include "itkImageRegionIterator.h"
 
 namespace Testing
 {
@@ -93,10 +94,9 @@ bool ImagesEqual(const TImage* const image1, const TImage* const image2)
   itk::ImageRegionConstIterator<TImage> iterator2(image2, image2->GetLargestPossibleRegion());
   while(!iterator1.IsAtEnd())
     {
-    // We should not compute derivatives for pixels in the hole.
     if(iterator1.Get() != iterator2.Get())
       {
-      std::cout << "image 1 pixel: " << iterator1.Get() << " image 2 pixel: " << iterator2.Get() << std::endl;
+      //std::cerr << "image 1 pixel: " << iterator1.Get() << " image 2 pixel: " << iterator2.Get() << std::endl;
       return false;
       }
     ++iterator1;
@@ -139,6 +139,24 @@ void GetBlankImage(TImage* image, const unsigned int numberOfComponents)
   image->FillBuffer(v);
 }
 
+template<typename TImage>
+void GetHalfConstantImage(TImage* const image, const typename TImage::PixelType& leftSideConstant, const typename TImage::PixelType& rightSideConstant)
+{
+  GetBlankImage(image);
+  itk::ImageRegionIterator<TImage> iterator(image, image->GetLargestPossibleRegion());
+  while(!iterator.IsAtEnd())
+    {
+    if(static_cast<unsigned int>(iterator.GetIndex()[0]) < TestImageSize/2)
+      {
+      iterator.Set(leftSideConstant);
+      }
+    else
+      {
+      iterator.Set(rightSideConstant);
+      }
 
+    ++iterator;
+    }
+}
 
 }// end namespace

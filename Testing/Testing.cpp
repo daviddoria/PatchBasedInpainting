@@ -65,7 +65,7 @@ void GetHalfValidMask(Mask* const mask)
 
   while(!iterator.IsAtEnd())
     {
-    if(iterator.GetIndex()[0] < TestImageSize/2)
+    if(static_cast<unsigned int>(iterator.GetIndex()[0]) < TestImageSize/2)
       {
       iterator.Set(mask->GetValidValue());
       }

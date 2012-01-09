@@ -51,6 +51,9 @@ namespace Testing
   void GetBlankImage(TImage* const image);
 
   template<typename TImage>
+  void GetHalfConstantImage(TImage* const image, const typename TImage::PixelType& leftSideConstant, const typename TImage::PixelType& rightSideConstant);
+
+  template<typename TImage>
   void GetBlankImage(TImage* const image, const unsigned int numberOfChannels);
 
 

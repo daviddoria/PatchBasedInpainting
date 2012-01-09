@@ -21,6 +21,7 @@
 
 #include "PairDifferences.h"
 #include "Patch.h"
+#include "PixelPairVisitor.h"
 
 #include <memory>
 
@@ -40,6 +41,15 @@ public:
   PairDifferences& GetDifferences();
   const PairDifferences& GetDifferences() const;
 
+  template <typename TImage>
+  void VisitAllPixels(const TImage* const image, PixelPairVisitor<typename TImage::PixelType> &visitor);
+
+  template <typename TImage>
+  void VisitAllValidPixels(const TImage* const image, const Mask* const mask, PixelPairVisitor<typename TImage::PixelType> &visitor);
+
+  template <typename TImage>
+  void VisitOffsets(const TImage* const image, const std::vector<itk::Offset<2> >& offsets, PixelPairVisitor<typename TImage::PixelType> &visitor);
+
 private:
   PairDifferences Differences;
   const Patch* const SourcePatch; // This is a pointer to a patch in the main (only) SourcePatchCollection.
@@ -55,5 +65,7 @@ struct PairSortFunctor
 
   PairDifferences::PatchDifferenceTypes SortBy;
 };
+
+#include "PatchPair.hxx"
 
 #endif
