@@ -16,27 +16,9 @@
  *
  *=========================================================================*/
 
-#include "InpaintingIterationRecord.h"
-
-int main(int argc, char*argv[])
+#include "Image.h" // appease syntax parser
+template <typename TPixel>
+Image<TPixel>::Image()
 {
-   InpaintingIterationRecord record;
-// 
-//   // Store the sets of pairs that were considered.
-//   std::vector<CandidatePairs> PotentialPairSets;
-// 
-//   // Store the pairs of patches that were actually used.
-//   PatchPair* UsedPatchPair;
-// 
-//   void AddImage(NamedITKImage&, const bool display = false);
-// 
-//   NamedITKImage GetImage(const unsigned int) const;
-//   NamedITKImage GetImageByName(const std::string&) const;
-//   unsigned int GetNumberOfImages() const;
-// 
-//   bool IsDisplayed(const unsigned int) const;
-//   void SetDisplayed(const unsigned int, const bool displayed);
-  throw;
 
-  return EXIT_SUCCESS;
 }

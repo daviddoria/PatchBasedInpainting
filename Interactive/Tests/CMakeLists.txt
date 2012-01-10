@@ -1,8 +1,10 @@
-include_directories(../ ../../ ../../Testing)
+include_directories(../) # The Interactive directory
+include_directories(../../) # The main PatchBasedInpainting}directory
+include_directories(../../Testing)
 
-add_executable(TestCanvas TestCanvas.cpp)
-target_link_libraries(TestCanvas)
-add_test(TestCanvas TestCanvas)
+add_executable(TestInpaintingIterationRecordViewer TestInpaintingIterationRecordViewer.cpp)
+target_link_libraries(TestInpaintingIterationRecordViewer)
+add_test(TestInpaintingIterationRecordViewer TestInpaintingIterationRecordViewer)
 
 add_executable(TestColorPalette TestColorPalette.cpp)
 target_link_libraries(TestColorPalette)

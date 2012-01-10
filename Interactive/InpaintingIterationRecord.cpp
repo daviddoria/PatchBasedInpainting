@@ -23,15 +23,20 @@ InpaintingIterationRecord::InpaintingIterationRecord()
 
 }
 
-void InpaintingIterationRecord::SetDisplayed(const unsigned int imageId, const bool displayed)
+NamedITKImageCollection& InpaintingIterationRecord::GetImages()
 {
-  this->Display[imageId] = displayed;
+  return this->Images;
 }
 
-bool InpaintingIterationRecord::IsDisplayed(const unsigned int imageId) const
-{
-  return this->Display[imageId];
-}
+// void InpaintingIterationRecord::SetDisplayed(const unsigned int imageId, const bool displayed)
+// {
+//   this->Display[imageId] = displayed;
+// }
+// 
+// bool InpaintingIterationRecord::IsDisplayed(const unsigned int imageId) const
+// {
+//   return this->Display[imageId];
+// }
 
 void InpaintingIterationRecord::AddImage(const NamedITKImage& namedImage, const bool display)
 {
@@ -39,17 +44,17 @@ void InpaintingIterationRecord::AddImage(const NamedITKImage& namedImage, const 
   this->Display.push_back(display);
 }
 
-NamedITKImage InpaintingIterationRecord::GetImage(const unsigned int imageId) const
-{
-  return this->Images[imageId];
-}
-
-NamedITKImage InpaintingIterationRecord::GetImageByName(const std::string& imageName) const
-{
-  return this->Images.FindImageByName(imageName);
-}
-
-unsigned int InpaintingIterationRecord::GetNumberOfImages() const
-{
-  return this->Images.size();
-}
+// NamedITKImage InpaintingIterationRecord::GetImage(const unsigned int imageId) const
+// {
+//   return this->Images[imageId];
+// }
+// 
+// NamedITKImage InpaintingIterationRecord::GetImageByName(const std::string& imageName) const
+// {
+//   return this->Images.FindImageByName(imageName);
+// }
+// 
+// unsigned int InpaintingIterationRecord::GetNumberOfImages() const
+// {
+//   return this->Images.size();
+// }

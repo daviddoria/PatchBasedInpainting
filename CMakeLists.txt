@@ -80,7 +80,7 @@ if(BuildTests)
   ENABLE_TESTING()
   add_subdirectory(Testing)
   add_subdirectory(Tests)
-  add_subdirectory(Helpers/Tests)
+  #add_subdirectory(Helpers/Tests)
 ENDIF(BuildTests)
 
 SET(BuildInteractiveTests CACHE BOOL "Build interactive tests.")
@@ -89,10 +89,7 @@ if(BuildInteractiveTests)
   add_subdirectory(Interactive/Tests)
 ENDIF(BuildInteractiveTests)
 
-
 SET(BuildDemos CACHE BOOL "Build demos.")
 if(BuildDemos)
   add_subdirectory(Demos)
 ENDIF(BuildDemos)
-
-add_subdirectory(Clustering)

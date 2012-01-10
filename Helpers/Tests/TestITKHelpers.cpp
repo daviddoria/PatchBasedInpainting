@@ -192,20 +192,24 @@ template<typename TImage>
 void MaskedMedianFilter(const TImage* inputImage, const Mask* mask, const unsigned int kernelRadius, TImage* output);*/
 
 
-  // Test the DeepCopy that uses downcasting to check for the image type.
-//   {
-//   FloatScalarImageType::Pointer image1 = FloatScalarImageType::New();
-//   TestHelpers::GetBlankImage(image1.GetPointer());
-//   FloatScalarImageType::Pointer image2 = FloatScalarImageType::New();
-//   ITKHelpers::DeepCopy(image1, image2);
-//   if(!TestHelpers::ImagesEqual(image1.GetPointer(), image2.GetPointer()))
-//     {
-//     throw std::runtime_error("Images are not equal!");
-//     }
-//   }
+
 
 #endif
   return EXIT_SUCCESS;
+}
+
+void TestDeepCopyGeneric()
+{
+  // Test the DeepCopy that uses downcasting to check for the image type.
+// TODO: Fix this
+//   itk::ImageBase<2>::Pointer image1 = FloatScalarImageType::New();
+//   Testing::GetBlankImage(image1.GetPointer());
+//   FloatScalarImageType::Pointer image2 = FloatScalarImageType::New();
+//   ITKHelpers::DeepCopy(image1, image2);
+//   if(!Testing::ImagesEqual(image1.GetPointer(), image2.GetPointer()))
+//     {
+//     throw std::runtime_error("Images are not equal!");
+//     }
 }
 
 void TestGetIndexString()

@@ -21,8 +21,8 @@
  * is not created until the Initialize button is clicked.
 */
 
-#ifndef Canvas_H
-#define Canvas_H
+#ifndef InpaintingIterationRecordViewer_H
+#define InpaintingIterationRecordViewer_H
 
 // Custom
 #include "ColorPalette.h"
@@ -40,10 +40,11 @@
 // VTK
 class vtkRenderer;
 
-class VTKCanvas
+// This class is responsible for 
+class InpaintingIterationRecordViewer
 {
 public:
-  VTKCanvas(vtkRenderer* const renderer);
+  InpaintingIterationRecordViewer(vtkRenderer* const renderer);
 
   DisplayStyle const& GetImageDisplayStyle() const;
   DisplayStyle& GetImageDisplayStyle();

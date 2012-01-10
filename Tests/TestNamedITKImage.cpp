@@ -23,26 +23,26 @@
 
 int main(int argc, char*argv[])
 {
-  FloatScalarImageType::Pointer image = FloatScalarImageType::New();
-  std::string scalarImageName = "ScalarIamge";
-  NamedITKImage::ImageDisplayTypeEnum scalarImageDisplayType = NamedITKImage::SCALARS;
-  NamedITKImage namedITKImage(image, scalarImageDisplayType, scalarImageName);
-
-  if(namedITKImage.Name != scalarImageName)
-    {
-    std::stringstream ss;
-    ss << "Scalar image name should be " << scalarImageName << " but is " << namedITKImage.Name;
-    throw std::runtime_error(ss.str());
-    }
-
-  if(namedITKImage.Image != image)
-    {
-    throw std::runtime_error("Pointers to test image and namedITKImage.Image should be the same!");
-    }
-
-  if(namedITKImage.ImageDisplayType != scalarImageDisplayType)
-    {
-    throw std::runtime_error("Scalar image display type received incorrectly!");
-    }
+//   FloatScalarImageType::Pointer image = FloatScalarImageType::New();
+//   std::string scalarImageName = "ScalarIamge";
+//   NamedITKImage::ImageDisplayTypeEnum scalarImageDisplayType = NamedITKImage::SCALARS;
+//   NamedITKImage namedITKImage(image, scalarImageDisplayType, scalarImageName);
+// 
+//   if(namedITKImage.Name != scalarImageName)
+//     {
+//     std::stringstream ss;
+//     ss << "Scalar image name should be " << scalarImageName << " but is " << namedITKImage.Name;
+//     throw std::runtime_error(ss.str());
+//     }
+// 
+//   if(namedITKImage.Image != image)
+//     {
+//     throw std::runtime_error("Pointers to test image and namedITKImage.Image should be the same!");
+//     }
+// 
+//   if(namedITKImage.ImageDisplayType != scalarImageDisplayType)
+//     {
+//     throw std::runtime_error("Scalar image display type received incorrectly!");
+//     }
 
 }

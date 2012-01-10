@@ -39,11 +39,11 @@ std::string GetIndexString(const itk::Index<2>& index);
 std::string GetSizeString(const itk::Size<2>& size);
 
 // Return the highest value of the specified image out of the pixels under a specified BoundaryImage.
-itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType* image, float& maxValue, UnsignedCharScalarImageType* maskImage);
+itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType* const image, float& maxValue, UnsignedCharScalarImageType* const maskImage);
 
 itk::ImageRegion<2> CropToRegion(const itk::ImageRegion<2>& inputRegion, const itk::ImageRegion<2>& targetRegion);
 
-void OutputImageType(const itk::ImageBase<2>* input);
+void OutputImageType(const itk::ImageBase<2>* const input);
 
 // Average each component of a list of vectors then construct and return a new vector composed of these averaged components.
 FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors);
@@ -53,20 +53,20 @@ FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors);
 itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned int dimension);
 
 // Convert an RGB image to the CIELAB colorspace.
-void RGBImageToCIELabImage(RGBImageType* const rgbImage, FloatVectorImageType* cielabImage);
+void RGBImageToCIELabImage(RGBImageType* const rgbImage, FloatVectorImageType* const cielabImage);
 
 // Convert the first 3 channels of an ITK image to the CIELAB colorspace.
-void ITKImageToCIELabImage(const FloatVectorImageType* rgbImage, FloatVectorImageType* cielabImage);
+void ITKImageToCIELabImage(const FloatVectorImageType* rgbImage, FloatVectorImageType* const cielabImage);
 
 // Normalize every pixel/vector in a vector image.
-void NormalizeVectorImage(FloatVector2ImageType* image);
+void NormalizeVectorImage(FloatVector2ImageType* const image);
 
 // Compute the angle between two vectors.
 float AngleBetween(const FloatVector2Type v1, const FloatVector2Type v2);
 
 
 // Convert the first 3 channels of a float vector image to an unsigned char/color/rgb image.
-void VectorImageToRGBImage(const FloatVectorImageType* image, RGBImageType* rgbImage);
+void VectorImageToRGBImage(const FloatVectorImageType* const image, RGBImageType* const rgbImage);
 
 // Get the center pixel of a region. The region is assumed to have odd dimensions.
 itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region);
@@ -101,20 +101,20 @@ template<typename TImage>
 bool HasNeighborWithValue(const itk::Index<2>& pixel, const TImage* const image, const typename TImage::PixelType& value);
 
 template<typename TVectorImage>
-void AnisotropicBlurAllChannels(const TVectorImage* image, TVectorImage* output, const float sigma);
+void AnisotropicBlurAllChannels(const TVectorImage* const image, TVectorImage* const output, const float sigma);
 
 template<typename TImage>
 void OutlineRegion(TImage* image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value);
 
 template<typename TImage>
-void DeepCopy(const TImage* input, TImage* output);
+void DeepCopy(const TImage* const input, TImage* const output);
 
 // Note: specialization declarations must appear in the header or the compiler does not know about their definition in the .cpp file!
 template<>
 void DeepCopy<FloatVectorImageType>(const FloatVectorImageType* const input, FloatVectorImageType* const output);
 
 template<typename TImage>
-void DeepCopyInRegion(const TImage* input, const itk::ImageRegion<2>& region, TImage* output);
+void DeepCopyInRegion(const TImage* const input, const itk::ImageRegion<2>& region, TImage* const output);
 
 template <class TImage>
 void CopyPatch(const TImage* const sourceImage, TImage* const targetImage, const itk::Index<2>& sourcePosition,
@@ -131,77 +131,78 @@ template<typename TImage>
 void ReplaceValue(TImage* image, const typename TImage::PixelType& queryValue, const typename TImage::PixelType& replacementValue);
 
 template <class TImage>
-void CopyPatchIntoImage(const TImage* patch, TImage* image, const itk::Index<2>& position);
+void CopyPatchIntoImage(const TImage* const patch, TImage* const image, const itk::Index<2>& position);
 
 
 template <class TImage>
-float MaxValue(const TImage* image);
+float MaxValue(const TImage* const image);
 
 template <class T>
 std::vector<T> MaxValuesVectorImage(const itk::VectorImage<T, 2>* const image);
 
 template <class TImage>
-float MaxValueLocation(const TImage* image);
+float MaxValueLocation(const TImage* const image);
 
 template <class TImage>
-float MinValue(const TImage* image);
+float MinValue(const TImage* const image);
 
 template <class TImage>
-itk::Index<2> MinValueLocation(const TImage* image);
+itk::Index<2> MinValueLocation(const TImage* const image);
 
 template <typename TImage>
-void ColorToGrayscale(const TImage* colorImage, UnsignedCharScalarImageType* grayscaleImage);
+void ColorToGrayscale(const TImage* const colorImage, UnsignedCharScalarImageType* const grayscaleImage);
 
 template<typename TImage>
-void BlankAndOutlineRegion(TImage* image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& blankValue,
+void BlankAndOutlineRegion(TImage* const image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& blankValue,
                            const typename TImage::PixelType& outlineValue);
 
 template<typename TImage>
-void SetRegionToConstant(TImage* image, const itk::ImageRegion<2>& region,const typename TImage::PixelType& constant);
+void SetRegionToConstant(TImage* const image, const itk::ImageRegion<2>& region,const typename TImage::PixelType& constant);
 
 template<typename TImage>
-void SetImageToConstant(TImage* image, const typename TImage::PixelType& constant);
+void SetImageToConstant(TImage* const image, const typename TImage::PixelType& constant);
 
 template<typename TImage>
-unsigned int CountNonZeroPixels(const TImage* image);
+unsigned int CountNonZeroPixels(const TImage* const image);
 
 template<typename TImage>
-std::vector<itk::Index<2> > GetNonZeroPixels(const TImage* image);
+std::vector<itk::Index<2> > GetNonZeroPixels(const TImage* const image);
 
 template<typename TImage>
-std::vector<itk::Index<2> > GetNonZeroPixels(const TImage* image, const itk::ImageRegion<2>& region);
+std::vector<itk::Index<2> > GetNonZeroPixels(const TImage* const image, const itk::ImageRegion<2>& region);
 
 template<typename TImage>
-void InitializeImage(TImage* image, const itk::ImageRegion<2>& region);
+void InitializeImage(TImage* const image, const itk::ImageRegion<2>& region);
 
 // This function will be used/deduced when called with itk::VectorImage<float,2> image; InitializeImage(image, region)
 template<typename TImage>
-void InitializeImage(const itk::VectorImage<TImage>* const input, const itk::ImageRegion<2>& region);
+void InitializeImage(const itk::VectorImage<TImage>* const const input, const itk::ImageRegion<2>& region);
 
 template<typename TImage>
-void DilateImage(const TImage* image, TImage* dilatedImage, const unsigned int radius);
+void DilateImage(const TImage* const image, TImage* const dilatedImage, const unsigned int radius);
 
 template<typename TImage>
-void ChangeValue(const TImage* image, const typename TImage::PixelType& oldValue, const typename TImage::PixelType& newValue);
+void ChangeValue(const TImage* const image, const typename TImage::PixelType& oldValue, const typename TImage::PixelType& newValue);
 
 template<typename TPixel>
-void ExtractChannel(const itk::VectorImage<TPixel, 2>* image, const unsigned int channel, typename itk::Image<TPixel, 2>* output);
+void ExtractChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel, typename itk::Image<TPixel, 2>* const output);
 
 template<typename TPixel>
-void ScaleChannel(const itk::VectorImage<TPixel, 2>* image, const unsigned int channel, const TPixel channelMax, typename itk::VectorImage<TPixel, 2>* output);
+void ScaleChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel,
+                  const TPixel channelMax, typename itk::VectorImage<TPixel, 2>* const output);
 
 template<typename TPixel>
-void ReplaceChannel(const itk::VectorImage<TPixel, 2>* image, const unsigned int channel, typename itk::Image<TPixel, 2>* replacement,
-                    typename itk::VectorImage<TPixel, 2>* output);
+void ReplaceChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel, typename itk::Image<TPixel, 2>* const replacement,
+                    typename itk::VectorImage<TPixel, 2>* const output);
 
 template<typename TImage>
-typename TImage::TPixel ComputeMaxPixelDifference(const TImage* image);
+typename TImage::TPixel ComputeMaxPixelDifference(const TImage* const image);
 
 template<typename TImage>
-void ReadImage(const std::string&, TImage* image);
+void ReadImage(const std::string&, TImage* const image);
 
 template<typename TInputImage, typename TOutputImage, typename TFilter>
-void FilterImage(const TInputImage* input, TOutputImage* output);
+void FilterImage(const TInputImage* const input, TOutputImage* const output);
 
 }// end namespace
 

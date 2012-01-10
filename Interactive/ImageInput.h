@@ -23,6 +23,7 @@
 #include <QVector>
 #include <iostream>
 
+// This class stores the name of an image and the filename that it was loaded from.
 class ImageInput
 {
 public:
@@ -35,8 +36,7 @@ public:
   QString Name;
   QString FileName;
 
+  static bool ImageExists(const QVector<ImageInput>&, const QString& name);
 };
-
-bool ImageExists(const QVector<ImageInput>&, const QString& name);
 
 #endif

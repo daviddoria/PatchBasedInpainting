@@ -54,28 +54,28 @@ void PatchBasedInpaintingGUI::on_chkDisplayUserPatch_clicked()
 void PatchBasedInpaintingGUI::on_radDisplayColorImage_clicked()
 {
   this->spinChannelToDisplay->setEnabled(false);
-  this->Canvas->GetImageDisplayStyle().Style = DisplayStyle::COLOR;
+  this->RecordViewer->GetImageDisplayStyle().Style = DisplayStyle::COLOR;
   Refresh();
 }
 
 void PatchBasedInpaintingGUI::on_radDisplayMagnitudeImage_clicked()
 {
   this->spinChannelToDisplay->setEnabled(false);
-  this->Canvas->GetImageDisplayStyle().Style = DisplayStyle::MAGNITUDE;
+  this->RecordViewer->GetImageDisplayStyle().Style = DisplayStyle::MAGNITUDE;
   Refresh();
 }
 
 void PatchBasedInpaintingGUI::on_radDisplayChannel_clicked()
 {
   this->spinChannelToDisplay->setEnabled(true);
-  this->Canvas->GetImageDisplayStyle().Style = DisplayStyle::CHANNEL;
-  this->Canvas->GetImageDisplayStyle().Channel = this->spinChannelToDisplay->value();
+  this->RecordViewer->GetImageDisplayStyle().Style = DisplayStyle::CHANNEL;
+  this->RecordViewer->GetImageDisplayStyle().Channel = this->spinChannelToDisplay->value();
   Refresh();
 }
 
 void PatchBasedInpaintingGUI::on_spinChannelToDisplay_valueChanged(int unused)
 {
-  this->Canvas->GetImageDisplayStyle().Channel = this->spinChannelToDisplay->value();
+  this->RecordViewer->GetImageDisplayStyle().Channel = this->spinChannelToDisplay->value();
   Refresh();
 }
 

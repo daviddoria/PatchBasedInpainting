@@ -37,7 +37,7 @@
 #include <QThread>
 
 // Custom
-#include "Canvas.h"
+#include "InpaintingIterationRecordViewer.h"
 
 #include "DebugOutputs.h"
 #include "DisplayState.h"
@@ -189,7 +189,7 @@ private:
   std::shared_ptr<MovablePatch> UserPatch;
 
   // This is a pointer because it must be initialized with a Renderer
-  std::shared_ptr<VTKCanvas> Canvas;
+  std::shared_ptr<InpaintingIterationRecordViewer> RecordViewer;
 
   // The image that the user loads
   FloatVectorImageType::Pointer UserImage;

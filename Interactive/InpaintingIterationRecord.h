@@ -36,22 +36,24 @@ public:
   // Store the sets of pairs that were considered.
   std::vector<CandidatePairs*> PotentialPairSets;
 
-  // Store the pairs of patches that were actually used.
+  // Store the pair of patches that was actually used.
   PatchPair* UsedPatchPair;
+
+  NamedITKImageCollection& GetImages();
 
   void AddImage(const NamedITKImage&, const bool display = false);
 
-  NamedITKImage GetImage(const unsigned int) const;
-  NamedITKImage GetImageByName(const std::string&) const;
-  unsigned int GetNumberOfImages() const;
-
-  bool IsDisplayed(const unsigned int) const;
-  void SetDisplayed(const unsigned int, const bool displayed);
+//   NamedITKImage GetImage(const unsigned int) const;
+//   NamedITKImage GetImageByName(const std::string&) const;
+//   unsigned int GetNumberOfImages() const;
+// 
+//   bool IsDisplayed(const unsigned int) const;
+//   void SetDisplayed(const unsigned int, const bool displayed);
 
 private:
   NamedITKImageCollection Images;
 
-  std::vector<bool> Display; // This vector is always the same length as the number of images.
+  //std::vector<bool> Display; // This vector is always the same length as the number of images.
 };
 
 #endif

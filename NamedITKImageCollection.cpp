@@ -27,58 +27,58 @@
 
 void NamedITKImageCollection::CopySelfPatchIntoHoleOfTargetRegion(const Mask* mask, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
 {
-  for(unsigned int imageId = 0; imageId < this->size(); ++imageId)
-    {
-    itk::ImageBase<2>* image = (*this)[imageId].Image;
-
-    if(dynamic_cast<FloatScalarImageType*>(image))
-      {
-      std::cout << "Image " << imageId << " is FloatScalarImageType" << std::endl;
-      MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<FloatScalarImageType>(dynamic_cast<FloatScalarImageType*>(image), mask, sourceRegion, targetRegion);
-      }
-    else if(dynamic_cast<UnsignedCharScalarImageType*>(image))
-      {
-      std::cout << "Image " << imageId << " is UnsignedCharScalarImageType" << std::endl;
-      MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<UnsignedCharScalarImageType>(dynamic_cast<UnsignedCharScalarImageType*>(image), mask, sourceRegion, targetRegion);
-      }
-    else if(dynamic_cast<Mask*>(image))
-      {
-      std::cout << "Image " << imageId << " is Mask" << std::endl;
-      MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<Mask>(dynamic_cast<Mask*>(image), mask, sourceRegion, targetRegion);
-      }
-    else if(dynamic_cast<FloatVectorImageType*>(image))
-      {
-      std::cout << "Image " << imageId << " is FloatVectorImageType" << std::endl;
-      MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(image), mask, sourceRegion, targetRegion);
-      }
-    else if(dynamic_cast<FloatVector2ImageType*>(image))
-      {
-      std::cout << "Image " << imageId << " is FloatVector2ImageType" << std::endl;
-      MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<FloatVector2ImageType>(dynamic_cast<FloatVector2ImageType*>(image), mask, sourceRegion, targetRegion);
-      }
-    else if(dynamic_cast<IntImageType*>(image))
-      {
-      std::cout << "Image " << imageId << " is IntImageType" << std::endl;
-      MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<IntImageType>(dynamic_cast<IntImageType*>(image), mask, sourceRegion, targetRegion);
-      }
-    else
-      {
-      std::cout << "Image " << imageId << " is Invalid type!" << std::endl;
-      std::cerr << "Cannot cast to any of the specified types!" << std::endl;
-      }
-    }
+//   for(unsigned int imageId = 0; imageId < this->size(); ++imageId)
+//     {
+//     itk::ImageBase<2>* image = (*this)[imageId].Image;
+// 
+//     if(dynamic_cast<FloatScalarImageType*>(image))
+//       {
+//       std::cout << "Image " << imageId << " is FloatScalarImageType" << std::endl;
+//       MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<FloatScalarImageType>(dynamic_cast<FloatScalarImageType*>(image), mask, sourceRegion, targetRegion);
+//       }
+//     else if(dynamic_cast<UnsignedCharScalarImageType*>(image))
+//       {
+//       std::cout << "Image " << imageId << " is UnsignedCharScalarImageType" << std::endl;
+//       MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<UnsignedCharScalarImageType>(dynamic_cast<UnsignedCharScalarImageType*>(image), mask, sourceRegion, targetRegion);
+//       }
+//     else if(dynamic_cast<Mask*>(image))
+//       {
+//       std::cout << "Image " << imageId << " is Mask" << std::endl;
+//       MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<Mask>(dynamic_cast<Mask*>(image), mask, sourceRegion, targetRegion);
+//       }
+//     else if(dynamic_cast<FloatVectorImageType*>(image))
+//       {
+//       std::cout << "Image " << imageId << " is FloatVectorImageType" << std::endl;
+//       MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(image), mask, sourceRegion, targetRegion);
+//       }
+//     else if(dynamic_cast<FloatVector2ImageType*>(image))
+//       {
+//       std::cout << "Image " << imageId << " is FloatVector2ImageType" << std::endl;
+//       MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<FloatVector2ImageType>(dynamic_cast<FloatVector2ImageType*>(image), mask, sourceRegion, targetRegion);
+//       }
+//     else if(dynamic_cast<IntImageType*>(image))
+//       {
+//       std::cout << "Image " << imageId << " is IntImageType" << std::endl;
+//       MaskOperations::CopySelfPatchIntoHoleOfTargetRegion<IntImageType>(dynamic_cast<IntImageType*>(image), mask, sourceRegion, targetRegion);
+//       }
+//     else
+//       {
+//       std::cout << "Image " << imageId << " is Invalid type!" << std::endl;
+//       std::cerr << "Cannot cast to any of the specified types!" << std::endl;
+//       }
+//     }
 }
 
 NamedITKImage NamedITKImageCollection::FindImageByName(const std::string& imageName) const
 {
-  for(unsigned int i = 0; i < this->size(); ++i)
-    {
-    if((*this)[i].Name == imageName)
-      {
-      return (*this)[i];
-      }
-    }
-  std::stringstream ss;
-  ss << "No image named " << imageName << " found!";
-  throw std::runtime_error(ss.str());
+//   for(unsigned int i = 0; i < this->size(); ++i)
+//     {
+//     if((*this)[i].Name == imageName)
+//       {
+//       return (*this)[i];
+//       }
+//     }
+//   std::stringstream ss;
+//   ss << "No image named " << imageName << " found!";
+//   throw std::runtime_error(ss.str());
 }

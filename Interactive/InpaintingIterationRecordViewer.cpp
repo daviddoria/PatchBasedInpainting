@@ -15,7 +15,7 @@
  *  limitations under the License.
  *
  *=========================================================================*/
-#include "Canvas.h"
+#include "InpaintingIterationRecordViewer.h"
 
 // Custom
 #include "Helpers/Helpers.h"
@@ -28,7 +28,7 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 
-VTKCanvas::VTKCanvas(vtkRenderer* const renderer) : Renderer(renderer)
+InpaintingIterationRecordViewer::InpaintingIterationRecordViewer(vtkRenderer* const renderer) : Renderer(renderer)
 {
   this->ImageLayer.ImageSlice->SetPickable(false);
   this->MaskLayer.ImageSlice->SetPickable(false);
@@ -43,7 +43,7 @@ VTKCanvas::VTKCanvas(vtkRenderer* const renderer) : Renderer(renderer)
   this->Renderer->AddViewProp(this->ForwardLookPatchLayer.ImageSlice);
 }
 
-void VTKCanvas::DisplayRecord(const InpaintingIterationRecord& record)
+void InpaintingIterationRecordViewer::DisplayRecord(const InpaintingIterationRecord& record)
 {
   // TODO: important commented function calls
   this->RecordToDisplay = record;
@@ -54,22 +54,22 @@ void VTKCanvas::DisplayRecord(const InpaintingIterationRecord& record)
   //DisplayMask();
 }
 
-DisplayStyle const& VTKCanvas::GetImageDisplayStyle() const
+DisplayStyle const& InpaintingIterationRecordViewer::GetImageDisplayStyle() const
 {
   return this->ImageDisplayStyle;
 }
 
-DisplayStyle& VTKCanvas::GetImageDisplayStyle()
+DisplayStyle& InpaintingIterationRecordViewer::GetImageDisplayStyle()
 {
   return this->ImageDisplayStyle;
 }
 
-ColorPalette const& VTKCanvas::GetColorPalette() const
+ColorPalette const& InpaintingIterationRecordViewer::GetColorPalette() const
 {
   return this->Colors;
 }
 
-void VTKCanvas::DisplayMask(const Mask* const mask)
+void InpaintingIterationRecordViewer::DisplayMask(const Mask* const mask)
 {
   //vtkSmartPointer<vtkImageData> temp = vtkSmartPointer<vtkImageData>::New();
   //Helpers::ITKScalarImageToScaledVTKImage<Mask>(this->IntermediateImages[this->IterationToDisplay].MaskImage, temp);
@@ -78,23 +78,23 @@ void VTKCanvas::DisplayMask(const Mask* const mask)
   mask->MakeVTKImage(this->MaskLayer.ImageData, QColor(Qt::white), this->Colors.Hole, false, true); // (..., holeTransparent, validTransparent);
 }
 
-void VTKCanvas::DisplayImage(const FloatVectorImageType* const image)
+void InpaintingIterationRecordViewer::DisplayImage(const FloatVectorImageType* const image)
 {
   ITKVectorImageToVTKImage(image, this->ImageLayer.ImageData);
 }
 
-void VTKCanvas::SetDisplayStyle(const DisplayStyle& style)
+void InpaintingIterationRecordViewer::SetDisplayStyle(const DisplayStyle& style)
 {
   this->ImageDisplayStyle = style;
 }
 
-void VTKCanvas::SetDisplayState(const DisplayState& displayState)
+void InpaintingIterationRecordViewer::SetDisplayState(const DisplayState& displayState)
 {
   this->RecordDisplayState = displayState;
 }
 
 // Convert a vector ITK image to a VTK image for display
-void VTKCanvas::ITKVectorImageToVTKImage(const FloatVectorImageType* const image, vtkImageData* const outputImage)
+void InpaintingIterationRecordViewer::ITKVectorImageToVTKImage(const FloatVectorImageType* const image, vtkImageData* const outputImage)
 {
   switch(this->ImageDisplayStyle.Style)
     {
@@ -115,7 +115,7 @@ void VTKCanvas::ITKVectorImageToVTKImage(const FloatVectorImageType* const image
   outputImage->Modified();
 }
 
-void VTKCanvas::HighlightUsedPatchPair(const PatchPair& patchPair)
+void InpaintingIterationRecordViewer::HighlightUsedPatchPair(const PatchPair& patchPair)
 {
   std::vector<Patch> patches;
   patches.push_back(*(patchPair.GetSourcePatch()));
@@ -125,17 +125,17 @@ void VTKCanvas::HighlightUsedPatchPair(const PatchPair& patchPair)
   // TODO: These should be different colors.
 }
 
-void VTKCanvas::HighlightForwardLookPatches(const std::vector<Patch>& patches)
+void InpaintingIterationRecordViewer::HighlightForwardLookPatches(const std::vector<Patch>& patches)
 {
   HighlightPatches(patches, this->Colors.ForwardLookPatch, this->UsedPatchPairLayer.ImageData);
 }
 
-void VTKCanvas::HighlightSourcePatches(const std::vector<Patch>& patches)
+void InpaintingIterationRecordViewer::HighlightSourcePatches(const std::vector<Patch>& patches)
 {
   HighlightPatches(patches, this->Colors.SourcePatch, this->UsedPatchPairLayer.ImageData);
 }
 
-void VTKCanvas::HighlightPatches(const std::vector<Patch>& patches, const QColor& color, vtkImageData* const outputImage)
+void InpaintingIterationRecordViewer::HighlightPatches(const std::vector<Patch>& patches, const QColor& color, vtkImageData* const outputImage)
 {
   // Delete any current highlight patches. We want to delete these (if they exist) no matter what because
   // then they won't be displayed if the box is not checked (they will respect the check box).
@@ -156,18 +156,18 @@ void VTKCanvas::HighlightPatches(const std::vector<Patch>& patches, const QColor
     }
 }
 
-void VTKCanvas::HighlightSourcePatches()
+void InpaintingIterationRecordViewer::HighlightSourcePatches()
 {
   const CandidatePairs& candidatePairs = *(this->RecordToDisplay.PotentialPairSets[this->RecordDisplayState.ForwardLookId]);
   unsigned int numberToDisplay = std::min(candidatePairs.GetNumberOfSourcePatches(), this->DisplaySettings.NumberOfTopPatchesToDisplay);
 }
 
-void VTKCanvas::SetSettings(const InpaintingDisplaySettings& settings)
+void InpaintingIterationRecordViewer::SetSettings(const InpaintingDisplaySettings& settings)
 {
   this->DisplaySettings = settings;
 }
 
-void VTKCanvas::HighlightForwardLookPatches()
+void InpaintingIterationRecordViewer::HighlightForwardLookPatches()
 {
   // Get the candidate patches and make sure we have requested a valid set.
   const std::vector<CandidatePairs*>& candidatePairs = this->RecordToDisplay.PotentialPairSets;

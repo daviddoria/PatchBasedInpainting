@@ -109,7 +109,7 @@ void PatchBasedInpaintingGUI::DefaultConstructor()
   
   this->UserPatch = std::make_shared<MovablePatch>(this->Settings.PatchRadius, this->Renderer, this->gfxUserPatch);
   
-  this->Canvas = std::make_shared<VTKCanvas>(this->Renderer);
+  this->RecordViewer = std::make_shared<InpaintingIterationRecordViewer>(this->Renderer);
 
   // TODO set the image to use in the MovablePatch
   //QImage userPatch = HelpersQt::GetQImage<FloatVectorImageType>(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[this->IterationToDisplay].GetImageByName("Image").Image.GetPointer()),
@@ -191,7 +191,7 @@ void PatchBasedInpaintingGUI::SetProgressBarToMarquee()
 
 void PatchBasedInpaintingGUI::ConnectForwardLookModelToView()
 {
-  this->ForwardLookModel = QSharedPointer<TableModelForwardLook>(new TableModelForwardLook(this, this->IterationRecords, this->Canvas->GetImageDisplayStyle()));
+  this->ForwardLookModel = QSharedPointer<TableModelForwardLook>(new TableModelForwardLook(this, this->IterationRecords, this->RecordViewer->GetImageDisplayStyle()));
   this->ForwardLookTableView->setModel(this->ForwardLookModel.data());
   this->ForwardLookTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 
@@ -204,7 +204,7 @@ void PatchBasedInpaintingGUI::ConnectForwardLookModelToView()
 
 void PatchBasedInpaintingGUI::ConnectTopPatchesModelToView()
 {
-  this->TopPatchesModel = QSharedPointer<TableModelTopPatches>(new TableModelTopPatches(this, this->IterationRecords, this->Canvas->GetImageDisplayStyle()));
+  this->TopPatchesModel = QSharedPointer<TableModelTopPatches>(new TableModelTopPatches(this, this->IterationRecords, this->RecordViewer->GetImageDisplayStyle()));
   this->TopPatchesTableView->setModel(this->TopPatchesModel.data());
   this->TopPatchesTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 

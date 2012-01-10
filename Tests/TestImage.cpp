@@ -16,23 +16,21 @@
  *
  *=========================================================================*/
 
-#include "Canvas.h"
+#include "Image.h"
 
 int main(int argc, char*argv[])
 {
-//   VTKCanvas(vtkRenderer* const renderer);
-// 
-//   DisplayStyle const& GetImageDisplayStyle() const;
-// 
-//   ColorPalette const& GetColorPalette() const;
-// 
-//   void SetDisplayStyle(const DisplayStyle& style);
-//   void SetDisplayState(const DisplayState& displayStyle);
-//   void SetSettings(const InpaintingDisplaySettings& settings);
-// 
-//   void DisplayRecord(const InpaintingIterationRecord& record);
+  itk::Index<2> corner;
+  corner.Fill(0);
 
-  throw;
-  
+  itk::Size<2> size;
+  size.Fill(100);
+
+  itk::ImageRegion<2> region(corner, size);
+
+  Image<float>::Pointer image = Image<float>::New();
+  image->SetRegions(region);
+  image->Allocate();
+
   return EXIT_SUCCESS;
 }

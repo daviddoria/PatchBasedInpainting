@@ -1,4 +1,6 @@
-include_directories(../ ../../ ../../Testing)
+include_directories(../) # The Helpers directory
+include_directories(../../) # The PatchBasedInpainting directory
+include_directories(../../Testing)
 
 add_executable(TestHelpers TestHelpers.cpp ../Helpers.cpp)
 target_link_libraries(TestHelpers libTesting)

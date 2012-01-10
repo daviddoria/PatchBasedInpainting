@@ -16,27 +16,23 @@
  *
  *=========================================================================*/
 
-#include "InpaintingIterationRecord.h"
+#include "InpaintingIterationRecordViewer.h"
 
 int main(int argc, char*argv[])
 {
-   InpaintingIterationRecord record;
+//   VTKCanvas(vtkRenderer* const renderer);
 // 
-//   // Store the sets of pairs that were considered.
-//   std::vector<CandidatePairs> PotentialPairSets;
+//   DisplayStyle const& GetImageDisplayStyle() const;
 // 
-//   // Store the pairs of patches that were actually used.
-//   PatchPair* UsedPatchPair;
+//   ColorPalette const& GetColorPalette() const;
 // 
-//   void AddImage(NamedITKImage&, const bool display = false);
+//   void SetDisplayStyle(const DisplayStyle& style);
+//   void SetDisplayState(const DisplayState& displayStyle);
+//   void SetSettings(const InpaintingDisplaySettings& settings);
 // 
-//   NamedITKImage GetImage(const unsigned int) const;
-//   NamedITKImage GetImageByName(const std::string&) const;
-//   unsigned int GetNumberOfImages() const;
-// 
-//   bool IsDisplayed(const unsigned int) const;
-//   void SetDisplayed(const unsigned int, const bool displayed);
-  throw;
+//   void DisplayRecord(const InpaintingIterationRecord& record);
 
+  throw;
+  
   return EXIT_SUCCESS;
 }

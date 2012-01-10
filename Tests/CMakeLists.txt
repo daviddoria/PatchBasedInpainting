@@ -3,6 +3,10 @@ include_directories(../Testing ../Helpers)
 
 #####################
 
+add_executable(TestImage TestImage.cpp)
+target_link_libraries(TestImage ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+add_test(TestImage TestImage)
+
 add_executable(TestPatch TestPatch.cpp ../Patch.cpp)
 target_link_libraries(TestPatch ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 add_test(TestPatch TestPatch)

@@ -25,27 +25,28 @@
 // STL
 #include <vector>
 
-// We would rather use this (inherited from ImageBase, but I don't think you can create an object:
-// NamedITKImage::Pointer maskImage = dynamic_cast<NamedITKImage*>(Mask::New().GetPointer());
-// doesn't make sense because NamedITKImage is the derived class in this case!
-// struct NamedITKImage : public itk::ImageBase<2>
-// {
-//   NamedITKImage() : Vectors(false), Name("Unnamed") {}
-//
-//   bool Vectors; // Should the image be displayed as vectors (little lines) vs scalars (dots).
-//   std::string Name;
-// };
-
-struct NamedITKImage
+// We would rather have this inherit from ImageBase like this:
+struct NamedITKImage : public itk::ImageBase<2>
 {
-  enum ImageDisplayTypeEnum {SCALARS, VECTORS};
-  NamedITKImage(itk::ImageBase<2>* const image = NULL, const ImageDisplayTypeEnum displayType = SCALARS, const std::string& name = "Unnamed") :
-  Image(image), ImageDisplayType(displayType), Name(name) {}
+  NamedITKImage(itk::ImageBase<2>* const image, const std::string& name) {}
 
-  itk::ImageBase<2>* Image;
-  //itk::ImageBase<2>::Pointer Image;
-  ImageDisplayTypeEnum ImageDisplayType; // Indicates if the image should be displayed as vectors (little lines) vs scalars (dots).
   std::string Name;
 };
+
+// But you can't create an object like this:
+// NamedITKImage::Pointer maskImage = dynamic_cast<NamedITKImage*>(Mask::New().GetPointer());
+// It doesn't make sense because NamedITKImage is the derived class in this case!
+
+// struct NamedITKImage
+// {
+//   enum ImageDisplayTypeEnum {SCALARS, VECTORS};
+//   NamedITKImage(itk::ImageBase<2>* const image = NULL, const ImageDisplayTypeEnum displayType = SCALARS, const std::string& name = "Unnamed") :
+//   Image(image), ImageDisplayType(displayType), Name(name) {}
+// 
+//   itk::ImageBase<2>* Image;
+//   //itk::ImageBase<2>::Pointer Image;
+//   ImageDisplayTypeEnum ImageDisplayType; // Indicates if the image should be displayed as vectors (little lines) vs scalars (dots).
+//   std::string Name;
+// };
 
 #endif
