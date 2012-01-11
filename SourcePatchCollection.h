@@ -24,6 +24,10 @@
 
 #include <set>
 
+/**
+\class SourcePatchCollection
+\brief This class stores several fully valid Patch objects.
+*/
 class SourcePatchCollection
 {
 

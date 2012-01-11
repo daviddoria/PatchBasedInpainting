@@ -20,40 +20,19 @@
 #include "Mask.h"
 #include "SourcePatchCollection.h"
 #include "Testing.h"
+#include "PixelWiseDifferencePatchPairVisitor.h"
+#include "DifferenceSumPixelPairVisitor.h"
 
 static void CreateMask(Mask* mask);
 
+static void TestVisitAllPatches();
+static void TestCombine();
+
+static CandidatePairs SetupObject();
+
 int main(int argc, char*argv[])
 {
-  // Setup target patch
-  itk::Index<2> targetCorner;
-  targetCorner.Fill(0);
-
-  itk::Size<2> patchSize;
-  patchSize.Fill(10);
-
-  itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
-  Patch targetPatch(targetRegion);
-
-  Mask::Pointer mask = Mask::New();
-  CreateMask(mask);
-  const unsigned int patchRadius = 5;
-  SourcePatchCollection sourcePatchCollection(mask, patchRadius);
-
-  SourcePatchCollection::PatchContainer patches = sourcePatchCollection.FindSourcePatchesInRegion(mask->GetLargestPossibleRegion());
-
-  sourcePatchCollection.AddPatches(patches);
-  
-  CandidatePairs candidatePairs(targetPatch);
-
-  if(candidatePairs.GetTargetPatch() != targetPatch)
-    {
-    std::cerr << "TargetPatch not set or retrieved correctly! Retrieved as " << candidatePairs.GetTargetPatch()
-              << " but should be " << targetPatch << std::endl;
-    return EXIT_FAILURE;
-    }
-
-  candidatePairs.AddSourcePatches(sourcePatchCollection);
+  CandidatePairs candidatePairs = SetupObject();
 
   unsigned int counter = 0;
 
@@ -83,19 +62,67 @@ int main(int argc, char*argv[])
     return EXIT_FAILURE;
     }
 
-  Patch retrievedTargetPatch = candidatePairs.GetTargetPatch();
-  if(retrievedTargetPatch != targetPatch)
-    {
-    std::cerr << "Target patch set or retrieved improperly!" << std::endl;
-    return EXIT_FAILURE;
-    }
-
-  // TODO: Test this
-  // void Combine(const CandidatePairs& pairs);
+  TestVisitAllPatches();
+  TestCombine();
 
   return EXIT_SUCCESS;
 }
 
+CandidatePairs SetupObject()
+{
+  // Setup target patch
+  itk::Index<2> targetCorner;
+  targetCorner.Fill(0);
+
+  itk::Size<2> patchSize;
+  patchSize.Fill(10);
+
+  itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
+  Patch targetPatch(targetRegion);
+
+  Mask::Pointer mask = Mask::New();
+  CreateMask(mask);
+  const unsigned int patchRadius = 5;
+  SourcePatchCollection sourcePatchCollection(mask, patchRadius);
+
+  SourcePatchCollection::PatchContainer patches = sourcePatchCollection.FindSourcePatchesInRegion(mask->GetLargestPossibleRegion());
+
+  sourcePatchCollection.AddPatches(patches);
+
+  CandidatePairs candidatePairs(targetPatch);
+
+  candidatePairs.AddSourcePatches(sourcePatchCollection);
+
+  // Test some things while we still have the objects used to create the main object:
+  Patch retrievedTargetPatch = candidatePairs.GetTargetPatch();
+  if(retrievedTargetPatch != targetPatch)
+    {
+    throw std::runtime_error("Target patch set or retrieved improperly!");
+    }
+
+  return candidatePairs;
+}
+
+void TestCombine()
+{
+  throw;
+}
+
+void TestVisitAllPatches()
+{
+  FloatScalarImageType::Pointer image = FloatScalarImageType::New();
+  Testing::GetBlankImage(image.GetPointer());
+
+  Mask::Pointer mask = Mask::New();
+  Testing::GetFullyValidMask(mask.GetPointer());
+
+  CandidatePairs candidatePairs = SetupObject();
+
+  PixelWiseDifferencePatchPairVisitor<DifferenceSumPixelPairVisitor<FloatScalarImageType> > visitor(image.GetPointer(), mask.GetPointer());
+
+  candidatePairs.VisitAllPatchPairs(image.GetPointer(), mask.GetPointer(), visitor);
+  throw;
+}
 
 void CreateMask(Mask* mask)
 {

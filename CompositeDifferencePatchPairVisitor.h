@@ -16,4 +16,31 @@
  *
  *=========================================================================*/
 
-#include "Image.h" // appease syntax parser
+#ifndef CompositeDifferencePatchPairVisitor_H
+#define CompositeDifferencePatchPairVisitor_H
+
+#include "PatchPairVisitor.h"
+
+#include <cmath>
+
+template <typename TPixel>
+class CompositeDifferencePatchPairVisitor : public PatchPairVisitor<TPixel>
+{
+public:
+
+  CompositeDifferencePatchVisitor() : Sum(0) {}
+
+  void Visit(const PatchPair& patchPair)
+  {
+    for(unsigned int i = 0; i < this->Items.size(); ++i)
+      {
+      this->Visitors[i].Visit(patchPair);
+      }
+  }
+
+private:
+
+  std::vector<PatchPairVisitor*> Visitors;
+};
+
+#endif

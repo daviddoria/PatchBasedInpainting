@@ -28,9 +28,22 @@ int main(int argc, char*argv[])
 
   itk::ImageRegion<2> region(corner, size);
 
-  Image<float>::Pointer image = Image<float>::New();
-  image->SetRegions(region);
-  image->Allocate();
+  Image<float>::Pointer floatImage = Image<float>::New();
+  floatImage->SetRegions(region);
+  floatImage->Allocate();
+
+  Image<int>::Pointer intImage = Image<int>::New();
+  intImage->SetRegions(region);
+  intImage->Allocate();
+
+  std::vector<ImageParent*> images;
+  images.push_back(floatImage);
+  images.push_back(intImage);
+
+  for(unsigned int i = 0; i < images.size(); ++i)
+    {
+    images[i]->DoSomething();
+    }
 
   return EXIT_SUCCESS;
 }

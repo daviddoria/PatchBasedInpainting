@@ -18,7 +18,7 @@
 
 #include "Patch.h"
 #include "PatchPair.h"
-#include "PixelPairDifferenceSum.h"
+#include "DifferenceSumPixelPairVisitor.h"
 #include "Types.h"
 #include "Testing.h"
 #include "ITKHelpers.h"
@@ -53,7 +53,7 @@ void TestScalar()
   const float rightSideValue = 3;
   Testing::GetHalfConstantImage(image.GetPointer(), leftSideValue, rightSideValue);
 
-  PixelPairDifferenceSum<FloatScalarImageType::PixelType> pixelPairDifferenceSum;
+  DifferenceSumPixelPairVisitor<FloatScalarImageType> pixelPairDifferenceSum;
 
   // Test sum of differences with patches on the same side of the image
   {

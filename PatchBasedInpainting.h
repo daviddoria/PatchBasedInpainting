@@ -27,7 +27,6 @@
 #include "Patch.h"
 #include "PatchPair.h"
 #include "Priority.h"
-#include "SelfPatchCompare.h"
 #include "SourcePatchCollection.h"
 #include "Types.h"
 
@@ -38,6 +37,10 @@
 // Boost
 #include <boost/function.hpp>
 
+/**
+\class PatchBasedInpainting
+\brief This class performs greedy patch based inpainting on an image.
+*/
 template <typename TImage>
 class PatchBasedInpainting : public DebugOutputs
 {
@@ -47,114 +50,117 @@ public:
   /////////////////// CriminisiInpaintingInterface.cpp //////////////////
   ///////////////////////////////////////////////////////////////////////
 
-  // Specify the size of the patches to copy.
+  /** Specify the size of the patches to copy.*/
   void SetPatchRadius(const unsigned int radius);
+
+  /** Get the radius of the patch to use for inpainting.*/
   unsigned int GetPatchRadius() const;
 
-  // Get the result/output of the inpainting so far. When the algorithm is complete, this will be the final output.
+  /** Get the result/output of the inpainting so far. When the algorithm is complete, this will be the final output.*/
   TImage* GetCurrentOutputImage();
 
-  // Get the current mask image
+  /** Get the current mask image*/
   Mask* GetMaskImage();
 
   //////////////////////////////////////////////////////////////
   /////////////////// CriminisiInpainting.cpp //////////////////
   //////////////////////////////////////////////////////////////
 
-  // Constructor
-  //PatchBasedInpainting();
+  /** Construct an inpainting object from an image and a mask.*/
   PatchBasedInpainting(const TImage* const image, const Mask* const mask);
 
-  // A single step of the algorithm. The real work is done here.
+  /** A single step of the algorithm. The real work is done here.*/
   PatchPair Iterate();
 
-  // A loop that calls Iterate() until the inpainting is complete.
+  /** A loop that calls Iterate() until the inpainting is complete.*/
   void Inpaint();
 
-  // Initialize everything.
+  /** Initialize everything.*/
   void Initialize();
 
-  // Determine whether or not the inpainting is completed by seeing if there are any pixels in the mask that still need to be filled.
+  /** Determine whether or not the inpainting is completed by seeing if there are any pixels in the mask that still need to be filled.*/
   bool HasMoreToInpaint();
 
-  // Return the number of completed iterations
+  /** Return the number of completed iterations*/
   unsigned int GetNumberOfCompletedIterations();
 
-  // When an image is loaded, it's size is taken as the size that everything else should be. We don't want to keep referring to Image->GetLargestPossibleRegion,
-  // so we store the region in a member variable. For the same reason, if we want to know the size of the images that this class is operating on, the user should
-  // not have to query a specific image, but rather access this more global region definition.
+  /** When an image is loaded, it's size is taken as the size that everything else should be. We don't want to keep referring to Image->GetLargestPossibleRegion,
+      so we store the region in a member variable. For the same reason, if we want to know the size of the images that this class is operating on, the user should
+      not have to query a specific image, but rather access this more global region definition.*/
   const itk::ImageRegion<2>& GetFullRegion() const;
 
-  //void SetPatchCompare(SelfPatchCompare* PatchCompare);
-  //SelfPatchCompare<FloatVectorImageType, PatchDifference<PixelDifference> >* GetPatchCompare() const;
-
-//   template <typename T>
-//   void SetPriorityFunction();
+  /** Set the priority function.*/
   void SetPriorityFunction(const std::string& priorityType);
 
+  /** Get the priority function.*/
   Priority<TImage>* GetPriorityFunction();
 
-  // We store the patch radius, so we need this function to compute the actual patch size from the radius.
+  /** We store the patch radius, so we need this function to compute the actual patch size from the radius.*/
   itk::Size<2> GetPatchSize();
 
+  /** Get the list of images to fill once the best patch is found.*/
   ITKImageCollection& GetImagesToUpdate();
-
-  SelfPatchCompare<TImage> PatchCompare;
 
 private:
 
-  void SetupHistograms();
+
+  /** Change the color of the input image.*/
   void ColorImageInsideHole();
 
+  /** Blur the input image.*/
   void BlurImage();
 
+  /** Compute the differences of a target patch and associated source patches.*/
   void ComputeScores(CandidatePairs& candidatePairs);
 
+  /** Find the best target patch to fill.*/
   virtual PatchPair FindBestPatch();
 
-  // The intermediate steps and eventually the result of the inpainting.
+  /** The intermediate steps and eventually the result of the inpainting.*/
   typename TImage::Pointer CurrentInpaintedImage;
 
-  // This image will be used for all patch to patch comparisons.
+  /** This image will be used for all patch to patch comparisons.*/
   //itk::ImageBase<2>* CompareImage; // Ideally we would be able to compare any type of image...
   TImage* CompareImage; // Currently we can only compare images of this type.
 
-  // The images in this collection will have the selected patch copied into them at each iteration.
-  // It should at least include the image and the mask.
+  /** The images in this collection will have the selected patch copied into them at each iteration.
+      It should at least include the image and the mask.*/
   ITKImageCollection ImagesToUpdate;
 
-  // The mask specifying the region to inpaint. It is updated as patches are copied.
+  /** The mask specifying the region to inpaint. It is updated as patches are copied.*/
   Mask::Pointer MaskImage;
 
-  // The patch radius.
+  /** The patch radius.*/
   itk::Size<2> PatchRadius;
 
-  // Determine if a patch is completely valid (no hole pixels).
+  /** Determine if a patch is completely valid (no hole pixels).*/
   bool IsValidPatch(const itk::Index<2>& queryPixel, const unsigned int radius);
 
-  // Determine if a region is completely valid (no hole pixels).
+  /** Determine if a region is completely valid (no hole pixels).*/
   bool IsValidRegion(const itk::ImageRegion<2>& region);
 
-  // Compute the number of pixels in a patch of the specified size.
+  /** Compute the number of pixels in a patch of the specified size.*/
   unsigned int GetNumberOfPixelsInPatch();
 
+  /** Check if a patch is already in the source patch collection.*/
   bool PatchExists(const itk::ImageRegion<2>& region);
 
+  /** The source patches at the current iteration.*/
   SourcePatchCollection* SourcePatches;
 
-  // This tracks the number of iterations that have been completed.
+  /** This tracks the number of iterations that have been completed.*/
   unsigned int NumberOfCompletedIterations;
 
-  // This is set when the image is loaded so that the region of all of the images can be addressed without referencing any specific image.
+  /** This is set when the image is loaded so that the region of all of the images can be addressed without referencing any specific image.*/
   itk::ImageRegion<2> FullImageRegion;
 
-  // The number of bins to use per dimension in the histogram computations.
+  /** The number of bins to use per dimension in the histogram computations.*/
   unsigned int HistogramBinsPerDimension;
 
-  // The maximum possible pixel squared difference in the image.
+  /** The maximum possible pixel squared difference in the image.*/
   float MaxPixelDifferenceSquared;
 
-  // Set the member MaxPixelDifference;
+  /** Set the member MaxPixelDifference;*/
   void ComputeMaxPixelDifference();
 
   ///////////// CriminisiInpaintingDebugging.cpp /////////////
@@ -167,8 +173,7 @@ private:
   void DebugWritePixelToFill(const itk::Index<2>& pixelToFill, const unsigned int iteration);
   void DebugWritePatchToFillLocation(const itk::Index<2>& pixelToFill, const unsigned int iteration);
 
-  //std::shared_ptr<SelfPatchCompare> PatchCompare;
-
+  /** The priority function to use.*/
   std::shared_ptr<Priority<TImage> > PriorityFunction;
 
 };

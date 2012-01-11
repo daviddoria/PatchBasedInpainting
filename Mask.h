@@ -16,10 +16,11 @@
  *
  *=========================================================================*/
 
-/*
- * This class is a subclass of itkImage that provides the concept of "valid" pixels
- * and "hole" pixels. Pixels that are any other value are never used in computations.
- */
+/**
+\class Mask
+\brief This class is a subclass of itkImage that provides the concept of "valid" pixels
+       and hole pixels. Pixels that are any other value are never used in computations.
+*/
 
 #ifndef MASK_H
 #define MASK_H
@@ -72,61 +73,62 @@ public:
   const NeighborhoodAccessorFunctorType GetNeighborhoodAccessor() const
   { return NeighborhoodAccessorFunctorType(); }
 
-  // Determine if a pixel is a hole pixel.
+  /** Determine if a pixel is a hole pixel.*/
   bool IsHole(const itk::Index<2>& index) const;
 
-  // Determine if an entire region is valid.
+  /** Determine if an entire region is valid.*/
   bool IsValid(const itk::ImageRegion<2>& region) const;
 
-  // Determine if a pixel is valid.
+  /** Determine if a pixel is valid.*/
   bool IsValid(const itk::Index<2>& index) const;
 
-  // Invert the mask by switching the hole and valid pixel values.
+  /** Invert the mask by switching the hole and valid pixel values.*/
   void Invert();
 
-  // Snap the pixel values to either 'hole' or 'valid'.
+  /** Snap the pixel values to either 'hole' or 'valid'.*/
   void Cleanup();
 
-  // Slightly dilate the hole.
+  /** Slightly dilate the hole.*/
   void ExpandHole();
 
-  // Specify which value should be considered a hole.
+  /** Specify which value should be considered a hole.*/
   void SetHoleValue(const unsigned char value);
 
-  // Specify which value should be considered valid.
+  /** Specify which value should be considered valid.*/
   void SetValidValue(const unsigned char value);
 
-  // Get the value that is considered a hole.
+  /** Get the value that is considered a hole.*/
   unsigned char GetHoleValue() const;
 
-  // Get the value that is considered valid.
+  /** Get the value that is considered valid.*/
   unsigned char GetValidValue() const;
 
-  // Print information about the Mask.
+  /** Print information about the Mask.*/
   void OutputMembers() const;
 
-  // Copy a mask.
+  /** Copy a mask.*/
   void DeepCopyFrom(const Mask* inputMask);
 
-  // Find the boundary of the Mask.
+  /** Find the boundary of the Mask.*/
   void FindBoundary(UnsignedCharScalarImageType* boundary) const;
 
-  // Recolor the hole pixels in 'image' a specified 'color'.
+  /** Recolor the hole pixels in 'image' a specified 'color'.*/
   template<typename TImage, typename TColor>
   void ApplyColorToImage(const typename TImage::Pointer image, const TColor& color);
 
-  // Change the hole pixels in 'image' to a specified 'holeValue'.
+  /** Change the hole pixels in 'image' to a specified 'holeValue'.*/
   template<typename TImage>
   void ApplyToImage(TImage* image, const typename TImage::PixelType& holeValue);
 
-  // Recolor the hole pixels in 'image' a specified 'color'.
+  /** Recolor the hole pixels in 'image' a specified 'color'.*/
   template<typename TImage, typename TColor>
   void ApplyToVectorImage(TImage* image, const TColor& color);
 
+  /** Create a VTK image from the mask.*/
   template<typename TColor>
   void MakeVTKImage(vtkImageData* image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent) const;
 
-  // Create a mask from a mask image.
+  /** Create a mask from a mask image.*/
   template<typename TImage>
   void CreateFromImage(const TImage* image, const typename TImage::PixelType& holeColor);
 

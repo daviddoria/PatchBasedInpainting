@@ -19,11 +19,17 @@
 #ifndef PixelPairVisitor_H
 #define PixelPairVisitor_H
 
-template <typename TPixel>
+/**
+\class PixelPairVisitor
+\brief This is an abstract class to visit a pair of pixels.
+*/
+template <typename TImage>
 class PixelPairVisitor
 {
 public:
-  virtual void Visit(const TPixel& pixel1, const TPixel& pixel2) = 0;
+  typedef TImage ImageType;
+
+  virtual void Visit(const typename TImage::PixelType& pixel1, const typename TImage::PixelType& pixel2) = 0;
 };
 
 #endif

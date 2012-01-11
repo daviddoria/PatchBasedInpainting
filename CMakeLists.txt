@@ -42,11 +42,11 @@ if(BuildInteractive OR BuildNonInteractive)
   MaskOperations.cpp
   NamedITKImageCollection.cpp
   NamedVTKImage.cpp
-  PairDifferences.cpp
   Patch.cpp
   PatchBasedInpainting.cpp
   PatchBasedInpaintingDebugging.cpp
   PatchPair.cpp
+  PatchPairDifferences.cpp
   Priority.cpp
   PriorityCriminisi.cpp
   PriorityDepth.cpp

@@ -26,7 +26,33 @@ CandidatePairs::CandidatePairs(const Patch& targetPatch) : Priority(0.0f), Targe
 
 }
 
-void CandidatePairs::Sort(const PairDifferences::PatchDifferenceTypes sortBy, const SortOrderEnum ordering)
+
+
+std::vector<itk::Offset<2> > CandidatePairs::ComputeOffsets(const Mask* const mask)
+{
+  // This function computes the list of offsets that are from the source region of the target patch.
+  std::vector<itk::Offset<2> > offsets;
+  
+  // Iterate over the target region of the mask. Add the linear offset of valid pixels to the offsets to be used later in the comparison.
+  itk::ImageRegionConstIterator<Mask> maskIterator(mask, this->GetTargetPatch().GetRegion());
+  itk::Index<2> targetCorner = this->GetTargetPatch().GetCorner();
+  while(!maskIterator.IsAtEnd())
+    {
+    if(mask->IsValid(maskIterator.GetIndex()))
+      {
+      // The ComputeOffset function returns the linear index of the pixel.
+      // To compute the memory address of the pixel, we must multiply by the number of components per pixel.
+      itk::Offset<2> offset = maskIterator.GetIndex() - targetCorner;
+
+      //std::cout << "Using offset: " << offset << std::endl;
+      offsets.push_back(offset); // We have to multiply the linear offset by the number of components per pixel for the VectorImage type
+      }
+
+    ++maskIterator;
+    }
+  return offsets;
+}
+void CandidatePairs::Sort(const PatchPairDifferences::PatchPairDifferenceTypes sortBy, const SortOrderEnum ordering)
 {
   PairSortFunctor sortFunctor(sortBy);
   std::sort(this->PatchPairs.begin(), this->PatchPairs.end(), sortFunctor);

@@ -22,8 +22,11 @@
 #include "PriorityOnionPeel.h"
 #include "Types.h"
 
-// This class includes the isophote direction term on top of the confidence term of PriorityOnionPeel.
-
+/**
+\class PriorityCriminisi
+\brief This class implements Criminisi's priority function. It includes a Data term ontop of
+       the confidence term of PriorityOnionPeel.
+*/
 template <typename TImage>
 class PriorityCriminisi : public PriorityOnionPeel<TImage>
 {

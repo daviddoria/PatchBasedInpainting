@@ -27,7 +27,6 @@
 #include "PatchDifferencePixelWiseSum.h"
 #include "PriorityFactory.h"
 #include "PriorityRandom.h"
-#include "SelfPatchCompare.h"
 #include "Types.h"
 
 // STL
@@ -237,11 +236,11 @@ template <typename TImage>
 void PatchBasedInpainting<TImage>::ComputeScores(CandidatePairs& candidatePairs)
 {
   //std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
-  this->PatchCompare.SetPairs(&candidatePairs);
-  this->PatchCompare.SetImage(this->CompareImage);
-  this->PatchCompare.SetMask(this->MaskImage);
-  this->PatchCompare.AddDifferenceType(PairDifferences::AveragePixelDifference);
-  this->PatchCompare.template Compute<PatchDifferencePixelWiseSum<TImage, PixelDifference> >();
+//   this->PatchCompare.SetPairs(&candidatePairs);
+//   this->PatchCompare.SetImage(this->CompareImage);
+//   this->PatchCompare.SetMask(this->MaskImage);
+//   this->PatchCompare.AddDifferenceType(PatchPairDifferences::AveragePixelDifference);
+  //this->PatchCompare.template Compute<PatchDifferencePixelWiseSum<TImage, PixelDifference> >();
 }
 
 template <typename TImage>
@@ -261,7 +260,7 @@ PatchPair PatchBasedInpainting<TImage>::FindBestPatch()
 
   ComputeScores(candidatePairs);
 
-  candidatePairs.Sort(PairDifferences::AveragePixelDifference);
+  candidatePairs.Sort(PatchPairDifferences::AveragePixelDifference);
 
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
 

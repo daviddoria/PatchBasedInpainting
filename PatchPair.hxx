@@ -19,7 +19,7 @@
 #include "PatchPair.h" // Appease the syntax parser
 
 template <typename TImage>
-void PatchPair::VisitAllPixels(const TImage* const image, PixelPairVisitor<typename TImage::PixelType> &visitor)
+void PatchPair::VisitAllPixels(const TImage* const image, PixelPairVisitor<TImage> &visitor) const
 {
   itk::ImageRegionConstIteratorWithIndex<TImage> sourceRegionIterator(image, this->GetSourcePatch()->GetRegion());
 
@@ -31,7 +31,7 @@ void PatchPair::VisitAllPixels(const TImage* const image, PixelPairVisitor<typen
 }
 
 template <typename TImage>
-void PatchPair::VisitAllValidPixels(const TImage* const image, const Mask* const mask, PixelPairVisitor<typename TImage::PixelType> &visitor)
+void PatchPair::VisitAllValidPixels(const TImage* const image, const Mask* const mask, PixelPairVisitor<TImage> &visitor) const
 {
   itk::ImageRegionConstIteratorWithIndex<TImage> targetRegionIterator(image, this->GetTargetPatch().GetRegion());
 
@@ -46,7 +46,7 @@ void PatchPair::VisitAllValidPixels(const TImage* const image, const Mask* const
 }
 
 template <typename TImage>
-void PatchPair::VisitOffsets(const TImage* const image, const std::vector<itk::Offset<2> >& offsets, PixelPairVisitor<typename TImage::PixelType> &visitor)
+void PatchPair::VisitOffsets(const TImage* const image, const std::vector<itk::Offset<2> >& offsets, PixelPairVisitor<TImage> &visitor) const
 {
   for(unsigned int offsetId = 0; offsetId < offsets.size(); ++offsetId)
     {

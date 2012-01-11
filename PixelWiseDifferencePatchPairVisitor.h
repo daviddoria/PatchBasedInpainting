@@ -16,4 +16,34 @@
  *
  *=========================================================================*/
 
-#include "SelfPatchCompare.h"
+#ifndef PixelWiseDifferencePatchPairVisitor_H
+#define PixelWiseDifferencePatchPairVisitor_H
+
+#include "PatchPairVisitor.h"
+
+#include "Mask.h"
+
+/**
+\class PixelWiseDifferencePatchPairVisitor
+\brief This class visits PatchPairs.
+*/
+template <typename TPixelPairVisitor>
+class PixelWiseDifferencePatchPairVisitor : public PatchPairVisitor
+{
+public:
+  PixelWiseDifferencePatchPairVisitor(const typename TPixelPairVisitor::ImageType* const image, const Mask* const mask) : Image(image), MaskImage(mask)
+  {
+  }
+
+  void Visit(const PatchPair& patchPair)
+  {
+    TPixelPairVisitor pixelPairVisitor;
+    patchPair.VisitAllPixels(Image, pixelPairVisitor);
+  }
+
+private:
+  const typename TPixelPairVisitor::ImageType* Image;
+  const Mask* MaskImage;
+};
+
+#endif

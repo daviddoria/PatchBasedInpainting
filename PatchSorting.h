@@ -20,7 +20,7 @@
 #define PATCHSORTING_H
 
 #include "CandidatePairs.h"
-#include "PairDifferences.h"
+#include "PatchPairDifferences.h"
 #include "PatchPair.h"
 
 //   void Sort(SortFunctorWrapper sortFunctor);
@@ -38,9 +38,9 @@
 struct PatchSortFunctor
 {
   enum SortOrderEnum {ASCENDING, DESCENDING};
-  PatchSortFunctor(const PairDifferences::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder);
+  PatchSortFunctor(const PatchPairDifferences::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder);
   virtual bool operator()(const PatchPair &T1, const PatchPair &T2) = 0;
-  PairDifferences::PatchDifferenceTypes DifferenceType;
+  PatchPairDifferences::PatchDifferenceTypes DifferenceType;
   SortOrderEnum SortOrder;
 };
 
@@ -59,7 +59,7 @@ struct SortFunctorWrapper
 
 struct SortByDifference : public PatchSortFunctor
 {
-  SortByDifference(PairDifferences::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder) : PatchSortFunctor(differenceType, sortOrder){}
+  SortByDifference(PatchPairDifferences::PatchDifferenceTypes differenceType, const SortOrderEnum sortOrder) : PatchSortFunctor(differenceType, sortOrder){}
   bool operator()(const PatchPair& pair1, const PatchPair& pair2);
 };
 

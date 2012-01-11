@@ -21,6 +21,10 @@
 
 #include "Priority.h"
 
+/**
+\class PriorityDepth
+\brief This class computes a patch's priority based on its depth channel.
+*/
 template <typename TImage>
 class PriorityDepth : public Priority<TImage>
 {

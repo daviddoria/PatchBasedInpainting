@@ -24,6 +24,10 @@ class Mask;
 #include "NamedVTKImage.h"
 #include "Types.h"
 
+/**
+\class Priority
+\brief This is an abstract class that indicates the interface for Priority functions.
+*/
 template <typename TImage>
 class Priority : public DebugOutputs
 {

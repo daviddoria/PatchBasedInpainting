@@ -16,27 +16,27 @@
  *
  *=========================================================================*/
 
-#ifndef PixelPairDifferenceSum_H
-#define PixelPairDifferenceSum_H
+#ifndef DifferenceSumPixelPairVisitor_H
+#define DifferenceSumPixelPairVisitor_H
 
 #include "PixelPairVisitor.h"
 
 #include <cmath>
 
-template <typename TPixel>
-class PixelPairDifferenceSum : public PixelPairVisitor<TPixel>
+template <typename TImage>
+class DifferenceSumPixelPairVisitor : public PixelPairVisitor<TImage>
 {
 public:
 
   // If TPixel is a POD, this initialization is enough. If TPixel is a itkVariableLengthVector, Initialize() must be called to set the length of the Sum vector.
-  PixelPairDifferenceSum() : Sum(0) {}
+  DifferenceSumPixelPairVisitor() : Sum(0) {}
 
-  void Visit(const TPixel &pixel1, const TPixel &pixel2)
+  void Visit(const typename TImage::PixelType &pixel1, const typename TImage::PixelType &pixel2)
   {
     this->Sum += fabs(pixel1 - pixel2);
   }
 
-  TPixel GetSum()
+  typename TImage::PixelType GetSum()
   {
     return this->Sum;
   }
@@ -46,7 +46,7 @@ public:
     this->Sum = 0; // This calls .Fill(0) if TPixel is an itkVariableLengthVector
   }
 
-  void Initialize(const TPixel& pixel)
+  void Initialize(const typename TImage::PixelType& pixel)
   {
     // If TPixel is a POD type, this does nothing different than the default constructor. If TPixel is an itkVariableLengthVector
     // This initializes its length (which must be done before operator+() calls make sense.
@@ -56,7 +56,7 @@ public:
 
 private:
 
-  TPixel Sum;
+  typename TImage::PixelType Sum;
 };
 
 #endif

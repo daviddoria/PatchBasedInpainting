@@ -22,6 +22,10 @@
 #include "Priority.h"
 #include "Types.h"
 
+/**
+\class PriorityOnionPeel
+\brief This class ranks the priority of a patch based on its closeness to the hole boundary.
+*/
 template <typename TImage>
 class PriorityOnionPeel : public Priority<TImage>
 {

@@ -24,6 +24,10 @@
 
 #include "Priority.h"
 
+/**
+\class PriorityFactory
+\brief This class constructs a Priority object based on a specified string/enum.
+*/
 template <typename TImage>
 class PriorityFactory
 {

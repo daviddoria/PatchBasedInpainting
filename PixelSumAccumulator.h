@@ -21,6 +21,10 @@
 
 #include "PixelVisitor.h"
 
+/**
+\class PixelSumAccumulator
+\brief This class visits pixels and sums their values.
+*/
 template <typename TPixel>
 class PixelSumAccumulator : public PixelVisitor<TPixel>
 {

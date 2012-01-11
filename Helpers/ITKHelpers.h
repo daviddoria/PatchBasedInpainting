@@ -176,7 +176,7 @@ void InitializeImage(TImage* const image, const itk::ImageRegion<2>& region);
 
 // This function will be used/deduced when called with itk::VectorImage<float,2> image; InitializeImage(image, region)
 template<typename TImage>
-void InitializeImage(const itk::VectorImage<TImage>* const const input, const itk::ImageRegion<2>& region);
+void InitializeImage(const itk::VectorImage<TImage>* const input, const itk::ImageRegion<2>& region);
 
 template<typename TImage>
 void DilateImage(const TImage* const image, TImage* const dilatedImage, const unsigned int radius);

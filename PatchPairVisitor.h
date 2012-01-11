@@ -16,4 +16,21 @@
  *
  *=========================================================================*/
 
-#include "Image.h" // appease syntax parser
+#ifndef PatchPairVisitor_H
+#define PatchPairVisitor_H
+
+#include "PatchPair.h"
+
+/**
+\class PatchPairVisitor
+\brief This is an abstract class to visit a PatchPair.
+*/
+class PatchPairVisitor
+{
+public:
+  /** Visit a PatchPair.*/
+  virtual void Visit(const PatchPair& patchPair) = 0;
+
+};
+
+#endif

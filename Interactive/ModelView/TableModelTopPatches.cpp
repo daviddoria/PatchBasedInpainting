@@ -159,8 +159,8 @@ QVariant TableModelTopPatches::headerData(int section, Qt::Orientation orientati
       if(section > 2)
         {
         // TODO: Fix this
-        //PairDifferences::PatchDifferenceTypes key = this->ComputedKeys[section-3];
-        //returnValue = PairDifferences::NameOfDifference(key).c_str();
+        //PatchPairDifferences::PatchDifferenceTypes key = this->ComputedKeys[section-3];
+        //returnValue = PatchPairDifferences::NameOfDifference(key).c_str();
         }
       }// end Horizontal orientation
     } // end DisplayRole

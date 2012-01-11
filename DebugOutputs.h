@@ -21,6 +21,10 @@
 
 #include <string>
 
+/**
+\class DebugOutputs
+\brief This class enables/disables the easy output of conditional outputs.
+*/
 class DebugOutputs
 {
 public:

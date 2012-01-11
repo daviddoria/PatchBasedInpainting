@@ -33,12 +33,12 @@ PatchPair::PatchPair(const Patch* const sourcePatch, const Patch& targetPatch) :
 //   return *this;
 // }
 
-PairDifferences& PatchPair::GetDifferences()
+PatchPairDifferences& PatchPair::GetDifferences()
 {
   return Differences;
 }
 
-const PairDifferences& PatchPair::GetDifferences() const
+const PatchPairDifferences& PatchPair::GetDifferences() const
 {
   return Differences;
 }

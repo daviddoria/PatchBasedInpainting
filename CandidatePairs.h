@@ -16,11 +16,11 @@
  *
  *=========================================================================*/
 
-#ifndef CANDIDATEPAIRS_H
-#define CANDIDATEPAIRS_H
+#ifndef CandidatePairs_H
+#define CandidatePairs_H
 
 // Custom
-#include "PairDifferences.h"
+#include "PatchPairVisitor.h"
 #include "PatchPair.h"
 #include "SourcePatchCollection.h"
 
@@ -30,18 +30,26 @@
 // STL
 #include <vector>
 
-// This class stores a target patch (a pointer to one of the source patches in PatchBasedInpainting)
-// and a list of N (user specified) source patches (also pointers to source patches in PatchBasedInpainting)
-
+/**
+\class CandidatePairs
+\brief This class stores a target patch (a pointer to one of the source patches in PatchBasedInpainting)
+       and a list of N (user specified) source patches (also pointers to source patches in PatchBasedInpainting)
+*/
 class CandidatePairs
 {
 private:
-  // This is a vector because the pairs are ordered - they can be sorted by any of their Distance
-  // values.
+  /** This is a vector because the pairs are ordered - they can be sorted by any of their Distance
+      values.
+    */
   typedef std::vector<std::shared_ptr<PatchPair> > PatchContainer;
 
 public:
+  /** Constructor that creates the CandidatePairs collection for pairs of 'targetPatch'.*/
   CandidatePairs(const Patch& targetPatch);
+
+  /** Apply a visitor to each PatchPair.*/
+  template <typename TImage>
+  void VisitAllPatchPairs(const TImage* const image, const Mask* const mask, PatchPairVisitor &visitor);
 
   // Iterator interface
   typedef boost::indirect_iterator<PatchContainer::iterator> Iterator;
@@ -51,25 +59,37 @@ public:
   ConstIterator begin() const;
   ConstIterator end() const;
 
+  /** Add source patches to the collection.*/
   void AddSourcePatches(const SourcePatchCollection& patches);
 
+  /** Absorb the source patches of another CandidatePairs collection.*/
   void Combine(const CandidatePairs& pairs);
 
+  /** Get all of the PatchPairs. */
   std::vector<std::shared_ptr<PatchPair> > GetPatchPairs();
 
+  /** Determine the order in which the PatchPairs will be sorted. */
   enum SortOrderEnum {ASCENDING, DESCENDING};
 
-  void Sort(const PairDifferences::PatchDifferenceTypes sortBy, const SortOrderEnum ordering = DESCENDING);
-  
-//   const PatchPair& GetPair(const unsigned int pairId) const;
-//   PatchPair& GetPair(const unsigned int pairId);
-  //const Patch* const GetSourcePatch(const unsigned int pairId) const;
+  /** Sort the PatchPairs on a particular difference type. */
+  void Sort(const PatchPairDifferences::PatchPairDifferenceTypes sortBy, const SortOrderEnum ordering = DESCENDING);
+
+  /** Get the target patch. */
   const Patch& GetTargetPatch() const;
+
+  /** Get the priority of the target patch, and hence of the collection. */
   float GetPriority() const;
+
+  /** Set the priority of the target patch, and hence of the collection. */
   void SetPriority(const float priority);
+
+  /** Get the number of source patches in the collection. */
   unsigned int GetNumberOfSourcePatches() const;
 
 private:
+
+  // Prepare to do some comparisons by finding all of the valid pixels in the target region
+  std::vector<itk::Offset<2> >  ComputeOffsets(const Mask* const mask);
 
   PatchContainer PatchPairs;
 
@@ -77,5 +97,7 @@ private:
 
   const Patch TargetPatch;
 };
+
+#include "CandidatePairs.hxx"
 
 #endif

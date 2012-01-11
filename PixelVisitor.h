@@ -19,11 +19,17 @@
 #ifndef PixelVisitor_H
 #define PixelVisitor_H
 
+/**
+\class PixelSumAccumulator
+\brief This is an abstract class to visit pixels.
+*/
 template <typename TPixel>
 class PixelVisitor
 {
 public:
+
   virtual void Visit(const TPixel& pixel) = 0;
+
 };
 
 #endif

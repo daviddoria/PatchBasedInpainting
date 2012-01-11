@@ -16,16 +16,16 @@
  *
  *=========================================================================*/
 
-#include "PairDifferences.h"
+#include "PatchPairDifferences.h"
 
 #include <cassert>
 
-unsigned int PairDifferences::GetNumberOfDifferences() const
+unsigned int PatchPairDifferences::GetNumberOfDifferences() const
 {
   return this->DifferenceMap.size();
 }
 
-PairDifferences::DifferenceNameMapType PairDifferences::CreateNameMap()
+PatchPairDifferences::DifferenceNameMapType PatchPairDifferences::CreateNameMap()
 {
   DifferenceNameMapType nameMap;
   nameMap[SumPixelDifference] = "SumPixelDifference";
@@ -35,31 +35,31 @@ PairDifferences::DifferenceNameMapType PairDifferences::CreateNameMap()
   return nameMap;
 }
 
-PairDifferences::DifferenceNameMapType PairDifferences::DifferenceNameMap = CreateNameMap();
+PatchPairDifferences::DifferenceNameMapType PatchPairDifferences::DifferenceNameMap = CreateNameMap();
 
-void PairDifferences::SetDifferenceByName(const std::string& differenceName, const float value)
+void PatchPairDifferences::SetDifferenceByName(const std::string& differenceName, const float value)
 {
   //this->DifferenceMap.find(TypeOfDifference(differenceName))->second = value;
   this->DifferenceMap[TypeOfDifference(differenceName)] = value;
 }
 
-void PairDifferences::SetDifferenceByType(const PatchDifferenceTypes differenceType, const float value)
+void PatchPairDifferences::SetDifferenceByType(const PatchPairDifferenceTypes differenceType, const float value)
 {
   //this->DifferenceMap.find(differenceType)->second = value;
   this->DifferenceMap[differenceType] = value;
 }
 
-float PairDifferences::GetDifferenceByName(const std::string& nameOfDifference) const
+float PatchPairDifferences::GetDifferenceByName(const std::string& nameOfDifference) const
 {
   return this->DifferenceMap.find(TypeOfDifference(nameOfDifference))->second;
 }
 
-float PairDifferences::GetDifferenceByType(const PatchDifferenceTypes differenceType) const
+float PatchPairDifferences::GetDifferenceByType(const PatchPairDifferenceTypes differenceType) const
 {
   return this->DifferenceMap.find(differenceType)->second;
 }
 
-std::vector<std::string> PairDifferences::GetDifferenceNames() const
+std::vector<std::string> PatchPairDifferences::GetDifferenceNames() const
 {
   std::vector<std::string> names;
   for(DifferenceMapType::const_iterator differenceIterator = this->DifferenceMap.begin(); differenceIterator != this->DifferenceMap.end(); ++differenceIterator)
@@ -69,12 +69,12 @@ std::vector<std::string> PairDifferences::GetDifferenceNames() const
   return names;
 }
 
-void PairDifferences::Invalidate()
+void PatchPairDifferences::Invalidate()
 {
   this->DifferenceMap.clear();
 }
 
-PairDifferences::PatchDifferenceTypes PairDifferences::TypeOfDifference(const std::string& nameOfDifference)
+PatchPairDifferences::PatchPairDifferenceTypes PatchPairDifferences::TypeOfDifference(const std::string& nameOfDifference)
 {
   DifferenceNameMapType::const_iterator iterator;
   for (iterator = DifferenceNameMap.begin(); iterator != DifferenceNameMap.end(); ++iterator)
@@ -88,7 +88,7 @@ PairDifferences::PatchDifferenceTypes PairDifferences::TypeOfDifference(const st
   return Invalid;
 }
 
-std::string PairDifferences::NameOfDifference(const PatchDifferenceTypes typeOfDifference)
+std::string PatchPairDifferences::NameOfDifference(const PatchPairDifferenceTypes typeOfDifference)
 {
   DifferenceNameMapType::const_iterator iterator;
 

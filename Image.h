@@ -27,13 +27,24 @@ class vtkImageData;
 // Custom
 #include "Types.h"
 
-template <typename TPixel>
-class Image : public itk::Image< TPixel, 2>
+/**
+\class ImageParent
+\brief This class provides a way to store heterogeneous images in a container.
+*/
+class ImageParent
 {
 public:
+  void DoSomething(){}
+};
+
+template <typename TPixel>
+class Image : public itk::VectorImage<TPixel, 2>, public ImageParent
+{
+public:
+
   /** Standard typedefs. */
   typedef Image                                  Self;
-  typedef itk::Image<TPixel, 2>                  Superclass;
+  typedef itk::VectorImage<TPixel, 2>            Superclass;
   typedef itk::SmartPointer< Self >              Pointer;
   typedef itk::SmartPointer< const Self >        ConstPointer;
   typedef itk::WeakPointer< const Self >         ConstWeakPointer;
@@ -42,11 +53,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(Image, Image);
-
-  /** Dimension of the image. */
-  itkStaticConstMacro(ImageDimension, unsigned int,
-                      Superclass::ImageDimension);
+  itkTypeMacro(Image, VectorImage);
 
   /** Types derived from the Superclass */
   typedef typename Superclass::IndexType IndexType;
@@ -74,7 +81,7 @@ private:
   Image(const Self &);    //purposely not implemented
   void operator=(const Self &); //purposely not implemented
 
-  Image();
+  Image(){}
 
 };
 

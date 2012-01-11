@@ -21,8 +21,10 @@
 
 #include "Priority.h"
 
-// This class returns a random value as the priority of each boundary pixel.
-
+/**
+\class PriorityRandom
+\brief This class returns a random value as the priority of each boundary pixel.
+*/
 template <typename TImage>
 class PriorityRandom : public Priority<TImage>
 {
