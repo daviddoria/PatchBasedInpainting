@@ -16,5 +16,7 @@
  *
  *=========================================================================*/
 
-#include "Image.h" // appease syntax parser
-
+std::string ImageParent::GetName() const
+{
+  return this->Name;
+}

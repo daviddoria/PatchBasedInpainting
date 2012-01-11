@@ -25,8 +25,6 @@
 #include "PriorityOnionPeel.h"
 #include "PriorityDepth.h"
 
-
-
 /**
 \class PriorityManual
 \brief This class first returns values that have been specified by a user generated image

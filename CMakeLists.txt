@@ -35,6 +35,7 @@ if(BuildInteractive OR BuildNonInteractive)
   CandidatePairs.cpp
   DebugOutputs.cpp
   Derivatives.cpp
+  ImageParent.cpp
   itkCommandLineArgumentParser.cxx
   ITKImageCollection.cpp
   Isophotes.cpp

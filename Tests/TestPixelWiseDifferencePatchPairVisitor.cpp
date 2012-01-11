@@ -21,6 +21,7 @@
 #include "SourcePatchCollection.h"
 #include "Testing.h"
 #include "PixelWiseDifferencePatchPairVisitor.h"
+#include "DifferenceSumPixelPairVisitor.h"
 
 int main(int argc, char*argv[])
 {
@@ -50,7 +51,7 @@ int main(int argc, char*argv[])
   FloatScalarImageType::Pointer image = FloatScalarImageType::New();
   Testing::GetBlankImage(image.GetPointer());
 
-  PixelWiseDifferencePatchPairVisitor<FloatScalarImageType::PixelType> visitor(image.GetPointer(), mask.GetPointer());
+  PixelWiseDifferencePatchPairVisitor<DifferenceSumPixelPairVisitor<FloatScalarImageType> > visitor(image.GetPointer(), mask.GetPointer());
   candidatePairs.VisitAllPatchPairs(image.GetPointer(), mask.GetPointer(), visitor);
   return EXIT_SUCCESS;
 }

@@ -42,7 +42,7 @@ int main(int argc, char*argv[])
 
   for(unsigned int i = 0; i < images.size(); ++i)
     {
-    images[i]->DoSomething();
+    //images[i]->DoSomething();
     }
 
   return EXIT_SUCCESS;

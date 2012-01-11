@@ -34,7 +34,11 @@ class vtkImageData;
 class ImageParent
 {
 public:
-  void DoSomething(){}
+  std::string GetName();
+
+private:
+  /** The name of the image. */
+  std::string Name;
 };
 
 template <typename TPixel>

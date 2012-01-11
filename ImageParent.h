@@ -16,5 +16,21 @@
  *
  *=========================================================================*/
 
-#include "Image.h" // appease syntax parser
+#ifndef ImageParent_H
+#define ImageParent_H
 
+/**
+\class ImageParent
+\brief This class provides a way to store heterogeneous images in a container.
+*/
+class ImageParent
+{
+public:
+  std::string GetName();
+
+private:
+  /** The name of the image. */
+  std::string Name;
+};
+
+#endif

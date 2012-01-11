@@ -16,5 +16,11 @@
  *
  *=========================================================================*/
 
-#include "Image.h" // appease syntax parser
+#include "ImageParent.h"
 
+int main(int argc, char*argv[])
+{
+  // Can't test anything here, ImageParent is abstract.
+
+  return EXIT_SUCCESS;
+}
