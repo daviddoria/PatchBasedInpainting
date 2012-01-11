@@ -1,0 +1,32 @@
+<map id="G" name="G">
+<area shape="rect" id="node7" href="$PatchBasedInpaintingGUI_8h.html" title="PatchBasedInpaintingGUI.h" alt="" coords="1681,83,1865,112"/>
+<area shape="rect" id="node132" href="$itkCommandLineArgumentParser_8h.html" title="itkCommandLineArgumentParser.h" alt="" coords="2892,315,3116,344"/>
+<area shape="rect" id="node19" href="$InpaintingIterationRecordViewer_8h.html" title="InpaintingIterationRecordViewer.h" alt="" coords="927,160,1145,189"/>
+<area shape="rect" id="node25" href="$DisplayState_8h.html" title="DisplayState.h" alt="" coords="1099,237,1205,267"/>
+<area shape="rect" id="node27" href="$InpaintingIterationRecord_8h.html" title="InpaintingIterationRecord.h" alt="" coords="283,237,461,267"/>
+<area shape="rect" id="node35" href="$Types_8h.html" title="Types.h" alt="" coords="1197,547,1267,576"/>
+<area shape="rect" id="node56" href="$InpaintingDisplaySettings_8h.html" title="InpaintingDisplaySettings.h" alt="" coords="1229,237,1411,267"/>
+<area shape="rect" id="node59" href="$DebugOutputs_8h.html" title="DebugOutputs.h" alt="" coords="1632,392,1749,421"/>
+<area shape="rect" id="node68" href="$ImageCamera_8h.html" title="ImageCamera.h" alt="" coords="43,315,157,344"/>
+<area shape="rect" id="node71" href="$ImageInput_8h.html" title="ImageInput.h" alt="" coords="2739,237,2837,267"/>
+<area shape="rect" id="node78" href="$InpaintingComputationObject_8h.html" title="InpaintingComputationObject.h" alt="" coords="1348,160,1548,189"/>
+<area shape="rect" id="node83" href="$PatchBasedInpainting_8h.html" title="PatchBasedInpainting.h" alt="" coords="1579,237,1739,267"/>
+<area shape="rect" id="node100" href="$MovablePatch_8h.html" title="MovablePatch.h" alt="" coords="1975,160,2089,189"/>
+<area shape="rect" id="node110" href="$TableModelForwardLook_8h.html" title="ModelView/TableModelForwardLook.h" alt="" coords="604,160,847,189"/>
+<area shape="rect" id="node117" href="$TableModelImageInput_8h.html" title="ModelView/TableModelImageInput.h" alt="" coords="2825,160,3057,189"/>
+<area shape="rect" id="node121" href="$TableModelTopPatches_8h.html" title="ModelView/TableModelTopPatches.h" alt="" coords="260,160,497,189"/>
+<area shape="rect" id="node128" href="$ListModelDisplay_8h.html" title="ModelView/ListModelDisplay.h" alt="" coords="2340,160,2540,189"/>
+<area shape="rect" id="node130" href="$ListModelSave_8h.html" title="ModelView/ListModelSave.h" alt="" coords="2564,160,2751,189"/>
+<area shape="rect" id="node21" href="$ColorPalette_8h.html" title="ColorPalette.h" alt="" coords="869,237,973,267"/>
+<area shape="rect" id="node23" href="$DisplayStyle_8h.html" title="DisplayStyle.h" alt="" coords="536,237,643,267"/>
+<area shape="rect" id="node31" href="$PatchPair_8h.html" title="PatchPair.h" alt="" coords="1187,392,1277,421"/>
+<area shape="rect" id="node40" href="$Mask_8h.html" title="Mask.h" alt="" coords="1080,469,1144,499"/>
+<area shape="rect" id="node51" href="$Layer_8h.html" title="Layer.h" alt="" coords="1873,237,1937,267"/>
+<area shape="rect" id="node29" href="$CandidatePairs_8h.html" title="CandidatePairs.h" alt="" coords="819,315,941,344"/>
+<area shape="rect" id="node47" href="$NamedITKImageCollection_8h.html" title="NamedITKImageCollection.h" alt="" coords="283,315,472,344"/>
+<area shape="rect" id="node38" href="$SourcePatchCollection_8h.html" title="SourcePatchCollection.h" alt="" coords="997,392,1163,421"/>
+<area shape="rect" id="node33" href="$Patch_8h.html" title="Patch.h" alt="" coords="1199,469,1265,499"/>
+<area shape="rect" id="node63" href="$DebugOutputs_8hxx.html" title="DebugOutputs.hxx" alt="" coords="1648,469,1779,499"/>
+<area shape="rect" id="node87" href="$ITKImageCollection_8h.html" title="ITKImageCollection.h" alt="" coords="1552,315,1699,344"/>
+<area shape="rect" id="node92" href="$Priority_8h.html" title="Priority.h" alt="" coords="1453,315,1528,344"/>
+</map>

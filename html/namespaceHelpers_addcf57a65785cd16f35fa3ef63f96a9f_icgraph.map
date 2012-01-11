@@ -1,0 +1,12 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classClusterColorsAdaptive.html#a94742b44f07a6f4e4be557b3d6fa0c04" title="ClusterColorsAdaptive::GenerateColorsVTKTopBins" alt="" coords="161,5,487,35"/>
+<area shape="rect" id="node5" href="$namespaceHelpersQt.html#a9e2047d64fdcceb0951e25572968cd62" title="HelpersQt::GetQImageColor" alt="" coords="231,59,417,88"/>
+<area shape="rect" id="node7" href="$namespaceHelpersQt.html#a019934d9bc908e7f4f1295352c19a288" title="HelpersQt::GetQImageMagnitude" alt="" coords="216,112,432,141"/>
+<area shape="rect" id="node9" href="$namespaceHelpersQt.html#a5956d2b73cbad41af5bed9e8677c4762" title="HelpersQt::GetQImageMasked" alt="" coords="223,165,425,195"/>
+<area shape="rect" id="node11" href="$namespaceHelpersQt.html#a4956a65a0b9d50f09a357f11044709f5" title="HelpersQt::GetQImageScalar" alt="" coords="228,219,420,248"/>
+<area shape="rect" id="node13" href="$DemoSelfPatchCompare_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97" title="main" alt="" coords="299,272,349,301"/>
+<area shape="rect" id="node15" href="$classMask.html#a0a2b23e9ae4936ff993203802dfa076f" title="Mask::MakeVTKImage" alt="" coords="247,325,401,355"/>
+<area shape="rect" id="node17" href="$namespaceITKHelpers.html#a7d0fd516737c9d960e14c8308b1d2d42" title="ITKHelpers::OutlineRegion" alt="" coords="235,379,413,408"/>
+<area shape="rect" id="node21" href="$namespaceHelpersOutput.html#a383af29c5807f826fc74be0e785ad36a" title="HelpersOutput::WriteMaskedRegion" alt="" coords="208,432,440,461"/>
+<area shape="rect" id="node19" href="$TestITKHelpers_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4" title="main" alt="" coords="536,379,587,408"/>
+</map>

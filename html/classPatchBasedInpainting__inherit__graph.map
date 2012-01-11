@@ -1,0 +1,6 @@
+<map id="G" name="G">
+<area shape="rect" id="node5" href="$classPatchBasedInpaintingForwardLooking.html" title="PatchBasedInpaintingForwardLooking" alt="" coords="429,5,669,35"/>
+<area shape="rect" id="node7" href="$classPatchBasedInpaintingScaleConsistent.html" title="PatchBasedInpaintingScaleConsistent" alt="" coords="427,59,672,88"/>
+<area shape="rect" id="node9" href="$classPatchBasedInpaintingTwoStepDepth.html" title="PatchBasedInpaintingTwoStepDepth" alt="" coords="432,112,667,141"/>
+<area shape="rect" id="node2" href="$classDebugOutputs.html" title="This class enables/disables the easy output of conditional outputs." alt="" coords="5,59,112,88"/>
+</map>

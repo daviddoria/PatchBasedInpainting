@@ -1,0 +1,11 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classPatchBasedInpaintingGUI.html#ae9a2b1aa976e130c7c3a17c750607b44" title="PatchBasedInpaintingGUI::on_chkDisplayForwardLookPatchLocations_clicked" alt="" coords="307,5,787,35"/>
+<area shape="rect" id="node5" href="$classPatchBasedInpaintingGUI.html#adedc004b5766cd13e077f596d16d1d92" title="PatchBasedInpaintingGUI::on_chkDisplaySourcePatchLocations_clicked" alt="" coords="324,59,769,88"/>
+<area shape="rect" id="node7" href="$classPatchBasedInpaintingGUI.html#a0ed05fe2afb4d58c537d364cb7f80586" title="PatchBasedInpaintingGUI::on_chkHighlightUsedPatches_clicked" alt="" coords="347,112,747,141"/>
+<area shape="rect" id="node9" href="$classPatchBasedInpaintingGUI.html#aa216de82c9b34123028af0b1fd405f76" title="PatchBasedInpaintingGUI::Refresh" alt="" coords="433,165,660,195"/>
+<area shape="rect" id="node11" href="$classPatchBasedInpaintingGUI.html#a3e3daa4fe6cffda3a5bbefd7f6f61d2f" title="PatchBasedInpaintingGUI::on_radDisplayChannel_clicked" alt="" coords="867,59,1227,88"/>
+<area shape="rect" id="node13" href="$classPatchBasedInpaintingGUI.html#afc166711d4815bce4627a8680af9f632" title="PatchBasedInpaintingGUI::on_radDisplayColorImage_clicked" alt="" coords="857,112,1236,141"/>
+<area shape="rect" id="node15" href="$classPatchBasedInpaintingGUI.html#a36288be2799dc3098160fe6f0fae6599" title="PatchBasedInpaintingGUI::on_radDisplayMagnitudeImage_clicked" alt="" coords="843,165,1251,195"/>
+<area shape="rect" id="node17" href="$classPatchBasedInpaintingGUI.html#a04b17bb560cfb27604d2326a14b1c179" title="PatchBasedInpaintingGUI::on_spinChannelToDisplay_valueChanged" alt="" coords="836,219,1257,248"/>
+<area shape="rect" id="node19" href="$classPatchBasedInpaintingGUI.html#a1fbd1f88a00b7e9aa4d9a070754571f2" title="PatchBasedInpaintingGUI::slot_IterationComplete" alt="" coords="891,272,1203,301"/>
+</map>

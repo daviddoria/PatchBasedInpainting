@@ -1,0 +1,8 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classClusterColorsUniform.html#a444835d9c4640a00401d57dfb1922d2a" title="ClusterColorsUniform::GenerateColors" alt="" coords="360,5,605,35"/>
+<area shape="rect" id="node5" href="$classClusterColorsAdaptive.html#a22fbbbd61c559e5ff72cafbf92f965f4" title="ClusterColorsAdaptive::GenerateColorsVTKBin" alt="" coords="335,59,631,88"/>
+<area shape="rect" id="node9" href="$classClusterColorsAdaptive.html#ac1af45a54149de7d76911c6b0f839860" title="ClusterColorsAdaptive::GenerateColorsVTKKMeans" alt="" coords="320,112,645,141"/>
+<area shape="rect" id="node11" href="$classClusterColorsAdaptive.html#a5efaa69d4b16738a6a1072207f098d58" title="ClusterColorsAdaptive::GenerateColorsVTKQuantize" alt="" coords="317,165,648,195"/>
+<area shape="rect" id="node13" href="$classClusterColorsAdaptive.html#a94742b44f07a6f4e4be557b3d6fa0c04" title="ClusterColorsAdaptive::GenerateColorsVTKTopBins" alt="" coords="320,219,645,248"/>
+<area shape="rect" id="node7" href="$classClusterColorsAdaptive.html#a6e0077ef2822f0e1910c50d1ec15d101" title="ClusterColorsAdaptive::GenerateColors" alt="" coords="697,59,948,88"/>
+</map>

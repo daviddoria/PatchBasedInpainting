@@ -1,0 +1,11 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classPatchDifferencePixelWiseSum.html#a5d126295a8950691a45856ad7fceb41e" title="PatchDifferencePixelWiseSum::Difference" alt="" coords="233,5,503,35"/>
+<area shape="rect" id="node5" href="$classPatchDifference.html#ac382287d789bc2eafa986c24c4ea5b12" title="PatchDifference::Difference" alt="" coords="276,59,460,88"/>
+<area shape="rect" id="node7" href="$classPatchBasedInpainting.html#a90c16cf81635e4db4569bd15f17035df" title="PatchBasedInpainting::Iterate" alt="" coords="271,112,465,141"/>
+<area shape="rect" id="node18" href="$TestPatchPair_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97" title="main" alt="" coords="343,165,393,195"/>
+<area shape="rect" id="node20" href="$classPatchPair.html#a68a2bb02339fff7a8c4280cff049dcd7" title="PatchPair::VisitAllValidPixels" alt="" coords="272,219,464,248"/>
+<area shape="rect" id="node9" href="$classInpaintingComputationObject.html#a7ecfb49077ae3e9ac070e8ad8ada7346" title="InpaintingComputationObject::AllSteps" alt="" coords="560,59,805,88"/>
+<area shape="rect" id="node13" href="$DemoColorImageByScore_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97" title="main" alt="" coords="657,112,708,141"/>
+<area shape="rect" id="node15" href="$classInpaintingComputationObject.html#aba4b4365cfdb3350695c06d5a8d3dbac" title="InpaintingComputationObject::SingleStep" alt="" coords="552,165,813,195"/>
+<area shape="rect" id="node11" href="$classInpaintingComputationObject.html#a5d98b9722426d759ba18c65135405022" title="InpaintingComputationObject::start" alt="" coords="861,112,1085,141"/>
+</map>

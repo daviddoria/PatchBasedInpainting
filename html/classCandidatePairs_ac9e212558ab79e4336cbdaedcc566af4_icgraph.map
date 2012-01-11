@@ -1,0 +1,9 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classCandidatePairs.html#af7333829f4c3d8e47d4ac1c0d1eed4ec" title="CandidatePairs::Combine" alt="" coords="289,5,460,35"/>
+<area shape="rect" id="node5" href="$classTableModelTopPatches.html#a46e53baefe6becd61ea029a687047a49" title="TableModelTopPatches::data" alt="" coords="279,59,471,88"/>
+<area shape="rect" id="node7" href="$classPatchBasedInpaintingTwoStepDepth.html#aa9b01f8a5c40531cee5ebc2fe97097ad" title="PatchBasedInpaintingTwoStepDepth::FindBestPatch" alt="" coords="209,136,540,165"/>
+<area shape="rect" id="node10" href="$classPatchBasedInpaintingScaleConsistent.html#a6f87ea3ca0e72da59b85f9104b2fd883" title="PatchBasedInpaintingScaleConsistent::FindBestPatch" alt="" coords="205,213,544,243"/>
+<area shape="rect" id="node13" href="$TestCandidatePairs_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97" title="main" alt="" coords="349,267,400,296"/>
+<area shape="rect" id="node15" href="$classCandidatePairs.html#aa54bb0f7bd4ea92fa82e575ea5367bec" title="CandidatePairs::VisitAllPatchPairs" alt="" coords="263,320,487,349"/>
+<area shape="rect" id="node17" href="$TestPixelWiseDifferencePatchPairVisitor_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97" title="main" alt="" coords="592,320,643,349"/>
+</map>

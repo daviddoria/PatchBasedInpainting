@@ -1,0 +1,28 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$PatchBasedInpainting_8h.html" title="PatchBasedInpainting.h" alt="" coords="576,160,736,189"/>
+<area shape="rect" id="node11" href="$Types_8h.html" title="Types.h" alt="" coords="1248,469,1317,499"/>
+<area shape="rect" id="node50" href="$Derivatives_8h.html" title="Derivatives.h" alt="" coords="2096,83,2195,112"/>
+<area shape="rect" id="node55" href="$Helpers_8h.html" title="Helpers/Helpers.h" alt="" coords="1989,237,2115,267"/>
+<area shape="rect" id="node64" href="$ITKHelpers_8h.html" title="Helpers/ITKHelpers.h" alt="" coords="1211,315,1357,344"/>
+<area shape="rect" id="node70" href="$HelpersOutput_8h.html" title="Helpers/HelpersOutput.h" alt="" coords="1839,83,2004,112"/>
+<area shape="rect" id="node79" href="$MaskOperations_8h.html" title="MaskOperations.h" alt="" coords="1055,160,1183,189"/>
+<area shape="rect" id="node88" href="$PatchDifferencePixelWiseSum_8h.html" title="PatchDifferencePixelWiseSum.h" alt="" coords="1488,160,1701,189"/>
+<area shape="rect" id="node97" href="$PriorityFactory_8h.html" title="PriorityFactory.h" alt="" coords="2279,83,2396,112"/>
+<area shape="rect" id="node106" href="$PriorityRandom_8h.html" title="PriorityRandom.h" alt="" coords="2576,237,2699,267"/>
+<area shape="rect" id="node5" href="$CandidatePairs_8h.html" title="CandidatePairs.h" alt="" coords="669,237,792,267"/>
+<area shape="rect" id="node7" href="$PatchPair_8h.html" title="PatchPair.h" alt="" coords="859,315,949,344"/>
+<area shape="rect" id="node9" href="$Patch_8h.html" title="Patch.h" alt="" coords="1180,392,1247,421"/>
+<area shape="rect" id="node21" href="$SourcePatchCollection_8h.html" title="SourcePatchCollection.h" alt="" coords="669,315,835,344"/>
+<area shape="rect" id="node23" href="$Mask_8h.html" title="Mask.h" alt="" coords="959,392,1023,421"/>
+<area shape="rect" id="node30" href="$DebugOutputs_8h.html" title="DebugOutputs.h" alt="" coords="2240,392,2357,421"/>
+<area shape="rect" id="node34" href="$ITKImageCollection_8h.html" title="ITKImageCollection.h" alt="" coords="195,237,341,267"/>
+<area shape="rect" id="node39" href="$Priority_8h.html" title="Priority.h" alt="" coords="2424,315,2499,344"/>
+<area shape="rect" id="node53" href="$Derivatives_8hxx.html" title="Derivatives.hxx" alt="" coords="1877,160,1989,189"/>
+<area shape="rect" id="node59" href="$Helpers_8hxx.html" title="Helpers.hxx" alt="" coords="2007,315,2097,344"/>
+<area shape="rect" id="node74" href="$HelpersOutput_8hxx.html" title="HelpersOutput.hxx" alt="" coords="2013,160,2144,189"/>
+<area shape="rect" id="node84" href="$MaskOperations_8hxx.html" title="MaskOperations.hxx" alt="" coords="968,237,1109,267"/>
+<area shape="rect" id="node90" href="$PatchDifference_8h.html" title="PatchDifference.h" alt="" coords="1637,237,1763,267"/>
+<area shape="rect" id="node95" href="$PatchDifferencePixelWiseSum_8hxx.html" title="PatchDifferencePixelWiseSum.hxx" alt="" coords="1336,237,1563,267"/>
+<area shape="rect" id="node102" href="$PriorityFactory_8hxx.html" title="PriorityFactory.hxx" alt="" coords="2269,160,2400,189"/>
+<area shape="rect" id="node109" href="$PriorityRandom_8hxx.html" title="PriorityRandom.hxx" alt="" coords="2573,315,2709,344"/>
+</map>

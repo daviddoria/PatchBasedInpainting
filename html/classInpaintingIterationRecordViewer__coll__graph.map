@@ -1,0 +1,12 @@
+<map id="G" name="G">
+<area shape="rect" id="node2" href="$classInpaintingIterationRecord.html" title="InpaintingIterationRecord" alt="" coords="597,32,763,61"/>
+<area shape="rect" id="node4" href="$classNamedITKImageCollection.html" title="NamedITKImageCollection" alt="" coords="277,5,456,35"/>
+<area shape="rect" id="node6" href="$classPatchPair.html" title="A source patch and a target patch." alt="" coords="328,59,405,88"/>
+<area shape="rect" id="node8" href="$classPatch.html" title="This class indicates a rectangular region in an image. It is not associated with a particular image..." alt="" coords="51,32,107,61"/>
+<area shape="rect" id="node10" href="$classPatchPairDifferences.html" title="Store different types of differences." alt="" coords="5,85,152,115"/>
+<area shape="rect" id="node12" href="$classInpaintingDisplaySettings.html" title="InpaintingDisplaySettings" alt="" coords="595,85,765,115"/>
+<area shape="rect" id="node14" href="$classLayer.html" title="Layer" alt="" coords="653,197,707,227"/>
+<area shape="rect" id="node16" href="$structDisplayState.html" title="DisplayState" alt="" coords="632,251,728,280"/>
+<area shape="rect" id="node18" href="$structDisplayStyle.html" title="DisplayStyle" alt="" coords="632,304,728,333"/>
+<area shape="rect" id="node20" href="$classColorPalette.html" title="ColorPalette" alt="" coords="633,357,727,387"/>
+</map>

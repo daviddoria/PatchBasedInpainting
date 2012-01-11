@@ -1,0 +1,27 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$PriorityDepth_8h.html" title="PriorityDepth.h" alt="" coords="1909,83,2019,112"/>
+<area shape="rect" id="node69" href="$HelpersOutput_8h.html" title="Helpers/HelpersOutput.h" alt="" coords="948,315,1113,344"/>
+<area shape="rect" id="node115" href="$Derivatives_8h.html" title="Derivatives.h" alt="" coords="2135,315,2233,344"/>
+<area shape="rect" id="node126" href="$Isophotes_8h.html" title="Isophotes.h" alt="" coords="2495,624,2585,653"/>
+<area shape="rect" id="node130" href="$MaskOperations_8h.html" title="MaskOperations.h" alt="" coords="2577,315,2705,344"/>
+<area shape="rect" id="node5" href="$Priority_8h.html" title="Priority.h" alt="" coords="816,160,891,189"/>
+<area shape="rect" id="node7" href="$DebugOutputs_8h.html" title="DebugOutputs.h" alt="" coords="509,237,627,267"/>
+<area shape="rect" id="node17" href="$NamedVTKImage_8h.html" title="NamedVTKImage.h" alt="" coords="349,237,485,267"/>
+<area shape="rect" id="node26" href="$Types_8h.html" title="Types.h" alt="" coords="1877,779,1947,808"/>
+<area shape="rect" id="node40" href="$Priority_8hxx.html" title="Priority.hxx" alt="" coords="809,237,897,267"/>
+<area shape="rect" id="node11" href="$DebugOutputs_8hxx.html" title="DebugOutputs.hxx" alt="" coords="485,315,616,344"/>
+<area shape="rect" id="node43" href="$Helpers_8h.html" title="Helpers/Helpers.h" alt="" coords="968,469,1093,499"/>
+<area shape="rect" id="node84" href="$ITKHelpers_8h.html" title="Helpers/ITKHelpers.h" alt="" coords="1720,469,1867,499"/>
+<area shape="rect" id="node101" href="$ITKVTKHelpers_8h.html" title="Helpers/ITKVTKHelpers.h" alt="" coords="212,469,385,499"/>
+<area shape="rect" id="node45" href="$Patch_8h.html" title="Patch.h" alt="" coords="923,547,989,576"/>
+<area shape="rect" id="node63" href="$Helpers_8hxx.html" title="Helpers.hxx" alt="" coords="1169,547,1260,576"/>
+<area shape="rect" id="node48" href="$PixelVisitor_8h.html" title="PixelVisitor.h" alt="" coords="740,624,839,653"/>
+<area shape="rect" id="node50" href="$Patch_8hxx.html" title="Patch.hxx" alt="" coords="913,624,993,653"/>
+<area shape="rect" id="node53" href="$Mask_8h.html" title="Mask.h" alt="" coords="1803,701,1867,731"/>
+<area shape="rect" id="node57" href="$Mask_8hxx.html" title="Mask.hxx" alt="" coords="1776,779,1853,808"/>
+<area shape="rect" id="node73" href="$HelpersOutput_8hxx.html" title="HelpersOutput.hxx" alt="" coords="965,392,1096,421"/>
+<area shape="rect" id="node88" href="$ITKHelpers_8hxx.html" title="ITKHelpers.hxx" alt="" coords="1737,547,1849,576"/>
+<area shape="rect" id="node108" href="$ITKVTKHelpers_8hxx.html" title="ITKVTKHelpers.hxx" alt="" coords="352,547,491,576"/>
+<area shape="rect" id="node118" href="$Derivatives_8hxx.html" title="Derivatives.hxx" alt="" coords="1891,392,2003,421"/>
+<area shape="rect" id="node135" href="$MaskOperations_8hxx.html" title="MaskOperations.hxx" alt="" coords="2135,392,2276,421"/>
+</map>

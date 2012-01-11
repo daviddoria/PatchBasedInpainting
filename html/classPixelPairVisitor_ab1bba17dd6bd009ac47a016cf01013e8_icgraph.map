@@ -1,0 +1,6 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classPatchPair.html#a25f6649f74614f11fe1f27358212faf8" title="PatchPair::VisitAllPixels" alt="" coords="216,5,379,35"/>
+<area shape="rect" id="node7" href="$classPatchPair.html#a68a2bb02339fff7a8c4280cff049dcd7" title="PatchPair::VisitAllValidPixels" alt="" coords="201,59,393,88"/>
+<area shape="rect" id="node9" href="$classPatchPair.html#aaf5268a2c771e834c9b83b7db3d63e2a" title="PatchPair::VisitOffsets" alt="" coords="220,112,375,141"/>
+<area shape="rect" id="node5" href="$classPixelWiseDifferencePatchPairVisitor.html#a889292740203c0b5319ac960d708b04e" title="PixelWiseDifferencePatchPairVisitor::Visit" alt="" coords="443,5,712,35"/>
+</map>

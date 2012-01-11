@@ -1,0 +1,33 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$PriorityRandom_8h.html" title="PriorityRandom.h" alt="" coords="483,83,605,112"/>
+<area shape="rect" id="node5" href="$PriorityManual_8h.html" title="PriorityManual.h" alt="" coords="315,160,429,189"/>
+<area shape="rect" id="node7" href="$PriorityFactory_8hxx.html" title="PriorityFactory.hxx" alt="" coords="5,237,136,267"/>
+<area shape="rect" id="node11" href="$PatchBasedInpainting_8hxx.html" title="PatchBasedInpainting.hxx" alt="" coords="1259,392,1432,421"/>
+<area shape="rect" id="node34" href="$PatchBasedInpaintingGUI_8cpp.html" title="Interactive/PatchBasedInpaintingGUI.cpp" alt="" coords="413,701,675,731"/>
+<area shape="rect" id="node71" href="$TestPriorityRandom_8cpp.html" title="Tests/TestPriorityRandom.cpp" alt="" coords="632,160,832,189"/>
+<area shape="rect" id="node63" href="$PriorityManual_8cpp.html" title="PriorityManual.cpp" alt="" coords="376,237,507,267"/>
+<area shape="rect" id="node65" href="$TestPriorityManual_8cpp.html" title="Tests/TestPriorityManual.cpp" alt="" coords="160,237,352,267"/>
+<area shape="rect" id="node9" href="$PriorityFactory_8h.html" title="PriorityFactory.h" alt="" coords="145,315,263,344"/>
+<area shape="rect" id="node59" href="$PriorityFactory_8cpp.html" title="PriorityFactory.cpp" alt="" coords="309,392,440,421"/>
+<area shape="rect" id="node61" href="$TestPriorityFactory_8cpp.html" title="Tests/TestPriorityFactory.cpp" alt="" coords="40,392,235,421"/>
+<area shape="rect" id="node13" href="$PatchBasedInpainting_8h.html" title="PatchBasedInpainting.h" alt="" coords="1943,469,2103,499"/>
+<area shape="rect" id="node15" href="$DemoBoundaryNormals2_8cpp.html" title="Demos/DemoBoundaryNormals2.cpp" alt="" coords="2165,547,2403,576"/>
+<area shape="rect" id="node18" href="$DemoColorImageByScore_8cpp.html" title="Demos/DemoColorImageByScore.cpp" alt="" coords="2427,547,2672,576"/>
+<area shape="rect" id="node20" href="$DemoFollowIsophotesAcrossBoundary_8cpp.html" title="Demos/DemoFollowIsophotesAcrossBoundary.cpp" alt="" coords="3256,547,3573,576"/>
+<area shape="rect" id="node22" href="$DemoGradient_8cpp.html" title="Demos/DemoGradient.cpp" alt="" coords="3597,547,3773,576"/>
+<area shape="rect" id="node24" href="$DemoIsophotes_8cpp.html" title="Demos/DemoIsophotes.cpp" alt="" coords="581,547,765,576"/>
+<area shape="rect" id="node26" href="$DemoPatchSearchFunction_8cpp.html" title="Demos/DemoPatchSearchFunction.cpp" alt="" coords="789,547,1043,576"/>
+<area shape="rect" id="node28" href="$InpaintingComputationObject_8h.html" title="Interactive/InpaintingComputationObject.h" alt="" coords="2965,547,3232,576"/>
+<area shape="rect" id="node32" href="$PatchBasedInpaintingGUI_8h.html" title="Interactive/PatchBasedInpaintingGUI.h" alt="" coords="3263,624,3511,653"/>
+<area shape="rect" id="node41" href="$PatchBasedInpaintingForwardLooking_8h.html" title="PatchBasedInpaintingForwardLooking.h" alt="" coords="1067,547,1317,576"/>
+<area shape="rect" id="node45" href="$PatchBasedInpaintingNonInteractive_8cpp.html" title="PatchBasedInpaintingNonInteractive.cpp" alt="" coords="1621,547,1880,576"/>
+<area shape="rect" id="node47" href="$PatchBasedInpaintingScaleConsistent_8h.html" title="PatchBasedInpaintingScaleConsistent.h" alt="" coords="1341,547,1597,576"/>
+<area shape="rect" id="node51" href="$PatchBasedInpaintingTwoStepDepth_8h.html" title="PatchBasedInpaintingTwoStepDepth.h" alt="" coords="2696,547,2941,576"/>
+<area shape="rect" id="node55" href="$TestPatchBasedInpainting_8cpp.html" title="Tests/TestPatchBasedInpainting.cpp" alt="" coords="1904,547,2141,576"/>
+<area shape="rect" id="node30" href="$InpaintingComputationObject_8cpp.html" title="Interactive/InpaintingComputationObject.cpp" alt="" coords="2959,624,3239,653"/>
+<area shape="rect" id="node36" href="$PatchBasedInpaintingGUISlots_8cpp.html" title="Interactive/PatchBasedInpaintingGUISlots.cpp" alt="" coords="3080,701,3373,731"/>
+<area shape="rect" id="node38" href="$PatchBasedInpaintingInteractive_8cpp.html" title="Interactive/PatchBasedInpaintingInteractive.cpp" alt="" coords="3397,701,3696,731"/>
+<area shape="rect" id="node43" href="$PatchBasedInpaintingForwardLooking_8cpp.html" title="PatchBasedInpaintingForwardLooking.cpp" alt="" coords="1051,624,1317,653"/>
+<area shape="rect" id="node49" href="$PatchBasedInpaintingScaleConsistent_8cpp.html" title="PatchBasedInpaintingScaleConsistent.cpp" alt="" coords="1341,624,1611,653"/>
+<area shape="rect" id="node53" href="$PatchBasedInpaintingTwoStepDepth_8cpp.html" title="PatchBasedInpaintingTwoStepDepth.cpp" alt="" coords="2673,624,2935,653"/>
+</map>

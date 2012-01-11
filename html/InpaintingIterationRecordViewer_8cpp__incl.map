@@ -1,0 +1,28 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$InpaintingIterationRecordViewer_8h.html" title="InpaintingIterationRecordViewer.h" alt="" coords="739,83,957,112"/>
+<area shape="rect" id="node73" href="$Helpers_8h.html" title="Helpers/Helpers.h" alt="" coords="1665,315,1791,344"/>
+<area shape="rect" id="node85" href="$ITKVTKHelpers_8h.html" title="Helpers/ITKVTKHelpers.h" alt="" coords="1964,160,2137,189"/>
+<area shape="rect" id="node99" href="$VTKHelpers_8h.html" title="Helpers/VTKHelpers.h" alt="" coords="1749,83,1901,112"/>
+<area shape="rect" id="node101" href="$HelpersQt_8h.html" title="HelpersQt.h" alt="" coords="1535,160,1625,189"/>
+<area shape="rect" id="node5" href="$ColorPalette_8h.html" title="ColorPalette.h" alt="" coords="743,160,847,189"/>
+<area shape="rect" id="node9" href="$DisplayStyle_8h.html" title="DisplayStyle.h" alt="" coords="1009,237,1116,267"/>
+<area shape="rect" id="node11" href="$DisplayState_8h.html" title="DisplayState.h" alt="" coords="511,160,617,189"/>
+<area shape="rect" id="node13" href="$InpaintingIterationRecord_8h.html" title="InpaintingIterationRecord.h" alt="" coords="181,160,360,189"/>
+<area shape="rect" id="node17" href="$PatchPair_8h.html" title="PatchPair.h" alt="" coords="564,315,655,344"/>
+<area shape="rect" id="node44" href="$Mask_8h.html" title="Mask.h" alt="" coords="1199,547,1263,576"/>
+<area shape="rect" id="node64" href="$Layer_8h.html" title="Layer.h" alt="" coords="871,160,935,189"/>
+<area shape="rect" id="node70" href="$InpaintingDisplaySettings_8h.html" title="InpaintingDisplaySettings.h" alt="" coords="1009,160,1191,189"/>
+<area shape="rect" id="node15" href="$CandidatePairs_8h.html" title="CandidatePairs.h" alt="" coords="308,237,431,267"/>
+<area shape="rect" id="node25" href="$Types_8h.html" title="Types.h" alt="" coords="1471,624,1540,653"/>
+<area shape="rect" id="node60" href="$NamedITKImageCollection_8h.html" title="NamedITKImageCollection.h" alt="" coords="44,237,233,267"/>
+<area shape="rect" id="node19" href="$PatchPairDifferences_8h.html" title="PatchPairDifferences.h" alt="" coords="487,392,644,421"/>
+<area shape="rect" id="node23" href="$Patch_8h.html" title="Patch.h" alt="" coords="1263,392,1329,421"/>
+<area shape="rect" id="node52" href="$PixelPairVisitor_8h.html" title="PixelPairVisitor.h" alt="" coords="668,392,791,421"/>
+<area shape="rect" id="node56" href="$PatchPair_8hxx.html" title="PatchPair.hxx" alt="" coords="359,392,463,421"/>
+<area shape="rect" id="node39" href="$PixelVisitor_8h.html" title="PixelVisitor.h" alt="" coords="1304,469,1403,499"/>
+<area shape="rect" id="node41" href="$Patch_8hxx.html" title="Patch.hxx" alt="" coords="1200,469,1280,499"/>
+<area shape="rect" id="node48" href="$Mask_8hxx.html" title="Mask.hxx" alt="" coords="1708,624,1785,653"/>
+<area shape="rect" id="node77" href="$Helpers_8hxx.html" title="Helpers.hxx" alt="" coords="1740,469,1831,499"/>
+<area shape="rect" id="node92" href="$ITKVTKHelpers_8hxx.html" title="ITKVTKHelpers.hxx" alt="" coords="2184,237,2323,267"/>
+<area shape="rect" id="node108" href="$HelpersQt_8hxx.html" title="HelpersQt.hxx" alt="" coords="1447,237,1553,267"/>
+</map>

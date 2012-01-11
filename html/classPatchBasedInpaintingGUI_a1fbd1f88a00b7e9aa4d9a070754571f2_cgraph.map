@@ -1,0 +1,7 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classDebugOutputs.html#ad53c3128f1ce9d6563b4a72771b73a2f" title="DebugOutputs::EnterFunction" alt="" coords="944,23,1139,52"/>
+<area shape="rect" id="node5" href="$classDebugOutputs.html#a6216284cb93c9693867711303a90140e" title="DebugOutputs::LeaveFunction" alt="" coords="943,128,1140,158"/>
+<area shape="rect" id="node7" href="$classPatchBasedInpaintingGUI.html#aa216de82c9b34123028af0b1fd405f76" title="PatchBasedInpaintingGUI::Refresh" alt="" coords="365,75,592,104"/>
+<area shape="rect" id="node11" href="$classPatchBasedInpaintingGUI.html#a7f65f11caccaa9295c0b078aa8ff320d" title="PatchBasedInpaintingGUI::RefreshQt" alt="" coords="647,102,887,131"/>
+<area shape="rect" id="node15" href="$classPatchBasedInpaintingGUI.html#a695e6d61206676a59779e5e4411bcd12" title="PatchBasedInpaintingGUI::RefreshVTK" alt="" coords="640,48,893,78"/>
+</map>

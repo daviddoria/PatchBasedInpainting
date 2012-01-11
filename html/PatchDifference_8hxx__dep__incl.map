@@ -1,0 +1,29 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$PatchDifference_8h.html" title="PatchDifference.h" alt="" coords="1969,83,2095,112"/>
+<area shape="rect" id="node5" href="$PatchDifferencePixelWiseSum_8h.html" title="PatchDifferencePixelWiseSum.h" alt="" coords="1801,160,2015,189"/>
+<area shape="rect" id="node57" href="$PatchDifferencePixelWiseAverage_8h.html" title="PatchDifferencePixelWiseAverage.h" alt="" coords="2039,160,2273,189"/>
+<area shape="rect" id="node7" href="$PatchBasedInpainting_8hxx.html" title="PatchBasedInpainting.hxx" alt="" coords="1609,237,1783,267"/>
+<area shape="rect" id="node53" href="$TestPatchDifference_8cpp.html" title="Tests/TestPatchDifference.cpp" alt="" coords="1807,237,2009,267"/>
+<area shape="rect" id="node55" href="$TestSelfPatchCompare_8cpp.html" title="Tests/TestSelfPatchCompare.cpp" alt="" coords="2033,237,2252,267"/>
+<area shape="rect" id="node9" href="$PatchBasedInpainting_8h.html" title="PatchBasedInpainting.h" alt="" coords="1616,315,1776,344"/>
+<area shape="rect" id="node11" href="$DemoBoundaryNormals2_8cpp.html" title="Demos/DemoBoundaryNormals2.cpp" alt="" coords="5,392,243,421"/>
+<area shape="rect" id="node14" href="$DemoColorImageByScore_8cpp.html" title="Demos/DemoColorImageByScore.cpp" alt="" coords="267,392,512,421"/>
+<area shape="rect" id="node16" href="$DemoFollowIsophotesAcrossBoundary_8cpp.html" title="Demos/DemoFollowIsophotesAcrossBoundary.cpp" alt="" coords="536,392,853,421"/>
+<area shape="rect" id="node18" href="$DemoGradient_8cpp.html" title="Demos/DemoGradient.cpp" alt="" coords="877,392,1053,421"/>
+<area shape="rect" id="node20" href="$DemoIsophotes_8cpp.html" title="Demos/DemoIsophotes.cpp" alt="" coords="1077,392,1261,421"/>
+<area shape="rect" id="node22" href="$DemoPatchSearchFunction_8cpp.html" title="Demos/DemoPatchSearchFunction.cpp" alt="" coords="1285,392,1539,421"/>
+<area shape="rect" id="node24" href="$InpaintingComputationObject_8h.html" title="Interactive/InpaintingComputationObject.h" alt="" coords="1563,392,1829,421"/>
+<area shape="rect" id="node28" href="$PatchBasedInpaintingGUI_8h.html" title="Interactive/PatchBasedInpaintingGUI.h" alt="" coords="1683,469,1931,499"/>
+<area shape="rect" id="node37" href="$PatchBasedInpaintingForwardLooking_8h.html" title="PatchBasedInpaintingForwardLooking.h" alt="" coords="1904,392,2155,421"/>
+<area shape="rect" id="node41" href="$PatchBasedInpaintingNonInteractive_8cpp.html" title="PatchBasedInpaintingNonInteractive.cpp" alt="" coords="2179,392,2437,421"/>
+<area shape="rect" id="node43" href="$PatchBasedInpaintingScaleConsistent_8h.html" title="PatchBasedInpaintingScaleConsistent.h" alt="" coords="2461,392,2717,421"/>
+<area shape="rect" id="node47" href="$PatchBasedInpaintingTwoStepDepth_8h.html" title="PatchBasedInpaintingTwoStepDepth.h" alt="" coords="2741,392,2987,421"/>
+<area shape="rect" id="node51" href="$TestPatchBasedInpainting_8cpp.html" title="Tests/TestPatchBasedInpainting.cpp" alt="" coords="3011,392,3248,421"/>
+<area shape="rect" id="node26" href="$InpaintingComputationObject_8cpp.html" title="Interactive/InpaintingComputationObject.cpp" alt="" coords="1379,469,1659,499"/>
+<area shape="rect" id="node30" href="$PatchBasedInpaintingGUI_8cpp.html" title="Interactive/PatchBasedInpaintingGUI.cpp" alt="" coords="1375,547,1636,576"/>
+<area shape="rect" id="node32" href="$PatchBasedInpaintingGUISlots_8cpp.html" title="Interactive/PatchBasedInpaintingGUISlots.cpp" alt="" coords="1660,547,1953,576"/>
+<area shape="rect" id="node34" href="$PatchBasedInpaintingInteractive_8cpp.html" title="Interactive/PatchBasedInpaintingInteractive.cpp" alt="" coords="1977,547,2276,576"/>
+<area shape="rect" id="node39" href="$PatchBasedInpaintingForwardLooking_8cpp.html" title="PatchBasedInpaintingForwardLooking.cpp" alt="" coords="1955,469,2221,499"/>
+<area shape="rect" id="node45" href="$PatchBasedInpaintingScaleConsistent_8cpp.html" title="PatchBasedInpaintingScaleConsistent.cpp" alt="" coords="2447,469,2716,499"/>
+<area shape="rect" id="node49" href="$PatchBasedInpaintingTwoStepDepth_8cpp.html" title="PatchBasedInpaintingTwoStepDepth.cpp" alt="" coords="2740,469,3001,499"/>
+</map>

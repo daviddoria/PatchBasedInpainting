@@ -1,0 +1,11 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$DisplayState_8cpp.html" title="Interactive/DisplayState.cpp" alt="" coords="228,83,415,112"/>
+<area shape="rect" id="node5" href="$InpaintingIterationRecordViewer_8h.html" title="Interactive/InpaintingIterationRecordViewer.h" alt="" coords="439,83,721,112"/>
+<area shape="rect" id="node9" href="$PatchBasedInpaintingGUI_8h.html" title="Interactive/PatchBasedInpaintingGUI.h" alt="" coords="709,160,957,189"/>
+<area shape="rect" id="node20" href="$TestDisplayState_8cpp.html" title="Interactive/Tests/TestDisplayState.cpp" alt="" coords="796,83,1047,112"/>
+<area shape="rect" id="node7" href="$InpaintingIterationRecordViewer_8cpp.html" title="Interactive/InpaintingIterationRecordViewer.cpp" alt="" coords="5,160,301,189"/>
+<area shape="rect" id="node17" href="$TestInpaintingIterationRecordViewer_8cpp.html" title="Interactive/Tests/TestInpaintingIterationRecordViewer.cpp" alt="" coords="325,160,685,189"/>
+<area shape="rect" id="node11" href="$PatchBasedInpaintingGUI_8cpp.html" title="Interactive/PatchBasedInpaintingGUI.cpp" alt="" coords="401,237,663,267"/>
+<area shape="rect" id="node13" href="$PatchBasedInpaintingGUISlots_8cpp.html" title="Interactive/PatchBasedInpaintingGUISlots.cpp" alt="" coords="687,237,980,267"/>
+<area shape="rect" id="node15" href="$PatchBasedInpaintingInteractive_8cpp.html" title="Interactive/PatchBasedInpaintingInteractive.cpp" alt="" coords="1004,237,1303,267"/>
+</map>

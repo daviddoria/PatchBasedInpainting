@@ -1,0 +1,17 @@
+<map id="G" name="G">
+<area shape="rect" id="node5" href="$FileSelector_8h.html" title="FileSelector.h" alt="" coords="375,83,476,112"/>
+<area shape="rect" id="node8" href="$FileSelectionWidget_8h.html" title="Widgets/FileSelectionWidget.h" alt="" coords="147,160,347,189"/>
+<area shape="rect" id="node14" href="$Mask_8h.html" title="Mask.h" alt="" coords="629,469,693,499"/>
+<area shape="rect" id="node18" href="$Types_8h.html" title="Types.h" alt="" coords="1152,547,1221,576"/>
+<area shape="rect" id="node39" href="$Helpers_8h.html" title="Helpers/Helpers.h" alt="" coords="977,237,1103,267"/>
+<area shape="rect" id="node61" href="$HelpersQt_8h.html" title="HelpersQt.h" alt="" coords="3717,83,3808,112"/>
+<area shape="rect" id="node31" href="$Mask_8hxx.html" title="Mask.hxx" alt="" coords="616,547,693,576"/>
+<area shape="rect" id="node41" href="$Patch_8h.html" title="Patch.h" alt="" coords="1007,315,1073,344"/>
+<area shape="rect" id="node53" href="$Helpers_8hxx.html" title="Helpers.hxx" alt="" coords="892,315,983,344"/>
+<area shape="rect" id="node44" href="$PixelVisitor_8h.html" title="PixelVisitor.h" alt="" coords="1136,392,1235,421"/>
+<area shape="rect" id="node46" href="$Patch_8hxx.html" title="Patch.hxx" alt="" coords="819,392,899,421"/>
+<area shape="rect" id="node67" href="$DisplayStyle_8h.html" title="DisplayStyle.h" alt="" coords="3709,160,3816,189"/>
+<area shape="rect" id="node70" href="$HelpersQt_8hxx.html" title="HelpersQt.hxx" alt="" coords="3579,160,3685,189"/>
+<area shape="rect" id="node79" href="$ITKHelpers_8h.html" title="Helpers/ITKHelpers.h" alt="" coords="2363,237,2509,267"/>
+<area shape="rect" id="node83" href="$ITKHelpers_8hxx.html" title="ITKHelpers.hxx" alt="" coords="2380,315,2492,344"/>
+</map>

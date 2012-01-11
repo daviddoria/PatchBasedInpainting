@@ -1,0 +1,20 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classTableModelTopPatches.html#a46e53baefe6becd61ea029a687047a49" title="TableModelTopPatches::data" alt="" coords="221,5,413,35"/>
+<area shape="rect" id="node5" href="$classTableModelForwardLook.html#a5d1b38ba5bcc4a7ab1ae89f833b8ddb7" title="TableModelForwardLook::data" alt="" coords="219,59,416,88"/>
+<area shape="rect" id="node7" href="$classPatchDifferencePixelWiseSum.html#a5d126295a8950691a45856ad7fceb41e" title="PatchDifferencePixelWiseSum::Difference" alt="" coords="183,112,452,141"/>
+<area shape="rect" id="node9" href="$classPatchDifference.html#ac382287d789bc2eafa986c24c4ea5b12" title="PatchDifference::Difference" alt="" coords="225,165,409,195"/>
+<area shape="rect" id="node11" href="$classPatchPair.html#a60e2aa2fec599b113c89da99022be84c" title="PatchPair::GetSourceToTargetOffset" alt="" coords="199,272,436,301"/>
+<area shape="rect" id="node21" href="$classPatchPair.html#a544323a9ec71739c23aec8560d5b1a56" title="PatchPair::GetTargetToSourceOffset" alt="" coords="199,219,436,248"/>
+<area shape="rect" id="node27" href="$classPatchBasedInpainting.html#a90c16cf81635e4db4569bd15f17035df" title="PatchBasedInpainting::Iterate" alt="" coords="220,325,415,355"/>
+<area shape="rect" id="node38" href="$TestPatch_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97" title="main" alt="" coords="292,379,343,408"/>
+<area shape="rect" id="node40" href="$Patch_8cpp.html#a9e52fe38b863f93094d8f2e419f3298c" title="operator\&lt;\&lt;" alt="" coords="275,432,360,461"/>
+<area shape="rect" id="node13" href="$SourceTargetBoundary_8cpp.html#aeca03b44e5da5b2fa9ceb2b59ad0e499" title="ComputeAverageIsophoteSourcePatch" alt="" coords="508,219,756,248"/>
+<area shape="rect" id="node15" href="$TestPatchPair_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97" title="main" alt="" coords="607,165,657,195"/>
+<area shape="rect" id="node17" href="$classPatchPair.html#a25f6649f74614f11fe1f27358212faf8" title="PatchPair::VisitAllPixels" alt="" coords="551,272,713,301"/>
+<area shape="rect" id="node19" href="$classPixelWiseDifferencePatchPairVisitor.html#a889292740203c0b5319ac960d708b04e" title="PixelWiseDifferencePatchPairVisitor::Visit" alt="" coords="811,272,1080,301"/>
+<area shape="rect" id="node25" href="$classPatchPair.html#a68a2bb02339fff7a8c4280cff049dcd7" title="PatchPair::VisitAllValidPixels" alt="" coords="536,112,728,141"/>
+<area shape="rect" id="node29" href="$classInpaintingComputationObject.html#a7ecfb49077ae3e9ac070e8ad8ada7346" title="InpaintingComputationObject::AllSteps" alt="" coords="509,379,755,408"/>
+<area shape="rect" id="node33" href="$DemoColorImageByScore_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97" title="main" alt="" coords="607,432,657,461"/>
+<area shape="rect" id="node35" href="$classInpaintingComputationObject.html#aba4b4365cfdb3350695c06d5a8d3dbac" title="InpaintingComputationObject::SingleStep" alt="" coords="501,325,763,355"/>
+<area shape="rect" id="node31" href="$classInpaintingComputationObject.html#a5d98b9722426d759ba18c65135405022" title="InpaintingComputationObject::start" alt="" coords="833,352,1057,381"/>
+</map>

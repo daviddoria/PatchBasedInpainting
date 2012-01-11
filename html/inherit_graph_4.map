@@ -1,0 +1,18 @@
+<map id="G" name="G">
+<area shape="rect" id="node1" href="$classDebugOutputs.html" title="This class enables/disables the easy output of conditional outputs." alt="" coords="5,245,112,275"/>
+<area shape="rect" id="node3" href="$classClusterColors.html" title="ClusterColors" alt="" coords="219,59,320,88"/>
+<area shape="rect" id="node9" href="$classPatchBasedInpainting.html" title="This class performs greedy patch based inpainting on an image." alt="" coords="161,165,377,195"/>
+<area shape="rect" id="node17" href="$classPatchBasedInpaintingGUI.html" title="PatchBasedInpaintingGUI" alt="" coords="183,219,356,248"/>
+<area shape="rect" id="node19" href="$classPriority.html" title="This is an abstract class that indicates the interface for Priority functions." alt="" coords="204,272,335,301"/>
+<area shape="rect" id="node29" href="$classTableModelForwardLook.html" title="TableModelForwardLook" alt="" coords="188,325,351,355"/>
+<area shape="rect" id="node31" href="$classTableModelTopPatches.html" title="TableModelTopPatches" alt="" coords="191,379,348,408"/>
+<area shape="rect" id="node5" href="$classClusterColorsAdaptive.html" title="ClusterColorsAdaptive" alt="" coords="473,5,625,35"/>
+<area shape="rect" id="node7" href="$classClusterColorsUniform.html" title="ClusterColorsUniform" alt="" coords="476,59,623,88"/>
+<area shape="rect" id="node11" href="$classPatchBasedInpaintingForwardLooking.html" title="PatchBasedInpaintingForwardLooking" alt="" coords="429,112,669,141"/>
+<area shape="rect" id="node13" href="$classPatchBasedInpaintingScaleConsistent.html" title="PatchBasedInpaintingScaleConsistent" alt="" coords="427,165,672,195"/>
+<area shape="rect" id="node15" href="$classPatchBasedInpaintingTwoStepDepth.html" title="PatchBasedInpaintingTwoStepDepth" alt="" coords="432,219,667,248"/>
+<area shape="rect" id="node21" href="$classPriorityDepth.html" title="This class computes a patch&#39;s priority based on its depth channel." alt="" coords="467,272,632,301"/>
+<area shape="rect" id="node23" href="$classPriorityOnionPeel.html" title="This class ranks the priority of a patch based on its closeness to the hole boundary." alt="" coords="455,325,644,355"/>
+<area shape="rect" id="node27" href="$classPriorityRandom.html" title="This class returns a random value as the priority of each boundary pixel." alt="" coords="460,379,639,408"/>
+<area shape="rect" id="node25" href="$classPriorityCriminisi.html" title="This class implements Criminisi&#39;s priority function. It includes a Data term ontop of the confidence ..." alt="" coords="721,325,903,355"/>
+</map>

@@ -1,0 +1,24 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classClusterColors.html#ac9a1eaa27d7ff414ebbd3fb1ccb03c02" title="ClusterColors::CreateMembershipImage" alt="" coords="195,59,451,88"/>
+<area shape="rect" id="node11" href="$namespaceMaskOperations.html#a0144cffeb12a66ca88b324c1f0c80331" title="MaskOperations::FindPixelAcrossHole" alt="" coords="200,112,445,141"/>
+<area shape="rect" id="node15" href="$classSourcePatchCollection.html#a7afbb790ff3ffaea6c5467f6ab104be7" title="SourcePatchCollection::FindSourcePatchesInRegion" alt="" coords="159,165,487,195"/>
+<area shape="rect" id="node19" href="$classClusterColorsAdaptive.html#a22fbbbd61c559e5ff72cafbf92f965f4" title="ClusterColorsAdaptive::GenerateColorsVTKBin" alt="" coords="175,219,471,248"/>
+<area shape="rect" id="node23" href="$classMask.html#aa9ad27bf5852737f4c6248026c7c6d37" title="Mask::GetValidPixelsInRegion" alt="" coords="223,272,423,301"/>
+<area shape="rect" id="node25" href="$classMask.html#a41187543552eefa7cd8359793de71b22" title="Mask::Invert" alt="" coords="276,325,369,355"/>
+<area shape="rect" id="node27" href="$classMask.html#a0a2b23e9ae4936ff993203802dfa076f" title="Mask::MakeVTKImage" alt="" coords="245,379,400,408"/>
+<area shape="rect" id="node29" href="$namespaceMaskOperations.html#a262ef0cdb2c3b27293643cb08ea4134b" title="MaskOperations::MaskedBlur" alt="" coords="225,432,420,461"/>
+<area shape="rect" id="node33" href="$namespaceDerivatives.html#aab92b94e3e9acae484ef7ea910ae8d3a" title="Derivatives::MaskedDerivative" alt="" coords="223,485,423,515"/>
+<area shape="rect" id="node35" href="$namespaceDerivatives.html#a4648eccb64c1e9ecf4ca640698590dd3" title="Derivatives::MaskedDerivativeGaussianInRegion" alt="" coords="169,539,476,568"/>
+<area shape="rect" id="node39" href="$namespaceDerivatives.html#a8ad8409d0a6facbd1abeeea9d35e467a" title="Derivatives::MaskedDerivativePrewitt" alt="" coords="201,592,444,621"/>
+<area shape="rect" id="node41" href="$namespaceDerivatives.html#ae24202144d052e5fb794901a648ddf0f" title="Derivatives::MaskedDerivativeSobel" alt="" coords="205,645,440,675"/>
+<area shape="rect" id="node43" href="$classPatchPair.html#a68a2bb02339fff7a8c4280cff049dcd7" title="PatchPair::VisitAllValidPixels" alt="" coords="227,699,419,728"/>
+<area shape="rect" id="node45" href="$classPatch.html#aec754b3c9e213c876c2af832db4157ae" title="Patch::VisitAllValidPixels" alt="" coords="237,752,408,781"/>
+<area shape="rect" id="node5" href="$classClusterColors.html#a46318b217488f9c7705dbaa6a3aebc0b" title="ClusterColors::ConstructFromImage" alt="" coords="560,5,792,35"/>
+<area shape="rect" id="node9" href="$classClusterColors.html#a40e37ba99da4b9f446356e423b01b00b" title="ClusterColors::ConstructFromMaskedImage" alt="" coords="537,59,815,88"/>
+<area shape="rect" id="node7" href="$DemoClusterColorsClusterCenters_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97" title="main" alt="" coords="864,5,915,35"/>
+<area shape="rect" id="node13" href="$classPriorityDepth.html#af7542410121a2f9587024e7eedba80b3" title="PriorityDepth::ComputePriority" alt="" coords="576,112,776,141"/>
+<area shape="rect" id="node17" href="$TestPixelWiseDifferencePatchPairVisitor_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97" title="main" alt="" coords="651,165,701,195"/>
+<area shape="rect" id="node21" href="$classClusterColorsAdaptive.html#a6e0077ef2822f0e1910c50d1ec15d101" title="ClusterColorsAdaptive::GenerateColors" alt="" coords="551,219,801,248"/>
+<area shape="rect" id="node31" href="$TestITKHelpers_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4" title="main" alt="" coords="651,432,701,461"/>
+<area shape="rect" id="node37" href="$namespaceDerivatives.html#a786c411192fba8246cf0f44dd7654fb1" title="Derivatives::MaskedDerivativeGaussian" alt="" coords="548,539,804,568"/>
+</map>

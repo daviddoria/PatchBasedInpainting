@@ -1,0 +1,11 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classSourcePatchCollection.html#af1197530186dcf7f31f004e25ad8c49c" title="SourcePatchCollection::AddPatches" alt="" coords="152,5,387,35"/>
+<area shape="rect" id="node5" href="$classSourcePatchCollection.html#a6a7e2c796cee247c7bf893cf5c892709" title="SourcePatchCollection::begin" alt="" coords="172,59,367,88"/>
+<area shape="rect" id="node7" href="$classSourcePatchCollection.html#a67fa4d7449d99dffeaa6e8012f51f7c1" title="SourcePatchCollection::Clear" alt="" coords="172,112,367,141"/>
+<area shape="rect" id="node9" href="$classSourcePatchCollection.html#a0d91ca1a65e2fa994464adc57184d8e1" title="SourcePatchCollection::end" alt="" coords="177,165,361,195"/>
+<area shape="rect" id="node11" href="$classSourcePatchCollection.html#a7afbb790ff3ffaea6c5467f6ab104be7" title="SourcePatchCollection::FindSourcePatchesInRegion" alt="" coords="105,219,433,248"/>
+<area shape="rect" id="node19" href="$classSourcePatchCollection.html#af9ea3b043cae2065ccc2df6ed93da7b0" title="SourcePatchCollection::GetNumberOfPatches" alt="" coords="124,272,415,301"/>
+<area shape="rect" id="node13" href="$namespaceITKHelpers.html#a47fac5f7e3559e14f8f922f7352bb037" title="ITKHelpers::CropToRegion" alt="" coords="533,165,712,195"/>
+<area shape="rect" id="node15" href="$namespaceITKHelpers.html#a4b91c088f9f9c59d98ecb5d9931543d0" title="ITKHelpers::GetRegionInRadiusAroundPixel" alt="" coords="483,219,763,248"/>
+<area shape="rect" id="node17" href="$classMask.html#a1906ad8a4eacc553a5e56b88b39b849a" title="Mask::IsValid" alt="" coords="572,272,673,301"/>
+</map>

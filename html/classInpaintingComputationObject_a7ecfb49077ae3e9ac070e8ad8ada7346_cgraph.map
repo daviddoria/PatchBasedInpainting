@@ -1,0 +1,9 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classPatchBasedInpainting.html#acd91515d49996af6f2fb10c649746b8a" title="PatchBasedInpainting::HasMoreToInpaint" alt="" coords="325,5,589,35"/>
+<area shape="rect" id="node5" href="$classInpaintingComputationObject.html#a1e634282c00a0430f1e31e3af8db2f90" title="InpaintingComputationObject::InpaintingComplete" alt="" coords="303,59,612,88"/>
+<area shape="rect" id="node7" href="$classPatchBasedInpainting.html#a90c16cf81635e4db4569bd15f17035df" title="PatchBasedInpainting::Iterate" alt="" coords="360,112,555,141"/>
+<area shape="rect" id="node15" href="$classInpaintingComputationObject.html#a7f7db59d23630e70d2ab1fbb837bfebe" title="InpaintingComputationObject::IterationComplete" alt="" coords="307,165,608,195"/>
+<area shape="rect" id="node9" href="$classPatch.html#a29501cec3084e456e126cc52f6200d94" title="Patch::GetRegion" alt="" coords="691,59,816,88"/>
+<area shape="rect" id="node11" href="$classPatchPair.html#ad315db27ac086737d3e2d0f0c8bcdaaf" title="PatchPair::GetSourcePatch" alt="" coords="663,112,844,141"/>
+<area shape="rect" id="node13" href="$classPatchPair.html#a4da1fc09afcd61bdc4930c2d27ca76a4" title="PatchPair::GetTargetPatch" alt="" coords="664,165,843,195"/>
+</map>

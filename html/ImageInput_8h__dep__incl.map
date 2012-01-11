@@ -1,0 +1,16 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$ImageInput_8cpp.html" title="Interactive/ImageInput.cpp" alt="" coords="395,83,571,112"/>
+<area shape="rect" id="node5" href="$ListModelImageInput_8h.html" title="Interactive/ModelView/ListModelImageInput.h" alt="" coords="595,83,880,112"/>
+<area shape="rect" id="node11" href="$PatchBasedInpaintingGUI_8h.html" title="Interactive/PatchBasedInpaintingGUI.h" alt="" coords="793,237,1041,267"/>
+<area shape="rect" id="node28" href="$TableModelImageInput_8h.html" title="Interactive/ModelView/TableModelImageInput.h" alt="" coords="955,83,1253,112"/>
+<area shape="rect" id="node34" href="$TestImageInput_8cpp.html" title="Interactive/Tests/TestImageInput.cpp" alt="" coords="1277,83,1517,112"/>
+<area shape="rect" id="node7" href="$ListModelDisplay_8h.html" title="Interactive/ModelView/ListModelDisplay.h" alt="" coords="613,160,880,189"/>
+<area shape="rect" id="node20" href="$ListModelImageInput_8cpp.html" title="Interactive/ModelView/ListModelImageInput.cpp" alt="" coords="288,160,589,189"/>
+<area shape="rect" id="node22" href="$ListModelSave_8h.html" title="Interactive/ModelView/ListModelSave.h" alt="" coords="13,160,264,189"/>
+<area shape="rect" id="node9" href="$ListModelDisplay_8cpp.html" title="Interactive/ModelView/ListModelDisplay.cpp" alt="" coords="489,237,769,267"/>
+<area shape="rect" id="node13" href="$PatchBasedInpaintingGUI_8cpp.html" title="Interactive/PatchBasedInpaintingGUI.cpp" alt="" coords="321,315,583,344"/>
+<area shape="rect" id="node15" href="$PatchBasedInpaintingGUISlots_8cpp.html" title="Interactive/PatchBasedInpaintingGUISlots.cpp" alt="" coords="688,315,981,344"/>
+<area shape="rect" id="node17" href="$PatchBasedInpaintingInteractive_8cpp.html" title="Interactive/PatchBasedInpaintingInteractive.cpp" alt="" coords="1005,315,1304,344"/>
+<area shape="rect" id="node24" href="$ListModelSave_8cpp.html" title="Interactive/ModelView/ListModelSave.cpp" alt="" coords="5,237,272,267"/>
+<area shape="rect" id="node30" href="$TableModelImageInput_8cpp.html" title="Interactive/ModelView/TableModelImageInput.cpp" alt="" coords="1005,160,1317,189"/>
+</map>

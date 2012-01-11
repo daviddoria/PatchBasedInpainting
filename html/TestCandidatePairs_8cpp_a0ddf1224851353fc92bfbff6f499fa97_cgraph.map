@@ -1,0 +1,9 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classCandidatePairs.html#ac9e212558ab79e4336cbdaedcc566af4" title="CandidatePairs::begin" alt="" coords="175,5,324,35"/>
+<area shape="rect" id="node5" href="$classCandidatePairs.html#a278124be32780e527f75e3fc69662890" title="CandidatePairs::end" alt="" coords="180,59,319,88"/>
+<area shape="rect" id="node7" href="$classCandidatePairs.html#a253f57bb0c7473bf0751deea3827697d" title="CandidatePairs::GetNumberOfSourcePatches" alt="" coords="105,112,393,141"/>
+<area shape="rect" id="node9" href="$classCandidatePairs.html#aa0ad535454560a95d16065a40a52420d" title="CandidatePairs::GetPatchPairs" alt="" coords="148,165,351,195"/>
+<area shape="rect" id="node11" href="$classCandidatePairs.html#aeeb25eea33cde821519b3343f2c9a2d2" title="CandidatePairs::GetPriority" alt="" coords="159,219,340,248"/>
+<area shape="rect" id="node13" href="$classCandidatePairs.html#a262269807eed301c921d2d1010132481" title="CandidatePairs::SetPriority" alt="" coords="160,272,339,301"/>
+<area shape="rect" id="node15" href="$namespaceTesting.html#a7bd85739861f536f5288e58d687b3aac" title="Testing::ValuesEqual" alt="" coords="176,325,323,355"/>
+</map>

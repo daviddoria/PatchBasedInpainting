@@ -1,0 +1,6 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classFileSelector.html#a2193ceb1ad23e613e21c8f3050b0780c" title="FileSelector::LoadAndDisplayImage" alt="" coords="277,5,507,35"/>
+<area shape="rect" id="node7" href="$classFileSelector.html#ace2d6194adea9618559f2e395fb39e24" title="FileSelector::LoadAndDisplayMask" alt="" coords="279,59,505,88"/>
+<area shape="rect" id="node10" href="$classFileSelector.html#ae29ca235b554cb03a1278610f1e646ea" title="FileSelector::on_buttonBox_accepted" alt="" coords="273,112,511,141"/>
+<area shape="rect" id="node5" href="$classFileSelector.html#a0e147be826fece336fe0eba814b90999" title="FileSelector::FileSelector" alt="" coords="560,32,728,61"/>
+</map>

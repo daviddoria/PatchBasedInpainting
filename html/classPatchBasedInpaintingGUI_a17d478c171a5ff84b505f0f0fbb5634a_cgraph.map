@@ -1,0 +1,5 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classFileSelector.html#ad600b39663a79f218f538409de2096ef" title="FileSelector::GetImageFileName" alt="" coords="383,5,593,35"/>
+<area shape="rect" id="node5" href="$classFileSelector.html#a8fc70eabe76d065572f282430731358a" title="FileSelector::GetMaskFileName" alt="" coords="384,59,592,88"/>
+<area shape="rect" id="node7" href="$classFileSelector.html#a91233883284b0d1cb6a8a71c302035b9" title="FileSelector::IsMaskInverted" alt="" coords="393,112,583,141"/>
+</map>

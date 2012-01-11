@@ -1,0 +1,7 @@
+<map id="G" name="G">
+<area shape="rect" id="node5" href="$classPriorityDepth.html" title="This class computes a patch&#39;s priority based on its depth channel." alt="" coords="5,160,171,189"/>
+<area shape="rect" id="node7" href="$classPriorityOnionPeel.html" title="This class ranks the priority of a patch based on its closeness to the hole boundary." alt="" coords="195,160,384,189"/>
+<area shape="rect" id="node11" href="$classPriorityRandom.html" title="This class returns a random value as the priority of each boundary pixel." alt="" coords="408,160,587,189"/>
+<area shape="rect" id="node2" href="$classDebugOutputs.html" title="This class enables/disables the easy output of conditional outputs." alt="" coords="236,5,343,35"/>
+<area shape="rect" id="node9" href="$classPriorityCriminisi.html" title="This class implements Criminisi&#39;s priority function. It includes a Data term ontop of the confidence ..." alt="" coords="199,237,380,267"/>
+</map>

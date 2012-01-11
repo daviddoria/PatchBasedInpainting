@@ -1,0 +1,17 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$Patch_8h.html" title="Patch.h" alt="" coords="499,160,565,189"/>
+<area shape="rect" id="node5" href="$Types_8h.html" title="Types.h" alt="" coords="307,392,376,421"/>
+<area shape="rect" id="node24" href="$Mask_8h.html" title="Mask.h" alt="" coords="3776,315,3840,344"/>
+<area shape="rect" id="node34" href="$PatchPair_8h.html" title="PatchPair.h" alt="" coords="3485,83,3576,112"/>
+<area shape="rect" id="node52" href="$DifferenceSumPixelPairVisitor_8h.html" title="DifferenceSumPixelPairVisitor.h" alt="" coords="3784,83,3992,112"/>
+<area shape="rect" id="node58" href="$Testing_8h.html" title="Testing.h" alt="" coords="4136,83,4211,112"/>
+<area shape="rect" id="node68" href="$ITKHelpers_8h.html" title="ITKHelpers.h" alt="" coords="1979,83,2077,112"/>
+<area shape="rect" id="node19" href="$PixelVisitor_8h.html" title="PixelVisitor.h" alt="" coords="483,237,581,267"/>
+<area shape="rect" id="node21" href="$Patch_8hxx.html" title="Patch.hxx" alt="" coords="379,237,459,267"/>
+<area shape="rect" id="node28" href="$Mask_8hxx.html" title="Mask.hxx" alt="" coords="3827,392,3904,421"/>
+<area shape="rect" id="node36" href="$PatchPairDifferences_8h.html" title="PatchPairDifferences.h" alt="" coords="3645,160,3803,189"/>
+<area shape="rect" id="node45" href="$PixelPairVisitor_8h.html" title="PixelPairVisitor.h" alt="" coords="3827,160,3949,189"/>
+<area shape="rect" id="node49" href="$PatchPair_8hxx.html" title="PatchPair.hxx" alt="" coords="3424,160,3528,189"/>
+<area shape="rect" id="node61" href="$Testing_8hxx.html" title="Testing.hxx" alt="" coords="4184,160,4275,189"/>
+<area shape="rect" id="node72" href="$ITKHelpers_8hxx.html" title="ITKHelpers.hxx" alt="" coords="1972,160,2084,189"/>
+</map>

@@ -1,0 +1,8 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classFileSelector.html#a2193ceb1ad23e613e21c8f3050b0780c" title="FileSelector::LoadAndDisplayImage" alt="" coords="223,32,452,61"/>
+<area shape="rect" id="node13" href="$classFileSelector.html#ace2d6194adea9618559f2e395fb39e24" title="FileSelector::LoadAndDisplayMask" alt="" coords="224,85,451,115"/>
+<area shape="rect" id="node5" href="$classFileSelectionWidget.html#a7f2e24fca0fa3dae1e66a5f06e5f1a03" title="FileSelectionWidget::currentIndex" alt="" coords="501,5,720,35"/>
+<area shape="rect" id="node7" href="$namespaceHelpersQt.html#a46f7bdedbcbccbeca8b3da26710eb1e3" title="HelpersQt::FitToGraphicsView" alt="" coords="511,59,711,88"/>
+<area shape="rect" id="node9" href="$classFileSelector.html#a4579eac4dd8fcc04e8f9815324f12ea0" title="FileSelector::Verify" alt="" coords="544,112,677,141"/>
+<area shape="rect" id="node11" href="$classFileSelectionWidget.html#a1b550203a010303a57410757b45e28e4" title="FileSelectionWidget::IsValid" alt="" coords="768,112,955,141"/>
+</map>

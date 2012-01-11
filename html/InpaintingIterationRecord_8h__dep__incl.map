@@ -1,0 +1,16 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$InpaintingIterationRecord_8cpp.html" title="Interactive/InpaintingIterationRecord.cpp" alt="" coords="175,83,431,112"/>
+<area shape="rect" id="node5" href="$InpaintingIterationRecordViewer_8h.html" title="Interactive/InpaintingIterationRecordViewer.h" alt="" coords="455,83,737,112"/>
+<area shape="rect" id="node9" href="$PatchBasedInpaintingGUI_8h.html" title="Interactive/PatchBasedInpaintingGUI.h" alt="" coords="709,160,957,189"/>
+<area shape="rect" id="node19" href="$ListModelDisplay_8cpp.html" title="Interactive/ModelView/ListModelDisplay.cpp" alt="" coords="1468,83,1748,112"/>
+<area shape="rect" id="node21" href="$TableModelForwardLook_8h.html" title="Interactive/ModelView/TableModelForwardLook.h" alt="" coords="812,83,1119,112"/>
+<area shape="rect" id="node26" href="$TableModelTopPatches_8h.html" title="Interactive/ModelView/TableModelTopPatches.h" alt="" coords="1143,83,1444,112"/>
+<area shape="rect" id="node32" href="$TestInpaintingIterationRecord_8cpp.html" title="Interactive/Tests/TestInpaintingIterationRecord.cpp" alt="" coords="1772,83,2092,112"/>
+<area shape="rect" id="node7" href="$InpaintingIterationRecordViewer_8cpp.html" title="Interactive/InpaintingIterationRecordViewer.cpp" alt="" coords="389,160,685,189"/>
+<area shape="rect" id="node17" href="$TestInpaintingIterationRecordViewer_8cpp.html" title="Interactive/Tests/TestInpaintingIterationRecordViewer.cpp" alt="" coords="5,160,365,189"/>
+<area shape="rect" id="node11" href="$PatchBasedInpaintingGUI_8cpp.html" title="Interactive/PatchBasedInpaintingGUI.cpp" alt="" coords="401,237,663,267"/>
+<area shape="rect" id="node13" href="$PatchBasedInpaintingGUISlots_8cpp.html" title="Interactive/PatchBasedInpaintingGUISlots.cpp" alt="" coords="687,237,980,267"/>
+<area shape="rect" id="node15" href="$PatchBasedInpaintingInteractive_8cpp.html" title="Interactive/PatchBasedInpaintingInteractive.cpp" alt="" coords="1004,237,1303,267"/>
+<area shape="rect" id="node23" href="$TableModelForwardLook_8cpp.html" title="Interactive/ModelView/TableModelForwardLook.cpp" alt="" coords="981,160,1304,189"/>
+<area shape="rect" id="node28" href="$TableModelTopPatches_8cpp.html" title="Interactive/ModelView/TableModelTopPatches.cpp" alt="" coords="1328,160,1645,189"/>
+</map>

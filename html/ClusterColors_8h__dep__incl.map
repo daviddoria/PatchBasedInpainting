@@ -1,0 +1,12 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$ClusterColors_8cpp.html" title="Clustering/ClusterColors.cpp" alt="" coords="353,83,543,112"/>
+<area shape="rect" id="node5" href="$ClusterColorsAdaptive_8h.html" title="Clustering/ClusterColorsAdaptive.h" alt="" coords="567,83,793,112"/>
+<area shape="rect" id="node17" href="$ClusterColorsUniform_8h.html" title="Clustering/ClusterColorsUniform.h" alt="" coords="817,83,1039,112"/>
+<area shape="rect" id="node25" href="$ClusterColorsVTK_8cpp.html" title="Clustering/ClusterColorsVTK.cpp" alt="" coords="1063,83,1279,112"/>
+<area shape="rect" id="node7" href="$ClusterColorsAdaptive_8cpp.html" title="Clustering/ClusterColorsAdaptive.cpp" alt="" coords="5,160,245,189"/>
+<area shape="rect" id="node9" href="$DemoClusterColors_8cpp.html" title="Demos/DemoClusterColors.cpp" alt="" coords="269,160,477,189"/>
+<area shape="rect" id="node11" href="$DemoClusterColorsClusterCenters_8cpp.html" title="Demos/DemoClusterColorsClusterCenters.cpp" alt="" coords="501,160,797,189"/>
+<area shape="rect" id="node13" href="$DemoClusterColorsLabelImage_8cpp.html" title="Demos/DemoClusterColorsLabelImage.cpp" alt="" coords="821,160,1096,189"/>
+<area shape="rect" id="node15" href="$DemoCreateMask_8cpp.html" title="Demos/DemoCreateMask.cpp" alt="" coords="1120,160,1317,189"/>
+<area shape="rect" id="node19" href="$ClusterColorsUniform_8cpp.html" title="Clustering/ClusterColorsUniform.cpp" alt="" coords="1341,160,1576,189"/>
+</map>

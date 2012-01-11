@@ -1,0 +1,24 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$TestHelpers_8cpp.html" title="Helpers/Tests/TestHelpers.cpp" alt="" coords="5,83,208,112"/>
+<area shape="rect" id="node5" href="$TestITKHelpers_8cpp.html" title="Helpers/Tests/TestITKHelpers.cpp" alt="" coords="232,83,456,112"/>
+<area shape="rect" id="node7" href="$TestVTKHelpers_8cpp.html" title="Helpers/Tests/TestVTKHelpers.cpp" alt="" coords="480,83,709,112"/>
+<area shape="rect" id="node9" href="$TestHelpersQt_8cpp.html" title="Interactive/Tests/TestHelpersQt.cpp" alt="" coords="733,83,968,112"/>
+<area shape="rect" id="node11" href="$Testing_8cpp.html" title="Testing/Testing.cpp" alt="" coords="992,83,1128,112"/>
+<area shape="rect" id="node13" href="$Testing_8hxx.html" title="Testing/Testing.hxx" alt="" coords="1152,83,1288,112"/>
+<area shape="rect" id="node16" href="$TestCandidatePairs_8cpp.html" title="Tests/TestCandidatePairs.cpp" alt="" coords="1312,83,1509,112"/>
+<area shape="rect" id="node18" href="$TestDerivatives_8cpp.html" title="Tests/TestDerivatives.cpp" alt="" coords="1533,83,1709,112"/>
+<area shape="rect" id="node20" href="$TestDifferenceSumPixelPairVisitor_8cpp.html" title="Tests/TestDifferenceSumPixelPairVisitor.cpp" alt="" coords="1733,83,2019,112"/>
+<area shape="rect" id="node22" href="$TestIsophotes_8cpp.html" title="Tests/TestIsophotes.cpp" alt="" coords="2043,83,2208,112"/>
+<area shape="rect" id="node24" href="$TestPatchBasedInpainting_8cpp.html" title="Tests/TestPatchBasedInpainting.cpp" alt="" coords="2232,83,2469,112"/>
+<area shape="rect" id="node26" href="$TestPatchDifference_8cpp.html" title="Tests/TestPatchDifference.cpp" alt="" coords="2493,83,2696,112"/>
+<area shape="rect" id="node28" href="$TestPixelDifferences_8cpp.html" title="Tests/TestPixelDifferences.cpp" alt="" coords="2720,83,2925,112"/>
+<area shape="rect" id="node30" href="$TestPixelSumAccumulator_8cpp.html" title="Tests/TestPixelSumAccumulator.cpp" alt="" coords="2949,83,3187,112"/>
+<area shape="rect" id="node32" href="$TestPixelWiseDifferencePatchPairVisitor_8cpp.html" title="Tests/TestPixelWiseDifferencePatchPairVisitor.cpp" alt="" coords="3211,83,3533,112"/>
+<area shape="rect" id="node34" href="$TestPriorityCriminisi_8cpp.html" title="Tests/TestPriorityCriminisi.cpp" alt="" coords="3557,83,3760,112"/>
+<area shape="rect" id="node36" href="$TestPriorityDepth_8cpp.html" title="Tests/TestPriorityDepth.cpp" alt="" coords="3784,83,3971,112"/>
+<area shape="rect" id="node38" href="$TestPriorityFactory_8cpp.html" title="Tests/TestPriorityFactory.cpp" alt="" coords="3995,83,4189,112"/>
+<area shape="rect" id="node40" href="$TestPriorityManual_8cpp.html" title="Tests/TestPriorityManual.cpp" alt="" coords="4213,83,4405,112"/>
+<area shape="rect" id="node42" href="$TestPriorityOnionPeel_8cpp.html" title="Tests/TestPriorityOnionPeel.cpp" alt="" coords="4429,83,4640,112"/>
+<area shape="rect" id="node44" href="$TestPriorityRandom_8cpp.html" title="Tests/TestPriorityRandom.cpp" alt="" coords="4664,83,4864,112"/>
+<area shape="rect" id="node46" href="$TestSelfPatchCompare_8cpp.html" title="Tests/TestSelfPatchCompare.cpp" alt="" coords="4888,83,5107,112"/>
+</map>

@@ -1,0 +1,8 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classCandidatePairs.html#af7333829f4c3d8e47d4ac1c0d1eed4ec" title="CandidatePairs::Combine" alt="" coords="279,5,449,35"/>
+<area shape="rect" id="node5" href="$classPatchBasedInpaintingTwoStepDepth.html#aa9b01f8a5c40531cee5ebc2fe97097ad" title="PatchBasedInpaintingTwoStepDepth::FindBestPatch" alt="" coords="199,83,529,112"/>
+<area shape="rect" id="node8" href="$classPatchBasedInpaintingScaleConsistent.html#a6f87ea3ca0e72da59b85f9104b2fd883" title="PatchBasedInpaintingScaleConsistent::FindBestPatch" alt="" coords="195,160,533,189"/>
+<area shape="rect" id="node11" href="$TestCandidatePairs_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97" title="main" alt="" coords="339,213,389,243"/>
+<area shape="rect" id="node13" href="$classCandidatePairs.html#aa54bb0f7bd4ea92fa82e575ea5367bec" title="CandidatePairs::VisitAllPatchPairs" alt="" coords="252,267,476,296"/>
+<area shape="rect" id="node15" href="$TestPixelWiseDifferencePatchPairVisitor_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97" title="main" alt="" coords="581,267,632,296"/>
+</map>

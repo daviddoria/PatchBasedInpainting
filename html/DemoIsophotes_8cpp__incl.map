@@ -1,0 +1,27 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$Helpers_8h.html" title="Helpers.h" alt="" coords="955,392,1032,421"/>
+<area shape="rect" id="node7" href="$Types_8h.html" title="Types.h" alt="" coords="1141,701,1211,731"/>
+<area shape="rect" id="node26" href="$Mask_8h.html" title="Mask.h" alt="" coords="2201,624,2265,653"/>
+<area shape="rect" id="node43" href="$HelpersOutput_8h.html" title="HelpersOutput.h" alt="" coords="585,237,703,267"/>
+<area shape="rect" id="node59" href="$PatchBasedInpainting_8h.html" title="PatchBasedInpainting.h" alt="" coords="2361,83,2521,112"/>
+<area shape="rect" id="node5" href="$Patch_8h.html" title="Patch.h" alt="" coords="1508,469,1575,499"/>
+<area shape="rect" id="node35" href="$Helpers_8hxx.html" title="Helpers.hxx" alt="" coords="1201,469,1292,499"/>
+<area shape="rect" id="node21" href="$PixelVisitor_8h.html" title="PixelVisitor.h" alt="" coords="1492,547,1591,576"/>
+<area shape="rect" id="node23" href="$Patch_8hxx.html" title="Patch.hxx" alt="" coords="1615,547,1695,576"/>
+<area shape="rect" id="node30" href="$Mask_8hxx.html" title="Mask.hxx" alt="" coords="2133,701,2211,731"/>
+<area shape="rect" id="node47" href="$HelpersOutput_8hxx.html" title="HelpersOutput.hxx" alt="" coords="521,315,652,344"/>
+<area shape="rect" id="node61" href="$CandidatePairs_8h.html" title="CandidatePairs.h" alt="" coords="1945,160,2068,189"/>
+<area shape="rect" id="node65" href="$PatchPair_8h.html" title="PatchPair.h" alt="" coords="2011,315,2101,344"/>
+<area shape="rect" id="node82" href="$SourcePatchCollection_8h.html" title="SourcePatchCollection.h" alt="" coords="2289,315,2455,344"/>
+<area shape="rect" id="node92" href="$DebugOutputs_8h.html" title="DebugOutputs.h" alt="" coords="2745,392,2863,421"/>
+<area shape="rect" id="node97" href="$ITKImageCollection_8h.html" title="ITKImageCollection.h" alt="" coords="2412,160,2559,189"/>
+<area shape="rect" id="node104" href="$Priority_8h.html" title="Priority.h" alt="" coords="2632,315,2707,344"/>
+<area shape="rect" id="node121" href="$PatchBasedInpainting_8hxx.html" title="PatchBasedInpainting.hxx" alt="" coords="992,160,1165,189"/>
+<area shape="rect" id="node63" href="$PatchPairVisitor_8h.html" title="PatchPairVisitor.h" alt="" coords="1993,237,2119,267"/>
+<area shape="rect" id="node89" href="$CandidatePairs_8hxx.html" title="CandidatePairs.hxx" alt="" coords="1543,237,1679,267"/>
+<area shape="rect" id="node67" href="$PatchPairDifferences_8h.html" title="PatchPairDifferences.h" alt="" coords="2303,392,2460,421"/>
+<area shape="rect" id="node74" href="$PixelPairVisitor_8h.html" title="PixelPairVisitor.h" alt="" coords="1860,392,1983,421"/>
+<area shape="rect" id="node78" href="$PatchPair_8hxx.html" title="PatchPair.hxx" alt="" coords="1732,392,1836,421"/>
+<area shape="rect" id="node95" href="$DebugOutputs_8hxx.html" title="DebugOutputs.hxx" alt="" coords="2683,469,2813,499"/>
+<area shape="rect" id="node107" href="$NamedVTKImage_8h.html" title="NamedVTKImage.h" alt="" coords="2585,392,2721,421"/>
+</map>
