@@ -27,8 +27,10 @@ int main(int argc, char*argv[])
   Mask::Pointer mask = Mask::New();
   CreateMask(mask);
 
+  FloatScalarImageType::Pointer image = FloatScalarImageType::New();
+
   const unsigned int patchRadius = 5;
-  SourcePatchCollection sourcePatchCollection(mask, patchRadius);
+  SourcePatchCollection<FloatScalarImageType> sourcePatchCollection(image, mask, patchRadius);
 
   if(sourcePatchCollection.GetNumberOfPatches() != 0)
     {
@@ -36,7 +38,7 @@ int main(int argc, char*argv[])
     return EXIT_FAILURE;
     }
 
-  SourcePatchCollection::PatchContainer patches = sourcePatchCollection.FindSourcePatchesInRegion(mask->GetLargestPossibleRegion());
+  SourcePatchCollection<FloatScalarImageType>::PatchContainer patches = sourcePatchCollection.FindSourcePatchesInRegion(mask->GetLargestPossibleRegion());
 
   sourcePatchCollection.AddPatches(patches);
   unsigned int correctNumberOfPatches = 2160;
@@ -48,7 +50,7 @@ int main(int argc, char*argv[])
 
   // Iterate over all patches
   unsigned int patchCounter = 0;
-  for(SourcePatchCollection::Iterator patchIterator = sourcePatchCollection.begin(); patchIterator != sourcePatchCollection.end(); ++patchIterator)
+  for(SourcePatchCollection<FloatScalarImageType>::Iterator patchIterator = sourcePatchCollection.begin(); patchIterator != sourcePatchCollection.end(); ++patchIterator)
     {
     patchCounter++;
     }

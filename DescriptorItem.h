@@ -16,28 +16,23 @@
  *
  *=========================================================================*/
 
-#include "PriorityFactory.h"
-#include "Priority.h"
-#include "Mask.h"
-#include "Testing.h"
+#ifndef DescriptorItem_H
+#define DescriptorItem_H
 
-int main()
+#include "Item.h"
+
+/**
+\class DescriptorItem
+\brief This class stores a descriptor.
+*/
+class DescriptorItem : public Item
 {
-  FloatVectorImageType::Pointer image = FloatVectorImageType::New();
-  Testing::GetBlankImage(image.GetPointer(), 3);
+public:
+  DescriptorItem(const std::vector<float>& descriptor) : Descriptor(descriptor){}
 
-  Mask::Pointer mask = Mask::New();
-  Testing::GetFullyValidMask(mask.GetPointer());
+private:
+  std::vector<float> Descriptor;
 
-  const unsigned int patchRadius = 5;
-  Priority<FloatVectorImageType>* priority = PriorityFactory<FloatVectorImageType>::Create(PriorityFactory<FloatVectorImageType>::RANDOM, image, mask, patchRadius);
+};
 
-  if(!priority)
-    {
-    throw std::runtime_error("priority was not created correctly!");
-    }
-
-  std::vector<std::string> imageNames = PriorityFactory<FloatVectorImageType>::GetImageNames(PriorityFactory<FloatVectorImageType>::RANDOM);
-
-  return EXIT_SUCCESS;
-}
+#endif

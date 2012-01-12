@@ -16,28 +16,34 @@
  *
  *=========================================================================*/
 
-#include "PriorityFactory.h"
-#include "Priority.h"
-#include "Mask.h"
-#include "Testing.h"
+#ifndef DescriptorCreator_H
+#define DescriptorCreator_H
 
-int main()
+#include "ItemCreator.h"
+
+// Custom
+#include "Item.h"
+
+// STL
+#include <map>
+#include <vector>
+
+// ITK
+#include "itkIndex.h"
+
+/**
+\class DescriptorCreator
+\brief This class creates a descriptor for each pixel.
+*/
+class DescriptorCreator : public ItemCreator
 {
-  FloatVectorImageType::Pointer image = FloatVectorImageType::New();
-  Testing::GetBlankImage(image.GetPointer(), 3);
+public:
 
-  Mask::Pointer mask = Mask::New();
-  Testing::GetFullyValidMask(mask.GetPointer());
+  virtual Item* CreateItem(const itk::Index<2>& index) const = 0;
 
-  const unsigned int patchRadius = 5;
-  Priority<FloatVectorImageType>* priority = PriorityFactory<FloatVectorImageType>::Create(PriorityFactory<FloatVectorImageType>::RANDOM, image, mask, patchRadius);
+private:
+  std::map<itk::Index<2>, std::vector<float> > Descriptors;
 
-  if(!priority)
-    {
-    throw std::runtime_error("priority was not created correctly!");
-    }
+};
 
-  std::vector<std::string> imageNames = PriorityFactory<FloatVectorImageType>::GetImageNames(PriorityFactory<FloatVectorImageType>::RANDOM);
-
-  return EXIT_SUCCESS;
-}
+#endif

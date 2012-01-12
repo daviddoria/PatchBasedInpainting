@@ -16,28 +16,28 @@
  *
  *=========================================================================*/
 
-#include "PriorityFactory.h"
-#include "Priority.h"
-#include "Mask.h"
-#include "Testing.h"
+#ifndef PointCloudDescriptorCreator_H
+#define PointCloudDescriptorCreator_H
 
-int main()
+#include "DescriptorCreator.h"
+
+/**
+\class PointCloudDescriptorCreator
+\brief This class reads a file to create a descriptor for each pixel.
+*/
+class PointCloudDescriptorCreator : public DescriptorCreator
 {
-  FloatVectorImageType::Pointer image = FloatVectorImageType::New();
-  Testing::GetBlankImage(image.GetPointer(), 3);
+public:
 
-  Mask::Pointer mask = Mask::New();
-  Testing::GetFullyValidMask(mask.GetPointer());
+  PointCloudDescriptorCreator(const std::string& fileName);
 
-  const unsigned int patchRadius = 5;
-  Priority<FloatVectorImageType>* priority = PriorityFactory<FloatVectorImageType>::Create(PriorityFactory<FloatVectorImageType>::RANDOM, image, mask, patchRadius);
+  Item* CreateItem(const itk::Index<2>& index) const;
 
-  if(!priority)
-    {
-    throw std::runtime_error("priority was not created correctly!");
-    }
+private:
+  std::map<itk::Index<2>, std::vector<float> > Descriptors;
 
-  std::vector<std::string> imageNames = PriorityFactory<FloatVectorImageType>::GetImageNames(PriorityFactory<FloatVectorImageType>::RANDOM);
+};
 
-  return EXIT_SUCCESS;
-}
+#include "PointCloudDescriptorCreator.hxx"
+
+#endif

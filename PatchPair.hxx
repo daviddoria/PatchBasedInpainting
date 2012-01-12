@@ -116,7 +116,7 @@ void PatchPair<TImage>::VisitAllPixels(PixelPairVisitor<TImage> &visitor) const
 
   while(!sourceRegionIterator.IsAtEnd())
     {
-    visitor.Visit(sourceRegionIterator.Get(), this->Image->GetPixel(sourceRegionIterator.GetIndex() + this->GetSourceToTargetOffset()));
+    visitor.Visit(sourceRegionIterator.Get(), this->TargetPatch.GetImage()->GetPixel(sourceRegionIterator.GetIndex() + this->GetSourceToTargetOffset()));
     ++sourceRegionIterator;
     }
 }
@@ -130,7 +130,7 @@ void PatchPair<TImage>::VisitAllValidPixels(const Mask* const mask, PixelPairVis
     {
     if(mask->IsValid(targetRegionIterator.GetIndex()))
       {
-      visitor.Visit(this->Image->GetPixel(targetRegionIterator.GetIndex() + this->GetTargetToSourceOffset()), targetRegionIterator.Get());
+      visitor.Visit(this->TargetPatch.GetImage()->GetPixel(targetRegionIterator.GetIndex() + this->GetTargetToSourceOffset()), targetRegionIterator.Get());
       }
     ++targetRegionIterator;
     }
@@ -141,6 +141,6 @@ void PatchPair<TImage>::VisitOffsets(const std::vector<itk::Offset<2> >& offsets
 {
   for(unsigned int offsetId = 0; offsetId < offsets.size(); ++offsetId)
     {
-    visitor.Visit(this->Image->GetPixel(this->SourcePatch->GetCorner() + offsets[offsetId]), this->Image->GetPixel(this->TargetPatch.GetCorner() + offsets[offsetId]));
+    visitor.Visit(this->TargetPatch.GetImage()->GetPixel(this->SourcePatch->GetCorner() + offsets[offsetId]), this->TargetPatch.GetImage()->GetPixel(this->TargetPatch.GetCorner() + offsets[offsetId]));
     }
 }

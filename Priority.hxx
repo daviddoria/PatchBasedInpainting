@@ -55,7 +55,7 @@ template <typename TImage>
 void Priority<TImage>::Update(const itk::ImageRegion<2>& filledRegion)
 {
   ITKHelpers::SetRegionToConstant<FloatScalarImageType>(this->PriorityImage, filledRegion, 0.0f);
-  ITKHelpers::SetImageToConstant<UnsignedCharScalarImageType>(this->BoundaryImage, filledRegion, 0u);
+  ITKHelpers::SetRegionToConstant<UnsignedCharScalarImageType>(this->BoundaryImage, filledRegion, 0u);
 }
 
 template <typename TImage>

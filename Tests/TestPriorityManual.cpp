@@ -41,8 +41,16 @@ int main()
   // Get the current priority image
   FloatScalarImageType* priorityImage = priority.GetPriorityImage();
 
+  if(!priorityImage)
+    {
+    throw std::runtime_error("priorityImage was NULL!");
+    }
   // Get the current boundary image
   UnsignedCharScalarImageType* boundaryImage = priority.GetBoundaryImage();
+  if(!boundaryImage)
+    {
+    throw std::runtime_error("boundaryImage was NULL!");
+    }
 
   UnsignedCharScalarImageType::Pointer manualPriorityImage = UnsignedCharScalarImageType::New();
   Testing::GetBlankImage(manualPriorityImage.GetPointer());

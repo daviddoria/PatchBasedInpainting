@@ -16,28 +16,19 @@
  *
  *=========================================================================*/
 
-#include "PriorityFactory.h"
-#include "Priority.h"
-#include "Mask.h"
-#include "Testing.h"
+#include "PointCloudDescriptorCreator.h"
 
-int main()
+#include "itkIndex.h"
+
+int main(int argc, char*argv[])
 {
-  FloatVectorImageType::Pointer image = FloatVectorImageType::New();
-  Testing::GetBlankImage(image.GetPointer(), 3);
+  std::string fileName;
+  PointCloudDescriptorCreator pointCloudDescriptorCreator(fileName);
 
-  Mask::Pointer mask = Mask::New();
-  Testing::GetFullyValidMask(mask.GetPointer());
-
-  const unsigned int patchRadius = 5;
-  Priority<FloatVectorImageType>* priority = PriorityFactory<FloatVectorImageType>::Create(PriorityFactory<FloatVectorImageType>::RANDOM, image, mask, patchRadius);
-
-  if(!priority)
-    {
-    throw std::runtime_error("priority was not created correctly!");
-    }
-
-  std::vector<std::string> imageNames = PriorityFactory<FloatVectorImageType>::GetImageNames(PriorityFactory<FloatVectorImageType>::RANDOM);
-
+  itk::Index<2> index;
+  index.Fill(0);
+  
+  pointCloudDescriptorCreator.CreateItem(index)
+  
   return EXIT_SUCCESS;
 }

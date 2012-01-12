@@ -15,6 +15,10 @@ add_executable(TestPatch TestPatch.cpp ../ImagePatch.cpp)
 target_link_libraries(TestPatch ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 add_test(TestPatch TestPatch)
 
+add_executable(TestPointCloudDescriptorCreator TestPointCloudDescriptorCreator.cpp)
+target_link_libraries(TestPointCloudDescriptorCreator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
+add_test(TestPointCloudDescriptorCreator TestPointCloudDescriptorCreator)
+
 add_executable(TestPixelSumAccumulator TestPixelSumAccumulator.cpp ../ImagePatch.cpp ../Mask.cpp)
 target_link_libraries(TestPixelSumAccumulator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
 add_test(TestPixelSumAccumulator TestPixelSumAccumulator)

@@ -16,28 +16,43 @@
  *
  *=========================================================================*/
 
-#include "PriorityFactory.h"
-#include "Priority.h"
-#include "Mask.h"
-#include "Testing.h"
+#include "PointCloudDescriptorCreator.h" // Appease syntax parser
 
-int main()
+#include "itkIndex.h"
+
+#include <fstream>
+#include <stdexcept>
+
+PointCloudDescriptorCreator::PointCloudDescriptorCreator(const std::string& fileName)
 {
-  FloatVectorImageType::Pointer image = FloatVectorImageType::New();
-  Testing::GetBlankImage(image.GetPointer(), 3);
+  std::ifstream fin(fileName.c_str());
 
-  Mask::Pointer mask = Mask::New();
-  Testing::GetFullyValidMask(mask.GetPointer());
-
-  const unsigned int patchRadius = 5;
-  Priority<FloatVectorImageType>* priority = PriorityFactory<FloatVectorImageType>::Create(PriorityFactory<FloatVectorImageType>::RANDOM, image, mask, patchRadius);
-
-  if(!priority)
+  if(fin == NULL)
     {
-    throw std::runtime_error("priority was not created correctly!");
+    std::stringstream ss;
+    ss << "Cannot open file " << fileName;
+    throw std::runtime_error(ss.str());
     }
 
-  std::vector<std::string> imageNames = PriorityFactory<FloatVectorImageType>::GetImageNames(PriorityFactory<FloatVectorImageType>::RANDOM);
+  std::string line;
+ 
+  while(getline(fin, line))
+    {
+    std::stringstream ss;
+    ss << line;
+    itk::Index<2> index;
+    ss >> index;
+  
+    std::vector<float> descriptor;
+    ss >> descriptor;
 
-  return EXIT_SUCCESS;
+    Descriptors[index] = descriptor;
+    }
+
+  fin.close();
+}
+
+Item* PointCloudDescriptorCreator::CreateItem(const itk::Index<2>& index) const
+{
+  return new DescriptorItem(this->Descriptors[index]);
 }
