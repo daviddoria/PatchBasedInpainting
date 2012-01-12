@@ -40,10 +40,10 @@ public:
   PatchDifference();
 
   /** Compute the difference between two patches.*/
-  float Difference(const PatchPair& patchPair) const;
+  float Difference(const PatchPair<TImage>& patchPair) const;
 
   /** Compute the difference between two patches only at specified offsets.*/
-  virtual float Difference(const PatchPair& patchPair, const std::vector<itk::Offset<2> >& offsetsToCompare) const = 0;
+  virtual float Difference(const PatchPair<TImage>& patchPair, const std::vector<itk::Offset<2> >& offsetsToCompare) const = 0;
 
   /** Provide the image to work with.*/
   void SetImage(const TImage* const image);

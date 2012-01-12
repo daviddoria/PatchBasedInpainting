@@ -54,7 +54,8 @@ std::vector<std::string> Priority<TImage>::GetImageNames()
 template <typename TImage>
 void Priority<TImage>::Update(const itk::ImageRegion<2>& filledRegion)
 {
-  // Do nothing in the default implementation.
+  ITKHelpers::SetRegionToConstant<FloatScalarImageType>(this->PriorityImage, filledRegion, 0.0f);
+  ITKHelpers::SetImageToConstant<UnsignedCharScalarImageType>(this->BoundaryImage, filledRegion, 0u);
 }
 
 template <typename TImage>

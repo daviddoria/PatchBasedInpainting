@@ -82,21 +82,23 @@ void FullPatchScalarComparison()
   itk::Index<2> sourceCorner;
   sourceCorner.Fill(0);
   itk::ImageRegion<2> sourceRegion(sourceCorner, patchSize);
-  Patch sourcePatch(sourceRegion);
+  ImagePatch<FloatScalarImageType> sourcePatch(scalarImage, sourceRegion);
 
   itk::Index<2> targetCorner;
   targetCorner.Fill(scalarImage->GetLargestPossibleRegion().GetSize()[0]/2 + 4); // No magic about 4, just want a patch on the right side of the image
   itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
-  Patch targetPatch(targetRegion);
+  ImagePatch<FloatScalarImageType> targetPatch(scalarImage, targetRegion);
   std::cout << "targetPatch: " << targetPatch << std::endl;
 
-  PatchPair patchPair(&sourcePatch, targetPatch);
+  PatchPair<FloatScalarImageType> patchPair(&sourcePatch, targetPatch);
   PatchDifferencePixelWiseSum<FloatScalarImageType, PixelDifference> scalar_patchDifferencePixelWiseSum;
   scalar_patchDifferencePixelWiseSum.SetImage(scalarImage);
   float difference = scalar_patchDifferencePixelWiseSum.Difference(patchPair);
 
   std::cout << "Number of pixels: " << targetPatch.GetRegion().GetNumberOfPixels() << std::endl;
+
   float correctDifference = targetPatch.GetRegion().GetNumberOfPixels() * 5;
+
   if(difference != correctDifference)
     {
     std::stringstream ss;
@@ -111,14 +113,14 @@ void FullPatchScalarComparison()
   itk::Index<2> sourceCorner;
   sourceCorner.Fill(0);
   itk::ImageRegion<2> sourceRegion(sourceCorner, patchSize);
-  Patch sourcePatch(sourceRegion);
+  ImagePatch<FloatScalarImageType> sourcePatch(scalarImage, sourceRegion);
 
   itk::Index<2> targetCorner;
   targetCorner.Fill(10); // No magic about 10, just want a patch not at (0,0) but still fully on the left side of the image
   itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
-  Patch targetPatch(targetRegion);
+  ImagePatch<FloatScalarImageType> targetPatch(scalarImage, targetRegion);
 
-  PatchPair patchPair(&sourcePatch, targetPatch);
+  PatchPair<FloatScalarImageType> patchPair(&sourcePatch, targetPatch);
   PatchDifferencePixelWiseSum<FloatScalarImageType, PixelDifference> scalar_patchDifferencePixelWiseSum;
   scalar_patchDifferencePixelWiseSum.SetImage(scalarImage);
   float difference = scalar_patchDifferencePixelWiseSum.Difference(patchPair);
@@ -177,14 +179,14 @@ void FullPatchVectorComparison()
   itk::Index<2> sourceCorner;
   sourceCorner.Fill(0);
   itk::ImageRegion<2> sourceRegion(sourceCorner, patchSize);
-  Patch sourcePatch(sourceRegion);
+  ImagePatch<FloatVectorImageType> sourcePatch(vectorImage, sourceRegion);
 
   itk::Index<2> targetCorner;
   targetCorner.Fill(vectorImage->GetLargestPossibleRegion().GetSize()[0]/2 + 4); // No magic about 4, just want a patch on the right side of the image
   itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
-  Patch targetPatch(targetRegion);
+  ImagePatch<FloatVectorImageType> targetPatch(vectorImage, targetRegion);
 
-  PatchPair patchPair(&sourcePatch, targetPatch);
+  PatchPair<FloatVectorImageType> patchPair(&sourcePatch, targetPatch);
   PatchDifferencePixelWiseSum<FloatVectorImageType, PixelDifference> vector_patchDifferencePixelWiseSum;
   vector_patchDifferencePixelWiseSum.SetImage(vectorImage);
   float difference = vector_patchDifferencePixelWiseSum.Difference(patchPair);
@@ -204,14 +206,14 @@ void FullPatchVectorComparison()
   itk::Index<2> sourceCorner;
   sourceCorner.Fill(5);
   itk::ImageRegion<2> sourceRegion(sourceCorner, patchSize);
-  Patch sourcePatch(sourceRegion);
+  ImagePatch<FloatVectorImageType> sourcePatch(vectorImage, sourceRegion);
 
   itk::Index<2> targetCorner;
   targetCorner.Fill(5);
   itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
-  Patch targetPatch(targetRegion);
+  ImagePatch<FloatVectorImageType> targetPatch(vectorImage, targetRegion);
 
-  PatchPair patchPair(&sourcePatch, targetPatch);
+  PatchPair<FloatVectorImageType> patchPair(&sourcePatch, targetPatch);
   PatchDifferencePixelWiseSum<FloatVectorImageType, PixelDifference> vector_patchDifferencePixelWiseSum;
   vector_patchDifferencePixelWiseSum.SetImage(vectorImage);
   float difference = vector_patchDifferencePixelWiseSum.Difference(patchPair);
@@ -266,15 +268,15 @@ void PartialPatchScalarComparison()
   itk::Index<2> sourceCorner;
   sourceCorner.Fill(0);
   itk::ImageRegion<2> sourceRegion(sourceCorner, patchSize);
-  Patch sourcePatch(sourceRegion);
+  ImagePatch<FloatScalarImageType> sourcePatch(scalarImage, sourceRegion);
 
   itk::Index<2> targetCorner;
   targetCorner.Fill(scalarImage->GetLargestPossibleRegion().GetSize()[0]/2 + 4); // No magic about 4, just want a patch on the right side of the image
   itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
-  Patch targetPatch(targetRegion);
+  ImagePatch<FloatScalarImageType> targetPatch(scalarImage, targetRegion);
   std::cout << "targetPatch: " << targetPatch << std::endl;
 
-  PatchPair patchPair(&sourcePatch, targetPatch);
+  PatchPair<FloatScalarImageType> patchPair(&sourcePatch, targetPatch);
   PatchDifferencePixelWiseSum<FloatScalarImageType, PixelDifference> scalar_patchDifferencePixelWiseSum;
   scalar_patchDifferencePixelWiseSum.SetImage(scalarImage);
   float difference = scalar_patchDifferencePixelWiseSum.Difference(patchPair, offsets);
@@ -295,14 +297,14 @@ void PartialPatchScalarComparison()
   itk::Index<2> sourceCorner;
   sourceCorner.Fill(0);
   itk::ImageRegion<2> sourceRegion(sourceCorner, patchSize);
-  Patch sourcePatch(sourceRegion);
+  ImagePatch<FloatScalarImageType> sourcePatch(scalarImage, sourceRegion);
 
   itk::Index<2> targetCorner;
   targetCorner.Fill(10); // No magic about 10, just want a patch not at (0,0) but still fully on the left side of the image
   itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
-  Patch targetPatch(targetRegion);
+  ImagePatch<FloatScalarImageType> targetPatch(scalarImage, targetRegion);
 
-  PatchPair patchPair(&sourcePatch, targetPatch);
+  PatchPair<FloatScalarImageType> patchPair(&sourcePatch, targetPatch);
   PatchDifferencePixelWiseSum<FloatScalarImageType, PixelDifference> scalar_patchDifferencePixelWiseSum;
   scalar_patchDifferencePixelWiseSum.SetImage(scalarImage);
   float difference = scalar_patchDifferencePixelWiseSum.Difference(patchPair, offsets);
@@ -361,14 +363,14 @@ void PartialPatchVectorComparison()
   itk::Index<2> sourceCorner;
   sourceCorner.Fill(0);
   itk::ImageRegion<2> sourceRegion(sourceCorner, patchSize);
-  Patch sourcePatch(sourceRegion);
+  ImagePatch<FloatVectorImageType> sourcePatch(vectorImage, sourceRegion);
 
   itk::Index<2> targetCorner;
   targetCorner.Fill(vectorImage->GetLargestPossibleRegion().GetSize()[0]/2 + 4); // No magic about 4, just want a patch on the right side of the image
   itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
-  Patch targetPatch(targetRegion);
+  ImagePatch<FloatVectorImageType> targetPatch(vectorImage, targetRegion);
 
-  PatchPair patchPair(&sourcePatch, targetPatch);
+  PatchPair<FloatVectorImageType> patchPair(&sourcePatch, targetPatch);
   PatchDifferencePixelWiseSum<FloatVectorImageType, PixelDifference> vector_patchDifferencePixelWiseSum;
   vector_patchDifferencePixelWiseSum.SetImage(vectorImage);
   float difference = vector_patchDifferencePixelWiseSum.Difference(patchPair);
@@ -388,14 +390,14 @@ void PartialPatchVectorComparison()
   itk::Index<2> sourceCorner;
   sourceCorner.Fill(5);
   itk::ImageRegion<2> sourceRegion(sourceCorner, patchSize);
-  Patch sourcePatch(sourceRegion);
+  ImagePatch<FloatVectorImageType> sourcePatch(vectorImage, sourceRegion);
 
   itk::Index<2> targetCorner;
   targetCorner.Fill(5);
   itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
-  Patch targetPatch(targetRegion);
+  ImagePatch<FloatVectorImageType> targetPatch(vectorImage, targetRegion);
 
-  PatchPair patchPair(&sourcePatch, targetPatch);
+  PatchPair<FloatVectorImageType> patchPair(&sourcePatch, targetPatch);
   PatchDifferencePixelWiseSum<FloatVectorImageType, PixelDifference> vector_patchDifferencePixelWiseSum;
   vector_patchDifferencePixelWiseSum.SetImage(vectorImage);
   float difference = vector_patchDifferencePixelWiseSum.Difference(patchPair);

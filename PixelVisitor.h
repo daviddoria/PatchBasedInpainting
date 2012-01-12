@@ -20,7 +20,7 @@
 #define PixelVisitor_H
 
 /**
-\class PixelSumAccumulator
+\class PixelVisitor
 \brief This is an abstract class to visit pixels.
 */
 template <typename TPixel>

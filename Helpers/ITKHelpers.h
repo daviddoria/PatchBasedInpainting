@@ -20,10 +20,9 @@
 #define ITKHELPERS_H
 
 // Custom
-#include "Patch.h"
+#include "ImagePatch.h"
 #include "Types.h"
 class Mask;
-
 
 namespace ITKHelpers
 {
@@ -39,7 +38,7 @@ std::string GetIndexString(const itk::Index<2>& index);
 std::string GetSizeString(const itk::Size<2>& size);
 
 // Return the highest value of the specified image out of the pixels under a specified BoundaryImage.
-itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType* const image, float& maxValue, UnsignedCharScalarImageType* const maskImage);
+itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType* const image, float& maxValue, const UnsignedCharScalarImageType* const maskImage);
 
 itk::ImageRegion<2> CropToRegion(const itk::ImageRegion<2>& inputRegion, const itk::ImageRegion<2>& targetRegion);
 
@@ -52,18 +51,14 @@ FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors);
 // to the value of the Offset<1>, and filling the other position with a 0.
 itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned int dimension);
 
-// Convert an RGB image to the CIELAB colorspace.
+// Convert an RGB image to the CIELAB colorspace. 'rgbImage' cannot be const because the adaptor doesn't allow it.
 void RGBImageToCIELabImage(RGBImageType* const rgbImage, FloatVectorImageType* const cielabImage);
 
 // Convert the first 3 channels of an ITK image to the CIELAB colorspace.
-void ITKImageToCIELabImage(const FloatVectorImageType* rgbImage, FloatVectorImageType* const cielabImage);
-
-// Normalize every pixel/vector in a vector image.
-void NormalizeVectorImage(FloatVector2ImageType* const image);
+void ITKImageToCIELabImage(const FloatVectorImageType* const rgbImage, FloatVectorImageType* const cielabImage);
 
 // Compute the angle between two vectors.
-float AngleBetween(const FloatVector2Type v1, const FloatVector2Type v2);
-
+float AngleBetween(const FloatVector2Type& v1, const FloatVector2Type& v2);
 
 // Convert the first 3 channels of a float vector image to an unsigned char/color/rgb image.
 void VectorImageToRGBImage(const FloatVectorImageType* const image, RGBImageType* const rgbImage);
@@ -157,7 +152,7 @@ void BlankAndOutlineRegion(TImage* const image, const itk::ImageRegion<2>& regio
                            const typename TImage::PixelType& outlineValue);
 
 template<typename TImage>
-void SetRegionToConstant(TImage* const image, const itk::ImageRegion<2>& region,const typename TImage::PixelType& constant);
+void SetRegionToConstant(TImage* const image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& constant);
 
 template<typename TImage>
 void SetImageToConstant(TImage* const image, const typename TImage::PixelType& constant);
@@ -203,6 +198,10 @@ void ReadImage(const std::string&, TImage* const image);
 
 template<typename TInputImage, typename TOutputImage, typename TFilter>
 void FilterImage(const TInputImage* const input, TOutputImage* const output);
+
+// Normalize every pixel/vector in a vector image.
+template<typename TImage>
+void NormalizeVectorImage(TImage* const image);
 
 }// end namespace
 

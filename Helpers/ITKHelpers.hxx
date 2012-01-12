@@ -704,5 +704,20 @@ void FilterImage(const TInputImage* input, TOutputImage* output)
   DeepCopy<TOutputImage>(filter->GetOutput(), output);
 }
 
+template<typename TImage>
+void NormalizeVectorImage(TImage* const image)
+{
+  // TImage::PixelType must have a .Normalize() function
+
+  itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
+
+  while(!imageIterator.IsAtEnd())
+    {
+    typename TImage::PixelType pixel = imageIterator.Get();
+    pixel.Normalize();
+    imageIterator.Set(pixel);
+    ++imageIterator;
+    }
+}
 
 }// end namespace

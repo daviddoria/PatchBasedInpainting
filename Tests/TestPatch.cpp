@@ -16,7 +16,9 @@
  *
  *=========================================================================*/
 
-#include "Patch.h"
+#include "ImagePatch.h"
+
+#include <stdexcept>
 
 static void TestConstructor();
 
@@ -34,7 +36,8 @@ int main(int argc, char*argv[])
   patchSize.Fill(10);
 
   itk::ImageRegion<2> region0(corner0, patchSize);
-  Patch patch0(region0);
+  UnsignedCharScalarImageType::Pointer image = UnsignedCharScalarImageType::New();
+  ImagePatch<UnsignedCharScalarImageType> patch0(image.GetPointer(), region0);
 
   if(patch0.GetRegion() != region0)
     {
@@ -65,7 +68,7 @@ int main(int argc, char*argv[])
   corner1.Fill(5);
 
   itk::ImageRegion<2> region1(corner1, patchSize);
-  Patch patch1(region1);
+  ImagePatch<UnsignedCharScalarImageType> patch1(image.GetPointer(), region1);
 
   if(patch0 == patch1)
     {

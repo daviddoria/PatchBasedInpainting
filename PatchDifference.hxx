@@ -29,7 +29,7 @@ void PatchDifference<TImage, TPixelDifference>::SetImage(const TImage* const ima
 }
 
 template <typename TImage, typename TPixelDifference>
-float PatchDifference<TImage, TPixelDifference>::Difference(const PatchPair& patchPair) const
+float PatchDifference<TImage, TPixelDifference>::Difference(const PatchPair<TImage>& patchPair) const
 {
   assert(this->Image);
 

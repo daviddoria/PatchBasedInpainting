@@ -113,20 +113,20 @@ void WriteRGBImage(const TImage* const input, const std::string& filename)
 }
 
 template<typename TImage>
-void WritePatch(const TImage* const image, const Patch& patch, const std::string& filename)
+void WritePatch(const ImagePatch<TImage>& patch, const std::string& filename)
 {
-  WriteRegion<TImage>(image, patch.Region, filename);
+  WriteRegion<TImage>(patch.Image, patch.Region, filename);
 }
 
 template<typename TImage>
-void WriteMaskedPatch(const TImage* const image, const Mask* mask, const Patch& patch, const std::string& filename)
+void WriteMaskedPatch(const Mask* mask, const ImagePatch<TImage>& patch, const std::string& filename, const typename TImage::PixelType& holeColor)
 {
-  WriteMaskedRegion<TImage>(image, mask, patch.Region, filename);
+  WriteMaskedRegion<TImage>(patch.Image, mask, patch.Region, filename);
 }
 
 
 template<typename TImage>
-void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename)
+void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename, const typename TImage::PixelType& holeColor)
 {
   typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
   typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
@@ -142,11 +142,6 @@ void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::I
 
   itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
 
-  typename TImage::PixelType greenPixel(3);
-  greenPixel[0] = 0;
-  greenPixel[1] = 255;
-  greenPixel[0] = 0;
-
   while(!imageIterator.IsAtEnd())
     {
     typename TImage::PixelType pixel = imageIterator.Get();
@@ -155,7 +150,7 @@ void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::I
 
     if(regionOfInterestMaskFilter->GetOutput()->IsHole(imageIterator.GetIndex()))
       {
-      regionOfInterestImageFilter->GetOutput()->SetPixel(index, greenPixel);
+      regionOfInterestImageFilter->GetOutput()->SetPixel(index, holeColor);
       }
 
     ++imageIterator;

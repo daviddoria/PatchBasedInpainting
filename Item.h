@@ -16,22 +16,17 @@
  *
  *=========================================================================*/
 
-#ifndef PatchPairVisitor_H
-#define PatchPairVisitor_H
-
-#include "PatchPair.h"
+#ifndef Item_H
+#define Item_H
 
 /**
-\class PatchPairVisitor
-\brief This is an abstract class to visit a PatchPair.
+\class Item
+\brief An abstract class to start the hierarchy of items that could be stored and compared at each pixel.
 */
-template <typename TImage>
-class PatchPairVisitor
+class Item
 {
 public:
-  /** Visit a PatchPair.*/
-  virtual void Visit(const PatchPair<TImage>& patchPair) = 0;
-
+  //virtual float Compare(const Item& item) = 0;
 };
 
 #endif

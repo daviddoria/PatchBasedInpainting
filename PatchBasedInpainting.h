@@ -22,9 +22,10 @@
 // Custom
 #include "CandidatePairs.h"
 #include "DebugOutputs.h"
+#include "ItemCreator.h"
 #include "ITKImageCollection.h"
 #include "Mask.h"
-#include "Patch.h"
+#include "ImagePatch.h"
 #include "PatchPair.h"
 #include "Priority.h"
 #include "SourcePatchCollection.h"
@@ -33,9 +34,6 @@
 // ITK
 #include "itkCovariantVector.h"
 #include "itkImage.h"
-
-// Boost
-#include <boost/function.hpp>
 
 /**
 \class PatchBasedInpainting
@@ -70,7 +68,7 @@ public:
   PatchBasedInpainting(const TImage* const image, const Mask* const mask);
 
   /** A single step of the algorithm. The real work is done here.*/
-  PatchPair Iterate();
+  PatchPair<TImage> Iterate();
 
   /** A loop that calls Iterate() until the inpainting is complete.*/
   void Inpaint();
@@ -111,10 +109,10 @@ private:
   void BlurImage();
 
   /** Compute the differences of a target patch and associated source patches.*/
-  void ComputeScores(CandidatePairs& candidatePairs);
+  void ComputeScores(CandidatePairs<TImage>& candidatePairs);
 
   /** Find the best target patch to fill.*/
-  virtual PatchPair FindBestPatch();
+  virtual PatchPair<TImage> FindBestPatch();
 
   /** The intermediate steps and eventually the result of the inpainting.*/
   typename TImage::Pointer CurrentInpaintedImage;
@@ -146,7 +144,7 @@ private:
   bool PatchExists(const itk::ImageRegion<2>& region);
 
   /** The source patches at the current iteration.*/
-  SourcePatchCollection* SourcePatches;
+  SourcePatchCollection<TImage>* SourcePatches;
 
   /** This tracks the number of iterations that have been completed.*/
   unsigned int NumberOfCompletedIterations;
@@ -173,8 +171,11 @@ private:
   void DebugWritePixelToFill(const itk::Index<2>& pixelToFill, const unsigned int iteration);
   void DebugWritePatchToFillLocation(const itk::Index<2>& pixelToFill, const unsigned int iteration);
 
-  /** The priority function to use.*/
+  /** The Priority function to use.*/
   std::shared_ptr<Priority<TImage> > PriorityFunction;
+
+  /** The ItemCreator to use.*/
+  std::shared_ptr<ItemCreator> ItemCreatorObject;
 
 };
 

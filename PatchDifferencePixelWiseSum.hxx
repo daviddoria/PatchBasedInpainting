@@ -23,7 +23,7 @@ PatchDifferencePixelWiseSum<TImage, TPixelDifference>::PatchDifferencePixelWiseS
 }
 
 template <typename TImage, typename TPixelDifference>
-float PatchDifferencePixelWiseSum<TImage, TPixelDifference>::Difference(const PatchPair& patchPair, const std::vector<itk::Offset<2> >& offsetsToCompare)  const
+float PatchDifferencePixelWiseSum<TImage, TPixelDifference>::Difference(const PatchPair<TImage>& patchPair, const std::vector<itk::Offset<2> >& offsetsToCompare)  const
 {
   float totalDifference = 0.0f;
   float numberOfComponentsPerPixel = this->Image->GetNumberOfComponentsPerPixel();

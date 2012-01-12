@@ -16,22 +16,18 @@
  *
  *=========================================================================*/
 
-#ifndef PatchPairVisitor_H
-#define PatchPairVisitor_H
+#include "ImagePatchCreator.h" // Appease syntax parser
 
-#include "PatchPair.h"
+#include "Helpers/ITKHelpers.h"
 
-/**
-\class PatchPairVisitor
-\brief This is an abstract class to visit a PatchPair.
-*/
 template <typename TImage>
-class PatchPairVisitor
+ImagePatchCreator<TImage>::ImagePatchCreator(const TImage* const image, const unsigned int patchRadius) : Image(image), PatchRadius(patchRadius)
 {
-public:
-  /** Visit a PatchPair.*/
-  virtual void Visit(const PatchPair<TImage>& patchPair) = 0;
 
-};
+}
 
-#endif
+template <typename TImage>
+Item* ImagePatchCreator<TImage>::CreateItem(const itk::Index<2>& index) const
+{
+  return new ImagePatch<TImage>(this->Image, ITKHelpers::GetRegionInRadiusAroundPixel(index, this->PatchRadius));
+}

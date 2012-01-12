@@ -16,22 +16,4 @@
  *
  *=========================================================================*/
 
-#ifndef PatchPairVisitor_H
-#define PatchPairVisitor_H
-
-#include "PatchPair.h"
-
-/**
-\class PatchPairVisitor
-\brief This is an abstract class to visit a PatchPair.
-*/
-template <typename TImage>
-class PatchPairVisitor
-{
-public:
-  /** Visit a PatchPair.*/
-  virtual void Visit(const PatchPair<TImage>& patchPair) = 0;
-
-};
-
-#endif
+#include "ImagePatch.h"

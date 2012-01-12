@@ -16,31 +16,33 @@
  *
  *=========================================================================*/
 
-#ifndef PATCH_H
-#define PATCH_H
+#ifndef ImagePatch_H
+#define ImagePatch_H
 
-#include "Types.h"
+#include "Item.h"
 #include "PixelVisitor.h"
+#include "Types.h"
 
 class Mask;
 
 /**
-\class Patch
+\class ImagePatch
 \brief This class indicates a rectangular region in an image.
        It is not associated with a particular image.
 */
-class Patch
+template <typename TImage>
+class ImagePatch : public Item
 {
 public:
 
   /** Construct a patch from a region.*/
-  Patch(const itk::ImageRegion<2>& region);
+  ImagePatch(const TImage* const image, const itk::ImageRegion<2>& region);
 
   /** Check if two patches are the same.*/
-  bool operator==(const Patch& other) const;
+  bool operator==(const ImagePatch& other) const;
 
   /** Check if two patches are different.*/
-  bool operator!=(const Patch& other) const;
+  bool operator!=(const ImagePatch& other) const;
 
   /** Get the region described by the patch.*/
   itk::ImageRegion<2> GetRegion() const;
@@ -49,29 +51,32 @@ public:
   itk::Index<2> GetCorner() const;
 
   /** Sort the patches by index (so they can be stored in a container such as std::set).*/
-  bool operator<(const Patch &other) const;
+  bool operator<(const ImagePatch &other) const;
 
-  /** Output information about the patch. */
-  friend std::ostream& operator<<(std::ostream& output,  const Patch& patch);
+  /** Output information about the patch. Even though this is inside a class template definition, we still need to declare it as a function template. */
+  template <typename T>
+  friend std::ostream& operator<<(std::ostream& output,  const ImagePatch<T>& patch);
 
   /** Visit all pixels in a patch.*/
-  template <typename TImage>
   void VisitAllPixels(const TImage* const image, PixelVisitor<typename TImage::PixelType> &visitor);
 
   /** Visit all pixels in a patch where the mask value is valid.*/
-  template <typename TImage>
   void VisitAllValidPixels(const TImage* const image, const Mask* const mask, PixelVisitor<typename TImage::PixelType> &visitor);
 
   /** Visit the pixels in a patch specified by a list of offsets from the corner of the patch. */
-  template <typename TImage>
   void VisitOffsets(const TImage* const image, const std::vector<itk::Offset<2> >& offsets, PixelVisitor<typename TImage::PixelType> &visitor);
 
+  TImage* GetImage() const;
+
 private:
-  // The region in the image defining the patch.
+  /** The region in the image defining the location of the patch. */
   itk::ImageRegion<2> Region;
+
+  /** The image that the patch points to. */
+  TImage* Image;
 
 };
 
-#include "Patch.hxx"
+#include "ImagePatch.hxx"
 
 #endif

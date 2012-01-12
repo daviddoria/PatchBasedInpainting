@@ -20,7 +20,7 @@
 #define PATCHPAIR_H
 
 #include "PatchPairDifferences.h"
-#include "Patch.h"
+#include "ImagePatch.h"
 #include "PixelPairVisitor.h"
 
 #include <memory>
@@ -29,12 +29,13 @@
 \class PatchPair
 \brief A source patch and a target patch.
 */
+template <typename TImage>
 class PatchPair
 {
 public:
 
   /** Construct a PatchPair between a source patch and a target patch*/
-  PatchPair(const Patch* const sourcePatch, const Patch& targetPatch);
+  PatchPair(const ImagePatch<TImage>* const sourcePatch, const ImagePatch<TImage>& targetPatch);
 
   /** Compute the relative location of the source and target patch corners*/
   itk::Offset<2> GetTargetToSourceOffset() const;
@@ -43,10 +44,10 @@ public:
   itk::Offset<2> GetSourceToTargetOffset() const;
 
   /** Get the source patch.*/
-  const Patch* GetSourcePatch() const;
+  const ImagePatch<TImage>* GetSourcePatch() const;
 
   /** Get the target patch.*/
-  const Patch& GetTargetPatch() const;
+  const ImagePatch<TImage>& GetTargetPatch() const;
 
   /** Get the differences of the PatchPair.*/
   PatchPairDifferences& GetDifferences();
@@ -55,32 +56,32 @@ public:
   const PatchPairDifferences& GetDifferences() const;
 
   /** Visit all corresponding pairs of pixels.*/
-  template <typename TImage>
-  void VisitAllPixels(const TImage* const image, PixelPairVisitor<TImage> &visitor) const;
+  void VisitAllPixels(PixelPairVisitor<TImage> &visitor) const;
 
   /** Visit all corresponding pairs of pixels where the mask is valid.*/
-  template <typename TImage>
-  void VisitAllValidPixels(const TImage* const image, const Mask* const mask, PixelPairVisitor<TImage> &visitor) const;
+  void VisitAllValidPixels(const Mask* const mask, PixelPairVisitor<TImage> &visitor) const;
 
   /** Visit corresponding pairs of pixels at the specified offsets.*/
-  template <typename TImage>
-  void VisitOffsets(const TImage* const image, const std::vector<itk::Offset<2> >& offsets, PixelPairVisitor<TImage> &visitor) const;
+  void VisitOffsets(const std::vector<itk::Offset<2> >& offsets, PixelPairVisitor<TImage> &visitor) const;
 
 private:
   PatchPairDifferences Differences;
-  const Patch* const SourcePatch; // This is a pointer to a patch in the main (only) SourcePatchCollection.
-  Patch TargetPatch; // This is not a pointer to a patch in the main SourcePatchCollection, because it is not valid yet (we are going to copy pixels here)!
+
+  const ImagePatch<TImage>* const SourcePatch; // This is a pointer to a patch in the main (only) SourcePatchCollection.
+
+  ImagePatch<TImage> TargetPatch; // This is not a pointer to a patch in the main SourcePatchCollection, because it is not valid yet (we are going to copy pixels here)!
+
 };
 
-struct PairSortFunctor
-{
-  PairSortFunctor(const PatchPairDifferences::PatchPairDifferenceTypes sortBy) : SortBy(sortBy) {}
-  bool operator()(const PatchPair& pair1, const PatchPair& pair2);
-
-  bool operator()(const std::shared_ptr<PatchPair>& pair1, const std::shared_ptr<PatchPair>& pair2);
-
-  PatchPairDifferences::PatchPairDifferenceTypes SortBy;
-};
+// struct PairSortFunctor
+// {
+//   PairSortFunctor(const PatchPairDifferences::PatchPairDifferenceTypes sortBy) : SortBy(sortBy) {}
+//   bool operator()(const PatchPair<TImage>& pair1, const PatchPair<TImage>& pair2);
+// 
+//   bool operator()(const std::shared_ptr<PatchPair<TImage> >& pair1, const std::shared_ptr<PatchPair<TImage> >& pair2);
+// 
+//   PatchPairDifferences::PatchPairDifferenceTypes SortBy;
+// };
 
 #include "PatchPair.hxx"
 

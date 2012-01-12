@@ -84,10 +84,7 @@ FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors)
   return averageVector;
 }
 
-
-
-
-float AngleBetween(const FloatVector2Type v1, const FloatVector2Type v2)
+float AngleBetween(const FloatVector2Type& v1, const FloatVector2Type& v2)
 {
   FloatVector2Type v1normalized = v1;
   v1normalized.Normalize();
@@ -126,14 +123,14 @@ itk::Size<2> SizeFromRadius(const unsigned int radius)
   return size;
 }
 
-void ITKImageToCIELabImage(const FloatVectorImageType* image, FloatVectorImageType* cielabImage)
+void ITKImageToCIELabImage(const FloatVectorImageType* const image, FloatVectorImageType* const cielabImage)
 {
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   VectorImageToRGBImage(image, rgbImage);
   RGBImageToCIELabImage(rgbImage, cielabImage);
 }
 
-void RGBImageToCIELabImage(RGBImageType* const rgbImage, FloatVectorImageType* cielabImage)
+void RGBImageToCIELabImage(RGBImageType* const rgbImage, FloatVectorImageType* const cielabImage)
 {
   // The adaptor expects to be able to modify the image (even though we don't in this case),
   // so we cannot pass a const RGBImageType* const.
@@ -169,7 +166,7 @@ void RGBImageToCIELabImage(RGBImageType* const rgbImage, FloatVectorImageType* c
   DeepCopy<FloatVectorImageType>(reassembler->GetOutput(), cielabImage);
 }
 
-void VectorImageToRGBImage(const FloatVectorImageType* image, RGBImageType* rgbImage)
+void VectorImageToRGBImage(const FloatVectorImageType* const image, RGBImageType* const rgbImage)
 {
   // Only the first 3 components are used (assumed to be RGB)
   rgbImage->SetRegions(image->GetLargestPossibleRegion());
@@ -221,19 +218,6 @@ itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region)
   return center;
 }
 
-void NormalizeVectorImage(FloatVector2ImageType* image)
-{
-  itk::ImageRegionIterator<FloatVector2ImageType> imageIterator(image, image->GetLargestPossibleRegion());
-
-  while(!imageIterator.IsAtEnd())
-    {
-    FloatVector2ImageType::PixelType pixel = imageIterator.Get();
-    pixel.Normalize();
-    imageIterator.Set(pixel);
-    ++imageIterator;
-    }
-}
-
 itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned int dimension)
 {
   // Manually construct a 2D offset with 0 in all dimensions except the specified dimension
@@ -282,7 +266,7 @@ itk::ImageRegion<2> CropToRegion(const itk::ImageRegion<2>& inputRegion, const i
   return region;
 }
 
-void OutputImageType(const itk::ImageBase<2>* input)
+void OutputImageType(const itk::ImageBase<2>* const input)
 {
   if(dynamic_cast<const FloatScalarImageType*>(input))
     {
@@ -315,7 +299,7 @@ void OutputImageType(const itk::ImageBase<2>* input)
 }
 
 // The return value MUST be a smart pointer
-itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* input)
+itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* const input)
 {
   itk::LightObject::Pointer objectCopyLight = input->CreateAnother();
 
@@ -324,7 +308,7 @@ itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* inpu
   return objectCopy;
 }
 /*
-void DeepCopyUnknownType(const itk::ImageBase<2>* input, itk::ImageBase<2>* output)
+void DeepCopyUnknownType(const itk::ImageBase<2>* const input, itk::ImageBase<2>* const output)
 {
   if(dynamic_cast<const FloatScalarImageType*>(input))
     {

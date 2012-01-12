@@ -19,26 +19,28 @@
 #ifndef SourcePatchCollection_h
 #define SourcePatchCollection_h
 
+// Custom
 #include "Mask.h"
-#include "Patch.h"
+#include "ImagePatch.h"
 
+// STL
 #include <set>
 
 /**
 \class SourcePatchCollection
 \brief This class stores several fully valid Patch objects.
 */
+template <typename TImage>
 class SourcePatchCollection
 {
-
 public:
 
-  SourcePatchCollection(Mask* const maskImage, const unsigned int patchRadius);
+  SourcePatchCollection(const TImage* const image, const Mask* const maskImage, const unsigned int patchRadius);
 
-  typedef std::set<Patch> PatchContainer;
+  typedef std::set<ImagePatch<TImage> > PatchContainer;
 
   // Iterator interface
-  typedef PatchContainer::iterator Iterator;
+  typedef typename PatchContainer::iterator Iterator;
   //typedef std::set<Patch>::const_iterator const_iterator;
   Iterator begin() const;
   Iterator end() const;
@@ -51,15 +53,22 @@ public:
 
   void Clear();
 
-  const Patch* GetPatch(const itk::ImageRegion<2>& region);
+  const ImagePatch<TImage>* GetPatch(const itk::ImageRegion<2>& region);
 
   unsigned int GetNumberOfPatches() const;
 
 private:
 
   PatchContainer SourcePatches;
-  Mask* MaskImage;
+
+  const TImage* Image;
+
+  const Mask* MaskImage;
+
   unsigned int PatchRadius;
+
 };
+
+#include "SourcePatchCollection.hxx"
 
 #endif

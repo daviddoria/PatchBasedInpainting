@@ -28,56 +28,66 @@ class vtkPolyData;
 // Custom
 //#include "Mask.h"
 class Mask;
-#include "Patch.h"
+#include "ImagePatch.h"
 #include "Types.h"
 
 namespace HelpersOutput
 {
 
-// Write a vtkPolyData to a .vtp file.
+/** Write a vtkPolyData to a .vtp file. */
 void WritePolyData(vtkPolyData* const polyData, const std::string& fileName);
 
-// Write a vtkImageData to a .vti file.
+/** Write a vtkImageData to a .vti file. */
 void WriteImageData(vtkImageData* const imageData, const std::string& fileName);
 
 
-// Paraview requires 3D vectors to display glyphs, even if the vectors are really 2D. These functions appends a 0 to each vectors of a 2D vector image so that it can be easily visualized with Paraview.
+/** Paraview requires 3D vectors to display glyphs, even if the vectors are really 2D.
+    These functions appends a 0 to each vectors of a 2D vector image so that it can be easily visualized with Paraview. */
 void Write2DVectorRegion(const FloatVector2ImageType* const image, const itk::ImageRegion<2>& region, const std::string& filename);
 
-// Calls Write2DVectorRegion on a full image.
+/**  Calls Write2DVectorRegion on a full image. */
 void Write2DVectorImage(const FloatVector2ImageType* const image, const std::string& filename);
 
-// Write the first 3 channels of a FloatVectorImageType as an unsigned char (RGB) image.
+/**  Write the first 3 channels of a FloatVectorImageType as an unsigned char (RGB) image. */
 void WriteVectorImageAsRGB(const FloatVectorImageType* const image, const std::string& fileName);
 
 ////////////////////////////////////
 ///////// Function templates (defined in HelpersOutput.hxx) /////////
 ////////////////////////////////////
 
+/**  Write the first 3 channels of an image to a file as unsigned chars. */
 template<typename TImage>
 void WriteRGBImage(const TImage* const input, const std::string& filename);
 
+/** Write an image to a file named 'prefix'_'iteration'.mha*/
 template <typename TImage>
 void WriteSequentialImage(const TImage* const image, const std::string& filePrefix, const unsigned int iteration);
 
+/** Write 'image' to 'fileName' if 'condition' is true. */
 template <typename TImage>
 void WriteImageConditional(const TImage* const image, const std::string& fileName, const bool condition);
 
+/** Scale a scalar image to the range (0-255) and then write it to a file as an unsigned char image. */
 template <class TImage>
 void WriteScaledScalarImage(const TImage* const image, const std::string& filename);
 
+/** Write 'image' to 'fileName'.*/
 template<typename TImage>
-void WriteImage(const TImage* const image, const std::string& filename);
+void WriteImage(const TImage* const image, const std::string& fileName);
 
+/** Write an ImagePatch as an image to 'fileName'. */
 template<typename TImage>
-void WritePatch(const TImage* const image, const Patch& patch, const std::string& filename);
+void WriteImagePatch(const ImagePatch<TImage>& patch, const std::string& fileName);
 
+/** Write an ImagePatch as an image to 'fileName', coloring all invalid pixels in 'mask' the color 'holeColor'. */
 template<typename TImage>
-void WriteMaskedPatch(const TImage* const image, const Mask* mask, const Patch& patch, const std::string& filename);
+void WriteMaskedImagePatch(const Mask* mask, const ImagePatch<TImage>& patch, const std::string& fileName, const typename TImage::PixelType& holeColor);
 
+/** Write a 'region' of an 'image' to 'filename', coloring any invalid pixels in 'mask' the color 'holeColor'. */
 template<typename TImage>
-void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename);
+void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename, const typename TImage::PixelType& holeColor);
 
+/** Write a 'region' of an 'image' to 'filename'.*/
 template<typename TImage>
 void WriteRegion(const TImage* const image, const itk::ImageRegion<2>& region, const std::string& filename);
 

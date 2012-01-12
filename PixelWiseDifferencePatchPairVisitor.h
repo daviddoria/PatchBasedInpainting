@@ -28,21 +28,21 @@
 \brief This class visits PatchPairs.
 */
 template <typename TPixelPairVisitor>
-class PixelWiseDifferencePatchPairVisitor : public PatchPairVisitor
+class PixelWiseDifferencePatchPairVisitor : public PatchPairVisitor<typename TPixelPairVisitor::ImageType>
 {
 public:
-  PixelWiseDifferencePatchPairVisitor(const typename TPixelPairVisitor::ImageType* const image, const Mask* const mask) : Image(image), MaskImage(mask)
+  PixelWiseDifferencePatchPairVisitor(const Mask* const mask) : MaskImage(mask)
   {
   }
 
-  void Visit(const PatchPair& patchPair)
+  void Visit(const PatchPair<typename TPixelPairVisitor::ImageType>& patchPair)
   {
     TPixelPairVisitor pixelPairVisitor;
-    patchPair.VisitAllPixels(Image, pixelPairVisitor);
+    patchPair.VisitAllPixels(pixelPairVisitor);
   }
 
 private:
-  const typename TPixelPairVisitor::ImageType* Image;
+
   const Mask* MaskImage;
 };
 

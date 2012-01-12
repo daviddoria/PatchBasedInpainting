@@ -16,21 +16,20 @@
  *
  *=========================================================================*/
 
-#ifndef PatchPairVisitor_H
-#define PatchPairVisitor_H
+#ifndef ItemVisitor_H
+#define ItemVisitor_H
 
-#include "PatchPair.h"
+#include "Item.h"
 
 /**
-\class PatchPairVisitor
-\brief This is an abstract class to visit a PatchPair.
+\class ItemVisitor
+\brief This is an abstract class to visit Items.
 */
-template <typename TImage>
-class PatchPairVisitor
+class ItemVisitor
 {
 public:
-  /** Visit a PatchPair.*/
-  virtual void Visit(const PatchPair<TImage>& patchPair) = 0;
+
+  virtual void Visit(const Item& item) = 0;
 
 };
 

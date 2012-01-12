@@ -16,22 +16,20 @@
  *
  *=========================================================================*/
 
-#ifndef PatchPairVisitor_H
-#define PatchPairVisitor_H
+#include "ImagePatchCreator.h"
+#include "ImagePatch.h"
 
-#include "PatchPair.h"
-
-/**
-\class PatchPairVisitor
-\brief This is an abstract class to visit a PatchPair.
-*/
-template <typename TImage>
-class PatchPairVisitor
+int main(int argc, char*argv[])
 {
-public:
-  /** Visit a PatchPair.*/
-  virtual void Visit(const PatchPair<TImage>& patchPair) = 0;
+  UnsignedCharScalarImageType::Pointer image = UnsignedCharScalarImageType::New();
+  
+  ImagePatchCreator<UnsignedCharScalarImageType> imagePatchCreator(image, 5);
 
-};
+  itk::Index<2> zeroIndex;
+  zeroIndex.Fill(0);
 
-#endif
+  //ImagePatch<UnsignedCharScalarImageType>* imagePatch = imagePatchCreator.CreateItem(zeroIndex);
+  Item* imagePatch = imagePatchCreator.CreateItem(zeroIndex);
+
+  return EXIT_SUCCESS;
+}

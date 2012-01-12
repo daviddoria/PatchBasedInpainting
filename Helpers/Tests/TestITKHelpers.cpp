@@ -362,7 +362,7 @@ void TestNormalizeVectorImage()
   v[0] = 5;
   v[1] = 1;
   image->SetPixel(corner, v);
-  ITKHelpers::NormalizeVectorImage(image);
+  ITKHelpers::NormalizeVectorImage(image.GetPointer());
   FloatVector2Type correct_norm;
   correct_norm[0] = 0.98058;
   correct_norm[1] = 0.19612;

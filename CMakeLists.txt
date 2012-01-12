@@ -36,6 +36,7 @@ if(BuildInteractive OR BuildNonInteractive)
   DebugOutputs.cpp
   Derivatives.cpp
   ImageParent.cpp
+  ImagePatch.cpp
   itkCommandLineArgumentParser.cxx
   ITKImageCollection.cpp
   Isophotes.cpp
@@ -43,7 +44,6 @@ if(BuildInteractive OR BuildNonInteractive)
   MaskOperations.cpp
   NamedITKImageCollection.cpp
   NamedVTKImage.cpp
-  Patch.cpp
   PatchBasedInpainting.cpp
   PatchBasedInpaintingDebugging.cpp
   PatchPair.cpp

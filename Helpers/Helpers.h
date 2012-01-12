@@ -20,7 +20,7 @@
 #define HELPERS_H
 
 // Custom
-#include "Patch.h"
+#include "ImagePatch.h"
 #include "Types.h"
 
 namespace Helpers

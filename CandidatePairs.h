@@ -35,38 +35,38 @@
 \brief This class stores a target patch (a pointer to one of the source patches in PatchBasedInpainting)
        and a list of N (user specified) source patches (also pointers to source patches in PatchBasedInpainting)
 */
+template <typename TImage>
 class CandidatePairs
 {
 private:
   /** This is a vector because the pairs are ordered - they can be sorted by any of their Distance
       values.
     */
-  typedef std::vector<std::shared_ptr<PatchPair> > PatchContainer;
+  typedef std::vector<std::shared_ptr<PatchPair<TImage> > > PatchContainer;
 
 public:
   /** Constructor that creates the CandidatePairs collection for pairs of 'targetPatch'.*/
-  CandidatePairs(const Patch& targetPatch);
+  CandidatePairs(const ImagePatch<TImage>& targetPatch);
 
   /** Apply a visitor to each PatchPair.*/
-  template <typename TImage>
-  void VisitAllPatchPairs(const TImage* const image, const Mask* const mask, PatchPairVisitor &visitor);
+  void VisitAllPatchPairs(const TImage* const image, const Mask* const mask, PatchPairVisitor<TImage> &visitor);
 
   // Iterator interface
-  typedef boost::indirect_iterator<PatchContainer::iterator> Iterator;
-  typedef boost::indirect_iterator<PatchContainer::const_iterator> ConstIterator;
+  typedef boost::indirect_iterator<typename PatchContainer::iterator> Iterator;
+  typedef boost::indirect_iterator<typename PatchContainer::const_iterator> ConstIterator;
   Iterator begin();
   Iterator end();
   ConstIterator begin() const;
   ConstIterator end() const;
 
   /** Add source patches to the collection.*/
-  void AddSourcePatches(const SourcePatchCollection& patches);
+  void AddSourcePatches(const SourcePatchCollection<TImage>& patches);
 
   /** Absorb the source patches of another CandidatePairs collection.*/
-  void Combine(const CandidatePairs& pairs);
+  void Combine(const CandidatePairs<TImage>& pairs);
 
   /** Get all of the PatchPairs. */
-  std::vector<std::shared_ptr<PatchPair> > GetPatchPairs();
+  std::vector<std::shared_ptr<PatchPair<TImage> > > GetPatchPairs();
 
   /** Determine the order in which the PatchPairs will be sorted. */
   enum SortOrderEnum {ASCENDING, DESCENDING};
@@ -75,7 +75,7 @@ public:
   void Sort(const PatchPairDifferences::PatchPairDifferenceTypes sortBy, const SortOrderEnum ordering = DESCENDING);
 
   /** Get the target patch. */
-  const Patch& GetTargetPatch() const;
+  const ImagePatch<TImage>& GetTargetPatch() const;
 
   /** Get the priority of the target patch, and hence of the collection. */
   float GetPriority() const;
@@ -95,7 +95,7 @@ private:
 
   float Priority;
 
-  const Patch TargetPatch;
+  const ImagePatch<TImage> TargetPatch;
 };
 
 #include "CandidatePairs.hxx"

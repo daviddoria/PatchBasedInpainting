@@ -16,7 +16,7 @@
  *
  *=========================================================================*/
 
-#include "Patch.h"
+#include "ImagePatch.h"
 #include "PatchPair.h"
 #include "PatchPairDifferences.h"
 
@@ -29,17 +29,19 @@ int main(int argc, char*argv[])
   itk::Size<2> patchSize;
   patchSize.Fill(10);
 
+  FloatScalarImageType::Pointer image = FloatScalarImageType::New();
+
   itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
-  Patch targetPatch(targetRegion);
+  ImagePatch<FloatScalarImageType> targetPatch(image, targetRegion);
 
   // Create another patch
   itk::Index<2> sourceCorner;
   sourceCorner.Fill(5);
 
   itk::ImageRegion<2> sourceRegion(sourceCorner, patchSize);
-  Patch sourcePatch(sourceRegion);
+  ImagePatch<FloatScalarImageType> sourcePatch(image, sourceRegion);
 
-  PatchPair patchPair(&sourcePatch, targetPatch);
+  PatchPair<FloatScalarImageType> patchPair(&sourcePatch, targetPatch);
 
   // Compute the relative location of the source and target patch corners
   itk::Offset<2> correctTargetToSourceOffset = {{5, 5}};

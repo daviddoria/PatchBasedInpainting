@@ -16,22 +16,29 @@
  *
  *=========================================================================*/
 
-#ifndef PatchPairVisitor_H
-#define PatchPairVisitor_H
+#ifndef ImagePatchCreator_H
+#define ImagePatchCreator_H
 
-#include "PatchPair.h"
+#include "ImagePatch.h"
 
 /**
-\class PatchPairVisitor
-\brief This is an abstract class to visit a PatchPair.
+\class ItemCreator
+\brief This is an abstract base class that produces an Item.
 */
 template <typename TImage>
-class PatchPairVisitor
+class ImagePatchCreator
 {
 public:
-  /** Visit a PatchPair.*/
-  virtual void Visit(const PatchPair<TImage>& patchPair) = 0;
 
+  ImagePatchCreator(const TImage* const image, const unsigned int patchRadius);
+
+  Item* CreateItem(const itk::Index<2>& index) const;
+
+private:
+  const TImage* Image;
+  unsigned int PatchRadius;
 };
+
+#include "ImagePatchCreator.hxx"
 
 #endif

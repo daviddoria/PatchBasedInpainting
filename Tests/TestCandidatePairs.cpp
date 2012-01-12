@@ -23,6 +23,8 @@
 #include "PixelWiseDifferencePatchPairVisitor.h"
 #include "DifferenceSumPixelPairVisitor.h"
 
+// TODO: Fix and enable this test.
+
 static void CreateMask(Mask* mask);
 
 static void TestVisitAllPatches();

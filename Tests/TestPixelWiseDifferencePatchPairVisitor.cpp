@@ -32,26 +32,26 @@ int main(int argc, char*argv[])
   itk::Size<2> patchSize;
   patchSize.Fill(10);
 
+  FloatScalarImageType::Pointer image = FloatScalarImageType::New();
+  Testing::GetBlankImage(image.GetPointer());
+
   itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
-  Patch targetPatch(targetRegion);
+  ImagePatch<FloatScalarImageType> targetPatch(image, targetRegion);
 
   Mask::Pointer mask = Mask::New();
   Testing::GetFullyValidMask(mask);
   const unsigned int patchRadius = 5;
-  SourcePatchCollection sourcePatchCollection(mask, patchRadius);
+  SourcePatchCollection<FloatScalarImageType> sourcePatchCollection(image, mask, patchRadius);
 
-  SourcePatchCollection::PatchContainer patches = sourcePatchCollection.FindSourcePatchesInRegion(mask->GetLargestPossibleRegion());
+  SourcePatchCollection<FloatScalarImageType>::PatchContainer patches = sourcePatchCollection.FindSourcePatchesInRegion(mask->GetLargestPossibleRegion());
 
   sourcePatchCollection.AddPatches(patches);
 
-  CandidatePairs candidatePairs(targetPatch);
+  CandidatePairs<FloatScalarImageType> candidatePairs(targetPatch);
 
   candidatePairs.AddSourcePatches(sourcePatchCollection);
 
-  FloatScalarImageType::Pointer image = FloatScalarImageType::New();
-  Testing::GetBlankImage(image.GetPointer());
-
-  PixelWiseDifferencePatchPairVisitor<DifferenceSumPixelPairVisitor<FloatScalarImageType> > visitor(image.GetPointer(), mask.GetPointer());
+  PixelWiseDifferencePatchPairVisitor<DifferenceSumPixelPairVisitor<FloatScalarImageType> > visitor(mask.GetPointer());
   candidatePairs.VisitAllPatchPairs(image.GetPointer(), mask.GetPointer(), visitor);
   return EXIT_SUCCESS;
 }

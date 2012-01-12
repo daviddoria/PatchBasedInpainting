@@ -23,6 +23,7 @@
 #include "Derivatives.h"
 #include "Helpers/Helpers.h"
 #include "Helpers/HelpersOutput.h"
+#include "Item.h"
 #include "MaskOperations.h"
 #include "PatchDifferencePixelWiseSum.h"
 #include "PriorityFactory.h"
@@ -166,7 +167,7 @@ void PatchBasedInpainting<TImage>::Initialize()
 
   DebugMessage("Computing source patches...");
 
-  this->SourcePatches = new SourcePatchCollection(this->MaskImage, this->PatchRadius[0]);
+  this->SourcePatches = new SourcePatchCollection<TImage>(this->MaskImage, this->PatchRadius[0]);
 
   // Clear the source patches, as additional patches are added each iteration. When we reset the inpainter, we want to start over from only patches that are
   // valid in the original mask.
@@ -176,16 +177,16 @@ void PatchBasedInpainting<TImage>::Initialize()
 }
 
 template <typename TImage>
-PatchPair PatchBasedInpainting<TImage>::Iterate()
+PatchPair<TImage> PatchBasedInpainting<TImage>::Iterate()
 {
   EnterFunction("Iterate()");
 
   this->PriorityFunction->ComputeAllPriorities();
 
-  SourcePatchCollection::PatchContainer sourcePatches = this->SourcePatches->FindSourcePatchesInRegion(this->FullImageRegion);
+  typename SourcePatchCollection<TImage>::PatchContainer sourcePatches = this->SourcePatches->FindSourcePatchesInRegion(this->FullImageRegion);
   this->SourcePatches->AddPatches(sourcePatches);
 
-  PatchPair usedPatchPair = FindBestPatch();
+  PatchPair<TImage> usedPatchPair = FindBestPatch();
 
   std::cout << "Used target region: " << usedPatchPair.GetTargetPatch().GetRegion() << std::endl;
 
@@ -233,7 +234,7 @@ Priority<TImage>* PatchBasedInpainting<TImage>::GetPriorityFunction()
 }
 
 template <typename TImage>
-void PatchBasedInpainting<TImage>::ComputeScores(CandidatePairs& candidatePairs)
+void PatchBasedInpainting<TImage>::ComputeScores(CandidatePairs<TImage>& candidatePairs)
 {
   //std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
 //   this->PatchCompare.SetPairs(&candidatePairs);
@@ -244,17 +245,34 @@ void PatchBasedInpainting<TImage>::ComputeScores(CandidatePairs& candidatePairs)
 }
 
 template <typename TImage>
-PatchPair PatchBasedInpainting<TImage>::FindBestPatch()
+PatchPair<TImage> PatchBasedInpainting<TImage>::FindBestPatch()
 {
   EnterFunction("PatchBasedInpainting::FindBestPatch()");
+
+  typedef itk::Image<Item*, 2> ImageOfItems;
+  ImageOfItems::Pointer itemImage = ImageOfItems::New();
+  itemImage->SetRegions(this->FullImageRegion);
+  itemImage->Allocate();
+
+  itk::ImageRegionIterator<ImageOfItems> iterator(itemImage, itemImage->GetLargestPossibleRegion());
+
+  while(!iterator.IsAtEnd())
+    {
+    if(this->MaskImage->IsHole(iterator.GetIndex()))
+      {
+      iterator.Set(ItemCreatorObject->CreateItem(iterator.GetIndex()));
+      }
+
+    ++iterator;
+    }
 
   float highestPriority = 0.0f;
   itk::Index<2> pixelToFill = MaskOperations::FindHighestValueInNonZeroRegion(this->PriorityFunction->GetPriorityImage(),
                                                                       highestPriority, this->PriorityFunction->GetBoundaryImage());
 
   itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
-  Patch targetPatch(targetRegion);
-  CandidatePairs candidatePairs(targetPatch);
+  ImagePatch<TImage> targetPatch(this->CurrentInpaintedImage, targetRegion);
+  CandidatePairs<TImage> candidatePairs(targetPatch);
   candidatePairs.AddSourcePatches(*(this->SourcePatches));
   candidatePairs.SetPriority(highestPriority);
 
@@ -264,7 +282,7 @@ PatchPair PatchBasedInpainting<TImage>::FindBestPatch()
 
   //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
 
-  PatchPair bestPatchPair = *(candidatePairs.begin());
+  PatchPair<TImage> bestPatchPair = *(candidatePairs.begin());
 
   //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatch()." << std::endl;
   //LeaveFunction("PatchBasedInpainting::FindBestPatch()");

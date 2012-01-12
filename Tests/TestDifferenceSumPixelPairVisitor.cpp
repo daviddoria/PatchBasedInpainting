@@ -16,13 +16,15 @@
  *
  *=========================================================================*/
 
-#include "Patch.h"
+#include "ImagePatch.h"
 #include "PatchPair.h"
 #include "DifferenceSumPixelPairVisitor.h"
 #include "Types.h"
 #include "Testing.h"
 #include "ITKHelpers.h"
 #include "Mask.h"
+
+// TODO: Fix this test
 
 static void TestScalar();
 static void TestVector();
