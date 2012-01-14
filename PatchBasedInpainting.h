@@ -162,16 +162,6 @@ private:
   /** Set the member MaxPixelDifference;*/
   void ComputeMaxPixelDifference();
 
-  ///////////// CriminisiInpaintingDebugging.cpp /////////////
-  void DebugWriteAllImages();
-  void DebugWriteAllImages(const itk::Index<2>& pixelToFill, const itk::Index<2>& bestMatchPixel, const unsigned int iteration);
-  void DebugWritePatch(const itk::Index<2>& pixel, const std::string& filePrefix, const unsigned int iteration);
-  void DebugWritePatch(const itk::ImageRegion<2>& region, const std::string& filename);
-
-  void DebugWritePatch(const itk::Index<2>& pixel, const std::string& filename);
-  void DebugWritePixelToFill(const itk::Index<2>& pixelToFill, const unsigned int iteration);
-  void DebugWritePatchToFillLocation(const itk::Index<2>& pixelToFill, const unsigned int iteration);
-
   /** The Priority function to use.*/
   std::shared_ptr<Priority> PriorityFunction;
 

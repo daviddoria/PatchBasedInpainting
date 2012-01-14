@@ -183,4 +183,35 @@ void WriteRegion(const TImage* const image, const itk::ImageRegion<2>& region, c
   writer->Update();
 }
 
+// Why is RegionOfInterestImageFilter used (above) instead of ExtractFilterType ?
+// template <typename TImage>
+// void PatchBasedInpainting<TImage>::DebugWritePatch(const itk::ImageRegion<2>& inputRegion, const std::string& filename)
+// {
+//   if(!this->DebugImages)
+//     {
+//     return;
+//     }
+// 
+//   typedef itk::RegionOfInterestImageFilter< FloatVectorImageType,
+//                                             FloatVectorImageType> ExtractFilterType;
+//   itk::ImageRegion<2> region = inputRegion;
+//   region.Crop(this->CurrentInpaintedImage->GetLargestPossibleRegion());
+// 
+//   ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+//   extractFilter->SetRegionOfInterest(region);
+//   extractFilter->SetInput(this->CurrentInpaintedImage);
+//   extractFilter->Update();
+//   /*
+//   typedef itk::Image<itk::CovariantVector<unsigned char, TImage::PixelType::Dimension>, 2> OutputImageType;
+// 
+//   typedef itk::CastImageFilter< TImage, OutputImageType > CastFilterType;
+//   typename CastFilterType::Pointer castFilter = CastFilterType::New();
+//   castFilter->SetInput(extractFilter->GetOutput());
+//   castFilter->Update();
+// 
+//   Helpers::WriteImage<OutputImageType>(castFilter->GetOutput(), filename);
+//   */
+// 
+// }
+
 } // end namespace

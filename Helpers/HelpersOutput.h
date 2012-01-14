@@ -85,7 +85,8 @@ void WriteMaskedImagePatch(const Mask* mask, const ImagePatch<TImage>& patch, co
 
 /** Write a 'region' of an 'image' to 'filename', coloring any invalid pixels in 'mask' the color 'holeColor'. */
 template<typename TImage>
-void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename, const typename TImage::PixelType& holeColor);
+void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename,
+                       const typename TImage::PixelType& holeColor);
 
 /** Write a 'region' of an 'image' to 'filename'.*/
 template<typename TImage>

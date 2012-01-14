@@ -29,7 +29,6 @@ int main()
   Mask::Pointer mask = Mask::New();
   Testing::GetFullyValidMask(mask.GetPointer());
 
-  unsigned int patchRadius = 5;
   PriorityRandom priority;
 
   itk::ImageRegion<2> filledRegion;
