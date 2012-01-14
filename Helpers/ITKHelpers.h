@@ -112,22 +112,21 @@ template<typename TImage>
 void DeepCopyInRegion(const TImage* const input, const itk::ImageRegion<2>& region, TImage* const output);
 
 template <class TImage>
-void CopyPatch(const TImage* const sourceImage, TImage* const targetImage, const itk::Index<2>& sourcePosition,
+void CopyRegion(const TImage* const sourceImage, TImage* const targetImage, const itk::Index<2>& sourcePosition,
                const itk::Index<2>& targetPosition, const unsigned int radius);
 
 template <class TImage>
-void CopyPatch(const TImage* const sourceImage, TImage* const targetImage, const itk::ImageRegion<2>& sourceRegion,
+void CopyRegion(const TImage* const sourceImage, TImage* const targetImage, const itk::ImageRegion<2>& sourceRegion,
                const itk::ImageRegion<2>& targetRegion);
 
 template <class TImage>
-void CreateConstantPatch(TImage* patch, const typename TImage::PixelType& value, const unsigned int radius);
+void CopySelfRegion(TImage* const image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
 
 template<typename TImage>
 void ReplaceValue(TImage* image, const typename TImage::PixelType& queryValue, const typename TImage::PixelType& replacementValue);
 
 template <class TImage>
-void CopyPatchIntoImage(const TImage* const patch, TImage* const image, const itk::Index<2>& position);
-
+void CopyRegionIntoImage(const TImage* const patch, TImage* const image, const itk::Index<2>& position);
 
 template <class TImage>
 float MaxValue(const TImage* const image);

@@ -54,7 +54,7 @@ void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* const image, con
   //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.Isophotes.mha", this->DebugImages);
   //Helpers::Write2DVectorImage(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.Isophotes.mha");
 
-  ITKHelpers::CopyPatch<FloatVector2ImageType>(rotateFilter->GetOutput(), outputIsophotes, region, region);
+  ITKHelpers::CopyRegion<FloatVector2ImageType>(rotateFilter->GetOutput(), outputIsophotes, region, region);
 }
 
 void ComputeColorIsophotesInRegion(const FloatVectorImageType* const image, const Mask* const mask,

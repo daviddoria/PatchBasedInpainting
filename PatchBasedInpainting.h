@@ -79,19 +79,19 @@ public:
   /** Set the priority function.*/
   void SetPriorityFunction(Priority* const priority);
 
-  /** We store the patch radius, so we need this function to compute the actual patch size from the radius.*/
-  itk::Size<2> GetPatchSize();
-
-  /** Get the list of images to fill once the best patch is found.*/
-  ITKImageCollection& GetImagesToUpdate();
-
 private:
+
+  /** Find the best source patch.*/
+  itk::ImageRegion<2> FindBestPatch();
+
+  /** Create objects that are valid and not yet created.*/
+  void AddNewObjectsInRegion(const itk::ImageRegion<2>& region);
 
   /** Change the color of the input image.*/
   void ColorImageInsideHole();
 
   /** Find the best target patch to fill.*/
-  virtual PatchPair<TImage> FindBestPatch();
+  virtual itk::ImageRegion<2> DetermineRegionToFill();
 
   /** The intermediate steps and eventually the result of the inpainting.*/
   typename TImage::Pointer CurrentInpaintedImage;
@@ -105,35 +105,11 @@ private:
   /** The patch radius.*/
   itk::Size<2> PatchRadius;
 
-  /** Determine if a patch is completely valid (no hole pixels).*/
-  bool IsValidPatch(const itk::Index<2>& queryPixel, const unsigned int radius);
-
-  /** Determine if a region is completely valid (no hole pixels).*/
-  bool IsValidRegion(const itk::ImageRegion<2>& region);
-
-  /** Compute the number of pixels in a patch of the specified size.*/
-  unsigned int GetNumberOfPixelsInPatch();
-
-  /** Check if a patch is already in the source patch collection.*/
-  bool PatchExists(const itk::ImageRegion<2>& region);
-
-  /** The source patches at the current iteration.*/
-  SourcePatchCollection<TImage>* SourcePatches;
-
   /** This tracks the number of iterations that have been completed.*/
   unsigned int NumberOfCompletedIterations;
 
   /** This is set when the image is loaded so that the region of all of the images can be addressed without referencing any specific image.*/
   itk::ImageRegion<2> FullImageRegion;
-
-  /** The number of bins to use per dimension in the histogram computations.*/
-  unsigned int HistogramBinsPerDimension;
-
-  /** The maximum possible pixel squared difference in the image.*/
-  float MaxPixelDifferenceSquared;
-
-  /** Set the member MaxPixelDifference;*/
-  void ComputeMaxPixelDifference();
 
   /** The Priority function to use.*/
   std::shared_ptr<Priority> PriorityFunction;
@@ -141,6 +117,8 @@ private:
   /** The ItemCreator to use.*/
   std::shared_ptr<ItemCreator> ItemCreatorObject;
 
+  typedef itk::Image<std::shared_ptr<Item>, 2> ItemImageType;
+  ItemImageType::Pointer ItemImage;
 };
 
 #include "PatchBasedInpainting.hxx"

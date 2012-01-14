@@ -28,6 +28,7 @@
 #include "Priority.h"
 #include "PrioritySearchHighest.h"
 #include "Types.h"
+#include "ValidRegionIterator.h"
 
 // Custom
 #include "Helpers/Helpers.h"
@@ -116,91 +117,81 @@ void PatchBasedInpainting<TImage>::ColorImageInsideHole()
 template <typename TImage>
 void PatchBasedInpainting<TImage>::Initialize()
 {
-  typedef itk::Image<Item*, 2> ImageOfItems;
-  ImageOfItems::Pointer itemImage = ImageOfItems::New();
-  itemImage->SetRegions(this->FullImageRegion);
-  itemImage->Allocate();
-
-  itk::ImageRegionIterator<ImageOfItems> iterator(itemImage, itemImage->GetLargestPossibleRegion());
-
-  while(!iterator.IsAtEnd())
-    {
-    if(this->MaskImage->IsHole(iterator.GetIndex()))
-      {
-      iterator.Set(ItemCreatorObject->CreateItem(iterator.GetIndex()));
-      }
-
-    ++iterator;
-    }
-
   // If the user hasn't specified a priority function, use the simplest one.
   if(!this->PriorityFunction)
     {
     throw std::runtime_error("You must specify a Priority function to use!");
     }
 
+  // If the user hasn't specified a priority function, use the simplest one.
+  if(!this->ItemCreatorObject)
+    {
+    throw std::runtime_error("You must specify an ItemCreator to use!");
+    }
+
+  this->ItemImage = ItemImageType::New();
+  this->ItemImage->SetRegions(this->FullImageRegion);
+  this->ItemImage->Allocate();
+
+  AddNewObjectsInRegion(this->MaskImage->GetLargestPossibleRegion());
+
   this->NumberOfCompletedIterations = 0;
+}
 
-  HelpersOutput::WriteImageConditional<FloatVectorImageType>(this->CurrentInpaintedImage, "Debug/Initialize.CurrentOutputImage.mha", this->DebugImages);
+template <typename TImage>
+void PatchBasedInpainting<TImage>::AddNewObjectsInRegion(const itk::ImageRegion<2>& region)
+{
+  ValidRegionIterator validRegionIterator(this->MaskImage, region, this->PatchRadius[0]);
 
-  this->SourcePatches = new SourcePatchCollection<TImage>(this->MaskImage, this->PatchRadius[0]);
+  for(ValidRegionIterator::ConstIterator iterator = validRegionIterator.begin(); iterator != validRegionIterator.end(); ++iterator)
+    {
+    itk::Index<2> centerPixel = ITKHelpers::GetRegionCenter(*iterator);
+    Item* newItem = ItemCreatorObject->CreateItem(centerPixel);
+    this->ItemImage->SetPixel(centerPixel, newItem);
+    ++iterator;
+    }
+}
 
-  // Clear the source patches, as additional patches are added each iteration. When we reset the inpainter, we want to start over from only patches that are
-  // valid in the original mask.
-  this->SourcePatches->Clear();
+template <typename TImage>
+itk::ImageRegion<2> PatchBasedInpainting<TImage>::FindBestPatch()
+{
+  // TODO: This is the key - how to do this?
 }
 
 template <typename TImage>
 PatchPair<TImage> PatchBasedInpainting<TImage>::Iterate()
 {
-  EnterFunction("Iterate()");
+  itk::ImageRegion<2> targetRegion = DetermineRegionToFill();
 
-  typename SourcePatchCollection<TImage>::PatchContainer sourcePatches = this->SourcePatches->FindSourcePatchesInRegion(this->FullImageRegion);
-  this->SourcePatches->AddPatches(sourcePatches);
-
-  PatchPair<TImage> usedPatchPair = FindBestPatch();
+  itk::ImageRegion<2> sourceRegion = FindBestPatch();
 
   // Copy the patch. This is the actual inpainting step.
-  // TODO: Change this to match new interfaces.
-  //ImagesToUpdate.CopySelfPatchIntoHoleOfTargetRegion(this->MaskImage, usedPatchPair.GetSourcePatch()->GetRegion(), usedPatchPair.GetTargetPatch().GetRegion());
-  std::cout << "Image size: " << this->CurrentInpaintedImage->GetLargestPossibleRegion().GetSize() << std::endl;
+  ITKHelpers::CopySelfRegion(this->CurrentInpaintedImage, sourceRegion, targetRegion);
 
-  this->PriorityFunction->Update(usedPatchPair.GetTargetPatch().GetRegion());
+  // Update the mask
+  ITKHelpers::CopySelfRegion(this->MaskImage, sourceRegion, targetRegion);
+
+  // Update the priority function
+  this->PriorityFunction->Update(targetRegion);
 
   this->NumberOfCompletedIterations++;
 
-  DebugMessage<unsigned int>("Completed iteration: ", this->NumberOfCompletedIterations);
+  AddNewObjectsInRegion(targetRegion);
 
-  LeaveFunction("Iterate()");
-  return usedPatchPair;
+  // TODO: This shouldn't be a PatchPair anymore because 'Patch' is now associated with an image.
+  //PatchPair<TImage> patchPair(sourceRegion, targetRegion);
+  //return usedPatchPair;
 }
 
-
 template <typename TImage>
-PatchPair<TImage> PatchBasedInpainting<TImage>::FindBestPatch()
+itk::ImageRegion<2> PatchBasedInpainting<TImage>::DetermineRegionToFill()
 {
-  EnterFunction("PatchBasedInpainting::FindBestPatch()");
-
-  float highestPriority = 0.0f;
-
   PrioritySearchHighest prioritySearchHighest;
   itk::Index<2> pixelToFill = prioritySearchHighest.FindHighestPriority(this->BoundaryPixels, this->PriorityFunction.get());
 
   itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
-  ImagePatch<TImage> targetPatch(this->CurrentInpaintedImage, targetRegion);
-  CandidatePairs<TImage> candidatePairs(targetPatch);
-  candidatePairs.AddSourcePatches(*(this->SourcePatches));
-  candidatePairs.SetPriority(highestPriority);
 
-  candidatePairs.Sort(PatchPairDifferences::AveragePixelDifference);
-
-  //std::cout << "Finished sorting " << candidatePairs.size() << " patches." << std::endl;
-
-  PatchPair<TImage> bestPatchPair = *(candidatePairs.begin());
-
-  //std::cout << "There are " << this->SourcePatches.size() << " source patches at the end of FindBestPatch()." << std::endl;
-  //LeaveFunction("PatchBasedInpainting::FindBestPatch()");
-  return bestPatchPair;
+  return targetRegion;
 }
 
 template <typename TImage>
@@ -226,8 +217,6 @@ void PatchBasedInpainting<TImage>::Inpaint()
 template <typename TImage>
 bool PatchBasedInpainting<TImage>::HasMoreToInpaint()
 {
-  EnterFunction("HasMoreToInpaint()");
-
   HelpersOutput::WriteImageConditional<Mask>(this->MaskImage, "Debug/HasMoreToInpaint.input.png", this->DebugImages);
 
   itk::ImageRegionIterator<Mask> maskIterator(this->MaskImage, this->MaskImage->GetLargestPossibleRegion());
@@ -242,52 +231,12 @@ bool PatchBasedInpainting<TImage>::HasMoreToInpaint()
     ++maskIterator;
     }
 
-  LeaveFunction("HasMoreToInpaint()");
   // If no pixels were holes, then we don't have any more to inpaint.
   return false;
-
-}
-
-template <typename TImage>
-bool PatchBasedInpainting<TImage>::IsValidPatch(const itk::Index<2>& queryPixel, const unsigned int radius)
-{
-  // This function checks if a patch is completely inside the image and not intersecting the mask
-
-  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, radius);
-  return IsValidRegion(region);
-}
-
-template <typename TImage>
-bool PatchBasedInpainting<TImage>::IsValidRegion(const itk::ImageRegion<2>& region)
-{
-  return this->MaskImage->IsValid(region);
-}
-
-template <typename TImage>
-unsigned int PatchBasedInpainting<TImage>::GetNumberOfPixelsInPatch()
-{
-  return this->GetPatchSize()[0]*this->GetPatchSize()[1];
-}
-
-template <typename TImage>
-itk::Size<2> PatchBasedInpainting<TImage>::GetPatchSize()
-{
-  itk::Size<2> patchSize;
-
-  patchSize[0] = Helpers::SideLengthFromRadius(this->PatchRadius[0]);
-  patchSize[1] = Helpers::SideLengthFromRadius(this->PatchRadius[1]);
-
-  return patchSize;
 }
 
 template <typename TImage>
 unsigned int PatchBasedInpainting<TImage>::GetNumberOfCompletedIterations()
 {
   return this->NumberOfCompletedIterations;
-}
-
-template <typename TImage>
-ITKImageCollection& PatchBasedInpainting<TImage>::GetImagesToUpdate()
-{
-  return this->ImagesToUpdate;
 }

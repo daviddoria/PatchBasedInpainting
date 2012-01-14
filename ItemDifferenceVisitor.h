@@ -16,27 +16,32 @@
  *
  *=========================================================================*/
 
-#include "ImagePatchCreator.h" // The class to testing.
+#ifndef ItemDifferenceVisitor_H
+#define ItemDifferenceVisitor_H
 
-#include "ImagePatch.h"
+#include "PatchPairVisitor.h"
 
-#include <stdexcept>
+#include "Mask.h"
 
-int main(int argc, char*argv[])
+/**
+\class ItemDifferenceVisitor
+\brief This class computes the difference between two Items.
+*/
+class ItemDifferenceVisitor
 {
-  UnsignedCharScalarImageType::Pointer image = UnsignedCharScalarImageType::New();
-  
-  ImagePatchCreator<UnsignedCharScalarImageType> imagePatchCreator(image, 5);
+public:
+  ItemDifferenceVisitor(const Item* const itemToCompare) : ItemToCompare(itemToCompare)
+  {
+  }
 
-  itk::Index<2> zeroIndex;
-  zeroIndex.Fill(0);
+  void Visit(const Item* item)
+  {
+    item->Difference(ItemToCompare);
+  }
 
-  //ImagePatch<UnsignedCharScalarImageType>* imagePatch = imagePatchCreator.CreateItem(zeroIndex);
-  Item* imagePatch = imagePatchCreator.CreateItem(zeroIndex);
+private:
 
-  if(!imagePatch)
-    {
-    throw std::runtime_error("imagePatch was NULL!");
-    }
-  return EXIT_SUCCESS;
-}
+  const Item* ItemToCompare;
+};
+
+#endif

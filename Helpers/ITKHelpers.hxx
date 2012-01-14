@@ -108,36 +108,6 @@ void ReplaceValue(TImage* image, const typename TImage::PixelType& queryValue, c
     }
 }
 
-
-template <class TImage>
-void CreateBlankPatch(TImage* patch, const unsigned int radius)
-{
-  CreateConstantPatch<TImage>(patch, itk::NumericTraits< typename TImage::PixelType >::Zero, radius);
-}
-
-template <class TImage>
-void CreateConstantPatch(TImage* patch, const typename TImage::PixelType& value, const unsigned int radius)
-{
-  typename TImage::IndexType start;
-  start.Fill(0);
-
-  typename TImage::SizeType size;
-  size.Fill(radius*2 + 1);
-
-  typename TImage::RegionType region(start, size);
-
-  patch->SetRegions(region);
-  patch->Allocate();
-
-  itk::ImageRegionIterator<TImage> imageIterator(patch, patch->GetLargestPossibleRegion());
-
-  while(!imageIterator.IsAtEnd())
-    {
-    imageIterator.Set(value);
-    ++imageIterator;
-    }
-}
-
 template <class T>
 std::vector<T> MaxValuesVectorImage(const itk::VectorImage<T, 2>* const image)
 {
@@ -274,7 +244,13 @@ void CopyPatchIntoImage(const TImage* patch, TImage* const image, const itk::Ind
 }
 
 template <class TImage>
-void CopyPatch(const TImage* sourceImage, TImage* targetImage, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
+void CopySelfRegion(TImage* const image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
+{
+  CopyRegion(image, image, sourceRegion, targetRegion);
+}
+
+template <class TImage>
+void CopyRegion(const TImage* sourceImage, TImage* targetImage, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
 {
   if(targetRegion.GetSize() != sourceRegion.GetSize())
     {
@@ -295,7 +271,7 @@ void CopyPatch(const TImage* sourceImage, TImage* targetImage, const itk::ImageR
 }
 
 template <class TImage>
-void CopyPatch(const TImage* sourceImage, TImage* targetImage,
+void CopyRegion(const TImage* sourceImage, TImage* targetImage,
                const itk::Index<2>& sourcePosition, const itk::Index<2>& targetPosition, const unsigned int radius)
 {
   // Copy a patch of radius 'radius' centered at 'sourcePosition' from 'sourceImage' to 'targetImage' centered at 'targetPosition'
