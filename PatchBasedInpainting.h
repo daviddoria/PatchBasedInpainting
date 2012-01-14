@@ -43,11 +43,9 @@
 template <typename TImage>
 class PatchBasedInpainting : public DebugOutputs
 {
-
 public:
-  ///////////////////////////////////////////////////////////////////////
-  /////////////////// CriminisiInpaintingInterface.cpp //////////////////
-  ///////////////////////////////////////////////////////////////////////
+  /** Construct an inpainting object from an image and a mask.*/
+  PatchBasedInpainting(const TImage* const image, const Mask* const mask);
 
   /** Specify the size of the patches to copy.*/
   void SetPatchRadius(const unsigned int radius);
@@ -57,16 +55,6 @@ public:
 
   /** Get the result/output of the inpainting so far. When the algorithm is complete, this will be the final output.*/
   TImage* GetCurrentOutputImage();
-
-  /** Get the current mask image*/
-  Mask* GetMaskImage();
-
-  //////////////////////////////////////////////////////////////
-  /////////////////// CriminisiInpainting.cpp //////////////////
-  //////////////////////////////////////////////////////////////
-
-  /** Construct an inpainting object from an image and a mask.*/
-  PatchBasedInpainting(const TImage* const image, const Mask* const mask);
 
   /** A single step of the algorithm. The real work is done here.*/
   PatchPair<TImage> Iterate();
@@ -99,29 +87,14 @@ public:
 
 private:
 
-
   /** Change the color of the input image.*/
   void ColorImageInsideHole();
-
-  /** Blur the input image.*/
-  void BlurImage();
-
-  /** Compute the differences of a target patch and associated source patches.*/
-  void ComputeScores(CandidatePairs<TImage>& candidatePairs);
 
   /** Find the best target patch to fill.*/
   virtual PatchPair<TImage> FindBestPatch();
 
   /** The intermediate steps and eventually the result of the inpainting.*/
   typename TImage::Pointer CurrentInpaintedImage;
-
-  /** This image will be used for all patch to patch comparisons.*/
-  //itk::ImageBase<2>* CompareImage; // Ideally we would be able to compare any type of image...
-  TImage* CompareImage; // Currently we can only compare images of this type.
-
-  /** The images in this collection will have the selected patch copied into them at each iteration.
-      It should at least include the image and the mask.*/
-  ITKImageCollection ImagesToUpdate;
 
   /** The mask specifying the region to inpaint. It is updated as patches are copied.*/
   Mask::Pointer MaskImage;

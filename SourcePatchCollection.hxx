@@ -16,6 +16,9 @@
  *
  *=========================================================================*/
 
+#include "SourcePatchCollection.h" // Appease syntax parser
+
+// Custom
 #include "Helpers/Helpers.h"
 #include "Helpers/ITKHelpers.h"
 

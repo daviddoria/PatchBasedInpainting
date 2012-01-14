@@ -3,6 +3,10 @@ include_directories(../Testing ../Helpers)
 
 #####################
 
+add_executable(TestValidRegionIterator TestValidRegionIterator.cpp ../ValidRegionIterator.cpp ../Mask.cpp)
+target_link_libraries(TestValidRegionIterator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
+add_test(TestValidRegionIterator TestValidRegionIterator)
+
 add_executable(TestImage TestImage.cpp)
 target_link_libraries(TestImage ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 add_test(TestImage TestImage)
