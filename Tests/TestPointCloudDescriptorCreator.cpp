@@ -18,6 +18,10 @@
 
 #include "PointCloudDescriptorCreator.h"
 
+// Custom
+#include "Item.h"
+
+// ITK
 #include "itkIndex.h"
 
 int main(int argc, char*argv[])
@@ -28,7 +32,12 @@ int main(int argc, char*argv[])
   itk::Index<2> index;
   index.Fill(0);
   
-  pointCloudDescriptorCreator.CreateItem(index)
-  
+  Item* item = pointCloudDescriptorCreator.CreateItem(index);
+
+  if(!item)
+    {
+    throw std::runtime_error("item is NULL!");
+    }
+
   return EXIT_SUCCESS;
 }

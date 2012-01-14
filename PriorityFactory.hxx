@@ -73,7 +73,7 @@ std::string PriorityFactory<TImage>::NameOfPriority(const PriorityTypes typeOfPr
 }
 
 template <typename TImage>
-Priority<TImage>* PriorityFactory<TImage>::Create(const PriorityTypes priorityType, const TImage* const image,
+Priority* PriorityFactory<TImage>::Create(const PriorityTypes priorityType, const TImage* const image,
                                   const Mask* const maskImage, const unsigned int patchRadius)
 {
   if(priorityType == MANUAL)

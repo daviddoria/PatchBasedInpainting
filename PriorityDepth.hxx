@@ -9,7 +9,7 @@
 #include <stdexcept>
 
 template <typename TImage>
-PriorityDepth<TImage>::PriorityDepth(const TImage* image, const Mask* maskImage, unsigned int patchRadius) : Priority<TImage>(image, maskImage, patchRadius)
+PriorityDepth<TImage>::PriorityDepth(const TImage* image, const Mask* maskImage, unsigned int patchRadius) : MaskImage(maskImage), Image(image)
 {
   if(image->GetNumberOfComponentsPerPixel() < 4)
     {
@@ -56,7 +56,7 @@ PriorityDepth<TImage>::PriorityDepth(const TImage* image, const Mask* maskImage,
 // }
 
 template <typename TImage>
-float PriorityDepth<TImage>::ComputePriority(const itk::Index<2>& queryPixel)
+float PriorityDepth<TImage>::ComputePriority(const itk::Index<2>& queryPixel) const
 {
   FloatVector2Type isophote = this->DepthIsophoteImage->GetPixel(queryPixel);
   isophote.Normalize();

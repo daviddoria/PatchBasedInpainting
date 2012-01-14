@@ -19,6 +19,10 @@ add_executable(TestPointCloudDescriptorCreator TestPointCloudDescriptorCreator.c
 target_link_libraries(TestPointCloudDescriptorCreator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
 add_test(TestPointCloudDescriptorCreator TestPointCloudDescriptorCreator)
 
+add_executable(TestPixelCollection TestPixelCollection.cpp ../PixelCollection.cpp)
+target_link_libraries(TestPixelCollection ${ITK_LIBRARIES})
+add_test(TestPixelCollection TestPixelCollection)
+
 add_executable(TestPixelSumAccumulator TestPixelSumAccumulator.cpp ../ImagePatch.cpp ../Mask.cpp)
 target_link_libraries(TestPixelSumAccumulator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
 add_test(TestPixelSumAccumulator TestPixelSumAccumulator)
@@ -62,10 +66,10 @@ add_executable(TestPatchDifference TestPatchDifference.cpp ../ImagePatch.cpp ../
 target_link_libraries(TestPatchDifference ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
 add_test(TestPatchDifference TestPatchDifference)
 
-add_executable(TestPriorityFactory TestPriorityFactory.cpp ../PriorityFactory.cpp ../Priority.cpp ../PriorityCriminisi.cpp ../PriorityDepth.cpp ../PriorityManual.cpp
-../PriorityOnionPeel.cpp ../DebugOutputs.cpp ../Mask.cpp ../PriorityRandom.cpp ../Isophotes.cpp ../Derivatives.cpp ../MaskOperations.cpp ../NamedVTKImage.cpp)
-target_link_libraries(TestPriorityFactory ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers libTesting)
-add_test(TestPriorityFactory TestPriorityFactory)
+# add_executable(TestPriorityFactory TestPriorityFactory.cpp ../PriorityFactory.cpp ../Priority.cpp ../PriorityCriminisi.cpp ../PriorityDepth.cpp ../PriorityManual.cpp
+# ../PriorityOnionPeel.cpp ../DebugOutputs.cpp ../Mask.cpp ../PriorityRandom.cpp ../Isophotes.cpp ../Derivatives.cpp ../MaskOperations.cpp ../NamedVTKImage.cpp)
+# target_link_libraries(TestPriorityFactory ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers libTesting)
+# add_test(TestPriorityFactory TestPriorityFactory)
 
 add_executable(TestPriorityDepth TestPriorityDepth.cpp ../PriorityDepth.cpp ../Priority.cpp ../Mask.cpp ../Derivatives.cpp ../MaskOperations.cpp
 ../DebugOutputs.cpp ../Isophotes.cpp ../NamedVTKImage.cpp)
@@ -105,10 +109,10 @@ add_test(TestNamedVTKImage TestNamedVTKImage)
 
 add_executable(TestPatchBasedInpainting TestPatchBasedInpainting.cpp ../PatchBasedInpainting.cpp ../PatchBasedInpaintingDebugging.cpp
 ../DebugOutputs.cpp ../CandidatePairs.cpp ../PatchPairDifferences.cpp
-../Priority.cpp ../PriorityFactory.cpp ../PriorityCriminisi.cpp ../PriorityOnionPeel.cpp ../PriorityRandom.cpp ../PriorityManual.cpp ../PriorityDepth.cpp
+../Priority.cpp ../PriorityCriminisi.cpp ../PriorityOnionPeel.cpp ../PriorityRandom.cpp ../PriorityManual.cpp ../PriorityDepth.cpp
+../PrioritySearchHighest.cpp ../PixelCollection.cpp
 ../SourcePatchCollection.cpp ../ImagePatch.cpp ../PatchPair.cpp
-../ITKImageCollection.cpp
-../Mask.cpp ../MaskOperations.cpp
+../Mask.cpp ../MaskOperations.cpp ../BoundaryNormals.cpp
 ../Isophotes.cpp ../Derivatives.cpp)
 target_link_libraries(TestPatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libTesting)
 add_test(TestPatchBasedInpainting TestPatchBasedInpainting)

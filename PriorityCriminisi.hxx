@@ -19,6 +19,7 @@
 #include "PriorityCriminisi.h" // Make syntax parser happy
 
 // Custom
+#include "BoundaryNormals.h"
 #include "Helpers/Helpers.h"
 #include "Helpers/HelpersOutput.h"
 #include "Isophotes.h"
@@ -36,7 +37,7 @@
 
 template <typename TImage>
 PriorityCriminisi<TImage>::PriorityCriminisi(const TImage* const image, const Mask* const maskImage, unsigned int patchRadius) :
-                                     PriorityOnionPeel<TImage>(image, maskImage, patchRadius)
+PriorityOnionPeel(maskImage, patchRadius), Image(image)
 {
   this->BoundaryNormalsImage = FloatVector2ImageType::New();
   ITKHelpers::InitializeImage<FloatVector2ImageType>(this->BoundaryNormalsImage, image->GetLargestPossibleRegion());
@@ -50,43 +51,43 @@ PriorityCriminisi<TImage>::PriorityCriminisi(const TImage* const image, const Ma
 
 }
 
-template <typename TImage>
-std::vector<std::string> PriorityCriminisi<TImage>::GetImageNames()
-{
-  std::vector<std::string> imageNames = PriorityOnionPeel<TImage>::GetImageNames();
-  imageNames.push_back("Isophotes");
-  imageNames.push_back("BoundaryNormals");
-  return imageNames;
-}
-
-template <typename TImage>
-std::vector<NamedVTKImage> PriorityCriminisi<TImage>::GetNamedImages()
-{
-  std::vector<NamedVTKImage> namedImages = PriorityOnionPeel<TImage>::GetNamedImages();
-
-  NamedVTKImage isophoteNamedImage;
-  isophoteNamedImage.Name = "Isophotes";
-  vtkSmartPointer<vtkImageData> isophoteImageVTK = vtkSmartPointer<vtkImageData>::New();
-  ITKVTKHelpers::ITKImageToVTKVectorFieldImage(this->IsophoteImage, isophoteImageVTK);
-  isophoteNamedImage.ImageData = isophoteImageVTK;
-  isophoteNamedImage.DisplayType = NamedVTKImage::VECTORS;
-  namedImages.push_back(isophoteNamedImage);
-
-  NamedVTKImage boundaryNormalsNamedImage;
-  boundaryNormalsNamedImage.Name = "BoundaryNormals";
-  vtkSmartPointer<vtkImageData> boundaryNormalsImageVTK = vtkSmartPointer<vtkImageData>::New();
-  ITKVTKHelpers::ITKImageToVTKVectorFieldImage(this->BoundaryNormalsImage, boundaryNormalsImageVTK);
-  boundaryNormalsNamedImage.ImageData = isophoteImageVTK;
-  boundaryNormalsNamedImage.DisplayType = NamedVTKImage::VECTORS;
-  namedImages.push_back(boundaryNormalsNamedImage);
-
-  return namedImages;
-}
+// template <typename TImage>
+// std::vector<std::string> PriorityCriminisi<TImage>::GetImageNames()
+// {
+//   std::vector<std::string> imageNames = PriorityOnionPeel<TImage>::GetImageNames();
+//   imageNames.push_back("Isophotes");
+//   imageNames.push_back("BoundaryNormals");
+//   return imageNames;
+// }
+// 
+// template <typename TImage>
+// std::vector<NamedVTKImage> PriorityCriminisi<TImage>::GetNamedImages()
+// {
+//   std::vector<NamedVTKImage> namedImages = PriorityOnionPeel<TImage>::GetNamedImages();
+// 
+//   NamedVTKImage isophoteNamedImage;
+//   isophoteNamedImage.Name = "Isophotes";
+//   vtkSmartPointer<vtkImageData> isophoteImageVTK = vtkSmartPointer<vtkImageData>::New();
+//   ITKVTKHelpers::ITKImageToVTKVectorFieldImage(this->IsophoteImage, isophoteImageVTK);
+//   isophoteNamedImage.ImageData = isophoteImageVTK;
+//   isophoteNamedImage.DisplayType = NamedVTKImage::VECTORS;
+//   namedImages.push_back(isophoteNamedImage);
+// 
+//   NamedVTKImage boundaryNormalsNamedImage;
+//   boundaryNormalsNamedImage.Name = "BoundaryNormals";
+//   vtkSmartPointer<vtkImageData> boundaryNormalsImageVTK = vtkSmartPointer<vtkImageData>::New();
+//   ITKVTKHelpers::ITKImageToVTKVectorFieldImage(this->BoundaryNormalsImage, boundaryNormalsImageVTK);
+//   boundaryNormalsNamedImage.ImageData = isophoteImageVTK;
+//   boundaryNormalsNamedImage.DisplayType = NamedVTKImage::VECTORS;
+//   namedImages.push_back(boundaryNormalsNamedImage);
+// 
+//   return namedImages;
+// }
 
 template <typename TImage>
 void PriorityCriminisi<TImage>::Update(const itk::ImageRegion<2>& filledRegion)
 {
-  PriorityOnionPeel<TImage>::Update(filledRegion);
+  Superclass::Update(filledRegion);
 
   Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage, filledRegion, this->IsophoteImage);
 
@@ -95,7 +96,7 @@ void PriorityCriminisi<TImage>::Update(const itk::ImageRegion<2>& filledRegion)
 }
 
 template <typename TImage>
-float PriorityCriminisi<TImage>::ComputePriority(const itk::Index<2>& queryPixel)
+float PriorityCriminisi<TImage>::ComputePriority(const itk::Index<2>& queryPixel) const
 {
   //std::cout << "PriorityCriminisi::ComputePriority()" << std::endl;
   float confidenceTerm = ComputeConfidenceTerm(queryPixel);
@@ -108,7 +109,7 @@ float PriorityCriminisi<TImage>::ComputePriority(const itk::Index<2>& queryPixel
 
 
 template <typename TImage>
-float PriorityCriminisi<TImage>::ComputeDataTerm(const itk::Index<2>& queryPixel)
+float PriorityCriminisi<TImage>::ComputeDataTerm(const itk::Index<2>& queryPixel) const
 {
   // D(p) = |dot(isophote at p, normalized normal of the front at p)|/alpha
 
@@ -128,56 +129,10 @@ float PriorityCriminisi<TImage>::ComputeDataTerm(const itk::Index<2>& queryPixel
 template <typename TImage>
 void PriorityCriminisi<TImage>::ComputeBoundaryNormals(const float blurVariance)
 {
-
-  // Blur the mask, compute the gradient, then keep the normals only at the original mask boundary
-
-  //HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/ComputeBoundaryNormals.BoundaryImage.mha", this->DebugImages);
-  //HelpersOutput::WriteImageConditional<Mask>(this->MaskImage, "Debug/ComputeBoundaryNormals.CurrentMask.mha", this->DebugImages);
-
-  // Blur the mask
-  typedef itk::DiscreteGaussianImageFilter< Mask, FloatScalarImageType >  BlurFilterType;
-  BlurFilterType::Pointer gaussianFilter = BlurFilterType::New();
-  gaussianFilter->SetInput(this->MaskImage);
-  gaussianFilter->SetVariance(blurVariance);
-  gaussianFilter->Update();
-
-  //HelpersOutput::WriteImageConditional<FloatScalarImageType>(gaussianFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMask.mha", this->DebugImages);
-
-  // Compute the gradient of the blurred mask
-  typedef itk::GradientImageFilter< FloatScalarImageType, float, float>  GradientFilterType;
-  GradientFilterType::Pointer gradientFilter = GradientFilterType::New();
-  gradientFilter->SetInput(gaussianFilter->GetOutput());
-  gradientFilter->Update();
-
-  //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(gradientFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMaskGradient.mha", this->DebugImages);
-
-  // Only keep the normals at the boundary
-  typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
-  MaskFilterType::Pointer maskFilter = MaskFilterType::New();
-  maskFilter->SetInput(gradientFilter->GetOutput());
-  maskFilter->SetMaskImage(this->BoundaryImage);
-  maskFilter->Update();
-
-  //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(),
-    //                                                          "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha", this->DebugImages);
-
-  ITKHelpers::DeepCopy<FloatVector2ImageType>(maskFilter->GetOutput(), this->BoundaryNormalsImage);
-
-  // Normalize the vectors because we just care about their direction (the Data term computation calls for the normalized boundary normal)
-  itk::ImageRegionIterator<FloatVector2ImageType> boundaryNormalsIterator(this->BoundaryNormalsImage, this->BoundaryNormalsImage->GetLargestPossibleRegion());
-  itk::ImageRegionConstIterator<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
-
-  while(!boundaryNormalsIterator.IsAtEnd())
-    {
-    if(boundaryIterator.Get()) // The pixel is on the boundary
-      {
-      FloatVector2ImageType::PixelType p = boundaryNormalsIterator.Get();
-      p.Normalize();
-      boundaryNormalsIterator.Set(p);
-      }
-    ++boundaryNormalsIterator;
-    ++boundaryIterator;
-    }
+  // TODO: The boundary image is no longer stored, so should we just blur the mask image locally
+  // to compute the boundary normal for each pixel separately (per ComputePriority() call)?
+  // BoundaryNormals boundaryNormals(this->BoundaryImage, this->MaskImage);
+  // this->BoundaryNormalsImage = boundaryNormals.ComputeBoundaryNormals(blurVariance);
 
   //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(this->BoundaryNormalsImage, "Debug/ComputeBoundaryNormals.BoundaryNormals.mha", this->DebugImages);
 }

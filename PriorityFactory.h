@@ -24,6 +24,9 @@
 
 #include "Priority.h"
 
+// TODO: Does this class make sense? It seems that the user needs to manually construct
+// the priority objects because they each need different data. Therefore a common constructor
+// interface is not possible, so the factory doesn't make sense.
 /**
 \class PriorityFactory
 \brief This class constructs a Priority object based on a specified string/enum.
@@ -33,7 +36,7 @@ class PriorityFactory
 {
 public:
   enum PriorityTypes {DEPTH, MANUAL, ONIONPEEL, CRIMINISI, RANDOM, INVALID};
-  static Priority<TImage>* Create(const PriorityTypes priorityType, const TImage* const image, const Mask* const maskImage, const unsigned int patchRadius);
+  static Priority* Create(const PriorityTypes priorityType, const TImage* const image, const Mask* const maskImage, const unsigned int patchRadius);
 
   static std::string NameOfPriority(const PriorityTypes);
   static PriorityTypes PriorityTypeFromName(const std::string&);

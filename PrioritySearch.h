@@ -16,26 +16,12 @@
  *
  *=========================================================================*/
 
-#ifndef PriorityRandom_H
-#define PriorityRandom_H
+#ifndef PrioritySearch_H
+#define PrioritySearch_H
 
-#include "Priority.h"
-
-/**
-\class PriorityRandom
-\brief This class returns a random value as the priority of each boundary pixel.
-*/
-class PriorityRandom : public Priority
+class PrioritySearch
 {
-public:
-
-  /** Return a random value.*/
-  float ComputePriority(const itk::Index<2>& queryPixel) const;
-
-  /** There is no reason to update anything.*/
-  void Update(const itk::ImageRegion<2>& filledRegion){}
+  virtual itk::Index<2> Search() = 0;
 };
-
-#include "PriorityRandom.hxx"
 
 #endif

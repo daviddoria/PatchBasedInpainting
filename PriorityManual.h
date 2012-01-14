@@ -32,22 +32,28 @@
        these pixels, the superclass's ComputePriority function is called.
        This is a "template template" class because one of the template parameters (TPriority) depends on another (TImage).
 */
-template< class TImage, template<class> class TPriority>
-class PriorityManual : public TPriority<TImage>
+// template< class TImage, template<class> class TPriority>
+// class PriorityManual : public TPriority<TImage>
+template< typename TImage, typename TPriority>
+class PriorityManual
 {
 public:
   // Reimplemented
-  PriorityManual(const TImage* image, const Mask* maskImage, unsigned int patchRadius);
+  PriorityManual(const TImage* manualPriorityImage, Priority* const priorityFunction);
 
-  float ComputePriority(const itk::Index<2>& queryPixel);
+  float ComputePriority(const itk::Index<2>& queryPixel) const;
 
   // New functions
   void SetManualPriorityImage(UnsignedCharScalarImageType* const);
 
-  UnsignedCharScalarImageType* GetManualPriorityImage();
+  void Update(const itk::ImageRegion<2>& filledRegion);
+
+  //void SetPriorityFunction(Priority* const priorityFunction);
 
 protected:
   UnsignedCharScalarImageType::Pointer ManualPriorityImage;
+
+  const TPriority* PriorityFunction;
 };
 
 #include "PriorityManual.hxx"

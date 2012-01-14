@@ -26,8 +26,7 @@
 \class PriorityOnionPeel
 \brief This class ranks the priority of a patch based on its closeness to the hole boundary.
 */
-template <typename TImage>
-class PriorityOnionPeel : public Priority<TImage>
+class PriorityOnionPeel : public Priority
 {
 public:
 
@@ -35,39 +34,33 @@ public:
   // Functions reimplemented from Priority //
   ///////////////////////////////////////////
 
-  PriorityOnionPeel(const TImage* const image, const Mask* const maskImage, unsigned int patchRadius);
+  PriorityOnionPeel(const Mask* const maskImage, const unsigned int patchRadius);
 
   virtual ~PriorityOnionPeel(){}
 
-  float ComputePriority(const itk::Index<2>& queryPixel);
+  float ComputePriority(const itk::Index<2>& queryPixel) const;
 
   void Update(const itk::ImageRegion<2>& filledRegion);
 
-  std::vector<NamedVTKImage> GetNamedImages();
-
-  static std::vector<std::string> GetImageNames();
-
-  ///////////////////////////////////////////
-  //////////////// New functions   //////////
-  ///////////////////////////////////////////
-
-  // Get the current confidence map image
-  FloatScalarImageType* GetConfidenceMapImage();
-
 protected:
 
-  // Compute the Confidence values for pixels that were just inpainted.
+  /** Compute the Confidence values for pixels that were just inpainted.*/
   void UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value);
 
-  // Compute the Confidence at a pixel.
-  float ComputeConfidenceTerm(const itk::Index<2>& queryPixel);
+  /** Compute the Confidence at a pixel.*/
+  float ComputeConfidenceTerm(const itk::Index<2>& queryPixel) const;
 
-  // Keep track of the Confidence of each pixel
+  /** Keep track of the Confidence of each pixel*/
   FloatScalarImageType::Pointer ConfidenceMapImage;
 
-  // The initial confidence is 0 in the hole and 1 outside the hole.
+  /** The initial confidence is 0 in the hole and 1 outside the hole.*/
   void InitializeConfidenceMap();
 
+  /** The mask image. */
+  const Mask* MaskImage;
+
+private:
+  const unsigned int PatchRadius;
 };
 
 #include "PriorityOnionPeel.hxx"

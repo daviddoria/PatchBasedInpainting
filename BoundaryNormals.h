@@ -16,26 +16,22 @@
  *
  *=========================================================================*/
 
-#ifndef PriorityRandom_H
-#define PriorityRandom_H
+#ifndef BoundaryNormals_H
+#define BoundaryNormals_H
 
-#include "Priority.h"
+#include "Mask.h"
+#include "Types.h"
 
-/**
-\class PriorityRandom
-\brief This class returns a random value as the priority of each boundary pixel.
-*/
-class PriorityRandom : public Priority
+class BoundaryNormals
 {
 public:
+  BoundaryNormals(const UnsignedCharScalarImageType* const boundaryImage, const Mask* const mask);
 
-  /** Return a random value.*/
-  float ComputePriority(const itk::Index<2>& queryPixel) const;
+  FloatVector2ImageType* ComputeBoundaryNormals(const float blurVariance);
 
-  /** There is no reason to update anything.*/
-  void Update(const itk::ImageRegion<2>& filledRegion){}
+private:
+  const UnsignedCharScalarImageType* BoundaryImage;
+  const Mask* MaskImage;
 };
-
-#include "PriorityRandom.hxx"
 
 #endif

@@ -31,28 +31,14 @@ int main()
   Testing::GetFullyValidMask(mask.GetPointer());
 
   unsigned int patchRadius = 5;
-  PriorityOnionPeel<FloatScalarImageType> priority(image, mask, patchRadius);
-
-  priority.ComputeAllPriorities();
+  PriorityOnionPeel priority(mask, patchRadius);
 
   itk::ImageRegion<2> filledRegion;
   priority.Update(filledRegion);
 
-  // Get the current priority image
-  FloatScalarImageType* priorityImage = priority.GetPriorityImage();
-
-  // Get the current boundary image
-  UnsignedCharScalarImageType* boundaryImage = priority.GetBoundaryImage();
-
-  FloatScalarImageType* confidenceImage = priority.GetConfidenceMapImage();
-
   itk::Index<2> queryPixel;
   queryPixel.Fill(0);
-  priority.GetPriority(queryPixel);
+  priority.ComputePriority(queryPixel);
 
-  priority.UpdateBoundary();
-
-  std::vector<NamedVTKImage> namedImages = priority.GetNamedImages();
-  std::vector<std::string> imageNames = priority.GetImageNames();
   return EXIT_SUCCESS;
 }

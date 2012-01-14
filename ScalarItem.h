@@ -16,26 +16,29 @@
  *
  *=========================================================================*/
 
-#ifndef PriorityRandom_H
-#define PriorityRandom_H
+#ifndef ScalarItem_H
+#define ScalarItem_H
 
-#include "Priority.h"
+#include "Item.h"
 
 /**
-\class PriorityRandom
-\brief This class returns a random value as the priority of each boundary pixel.
+\class ScalarItem
+\brief This class stores a scalar.
 */
-class PriorityRandom : public Priority
+template <typename T>
+class ScalarItem : public Item
 {
 public:
 
-  /** Return a random value.*/
-  float ComputePriority(const itk::Index<2>& queryPixel) const;
+  /** Create an item.*/
+  ScalarItem(const T& scalar) : Scalar(scalar) {}
 
-  /** There is no reason to update anything.*/
-  void Update(const itk::ImageRegion<2>& filledRegion){}
+private:
+  /** The scalar value. */
+  T Scalar;
+
 };
 
-#include "PriorityRandom.hxx"
+#include "ImagePatch.hxx"
 
 #endif

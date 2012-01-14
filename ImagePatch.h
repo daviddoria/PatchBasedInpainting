@@ -28,7 +28,6 @@ class Mask;
 /**
 \class ImagePatch
 \brief This class indicates a rectangular region in an image.
-       It is not associated with a particular image.
 */
 template <typename TImage>
 class ImagePatch : public Item

@@ -26,13 +26,13 @@
 \brief This class computes a patch's priority based on its depth channel.
 */
 template <typename TImage>
-class PriorityDepth : public Priority<TImage>
+class PriorityDepth : public Priority
 {
 public:
   // Reimplemented from Priority
   PriorityDepth(const TImage* image, const Mask* maskImage, unsigned int patchRadius);
 
-  float ComputePriority(const itk::Index<2>& queryPixel);
+  float ComputePriority(const itk::Index<2>& queryPixel) const;
 
   void Update(const itk::ImageRegion<2>& filledRegion);
 
@@ -41,6 +41,9 @@ protected:
   FloatVector2ImageType::Pointer DepthIsophoteImage;
 
   FloatScalarImageType::Pointer BlurredDepth;
+
+  const Mask* MaskImage;
+  const TImage* Image;
 };
 
 #include "PriorityDepth.hxx"

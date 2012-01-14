@@ -16,26 +16,21 @@
  *
  *=========================================================================*/
 
-#ifndef PriorityRandom_H
-#define PriorityRandom_H
+#include "PixelCollection.h"
 
-#include "Priority.h"
-
-/**
-\class PriorityRandom
-\brief This class returns a random value as the priority of each boundary pixel.
-*/
-class PriorityRandom : public Priority
+int main(int argc, char*argv[])
 {
-public:
+  PixelCollection pixels;
+  for(unsigned int i = 0; i < 4; ++i)
+    {
+    itk::Index<2> index = {{i, i}};
+    pixels.AddPixel(index);
+    }
 
-  /** Return a random value.*/
-  float ComputePriority(const itk::Index<2>& queryPixel) const;
+  for(PixelCollection::ConstIterator pixelIterator = pixels.begin(); pixelIterator != pixels.end(); ++pixelIterator)
+    {
+    std::cout << *pixelIterator << std::endl;
+    }
 
-  /** There is no reason to update anything.*/
-  void Update(const itk::ImageRegion<2>& filledRegion){}
-};
-
-#include "PriorityRandom.hxx"
-
-#endif
+  return EXIT_SUCCESS;
+}

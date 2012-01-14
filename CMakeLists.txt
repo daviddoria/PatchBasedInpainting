@@ -42,19 +42,19 @@ if(BuildInteractive OR BuildNonInteractive)
   Isophotes.cpp
   Mask.cpp
   MaskOperations.cpp
-  NamedITKImageCollection.cpp
-  NamedVTKImage.cpp
   PatchBasedInpainting.cpp
   PatchBasedInpaintingDebugging.cpp
   PatchPair.cpp
   PatchPairDifferences.cpp
+  PixelCollection.cpp
   Priority.cpp
   PriorityCriminisi.cpp
   PriorityDepth.cpp
-  PriorityFactory.cpp
+  
   PriorityManual.cpp
   PriorityOnionPeel.cpp
   PriorityRandom.cpp
+  PrioritySearchHighest.cpp
   SelfPatchCompare.cpp
   SourcePatchCollection.cpp
   )

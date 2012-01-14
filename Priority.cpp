@@ -15,3 +15,10 @@
  *  limitations under the License.
  *
  *=========================================================================*/
+
+#include "Priority.h"
+
+Priority::Priority()
+{
+
+}

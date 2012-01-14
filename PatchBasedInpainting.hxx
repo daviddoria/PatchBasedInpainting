@@ -26,8 +26,8 @@
 #include "Item.h"
 #include "MaskOperations.h"
 #include "PatchDifferencePixelWiseSum.h"
-#include "PriorityFactory.h"
 #include "PriorityRandom.h"
+#include "PrioritySearchHighest.h"
 #include "Types.h"
 
 // STL
@@ -129,10 +129,9 @@ const itk::ImageRegion<2>& PatchBasedInpainting<TImage>::GetFullRegion() const
 // }
 
 template <typename TImage>
-void PatchBasedInpainting<TImage>::SetPriorityFunction(const std::string& priorityName)
+void PatchBasedInpainting<TImage>::SetPriorityFunction(Priority* const priority)
 {
-  this->PriorityFunction = std::shared_ptr<Priority<TImage> >(PriorityFactory<TImage>::Create(PriorityFactory<TImage>::PriorityTypeFromName(priorityName),
-                                                                             this->CompareImage, this->MaskImage.GetPointer(), this->PatchRadius[0]));
+  this->PriorityFunction = priority;
 }
 
 template <typename TImage>
@@ -154,11 +153,28 @@ void PatchBasedInpainting<TImage>::Initialize()
 {
   EnterFunction("PatchBasedInpainting::Initialize()");
 
+  typedef itk::Image<Item*, 2> ImageOfItems;
+  ImageOfItems::Pointer itemImage = ImageOfItems::New();
+  itemImage->SetRegions(this->FullImageRegion);
+  itemImage->Allocate();
+
+  itk::ImageRegionIterator<ImageOfItems> iterator(itemImage, itemImage->GetLargestPossibleRegion());
+
+  while(!iterator.IsAtEnd())
+    {
+    if(this->MaskImage->IsHole(iterator.GetIndex()))
+      {
+      iterator.Set(ItemCreatorObject->CreateItem(iterator.GetIndex()));
+      }
+
+    ++iterator;
+    }
+
   // If the user hasn't specified a priority function, use the simplest one.
   if(!this->PriorityFunction)
     {
     std::cout << "Using default Priority function." << std::endl;
-    this->PriorityFunction = std::make_shared<PriorityRandom<FloatVectorImageType> >(this->CurrentInpaintedImage, this->MaskImage, this->PatchRadius[0]);
+    this->PriorityFunction = std::make_shared<PriorityRandom>(this->CurrentInpaintedImage, this->MaskImage, this->PatchRadius[0]);
     }
 
   this->NumberOfCompletedIterations = 0;
@@ -228,12 +244,6 @@ PatchPair<TImage> PatchBasedInpainting<TImage>::Iterate()
 }
 
 template <typename TImage>
-Priority<TImage>* PatchBasedInpainting<TImage>::GetPriorityFunction()
-{
-  return this->PriorityFunction.get();
-}
-
-template <typename TImage>
 void PatchBasedInpainting<TImage>::ComputeScores(CandidatePairs<TImage>& candidatePairs)
 {
   //std::cout << "FindBestPatch: There are " << candidatePairs.size() << " candidate pairs." << std::endl;
@@ -249,26 +259,10 @@ PatchPair<TImage> PatchBasedInpainting<TImage>::FindBestPatch()
 {
   EnterFunction("PatchBasedInpainting::FindBestPatch()");
 
-  typedef itk::Image<Item*, 2> ImageOfItems;
-  ImageOfItems::Pointer itemImage = ImageOfItems::New();
-  itemImage->SetRegions(this->FullImageRegion);
-  itemImage->Allocate();
-
-  itk::ImageRegionIterator<ImageOfItems> iterator(itemImage, itemImage->GetLargestPossibleRegion());
-
-  while(!iterator.IsAtEnd())
-    {
-    if(this->MaskImage->IsHole(iterator.GetIndex()))
-      {
-      iterator.Set(ItemCreatorObject->CreateItem(iterator.GetIndex()));
-      }
-
-    ++iterator;
-    }
-
   float highestPriority = 0.0f;
-  itk::Index<2> pixelToFill = MaskOperations::FindHighestValueInNonZeroRegion(this->PriorityFunction->GetPriorityImage(),
-                                                                      highestPriority, this->PriorityFunction->GetBoundaryImage());
+
+  PrioritySearchHighest prioritySearchHighest;
+  itk::Index<2> pixelToFill = prioritySearchHighest.FindHighestPriority(this->BoundaryPixels, this->PriorityFunction.get());
 
   itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
   ImagePatch<TImage> targetPatch(this->CurrentInpaintedImage, targetRegion);

@@ -16,43 +16,58 @@
  *
  *=========================================================================*/
 
+#include "PriorityManual.h" // Appease syntax parser
+
 #include "Helpers/ITKHelpers.h"
 
-template< typename TImage, template<class> class TPriority>
-PriorityManual<TImage, TPriority>::PriorityManual(const TImage* image, const Mask* maskImage, unsigned int patchRadius) :
-TPriority<TImage>(image, maskImage, patchRadius)
+template< typename TImage, typename TPriority>
+PriorityManual<TImage, TPriority>::PriorityManual(const TImage* manualPriorityImage, Priority* const priorityFunction)
 {
   this->ManualPriorityImage = UnsignedCharScalarImageType::New();
 }
 
-template< typename TImage, template<class> class TPriority>
-float PriorityManual<TImage, TPriority>::ComputePriority(const itk::Index<2>& queryPixel)
+// template< typename TImage, typename TPriority>
+// void SetPriorityFunction(Priority* const priorityFunction)
+// {
+//   this->PriorityFunction = priorityFunction;
+// }
+
+template< typename TImage, typename TPriority>
+float PriorityManual<TImage, TPriority>::ComputePriority(const itk::Index<2>& queryPixel) const
 {
   //std::cout << static_cast<float>(this->ManualPriorityImage->GetPixel(queryPixel)) << std::endl;
 
   float priority = 0.0f;
   float manualPriority = this->ManualPriorityImage->GetPixel(queryPixel);
 
+  // Make the priority values extremely high, but still sorted.
   float offset = 1e4;
+  float normalPriority = this->PriorityFunction->ComputePriority(queryPixel);
   if(manualPriority > 0)
     {
-    priority = offset + PriorityOnionPeel<TImage>::ComputePriority(queryPixel);
+    priority = offset + normalPriority;
     }
   else
     {
-    priority = PriorityOnionPeel<TImage>::ComputePriority(queryPixel);
+    priority = normalPriority;
     }
 
   return priority;
 }
 
-template< typename TImage, template<class> class TPriority>
-UnsignedCharScalarImageType* PriorityManual<TImage, TPriority>::GetManualPriorityImage()
+// template< typename TImage, typename TPriority>
+// UnsignedCharScalarImageType* PriorityManual<TImage, TPriority>::GetManualPriorityImage()
+// {
+//   return this->ManualPriorityImage;
+// }
+
+template< typename TImage, typename TPriority>
+void PriorityManual<TImage, TPriority>::Update(const itk::ImageRegion<2>& filledRegion)
 {
-  return this->ManualPriorityImage;
+
 }
 
-template< typename TImage, template<class> class TPriority>
+template< typename TImage, typename TPriority>
 void PriorityManual<TImage, TPriority>::SetManualPriorityImage(UnsignedCharScalarImageType* const image)
 {
   //this->ManualPriorityImage = image;

@@ -15,3 +15,10 @@
  *  limitations under the License.
  *
  *=========================================================================*/
+
+#include "PriorityRandom.h"
+
+float PriorityRandom::ComputePriority(const itk::Index<2>& queryPixel) const
+{
+  return drand48();
+}

@@ -30,40 +30,21 @@ int main()
   Mask::Pointer mask = Mask::New();
   Testing::GetFullyValidMask(mask.GetPointer());
 
-  unsigned int patchRadius = 5;
-  PriorityManual<FloatVectorImageType, PriorityOnionPeel> priority(image, mask, patchRadius);
-
-  priority.ComputeAllPriorities();
-
-  itk::ImageRegion<2> filledRegion;
-  priority.Update(filledRegion);
-
-  // Get the current priority image
-  FloatScalarImageType* priorityImage = priority.GetPriorityImage();
-
-  if(!priorityImage)
-    {
-    throw std::runtime_error("priorityImage was NULL!");
-    }
-  // Get the current boundary image
-  UnsignedCharScalarImageType* boundaryImage = priority.GetBoundaryImage();
-  if(!boundaryImage)
-    {
-    throw std::runtime_error("boundaryImage was NULL!");
-    }
-
   UnsignedCharScalarImageType::Pointer manualPriorityImage = UnsignedCharScalarImageType::New();
   Testing::GetBlankImage(manualPriorityImage.GetPointer());
 
+  unsigned int patchRadius = 5;
+  PriorityOnionPeel priorityOnionPeel(mask, patchRadius);
+  
+  PriorityManual<UnsignedCharScalarImageType, PriorityOnionPeel> priority(manualPriorityImage, &priorityOnionPeel);
+
+  itk::ImageRegion<2> filledRegion;
+  priority.Update(filledRegion);
   priority.SetManualPriorityImage(manualPriorityImage);
 
   itk::Index<2> queryPixel;
   queryPixel.Fill(0);
-  priority.GetPriority(queryPixel);
+  priority.ComputePriority(queryPixel);
 
-  priority.UpdateBoundary();
-
-  std::vector<NamedVTKImage> namedImages = priority.GetNamedImages();
-  std::vector<std::string> imageNames = priority.GetImageNames();
   return EXIT_SUCCESS;
 }

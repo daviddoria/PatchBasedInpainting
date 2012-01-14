@@ -16,27 +16,40 @@
  *
  *=========================================================================*/
 
-#include "Priority.h"
+#ifndef DisplayPriority_H
+#define DisplayPriority_H
 
-// Custom
-#include "Helpers/Helpers.h"
-#include "Helpers/HelpersOutput.h"
-#include "Helpers/ITKHelpers.h"
-#include "Helpers/ITKVTKHelpers.h"
-
-// VTK
-#include <vtkSmartPointer.h>
-
-
-/*
-template <typename TImage>
-FloatScalarImageType* Priority<TImage>::GetPriorityImage()
+class DisplayPriority
 {
-  return this->PriorityImage;
-}*/
-/*
+
+  virtual std::vector<NamedVTKImage> GetNamedImages();
+  static std::vector<std::string> GetImageNames();
+};
+
+
 template <typename TImage>
-UnsignedCharScalarImageType* Priority<TImage>::GetBoundaryImage()
+std::vector<NamedVTKImage> Priority<TImage>::GetNamedImages()
 {
-  return this->BoundaryImage;
-}*/
+  std::vector<NamedVTKImage> namedImages;
+
+  NamedVTKImage priorityImage;
+  priorityImage.Name = "Priority";
+  vtkSmartPointer<vtkImageData> priorityImageVTK = vtkSmartPointer<vtkImageData>::New();
+  ITKVTKHelpers::ITKScalarImageToScaledVTKImage<FloatScalarImageType>(this->PriorityImage, priorityImageVTK);
+  priorityImage.ImageData = priorityImageVTK;
+
+  namedImages.push_back(priorityImage);
+
+  return namedImages;
+}
+
+template <typename TImage>
+std::vector<std::string> Priority<TImage>::GetImageNames()
+{
+  std::vector<std::string> imageNames;
+  imageNames.push_back("Priority");
+  return imageNames;
+}
+
+
+#endif

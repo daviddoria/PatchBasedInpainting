@@ -26,6 +26,7 @@
 #include "ITKImageCollection.h"
 #include "Mask.h"
 #include "ImagePatch.h"
+#include "PixelCollection.h"
 #include "PatchPair.h"
 #include "Priority.h"
 #include "SourcePatchCollection.h"
@@ -88,10 +89,7 @@ public:
   const itk::ImageRegion<2>& GetFullRegion() const;
 
   /** Set the priority function.*/
-  void SetPriorityFunction(const std::string& priorityType);
-
-  /** Get the priority function.*/
-  Priority<TImage>* GetPriorityFunction();
+  void SetPriorityFunction(Priority* const priority);
 
   /** We store the patch radius, so we need this function to compute the actual patch size from the radius.*/
   itk::Size<2> GetPatchSize();
@@ -127,6 +125,9 @@ private:
 
   /** The mask specifying the region to inpaint. It is updated as patches are copied.*/
   Mask::Pointer MaskImage;
+
+  /** The pixels on the current boundary.*/
+  PixelCollection BoundaryPixels;
 
   /** The patch radius.*/
   itk::Size<2> PatchRadius;
@@ -172,7 +173,7 @@ private:
   void DebugWritePatchToFillLocation(const itk::Index<2>& pixelToFill, const unsigned int iteration);
 
   /** The Priority function to use.*/
-  std::shared_ptr<Priority<TImage> > PriorityFunction;
+  std::shared_ptr<Priority> PriorityFunction;
 
   /** The ItemCreator to use.*/
   std::shared_ptr<ItemCreator> ItemCreatorObject;

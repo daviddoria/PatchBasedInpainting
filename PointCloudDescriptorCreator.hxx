@@ -18,8 +18,13 @@
 
 #include "PointCloudDescriptorCreator.h" // Appease syntax parser
 
+// Custom
+#include "DescriptorItem.h"
+
+// ITK
 #include "itkIndex.h"
 
+// STL
 #include <fstream>
 #include <stdexcept>
 
@@ -35,24 +40,39 @@ PointCloudDescriptorCreator::PointCloudDescriptorCreator(const std::string& file
     }
 
   std::string line;
- 
-  while(getline(fin, line))
-    {
-    std::stringstream ss;
-    ss << line;
-    itk::Index<2> index;
-    ss >> index;
-  
-    std::vector<float> descriptor;
-    ss >> descriptor;
-
-    Descriptors[index] = descriptor;
-    }
+  // TODO: Write this parser
+//   while(getline(fin, line))
+//     {
+//     std::stringstream ss;
+//     ss << line;
+//     itk::Index<2> index;
+//     ss >> index;
+//   
+//     std::vector<float> descriptor;
+//     ss >> descriptor;
+// 
+//     Descriptors[index] = descriptor;
+//     }
 
   fin.close();
 }
 
 Item* PointCloudDescriptorCreator::CreateItem(const itk::Index<2>& index) const
 {
-  return new DescriptorItem(this->Descriptors[index]);
+  //return new PointCloudDescriptorCreator(this->Descriptors[index]);
+
+  DescriptorContainer::const_iterator iter = this->Descriptors.find(index);
+
+  if(iter == this->Descriptors.end())
+    {
+    std::stringstream ss;
+    ss << "Index " << index << " not found.";
+    throw std::runtime_error(ss.str());
+    }
+  else
+    {
+    return new DescriptorItem(iter->second);
+    //std::cout << "Found key " << iter->first << ". Associated value: " << iter->second << std::endl;
+    }
+
 }

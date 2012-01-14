@@ -32,23 +32,11 @@ int main()
   unsigned int patchRadius = 5;
   PriorityDepth<FloatVectorImageType> priority(image, mask, patchRadius);
 
-  priority.ComputeAllPriorities();
-
   itk::ImageRegion<2> filledRegion;
   priority.Update(filledRegion);
 
-  // Get the current priority image
-  FloatScalarImageType* priorityImage = priority.GetPriorityImage();
-
-  // Get the current boundary image
-  UnsignedCharScalarImageType* boundaryImage = priority.GetBoundaryImage();
-
   itk::Index<2> queryPixel;
-  priority.GetPriority(queryPixel);
+  priority.ComputePriority(queryPixel);
 
-  priority.UpdateBoundary();
-
-  std::vector<NamedVTKImage> namedImages = priority.GetNamedImages();
-  std::vector<std::string> imageNames = priority.GetImageNames();
   return EXIT_SUCCESS;
 }

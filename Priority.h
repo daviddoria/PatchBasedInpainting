@@ -16,61 +16,30 @@
  *
  *=========================================================================*/
 
-#ifndef PRIORITY_H
-#define PRIORITY_H
+#ifndef Priority_H
+#define Priority_H
 
-#include "DebugOutputs.h"
-class Mask;
-#include "NamedVTKImage.h"
-#include "Types.h"
+// ITK
+#include "itkIndex.h"
+#include "itkImageRegion.h"
 
 /**
 \class Priority
 \brief This is an abstract class that indicates the interface for Priority functions.
 */
-template <typename TImage>
-class Priority : public DebugOutputs
+class Priority
 {
 public:
-  Priority(const TImage* const image, const Mask* const maskImage, const unsigned int patchRadius);
+  Priority();
+
+  /** Compute the priority of a specific pixel. */
+  virtual float ComputePriority(const itk::Index<2>& queryPixel) const = 0;
 
   virtual ~Priority(){}
 
-  // Compute the priorities at all boundary pixels.
-  virtual void ComputeAllPriorities();
-
   // At the end of an iteration, update anything that needs to be updated.
-  virtual void Update(const itk::ImageRegion<2>& filledRegion);
+  virtual void Update(const itk::ImageRegion<2>& filledRegion) = 0;
 
-  // Get the current priority image
-  FloatScalarImageType* GetPriorityImage();
-
-  // Get the current boundary image
-  UnsignedCharScalarImageType* GetBoundaryImage();
-
-  float GetPriority(const itk::Index<2>& queryPixel);
-
-  void UpdateBoundary();
-
-  virtual std::vector<NamedVTKImage> GetNamedImages();
-  static std::vector<std::string> GetImageNames();
-
-protected:
-
-  // Compute the priority of a specific pixel.
-  virtual float ComputePriority(const itk::Index<2>& queryPixel) = 0;
-
-  // Keep track of the priority of each pixel.
-  FloatScalarImageType::Pointer PriorityImage;
-
-  // In most subclasses, the image and mask are needed to compute the priority.
-  const TImage* Image;
-  const Mask* MaskImage;
-
-  // In most subclasses, the boundary image is needed to know where to compute the priority.
-  UnsignedCharScalarImageType::Pointer BoundaryImage;
-
-  unsigned int PatchRadius;
 };
 
 #include "Priority.hxx"

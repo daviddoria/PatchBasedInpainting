@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef PRIORITYCRIMINISI_H
-#define PRIORITYCRIMINISI_H
+#ifndef PriorityCriminisi_H
+#define PriorityCriminisi_H
 
 #include "PriorityOnionPeel.h"
 #include "Types.h"
@@ -28,7 +28,7 @@
        the confidence term of PriorityOnionPeel.
 */
 template <typename TImage>
-class PriorityCriminisi : public PriorityOnionPeel<TImage>
+class PriorityCriminisi : public PriorityOnionPeel
 {
 public:
 
@@ -38,15 +38,15 @@ public:
 
   PriorityCriminisi(const TImage* image, const Mask* maskImage, unsigned int patchRadius);
 
-  float ComputePriority(const itk::Index<2>& queryPixel);
+  float ComputePriority(const itk::Index<2>& queryPixel) const;
 
   void Update(const itk::ImageRegion<2>& filledRegion);
 
-  std::vector<NamedVTKImage> GetNamedImages();
+//   std::vector<NamedVTKImage> GetNamedImages();
+// 
+//   static std::vector<std::string> GetImageNames();
 
-  static std::vector<std::string> GetImageNames();
-
-  using PriorityOnionPeel<TImage>::ComputeConfidenceTerm;
+  using PriorityOnionPeel::ComputeConfidenceTerm;
   ///////////////////////////////////////////
   //////////////// New functions   //////////
   ///////////////////////////////////////////
@@ -56,8 +56,9 @@ public:
 
 protected:
 
+  typedef PriorityOnionPeel Superclass;
   // Compute the Data at a pixel.
-  float ComputeDataTerm(const itk::Index<2>& queryPixel);
+  float ComputeDataTerm(const itk::Index<2>& queryPixel) const;
 
   // Compute the normals of the hole boundary.
   void ComputeBoundaryNormals(const float blurVariance);
@@ -68,6 +69,8 @@ protected:
   // Boundary normals.
   FloatVector2ImageType::Pointer BoundaryNormalsImage;
 
+private:
+  const TImage* Image;
 };
 
 #include "PriorityCriminisi.hxx"

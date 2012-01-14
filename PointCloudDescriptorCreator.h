@@ -34,7 +34,8 @@ public:
   Item* CreateItem(const itk::Index<2>& index) const;
 
 private:
-  std::map<itk::Index<2>, std::vector<float> > Descriptors;
+  typedef std::map<itk::Index<2>, std::vector<float>, itk::Index<2>::LexicographicCompare> DescriptorContainer;
+  DescriptorContainer Descriptors;
 
 };
 
