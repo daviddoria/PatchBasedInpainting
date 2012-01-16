@@ -18,7 +18,6 @@
 
 #include "PriorityDepth.h"
 #include "Mask.h"
-#include "NamedVTKImage.h"
 #include "Testing.h"
 
 int main()

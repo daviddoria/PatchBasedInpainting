@@ -6,9 +6,21 @@ add_executable(TestInpaintingIterationRecordViewer TestInpaintingIterationRecord
 target_link_libraries(TestInpaintingIterationRecordViewer)
 add_test(TestInpaintingIterationRecordViewer TestInpaintingIterationRecordViewer)
 
+add_executable(TestNamedITKImage TestNamedITKImage.cpp)
+target_link_libraries(TestNamedITKImage ${ITK_LIBRARIES})
+add_test(TestNamedITKImage TestNamedITKImage)
+
+add_executable(TestNamedVTKImage TestNamedVTKImage.cpp ../NamedVTKImage.cpp)
+target_link_libraries(TestNamedVTKImage ${VTK_LIBRARIES})
+add_test(TestNamedVTKImage TestNamedVTKImage)
+
 add_executable(TestColorPalette TestColorPalette.cpp)
 target_link_libraries(TestColorPalette)
 add_test(TestColorPalette TestColorPalette)
+
+add_executable(TestNamedITKImageCollection TestNamedITKImageCollection.cpp ../NamedITKImageCollection.cpp ../MaskOperations.cpp ../Mask.cpp)
+target_link_libraries(TestNamedITKImageCollection ${ITK_LIBRARIES} libHelpers)
+add_test(TestNamedITKImageCollection TestNamedITKImageCollection)
 
 add_executable(TestDisplayState TestDisplayState.cpp ../DisplayState.cpp)
 target_link_libraries(TestDisplayState)
