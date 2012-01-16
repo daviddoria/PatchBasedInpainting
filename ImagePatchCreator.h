@@ -19,7 +19,9 @@
 #ifndef ImagePatchCreator_H
 #define ImagePatchCreator_H
 
-#include "ImagePatch.h"
+class Item;
+
+#include "itkIndex.h"
 
 /**
 \class ItemCreator

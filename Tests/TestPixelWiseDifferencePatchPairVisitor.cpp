@@ -36,7 +36,7 @@ int main(int argc, char*argv[])
   Testing::GetBlankImage(image.GetPointer());
 
   itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
-  ImagePatch<FloatScalarImageType> targetPatch(image, targetRegion);
+  ImagePatchItem<FloatScalarImageType> targetPatch(image, targetRegion);
 
   Mask::Pointer mask = Mask::New();
   Testing::GetFullyValidMask(mask);

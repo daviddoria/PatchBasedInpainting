@@ -16,14 +16,19 @@
  *
  *=========================================================================*/
 
-#include "ImagePatch.h" // Make syntax parser happy
+#ifndef ImagePatchItem_hxx
+#define ImagePatchItem_hxx
+
+#include "ImagePatchItem.h" // Appease syntax parser
 
 #include "Mask.h"
 
 #include "itkImageRegionConstIteratorWithIndex.h"
 
+#include "itkImageRegionConstIterator.h"
+
 template <typename TImage>
-void ImagePatch<TImage>::VisitAllPixels(const TImage* const image, PixelVisitor<typename TImage::PixelType> &visitor)
+void ImagePatchItem<TImage>::VisitAllPixels(const TImage* const image, PixelVisitor<typename TImage::PixelType> &visitor)
 {
   itk::ImageRegionConstIterator<TImage> imageIterator(image, this->Region);
 
@@ -34,14 +39,22 @@ void ImagePatch<TImage>::VisitAllPixels(const TImage* const image, PixelVisitor<
     }
 }
 
+
 template <typename TImage>
-TImage* ImagePatch<TImage>::GetImage() const
+float ImagePatchItem<TImage>::Compare(const Item* const item) const
+{
+  // TODO: Implement this.
+  return 0.0f;
+}
+
+template <typename TImage>
+TImage* ImagePatchItem<TImage>::GetImage() const
 {
   return this->Image;
 }
 
 template <typename TImage>
-void ImagePatch<TImage>::VisitAllValidPixels(const TImage* const image, const Mask* const mask, PixelVisitor<typename TImage::PixelType> &visitor)
+void ImagePatchItem<TImage>::VisitAllValidPixels(const TImage* const image, const Mask* const mask, PixelVisitor<typename TImage::PixelType> &visitor)
 {
   itk::ImageRegionConstIteratorWithIndex<TImage> imageIterator(image, this->Region);
 
@@ -56,7 +69,7 @@ void ImagePatch<TImage>::VisitAllValidPixels(const TImage* const image, const Ma
 }
 
 template <typename TImage>
-void ImagePatch<TImage>::VisitOffsets(const TImage* const image, const std::vector<itk::Offset<2> >& offsets, PixelVisitor<typename TImage::PixelType> &visitor)
+void ImagePatchItem<TImage>::VisitOffsets(const TImage* const image, const std::vector<itk::Offset<2> >& offsets, PixelVisitor<typename TImage::PixelType> &visitor)
 {
   itk::Index<2> corner = this->Region.GetIndex();
 
@@ -66,36 +79,33 @@ void ImagePatch<TImage>::VisitOffsets(const TImage* const image, const std::vect
     }
 }
 
-
-#include "itkImageRegionConstIterator.h"
-
 template <typename TImage>
-ImagePatch<TImage>::ImagePatch(const TImage* const image, const itk::ImageRegion<2>& region)
+ImagePatchItem<TImage>::ImagePatchItem(const TImage* const image, const itk::ImageRegion<2>& region)
 {
   this->Region = region;
 }
 
 template <typename TImage>
-itk::Index<2> ImagePatch<TImage>::GetCorner() const
+itk::Index<2> ImagePatchItem<TImage>::GetCorner() const
 {
   return this->Region.GetIndex();
 }
 
 template <typename TImage>
-itk::ImageRegion<2> ImagePatch<TImage>::GetRegion() const
+itk::ImageRegion<2> ImagePatchItem<TImage>::GetRegion() const
 {
   return this->Region;
 }
 
 template <typename TImage>
-std::ostream& operator<<(std::ostream& output, const ImagePatch<TImage> &patch)
+std::ostream& operator<<(std::ostream& output, const ImagePatchItem<TImage> &patch)
 {
   output << "Patch: " << patch.GetRegion() << std::endl;
   return output;
 }
 
 template <typename TImage>
-bool ImagePatch<TImage>::operator==(const ImagePatch& other) const
+bool ImagePatchItem<TImage>::operator==(const ImagePatchItem& other) const
 {
   if(this->Region == other.Region)
     {
@@ -105,14 +115,15 @@ bool ImagePatch<TImage>::operator==(const ImagePatch& other) const
 }
 
 template <typename TImage>
-bool ImagePatch<TImage>::operator!=(const ImagePatch& other) const
+bool ImagePatchItem<TImage>::operator!=(const ImagePatchItem& other) const
 {
   return !operator==(other);
 }
 
 template <typename TImage>
-bool ImagePatch<TImage>::operator<(const ImagePatch &other) const
+bool ImagePatchItem<TImage>::operator<(const ImagePatchItem& other) const
 {
+  // TODO: Use the itk::Index LexicalCompare functor
   if(this->Region.GetIndex()[0] < other.Region.GetIndex()[0])
     {
     return true;
@@ -133,3 +144,5 @@ bool ImagePatch<TImage>::operator<(const ImagePatch &other) const
   assert(0); // This should never be reached
   return true;
 }
+
+#endif

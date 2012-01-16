@@ -20,15 +20,11 @@
 #define HELPERS_OUTPUT_H
 
 // VTK
-//#include <vtkImageData.h>
-//#include <vtkPolyData.h>
 class vtkImageData;
 class vtkPolyData;
 
 // Custom
-//#include "Mask.h"
 class Mask;
-#include "ImagePatch.h"
 #include "Types.h"
 
 namespace HelpersOutput
@@ -75,14 +71,6 @@ void WriteScaledScalarImage(const TImage* const image, const std::string& filena
 template<typename TImage>
 void WriteImage(const TImage* const image, const std::string& fileName);
 
-/** Write an ImagePatch as an image to 'fileName'. */
-template<typename TImage>
-void WriteImagePatch(const ImagePatch<TImage>& patch, const std::string& fileName);
-
-/** Write an ImagePatch as an image to 'fileName', coloring all invalid pixels in 'mask' the color 'holeColor'. */
-template<typename TImage>
-void WriteMaskedImagePatch(const Mask* mask, const ImagePatch<TImage>& patch, const std::string& fileName, const typename TImage::PixelType& holeColor);
-
 /** Write a 'region' of an 'image' to 'filename', coloring any invalid pixels in 'mask' the color 'holeColor'. */
 template<typename TImage>
 void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename,
@@ -93,6 +81,15 @@ template<typename TImage>
 void WriteRegion(const TImage* const image, const itk::ImageRegion<2>& region, const std::string& filename);
 
 } // end namespace
+
+// These functions should go somewhere else. We don't want any Helpers* to be rebuilt based on an API change.
+///** Write an ImagePatch as an image to 'fileName'. */
+//template<typename TImage>
+//void WriteImagePatch(const ImagePatch<TImage>& patch, const std::string& fileName);
+
+///** Write an ImagePatch as an image to 'fileName', coloring all invalid pixels in 'mask' the color 'holeColor'. */
+//template<typename TImage>
+//void WriteMaskedImagePatch(const Mask* mask, const ImagePatch<TImage>& patch, const std::string& fileName, const typename TImage::PixelType& holeColor);
 
 #include "HelpersOutput.hxx"
 

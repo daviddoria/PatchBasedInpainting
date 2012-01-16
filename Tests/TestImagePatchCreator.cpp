@@ -18,7 +18,7 @@
 
 #include "ImagePatchCreator.h" // The class to testing.
 
-#include "ImagePatch.h"
+#include "ImagePatchItem.h"
 
 #include <stdexcept>
 

@@ -16,20 +16,11 @@
  *
  *=========================================================================*/
 
-#include "ImagePatchCreator.h" // Appease syntax parser
+#include "ScalarItem.h"
 
-#include "Helpers/ITKHelpers.h"
-
-#include "ImagePatchItem.h"
-
-template <typename TImage>
-ImagePatchCreator<TImage>::ImagePatchCreator(const TImage* const image, const unsigned int patchRadius) : Image(image), PatchRadius(patchRadius)
+int main(int argc, char*argv[])
 {
+  ScalarItem<float> item1(1.0);
 
-}
-
-template <typename TImage>
-Item* ImagePatchCreator<TImage>::CreateItem(const itk::Index<2>& index) const
-{
-  return new ImagePatchItem<TImage>(this->Image, ITKHelpers::GetRegionInRadiusAroundPixel(index, this->PatchRadius));
+  return EXIT_SUCCESS;
 }

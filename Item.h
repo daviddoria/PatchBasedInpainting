@@ -26,7 +26,7 @@
 class Item
 {
 public:
-  //virtual float Compare(const Item& item) = 0;
+  virtual float Compare(const Item* const item) const = 0;
 };
 
 #endif

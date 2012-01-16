@@ -34,9 +34,9 @@ public:
   {
   }
 
-  void Visit(const Item* item)
+  void Visit(const Item& item)
   {
-    item->Difference(ItemToCompare);
+    item.Compare(ItemToCompare);
   }
 
 private:

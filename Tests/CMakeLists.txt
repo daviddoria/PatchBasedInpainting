@@ -11,13 +11,21 @@ add_executable(TestImage TestImage.cpp)
 target_link_libraries(TestImage ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 add_test(TestImage TestImage)
 
-add_executable(TestPixelWiseDifferencePatchPairVisitor TestPixelWiseDifferencePatchPairVisitor.cpp ../ImagePatch.cpp ../PatchPair.cpp ../PatchPairDifferences.cpp ../SourcePatchCollection.cpp ../CandidatePairs.cpp ../Mask.cpp)
+add_executable(TestPixelWiseDifferencePatchPairVisitor TestPixelWiseDifferencePatchPairVisitor.cpp ../ImagePatchItem.cpp ../PatchPair.cpp ../PatchPairDifferences.cpp ../SourcePatchCollection.cpp ../CandidatePairs.cpp ../Mask.cpp)
 target_link_libraries(TestPixelWiseDifferencePatchPairVisitor ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
 add_test(TestPixelWiseDifferencePatchPairVisitor TestPixelWiseDifferencePatchPairVisitor)
 
-add_executable(TestPatch TestPatch.cpp ../ImagePatch.cpp)
-target_link_libraries(TestPatch ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-add_test(TestPatch TestPatch)
+add_executable(TestImagePatchItem TestImagePatchItem.cpp ../ImagePatchItem.cpp)
+target_link_libraries(TestImagePatchItem ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+add_test(TestImagePatchItem TestImagePatchItem)
+
+add_executable(TestScalarItem TestScalarItem.cpp)
+target_link_libraries(TestScalarItem ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+add_test(TestScalarItem TestScalarItem)
+
+add_executable(TestItemDifferenceVisitor TestItemDifferenceVisitor.cpp)
+target_link_libraries(TestItemDifferenceVisitor ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+add_test(TestItemDifferenceVisitor TestItemDifferenceVisitor)
 
 add_executable(TestPointCloudDescriptorCreator TestPointCloudDescriptorCreator.cpp)
 target_link_libraries(TestPointCloudDescriptorCreator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
@@ -27,11 +35,11 @@ add_executable(TestPixelCollection TestPixelCollection.cpp ../PixelCollection.cp
 target_link_libraries(TestPixelCollection ${ITK_LIBRARIES})
 add_test(TestPixelCollection TestPixelCollection)
 
-add_executable(TestPixelSumAccumulator TestPixelSumAccumulator.cpp ../ImagePatch.cpp ../Mask.cpp)
+add_executable(TestPixelSumAccumulator TestPixelSumAccumulator.cpp ../ImagePatchItem.cpp ../Mask.cpp)
 target_link_libraries(TestPixelSumAccumulator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
 add_test(TestPixelSumAccumulator TestPixelSumAccumulator)
 
-add_executable(TestPatchPair TestPatchPair.cpp ../ImagePatch.cpp ../PatchPair.cpp ../PatchPairDifferences.cpp)
+add_executable(TestPatchPair TestPatchPair.cpp ../ImagePatchItem.cpp ../PatchPair.cpp ../PatchPairDifferences.cpp)
 target_link_libraries(TestPatchPair ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 add_test(TestPatchPair TestPatchPair)
 
@@ -45,7 +53,7 @@ add_test(TestPatchPairDifferences TestPatchPairDifferences)
 
 # TODO: Fix this test.
 # add_executable(TestCandidatePairs TestCandidatePairs.cpp ../CandidatePairs.cpp
-# ../PatchPair.cpp ../ImagePatch.cpp ../SourcePatchCollection.cpp ../Mask.cpp ../PatchPairDifferences.cpp)
+# ../PatchPair.cpp ../ImagePatchItem.cpp ../SourcePatchCollection.cpp ../Mask.cpp ../PatchPairDifferences.cpp)
 # target_link_libraries(TestCandidatePairs ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
 # add_test(TestCandidatePairs TestCandidatePairs)
 
@@ -53,12 +61,12 @@ add_executable(TestMask TestMask.cpp ../Mask.cpp)
 target_link_libraries(TestMask ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 add_test(TestMask TestMask)
 
-add_executable(TestSourcePatchCollection TestSourcePatchCollection.cpp ../SourcePatchCollection.cpp ../Mask.cpp ../ImagePatch.cpp)
+add_executable(TestSourcePatchCollection TestSourcePatchCollection.cpp ../SourcePatchCollection.cpp ../Mask.cpp ../ImagePatchItem.cpp)
 target_link_libraries(TestSourcePatchCollection ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
 add_test(TestSourcePatchCollection TestSourcePatchCollection)
 
 # TODO: Fix this test.
-# add_executable(TestDifferenceSumPixelPairVisitor TestDifferenceSumPixelPairVisitor.cpp ../ImagePatch.cpp ../PatchPair.cpp ../Mask.cpp ../PatchPairDifferences.cpp)
+# add_executable(TestDifferenceSumPixelPairVisitor TestDifferenceSumPixelPairVisitor.cpp ../ImagePatchItem.cpp ../PatchPair.cpp ../Mask.cpp ../PatchPairDifferences.cpp)
 # target_link_libraries(TestDifferenceSumPixelPairVisitor ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
 # add_test(TestDifferenceSumPixelPairVisitor TestDifferenceSumPixelPairVisitor)
 
@@ -66,7 +74,7 @@ add_executable(TestPixelDifferences TestPixelDifferences.cpp)
 target_link_libraries(TestPixelDifferences ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
 add_test(TestPixelDifferences TestPixelDifferences)
 
-add_executable(TestPatchDifference TestPatchDifference.cpp ../ImagePatch.cpp ../PatchPair.cpp ../PatchPairDifferences.cpp)
+add_executable(TestPatchDifference TestPatchDifference.cpp ../ImagePatchItem.cpp ../PatchPair.cpp ../PatchPairDifferences.cpp)
 target_link_libraries(TestPatchDifference ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
 add_test(TestPatchDifference TestPatchDifference)
 
@@ -115,7 +123,7 @@ add_executable(TestPatchBasedInpainting TestPatchBasedInpainting.cpp ../PatchBas
 ../DebugOutputs.cpp ../CandidatePairs.cpp ../PatchPairDifferences.cpp
 ../Priority.cpp ../PriorityCriminisi.cpp ../PriorityOnionPeel.cpp ../PriorityRandom.cpp ../PriorityManual.cpp ../PriorityDepth.cpp
 ../PrioritySearchHighest.cpp ../PixelCollection.cpp
-../SourcePatchCollection.cpp ../ImagePatch.cpp ../PatchPair.cpp
+../SourcePatchCollection.cpp ../ImagePatchItem.cpp ../PatchPair.cpp
 ../Mask.cpp ../MaskOperations.cpp ../BoundaryNormals.cpp
 ../Isophotes.cpp ../Derivatives.cpp)
 target_link_libraries(TestPatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libTesting)

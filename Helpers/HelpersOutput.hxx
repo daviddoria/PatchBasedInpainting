@@ -112,18 +112,17 @@ void WriteRGBImage(const TImage* const input, const std::string& filename)
   writer->Update();
 }
 
-template<typename TImage>
-void WritePatch(const ImagePatch<TImage>& patch, const std::string& filename)
-{
-  WriteRegion<TImage>(patch.Image, patch.Region, filename);
-}
-
-template<typename TImage>
-void WriteMaskedPatch(const Mask* mask, const ImagePatch<TImage>& patch, const std::string& filename, const typename TImage::PixelType& holeColor)
-{
-  WriteMaskedRegion<TImage>(patch.Image, mask, patch.Region, filename);
-}
-
+// template<typename TImage>
+// void WritePatch(const ImagePatch<TImage>& patch, const std::string& filename)
+// {
+//   WriteRegion<TImage>(patch.Image, patch.Region, filename);
+// }
+// 
+// template<typename TImage>
+// void WriteMaskedPatch(const Mask* mask, const ImagePatch<TImage>& patch, const std::string& filename, const typename TImage::PixelType& holeColor)
+// {
+//   WriteMaskedRegion<TImage>(patch.Image, mask, patch.Region, filename);
+// }
 
 template<typename TImage>
 void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename, const typename TImage::PixelType& holeColor)

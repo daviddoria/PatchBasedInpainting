@@ -20,7 +20,7 @@
 #define PATCHPAIR_H
 
 #include "PatchPairDifferences.h"
-#include "ImagePatch.h"
+#include "ImagePatchItem.h"
 #include "PixelPairVisitor.h"
 
 #include <memory>
@@ -35,7 +35,7 @@ class PatchPair
 public:
 
   /** Construct a PatchPair between a source patch and a target patch*/
-  PatchPair(const ImagePatch<TImage>* const sourcePatch, const ImagePatch<TImage>& targetPatch);
+  PatchPair(const ImagePatchItem<TImage>* const sourcePatch, const ImagePatchItem<TImage>& targetPatch);
 
   /** Compute the relative location of the source and target patch corners*/
   itk::Offset<2> GetTargetToSourceOffset() const;
@@ -44,10 +44,10 @@ public:
   itk::Offset<2> GetSourceToTargetOffset() const;
 
   /** Get the source patch.*/
-  const ImagePatch<TImage>* GetSourcePatch() const;
+  const ImagePatchItem<TImage>* GetSourcePatch() const;
 
   /** Get the target patch.*/
-  const ImagePatch<TImage>& GetTargetPatch() const;
+  const ImagePatchItem<TImage>& GetTargetPatch() const;
 
   /** Get the differences of the PatchPair.*/
   PatchPairDifferences& GetDifferences();
@@ -67,9 +67,9 @@ public:
 private:
   PatchPairDifferences Differences;
 
-  const ImagePatch<TImage>* const SourcePatch; // This is a pointer to a patch in the main (only) SourcePatchCollection.
+  const ImagePatchItem<TImage>* const SourcePatch; // This is a pointer to a patch in the main (only) SourcePatchCollection.
 
-  ImagePatch<TImage> TargetPatch; // This is not a pointer to a patch in the main SourcePatchCollection, because it is not valid yet (we are going to copy pixels here)!
+  ImagePatchItem<TImage> TargetPatch; // This is not a pointer to a patch in the main SourcePatchCollection, because it is not valid yet (we are going to copy pixels here)!
 
 };
 

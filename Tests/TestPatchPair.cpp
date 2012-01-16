@@ -16,7 +16,7 @@
  *
  *=========================================================================*/
 
-#include "ImagePatch.h"
+#include "ImagePatchItem.h"
 #include "PatchPair.h"
 #include "PatchPairDifferences.h"
 
@@ -32,14 +32,14 @@ int main(int argc, char*argv[])
   FloatScalarImageType::Pointer image = FloatScalarImageType::New();
 
   itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
-  ImagePatch<FloatScalarImageType> targetPatch(image, targetRegion);
+  ImagePatchItem<FloatScalarImageType> targetPatch(image, targetRegion);
 
   // Create another patch
   itk::Index<2> sourceCorner;
   sourceCorner.Fill(5);
 
   itk::ImageRegion<2> sourceRegion(sourceCorner, patchSize);
-  ImagePatch<FloatScalarImageType> sourcePatch(image, sourceRegion);
+  ImagePatchItem<FloatScalarImageType> sourcePatch(image, sourceRegion);
 
   PatchPair<FloatScalarImageType> patchPair(&sourcePatch, targetPatch);
 

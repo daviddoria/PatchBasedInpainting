@@ -25,7 +25,7 @@
 #include "ItemCreator.h"
 #include "ITKImageCollection.h"
 #include "Mask.h"
-#include "ImagePatch.h"
+#include "ImagePatchItem.h"
 #include "PixelCollection.h"
 #include "PatchPair.h"
 #include "Priority.h"
@@ -119,6 +119,8 @@ private:
 
   typedef itk::Image<std::shared_ptr<Item>, 2> ItemImageType;
   ItemImageType::Pointer ItemImage;
+
+  std::map<Item*, PatchPairDifferences> DifferenceMap;
 };
 
 #include "PatchBasedInpainting.hxx"

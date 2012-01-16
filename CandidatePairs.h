@@ -46,7 +46,7 @@ private:
 
 public:
   /** Constructor that creates the CandidatePairs collection for pairs of 'targetPatch'.*/
-  CandidatePairs(const ImagePatch<TImage>& targetPatch);
+  CandidatePairs(const ImagePatchItem<TImage>& targetPatch);
 
   /** Apply a visitor to each PatchPair.*/
   void VisitAllPatchPairs(const TImage* const image, const Mask* const mask, PatchPairVisitor<TImage> &visitor);
@@ -75,7 +75,7 @@ public:
   void Sort(const PatchPairDifferences::PatchPairDifferenceTypes sortBy, const SortOrderEnum ordering = DESCENDING);
 
   /** Get the target patch. */
-  const ImagePatch<TImage>& GetTargetPatch() const;
+  const ImagePatchItem<TImage>& GetTargetPatch() const;
 
   /** Get the priority of the target patch, and hence of the collection. */
   float GetPriority() const;
@@ -95,7 +95,7 @@ private:
 
   float Priority;
 
-  const ImagePatch<TImage> TargetPatch;
+  const ImagePatchItem<TImage> TargetPatch;
 };
 
 #include "CandidatePairs.hxx"

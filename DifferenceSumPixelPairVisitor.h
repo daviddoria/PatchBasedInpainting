@@ -28,7 +28,8 @@ class DifferenceSumPixelPairVisitor : public PixelPairVisitor<TImage>
 {
 public:
 
-  // If TPixel is a POD, this initialization is enough. If TPixel is a itkVariableLengthVector, Initialize() must be called to set the length of the Sum vector.
+  // If TPixel is a POD, this initialization is enough. If TPixel is a itkVariableLengthVector,
+  // Initialize() must be called to set the length of the Sum vector.
   DifferenceSumPixelPairVisitor() : Sum(0) {}
 
   void Visit(const typename TImage::PixelType &pixel1, const typename TImage::PixelType &pixel2)

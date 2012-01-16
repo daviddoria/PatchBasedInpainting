@@ -30,6 +30,18 @@ class DescriptorItem : public Item
 public:
   DescriptorItem(const std::vector<float>& descriptor) : Descriptor(descriptor){}
 
+  float Compare(const Item* const item) const
+  {
+    //ScalarItem<T> other = static_cast<ScalarItem<T> >(item);
+    //return fabs(this->Scalar - static_cast<ScalarItem<T> >(item).Scalar);
+    float totalDifference = 0.0f;
+    for(unsigned int i = 0; i < Descriptor.size(); ++i)
+      {
+      //totalDifference += fabs(this->Scalar - static_cast<ScalarItem<T> >(item).Scalar);
+      }
+
+    return totalDifference;
+  }
 private:
   std::vector<float> Descriptor;
 

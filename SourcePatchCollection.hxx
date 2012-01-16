@@ -47,7 +47,7 @@ typename SourcePatchCollection<TImage>::Iterator SourcePatchCollection<TImage>::
 }
 
 template <typename TImage>
-const ImagePatch<TImage>* SourcePatchCollection<TImage>::GetPatch(const itk::ImageRegion<2>& region)
+const ImagePatchItem<TImage>* SourcePatchCollection<TImage>::GetPatch(const itk::ImageRegion<2>& region)
 {
   for(Iterator iterator = this->SourcePatches.begin(); iterator != this->SourcePatches.end(); ++iterator)
     {
@@ -80,7 +80,7 @@ typename SourcePatchCollection<TImage>::PatchContainer SourcePatchCollection<TIm
       {
       if(this->MaskImage->IsValid(currentPatchRegion))
         {
-        patches.insert(ImagePatch<TImage>(this->Image, currentPatchRegion));
+        patches.insert(ImagePatchItem<TImage>(this->Image, currentPatchRegion));
         }
       }
 

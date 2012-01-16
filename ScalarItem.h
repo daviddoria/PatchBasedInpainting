@@ -33,12 +33,19 @@ public:
   /** Create an item.*/
   ScalarItem(const T& scalar) : Scalar(scalar) {}
 
+  float Compare(const Item* const item) const
+  {
+    //ScalarItem<T> other = static_cast<ScalarItem<T> >(item);
+    const ScalarItem<T>* other = dynamic_cast<const ScalarItem<T>* >(item);
+    //return fabs(this->Scalar - static_cast<ScalarItem<T> >(item).Scalar);
+  }
+
 private:
   /** The scalar value. */
   T Scalar;
 
 };
 
-#include "ImagePatch.hxx"
+#include "ImagePatchItem.hxx"
 
 #endif

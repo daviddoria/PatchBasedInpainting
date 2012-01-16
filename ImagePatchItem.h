@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef ImagePatch_H
-#define ImagePatch_H
+#ifndef ImagePatchItem_H
+#define ImagePatchItem_H
 
 #include "Item.h"
 #include "PixelVisitor.h"
@@ -30,18 +30,21 @@ class Mask;
 \brief This class indicates a rectangular region in an image.
 */
 template <typename TImage>
-class ImagePatch : public Item
+class ImagePatchItem : public Item
 {
 public:
 
   /** Construct a patch from a region.*/
-  ImagePatch(const TImage* const image, const itk::ImageRegion<2>& region);
+  ImagePatchItem(const TImage* const image, const itk::ImageRegion<2>& region);
 
+  /** Compute the difference to another ImagePatch.*/
+  float Compare(const Item* const item) const;
+  
   /** Check if two patches are the same.*/
-  bool operator==(const ImagePatch& other) const;
+  bool operator==(const ImagePatchItem& other) const;
 
   /** Check if two patches are different.*/
-  bool operator!=(const ImagePatch& other) const;
+  bool operator!=(const ImagePatchItem& other) const;
 
   /** Get the region described by the patch.*/
   itk::ImageRegion<2> GetRegion() const;
@@ -50,11 +53,11 @@ public:
   itk::Index<2> GetCorner() const;
 
   /** Sort the patches by index (so they can be stored in a container such as std::set).*/
-  bool operator<(const ImagePatch &other) const;
+  bool operator<(const ImagePatchItem& other) const;
 
   /** Output information about the patch. Even though this is inside a class template definition, we still need to declare it as a function template. */
   template <typename T>
-  friend std::ostream& operator<<(std::ostream& output,  const ImagePatch<T>& patch);
+  friend std::ostream& operator<<(std::ostream& output,  const ImagePatchItem<T>& patch);
 
   /** Visit all pixels in a patch.*/
   void VisitAllPixels(const TImage* const image, PixelVisitor<typename TImage::PixelType> &visitor);
@@ -76,6 +79,6 @@ private:
 
 };
 
-#include "ImagePatch.hxx"
+#include "ImagePatchItem.hxx"
 
 #endif

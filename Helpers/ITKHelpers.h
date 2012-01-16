@@ -20,7 +20,6 @@
 #define ITKHELPERS_H
 
 // Custom
-#include "ImagePatch.h"
 #include "Types.h"
 class Mask;
 

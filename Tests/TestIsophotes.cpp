@@ -21,8 +21,8 @@
 #include "Mask.h"
 #include "Testing.h"
 
-static void CreateMask(Mask* const mask);
-static void CreateImage(UnsignedCharScalarImageType* const image);
+// static void CreateMask(Mask* const mask);
+// static void CreateImage(UnsignedCharScalarImageType* const image);
 
 static void TestComputeColorIsophotesInRegion();
 static void TestComputeMaskedIsophotesInRegion();
@@ -49,7 +49,7 @@ void TestComputeMaskedIsophotesInRegion()
     //                                FloatVector2ImageType* const outputIsophotes);
   throw;
 }
-
+/*
 void CreateMask(Mask* const mask)
 {
   itk::Index<2> maskCorner;
@@ -114,4 +114,4 @@ void CreateImage(UnsignedCharScalarImageType* const image)
       image->SetPixel(currentIndex, 255);
       }
     }
-}
+}*/
