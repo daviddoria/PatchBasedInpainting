@@ -16,22 +16,14 @@
  *
  *=========================================================================*/
 
-#include "ItemDifferenceVisitor.h"
-#include "ItemDifferenceMap.h"
-#include "ScalarItem.h"
+#ifndef ItemDifferenceMap_h
+#define ItemDifferenceMap_h
 
-int main(int argc, char*argv[])
-{
-  
+#include <map>
 
-  ScalarItem<float> item1(1.0);
-  ScalarItem<float> item2(1.0);
+class Item;
+#include "PatchPairDifferences.h"
 
-  ItemDifferenceMapType itemDifferenceMap;
-  ItemDifferenceVisitor itemDifferenceVisitor(&item1, &itemDifferenceMap);
-  itemDifferenceVisitor.Visit(item2);
+typedef std::map<const Item*, PatchPairDifferences> ItemDifferenceMapType;
 
-  
-  
-  return EXIT_SUCCESS;
-}
+#endif

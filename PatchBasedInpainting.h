@@ -23,6 +23,8 @@
 #include "CandidatePairs.h"
 #include "DebugOutputs.h"
 #include "ItemCreator.h"
+#include "ItemDifferenceMap.h"
+#include "ItemDifferenceVisitor.h"
 #include "ITKImageCollection.h"
 #include "Mask.h"
 #include "ImagePatchItem.h"
@@ -79,6 +81,8 @@ public:
   /** Set the priority function.*/
   void SetPriorityFunction(Priority* const priority);
 
+  void SetDifferenceVisitor(ItemDifferenceVisitor* const differenceVisitor);
+
 private:
 
   /** Find the best source patch.*/
@@ -120,7 +124,9 @@ private:
   typedef itk::Image<std::shared_ptr<Item>, 2> ItemImageType;
   ItemImageType::Pointer ItemImage;
 
-  std::map<Item*, PatchPairDifferences> DifferenceMap;
+  ItemDifferenceMapType ItemDifferenceMap;
+
+  std::shared_ptr<ItemDifferenceVisitor> DifferenceVisitor;
 };
 
 #include "PatchBasedInpainting.hxx"

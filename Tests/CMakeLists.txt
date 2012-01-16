@@ -27,7 +27,7 @@ add_executable(TestScalarItem TestScalarItem.cpp)
 target_link_libraries(TestScalarItem ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 add_test(TestScalarItem TestScalarItem)
 
-add_executable(TestItemDifferenceVisitor TestItemDifferenceVisitor.cpp)
+add_executable(TestItemDifferenceVisitor TestItemDifferenceVisitor.cpp ../PatchPairDifferences.cpp)
 target_link_libraries(TestItemDifferenceVisitor ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 add_test(TestItemDifferenceVisitor TestItemDifferenceVisitor)
 

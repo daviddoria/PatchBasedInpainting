@@ -18,6 +18,7 @@
 
 #include "PatchBasedInpainting.h"
 #include "Testing.h"
+#include "ItemDifferenceVisitor.h"
 
 int main()
 {
@@ -27,6 +28,9 @@ int main()
   Mask::Pointer mask = Mask::New();
   Testing::GetFullyValidMask(mask.GetPointer());
 
-  PatchBasedInpainting<FloatVectorImageType>(image, mask);
+  PatchBasedInpainting<FloatVectorImageType> patchBasedInpainting(image, mask);
+
+  ItemDifferenceVisitor itemDifferenceVisitor;
+  patchBasedInpainting.SetDifferenceVisitor(&itemDifferenceVisitor);
   return EXIT_SUCCESS;
 }

@@ -16,22 +16,33 @@
  *
  *=========================================================================*/
 
+#ifndef CompositeItemDifferenceVisitor_H
+#define CompositeItemDifferenceVisitor_H
+
 #include "ItemDifferenceVisitor.h"
-#include "ItemDifferenceMap.h"
-#include "ScalarItem.h"
 
-int main(int argc, char*argv[])
+#include <cmath>
+
+class CompositeItemDifferenceVisitor : public ItemDifferenceVisitor
 {
-  
+public:
 
-  ScalarItem<float> item1(1.0);
-  ScalarItem<float> item2(1.0);
+  void Visit(const Item* const item)
+  {
+    for(unsigned int i = 0; i < this->Visitors.size(); ++i)
+      {
+      this->Visitors[i]->Visit(item);
+      }
+  }
 
-  ItemDifferenceMapType itemDifferenceMap;
-  ItemDifferenceVisitor itemDifferenceVisitor(&item1, &itemDifferenceMap);
-  itemDifferenceVisitor.Visit(item2);
+  void AddVisitor(ItemDifferenceVisitor* visitor)
+  {
+    this->Visitors.push_back(visitor);
+  }
+  
+private:
 
-  
-  
-  return EXIT_SUCCESS;
-}
+  std::vector<ItemDifferenceVisitor*> Visitors;
+};
+
+#endif

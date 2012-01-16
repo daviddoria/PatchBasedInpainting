@@ -19,9 +19,9 @@
 #ifndef ItemDifferenceVisitor_H
 #define ItemDifferenceVisitor_H
 
-#include "PatchPairVisitor.h"
-
+#include "ItemDifferenceMap.h"
 #include "Mask.h"
+#include "PatchPairVisitor.h"
 
 /**
 \class ItemDifferenceVisitor
@@ -30,18 +30,34 @@
 class ItemDifferenceVisitor
 {
 public:
-  ItemDifferenceVisitor(const Item* const itemToCompare) : ItemToCompare(itemToCompare)
+  ItemDifferenceVisitor(){}
+
+  ItemDifferenceVisitor(Item* const itemToCompare, ItemDifferenceMapType* const differenceMap) : ItemToCompare(itemToCompare), DifferenceMap(differenceMap)
   {
   }
 
+  void SetItemToCompare(Item* const itemToCompare)
+  {
+    this->ItemToCompare = ItemToCompare;
+  }
+
+  void SetDifferenceMap(ItemDifferenceMapType* const differenceMap)
+  {
+    this->DifferenceMap = differenceMap;
+  }
+  
   void Visit(const Item& item)
   {
-    item.Compare(ItemToCompare);
+    float difference = item.Compare(ItemToCompare);
+    PatchPairDifferences& differences = (*this->DifferenceMap)[&item];
+    differences.SetDifferenceByType(PatchPairDifferences::AveragePixelDifference, difference);
   }
 
 private:
 
-  const Item* ItemToCompare;
+  Item* ItemToCompare;
+  ItemDifferenceMapType* DifferenceMap;
+
 };
 
 #endif

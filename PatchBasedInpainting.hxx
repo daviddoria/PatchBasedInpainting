@@ -165,16 +165,24 @@ void PatchBasedInpainting<TImage>::AddNewObjectsInRegion(const itk::ImageRegion<
 template <typename TImage>
 itk::ImageRegion<2> PatchBasedInpainting<TImage>::FindBestMatch(const itk::Index<2>& targetPixel)
 {
-  // TODO: Implement this.
-  ItemDifferenceVisitor itemDifferenceVisitor(this->ItemImage->GetPixel(targetPixel));
+  //ItemDifferenceVisitor itemDifferenceVisitor(this->ItemImage->GetPixel(targetPixel), this->ItemDifferenceMap);
+  assert(this->DifferenceVisitor);
+  this->DifferenceVisitor->SetItemToCompare(this->ItemImage->GetPixel(targetPixel));
+  this->DifferenceVisitor->SetDifferenceMap(this->ItemDifferenceMap);
 
   ValidPixelIterator<ItemImageType> validPixelIterator(this->ItemImage, this->ItemImage->GetLargestPossibleRegion());
 
   for(ValidPixelIterator<ItemImageType>::ConstIterator iterator = validPixelIterator.begin(); iterator != validPixelIterator.end(); ++iterator)
     {
-    itemDifferenceVisitor.Visit(this->ItemImage->GetPixel(*iterator));
+    this->DifferenceVisitor->Visit(this->ItemImage->GetPixel(*iterator));
     ++iterator;
     }
+}
+
+template <typename TImage>
+void PatchBasedInpainting<TImage>::SetDifferenceVisitor(ItemDifferenceVisitor* const differenceVisitor)
+{
+  this->DifferenceVisitor = std::shared_ptr<ItemDifferenceVisitor>(differenceVisitor);
 }
 
 template <typename TImage>
