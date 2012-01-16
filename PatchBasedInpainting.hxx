@@ -23,11 +23,13 @@
 #include "Helpers/Helpers.h"
 #include "Helpers/HelpersOutput.h"
 #include "Item.h"
+#include "ItemDifferenceVisitor.h"
 #include "MaskOperations.h"
 #include "PatchDifferencePixelWiseSum.h"
 #include "Priority.h"
 #include "PrioritySearchHighest.h"
 #include "Types.h"
+#include "ValidPixelIterator.h"
 #include "ValidRegionIterator.h"
 
 // Custom
@@ -133,6 +135,14 @@ void PatchBasedInpainting<TImage>::Initialize()
   this->ItemImage->SetRegions(this->FullImageRegion);
   this->ItemImage->Allocate();
 
+  itk::ImageRegionIterator<ItemImageType> iterator(this->ItemImage, this->ItemImage->GetLargestPossibleRegion());
+
+  while(!iterator.IsAtEnd())
+    {
+    iterator.Set(NULL);
+    ++iterator;
+    }
+
   AddNewObjectsInRegion(this->MaskImage->GetLargestPossibleRegion());
 
   this->NumberOfCompletedIterations = 0;
@@ -153,9 +163,18 @@ void PatchBasedInpainting<TImage>::AddNewObjectsInRegion(const itk::ImageRegion<
 }
 
 template <typename TImage>
-itk::ImageRegion<2> PatchBasedInpainting<TImage>::FindBestPatch()
+itk::ImageRegion<2> PatchBasedInpainting<TImage>::FindBestMatch(const itk::Index<2>& targetPixel)
 {
-  // TODO: This is the key - how to do this?
+  // TODO: Implement this.
+  ItemDifferenceVisitor itemDifferenceVisitor(this->ItemImage->GetPixel(targetPixel));
+
+  ValidPixelIterator<ItemImageType> validPixelIterator(this->ItemImage, this->ItemImage->GetLargestPossibleRegion());
+
+  for(ValidPixelIterator<ItemImageType>::ConstIterator iterator = validPixelIterator.begin(); iterator != validPixelIterator.end(); ++iterator)
+    {
+    itemDifferenceVisitor.Visit(this->ItemImage->GetPixel(*iterator));
+    ++iterator;
+    }
 }
 
 template <typename TImage>
@@ -163,7 +182,7 @@ PatchPair<TImage> PatchBasedInpainting<TImage>::Iterate()
 {
   itk::ImageRegion<2> targetRegion = DetermineRegionToFill();
 
-  itk::ImageRegion<2> sourceRegion = FindBestPatch();
+  itk::ImageRegion<2> sourceRegion = FindBestMatch(ITKHelpers::GetRegionCenter(targetRegion));
 
   // Copy the patch. This is the actual inpainting step.
   ITKHelpers::CopySelfRegion(this->CurrentInpaintedImage, sourceRegion, targetRegion);

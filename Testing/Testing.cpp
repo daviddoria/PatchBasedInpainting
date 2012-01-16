@@ -37,21 +37,14 @@ bool ValuesEqual(const float a, const float b, const float epsilon)
 void GetFullyValidMask(Mask* const mask)
 {
   // This function produces a fully valid mask.
-  itk::Index<2> corner;
-  corner.Fill(0);
-
-  itk::Size<2> size;
-  size.Fill(TestImageSize);
-
-  itk::ImageRegion<2> region(corner,size);
+  itk::ImageRegion<2> region = GetImageRegion();
   mask->SetRegions(region);
   mask->Allocate();
   mask->FillBuffer(mask->GetValidValue());
 }
 
-void GetHalfValidMask(Mask* const mask)
+itk::ImageRegion<2> GetImageRegion()
 {
-  // This function produces a fully valid mask.
   itk::Index<2> corner;
   corner.Fill(0);
 
@@ -59,6 +52,13 @@ void GetHalfValidMask(Mask* const mask)
   size.Fill(TestImageSize);
 
   itk::ImageRegion<2> region(corner,size);
+  return region;
+}
+
+void GetHalfValidMask(Mask* const mask)
+{
+  // This function produces a fully valid mask.
+  itk::ImageRegion<2> region = GetImageRegion();
   mask->SetRegions(region);
   mask->Allocate();
   itk::ImageRegionIteratorWithIndex<Mask> iterator(mask, mask->GetLargestPossibleRegion());

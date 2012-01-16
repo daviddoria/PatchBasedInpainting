@@ -82,7 +82,7 @@ public:
 private:
 
   /** Find the best source patch.*/
-  itk::ImageRegion<2> FindBestPatch();
+  itk::ImageRegion<2> FindBestMatch(const itk::Index<2>& targetPixel);
 
   /** Create objects that are valid and not yet created.*/
   void AddNewObjectsInRegion(const itk::ImageRegion<2>& region);

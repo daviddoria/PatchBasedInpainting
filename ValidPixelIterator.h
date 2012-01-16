@@ -16,36 +16,37 @@
  *
  *=========================================================================*/
 
-#ifndef ScalarItem_H
-#define ScalarItem_H
+#ifndef ValidPixelIterator_h
+#define ValidPixelIterator_h
 
-#include "Item.h"
+// Custom
+#include "Mask.h"
+
+// ITK
+#include "itkImageRegion.h"
 
 /**
-\class ScalarItem
-\brief This class stores a scalar.
+\class ValidPixelIterator
+\brief Iterate over all non-NULL pixels. TImage must be a pointer type.
 */
-template <typename T>
-class ScalarItem : public Item
+template <typename TImage>
+class ValidPixelIterator
 {
-public:
-
-  /** Create an item.*/
-  ScalarItem(const T& scalar) : Scalar(scalar) {}
-
-  float Compare(const Item* const item) const
-  {
-    //ScalarItem<T> other = static_cast<ScalarItem<T> >(item);
-    const ScalarItem<T>* other = dynamic_cast<const ScalarItem<T>* >(item);
-    return fabs(this->Scalar - other->Scalar);
-  }
-
 private:
-  /** The scalar value. */
-  T Scalar;
+
+  typedef std::vector<itk::Index<2> > PixelContainer;
+  PixelContainer ValidPixels;
+  const TImage* Image;
+
+public:
+  ValidPixelIterator(const TImage* const image, const itk::ImageRegion<2>& region);
+
+  typedef PixelContainer::const_iterator ConstIterator;
+  ConstIterator begin() const;
+  ConstIterator end() const;
 
 };
 
-#include "ImagePatchItem.hxx"
+#include "ValidPixelIterator.hxx"
 
 #endif

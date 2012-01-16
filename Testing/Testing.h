@@ -31,6 +31,8 @@ namespace Testing
 
   void GetHalfValidMask(Mask* const mask);
 
+  itk::ImageRegion<2> GetImageRegion();
+
   // Function templates
   template<typename T>
   bool ArraysEqual(const T* const a, const T* const b, const unsigned int length, const float epsilon = 1e-6);
