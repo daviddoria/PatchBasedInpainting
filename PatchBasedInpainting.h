@@ -32,6 +32,7 @@
 #include "PatchPair.h"
 #include "Priority.h"
 #include "SourcePatchCollection.h"
+#include "SourceTargetPair.h"
 #include "Types.h"
 
 // ITK
@@ -59,7 +60,7 @@ public:
   TImage* GetCurrentOutputImage();
 
   /** A single step of the algorithm. The real work is done here.*/
-  PatchPair<TImage> Iterate();
+  SourceTargetPair Iterate();
 
   /** A loop that calls Iterate() until the inpainting is complete.*/
   void Inpaint();

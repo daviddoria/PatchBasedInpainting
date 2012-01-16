@@ -186,7 +186,7 @@ void PatchBasedInpainting<TImage>::SetDifferenceVisitor(ItemDifferenceVisitor* c
 }
 
 template <typename TImage>
-PatchPair<TImage> PatchBasedInpainting<TImage>::Iterate()
+SourceTargetPair PatchBasedInpainting<TImage>::Iterate()
 {
   itk::ImageRegion<2> targetRegion = DetermineRegionToFill();
 
@@ -205,9 +205,8 @@ PatchPair<TImage> PatchBasedInpainting<TImage>::Iterate()
 
   AddNewObjectsInRegion(targetRegion);
 
-  // TODO: This shouldn't be a PatchPair anymore because 'Patch' is now associated with an image.
-  //PatchPair<TImage> patchPair(sourceRegion, targetRegion);
-  //return usedPatchPair;
+  SourceTargetPair sourceTargetPair(targetRegion, sourceRegion);
+  return sourceTargetPair;
 }
 
 template <typename TImage>
