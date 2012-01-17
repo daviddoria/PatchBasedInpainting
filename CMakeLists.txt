@@ -6,4 +6,5 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
 FIND_PACKAGE(ITK REQUIRED)
 INCLUDE(${ITK_USE_FILE})
 
-add_executable(PatchBasedInpainting Driver.cpp)
+add_executable(PatchBasedInpainting Driver.cpp Mask.cpp)
+target_link_libraries(PatchBasedInpainting ${ITK_LIBRARIES})
