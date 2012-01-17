@@ -25,6 +25,12 @@ public:
 
 private:
   Priority* PriorityFunction;
+
+  void Iterate();
+  bool IsDone();
+
+  itk::Index<2> DetermineTargetPixel();
+  itk::Index<2> DetermineBestSourcePixel(itk::Index<2> targetPixel);
 };
 
 #include "PatchBasedInpainting.hxx"
