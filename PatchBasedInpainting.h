@@ -6,7 +6,7 @@
 #include "Priority.h"
 
 /**
-\class Inpainting
+\class PatchBasedInpainting
 \brief This class perform image inpainting by copying patches from elsewhere in the image into the hole.
 */
 template <typename TImage>
