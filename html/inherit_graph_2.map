@@ -1,0 +1,5 @@
+<map id="G" name="G">
+<area shape="rect" id="node1" href="$classPriority.html" title="This is an abstract class that indicates the interface for Priority functions." alt="" coords="7,32,68,61"/>
+<area shape="rect" id="node3" href="$classPriorityOnionPeel.html" title="This class computes the priority of a pixel based on its closeness to the original hole boundary..." alt="" coords="117,5,240,35"/>
+<area shape="rect" id="node5" href="$classPriorityRandom.html" title="This class returns a random value as the priority of each boundary pixel. This example Priority subcl..." alt="" coords="123,59,235,88"/>
+</map>
