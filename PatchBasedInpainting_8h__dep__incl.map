@@ -1,4 +1,6 @@
 <map id="G" name="G">
 <area shape="rect" id="node3" href="$Driver_8cpp.html" title="Driver.cpp" alt="" coords="5,83,88,112"/>
 <area shape="rect" id="node5" href="$PatchBasedInpainting_8hxx.html" title="PatchBasedInpainting.hxx" alt="" coords="112,83,285,112"/>
+<area shape="rect" id="node8" href="$PatchBasedInpaintingTwoStep_8h.html" title="PatchBasedInpaintingTwoStep.h" alt="" coords="309,83,520,112"/>
+<area shape="rect" id="node10" href="$PatchBasedInpaintingTwoStep_8hxx.html" title="PatchBasedInpaintingTwoStep.hxx" alt="" coords="301,160,528,189"/>
 </map>

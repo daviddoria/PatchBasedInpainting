@@ -1,8 +1,10 @@
 <map id="G" name="G">
 <area shape="rect" id="node3" href="$Driver_8cpp.html" title="Driver.cpp" alt="" coords="5,237,88,267"/>
-<area shape="rect" id="node5" href="$Inpainting_8h.html" title="Inpainting.h" alt="" coords="109,83,197,112"/>
-<area shape="rect" id="node13" href="$Mask_8cpp.html" title="Mask.cpp" alt="" coords="221,83,299,112"/>
-<area shape="rect" id="node15" href="$PriorityOnionPeel_8cpp.html" title="PriorityOnionPeel.cpp" alt="" coords="323,83,469,112"/>
-<area shape="rect" id="node7" href="$PatchBasedInpainting_8h.html" title="PatchBasedInpainting.h" alt="" coords="109,160,269,189"/>
+<area shape="rect" id="node5" href="$Inpainting_8h.html" title="Inpainting.h" alt="" coords="136,83,224,112"/>
+<area shape="rect" id="node18" href="$Mask_8cpp.html" title="Mask.cpp" alt="" coords="248,83,325,112"/>
+<area shape="rect" id="node20" href="$PriorityOnionPeel_8cpp.html" title="PriorityOnionPeel.cpp" alt="" coords="349,83,496,112"/>
+<area shape="rect" id="node7" href="$PatchBasedInpainting_8h.html" title="PatchBasedInpainting.h" alt="" coords="119,160,279,189"/>
 <area shape="rect" id="node10" href="$PatchBasedInpainting_8hxx.html" title="PatchBasedInpainting.hxx" alt="" coords="112,237,285,267"/>
+<area shape="rect" id="node13" href="$PatchBasedInpaintingTwoStep_8h.html" title="PatchBasedInpaintingTwoStep.h" alt="" coords="309,237,520,267"/>
+<area shape="rect" id="node15" href="$PatchBasedInpaintingTwoStep_8hxx.html" title="PatchBasedInpaintingTwoStep.hxx" alt="" coords="301,315,528,344"/>
 </map>

@@ -1,0 +1,3 @@
+<map id="G" name="G">
+<area shape="rect" id="node1" href="$classPriorityManual.html" title="This example of a Priority subclass shows how complicated a Priority class can get. It is a &quot;two step&quot; priority computation &#45; where first it uses a new technique (dependent on a user supplied image) then falls back onto another Priority subclass. This class first returns values that have been specified by a user generated image that contains pixels that indicate &quot;definitely fill first&quot;. Once there are no more of these pixels, the superclass&#39;s ComputePriority function is called. This is a &quot;template template&quot; class because one of the template parameters (TPriority) depends on another (TImage)." alt="" coords="7,5,111,35"/>
+</map>

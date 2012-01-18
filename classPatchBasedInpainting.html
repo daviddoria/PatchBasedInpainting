@@ -59,13 +59,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 <div class="header">
   <div class="summary">
-<a href="#pub-methods">Public Member Functions</a>  </div>
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a>  </div>
   <div class="headertitle">
 <div class="title">PatchBasedInpainting&lt; TImage &gt; Class Template Reference</div>  </div>
 </div>
 <div class="contents">
 <!-- doxytag: class="PatchBasedInpainting" --><!-- doxytag: inherits="Inpainting" -->
-<p>This class perform image inpainting by copying patches from elsewhere in the image into the hole.  
+<p>This class perform image inpainting by copying patches from elsewhere in the image into the hole. The <a class="el" href="classPatchBasedInpainting.html" title="This class perform image inpainting by copying patches from elsewhere in the image into the hole...">PatchBasedInpainting</a> hierarchy implements the Template Method pattern.  
  <a href="classPatchBasedInpainting.html#details">More...</a></p>
 
 <p><code>#include &quot;<a class="el" href="PatchBasedInpainting_8h_source.html">PatchBasedInpainting.h</a>&quot;</code></p>
@@ -74,14 +76,14 @@ Inheritance diagram for PatchBasedInpainting&lt; TImage &gt;:</div>
 <div class="dyncontent">
 <div class="center"><img src="classPatchBasedInpainting__inherit__graph.png" border="0" usemap="#PatchBasedInpainting_3_01TImage_01_4_inherit__map" alt="Inheritance graph"/></div>
 <map name="PatchBasedInpainting_3_01TImage_01_4_inherit__map" id="PatchBasedInpainting_3_01TImage_01_4_inherit__map">
-<area shape="rect" id="node2" href="classInpainting.html" title="This is an abstract class to perform image inpainting." alt="" coords="40,5,187,35"/></map>
+<area shape="rect" id="node5" href="classPatchBasedInpaintingTwoStep.html" title="This class perform image inpainting by copying patches from elsewhere in the image into the hole..." alt="" coords="5,160,275,189"/><area shape="rect" id="node2" href="classInpainting.html" title="This is an abstract class to perform image inpainting." alt="" coords="67,5,213,35"/></map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
 Collaboration diagram for PatchBasedInpainting&lt; TImage &gt;:</div>
 <div class="dyncontent">
 <div class="center"><img src="classPatchBasedInpainting__coll__graph.png" border="0" usemap="#PatchBasedInpainting_3_01TImage_01_4_coll__map" alt="Collaboration graph"/></div>
 <map name="PatchBasedInpainting_3_01TImage_01_4_coll__map" id="PatchBasedInpainting_3_01TImage_01_4_coll__map">
-<area shape="rect" id="node2" href="classInpainting.html" title="This is an abstract class to perform image inpainting." alt="" coords="5,101,152,131"/><area shape="rect" id="node4" href="classMask.html" title="This class is a subclass of itkImage that provides the concept of &quot;valid&quot; pixels and hole pixels..." alt="" coords="52,5,105,35"/><area shape="rect" id="node6" href="classPriority.html" title="This is an abstract class that indicates the interface for Priority functions." alt="" coords="176,101,237,131"/></map>
+<area shape="rect" id="node2" href="classInpainting.html" title="This is an abstract class to perform image inpainting." alt="" coords="5,101,152,131"/><area shape="rect" id="node4" href="classMask.html" title="This class is a subclass of itkImage that provides the concept of &quot;valid&quot; pixels and hole pixels..." alt="" coords="52,5,105,35"/><area shape="rect" id="node6" href="classPriority.html" title="This is an abstract class that indicates the interface for Priority functions. The Priority class hie..." alt="" coords="176,101,237,131"/></map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 
 <p><a href="classPatchBasedInpainting-members.html">List of all members.</a></p>
@@ -91,12 +93,22 @@ Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPatchBasedInpainting.html#a822de9140f68995b9ade6a0515bc1406">PatchBasedInpainting</a> (const TImage *const image, const <a class="el" href="classMask.html">Mask</a> *mask)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPatchBasedInpainting.html#abde34f6f11648b84ca09f9370caa9ecb">Inpaint</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPatchBasedInpainting.html#a5e1ea459c60e3ae502c009363a376968">SetPriorityFunction</a> (<a class="el" href="classPriority.html">Priority</a> *priorityFunction)</td></tr>
+<tr><td colspan="2"><h2><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPatchBasedInpainting.html#aa65b77182032e43796017e19a5e77e1f">Iterate</a> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPatchBasedInpainting.html#a430a8e5bc5120457cd6c3ee259c1a215">IsDone</a> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">itk::Index&lt; 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPatchBasedInpainting.html#a5c24db4c39371874b9766399409dc5d9">DetermineTargetPixel</a> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">itk::Index&lt; 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPatchBasedInpainting.html#a17d3d1ed3e216f8a0c64a77bb1a8fbdf">DetermineBestSourcePixel</a> (itk::Index&lt; 2 &gt; targetPixel)</td></tr>
+<tr><td colspan="2"><h2><a name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classPriority.html">Priority</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPatchBasedInpainting.html#aab94bc3d374a437eebc5a803c0053969">PriorityFunction</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">itk::Image&lt; <a class="el" href="classPixelDescriptor.html">PixelDescriptor</a> *, 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPatchBasedInpainting.html#a8ddb894d1dbfbe49654ed71d9cc3be8e">DescriptorImage</a></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename TImage&gt;<br/>
 class PatchBasedInpainting&lt; TImage &gt;</h3>
 
-<p>This class perform image inpainting by copying patches from elsewhere in the image into the hole. </p>
+<p>This class perform image inpainting by copying patches from elsewhere in the image into the hole. The <a class="el" href="classPatchBasedInpainting.html" title="This class perform image inpainting by copying patches from elsewhere in the image into the hole...">PatchBasedInpainting</a> hierarchy implements the Template Method pattern. </p>
 </div><hr/><h2>Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a822de9140f68995b9ade6a0515bc1406"></a><!-- doxytag: member="PatchBasedInpainting::PatchBasedInpainting" ref="a822de9140f68995b9ade6a0515bc1406" args="(const TImage *const image, const Mask *mask)" -->
 <div class="memitem">
@@ -124,10 +136,52 @@ template&lt;typename TImage &gt; </div>
       </table>
 </div>
 <div class="memdoc">
+<p>Constructor. An image and a mask are always required. </p>
 
 </div>
 </div>
 <hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="a17d3d1ed3e216f8a0c64a77bb1a8fbdf"></a><!-- doxytag: member="PatchBasedInpainting::DetermineBestSourcePixel" ref="a17d3d1ed3e216f8a0c64a77bb1a8fbdf" args="(itk::Index&lt; 2 &gt; targetPixel)" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TImage &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">itk::Index&lt; 2 &gt; <a class="el" href="classPatchBasedInpainting.html">PatchBasedInpainting</a>&lt; TImage &gt;::DetermineBestSourcePixel </td>
+          <td>(</td>
+          <td class="paramtype">itk::Index&lt; 2 &gt;&#160;</td>
+          <td class="paramname"><em>targetPixel</em></td><td>)</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Do the comparisons from the target pixel to all valid source pixels. </p>
+
+<p>Reimplemented in <a class="el" href="classPatchBasedInpaintingTwoStep.html#a5ab3c748d8bcef4830da79cef620eb2e">PatchBasedInpaintingTwoStep&lt; TImage &gt;</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a5c24db4c39371874b9766399409dc5d9"></a><!-- doxytag: member="PatchBasedInpainting::DetermineTargetPixel" ref="a5c24db4c39371874b9766399409dc5d9" args="()" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TImage &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">itk::Index&lt; 2 &gt; <a class="el" href="classPatchBasedInpainting.html">PatchBasedInpainting</a>&lt; TImage &gt;::DetermineTargetPixel </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Use the PriorityFunction to determine which pixel to fill. </p>
+
+</div>
+</div>
 <a class="anchor" id="abde34f6f11648b84ca09f9370caa9ecb"></a><!-- doxytag: member="PatchBasedInpainting::Inpaint" ref="abde34f6f11648b84ca09f9370caa9ecb" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -143,8 +197,47 @@ template&lt;typename TImage &gt; </div>
       </table>
 </div>
 <div class="memdoc">
+<p>Perform <a class="el" href="classPatchBasedInpainting.html#aa65b77182032e43796017e19a5e77e1f">Iterate()</a> until <a class="el" href="classPatchBasedInpainting.html#a430a8e5bc5120457cd6c3ee259c1a215">IsDone()</a> is true. </p>
 
 <p>Implements <a class="el" href="classInpainting.html#a14534dd79ac2eceff38df4e0a63edd18">Inpainting&lt; TImage &gt;</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a430a8e5bc5120457cd6c3ee259c1a215"></a><!-- doxytag: member="PatchBasedInpainting::IsDone" ref="a430a8e5bc5120457cd6c3ee259c1a215" args="()" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TImage &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classPatchBasedInpainting.html">PatchBasedInpainting</a>&lt; TImage &gt;::IsDone </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Determine if the hole is completely filled or if more inpainting is necessary. </p>
+
+</div>
+</div>
+<a class="anchor" id="aa65b77182032e43796017e19a5e77e1f"></a><!-- doxytag: member="PatchBasedInpainting::Iterate" ref="aa65b77182032e43796017e19a5e77e1f" args="()" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TImage &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classPatchBasedInpainting.html">PatchBasedInpainting</a>&lt; TImage &gt;::Iterate </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Perform a single step of the inpainting procedure. </p>
 
 </div>
 </div>
@@ -164,6 +257,7 @@ template&lt;typename TImage&gt; </div>
       </table>
 </div>
 <div class="memdoc">
+<p>Set the priority function to use. The client must have configured this object with all of the data it will need. </p>
 
 <p><div class="dynheader">
 Here is the caller graph for this function:</div>
@@ -176,9 +270,42 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
+<hr/><h2>Member Data Documentation</h2>
+<a class="anchor" id="a8ddb894d1dbfbe49654ed71d9cc3be8e"></a><!-- doxytag: member="PatchBasedInpainting::DescriptorImage" ref="a8ddb894d1dbfbe49654ed71d9cc3be8e" args="" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TImage&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">itk::Image&lt;<a class="el" href="classPixelDescriptor.html">PixelDescriptor</a>*, 2&gt; <a class="el" href="classPatchBasedInpainting.html">PatchBasedInpainting</a>&lt; TImage &gt;::<a class="el" href="classPatchBasedInpainting.html#a8ddb894d1dbfbe49654ed71d9cc3be8e">DescriptorImage</a><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>This image contains a descriptor of every pixel. </p>
+
+</div>
+</div>
+<a class="anchor" id="aab94bc3d374a437eebc5a803c0053969"></a><!-- doxytag: member="PatchBasedInpainting::PriorityFunction" ref="aab94bc3d374a437eebc5a803c0053969" args="" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TImage&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classPriority.html">Priority</a>* <a class="el" href="classPatchBasedInpainting.html">PatchBasedInpainting</a>&lt; TImage &gt;::<a class="el" href="classPatchBasedInpainting.html#aab94bc3d374a437eebc5a803c0053969">PriorityFunction</a><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li><a class="el" href="PatchBasedInpainting_8h_source.html">PatchBasedInpainting.h</a></li>
 <li><a class="el" href="PatchBasedInpainting_8hxx_source.html">PatchBasedInpainting.hxx</a></li>
+<li><a class="el" href="PatchBasedInpaintingTwoStep_8hxx_source.html">PatchBasedInpaintingTwoStep.hxx</a></li>
 </ul>
 </div>
 <!-- window showing the filter options -->
@@ -195,7 +322,7 @@ Here is the caller graph for this function:</div>
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Tue Jan 17 2012 15:41:50 for Patch Based Inpainting by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:08:09 for Patch Based Inpainting by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

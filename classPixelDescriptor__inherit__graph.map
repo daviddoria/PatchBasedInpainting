@@ -1,0 +1,4 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classFeatureVectorPixelDescriptor.html" title="Describes a pixel using a feature vector." alt="" coords="5,83,197,112"/>
+<area shape="rect" id="node5" href="$classImagePatchPixelDescriptor.html" title="Describes a pixel by it&#39;s surrounding region in an image." alt="" coords="221,83,469,112"/>
+</map>

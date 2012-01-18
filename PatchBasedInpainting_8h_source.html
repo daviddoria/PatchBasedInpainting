@@ -65,34 +65,39 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00004"></a>00004 <span class="preprocessor">#include &quot;<a class="code" href="Inpainting_8h.html">Inpainting.h</a>&quot;</span>
 <a name="l00005"></a>00005 
 <a name="l00006"></a>00006 <span class="preprocessor">#include &quot;<a class="code" href="Priority_8h.html">Priority.h</a>&quot;</span>
-<a name="l00007"></a>00007 
-<a name="l00012"></a>00012 <span class="keyword">template</span> &lt;<span class="keyword">typename</span> TImage&gt;
-<a name="l00013"></a><a class="code" href="classPatchBasedInpainting.html">00013</a> <span class="keyword">class </span><a class="code" href="classPatchBasedInpainting.html" title="This class perform image inpainting by copying patches from elsewhere in the image into the hole...">PatchBasedInpainting</a> : <span class="keyword">public</span> <a class="code" href="classInpainting.html" title="This is an abstract class to perform image inpainting.">Inpainting</a>&lt;TImage&gt;
-<a name="l00014"></a>00014 {
-<a name="l00015"></a>00015 <span class="keyword">public</span>:
-<a name="l00016"></a>00016 
-<a name="l00017"></a>00017   <a class="code" href="classPatchBasedInpainting.html#a822de9140f68995b9ade6a0515bc1406">PatchBasedInpainting</a>(<span class="keyword">const</span> TImage* <span class="keyword">const</span> image, <span class="keyword">const</span> <a class="code" href="classMask.html" title="This class is a subclass of itkImage that provides the concept of &quot;valid&quot; pixels and hole pixels...">Mask</a>* mask);
+<a name="l00007"></a>00007 <span class="preprocessor">#include &quot;<a class="code" href="PixelDescriptor_8h.html">PixelDescriptor.h</a>&quot;</span>
+<a name="l00008"></a>00008 
+<a name="l00014"></a>00014 <span class="keyword">template</span> &lt;<span class="keyword">typename</span> TImage&gt;
+<a name="l00015"></a><a class="code" href="classPatchBasedInpainting.html">00015</a> <span class="keyword">class </span><a class="code" href="classPatchBasedInpainting.html" title="This class perform image inpainting by copying patches from elsewhere in the image into the hole...">PatchBasedInpainting</a> : <span class="keyword">public</span> <a class="code" href="classInpainting.html" title="This is an abstract class to perform image inpainting.">Inpainting</a>&lt;TImage&gt;
+<a name="l00016"></a>00016 {
+<a name="l00017"></a>00017 <span class="keyword">public</span>:
 <a name="l00018"></a>00018 
-<a name="l00019"></a>00019   <span class="keywordtype">void</span> <a class="code" href="classPatchBasedInpainting.html#abde34f6f11648b84ca09f9370caa9ecb">Inpaint</a>();
-<a name="l00020"></a>00020 
-<a name="l00021"></a><a class="code" href="classPatchBasedInpainting.html#a5e1ea459c60e3ae502c009363a376968">00021</a>   <span class="keywordtype">void</span> <a class="code" href="classPatchBasedInpainting.html#a5e1ea459c60e3ae502c009363a376968">SetPriorityFunction</a>(<a class="code" href="classPriority.html" title="This is an abstract class that indicates the interface for Priority functions.">Priority</a>* priorityFunction)
-<a name="l00022"></a>00022   {
-<a name="l00023"></a>00023     this-&gt;PriorityFunction = priorityFunction;
-<a name="l00024"></a>00024   }
-<a name="l00025"></a>00025 
-<a name="l00026"></a>00026 <span class="keyword">private</span>:
-<a name="l00027"></a>00027   <a class="code" href="classPriority.html" title="This is an abstract class that indicates the interface for Priority functions.">Priority</a>* PriorityFunction;
-<a name="l00028"></a>00028 
-<a name="l00029"></a>00029   <span class="keywordtype">void</span> Iterate();
-<a name="l00030"></a>00030   <span class="keywordtype">bool</span> IsDone();
-<a name="l00031"></a>00031 
-<a name="l00032"></a>00032   itk::Index&lt;2&gt; DetermineTargetPixel();
-<a name="l00033"></a>00033   itk::Index&lt;2&gt; DetermineBestSourcePixel(itk::Index&lt;2&gt; targetPixel);
-<a name="l00034"></a>00034 };
-<a name="l00035"></a>00035 
-<a name="l00036"></a>00036 <span class="preprocessor">#include &quot;<a class="code" href="PatchBasedInpainting_8hxx.html">PatchBasedInpainting.hxx</a>&quot;</span>
-<a name="l00037"></a>00037 
-<a name="l00038"></a>00038 <span class="preprocessor">#endif</span>
+<a name="l00020"></a>00020   <a class="code" href="classPatchBasedInpainting.html#a822de9140f68995b9ade6a0515bc1406">PatchBasedInpainting</a>(<span class="keyword">const</span> TImage* <span class="keyword">const</span> image, <span class="keyword">const</span> <a class="code" href="classMask.html" title="This class is a subclass of itkImage that provides the concept of &quot;valid&quot; pixels and hole pixels...">Mask</a>* mask);
+<a name="l00021"></a>00021 
+<a name="l00023"></a>00023   <span class="keywordtype">void</span> <a class="code" href="classPatchBasedInpainting.html#abde34f6f11648b84ca09f9370caa9ecb">Inpaint</a>();
+<a name="l00024"></a>00024 
+<a name="l00026"></a><a class="code" href="classPatchBasedInpainting.html#a5e1ea459c60e3ae502c009363a376968">00026</a>   <span class="keywordtype">void</span> <a class="code" href="classPatchBasedInpainting.html#a5e1ea459c60e3ae502c009363a376968">SetPriorityFunction</a>(<a class="code" href="classPriority.html" title="This is an abstract class that indicates the interface for Priority functions. The Priority class hie...">Priority</a>* priorityFunction)
+<a name="l00027"></a>00027   {
+<a name="l00028"></a>00028     this-&gt;<a class="code" href="classPatchBasedInpainting.html#aab94bc3d374a437eebc5a803c0053969">PriorityFunction</a> = priorityFunction;
+<a name="l00029"></a>00029   }
+<a name="l00030"></a>00030 
+<a name="l00031"></a>00031 <span class="keyword">protected</span>:
+<a name="l00032"></a><a class="code" href="classPatchBasedInpainting.html#aab94bc3d374a437eebc5a803c0053969">00032</a>   <a class="code" href="classPriority.html" title="This is an abstract class that indicates the interface for Priority functions. The Priority class hie...">Priority</a>* <a class="code" href="classPatchBasedInpainting.html#aab94bc3d374a437eebc5a803c0053969">PriorityFunction</a>;
+<a name="l00033"></a>00033 
+<a name="l00035"></a>00035   <span class="keywordtype">void</span> <a class="code" href="classPatchBasedInpainting.html#aa65b77182032e43796017e19a5e77e1f">Iterate</a>();
+<a name="l00036"></a>00036 
+<a name="l00038"></a>00038   <span class="keywordtype">bool</span> <a class="code" href="classPatchBasedInpainting.html#a430a8e5bc5120457cd6c3ee259c1a215">IsDone</a>();
+<a name="l00039"></a>00039 
+<a name="l00041"></a>00041   itk::Index&lt;2&gt; <a class="code" href="classPatchBasedInpainting.html#a5c24db4c39371874b9766399409dc5d9">DetermineTargetPixel</a>();
+<a name="l00042"></a>00042 
+<a name="l00044"></a>00044   itk::Index&lt;2&gt; <a class="code" href="classPatchBasedInpainting.html#a17d3d1ed3e216f8a0c64a77bb1a8fbdf">DetermineBestSourcePixel</a>(itk::Index&lt;2&gt; targetPixel);
+<a name="l00045"></a>00045 
+<a name="l00047"></a><a class="code" href="classPatchBasedInpainting.html#a8ddb894d1dbfbe49654ed71d9cc3be8e">00047</a>   itk::Image&lt;PixelDescriptor*, 2&gt; <a class="code" href="classPatchBasedInpainting.html#a8ddb894d1dbfbe49654ed71d9cc3be8e">DescriptorImage</a>;
+<a name="l00048"></a>00048 };
+<a name="l00049"></a>00049 
+<a name="l00050"></a>00050 <span class="preprocessor">#include &quot;<a class="code" href="PatchBasedInpainting_8hxx.html">PatchBasedInpainting.hxx</a>&quot;</span>
+<a name="l00051"></a>00051 
+<a name="l00052"></a>00052 <span class="preprocessor">#endif</span>
 </pre></div></div>
 </div>
 <!-- window showing the filter options -->
@@ -109,7 +114,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Tue Jan 17 2012 15:41:50 for Patch Based Inpainting by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:08:08 for Patch Based Inpainting by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

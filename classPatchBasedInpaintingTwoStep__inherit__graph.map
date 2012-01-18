@@ -1,0 +1,4 @@
+<map id="G" name="G">
+<area shape="rect" id="node2" href="$classPatchBasedInpainting.html" title="This class perform image inpainting by copying patches from elsewhere in the image into the hole..." alt="" coords="32,83,248,112"/>
+<area shape="rect" id="node4" href="$classInpainting.html" title="This is an abstract class to perform image inpainting." alt="" coords="67,5,213,35"/>
+</map>

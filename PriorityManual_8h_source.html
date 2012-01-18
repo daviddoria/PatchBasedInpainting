@@ -72,7 +72,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00021"></a><a class="code" href="classPriorityManual.html#a763cc3d6d6194097cfb902a4579d68aa">00021</a>   <span class="keyword">typedef</span> itk::Image&lt;unsigned char, 2&gt; <a class="code" href="classPriorityManual.html#a763cc3d6d6194097cfb902a4579d68aa">ManualPriorityImageType</a>;
 <a name="l00022"></a>00022 
 <a name="l00023"></a>00023   <span class="comment">// Reimplemented</span>
-<a name="l00024"></a><a class="code" href="classPriorityManual.html#ad8c4ad1bc8eb6a477d0b915feb665ca3">00024</a>   <a class="code" href="classPriorityManual.html#ad8c4ad1bc8eb6a477d0b915feb665ca3">PriorityManual</a>(<a class="code" href="classPriorityManual.html#a763cc3d6d6194097cfb902a4579d68aa">ManualPriorityImageType</a>* manualPriorityImage, <a class="code" href="classPriority.html" title="This is an abstract class that indicates the interface for Priority functions.">Priority</a>* <span class="keyword">const</span> priorityFunction) :
+<a name="l00024"></a><a class="code" href="classPriorityManual.html#ad8c4ad1bc8eb6a477d0b915feb665ca3">00024</a>   <a class="code" href="classPriorityManual.html#ad8c4ad1bc8eb6a477d0b915feb665ca3">PriorityManual</a>(<a class="code" href="classPriorityManual.html#a763cc3d6d6194097cfb902a4579d68aa">ManualPriorityImageType</a>* manualPriorityImage, <a class="code" href="classPriority.html" title="This is an abstract class that indicates the interface for Priority functions. The Priority class hie...">Priority</a>* <span class="keyword">const</span> priorityFunction) :
 <a name="l00025"></a>00025   <a class="code" href="classPriorityManual.html#ae12a6d8dd4c5b3e4da17b515bfbd0349">ManualPriorityImage</a>(manualPriorityImage), <a class="code" href="classPriorityManual.html#aba6c9aaf6d3a191a3fd36757fed5e17b">FallbackPriorityFunction</a>(priorityFunction){}
 <a name="l00026"></a>00026 
 <a name="l00027"></a>00027   <span class="keywordtype">float</span> <a class="code" href="classPriorityManual.html#ad21f0f6943c63bc3060ba96d26f47258">ComputePriority</a>(<span class="keyword">const</span> itk::Index&lt;2&gt;&amp; queryPixel) <span class="keyword">const</span>;
@@ -82,7 +82,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00031"></a>00031 
 <a name="l00032"></a>00032   <span class="keywordtype">void</span> <a class="code" href="classPriorityManual.html#a927f349b8550f57270e96db8ca219623">Update</a>(<span class="keyword">const</span> itk::ImageRegion&lt;2&gt;&amp; filledRegion);
 <a name="l00033"></a>00033 
-<a name="l00034"></a><a class="code" href="classPriorityManual.html#a2c7c18098998533fb4551446a32685d7">00034</a>   <span class="keywordtype">void</span> <a class="code" href="classPriorityManual.html#a2c7c18098998533fb4551446a32685d7">SetFallbackPriorityFunction</a>(<a class="code" href="classPriority.html" title="This is an abstract class that indicates the interface for Priority functions.">Priority</a>* <span class="keyword">const</span> priorityFunction)
+<a name="l00034"></a><a class="code" href="classPriorityManual.html#a2c7c18098998533fb4551446a32685d7">00034</a>   <span class="keywordtype">void</span> <a class="code" href="classPriorityManual.html#a2c7c18098998533fb4551446a32685d7">SetFallbackPriorityFunction</a>(<a class="code" href="classPriority.html" title="This is an abstract class that indicates the interface for Priority functions. The Priority class hie...">Priority</a>* <span class="keyword">const</span> priorityFunction)
 <a name="l00035"></a>00035   {
 <a name="l00036"></a>00036     this-&gt;<a class="code" href="classPriorityManual.html#aba6c9aaf6d3a191a3fd36757fed5e17b">FallbackPriorityFunction</a> = priorityFunction;
 <a name="l00037"></a>00037   }
@@ -90,7 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00039"></a>00039 <span class="keyword">protected</span>:
 <a name="l00040"></a><a class="code" href="classPriorityManual.html#ae12a6d8dd4c5b3e4da17b515bfbd0349">00040</a>   <a class="code" href="classPriorityManual.html#a763cc3d6d6194097cfb902a4579d68aa">ManualPriorityImageType</a>* <a class="code" href="classPriorityManual.html#ae12a6d8dd4c5b3e4da17b515bfbd0349">ManualPriorityImage</a>;
 <a name="l00041"></a>00041 
-<a name="l00042"></a><a class="code" href="classPriorityManual.html#aba6c9aaf6d3a191a3fd36757fed5e17b">00042</a>   <span class="keyword">const</span> <a class="code" href="classPriority.html" title="This is an abstract class that indicates the interface for Priority functions.">Priority</a>* <a class="code" href="classPriorityManual.html#aba6c9aaf6d3a191a3fd36757fed5e17b">FallbackPriorityFunction</a>;
+<a name="l00042"></a><a class="code" href="classPriorityManual.html#aba6c9aaf6d3a191a3fd36757fed5e17b">00042</a>   <span class="keyword">const</span> <a class="code" href="classPriority.html" title="This is an abstract class that indicates the interface for Priority functions. The Priority class hie...">Priority</a>* <a class="code" href="classPriorityManual.html#aba6c9aaf6d3a191a3fd36757fed5e17b">FallbackPriorityFunction</a>;
 <a name="l00043"></a>00043 };
 <a name="l00044"></a>00044 
 <a name="l00045"></a>00045 <span class="preprocessor">#endif</span>
@@ -110,7 +110,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Tue Jan 17 2012 15:41:50 for Patch Based Inpainting by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:08:08 for Patch Based Inpainting by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>
