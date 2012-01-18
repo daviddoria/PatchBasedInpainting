@@ -70,6 +70,7 @@ This is the complete list of members for <a class="el" href="classMask.html">Mas
   <tr class="memlist"><td><a class="el" href="classMask.html#aa408e96a850827dc2ac7018922ff0487">GetNeighborhoodAccessor</a>()</td><td><a class="el" href="classMask.html">Mask</a></td><td><code> [inline]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classMask.html#ab20d29f951ee95a6ae7cf3bd95818721">GetNeighborhoodAccessor</a>() const </td><td><a class="el" href="classMask.html">Mask</a></td><td><code> [inline]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classMask.html#ae500aa51267b3c05d6f7d9fbfa5f33fd">GetValidValue</a>() const </td><td><a class="el" href="classMask.html">Mask</a></td><td></td></tr>
+  <tr class="memlist"><td><a class="el" href="classMask.html#a286c5e5dc5addfb5d799f891856bacb4">HoleValue</a></td><td><a class="el" href="classMask.html">Mask</a></td><td><code> [private]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classMask.html#a7ac625686c5ff852500bccec8b45a1f5">IndexType</a> typedef</td><td><a class="el" href="classMask.html">Mask</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classMask.html#a48ce1778c6f32184251ea62e3c266411">IOPixelType</a> typedef</td><td><a class="el" href="classMask.html">Mask</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classMask.html#a9d46612768debb60374de2a6aaee0d04">IsHole</a>(const itk::Index&lt; 2 &gt; &amp;index) const </td><td><a class="el" href="classMask.html">Mask</a></td><td></td></tr>
@@ -78,12 +79,16 @@ This is the complete list of members for <a class="el" href="classMask.html">Mas
   <tr class="memlist"><td><a class="el" href="classMask.html#a65776f0cd18f146fa827efc778355828">itkNewMacro</a>(Self)</td><td><a class="el" href="classMask.html">Mask</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classMask.html#a0012118babaa4fdbaa89ddb882e9858d">itkStaticConstMacro</a>(ImageDimension, unsigned int, Superclass::ImageDimension)</td><td><a class="el" href="classMask.html">Mask</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classMask.html#a4df10b47d70fc7306e9cd16a58120e4b">itkTypeMacro</a>(Mask, Image)</td><td><a class="el" href="classMask.html">Mask</a></td><td></td></tr>
+  <tr class="memlist"><td><a class="el" href="classMask.html#a0c4b0d2e1280e80c4797cda9e0140a8c">Mask</a>(const Self &amp;)</td><td><a class="el" href="classMask.html">Mask</a></td><td><code> [private]</code></td></tr>
+  <tr class="memlist"><td><a class="el" href="classMask.html#a209448a82e47f6ebf89f5b6fb8267dfa">Mask</a>()</td><td><a class="el" href="classMask.html">Mask</a></td><td><code> [private]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classMask.html#ad7e87375809363146e37b07283c26d0b">NeighborhoodAccessorFunctorType</a> typedef</td><td><a class="el" href="classMask.html">Mask</a></td><td></td></tr>
+  <tr class="memlist"><td><a class="el" href="classMask.html#a188b008716eba576520b88fc099a9dac">operator=</a>(const Self &amp;)</td><td><a class="el" href="classMask.html">Mask</a></td><td><code> [private]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classMask.html#a29acafe8055bb7562268d5704d2819ef">Pointer</a> typedef</td><td><a class="el" href="classMask.html">Mask</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classMask.html#a72ed2b55388afd89e2b458274fa4b9de">Self</a> typedef</td><td><a class="el" href="classMask.html">Mask</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classMask.html#aace336b0ebb5042449f843994c5a2147">SetHoleValue</a>(const unsigned char value)</td><td><a class="el" href="classMask.html">Mask</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classMask.html#a4ab8f5c1659ec38b8940086d258a66e0">SetValidValue</a>(const unsigned char value)</td><td><a class="el" href="classMask.html">Mask</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classMask.html#a8ffaefeeccc0e751ce0e23c274d83542">Superclass</a> typedef</td><td><a class="el" href="classMask.html">Mask</a></td><td></td></tr>
+  <tr class="memlist"><td><a class="el" href="classMask.html#abbe16669488b2f4ffce5b672cb238866">ValidValue</a></td><td><a class="el" href="classMask.html">Mask</a></td><td><code> [private]</code></td></tr>
 </table></div>
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
@@ -99,7 +104,7 @@ This is the complete list of members for <a class="el" href="classMask.html">Mas
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:08:09 for Patch Based Inpainting by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:11:47 for Patch Based Inpainting by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

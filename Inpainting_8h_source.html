@@ -68,14 +68,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00011"></a><a class="code" href="classInpainting.html">00011</a> <span class="keyword">class </span><a class="code" href="classInpainting.html" title="This is an abstract class to perform image inpainting.">Inpainting</a>
 <a name="l00012"></a>00012 {
 <a name="l00013"></a>00013 <span class="keyword">public</span>:
-<a name="l00014"></a><a class="code" href="classInpainting.html#a31de56846e581bf4315426afdaabe0f0">00014</a>   <a class="code" href="classInpainting.html#a31de56846e581bf4315426afdaabe0f0">Inpainting</a>(<span class="keyword">const</span> TImage* <span class="keyword">const</span> image, <span class="keyword">const</span> <a class="code" href="classMask.html" title="This class is a subclass of itkImage that provides the concept of &quot;valid&quot; pixels and hole pixels...">Mask</a>* mask) : Image(image), MaskImage(mask){}
+<a name="l00014"></a><a class="code" href="classInpainting.html#a31de56846e581bf4315426afdaabe0f0">00014</a>   <a class="code" href="classInpainting.html#a31de56846e581bf4315426afdaabe0f0">Inpainting</a>(<span class="keyword">const</span> TImage* <span class="keyword">const</span> image, <span class="keyword">const</span> <a class="code" href="classMask.html" title="This class is a subclass of itkImage that provides the concept of &quot;valid&quot; pixels and hole pixels...">Mask</a>* mask) : <a class="code" href="classInpainting.html#ad23b92782ae4d0e697ff8bc801afd9d0">Image</a>(image), <a class="code" href="classInpainting.html#a15caf1a709f1c947331bc5800a31bb75">MaskImage</a>(mask){}
 <a name="l00015"></a>00015 
 <a name="l00016"></a>00016   <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classInpainting.html#a14534dd79ac2eceff38df4e0a63edd18">Inpaint</a>() = 0;
 <a name="l00017"></a>00017 
 <a name="l00018"></a>00018 <span class="keyword">private</span>:
-<a name="l00019"></a>00019   <span class="keyword">const</span> TImage* Image;
-<a name="l00020"></a>00020   <span class="keyword">const</span> <a class="code" href="classMask.html" title="This class is a subclass of itkImage that provides the concept of &quot;valid&quot; pixels and hole pixels...">Mask</a>* MaskImage;
-<a name="l00021"></a>00021   TImage* Result;
+<a name="l00019"></a><a class="code" href="classInpainting.html#ad23b92782ae4d0e697ff8bc801afd9d0">00019</a>   <span class="keyword">const</span> TImage* <a class="code" href="classInpainting.html#ad23b92782ae4d0e697ff8bc801afd9d0">Image</a>;
+<a name="l00020"></a><a class="code" href="classInpainting.html#a15caf1a709f1c947331bc5800a31bb75">00020</a>   <span class="keyword">const</span> <a class="code" href="classMask.html" title="This class is a subclass of itkImage that provides the concept of &quot;valid&quot; pixels and hole pixels...">Mask</a>* <a class="code" href="classInpainting.html#a15caf1a709f1c947331bc5800a31bb75">MaskImage</a>;
+<a name="l00021"></a><a class="code" href="classInpainting.html#a0bba74df081aef794e82646616b4e4b6">00021</a>   TImage* <a class="code" href="classInpainting.html#a0bba74df081aef794e82646616b4e4b6">Result</a>;
 <a name="l00022"></a>00022 };
 <a name="l00023"></a>00023 
 <a name="l00024"></a>00024 <span class="preprocessor">#endif</span>
@@ -95,7 +95,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:08:08 for Patch Based Inpainting by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:11:46 for Patch Based Inpainting by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

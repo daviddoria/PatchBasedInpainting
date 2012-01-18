@@ -74,7 +74,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00018"></a><a class="code" href="classPriorityOnionPeel.html#a1caa064c3317cd1991c0c17a25816dca">00018</a>   <span class="keyword">typedef</span> itk::Image&lt;float, 2&gt; <a class="code" href="classPriorityOnionPeel.html#a1caa064c3317cd1991c0c17a25816dca">ConfidenceMapImageType</a>;
 <a name="l00020"></a>00020   <span class="comment">// Functions reimplemented from Priority //</span>
 <a name="l00022"></a>00022 <span class="comment"></span>
-<a name="l00023"></a><a class="code" href="classPriorityOnionPeel.html#aef63ee512fa6deeb4fcdb4aa0b37a3e6">00023</a>   <a class="code" href="classPriorityOnionPeel.html#aef63ee512fa6deeb4fcdb4aa0b37a3e6">PriorityOnionPeel</a>(<span class="keyword">const</span> <a class="code" href="classMask.html" title="This class is a subclass of itkImage that provides the concept of &quot;valid&quot; pixels and hole pixels...">Mask</a>* <span class="keyword">const</span> maskImage, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> patchRadius) : MaskImage(maskImage), PatchRadius(patchRadius){}
+<a name="l00023"></a><a class="code" href="classPriorityOnionPeel.html#aef63ee512fa6deeb4fcdb4aa0b37a3e6">00023</a>   <a class="code" href="classPriorityOnionPeel.html#aef63ee512fa6deeb4fcdb4aa0b37a3e6">PriorityOnionPeel</a>(<span class="keyword">const</span> <a class="code" href="classMask.html" title="This class is a subclass of itkImage that provides the concept of &quot;valid&quot; pixels and hole pixels...">Mask</a>* <span class="keyword">const</span> maskImage, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> patchRadius) : <a class="code" href="classPriorityOnionPeel.html#aa827a0ecaa8cfaac7272de6966cdc673">MaskImage</a>(maskImage), <a class="code" href="classPriorityOnionPeel.html#af4a040d3ffb80f5d0fa9393d2654acde">PatchRadius</a>(patchRadius){}
 <a name="l00024"></a>00024 
 <a name="l00025"></a>00025   <span class="keywordtype">float</span> <a class="code" href="classPriorityOnionPeel.html#a512b8ec56c79ec79cfe9249cdcb63dca">ComputePriority</a>(<span class="keyword">const</span> itk::Index&lt;2&gt;&amp; queryPixel) <span class="keyword">const</span>;
 <a name="l00026"></a>00026 
@@ -82,15 +82,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00028"></a>00028 
 <a name="l00029"></a>00029 <span class="keyword">private</span>:
 <a name="l00030"></a>00030 
-<a name="l00032"></a>00032   <span class="keywordtype">void</span> UpdateConfidences(<span class="keyword">const</span> itk::ImageRegion&lt;2&gt;&amp; targetRegion, <span class="keyword">const</span> <span class="keywordtype">float</span> value);
+<a name="l00032"></a>00032   <span class="keywordtype">void</span> <a class="code" href="classPriorityOnionPeel.html#abfd0ee0d370210c12e68736a2410f75a">UpdateConfidences</a>(<span class="keyword">const</span> itk::ImageRegion&lt;2&gt;&amp; targetRegion, <span class="keyword">const</span> <span class="keywordtype">float</span> value);
 <a name="l00033"></a>00033 
-<a name="l00035"></a>00035   <span class="keywordtype">float</span> ComputeConfidenceTerm(<span class="keyword">const</span> itk::Index&lt;2&gt;&amp; queryPixel) <span class="keyword">const</span>;
+<a name="l00035"></a>00035   <span class="keywordtype">float</span> <a class="code" href="classPriorityOnionPeel.html#a2fa65531de9837de63959285d069deb7">ComputeConfidenceTerm</a>(<span class="keyword">const</span> itk::Index&lt;2&gt;&amp; queryPixel) <span class="keyword">const</span>;
 <a name="l00036"></a>00036 
-<a name="l00038"></a>00038   ConfidenceMapImageType::Pointer ConfidenceMapImage;
+<a name="l00038"></a><a class="code" href="classPriorityOnionPeel.html#a8d29ba3b9ff288d8961c54a55ac99930">00038</a>   ConfidenceMapImageType::Pointer <a class="code" href="classPriorityOnionPeel.html#a8d29ba3b9ff288d8961c54a55ac99930">ConfidenceMapImage</a>;
 <a name="l00039"></a>00039 
-<a name="l00041"></a>00041   <span class="keyword">const</span> <a class="code" href="classMask.html" title="This class is a subclass of itkImage that provides the concept of &quot;valid&quot; pixels and hole pixels...">Mask</a>* MaskImage;
+<a name="l00041"></a><a class="code" href="classPriorityOnionPeel.html#aa827a0ecaa8cfaac7272de6966cdc673">00041</a>   <span class="keyword">const</span> <a class="code" href="classMask.html" title="This class is a subclass of itkImage that provides the concept of &quot;valid&quot; pixels and hole pixels...">Mask</a>* <a class="code" href="classPriorityOnionPeel.html#aa827a0ecaa8cfaac7272de6966cdc673">MaskImage</a>;
 <a name="l00042"></a>00042 
-<a name="l00044"></a>00044   <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> PatchRadius;
+<a name="l00044"></a><a class="code" href="classPriorityOnionPeel.html#af4a040d3ffb80f5d0fa9393d2654acde">00044</a>   <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> <a class="code" href="classPriorityOnionPeel.html#af4a040d3ffb80f5d0fa9393d2654acde">PatchRadius</a>;
 <a name="l00045"></a>00045 };
 <a name="l00046"></a>00046 
 <a name="l00047"></a>00047 <span class="preprocessor">#endif</span>
@@ -110,7 +110,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:08:08 for Patch Based Inpainting by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:11:46 for Patch Based Inpainting by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

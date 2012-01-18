@@ -60,7 +60,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
-<a href="#pub-methods">Public Member Functions</a>  </div>
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pri-methods">Private Member Functions</a> &#124;
+<a href="#pri-attribs">Private Attributes</a>  </div>
   <div class="headertitle">
 <div class="title">PriorityOnionPeel Class Reference</div>  </div>
 </div>
@@ -95,6 +97,15 @@ Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPriorityOnionPeel.html#aef63ee512fa6deeb4fcdb4aa0b37a3e6">PriorityOnionPeel</a> (const <a class="el" href="classMask.html">Mask</a> *const maskImage, const unsigned int patchRadius)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPriorityOnionPeel.html#a512b8ec56c79ec79cfe9249cdcb63dca">ComputePriority</a> (const itk::Index&lt; 2 &gt; &amp;queryPixel) const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPriorityOnionPeel.html#af9ae08663c03a970f06ba2fc6564d958">Update</a> (const itk::ImageRegion&lt; 2 &gt; &amp;filledRegion)</td></tr>
+<tr><td colspan="2"><h2><a name="pri-methods"></a>
+Private Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPriorityOnionPeel.html#abfd0ee0d370210c12e68736a2410f75a">UpdateConfidences</a> (const itk::ImageRegion&lt; 2 &gt; &amp;targetRegion, const float value)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPriorityOnionPeel.html#a2fa65531de9837de63959285d069deb7">ComputeConfidenceTerm</a> (const itk::Index&lt; 2 &gt; &amp;queryPixel) const </td></tr>
+<tr><td colspan="2"><h2><a name="pri-attribs"></a>
+Private Attributes</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">ConfidenceMapImageType::Pointer&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPriorityOnionPeel.html#a8d29ba3b9ff288d8961c54a55ac99930">ConfidenceMapImage</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classMask.html">Mask</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPriorityOnionPeel.html#aa827a0ecaa8cfaac7272de6966cdc673">MaskImage</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPriorityOnionPeel.html#af4a040d3ffb80f5d0fa9393d2654acde">PatchRadius</a></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>This class computes the priority of a pixel based on its closeness to the original hole boundary. This example of a <a class="el" href="classPriority.html" title="This is an abstract class that indicates the interface for Priority functions. The Priority class hie...">Priority</a> subclass depends on inputs that we must already have. </p>
@@ -141,6 +152,24 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <hr/><h2>Member Function Documentation</h2>
+<a class="anchor" id="a2fa65531de9837de63959285d069deb7"></a><!-- doxytag: member="PriorityOnionPeel::ComputeConfidenceTerm" ref="a2fa65531de9837de63959285d069deb7" args="(const itk::Index&lt; 2 &gt; &amp;queryPixel) const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float PriorityOnionPeel::ComputeConfidenceTerm </td>
+          <td>(</td>
+          <td class="paramtype">const itk::Index&lt; 2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>queryPixel</em></td><td>)</td>
+          <td> const<code> [private]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Compute the Confidence at a pixel. </p>
+
+</div>
+</div>
 <a class="anchor" id="a512b8ec56c79ec79cfe9249cdcb63dca"></a><!-- doxytag: member="PriorityOnionPeel::ComputePriority" ref="a512b8ec56c79ec79cfe9249cdcb63dca" args="(const itk::Index&lt; 2 &gt; &amp;queryPixel) const " -->
 <div class="memitem">
 <div class="memproto">
@@ -180,6 +209,77 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="abfd0ee0d370210c12e68736a2410f75a"></a><!-- doxytag: member="PriorityOnionPeel::UpdateConfidences" ref="abfd0ee0d370210c12e68736a2410f75a" args="(const itk::ImageRegion&lt; 2 &gt; &amp;targetRegion, const float value)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PriorityOnionPeel::UpdateConfidences </td>
+          <td>(</td>
+          <td class="paramtype">const itk::ImageRegion&lt; 2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>targetRegion</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const float&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td><code> [private]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Compute the Confidence values for pixels that were just inpainted. </p>
+
+</div>
+</div>
+<hr/><h2>Member Data Documentation</h2>
+<a class="anchor" id="a8d29ba3b9ff288d8961c54a55ac99930"></a><!-- doxytag: member="PriorityOnionPeel::ConfidenceMapImage" ref="a8d29ba3b9ff288d8961c54a55ac99930" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ConfidenceMapImageType::Pointer <a class="el" href="classPriorityOnionPeel.html#a8d29ba3b9ff288d8961c54a55ac99930">PriorityOnionPeel::ConfidenceMapImage</a><code> [private]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Keep track of the Confidence of each pixel </p>
+
+</div>
+</div>
+<a class="anchor" id="aa827a0ecaa8cfaac7272de6966cdc673"></a><!-- doxytag: member="PriorityOnionPeel::MaskImage" ref="aa827a0ecaa8cfaac7272de6966cdc673" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classMask.html">Mask</a>* <a class="el" href="classPriorityOnionPeel.html#aa827a0ecaa8cfaac7272de6966cdc673">PriorityOnionPeel::MaskImage</a><code> [private]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>The mask image. </p>
+
+</div>
+</div>
+<a class="anchor" id="af4a040d3ffb80f5d0fa9393d2654acde"></a><!-- doxytag: member="PriorityOnionPeel::PatchRadius" ref="af4a040d3ffb80f5d0fa9393d2654acde" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned int <a class="el" href="classPriorityOnionPeel.html#af4a040d3ffb80f5d0fa9393d2654acde">PriorityOnionPeel::PatchRadius</a><code> [private]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>The patch radius to use when computing the confidence. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li><a class="el" href="PriorityOnionPeel_8h_source.html">PriorityOnionPeel.h</a></li>
 <li><a class="el" href="PriorityOnionPeel_8cpp.html">PriorityOnionPeel.cpp</a></li>
@@ -199,7 +299,7 @@ Public Member Functions</h2></td></tr>
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:08:09 for Patch Based Inpainting by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:11:47 for Patch Based Inpainting by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

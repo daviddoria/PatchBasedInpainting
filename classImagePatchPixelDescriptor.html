@@ -58,6 +58,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
 </div>
 <div class="header">
+  <div class="summary">
+<a href="#pri-attribs">Private Attributes</a>  </div>
   <div class="headertitle">
 <div class="title">ImagePatchPixelDescriptor&lt; TImage &gt; Class Template Reference</div>  </div>
 </div>
@@ -84,13 +86,50 @@ Collaboration diagram for ImagePatchPixelDescriptor&lt; TImage &gt;:</div>
 
 <p><a href="classImagePatchPixelDescriptor-members.html">List of all members.</a></p>
 <table class="memberdecls">
+<tr><td colspan="2"><h2><a name="pri-attribs"></a>
+Private Attributes</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">TImage *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classImagePatchPixelDescriptor.html#aa9299b726890ed1f42f86a8970830eb4">Image</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">itk::ImageRegion&lt; 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classImagePatchPixelDescriptor.html#ac29667b0400eafff2bc3b80737c8df73">Region</a></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename TImage&gt;<br/>
 class ImagePatchPixelDescriptor&lt; TImage &gt;</h3>
 
 <p>Describes a pixel by it's surrounding region in an image. </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
+</div><hr/><h2>Member Data Documentation</h2>
+<a class="anchor" id="aa9299b726890ed1f42f86a8970830eb4"></a><!-- doxytag: member="ImagePatchPixelDescriptor::Image" ref="aa9299b726890ed1f42f86a8970830eb4" args="" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TImage &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">TImage* <a class="el" href="classImagePatchPixelDescriptor.html">ImagePatchPixelDescriptor</a>&lt; TImage &gt;::<a class="el" href="classImagePatchPixelDescriptor.html#aa9299b726890ed1f42f86a8970830eb4">Image</a><code> [private]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>The image from which the pixel comes from. </p>
+
+</div>
+</div>
+<a class="anchor" id="ac29667b0400eafff2bc3b80737c8df73"></a><!-- doxytag: member="ImagePatchPixelDescriptor::Region" ref="ac29667b0400eafff2bc3b80737c8df73" args="" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TImage &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">itk::ImageRegion&lt;2&gt; <a class="el" href="classImagePatchPixelDescriptor.html">ImagePatchPixelDescriptor</a>&lt; TImage &gt;::<a class="el" href="classImagePatchPixelDescriptor.html#ac29667b0400eafff2bc3b80737c8df73">Region</a><code> [private]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>The region surrounding the pixel. </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
 <li><a class="el" href="ImagePatchPixelDescriptor_8h_source.html">ImagePatchPixelDescriptor.h</a></li>
 </ul>
 </div>
@@ -108,7 +147,7 @@ class ImagePatchPixelDescriptor&lt; TImage &gt;</h3>
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:08:09 for Patch Based Inpainting by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:11:46 for Patch Based Inpainting by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

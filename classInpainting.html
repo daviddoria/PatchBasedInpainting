@@ -59,7 +59,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 <div class="header">
   <div class="summary">
-<a href="#pub-methods">Public Member Functions</a>  </div>
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pri-attribs">Private Attributes</a>  </div>
   <div class="headertitle">
 <div class="title">Inpainting&lt; TImage &gt; Class Template Reference</div>  </div>
 </div>
@@ -90,6 +91,11 @@ Collaboration diagram for Inpainting&lt; TImage &gt;:</div>
 Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInpainting.html#a31de56846e581bf4315426afdaabe0f0">Inpainting</a> (const TImage *const image, const <a class="el" href="classMask.html">Mask</a> *mask)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInpainting.html#a14534dd79ac2eceff38df4e0a63edd18">Inpaint</a> ()=0</td></tr>
+<tr><td colspan="2"><h2><a name="pri-attribs"></a>
+Private Attributes</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const TImage *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInpainting.html#ad23b92782ae4d0e697ff8bc801afd9d0">Image</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classMask.html">Mask</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInpainting.html#a15caf1a709f1c947331bc5800a31bb75">MaskImage</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">TImage *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInpainting.html#a0bba74df081aef794e82646616b4e4b6">Result</a></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename TImage&gt;<br/>
@@ -147,6 +153,52 @@ template&lt;typename TImage &gt; </div>
 
 </div>
 </div>
+<hr/><h2>Member Data Documentation</h2>
+<a class="anchor" id="ad23b92782ae4d0e697ff8bc801afd9d0"></a><!-- doxytag: member="Inpainting::Image" ref="ad23b92782ae4d0e697ff8bc801afd9d0" args="" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TImage &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">const TImage* <a class="el" href="classInpainting.html">Inpainting</a>&lt; TImage &gt;::<a class="el" href="classInpainting.html#ad23b92782ae4d0e697ff8bc801afd9d0">Image</a><code> [private]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a15caf1a709f1c947331bc5800a31bb75"></a><!-- doxytag: member="Inpainting::MaskImage" ref="a15caf1a709f1c947331bc5800a31bb75" args="" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TImage &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classMask.html">Mask</a>* <a class="el" href="classInpainting.html">Inpainting</a>&lt; TImage &gt;::<a class="el" href="classInpainting.html#a15caf1a709f1c947331bc5800a31bb75">MaskImage</a><code> [private]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0bba74df081aef794e82646616b4e4b6"></a><!-- doxytag: member="Inpainting::Result" ref="a0bba74df081aef794e82646616b4e4b6" args="" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename TImage &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">TImage* <a class="el" href="classInpainting.html">Inpainting</a>&lt; TImage &gt;::<a class="el" href="classInpainting.html#a0bba74df081aef794e82646616b4e4b6">Result</a><code> [private]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li><a class="el" href="Inpainting_8h_source.html">Inpainting.h</a></li>
 </ul>
@@ -165,7 +217,7 @@ template&lt;typename TImage &gt; </div>
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:08:09 for Patch Based Inpainting by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Wed Jan 18 2012 15:11:46 for Patch Based Inpainting by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>
