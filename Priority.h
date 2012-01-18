@@ -8,6 +8,7 @@
 /**
 \class Priority
 \brief This is an abstract class that indicates the interface for Priority functions.
+       The Priority class hierarchy implements the Strategy pattern.
 */
 class Priority
 {

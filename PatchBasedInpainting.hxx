@@ -45,7 +45,7 @@ itk::Index<2> PatchBasedInpainting<TImage>::DetermineTargetPixel()
 template <typename TImage>
 itk::Index<2> PatchBasedInpainting<TImage>::DetermineBestSourcePixel(itk::Index<2> targetPixel)
 {
-  // Compare "Items" at every valid source pixel with the Item at the 'targetPixel'
+  // Compare the ImagePatchPixelDescriptor at every pixel with a non-NULL ImagePatchPixelDescriptor to the ImagePatchPixelDescriptor at the 'targetPixel'
 
-  // Return the location of the item with the lowest difference (best match)
+  // Return the location of the item with the lowest ImagePatchPixelDescriptor difference
 }
