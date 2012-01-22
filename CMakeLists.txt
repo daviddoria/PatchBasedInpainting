@@ -11,3 +11,5 @@ target_link_libraries(PatchBasedInpainting ${ITK_LIBRARIES})
 
 add_executable(PropertyMapDemoRevised PropertyMapDemoRevised.cpp)
 target_link_libraries(PropertyMapDemoRevised )
+
+add_subdirectory(DVPTree)
