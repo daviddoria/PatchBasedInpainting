@@ -147,6 +147,136 @@ void put( CompositePropertyMap< TGraph > p,
 
 // ****************** End of Optional *********************
 
+// ****************** Optional 2 **************************
+
+// Say that you want to have the option of having a property as a run-time one or a compile-time one
+//  then, you can do this type of little trick:
+
+// Create some tags for some optional feature "nearest_hole_pixel" and one for a run-time feature-set:
+namespace boost {
+
+enum vertex_nearest_hole_pixel_t { vertex_nearest_hole_pixel };
+enum vertex_runtime_features_t { vertex_runtime_features };
+
+BOOST_INSTALL_PROPERTY(vertex,nearest_hole_pixel);
+BOOST_INSTALL_PROPERTY(vertex,runtime_features);
+
+};
+
+// Create a base-class for the run-time feature elements:
+struct RunTimeFeature {
+  virtual std::size_t GetTagTypeID() const = 0;
+  virtual ~RunTimeFeature() { };  
+};
+
+// Create a container for the run-time features:
+class RunTimeFeatureSet {
+  private:
+    std::map< std::size_t, std::shared_ptr<RunTimeFeature> > elements;
+  public:
+    void AddFeature(const std::shared_ptr<RunTimeFeature>& aElem) {
+      elements[ aElem->GetTagTypeID() ] = aElem;
+    };
+    //... other useful functions here, and then...
+    std::shared_ptr<RunTimeFeature> operator[](std::size_t id) {
+      std::map< std::size_t, std::shared_ptr<RunTimeFeature> >::iterator it = elements.find(id);
+      if(it != elements.end())
+	return it->second;
+      else
+	return std::shared_ptr<RunTimeFeature>();
+    };
+};
+
+template <typename PropertyMap>
+class RunTimePropertyMap {
+  public:
+    
+    // Define a few standard (required) nested types:
+    typedef typename boost::property_traits< PropertyMap >::key_type key_type;
+    typedef std::shared_ptr<RunTimeFeature> value_type;
+    typedef boost::read_write_property_map_tag category;
+    
+    PropertyMap propMap;
+    std::size_t index;
+  
+    RunTimePropertyMap(PropertyMap p, std::size_t id) : propMap(p), index(id) { };
+    
+};
+
+// Get the run-time-property associated to a vertex:
+template <typename PropertyMap, typename VertexType>
+typename boost::property_traits< RunTimePropertyMap< PropertyMap > >::value_type
+  get( RunTimePropertyMap< PropertyMap > p, VertexType u) {
+  typedef typename boost::property_traits< RunTimePropertyMap< PropertyMap > >::value_type ResultType;
+  using boost::get;
+  return ResultType( get(p.propMap, u)[p.index] );
+};
+
+// Set the run-time-property associated to a vertex:
+template <typename PropertyMap, typename VertexType>
+void put( RunTimePropertyMap< PropertyMap > p, 
+          VertexType u,
+	  const typename boost::property_traits< RunTimePropertyMap< PropertyMap > >::value_type& value) {
+  using boost::put;
+  typename boost::property_traits< PropertyMap >::value_type temp = get(p.propMap, u);
+  temp.AddFeature(value);
+  put(p.propMap, u, temp);
+};
+
+
+// Create the actual feature:
+struct NearestHolePixelFeature : public RunTimeFeature {
+  virtual std::size_t GetTagTypeID() const { return typeid(boost::vertex_nearest_hole_pixel_t).hash_code(); };
+  
+  // some property:
+  unsigned int holeX;
+  unsigned int holeY;
+  
+};
+
+// Now, here is the magic:
+
+namespace boost {
+  // Get the property map associated to a graph at compile-time:
+  template <typename TGraph>
+  typename property_map<TGraph, vertex_nearest_hole_pixel_t>::type 
+     get( vertex_runtime_features_t, vertex_nearest_hole_pixel_t, TGraph& g) {
+    return get(vertex_nearest_hole_pixel, g);
+  };
+  //The above will fail to instantiate if "vertex_nearest_hole_pixel" is not a compile-time 
+  // property of the graph (i.e. property_map<TGraph, vertex_nearest_hole_pixel_t>::type doesn't 
+  // exist. But, that substitution-failure is not an error (Sfinae) and it will simply cause the 
+  // compile to look for another function overload, and, so, we will give one for run-time checks.
+  
+  // Get the property map associated to a graph at run-time:
+  template <typename FeatureTag, typename TGraph>
+  RunTimePropertyMap< typename property_map<TGraph, vertex_runtime_features_t>::type >
+    get( vertex_runtime_features_t, FeatureTag, TGraph& g) {
+    return RunTimePropertyMap< typename property_map<TGraph, vertex_runtime_features_t>::type >(
+      get(vertex_runtime_features,g), typeid(FeatureTag).hash_code());
+  };
+  
+};
+
+// Now, you could declare a graph with a static property:
+typedef boost::adjacency_list<boost::vecS, //OutEdgeList
+                              boost::vecS,// VertexList
+                              boost::undirectedS, //Directed,
+                              boost::property< boost::vertex_nearest_hole_pixel_t, NearestHolePixelFeature > //VertexProperties
+                              > NearestHoleGraph;
+
+// Or, you could declare a graph with a dynamic property:
+typedef boost::adjacency_list<boost::vecS, //OutEdgeList
+                              boost::vecS,// VertexList
+                              boost::undirectedS, //Directed,
+                              boost::property< boost::vertex_runtime_features_t, RunTimeFeatureSet > //VertexProperties
+                              > RunTimeFeatureSetGraph;
+			      
+//And, in both cases, you can access the property-map for "vertex_nearest_hole_pixel_t" the same way
+// except that in the second case, the check is done at run-time.
+
+// ****************** End of Optional 2 *******************
+
 
 
 typedef boost::adjacency_list<boost::vecS, //OutEdgeList
