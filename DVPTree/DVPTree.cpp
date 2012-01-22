@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 
   typedef boost::graph_traits<Graph>::vertex_descriptor VertexType;
 
-  boost::property_map<Graph, boost::vertex_data_t>::type positionMap;
+  boost::property_map<Graph, boost::vertex_data_t>::type positionMap = get(boost::vertex_data, g); // You forgot to actually initialize the positionMap! (which was the source of the seg-fault on first use)
 
   TopologyType myTopology;
 
@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
 
   typedef ReaK::pp::dvp_tree<VertexType, TopologyType, boost::property_map<Graph, boost::vertex_data_t>::type > TreeType;
   
-  TreeType tree(g, myTopology, positionMap);
 
   // Add vertices to the graph and corresponding points increasin integer points to the tree.
   // The experiment here is to query the nearest neighbor of a point like (5.2, 5.2, 5.1, 5.3, 5.2, 5.1)
@@ -46,8 +45,9 @@ int main(int argc, char *argv[])
       p[dim] = vertexId;
       }
     boost::put(positionMap, v, p); // segfault on this line
-    tree.insert(v);
   };
+
+  TreeType tree(g, myTopology, positionMap); // Prefer to initialize the DVP-tree with a filled graph, this way, the entire DVP-tree will be initialized at once (gets best results).
 
   ReaK::pp::multi_dvp_tree_search<Graph, TreeType> nearestNeighborFinder;
   nearestNeighborFinder.graph_tree_map[&g] = &tree;
