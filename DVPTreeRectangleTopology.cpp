@@ -10,23 +10,22 @@ namespace boost {
 
 int main(int argc, char *argv[])
 {
-  typedef boost::hypercube_topology<6,boost::minstd_rand> TopologyType;
+  typedef boost::rectangle_topology<boost::minstd_rand> RectangleTopologyType;
 
   typedef boost::adjacency_list<boost::vecS,
                                 boost::vecS,
                                 boost::undirectedS,
-                                boost::property< boost::vertex_data_t, TopologyType::point_type >
+                                boost::property< boost::vertex_data_t, RectangleTopologyType::point_type >
                                 > Graph;
 
   Graph g;
 
   typedef boost::graph_traits<Graph>::vertex_descriptor VertexType;
 
-  //typedef TopologyType::point_type PointType;
+    //ReaK::pp::dvp_tree<Key, Topology, PositionMap> tree;
+  typedef ReaK::pp::dvp_tree<VertexType, RectangleTopologyType, boost::property_map<Graph, boost::vertex_data_t>::type > TreeType;
 
-  typedef ReaK::pp::dvp_tree<VertexType, TopologyType, boost::property_map<Graph, boost::vertex_data_t>::type > TreeType;
-
-  TopologyType myTopology;
+  RectangleTopologyType myTopology(0,0,100,100);
   boost::property_map<Graph, boost::vertex_data_t>::type positionMap;
   TreeType tree(g, myTopology, positionMap);
 
