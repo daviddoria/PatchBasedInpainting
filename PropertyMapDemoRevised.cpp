@@ -161,6 +161,7 @@ typedef boost::adjacency_list<boost::vecS, //OutEdgeList
                               boost::property< boost::vertex_image_patch_t, Image > //VertexProperties
                               > ImagePatchGraph;
 
+                              // The VertexProperties specified here is a "property list" : http://www.boost.org/doc/libs/1_48_0/libs/graph/doc/using_adjacency_list.html#sec:adjacency-list-properties
 typedef boost::adjacency_list<boost::vecS, //OutEdgeList
                               boost::vecS,// VertexList
                               boost::undirectedS, //Directed,
@@ -220,13 +221,15 @@ private:
 
 int main(int,char*[])
 {
-  //PatchBasedInpainting<FeatureVectorGraph> patchBasedInpainting;
-
   enum UserChoice {UseFeatureVectors, UseImagePatches, UseComposite};
 
   UserChoice userChoice = UseFeatureVectors;
 
   InpaintingParent* inpainting;
+
+  // inpainting = new PatchBasedInpainting<FeatureVectorGraph, ComputeImagePatch >; // This is not supposed to work - the types don't match.
+  inpainting = new PatchBasedInpainting<CompositeDescriptorGraph, ComputeImagePatch >; // This works, though it is overkill
+
   if(userChoice == UseFeatureVectors)
   {
     inpainting = new PatchBasedInpainting<FeatureVectorGraph, ComputeFeatureVector >;

@@ -8,3 +8,6 @@ INCLUDE(${ITK_USE_FILE})
 
 add_executable(PatchBasedInpainting Driver.cpp Mask.cpp PriorityOnionPeel.cpp)
 target_link_libraries(PatchBasedInpainting ${ITK_LIBRARIES})
+
+add_executable(PropertyMapDemoRevised PropertyMapDemoRevised.cpp)
+target_link_libraries(PropertyMapDemoRevised )
