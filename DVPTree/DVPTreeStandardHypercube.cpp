@@ -8,27 +8,10 @@ namespace boost {
   BOOST_INSTALL_PROPERTY(vertex, data);
 };
 
-class custom_topology : public boost::hypercube_topology<6, boost::minstd_rand>
-{
-public:
-  double distance(point a, point b) const
-  {
-    double dist = 0.0f;
-    for(unsigned int i = 0; i < 6; ++i)
-      {
-      dist += fabs(a[i] - b[i]);
-      }
-    return dist;
-  }
-};
-
 int main(int argc, char *argv[])
 {
   const unsigned int dimension = 6;
-  //typedef boost::hypercube_topology<dimension, boost::minstd_rand> TopologyType;
-  // This distance(a,b) function is the equivialent of matlab's norm(a-b)
-
-  typedef custom_topology TopologyType;
+  typedef boost::hypercube_topology<dimension, boost::minstd_rand> TopologyType;
 
   typedef boost::adjacency_list<boost::vecS,
                                 boost::vecS,
@@ -40,28 +23,14 @@ int main(int argc, char *argv[])
 
   typedef boost::graph_traits<Graph>::vertex_descriptor VertexType;
 
-  boost::property_map<Graph, boost::vertex_data_t>::type positionMap = get(boost::vertex_data, g);
+  boost::property_map<Graph, boost::vertex_data_t>::type positionMap = get(boost::vertex_data, g); // You forgot to actually initialize the positionMap! (which was the source of the seg-fault on first use)
 
   TopologyType myTopology;
+
   typedef TopologyType::point_type PointType;
 
-  {
-  PointType a;
-  for(unsigned int dim = 0; dim < dimension; ++dim)
-    {
-    a[dim] = 1;
-    }
-  PointType b;
-  for(unsigned int dim = 0; dim < dimension; ++dim)
-    {
-    b[dim] = 2;
-    }
-
-  std::cout << "Diff: " << myTopology.distance(a, b) << std::endl;
-  }
-  
-
   typedef ReaK::pp::dvp_tree<VertexType, TopologyType, boost::property_map<Graph, boost::vertex_data_t>::type > TreeType;
+
 
   // Add vertices to the graph and corresponding points increasin integer points to the tree.
   // The experiment here is to query the nearest neighbor of a point like (5.2, 5.2, 5.1, 5.3, 5.2, 5.1)
@@ -78,8 +47,7 @@ int main(int argc, char *argv[])
     boost::put(positionMap, v, p); // segfault on this line
   };
 
-  // Prefer to initialize the DVP-tree with a filled graph, this way, the entire DVP-tree will be initialized at once (gets best results).
-  TreeType tree(g, myTopology, positionMap);
+  TreeType tree(g, myTopology, positionMap); // Prefer to initialize the DVP-tree with a filled graph, this way, the entire DVP-tree will be initialized at once (gets best results).
 
   ReaK::pp::multi_dvp_tree_search<Graph, TreeType> nearestNeighborFinder;
   nearestNeighborFinder.graph_tree_map[&g] = &tree;
