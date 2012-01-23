@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classPatchBasedInpainting.html#a90c16cf81635e4db4569bd15f17035df" title="PatchBasedInpainting::Iterate" alt="" coords="368,59,563,88"/>
-<area shape="rect" id="node11" href="$classInpaintingComputationObject.html#a7f7db59d23630e70d2ab1fbb837bfebe" title="InpaintingComputationObject::IterationComplete" alt="" coords="315,112,616,141"/>
-<area shape="rect" id="node5" href="$classPatch.html#a29501cec3084e456e126cc52f6200d94" title="Patch::GetRegion" alt="" coords="693,5,819,35"/>
-<area shape="rect" id="node7" href="$classPatchPair.html#ad315db27ac086737d3e2d0f0c8bcdaaf" title="PatchPair::GetSourcePatch" alt="" coords="665,59,847,88"/>
-<area shape="rect" id="node9" href="$classPatchPair.html#a4da1fc09afcd61bdc4930c2d27ca76a4" title="PatchPair::GetTargetPatch" alt="" coords="667,112,845,141"/>
-</map>

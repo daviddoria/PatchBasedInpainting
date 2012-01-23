@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classPatchPair.html#a25f6649f74614f11fe1f27358212faf8" title="PatchPair::VisitAllPixels" alt="" coords="324,59,487,88"/>
-<area shape="rect" id="node5" href="$classPatchPair.html#ad315db27ac086737d3e2d0f0c8bcdaaf" title="PatchPair::GetSourcePatch" alt="" coords="564,5,745,35"/>
-<area shape="rect" id="node7" href="$classPatchPair.html#a60e2aa2fec599b113c89da99022be84c" title="PatchPair::GetSourceToTargetOffset" alt="" coords="536,59,773,88"/>
-<area shape="rect" id="node11" href="$classPixelPairVisitor.html#ab1bba17dd6bd009ac47a016cf01013e8" title="PixelPairVisitor::Visit" alt="" coords="583,112,727,141"/>
-<area shape="rect" id="node9" href="$classPatch.html#a29501cec3084e456e126cc52f6200d94" title="Patch::GetRegion" alt="" coords="823,59,948,88"/>
-</map>

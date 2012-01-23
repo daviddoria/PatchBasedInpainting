@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classClusterColors.html#ac0932463b1a69381c29e05bbbefe2391" title="ClusterColors::CreateKDTreeFromColors" alt="" coords="353,44,615,73"/>
-<area shape="rect" id="node5" href="$classDebugOutputs.html#ad53c3128f1ce9d6563b4a72771b73a2f" title="DebugOutputs::EnterFunction" alt="" coords="667,5,861,35"/>
-<area shape="rect" id="node7" href="$classDebugOutputs.html#a6216284cb93c9693867711303a90140e" title="DebugOutputs::LeaveFunction" alt="" coords="665,71,863,100"/>
-<area shape="rect" id="node10" href="$namespaceVTKHelpers.html#a2b385ffe4dd5f5959704c07809e05d42" title="VTKHelpers::GetCellCenter" alt="" coords="392,148,576,177"/>
-<area shape="rect" id="node12" href="$classMask.html#a1906ad8a4eacc553a5e56b88b39b849a" title="Mask::IsValid" alt="" coords="433,201,535,231"/>
-</map>

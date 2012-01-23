@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classClusterColors.html#ac9a1eaa27d7ff414ebbd3fb1ccb03c02" title="ClusterColors::CreateMembershipImage" alt="" coords="333,59,589,88"/>
-<area shape="rect" id="node11" href="$classClusterColors.html#a831207c448926a421396135eb0053640" title="ClusterColors::GenerateColors" alt="" coords="361,112,561,141"/>
-<area shape="rect" id="node5" href="$classDebugOutputs.html#ad53c3128f1ce9d6563b4a72771b73a2f" title="DebugOutputs::EnterFunction" alt="" coords="640,5,835,35"/>
-<area shape="rect" id="node7" href="$classMask.html#a1906ad8a4eacc553a5e56b88b39b849a" title="Mask::IsValid" alt="" coords="687,59,788,88"/>
-<area shape="rect" id="node9" href="$classDebugOutputs.html#a6216284cb93c9693867711303a90140e" title="DebugOutputs::LeaveFunction" alt="" coords="639,112,836,141"/>
-</map>

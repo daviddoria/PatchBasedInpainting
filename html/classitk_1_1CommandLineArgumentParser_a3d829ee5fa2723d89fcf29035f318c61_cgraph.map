@@ -1,5 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classitk_1_1CommandLineArgumentParser.html#a30e9c46be0da724e949043cd7a872667" title="itk::CommandLineArgumentParser::GetCommandLineArgument" alt="" coords="447,32,836,61"/>
-<area shape="rect" id="node5" href="$classitk_1_1CommandLineArgumentParser.html#a858901bbf6331f5257f52da08f7265f0" title="itk::CommandLineArgumentParser::FindKey" alt="" coords="893,5,1171,35"/>
-<area shape="rect" id="node7" href="$classitk_1_1CommandLineArgumentParser.html#aacd1ed95dfc9887723e25d236a85dbec" title="itk::CommandLineArgumentParser::StringCast" alt="" coords="887,59,1177,88"/>
-</map>

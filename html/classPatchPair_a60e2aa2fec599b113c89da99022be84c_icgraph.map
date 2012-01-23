@@ -1,6 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$SourceTargetBoundary_8cpp.html#aeca03b44e5da5b2fa9ceb2b59ad0e499" title="ComputeAverageIsophoteSourcePatch" alt="" coords="291,5,539,35"/>
-<area shape="rect" id="node5" href="$TestPatchPair_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97" title="main" alt="" coords="389,59,440,88"/>
-<area shape="rect" id="node7" href="$classPatchPair.html#a25f6649f74614f11fe1f27358212faf8" title="PatchPair::VisitAllPixels" alt="" coords="333,112,496,141"/>
-<area shape="rect" id="node9" href="$classPixelWiseDifferencePatchPairVisitor.html#a889292740203c0b5319ac960d708b04e" title="PixelWiseDifferencePatchPairVisitor::Visit" alt="" coords="587,112,856,141"/>
-</map>

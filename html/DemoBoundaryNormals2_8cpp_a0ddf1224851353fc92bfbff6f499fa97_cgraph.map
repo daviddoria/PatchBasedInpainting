@@ -1,5 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$namespaceITKVTKHelpers.html#a62f0bb3bdc15c5ea6cb056897d231e47" title="ITKVTKHelpers::ConvertNonZeroPixelsToVectors" alt="" coords="104,5,419,35"/>
-<area shape="rect" id="node5" href="$namespaceITKHelpers.html#a7965c9af2bd081b48f3308e26310dd02" title="ITKHelpers::VectorImageToRGBImage" alt="" coords="136,59,387,88"/>
-<area shape="rect" id="node7" href="$namespaceHelpersOutput.html#adf63b5478c983a743382fd085e1fee3d" title="HelpersOutput::WritePolyData" alt="" coords="163,112,360,141"/>
-</map>

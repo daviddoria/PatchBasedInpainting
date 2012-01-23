@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$namespaceITKHelpers.html#a51ab6cf4f70d1e1fda9c5b2dc10f56e6" title="ITKHelpers::AverageVectors" alt="" coords="347,5,536,35"/>
-<area shape="rect" id="node5" href="$namespaceITKHelpers.html#a4b91c088f9f9c59d98ecb5d9931543d0" title="ITKHelpers::GetRegionInRadiusAroundPixel" alt="" coords="301,59,581,88"/>
-<area shape="rect" id="node7" href="$classPatchPair.html#a60e2aa2fec599b113c89da99022be84c" title="PatchPair::GetSourceToTargetOffset" alt="" coords="323,112,560,141"/>
-<area shape="rect" id="node11" href="$classPatchPair.html#a544323a9ec71739c23aec8560d5b1a56" title="PatchPair::GetTargetToSourceOffset" alt="" coords="323,165,560,195"/>
-<area shape="rect" id="node9" href="$classPatch.html#a29501cec3084e456e126cc52f6200d94" title="Patch::GetRegion" alt="" coords="631,139,756,168"/>
-</map>

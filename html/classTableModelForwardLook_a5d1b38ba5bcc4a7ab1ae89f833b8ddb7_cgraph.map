@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classDebugOutputs.html#ad53c3128f1ce9d6563b4a72771b73a2f" title="DebugOutputs::EnterFunction" alt="" coords="259,5,453,35"/>
-<area shape="rect" id="node5" href="$classCandidatePairs.html#aeeb25eea33cde821519b3343f2c9a2d2" title="CandidatePairs::GetPriority" alt="" coords="265,59,447,88"/>
-<area shape="rect" id="node7" href="$classPatch.html#a29501cec3084e456e126cc52f6200d94" title="Patch::GetRegion" alt="" coords="293,112,419,141"/>
-<area shape="rect" id="node9" href="$classCandidatePairs.html#a08fabaff11505fdc081ee73211f26025" title="CandidatePairs::GetTargetPatch" alt="" coords="251,165,461,195"/>
-<area shape="rect" id="node11" href="$classDebugOutputs.html#a6216284cb93c9693867711303a90140e" title="DebugOutputs::LeaveFunction" alt="" coords="257,219,455,248"/>
-</map>

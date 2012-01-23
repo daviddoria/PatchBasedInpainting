@@ -1,6 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classPriorityCriminisi.html#a674e41ff54d156fd6fede64c9b9843b2" title="PriorityCriminisi::ComputeBoundaryNormals" alt="" coords="271,5,548,35"/>
-<area shape="rect" id="node5" href="$namespaceIsophotes.html#ad76b671da6d0289dfcacb32633ee2f75" title="Isophotes::ComputeColorIsophotesInRegion" alt="" coords="269,59,549,88"/>
-<area shape="rect" id="node7" href="$namespaceIsophotes.html#a40ce9eef4cab7920eb5a55ee8014ab76" title="Isophotes::ComputeMaskedIsophotesInRegion" alt="" coords="599,32,892,61"/>
-<area shape="rect" id="node9" href="$namespaceITKHelpers.html#a7965c9af2bd081b48f3308e26310dd02" title="ITKHelpers::VectorImageToRGBImage" alt="" coords="620,85,871,115"/>
-</map>

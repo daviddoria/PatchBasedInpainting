@@ -1,9 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$DemoColorImageByScore_8cpp.html" title="Demos/DemoColorImageByScore.cpp" alt="" coords="5,83,251,112"/>
-<area shape="rect" id="node5" href="$LearnLambda_8cpp.html" title="LearnLambda.cpp" alt="" coords="275,83,400,112"/>
-<area shape="rect" id="node7" href="$PixelDifferenceAllOrNothing_8h.html" title="PixelDifferenceAllOrNothing.h" alt="" coords="424,83,619,112"/>
-<area shape="rect" id="node9" href="$TestPixelDifferences_8cpp.html" title="Tests/TestPixelDifferences.cpp" alt="" coords="553,160,759,189"/>
-<area shape="rect" id="node11" href="$PixelDifferenceSquared_8h.html" title="PixelDifferenceSquared.h" alt="" coords="693,83,864,112"/>
-<area shape="rect" id="node14" href="$TestPatchDifference_8cpp.html" title="Tests/TestPatchDifference.cpp" alt="" coords="888,83,1091,112"/>
-<area shape="rect" id="node17" href="$TestSelfPatchCompare_8cpp.html" title="Tests/TestSelfPatchCompare.cpp" alt="" coords="1115,83,1333,112"/>
-</map>

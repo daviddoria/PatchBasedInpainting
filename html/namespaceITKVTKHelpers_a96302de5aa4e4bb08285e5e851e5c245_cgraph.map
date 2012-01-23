@@ -1,5 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$namespaceITKVTKHelpers.html#a38363fed86541cf9a9f28dc6184e58a5" title="ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension" alt="" coords="312,32,699,61"/>
-<area shape="rect" id="node5" href="$namespaceITKVTKHelpers.html#a3f3c3713cfa0632214cd57cd5c7a8633" title="ITKVTKHelpers::ITKImageToVTKMagnitudeImage" alt="" coords="748,5,1063,35"/>
-<area shape="rect" id="node7" href="$namespaceITKVTKHelpers.html#a5b91e55ccf64fecbb2c010336d8bee18" title="ITKVTKHelpers::ITKImageToVTKRGBImage" alt="" coords="763,59,1048,88"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$namespaceIsophotes.html#ad76b671da6d0289dfcacb32633ee2f75" title="Isophotes::ComputeColorIsophotesInRegion" alt="" coords="219,59,499,88"/>
-<area shape="rect" id="node9" href="$classPriorityOnionPeel.html#a1d9e6a3b76315e16d0c5ded2c15529f4" title="PriorityOnionPeel::Update" alt="" coords="272,112,445,141"/>
-<area shape="rect" id="node5" href="$namespaceIsophotes.html#a40ce9eef4cab7920eb5a55ee8014ab76" title="Isophotes::ComputeMaskedIsophotesInRegion" alt="" coords="548,5,841,35"/>
-<area shape="rect" id="node7" href="$namespaceITKHelpers.html#a7965c9af2bd081b48f3308e26310dd02" title="ITKHelpers::VectorImageToRGBImage" alt="" coords="569,59,820,88"/>
-<area shape="rect" id="node11" href="$namespaceITKHelpers.html#a516fef34cf143e65fa0cd6f8d9b6c9be" title="ITKHelpers::GetRegionCenter" alt="" coords="596,112,793,141"/>
-</map>

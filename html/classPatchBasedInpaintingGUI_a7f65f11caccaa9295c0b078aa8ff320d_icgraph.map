@@ -1,8 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classPatchBasedInpaintingGUI.html#aa216de82c9b34123028af0b1fd405f76" title="PatchBasedInpaintingGUI::Refresh" alt="" coords="296,112,523,141"/>
-<area shape="rect" id="node5" href="$classPatchBasedInpaintingGUI.html#a3e3daa4fe6cffda3a5bbefd7f6f61d2f" title="PatchBasedInpaintingGUI::on_radDisplayChannel_clicked" alt="" coords="603,5,963,35"/>
-<area shape="rect" id="node7" href="$classPatchBasedInpaintingGUI.html#afc166711d4815bce4627a8680af9f632" title="PatchBasedInpaintingGUI::on_radDisplayColorImage_clicked" alt="" coords="593,59,972,88"/>
-<area shape="rect" id="node9" href="$classPatchBasedInpaintingGUI.html#a36288be2799dc3098160fe6f0fae6599" title="PatchBasedInpaintingGUI::on_radDisplayMagnitudeImage_clicked" alt="" coords="579,112,987,141"/>
-<area shape="rect" id="node11" href="$classPatchBasedInpaintingGUI.html#a04b17bb560cfb27604d2326a14b1c179" title="PatchBasedInpaintingGUI::on_spinChannelToDisplay_valueChanged" alt="" coords="572,165,993,195"/>
-<area shape="rect" id="node13" href="$classPatchBasedInpaintingGUI.html#a1fbd1f88a00b7e9aa4d9a070754571f2" title="PatchBasedInpaintingGUI::slot_IterationComplete" alt="" coords="627,219,939,248"/>
-</map>

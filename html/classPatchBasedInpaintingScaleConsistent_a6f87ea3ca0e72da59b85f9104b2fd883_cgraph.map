@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classCandidatePairs.html#ac9e212558ab79e4336cbdaedcc566af4" title="CandidatePairs::begin" alt="" coords="475,5,624,35"/>
-<area shape="rect" id="node5" href="$namespaceITKHelpers.html#a746de67705e3bd4cd7b8a8bbccaa535a" title="ITKHelpers::DeepCopy\&lt; FloatVectorImageType \&gt;" alt="" coords="392,59,707,88"/>
-<area shape="rect" id="node7" href="$classCandidatePairs.html#a278124be32780e527f75e3fc69662890" title="CandidatePairs::end" alt="" coords="480,112,619,141"/>
-<area shape="rect" id="node9" href="$classDebugOutputs.html#ad53c3128f1ce9d6563b4a72771b73a2f" title="DebugOutputs::EnterFunction" alt="" coords="452,165,647,195"/>
-<area shape="rect" id="node12" href="$classDebugOutputs.html#a6216284cb93c9693867711303a90140e" title="DebugOutputs::LeaveFunction" alt="" coords="451,219,648,248"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$namespaceITKHelpers.html#a4df9115c26721d697f3e0db705553f80" title="ITKHelpers::GetNextPixelAlongVector" alt="" coords="301,5,547,35"/>
-<area shape="rect" id="node9" href="$classMask.html#a9d46612768debb60374de2a6aaee0d04" title="Mask::IsHole" alt="" coords="375,59,473,88"/>
-<area shape="rect" id="node11" href="$classMask.html#a1906ad8a4eacc553a5e56b88b39b849a" title="Mask::IsValid" alt="" coords="373,112,475,141"/>
-<area shape="rect" id="node5" href="$namespaceITKHelpers.html#a01b1461718ea4b5d11879c816273b389" title="ITKHelpers::GetOffsetAlongVector" alt="" coords="595,5,819,35"/>
-<area shape="rect" id="node7" href="$namespaceHelpers.html#a2aab9675709636946cfc8b1ca0440446" title="Helpers::RoundAwayFromZero" alt="" coords="867,5,1069,35"/>
-</map>

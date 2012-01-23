@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classCandidatePairs.html#ac9e212558ab79e4336cbdaedcc566af4" title="CandidatePairs::begin" alt="" coords="271,5,420,35"/>
-<area shape="rect" id="node5" href="$classDebugOutputs.html#ad53c3128f1ce9d6563b4a72771b73a2f" title="DebugOutputs::EnterFunction" alt="" coords="248,59,443,88"/>
-<area shape="rect" id="node7" href="$namespaceITKHelpers.html#a744241e9003541dc8d3e961ea56ff858" title="ITKHelpers::GetIndexString" alt="" coords="255,112,436,141"/>
-<area shape="rect" id="node9" href="$classPatch.html#a29501cec3084e456e126cc52f6200d94" title="Patch::GetRegion" alt="" coords="283,165,408,195"/>
-<area shape="rect" id="node11" href="$classDebugOutputs.html#a6216284cb93c9693867711303a90140e" title="DebugOutputs::LeaveFunction" alt="" coords="247,219,444,248"/>
-</map>

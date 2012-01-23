@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classPatchPair.html#a4da1fc09afcd61bdc4930c2d27ca76a4" title="PatchPair::GetTargetPatch" alt="" coords="277,5,456,35"/>
-<area shape="rect" id="node5" href="$classPatchPair.html#a544323a9ec71739c23aec8560d5b1a56" title="PatchPair::GetTargetToSourceOffset" alt="" coords="248,59,485,88"/>
-<area shape="rect" id="node9" href="$classMask.html#a1906ad8a4eacc553a5e56b88b39b849a" title="Mask::IsValid" alt="" coords="316,112,417,141"/>
-<area shape="rect" id="node11" href="$classPixelPairVisitor.html#ab1bba17dd6bd009ac47a016cf01013e8" title="PixelPairVisitor::Visit" alt="" coords="295,165,439,195"/>
-<area shape="rect" id="node7" href="$classPatch.html#a29501cec3084e456e126cc52f6200d94" title="Patch::GetRegion" alt="" coords="535,59,660,88"/>
-</map>

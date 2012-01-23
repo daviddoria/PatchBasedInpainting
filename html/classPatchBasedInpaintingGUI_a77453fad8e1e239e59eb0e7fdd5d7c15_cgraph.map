@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classPatchBasedInpainting.html#aad96a6d19973d04a816bc88aba22e992" title="PatchBasedInpainting::Initialize" alt="" coords="396,5,601,35"/>
-<area shape="rect" id="node5" href="$classDebugOutputs.html#a0a63365827a79ac5d4f4ca6cdf246cfd" title="DebugOutputs::SetDebugImages" alt="" coords="392,59,605,88"/>
-<area shape="rect" id="node7" href="$classDebugOutputs.html#ab83a42fea8119b5bc3b656b30aa58563" title="DebugOutputs::SetDebugMessages" alt="" coords="383,112,615,141"/>
-<area shape="rect" id="node9" href="$classInpaintingComputationObject.html#a59d5b3f53a5008a607683f6915cbeb7a" title="InpaintingComputationObject::SetObject" alt="" coords="371,165,627,195"/>
-<area shape="rect" id="node11" href="$classPatchBasedInpainting.html#aafc3d7a9a5cef3544173ca10633d2dae" title="PatchBasedInpainting::SetPatchRadius" alt="" coords="373,219,624,248"/>
-</map>

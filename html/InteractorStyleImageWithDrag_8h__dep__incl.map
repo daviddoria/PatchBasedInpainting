@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$ImageCamera_8cpp.html" title="Interactive/ImageCamera.cpp" alt="" coords="5,83,200,112"/>
-<area shape="rect" id="node5" href="$InteractorStyleImageWithDrag_8cpp.html" title="Interactive/InteractorStyleImageWithDrag.cpp" alt="" coords="224,83,512,112"/>
-<area shape="rect" id="node7" href="$MovablePatch_8cpp.html" title="Interactive/MovablePatch.cpp" alt="" coords="536,83,731,112"/>
-<area shape="rect" id="node9" href="$PatchBasedInpaintingGUI_8cpp.html" title="Interactive/PatchBasedInpaintingGUI.cpp" alt="" coords="755,83,1016,112"/>
-<area shape="rect" id="node11" href="$PatchBasedInpaintingGUISlots_8cpp.html" title="Interactive/PatchBasedInpaintingGUISlots.cpp" alt="" coords="1040,83,1333,112"/>
-</map>

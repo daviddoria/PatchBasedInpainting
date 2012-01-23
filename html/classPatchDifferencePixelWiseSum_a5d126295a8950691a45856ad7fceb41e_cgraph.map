@@ -1,5 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classPatch.html#a29501cec3084e456e126cc52f6200d94" title="Patch::GetRegion" alt="" coords="355,5,480,35"/>
-<area shape="rect" id="node5" href="$classPatchPair.html#ad315db27ac086737d3e2d0f0c8bcdaaf" title="PatchPair::GetSourcePatch" alt="" coords="327,59,508,88"/>
-<area shape="rect" id="node7" href="$classPatchPair.html#a4da1fc09afcd61bdc4930c2d27ca76a4" title="PatchPair::GetTargetPatch" alt="" coords="328,112,507,141"/>
-</map>

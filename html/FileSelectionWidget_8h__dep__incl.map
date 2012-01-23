@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$FileSelector_8h.html" title="Interactive/FileSelector.h" alt="" coords="227,83,392,112"/>
-<area shape="rect" id="node5" href="$FileSelector_8cpp.html" title="Interactive/FileSelector.cpp" alt="" coords="5,160,187,189"/>
-<area shape="rect" id="node12" href="$FileSelectionWidget_8cpp.html" title="Interactive/Widgets/FileSelectionWidget.cpp" alt="" coords="416,83,696,112"/>
-<area shape="rect" id="node7" href="$PatchBasedInpaintingGUI_8cpp.html" title="Interactive/PatchBasedInpaintingGUI.cpp" alt="" coords="211,160,472,189"/>
-<area shape="rect" id="node9" href="$PatchBasedInpaintingGUISlots_8cpp.html" title="Interactive/PatchBasedInpaintingGUISlots.cpp" alt="" coords="496,160,789,189"/>
-</map>

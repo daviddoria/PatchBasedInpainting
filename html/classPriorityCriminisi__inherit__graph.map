@@ -1,5 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node2" href="$classPriorityOnionPeel.html" title="This class ranks the priority of a patch based on its closeness to the hole boundary." alt="" coords="5,160,195,189"/>
-<area shape="rect" id="node4" href="$classPriority.html" title="This is an abstract class that indicates the interface for Priority functions." alt="" coords="35,83,165,112"/>
-<area shape="rect" id="node6" href="$classDebugOutputs.html" title="This class enables/disables the easy output of conditional outputs." alt="" coords="47,5,153,35"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node2" href="$classPatchBasedInpainting.html" title="PatchBasedInpainting\&lt; FloatVectorImageType \&gt;" alt="" coords="52,197,356,227"/>
-<area shape="rect" id="node4" href="$classDebugOutputs.html" title="This class enables/disables the easy output of conditional outputs." alt="" coords="5,101,112,131"/>
-<area shape="rect" id="node6" href="$classITKImageCollection.html" title="ITKImageCollection" alt="" coords="136,101,272,131"/>
-<area shape="rect" id="node8" href="$classSourcePatchCollection.html" title="This class stores several fully valid Patch objects." alt="" coords="296,101,451,131"/>
-<area shape="rect" id="node10" href="$classMask.html" title="This class is a subclass of itkImage that provides the concept of &quot;valid&quot; pixels and hole pixels..." alt="" coords="347,5,400,35"/>
-</map>
