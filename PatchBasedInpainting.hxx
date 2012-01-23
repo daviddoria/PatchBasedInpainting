@@ -125,10 +125,31 @@ void PatchBasedInpainting<TImage>::Initialize()
     }
 
   // If the user hasn't specified a priority function, use the simplest one.
-  if(!this->ItemCreatorObject)
+//   if(!this->ItemCreatorObject)
+//     {
+//     throw std::runtime_error("You must specify an ItemCreator to use!");
+//     }
+
+  // Create the grid_graph from the image. 
+  // TODO:
+
+  // Find and add the boundary nodes.
+  SortByPriority<GraphType> sortByPriority;
+  this->BoundaryNodes = BoundaryNodeSetType(sortByPriority);
+  // TODO: How to set the comparsion function for this->BoundaryNodes at this point?
+  UnsignedCharScalarImageType::Pointer boundaryImage = UnsignedCharScalarImageType::New();
+  this->MaskImage->FindBoundary(boundaryImage);
+  std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetNonZeroPixels(boundaryImage.GetPointer());
+
+  // Add the vertex_descriptor for every boundary pixel to the set of boundary nodes
+  for(unsigned int pixelId = 0; pixelId < boundaryPixels.size(); ++pixelId)
     {
-    throw std::runtime_error("You must specify an ItemCreator to use!");
+    VertexDescriptor boundaryDescriptor = { { boundaryPixels[pixelId][0], boundaryPixels[pixelId][0] } };
+
+    this->BoundaryNodes.insert(boundaryDescriptor);
     }
+    
+  
 
   this->ItemImage = ItemImageType::New();
   this->ItemImage->SetRegions(this->FullImageRegion);
@@ -187,11 +208,28 @@ void PatchBasedInpainting<TImage>::SetDifferenceVisitor(ItemDifferenceVisitor* c
 template <typename TImage>
 SourceTargetPair PatchBasedInpainting<TImage>::Iterate()
 {
-  itk::ImageRegion<2> targetRegion = DetermineRegionToFill();
+  // This gets the node at the "front" of the "queue" (it is actually a set, but the elements are still sorted).
+  VertexDescriptor targetNode;
+  for(typename BoundaryNodeSetType::iterator iterator = this->BoundaryNodes.begin(); iterator != this->BoundaryNodes.end(); iterator++)
+    {
+    targetNode = *iterator;
+    }
 
-  itk::ImageRegion<2> sourceRegion = FindBestMatch(ITKHelpers::GetRegionCenter(targetRegion));
+  // TODO: how to call this?
+  VertexDescriptor sourceNode;
+  //VertexDescriptor sourceNode = FindBestMatch(ITKHelpers::GetRegionCenter(targetRegion));
 
   // Copy the patch. This is the actual inpainting step.
+  itk::Index<2> targetPixel;
+  targetPixel[0] = targetNode[0];
+  targetPixel[1] = targetNode[1];
+  itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, this->GetPatchRadius());
+  
+  itk::Index<2> sourcePixel;
+  sourcePixel[0] = sourceNode[0];
+  sourcePixel[1] = sourceNode[1];
+  itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, this->GetPatchRadius());
+  
   ITKHelpers::CopySelfRegion(this->CurrentInpaintedImage, sourceRegion, targetRegion);
 
   // Update the mask
@@ -209,20 +247,8 @@ SourceTargetPair PatchBasedInpainting<TImage>::Iterate()
 }
 
 template <typename TImage>
-itk::ImageRegion<2> PatchBasedInpainting<TImage>::DetermineRegionToFill()
-{
-//   PrioritySearchHighest prioritySearchHighest;
-//   itk::Index<2> pixelToFill = prioritySearchHighest.FindHighestPriority(this->BoundaryPixels, this->PriorityFunction.get());
-// 
-//   itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
-// 
-//   return targetRegion;
-}
-
-template <typename TImage>
 void PatchBasedInpainting<TImage>::Inpaint()
 {
-  EnterFunction("Inpaint()");
   // This function is intended to be used by the command line version.
   // It will do the complete inpainting without updating any UI or the ability to stop before it is complete.
 
@@ -234,30 +260,12 @@ void PatchBasedInpainting<TImage>::Inpaint()
     {
     Iterate();
     }
-  //std::cout << "Finished inpainting." << std::endl;
-  LeaveFunction("Inpaint()");
-
 }
 
 template <typename TImage>
 bool PatchBasedInpainting<TImage>::HasMoreToInpaint()
 {
-  HelpersOutput::WriteImageConditional<Mask>(this->MaskImage, "Debug/HasMoreToInpaint.input.png", this->DebugImages);
-
-  itk::ImageRegionIterator<Mask> maskIterator(this->MaskImage, this->MaskImage->GetLargestPossibleRegion());
-
-  while(!maskIterator.IsAtEnd())
-    {
-    if(this->MaskImage->IsHole(maskIterator.GetIndex()))
-      {
-      return true;
-      }
-
-    ++maskIterator;
-    }
-
-  // If no pixels were holes, then we don't have any more to inpaint.
-  return false;
+  return this->BoundaryPixels.empty();
 }
 
 template <typename TImage>

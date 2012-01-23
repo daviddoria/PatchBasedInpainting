@@ -111,6 +111,8 @@ private:
                                     boost::property< boost::vertex_image_patch_t, ImagePatchPixelDescriptor<TImage> > > > //VertexProperties
                               > GraphType;
 
+  typedef typename boost::graph_traits<GraphType>::vertex_descriptor VertexDescriptor;
+
   /** Find the best source patch.*/
   itk::ImageRegion<2> FindBestMatch(const itk::Index<2>& targetPixel);
 
@@ -120,9 +122,6 @@ private:
   /** Change the color of the input image.*/
   void ColorImageInsideHole();
 
-  /** Find the best target patch to fill.*/
-  virtual itk::ImageRegion<2> DetermineRegionToFill();
-
   /** The intermediate steps and eventually the result of the inpainting.*/
   typename TImage::Pointer CurrentInpaintedImage;
 
@@ -130,7 +129,8 @@ private:
   Mask::Pointer MaskImage;
 
   /** The pixels on the current boundary.*/
-  std::set<typename boost::graph_traits<GraphType>::vertex_descriptor, SortByPriority<GraphType> > BoundaryPixels;
+  typedef std::set<VertexDescriptor, SortByPriority<GraphType> > BoundaryNodeSetType;
+  BoundaryNodeSetType BoundaryNodes;
 
   /** The patch radius.*/
   itk::Size<2> PatchRadius;
