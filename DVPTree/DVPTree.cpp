@@ -58,7 +58,8 @@ int main(int argc, char *argv[])
     queryPoint[dim] = 5.2;
     }
 
-  nearestNeighborFinder(queryPoint, g, myTopology, positionMap);
+  VertexType nearestNeighbor = nearestNeighborFinder(queryPoint, g, myTopology, positionMap);
+  std::cout << "nearestNeighbor: " << nearestNeighbor << std::endl;
 
   return 0;
 }
