@@ -145,9 +145,6 @@ template <typename TImage>
 void PatchBasedInpainting<TImage>::InitializeBoundaryNodes()
 {
   // Find and add the boundary nodes.
-  SortByPriority<GraphType> sortByPriority;
-  this->BoundaryNodes = BoundaryNodeSetType(sortByPriority);
-  // TODO: How to set the comparsion function for this->BoundaryNodes at this point?
   UnsignedCharScalarImageType::Pointer boundaryImage = UnsignedCharScalarImageType::New();
   this->MaskImage->FindBoundary(boundaryImage);
   std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetNonZeroPixels(boundaryImage.GetPointer());
@@ -193,6 +190,8 @@ void PatchBasedInpainting<TImage>::AddNewObjectsInRegion(const itk::ImageRegion<
 //     this->ItemImage->SetPixel(centerPixel, newItem);
 //     ++iterator;
     }
+   
+  // TODO: also add these new objects to the DVP tree (I know how to do this).
 }
 
 template <typename TImage>
@@ -204,7 +203,7 @@ typename PatchBasedInpainting<TImage>::VertexDescriptor PatchBasedInpainting<TIm
 
   TopologyPointType queryPoint;
   
-  // TODO: get the object from the VertexDescriptor
+  // TODO: How to get the object from the VertexDescriptor?
 
   //VertexType nearestNeighbor = nearestNeighborFinder(queryPoint, g, this->Topology, positionMap);
 }
@@ -225,9 +224,7 @@ SourceTargetPair PatchBasedInpainting<TImage>::Iterate()
     targetNode = *iterator;
     }
 
-  // TODO: how to call this?
-  VertexDescriptor sourceNode;
-  //VertexDescriptor sourceNode = FindBestMatch(ITKHelpers::GetRegionCenter(targetRegion));
+  VertexDescriptor sourceNode = FindBestMatch(targetNode);
 
   // Copy the patch. This is the actual inpainting step.
   itk::Index<2> targetPixel;
@@ -254,7 +251,7 @@ SourceTargetPair PatchBasedInpainting<TImage>::Iterate()
 
   AddBoundaryNodes(targetRegion);
 
-  // TODO: remove the node that was used and all nodes that are no longer on the boundary from this->BoundaryNodes
+  // TODO: remove the node that was used and all nodes that are no longer on the boundary from this->BoundaryNodes ( I know how to do this).
 
   SourceTargetPair sourceTargetPair(targetRegion, sourceRegion);
   return sourceTargetPair;
@@ -263,7 +260,7 @@ SourceTargetPair PatchBasedInpainting<TImage>::Iterate()
 template <typename TImage>
 void PatchBasedInpainting<TImage>::AddBoundaryNodes(const itk::ImageRegion<2>& region)
 {
-  // TODO: traverse the boundary of the region
+  // TODO: traverse the boundary of the region (I know how to do this)
   // for pixels that have a masked neighbor, add a node to this->BoundaryNodes
 }
 
