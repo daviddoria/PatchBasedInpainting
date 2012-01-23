@@ -133,6 +133,17 @@ void PatchBasedInpainting<TImage>::Initialize()
   // Create the grid_graph from the image. 
   // TODO:
 
+
+  
+
+  AddNewObjectsInRegion(this->MaskImage->GetLargestPossibleRegion());
+
+  this->NumberOfCompletedIterations = 0;
+}
+
+template <typename TImage>
+void PatchBasedInpainting<TImage>::InitializeBoundaryNodes()
+{
   // Find and add the boundary nodes.
   SortByPriority<GraphType> sortByPriority;
   this->BoundaryNodes = BoundaryNodeSetType(sortByPriority);
@@ -148,12 +159,12 @@ void PatchBasedInpainting<TImage>::Initialize()
 
     this->BoundaryNodes.insert(boundaryDescriptor);
     }
-    
-  
+}
 
-  this->ItemImage = ItemImageType::New();
-  this->ItemImage->SetRegions(this->FullImageRegion);
-  this->ItemImage->Allocate();
+template <typename TImage>
+void PatchBasedInpainting<TImage>::InitializeDVPTree()
+{
+  // Setup the DVP tree
 
   itk::ImageRegionIterator<ItemImageType> iterator(this->ItemImage, this->ItemImage->GetLargestPossibleRegion());
 
@@ -162,10 +173,17 @@ void PatchBasedInpainting<TImage>::Initialize()
     iterator.Set(NULL);
     ++iterator;
     }
-
-  AddNewObjectsInRegion(this->MaskImage->GetLargestPossibleRegion());
-
-  this->NumberOfCompletedIterations = 0;
+    
+  // Add vertices to the graph and corresponding points
+  for(unsigned int vertexId = 0; vertexId < numberOfVertices; ++vertexId)
+  {
+    TreePointType p;
+    for(unsigned int dim = 0; dim < dimension; ++dim)
+      {
+      p[dim] = vertexId;
+      }
+    boost::put(positionMap, v, p); // segfault on this line
+  };
 }
 
 template <typename TImage>

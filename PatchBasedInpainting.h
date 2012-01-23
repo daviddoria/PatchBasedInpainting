@@ -27,6 +27,7 @@
 #include "ItemDifferenceVisitor.h"
 #include "ITKImageCollection.h"
 #include "Mask.h"
+#include "metric_space_search.hpp"
 #include "ImagePatchPixelDescriptor.h"
 #include "PixelCollection.h"
 #include "PatchPair.h"
@@ -34,6 +35,7 @@
 #include "SourcePatchCollection.h"
 #include "SourceTargetPair.h"
 #include "SortByPriority.h"
+#include "Topologies.h"
 #include "Types.h"
 
 // Boost
@@ -84,6 +86,8 @@ public:
 
   /** Initialize everything.*/
   void Initialize();
+  void InitializeBoundaryNodes();
+  void InitializeDVPTree();
 
   /** Determine whether or not the inpainting is completed by seeing if there are any pixels in the mask that still need to be filled.*/
   bool HasMoreToInpaint();
@@ -103,15 +107,19 @@ public:
 
 private:
 
-  typedef boost::adjacency_list<boost::vecS, //OutEdgeList
-                              boost::vecS,// VertexList
-                              boost::undirectedS, //Directed,
-                              boost::property< boost::vertex_feature_vector_t, std::vector<float>,
-                                    boost::property< boost::vertex_priority_t, float ,
-                                    boost::property< boost::vertex_image_patch_t, ImagePatchPixelDescriptor<TImage> > > > //VertexProperties
-                              > GraphType;
+//   typedef boost::adjacency_list<boost::vecS, //OutEdgeList
+//                               boost::vecS,// VertexList
+//                               boost::undirectedS, //Directed,
+//                               boost::property< boost::vertex_feature_vector_t, std::vector<float>,
+//                                     boost::property< boost::vertex_priority_t, float ,
+//                                     boost::property< boost::vertex_image_patch_t, ImagePatchPixelDescriptor<TImage> > > > //VertexProperties
+//                               > GraphType;
 
+  typedef boost::grid_graph<2> GraphType;
   typedef typename boost::graph_traits<GraphType>::vertex_descriptor VertexDescriptor;
+
+  typedef dvp_tree<VertexDescriptor, FeatureVectorTopology, boost::property_map<GraphType, boost::vertex_feature_vector_t>::type > TreeType;
+  typedef TopologyType::point_type TreePointType;
 
   /** Find the best source patch.*/
   itk::ImageRegion<2> FindBestMatch(const itk::Index<2>& targetPixel);
