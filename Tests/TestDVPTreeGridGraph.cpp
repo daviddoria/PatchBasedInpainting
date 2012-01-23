@@ -49,9 +49,9 @@ int main(int argc, char *argv[])
   // Prefer to initialize the DVP-tree with a filled graph, this way, the entire DVP-tree will be initialized at once (gets best results).
   TreeType tree(graph, myTopology, myMap);
 
-  /*
-  multi_dvp_tree_search<Graph, TreeType> nearestNeighborFinder;
-  nearestNeighborFinder.graph_tree_map[&g] = &tree;
+  
+  multi_dvp_tree_search<GraphType, TreeType> nearestNeighborFinder;
+  nearestNeighborFinder.graph_tree_map[&graph] = &tree;
 
   PointType queryPoint;
   for(unsigned int dim = 0; dim < dimension; ++dim)
@@ -59,8 +59,8 @@ int main(int argc, char *argv[])
     queryPoint[dim] = 5.2;
     }
 
-  VertexType nearestNeighbor = nearestNeighborFinder(queryPoint, g, myTopology, positionMap);
-  std::cout << "nearestNeighbor: " << nearestNeighbor << std::endl;*/
+  VertexDescriptor nearestNeighbor = nearestNeighborFinder(queryPoint, graph, myTopology, myMap);
+  std::cout << "nearestNeighbor[0]: " << nearestNeighbor[0] << std::endl;
 
   return 0;
 }

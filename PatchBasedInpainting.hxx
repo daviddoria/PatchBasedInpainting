@@ -40,7 +40,7 @@
 #include <iostream>
 
 template <typename TImage>
-PatchBasedInpainting<TImage>::PatchBasedInpainting(const TImage* const image, const Mask* const mask)
+PatchBasedInpainting<TImage>::PatchBasedInpainting(const TImage* const image, const Mask* const mask) : Graph(NULL), DVPTree(NULL), PriorityFunction(NULL)
 {
   EnterFunction("PatchBasedInpainting()");
 
@@ -66,8 +66,6 @@ PatchBasedInpainting<TImage>::PatchBasedInpainting(const TImage* const image, co
 
   // Set defaults
   this->NumberOfCompletedIterations = 0;
-
-  this->PriorityFunction = NULL; // Can't initialize this here, must wait until the image and mask are opened
 }
 
 template <typename TImage>
@@ -131,10 +129,12 @@ void PatchBasedInpainting<TImage>::Initialize()
 //     }
 
   // Create the grid_graph from the image. 
-  // TODO:
+  boost::array<std::size_t, 2> lengths = { { this->GetFullRegion().GetIndex()[0], this->GetFullRegion().GetIndex()[0] } };
+  this->Graph = new GraphType(lengths);
 
+  InitializeBoundaryNodes();
 
-  
+  InitializeDVPTree();
 
   AddNewObjectsInRegion(this->MaskImage->GetLargestPossibleRegion());
 
@@ -164,26 +164,21 @@ void PatchBasedInpainting<TImage>::InitializeBoundaryNodes()
 template <typename TImage>
 void PatchBasedInpainting<TImage>::InitializeDVPTree()
 {
-  // Setup the DVP tree
-
-  itk::ImageRegionIterator<ItemImageType> iterator(this->ItemImage, this->ItemImage->GetLargestPossibleRegion());
+  itk::ImageRegionConstIteratorWithIndex<ItemImageType> iterator(this->ItemImage, this->ItemImage->GetLargestPossibleRegion());
 
   while(!iterator.IsAtEnd())
     {
-    iterator.Set(NULL);
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(iterator.GetIndex(), this->PatchRadius);
+    if(this->MaskImage->IsValid(region))
+      {
+      TopologyPointType p;
+      // TODO: How to create an object here?
+      // boost::put(positionMap, v, p);
+      }
     ++iterator;
     }
-    
-  // Add vertices to the graph and corresponding points
-  for(unsigned int vertexId = 0; vertexId < numberOfVertices; ++vertexId)
-  {
-    TreePointType p;
-    for(unsigned int dim = 0; dim < dimension; ++dim)
-      {
-      p[dim] = vertexId;
-      }
-    boost::put(positionMap, v, p); // segfault on this line
-  };
+
+  //this->DVPTree = new DVPTreeType(this->Graph, this->GraphTopology, positionMap);
 }
 
 template <typename TImage>
@@ -201,20 +196,17 @@ void PatchBasedInpainting<TImage>::AddNewObjectsInRegion(const itk::ImageRegion<
 }
 
 template <typename TImage>
-itk::ImageRegion<2> PatchBasedInpainting<TImage>::FindBestMatch(const itk::Index<2>& targetPixel)
+typename PatchBasedInpainting<TImage>::VertexDescriptor PatchBasedInpainting<TImage>::FindBestMatch(const VertexDescriptor& queryNode)
 {
-  //ItemDifferenceVisitor itemDifferenceVisitor(this->ItemImage->GetPixel(targetPixel), this->ItemDifferenceMap);
-//   assert(this->DifferenceVisitor);
-//   this->DifferenceVisitor->SetItemToCompare(this->ItemImage->GetPixel(targetPixel));
-//   this->DifferenceVisitor->SetDifferenceMap(this->ItemDifferenceMap);
-// 
-//   ValidPixelIterator<ItemImageType> validPixelIterator(this->ItemImage, this->ItemImage->GetLargestPossibleRegion());
-// 
-//   for(ValidPixelIterator<ItemImageType>::ConstIterator iterator = validPixelIterator.begin(); iterator != validPixelIterator.end(); ++iterator)
-//     {
-//     this->DifferenceVisitor->Visit(this->ItemImage->GetPixel(*iterator));
-//     ++iterator;
-//     }
+  
+  multi_dvp_tree_search<GraphType, DVPTreeType> nearestNeighborFinder;
+  nearestNeighborFinder.graph_tree_map[this->Graph] = this->DVPTree;
+
+  TopologyPointType queryPoint;
+  
+  // TODO: get the object from the VertexDescriptor
+
+  //VertexType nearestNeighbor = nearestNeighborFinder(queryPoint, g, this->Topology, positionMap);
 }
 
 template <typename TImage>
@@ -260,8 +252,19 @@ SourceTargetPair PatchBasedInpainting<TImage>::Iterate()
 
   AddNewObjectsInRegion(targetRegion);
 
+  AddBoundaryNodes(targetRegion);
+
+  // TODO: remove the node that was used and all nodes that are no longer on the boundary from this->BoundaryNodes
+
   SourceTargetPair sourceTargetPair(targetRegion, sourceRegion);
   return sourceTargetPair;
+}
+
+template <typename TImage>
+void PatchBasedInpainting<TImage>::AddBoundaryNodes(const itk::ImageRegion<2>& region)
+{
+  // TODO: traverse the boundary of the region
+  // for pixels that have a masked neighbor, add a node to this->BoundaryNodes
 }
 
 template <typename TImage>

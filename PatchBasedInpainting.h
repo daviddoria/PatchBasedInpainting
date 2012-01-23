@@ -116,16 +116,30 @@ private:
 //                               > GraphType;
 
   typedef boost::grid_graph<2> GraphType;
+
+  // GraphType Graph; // grid_graph has the default constructor private
+  GraphType* Graph;
+
   typedef typename boost::graph_traits<GraphType>::vertex_descriptor VertexDescriptor;
 
-  typedef dvp_tree<VertexDescriptor, FeatureVectorTopology, boost::property_map<GraphType, boost::vertex_feature_vector_t>::type > TreeType;
-  typedef TopologyType::point_type TreePointType;
+  typedef boost::property_map<GraphType, boost::vertex_index_t>::const_type VertexIndexMapType;
+  typedef dvp_tree<VertexDescriptor, FeatureVectorTopology, VertexIndexMapType> DVPTreeType;
+
+  // DVPTreeType DVPTree; // no default constructor
+  DVPTreeType* DVPTree;
+
+  typedef FeatureVectorTopology::point_type TopologyPointType;
+
+  FeatureVectorTopology GraphTopology;
 
   /** Find the best source patch.*/
-  itk::ImageRegion<2> FindBestMatch(const itk::Index<2>& targetPixel);
+  VertexDescriptor FindBestMatch(const VertexDescriptor& queryNode);
 
   /** Create objects that are valid and not yet created.*/
   void AddNewObjectsInRegion(const itk::ImageRegion<2>& region);
+  
+  /** Create boundary nodes for points on the boundary of the 'region' that are touching the hole.*/
+  void AddBoundaryNodes(const itk::ImageRegion<2>& region);
 
   /** Change the color of the input image.*/
   void ColorImageInsideHole();
@@ -136,8 +150,12 @@ private:
   /** The mask specifying the region to inpaint. It is updated as patches are copied.*/
   Mask::Pointer MaskImage;
 
+  /** An exterior property to store the priority at each node. */
+  std::vector<float> BoundaryNodePriority;
+
   /** The pixels on the current boundary.*/
-  typedef std::set<VertexDescriptor, SortByPriority<GraphType> > BoundaryNodeSetType;
+  typedef std::pair<VertexDescriptor, float> PrioritizedNode;
+  typedef std::set<PrioritizedNode, SortByPriority<PrioritizedNode> > BoundaryNodeSetType;
   BoundaryNodeSetType BoundaryNodes;
 
   /** The patch radius.*/
