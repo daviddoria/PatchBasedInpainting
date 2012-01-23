@@ -1,15 +1,16 @@
 cmake_minimum_required(VERSION 2.6)
 PROJECT(PatchBasedInpainting)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")# -std=gnu++0x") # ITK headers don't seem to compile under C++0x
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")# -std=gnu++0x") # ITK headers don't seem to compile under C++0x
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x") # I believe this is fixed in git master. (git clone git://itk.org/ITK.git)
 
 FIND_PACKAGE(ITK REQUIRED)
 INCLUDE(${ITK_USE_FILE})
 
-add_executable(PatchBasedInpainting Driver.cpp Mask.cpp PriorityOnionPeel.cpp)
-target_link_libraries(PatchBasedInpainting ${ITK_LIBRARIES})
-
-add_executable(PropertyMapDemoRevised PropertyMapDemoRevised.cpp)
-target_link_libraries(PropertyMapDemoRevised )
-
+# add_executable(PatchBasedInpainting Driver.cpp Mask.cpp PriorityOnionPeel.cpp)
+# target_link_libraries(PatchBasedInpainting ${ITK_LIBRARIES})
+# 
+# add_executable(PropertyMapDemoRevised PropertyMapDemoRevised.cpp)
+# target_link_libraries(PropertyMapDemoRevised )
+# 
 add_subdirectory(DVPTree)
