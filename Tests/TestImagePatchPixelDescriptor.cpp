@@ -16,7 +16,7 @@
  *
  *=========================================================================*/
 
-#include "ImagePatchItem.h"
+#include "ImagePatchPixelDescriptor.h"
 
 #include <stdexcept>
 
@@ -37,7 +37,7 @@ int main(int argc, char*argv[])
 
   itk::ImageRegion<2> region0(corner0, patchSize);
   UnsignedCharScalarImageType::Pointer image = UnsignedCharScalarImageType::New();
-  ImagePatchItem<UnsignedCharScalarImageType> patch0(image.GetPointer(), region0);
+  ImagePatchPixelDescriptor<UnsignedCharScalarImageType> patch0(image.GetPointer(), region0);
 
   if(patch0.GetRegion() != region0)
     {
@@ -68,7 +68,7 @@ int main(int argc, char*argv[])
   corner1.Fill(5);
 
   itk::ImageRegion<2> region1(corner1, patchSize);
-  ImagePatchItem<UnsignedCharScalarImageType> patch1(image.GetPointer(), region1);
+  ImagePatchPixelDescriptor<UnsignedCharScalarImageType> patch1(image.GetPointer(), region1);
 
   if(patch0 == patch1)
     {

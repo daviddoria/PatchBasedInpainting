@@ -16,10 +16,10 @@
  *
  *=========================================================================*/
 
-#ifndef ImagePatchItem_hxx
-#define ImagePatchItem_hxx
+#ifndef ImagePatchPixelDescriptor_hxx
+#define ImagePatchPixelDescriptor_hxx
 
-#include "ImagePatchItem.h" // Appease syntax parser
+#include "ImagePatchPixelDescriptor.h" // Appease syntax parser
 
 #include "Mask.h"
 
@@ -28,7 +28,7 @@
 #include "itkImageRegionConstIterator.h"
 
 template <typename TImage>
-void ImagePatchItem<TImage>::VisitAllPixels(const TImage* const image, PixelVisitor<typename TImage::PixelType> &visitor)
+void ImagePatchPixelDescriptor<TImage>::VisitAllPixels(const TImage* const image, PixelVisitor<typename TImage::PixelType> &visitor)
 {
   itk::ImageRegionConstIterator<TImage> imageIterator(image, this->Region);
 
@@ -41,20 +41,20 @@ void ImagePatchItem<TImage>::VisitAllPixels(const TImage* const image, PixelVisi
 
 
 template <typename TImage>
-float ImagePatchItem<TImage>::Compare(const Item* const item) const
+float ImagePatchPixelDescriptor<TImage>::Compare(const ImagePatchPixelDescriptor* const item) const
 {
   // TODO: Implement this.
   return 0.0f;
 }
 
 template <typename TImage>
-TImage* ImagePatchItem<TImage>::GetImage() const
+TImage* ImagePatchPixelDescriptor<TImage>::GetImage() const
 {
   return this->Image;
 }
 
 template <typename TImage>
-void ImagePatchItem<TImage>::VisitAllValidPixels(const TImage* const image, const Mask* const mask, PixelVisitor<typename TImage::PixelType> &visitor)
+void ImagePatchPixelDescriptor<TImage>::VisitAllValidPixels(const TImage* const image, const Mask* const mask, PixelVisitor<typename TImage::PixelType> &visitor)
 {
   itk::ImageRegionConstIteratorWithIndex<TImage> imageIterator(image, this->Region);
 
@@ -69,7 +69,7 @@ void ImagePatchItem<TImage>::VisitAllValidPixels(const TImage* const image, cons
 }
 
 template <typename TImage>
-void ImagePatchItem<TImage>::VisitOffsets(const TImage* const image, const std::vector<itk::Offset<2> >& offsets, PixelVisitor<typename TImage::PixelType> &visitor)
+void ImagePatchPixelDescriptor<TImage>::VisitOffsets(const TImage* const image, const std::vector<itk::Offset<2> >& offsets, PixelVisitor<typename TImage::PixelType> &visitor)
 {
   itk::Index<2> corner = this->Region.GetIndex();
 
@@ -80,32 +80,32 @@ void ImagePatchItem<TImage>::VisitOffsets(const TImage* const image, const std::
 }
 
 template <typename TImage>
-ImagePatchItem<TImage>::ImagePatchItem(const TImage* const image, const itk::ImageRegion<2>& region)
+ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor(const TImage* const image, const itk::ImageRegion<2>& region)
 {
   this->Region = region;
 }
 
 template <typename TImage>
-itk::Index<2> ImagePatchItem<TImage>::GetCorner() const
+itk::Index<2> ImagePatchPixelDescriptor<TImage>::GetCorner() const
 {
   return this->Region.GetIndex();
 }
 
 template <typename TImage>
-itk::ImageRegion<2> ImagePatchItem<TImage>::GetRegion() const
+itk::ImageRegion<2> ImagePatchPixelDescriptor<TImage>::GetRegion() const
 {
   return this->Region;
 }
 
 template <typename TImage>
-std::ostream& operator<<(std::ostream& output, const ImagePatchItem<TImage> &patch)
+std::ostream& operator<<(std::ostream& output, const ImagePatchPixelDescriptor<TImage> &patch)
 {
   output << "Patch: " << patch.GetRegion() << std::endl;
   return output;
 }
 
 template <typename TImage>
-bool ImagePatchItem<TImage>::operator==(const ImagePatchItem& other) const
+bool ImagePatchPixelDescriptor<TImage>::operator==(const ImagePatchPixelDescriptor& other) const
 {
   if(this->Region == other.Region)
     {
@@ -115,13 +115,13 @@ bool ImagePatchItem<TImage>::operator==(const ImagePatchItem& other) const
 }
 
 template <typename TImage>
-bool ImagePatchItem<TImage>::operator!=(const ImagePatchItem& other) const
+bool ImagePatchPixelDescriptor<TImage>::operator!=(const ImagePatchPixelDescriptor& other) const
 {
   return !operator==(other);
 }
 
 template <typename TImage>
-bool ImagePatchItem<TImage>::operator<(const ImagePatchItem& other) const
+bool ImagePatchPixelDescriptor<TImage>::operator<(const ImagePatchPixelDescriptor& other) const
 {
   // TODO: Use the itk::Index LexicalCompare functor
   if(this->Region.GetIndex()[0] < other.Region.GetIndex()[0])

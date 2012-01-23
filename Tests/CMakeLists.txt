@@ -19,21 +19,17 @@ add_executable(TestPixelWiseDifferencePatchPairVisitor TestPixelWiseDifferencePa
 target_link_libraries(TestPixelWiseDifferencePatchPairVisitor ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
 add_test(TestPixelWiseDifferencePatchPairVisitor TestPixelWiseDifferencePatchPairVisitor)
 
-add_executable(TestImagePatchItem TestImagePatchItem.cpp ../ImagePatchItem.cpp)
-target_link_libraries(TestImagePatchItem ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-add_test(TestImagePatchItem TestImagePatchItem)
-
-add_executable(TestScalarItem TestScalarItem.cpp)
-target_link_libraries(TestScalarItem ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-add_test(TestScalarItem TestScalarItem)
+add_executable(TestImagePatchPixelDescriptor TestImagePatchPixelDescriptor.cpp)
+target_link_libraries(TestImagePatchPixelDescriptor ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+add_test(TestImagePatchPixelDescriptor TestImagePatchPixelDescriptor)
 
 add_executable(TestItemDifferenceVisitor TestItemDifferenceVisitor.cpp ../PatchPairDifferences.cpp)
 target_link_libraries(TestItemDifferenceVisitor ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 add_test(TestItemDifferenceVisitor TestItemDifferenceVisitor)
 
-add_executable(TestPointCloudDescriptorCreator TestPointCloudDescriptorCreator.cpp)
-target_link_libraries(TestPointCloudDescriptorCreator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
-add_test(TestPointCloudDescriptorCreator TestPointCloudDescriptorCreator)
+# add_executable(TestPointCloudDescriptorCreator TestPointCloudDescriptorCreator.cpp)
+# target_link_libraries(TestPointCloudDescriptorCreator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
+# add_test(TestPointCloudDescriptorCreator TestPointCloudDescriptorCreator)
 
 add_executable(TestPixelCollection TestPixelCollection.cpp ../PixelCollection.cpp)
 target_link_libraries(TestPixelCollection ${ITK_LIBRARIES})
@@ -47,9 +43,9 @@ add_executable(TestPatchPair TestPatchPair.cpp ../ImagePatchItem.cpp ../PatchPai
 target_link_libraries(TestPatchPair ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 add_test(TestPatchPair TestPatchPair)
 
-add_executable(TestImagePatchCreator TestImagePatchCreator.cpp)
-target_link_libraries(TestImagePatchCreator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
-add_test(TestImagePatchCreator TestImagePatchCreator)
+# add_executable(TestImagePatchCreator TestImagePatchCreator.cpp)
+# target_link_libraries(TestImagePatchCreator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
+# add_test(TestImagePatchCreator TestImagePatchCreator)
 
 add_executable(TestPatchPairDifferences TestPatchPairDifferences.cpp ../PatchPairDifferences.cpp)
 target_link_libraries(TestPatchPairDifferences ${VTK_LIBRARIES} ${ITK_LIBRARIES})

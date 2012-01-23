@@ -27,17 +27,34 @@
 #include "ItemDifferenceVisitor.h"
 #include "ITKImageCollection.h"
 #include "Mask.h"
-#include "ImagePatchItem.h"
+#include "ImagePatchPixelDescriptor.h"
 #include "PixelCollection.h"
 #include "PatchPair.h"
 #include "Priority.h"
 #include "SourcePatchCollection.h"
 #include "SourceTargetPair.h"
+#include "SortByPriority.h"
 #include "Types.h"
+
+// Boost
+#include <boost/graph/grid_graph.hpp>
 
 // ITK
 #include "itkCovariantVector.h"
 #include "itkImage.h"
+
+// Create tags for the properties in the graphs:
+namespace boost {
+
+enum vertex_feature_vector_t { vertex_feature_vector };
+enum vertex_image_patch_t { vertex_image_patch };
+//enum vertex_priority_t { vertex_priority }; // Priority is already defined in graph/properties.hpp
+
+BOOST_INSTALL_PROPERTY(vertex,feature_vector);
+BOOST_INSTALL_PROPERTY(vertex,image_patch);
+//BOOST_INSTALL_PROPERTY(vertex,priority);
+
+};
 
 /**
 \class PatchBasedInpainting
@@ -86,6 +103,14 @@ public:
 
 private:
 
+  typedef boost::adjacency_list<boost::vecS, //OutEdgeList
+                              boost::vecS,// VertexList
+                              boost::undirectedS, //Directed,
+                              boost::property< boost::vertex_feature_vector_t, std::vector<float>,
+                                    boost::property< boost::vertex_priority_t, float ,
+                                    boost::property< boost::vertex_image_patch_t, ImagePatchPixelDescriptor<TImage> > > > //VertexProperties
+                              > GraphType;
+
   /** Find the best source patch.*/
   itk::ImageRegion<2> FindBestMatch(const itk::Index<2>& targetPixel);
 
@@ -105,7 +130,7 @@ private:
   Mask::Pointer MaskImage;
 
   /** The pixels on the current boundary.*/
-  PixelCollection BoundaryPixels;
+  std::set<typename boost::graph_traits<GraphType>::vertex_descriptor, SortByPriority<GraphType> > BoundaryPixels;
 
   /** The patch radius.*/
   itk::Size<2> PatchRadius;
@@ -118,9 +143,6 @@ private:
 
   /** The Priority function to use.*/
   std::shared_ptr<Priority> PriorityFunction;
-
-  /** The ItemCreator to use.*/
-  std::shared_ptr<ItemCreator> ItemCreatorObject;
 
   typedef itk::Image<std::shared_ptr<Item>, 2> ItemImageType;
   ItemImageType::Pointer ItemImage;

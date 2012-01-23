@@ -18,7 +18,7 @@
 
 #include "PatchBasedInpainting.h"
 #include "Testing.h"
-#include "ItemDifferenceVisitor.h"
+//#include "ItemDifferenceVisitor.h"
 
 int main()
 {
@@ -30,7 +30,7 @@ int main()
 
   PatchBasedInpainting<FloatVectorImageType> patchBasedInpainting(image, mask);
 
-  ItemDifferenceVisitor itemDifferenceVisitor;
-  patchBasedInpainting.SetDifferenceVisitor(&itemDifferenceVisitor);
+//   ItemDifferenceVisitor itemDifferenceVisitor;
+//   patchBasedInpainting.SetDifferenceVisitor(&itemDifferenceVisitor);
   return EXIT_SUCCESS;
 }

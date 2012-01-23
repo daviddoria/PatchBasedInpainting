@@ -16,35 +16,34 @@
  *
  *=========================================================================*/
 
-#ifndef ImagePatchItem_H
-#define ImagePatchItem_H
+#ifndef ImagePatchPixelDescriptor_H
+#define ImagePatchPixelDescriptor_H
 
-#include "Item.h"
 #include "PixelVisitor.h"
 #include "Types.h"
 
 class Mask;
 
 /**
-\class ImagePatch
+\class ImagePatchPixelDescriptor
 \brief This class indicates a rectangular region in an image.
 */
 template <typename TImage>
-class ImagePatchItem : public Item
+class ImagePatchPixelDescriptor
 {
 public:
 
   /** Construct a patch from a region.*/
-  ImagePatchItem(const TImage* const image, const itk::ImageRegion<2>& region);
+  ImagePatchPixelDescriptor(const TImage* const image, const itk::ImageRegion<2>& region);
 
   /** Compute the difference to another ImagePatch.*/
-  float Compare(const Item* const item) const;
+  float Compare(const ImagePatchPixelDescriptor* const item) const;
   
   /** Check if two patches are the same.*/
-  bool operator==(const ImagePatchItem& other) const;
+  bool operator==(const ImagePatchPixelDescriptor& other) const;
 
   /** Check if two patches are different.*/
-  bool operator!=(const ImagePatchItem& other) const;
+  bool operator!=(const ImagePatchPixelDescriptor& other) const;
 
   /** Get the region described by the patch.*/
   itk::ImageRegion<2> GetRegion() const;
@@ -53,11 +52,11 @@ public:
   itk::Index<2> GetCorner() const;
 
   /** Sort the patches by index (so they can be stored in a container such as std::set).*/
-  bool operator<(const ImagePatchItem& other) const;
+  bool operator<(const ImagePatchPixelDescriptor& other) const;
 
   /** Output information about the patch. Even though this is inside a class template definition, we still need to declare it as a function template. */
   template <typename T>
-  friend std::ostream& operator<<(std::ostream& output,  const ImagePatchItem<T>& patch);
+  friend std::ostream& operator<<(std::ostream& output,  const ImagePatchPixelDescriptor<T>& patch);
 
   /** Visit all pixels in a patch.*/
   void VisitAllPixels(const TImage* const image, PixelVisitor<typename TImage::PixelType> &visitor);
@@ -79,6 +78,6 @@ private:
 
 };
 
-#include "ImagePatchItem.hxx"
+#include "ImagePatchPixelDescriptor.hxx"
 
 #endif

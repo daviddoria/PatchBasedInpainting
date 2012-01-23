@@ -49,7 +49,7 @@ void CandidatePairs<TImage>::VisitAllPatchPairs(const TImage* const image, const
 }
 
 template <typename TImage>
-CandidatePairs<TImage>::CandidatePairs(const ImagePatchItem<TImage>& targetPatch) : Priority(0.0f), TargetPatch(targetPatch)
+CandidatePairs<TImage>::CandidatePairs(const ImagePatchPixelDescriptor<TImage>& targetPatch) : Priority(0.0f), TargetPatch(targetPatch)
 {
 
 }
@@ -92,7 +92,7 @@ void CandidatePairs<TImage>::AddSourcePatches(const SourcePatchCollection<TImage
 {
   for(typename SourcePatchCollection<TImage>::Iterator patchIterator = patches.begin(); patchIterator != patches.end(); ++patchIterator)
     {
-    const ImagePatchItem<TImage>* sourcePatch = &(*patchIterator);
+    const ImagePatchPixelDescriptor<TImage>* sourcePatch = &(*patchIterator);
     // TODO: Why doesn't this need typename PatchPair<TImage> ? isn't PatchPair<TImage> a dependent type?
     std::shared_ptr<PatchPair<TImage> > patchPair = std::shared_ptr<PatchPair<TImage> >(new PatchPair<TImage>(sourcePatch, this->TargetPatch));
     this->PatchPairs.push_back(patchPair);
@@ -139,7 +139,7 @@ typename CandidatePairs<TImage>::ConstIterator CandidatePairs<TImage>::end() con
 // }
 
 template <typename TImage>
-const ImagePatchItem<TImage>& CandidatePairs<TImage>::GetTargetPatch() const
+const ImagePatchPixelDescriptor<TImage>& CandidatePairs<TImage>::GetTargetPatch() const
 {
   return this->TargetPatch;
 }

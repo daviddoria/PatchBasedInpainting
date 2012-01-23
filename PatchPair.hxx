@@ -19,7 +19,7 @@
 #include "PatchPair.h" // Appease the syntax parser
 
 template <typename TImage>
-PatchPair<TImage>::PatchPair(const ImagePatchItem<TImage>* const sourcePatch, const ImagePatchItem<TImage>& targetPatch) :
+PatchPair<TImage>::PatchPair(const ImagePatchPixelDescriptor<TImage>* const sourcePatch, const ImagePatchPixelDescriptor<TImage>& targetPatch) :
 SourcePatch(sourcePatch), TargetPatch(targetPatch)
 {
 
@@ -60,13 +60,13 @@ itk::Offset<2> PatchPair<TImage>::GetSourceToTargetOffset() const
 }
 
 template <typename TImage>
-const ImagePatchItem<TImage>* PatchPair<TImage>::GetSourcePatch() const
+const ImagePatchPixelDescriptor<TImage>* PatchPair<TImage>::GetSourcePatch() const
 {
   return this->SourcePatch;
 }
 
 template <typename TImage>
-const ImagePatchItem<TImage>& PatchPair<TImage>::GetTargetPatch() const
+const ImagePatchPixelDescriptor<TImage>& PatchPair<TImage>::GetTargetPatch() const
 {
   return this->TargetPatch;
 }

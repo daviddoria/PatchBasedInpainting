@@ -19,9 +19,6 @@
 #ifndef ItemCreator_H
 #define ItemCreator_H
 
-// Custom
-#include "Item.h"
-
 // ITK
 #include "itkIndex.h"
 
@@ -33,7 +30,7 @@ class ItemCreator
 {
 public:
 
-  virtual Item* CreateItem(const itk::Index<2>& index) const = 0;
+  //virtual Item* CreateItem(const itk::Index<2>& index) const = 0;
 };
 
 #endif

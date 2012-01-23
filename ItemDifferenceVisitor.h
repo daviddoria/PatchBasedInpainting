@@ -32,30 +32,30 @@ class ItemDifferenceVisitor
 public:
   ItemDifferenceVisitor(){}
 
-  ItemDifferenceVisitor(Item* const itemToCompare, ItemDifferenceMapType* const differenceMap) : ItemToCompare(itemToCompare), DifferenceMap(differenceMap)
-  {
-  }
+//   ItemDifferenceVisitor(Item* const itemToCompare, ItemDifferenceMapType* const differenceMap) : ItemToCompare(itemToCompare), DifferenceMap(differenceMap)
+//   {
+//   }
 
-  void SetItemToCompare(Item* const itemToCompare)
-  {
-    this->ItemToCompare = ItemToCompare;
-  }
+//   void SetItemToCompare(Item* const itemToCompare)
+//   {
+//     this->ItemToCompare = ItemToCompare;
+//   }
 
   void SetDifferenceMap(ItemDifferenceMapType* const differenceMap)
   {
     this->DifferenceMap = differenceMap;
   }
   
-  void Visit(const Item& item)
-  {
-    float difference = item.Compare(ItemToCompare);
-    PatchPairDifferences& differences = (*this->DifferenceMap)[&item];
-    differences.SetDifferenceByType(PatchPairDifferences::AveragePixelDifference, difference);
-  }
+//   void Visit(const Item& item)
+//   {
+//     float difference = item.Compare(ItemToCompare);
+//     PatchPairDifferences& differences = (*this->DifferenceMap)[&item];
+//     differences.SetDifferenceByType(PatchPairDifferences::AveragePixelDifference, difference);
+//   }
 
 private:
 
-  Item* ItemToCompare;
+  // Item* ItemToCompare;
   ItemDifferenceMapType* DifferenceMap;
 
 };

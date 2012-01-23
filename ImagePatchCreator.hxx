@@ -20,8 +20,6 @@
 
 #include "Helpers/ITKHelpers.h"
 
-#include "ImagePatchItem.h"
-
 template <typename TImage>
 ImagePatchCreator<TImage>::ImagePatchCreator(const TImage* const image, const unsigned int patchRadius) : Image(image), PatchRadius(patchRadius)
 {

@@ -22,7 +22,6 @@
 #include "Derivatives.h"
 #include "Helpers/Helpers.h"
 #include "Helpers/HelpersOutput.h"
-#include "Item.h"
 #include "ItemDifferenceVisitor.h"
 #include "MaskOperations.h"
 #include "PatchDifferencePixelWiseSum.h"
@@ -155,10 +154,10 @@ void PatchBasedInpainting<TImage>::AddNewObjectsInRegion(const itk::ImageRegion<
 
   for(ValidRegionIterator::ConstIterator iterator = validRegionIterator.begin(); iterator != validRegionIterator.end(); ++iterator)
     {
-    itk::Index<2> centerPixel = ITKHelpers::GetRegionCenter(*iterator);
-    Item* newItem = ItemCreatorObject->CreateItem(centerPixel);
-    this->ItemImage->SetPixel(centerPixel, newItem);
-    ++iterator;
+//     itk::Index<2> centerPixel = ITKHelpers::GetRegionCenter(*iterator);
+//     Item* newItem = ItemCreatorObject->CreateItem(centerPixel);
+//     this->ItemImage->SetPixel(centerPixel, newItem);
+//     ++iterator;
     }
 }
 
@@ -166,17 +165,17 @@ template <typename TImage>
 itk::ImageRegion<2> PatchBasedInpainting<TImage>::FindBestMatch(const itk::Index<2>& targetPixel)
 {
   //ItemDifferenceVisitor itemDifferenceVisitor(this->ItemImage->GetPixel(targetPixel), this->ItemDifferenceMap);
-  assert(this->DifferenceVisitor);
-  this->DifferenceVisitor->SetItemToCompare(this->ItemImage->GetPixel(targetPixel));
-  this->DifferenceVisitor->SetDifferenceMap(this->ItemDifferenceMap);
-
-  ValidPixelIterator<ItemImageType> validPixelIterator(this->ItemImage, this->ItemImage->GetLargestPossibleRegion());
-
-  for(ValidPixelIterator<ItemImageType>::ConstIterator iterator = validPixelIterator.begin(); iterator != validPixelIterator.end(); ++iterator)
-    {
-    this->DifferenceVisitor->Visit(this->ItemImage->GetPixel(*iterator));
-    ++iterator;
-    }
+//   assert(this->DifferenceVisitor);
+//   this->DifferenceVisitor->SetItemToCompare(this->ItemImage->GetPixel(targetPixel));
+//   this->DifferenceVisitor->SetDifferenceMap(this->ItemDifferenceMap);
+// 
+//   ValidPixelIterator<ItemImageType> validPixelIterator(this->ItemImage, this->ItemImage->GetLargestPossibleRegion());
+// 
+//   for(ValidPixelIterator<ItemImageType>::ConstIterator iterator = validPixelIterator.begin(); iterator != validPixelIterator.end(); ++iterator)
+//     {
+//     this->DifferenceVisitor->Visit(this->ItemImage->GetPixel(*iterator));
+//     ++iterator;
+//     }
 }
 
 template <typename TImage>
@@ -212,12 +211,12 @@ SourceTargetPair PatchBasedInpainting<TImage>::Iterate()
 template <typename TImage>
 itk::ImageRegion<2> PatchBasedInpainting<TImage>::DetermineRegionToFill()
 {
-  PrioritySearchHighest prioritySearchHighest;
-  itk::Index<2> pixelToFill = prioritySearchHighest.FindHighestPriority(this->BoundaryPixels, this->PriorityFunction.get());
-
-  itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
-
-  return targetRegion;
+//   PrioritySearchHighest prioritySearchHighest;
+//   itk::Index<2> pixelToFill = prioritySearchHighest.FindHighestPriority(this->BoundaryPixels, this->PriorityFunction.get());
+// 
+//   itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(pixelToFill, this->PatchRadius[0]);
+// 
+//   return targetRegion;
 }
 
 template <typename TImage>

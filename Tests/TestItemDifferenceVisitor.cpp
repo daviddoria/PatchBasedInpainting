@@ -18,18 +18,12 @@
 
 #include "ItemDifferenceVisitor.h"
 #include "ItemDifferenceMap.h"
-#include "ScalarItem.h"
 
 int main(int argc, char*argv[])
 {
-  
-
-  ScalarItem<float> item1(1.0);
-  ScalarItem<float> item2(1.0);
-
-  ItemDifferenceMapType itemDifferenceMap;
-  ItemDifferenceVisitor itemDifferenceVisitor(&item1, &itemDifferenceMap);
-  itemDifferenceVisitor.Visit(item2);
+//   ItemDifferenceMapType itemDifferenceMap;
+//   ItemDifferenceVisitor itemDifferenceVisitor(&item1, &itemDifferenceMap);
+//   itemDifferenceVisitor.Visit(item2);
 
   
   

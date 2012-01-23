@@ -21,7 +21,7 @@
 
 // Custom
 #include "Mask.h"
-#include "ImagePatchItem.h"
+#include "ImagePatchPixelDescriptor.h"
 
 // STL
 #include <set>
@@ -37,7 +37,7 @@ public:
 
   SourcePatchCollection(const TImage* const image, const Mask* const maskImage, const unsigned int patchRadius);
 
-  typedef std::set<ImagePatchItem<TImage> > PatchContainer;
+  typedef std::set<ImagePatchPixelDescriptor<TImage> > PatchContainer;
 
   // Iterator interface
   typedef typename PatchContainer::iterator Iterator;
@@ -53,7 +53,7 @@ public:
 
   void Clear();
 
-  const ImagePatchItem<TImage>* GetPatch(const itk::ImageRegion<2>& region);
+  const ImagePatchPixelDescriptor<TImage>* GetPatch(const itk::ImageRegion<2>& region);
 
   unsigned int GetNumberOfPatches() const;
 
