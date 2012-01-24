@@ -218,11 +218,7 @@ template <typename TImage>
 SourceTargetPair PatchBasedInpainting<TImage>::Iterate()
 {
   // This gets the node at the "front" of the "queue" (it is actually a set, but the elements are still sorted).
-  VertexDescriptor targetNode;
-  for(typename BoundaryNodeSetType::iterator iterator = this->BoundaryNodes.begin(); iterator != this->BoundaryNodes.end(); iterator++)
-    {
-    targetNode = *iterator;
-    }
+  VertexDescriptor targetNode = *(this->BoundaryNodes.begin());
 
   VertexDescriptor sourceNode = FindBestMatch(targetNode);
 
