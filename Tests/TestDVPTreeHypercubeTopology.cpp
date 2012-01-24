@@ -8,22 +8,15 @@ namespace boost {
   BOOST_INSTALL_PROPERTY(vertex, data);
 };
 
-class MyClass
-{
-
-};
-
-class custom_topology : public boost::convex_topology<0>
+class custom_topology : public boost::hypercube_topology<6, boost::minstd_rand>
 {
 public:
-  typedef MyClass point_type;
-
-  double distance(point_type a, point_type b) const
+  double distance(point a, point b) const
   {
     double dist = 0.0f;
     for(unsigned int i = 0; i < 6; ++i)
       {
-      //dist += fabs(a[i] - b[i]);
+      dist += fabs(a[i] - b[i]);
       }
     return dist;
   }
@@ -56,17 +49,17 @@ int main(int argc, char *argv[])
   PointType a;
   for(unsigned int dim = 0; dim < dimension; ++dim)
     {
-    //a[dim] = 1;
+    a[dim] = 1;
     }
   PointType b;
   for(unsigned int dim = 0; dim < dimension; ++dim)
     {
-    //b[dim] = 2;
+    b[dim] = 2;
     }
 
   std::cout << "Diff: " << myTopology.distance(a, b) << std::endl;
   }
-  
+
 
   typedef dvp_tree<VertexType, TopologyType, boost::property_map<Graph, boost::vertex_data_t>::type > TreeType;
 
@@ -80,7 +73,7 @@ int main(int argc, char *argv[])
     PointType p;
     for(unsigned int dim = 0; dim < dimension; ++dim)
       {
-      //p[dim] = vertexId;
+      p[dim] = vertexId;
       }
     boost::put(positionMap, v, p);
   };
@@ -94,7 +87,7 @@ int main(int argc, char *argv[])
   PointType queryPoint;
   for(unsigned int dim = 0; dim < dimension; ++dim)
     {
-    //queryPoint[dim] = 5.2;
+    queryPoint[dim] = 5.2;
     }
 
   VertexType nearestNeighbor = nearestNeighborFinder(queryPoint, g, myTopology, positionMap);

@@ -4,11 +4,15 @@ include_directories(../Testing ../Helpers)
 #####################
 
 add_executable(TestDVPTree TestDVPTree.cpp)
-target_link_libraries(TestDVPTree ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
+target_link_libraries(TestDVPTree)
 add_test(TestDVPTree TestDVPTree)
 
+add_executable(TestDVPTreeHypercubeTopology TestDVPTreeHypercubeTopology.cpp)
+target_link_libraries(TestDVPTreeHypercubeTopology)
+add_test(TestDVPTreeHypercubeTopology TestDVPTreeHypercubeTopology)
+
 add_executable(TestDVPTreeGridGraph TestDVPTreeGridGraph.cpp)
-target_link_libraries(TestDVPTree ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+target_link_libraries(TestDVPTree)
 add_test(TestDVPTreeGridGraph TestDVPTreeGridGraph)
 
 add_executable(TestValidPixelIterator TestValidPixelIterator.cpp ../ValidPixelIterator.cpp)
