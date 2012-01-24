@@ -10,10 +10,22 @@ namespace boost {
 
 class MyClass
 {
+public:
+  // Trying to fix error:
+  // metric_space_concept.hpp:137:5: error: no match for ‘operator=’ in ‘((MetricSpaceConcept<custom_topology>*)this)->MetricSpaceConcept<custom_topology>::p1 = ((MetricSpaceConcept<custom_topology>*)this)->MetricSpaceConcept<custom_topology>::space.custom_topology::<anonymous>.boost::hypercube_topology<Dims, RandomNumberGenerator>::random_point [with unsigned int Dims = 0u, RandomNumberGenerator = boost::random::linear_congruential<int, 48271, 0, 2147483647, 399268537>, boost::hypercube_topology<Dims, RandomNumberGenerator>::point_type = boost::convex_topology<0u>::point]()’
 
+//   MyClass operator=(const MyClass &rhs)
+//   {
+//     a = rhs.a;
+//     return *this;
+//   }
+
+private:
+  int a;
 };
 
-class custom_topology : public boost::convex_topology<0>
+//class custom_topology : public boost::convex_topology<0>
+class custom_topology : public boost::hypercube_topology<0, boost::minstd_rand>
 {
 public:
   typedef MyClass point_type;
