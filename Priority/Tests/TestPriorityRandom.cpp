@@ -16,21 +16,26 @@
  *
  *=========================================================================*/
 
-#ifndef ImageParent_H
-#define ImageParent_H
+#include "PriorityRandom.h"
+#include "../ImageProcessing/Mask.h"
+#include "../Testing/Testing.h"
 
-/**
-\class ImageParent
-\brief This class provides a way to store heterogeneous images in a container.
-*/
-class ImageParent
+int main()
 {
-public:
-  std::string GetName();
+  FloatVectorImageType::Pointer image = FloatVectorImageType::New();
+  Testing::GetBlankImage(image.GetPointer(), 3);
 
-private:
-  /** The name of the image. */
-  std::string Name;
-};
+  Mask::Pointer mask = Mask::New();
+  Testing::GetFullyValidMask(mask.GetPointer());
 
-#endif
+  PriorityRandom priority;
+
+  itk::ImageRegion<2> filledRegion;
+  priority.Update(filledRegion);
+
+  itk::Index<2> queryPixel;
+  queryPixel.Fill(0);
+  priority.ComputePriority(queryPixel);
+
+  return EXIT_SUCCESS;
+}

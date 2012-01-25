@@ -21,17 +21,15 @@
 
 // Custom
 #include "CandidatePairs.h"
-#include "DebugOutputs.h"
 #include "ItemCreator.h"
 #include "ItemDifferenceMap.h"
 #include "ItemDifferenceVisitor.h"
-#include "ITKImageCollection.h"
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
 #include "metric_space_search.hpp"
 #include "ImagePatchPixelDescriptor.h"
 #include "PixelCollection.h"
 #include "PatchPair.h"
-#include "Priority.h"
+#include "Priority/Priority.h"
 #include "SourcePatchCollection.h"
 #include "SourceTargetPair.h"
 #include "SortByPriority.h"
@@ -63,7 +61,7 @@ BOOST_INSTALL_PROPERTY(vertex,image_patch);
 \brief This class performs greedy patch based inpainting on an image.
 */
 template <typename TImage>
-class PatchBasedInpainting : public DebugOutputs
+class PatchBasedInpainting
 {
 public:
   /** Construct an inpainting object from an image and a mask.*/

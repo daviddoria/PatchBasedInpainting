@@ -17,7 +17,7 @@
  *=========================================================================*/
 
 #include "ValidRegionIterator.h"
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
 #include "Testing.h"
 
 int main(int argc, char*argv[])

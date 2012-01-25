@@ -16,10 +16,9 @@
  *
  *=========================================================================*/
 
-#include "PriorityManual.h"
-#include "PriorityOnionPeel.h"
-#include "Mask.h"
-#include "Testing.h"
+#include "PriorityDepth.h"
+#include "../ImageProcessing/Mask.h"
+#include "../Testing/Testing.h"
 
 int main()
 {
@@ -29,20 +28,13 @@ int main()
   Mask::Pointer mask = Mask::New();
   Testing::GetFullyValidMask(mask.GetPointer());
 
-  UnsignedCharScalarImageType::Pointer manualPriorityImage = UnsignedCharScalarImageType::New();
-  Testing::GetBlankImage(manualPriorityImage.GetPointer());
-
   unsigned int patchRadius = 5;
-  PriorityOnionPeel priorityOnionPeel(mask, patchRadius);
-  
-  PriorityManual<UnsignedCharScalarImageType, PriorityOnionPeel> priority(manualPriorityImage, &priorityOnionPeel);
+  PriorityDepth<FloatVectorImageType> priority(image, mask, patchRadius);
 
   itk::ImageRegion<2> filledRegion;
   priority.Update(filledRegion);
-  priority.SetManualPriorityImage(manualPriorityImage);
 
   itk::Index<2> queryPixel;
-  queryPixel.Fill(0);
   priority.ComputePriority(queryPixel);
 
   return EXIT_SUCCESS;

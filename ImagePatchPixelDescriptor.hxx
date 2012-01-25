@@ -21,10 +21,9 @@
 
 #include "ImagePatchPixelDescriptor.h" // Appease syntax parser
 
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
 
 #include "itkImageRegionConstIteratorWithIndex.h"
-
 #include "itkImageRegionConstIterator.h"
 
 template <typename TImage>

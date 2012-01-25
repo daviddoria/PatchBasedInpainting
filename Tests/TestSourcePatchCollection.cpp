@@ -18,7 +18,7 @@
 
 #include "SourcePatchCollection.h"
 
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
 
 static void CreateMask(Mask* mask);
 

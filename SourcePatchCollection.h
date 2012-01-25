@@ -20,7 +20,7 @@
 #define SourcePatchCollection_h
 
 // Custom
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
 #include "ImagePatchPixelDescriptor.h"
 
 // STL

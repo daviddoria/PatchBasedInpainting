@@ -1,10 +1,10 @@
 
 #include "PriorityDepth.h"
 
-#include "Derivatives.h"
+#include "ImageProcessing/Derivatives.h"
 #include "Helpers/HelpersOutput.h"
-#include "Isophotes.h"
-#include "MaskOperations.h"
+#include "ImageProcessing/Isophotes.h"
+#include "ImageProcessing/MaskOperations.h"
 
 #include <stdexcept>
 

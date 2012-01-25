@@ -19,10 +19,10 @@
 #include "PriorityCriminisi.h" // Make syntax parser happy
 
 // Custom
-#include "BoundaryNormals.h"
+#include "../ImageProcessing/BoundaryNormals.h"
 #include "Helpers/Helpers.h"
 #include "Helpers/HelpersOutput.h"
-#include "Isophotes.h"
+#include "../ImageProcessing/Isophotes.h"
 #include "Helpers/ITKHelpers.h"
 #include "Helpers/ITKVTKHelpers.h"
 

@@ -42,7 +42,7 @@
 #include "itkVectorIndexSelectionCastImageFilter.h"
 
 // Custom
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
 
 namespace ITKHelpers
 {

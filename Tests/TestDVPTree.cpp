@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
   const unsigned int dimension = 6;
   //typedef boost::hypercube_topology<dimension, boost::minstd_rand> TopologyType;
   // This distance(a,b) function is the equivialent of matlab's norm(a-b)
-
+#if 0
   typedef custom_topology TopologyType;
 
   typedef boost::adjacency_list<boost::vecS,
@@ -111,6 +111,6 @@ int main(int argc, char *argv[])
 
   VertexType nearestNeighbor = nearestNeighborFinder(queryPoint, g, myTopology, positionMap);
   std::cout << "nearestNeighbor: " << nearestNeighbor << std::endl;
-
+#endif
   return 0;
 }

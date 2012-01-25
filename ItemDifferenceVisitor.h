@@ -20,7 +20,7 @@
 #define ItemDifferenceVisitor_H
 
 #include "ItemDifferenceMap.h"
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
 #include "PatchPairVisitor.h"
 
 /**

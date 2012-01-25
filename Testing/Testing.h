@@ -19,7 +19,7 @@
 #ifndef Testing_H
 #define Testing_H
 
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
 
 namespace Testing
 {

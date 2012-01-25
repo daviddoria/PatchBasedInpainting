@@ -21,7 +21,7 @@
 
 #include "PatchPairVisitor.h"
 
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
 
 /**
 \class PixelWiseDifferencePatchPairVisitor

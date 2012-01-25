@@ -39,9 +39,9 @@
 #include <vtkXMLPolyDataWriter.h>
 
 // Custom
-#include "Derivatives.h"
+#include "ImageProcessing/Derivatives.h"
 #include "Helpers.h"
-#include "itkRGBToLabColorSpacePixelAccessor.h"
+#include "ImageProcessing/itkRGBToLabColorSpacePixelAccessor.h"
 
 namespace ITKHelpers
 {

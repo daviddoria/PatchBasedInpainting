@@ -16,5 +16,28 @@
  *
  *=========================================================================*/
 
-#include "Image.h" // appease syntax parser
+#include "PriorityOnionPeel.h"
+#include "../ImageProcessing/Mask.h"
+#include "../Testing/Testing.h"
 
+int main()
+{
+  //FloatVectorImageType::Pointer image = FloatVectorImageType::New();
+  FloatScalarImageType::Pointer image = FloatScalarImageType::New();
+  Testing::GetBlankImage(image.GetPointer());
+
+  Mask::Pointer mask = Mask::New();
+  Testing::GetFullyValidMask(mask.GetPointer());
+
+  unsigned int patchRadius = 5;
+  PriorityOnionPeel priority(mask, patchRadius);
+
+  itk::ImageRegion<2> filledRegion;
+  priority.Update(filledRegion);
+
+  itk::Index<2> queryPixel;
+  queryPixel.Fill(0);
+  priority.ComputePriority(queryPixel);
+
+  return EXIT_SUCCESS;
+}

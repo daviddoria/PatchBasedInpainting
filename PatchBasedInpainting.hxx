@@ -19,14 +19,14 @@
 #include "PatchBasedInpainting.h" // Appease syntax parser
 
 // Custom
-#include "Derivatives.h"
+#include "ImageProcessing/Derivatives.h"
 #include "Helpers/Helpers.h"
 #include "Helpers/HelpersOutput.h"
 #include "ItemDifferenceVisitor.h"
-#include "MaskOperations.h"
+#include "ImageProcessing/MaskOperations.h"
 #include "PatchDifferencePixelWiseSum.h"
-#include "Priority.h"
-#include "PrioritySearchHighest.h"
+#include "Priority/Priority.h"
+#include "Priority/PrioritySearchHighest.h"
 #include "Types.h"
 #include "ValidPixelIterator.h"
 #include "ValidRegionIterator.h"
@@ -42,8 +42,6 @@
 template <typename TImage>
 PatchBasedInpainting<TImage>::PatchBasedInpainting(const TImage* const image, const Mask* const mask) : Graph(NULL), DVPTree(NULL), PriorityFunction(NULL)
 {
-  EnterFunction("PatchBasedInpainting()");
-
   this->PatchRadius.Fill(3);
 
   // We don't want to modify the input images, so we copy them.

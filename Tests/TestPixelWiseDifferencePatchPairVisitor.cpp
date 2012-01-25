@@ -17,7 +17,7 @@
  *=========================================================================*/
 
 #include "CandidatePairs.h"
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
 #include "SourcePatchCollection.h"
 #include "Testing.h"
 #include "PixelWiseDifferencePatchPairVisitor.h"

@@ -19,7 +19,7 @@
 #include "Derivatives.h"
 #include "Types.h"
 #include "Mask.h"
-#include "Testing.h"
+#include "Testing/Testing.h"
 
 static void CreateMask(Mask* const mask);
 static void CreateImage(UnsignedCharScalarImageType* const image);

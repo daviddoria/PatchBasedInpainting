@@ -16,11 +16,26 @@
  *
  *=========================================================================*/
 
-#include "ImageParent.h"
+#include "PriorityCriminisi.h"
+#include "../ImageProcessing/Mask.h"
+#include "../Testing/Testing.h"
 
-int main(int argc, char*argv[])
+int main()
 {
-  // Can't test anything here, ImageParent is abstract.
+  FloatVectorImageType::Pointer image = FloatVectorImageType::New();
+  Testing::GetBlankImage(image.GetPointer(), 4);
+
+  Mask::Pointer mask = Mask::New();
+  Testing::GetFullyValidMask(mask.GetPointer());
+
+  unsigned int patchRadius = 5;
+  PriorityCriminisi<FloatVectorImageType> priority(image, mask, patchRadius);
+
+  itk::ImageRegion<2> filledRegion;
+  priority.Update(filledRegion);
+
+  itk::Index<2> queryPixel = {{0,0}};
+  priority.ComputePriority(queryPixel);
 
   return EXIT_SUCCESS;
 }

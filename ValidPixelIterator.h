@@ -20,7 +20,7 @@
 #define ValidPixelIterator_h
 
 // Custom
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
 
 // ITK
 #include "itkImageRegion.h"

@@ -25,7 +25,7 @@
 #include <vtkImageData.h>
 
 // Custom
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
 
 namespace Helpers
 {

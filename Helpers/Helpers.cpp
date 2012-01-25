@@ -19,8 +19,8 @@
 #include "Helpers.h"
 
 // Custom
-#include "itkRGBToLabColorSpacePixelAccessor.h"
-#include "Derivatives.h"
+#include "ImageProcessing/itkRGBToLabColorSpacePixelAccessor.h"
+#include "ImageProcessing/Derivatives.h"
 
 namespace Helpers
 {
