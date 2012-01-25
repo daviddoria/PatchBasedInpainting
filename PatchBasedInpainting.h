@@ -25,7 +25,7 @@
 #include "ItemDifferenceMap.h"
 #include "ItemDifferenceVisitor.h"
 #include "ImageProcessing/Mask.h"
-#include "metric_space_search.hpp"
+#include "NearestNeighbor/metric_space_search.hpp"
 #include "ImagePatchPixelDescriptor.h"
 #include "PixelCollection.h"
 #include "PatchPair.h"

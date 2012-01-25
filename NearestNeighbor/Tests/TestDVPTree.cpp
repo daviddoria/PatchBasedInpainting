@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "metric_space_search.hpp"
+#include "NearestNeighbor/metric_space_search.hpp"
 
 namespace boost {
   enum vertex_data_t { vertex_data };

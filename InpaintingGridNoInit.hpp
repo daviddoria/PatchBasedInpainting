@@ -56,19 +56,24 @@ void inpainting_grid_no_init(VertexListGraph& g, InpaintingVisitor vis,
   typedef typename boost::property_traits<ColorMap>::value_type ColorValue;
   typedef boost::color_traits<ColorValue> Color;
   typedef typename boost::property_traits<PriorityMap>::value_type PriorityValue;
-  typedef boost::vector_property_map<std::size_t> IndexInHeapMap;
+  
+  typedef typename boost::property_map<VertexListGraph, boost::vertex_index_t>::const_type GridIndexMapType;
+  typedef boost::vector_property_map<std::size_t, GridIndexMapType> IndexInHeapMap;
   IndexInHeapMap index_in_heap;
 
   typedef boost::d_ary_heap_indirect<Vertex, 4, IndexInHeapMap, PriorityMap, PriorityCompare> MutableQueue;
   MutableQueue boundaryNodeQueue(priority, index_in_heap, compare_priority); //priority queue
 
-    // add all the black vertices (holes) to the priority-queue:
+  // TODO: Is it ok to add the vertex to the index_in_heap at the same time as pushing it onto the queue (like is done below)?
+  // add all the black vertices (holes) to the priority-queue:
   for (typename boost::graph_traits<VertexListGraph>::vertices_size_type v_index = 0; v_index < num_vertices(g); ++v_index) 
     {
-    put(index_in_heap, vertex(v_index, g), (std::size_t)(-1)); //this ugly C-style cast is required to match the boost::d_ary_heap_indirect implementation.
-    if( get(color, vertex(v_index, g)) == Color::black() )
+    Vertex v = vertex(v_index, g);
+    if( get(color, v) == Color::black() )
       {
-      boundaryNodeQueue.push(vertex(v_index, g));  // the priority-queue will automatically get the priority and put the vertex in the right order (hence the "indirect")
+      put(index_in_heap, v, static_cast<std::size_t>(-1));
+
+      boundaryNodeQueue.push(v);  // the priority-queue will automatically get the priority and put the vertex in the right order (hence the "indirect")
       }
     }
 

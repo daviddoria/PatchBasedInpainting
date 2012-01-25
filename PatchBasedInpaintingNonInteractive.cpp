@@ -19,8 +19,7 @@
 // Custom
 #include "Helpers/HelpersOutput.h"
 #include "DefaultInpaintingVisitor.hpp"
-#include "NearestNeighbor/LinearSearch.hpp"
-#include "Utilities/LessThanFunctor.hpp"
+#include "NearestNeighbor/topological_search.hpp"
 #include "PatchInpainter.hpp"
 #include "InpaintingGridNoInit.hpp"
 
@@ -96,20 +95,26 @@ int main(int argc, char *argv[])
 
   // Create the color map
   std::vector<boost::default_color_type> vertexColorData(num_vertices(graph), boost::white_color);
-  typedef boost::iterator_property_map<std::vector<boost::default_color_type>::iterator, GridIndexMapType> ColorMapType;
-  ColorMapType colorMap(vertexColorData.begin(), gridIndexMap);
+  //typedef boost::iterator_property_map<std::vector<boost::default_color_type>::iterator, GridIndexMapType> ColorMapType;
+  //ColorMapType colorMap(vertexColorData.begin(), gridIndexMap);
+  //ColorMapType colorMap(vertexColorData, gridIndexMap);
+  typedef boost::vector_property_map<boost::default_color_type, GridIndexMapType> ColorMapType;
+  ColorMapType colorMap(num_vertices(graph), gridIndexMap);
   
   // Create the priority map
-  std::vector<float> vertexPriorityData(num_vertices(graph), 0.0f);
-  typedef boost::iterator_property_map<std::vector<float>::iterator, GridIndexMapType> PriorityMapType;
-  PriorityMapType priorityMap(vertexPriorityData.begin(), gridIndexMap);
+  //std::vector<float> vertexPriorityData(num_vertices(graph), 0.0f);
+  //typedef boost::iterator_property_map<std::vector<float>::iterator, GridIndexMapType> PriorityMapType;
+  //PriorityMapType priorityMap(vertexPriorityData.begin(), gridIndexMap);
+  typedef boost::vector_property_map<float, GridIndexMapType> PriorityMapType;
+  PriorityMapType priorityMap(num_vertices(graph), gridIndexMap);
 
   // Create the priority compare functor
-  typedef LessThanFunctor<float> PriorityCompareType;
+  typedef std::less<float> PriorityCompareType;
   PriorityCompareType lessThanFunctor;
 
   // Create the nearest neighbor finder
-  LinearSearch linearSearch;
+  typedef linear_neighbor_search<> SearchType;
+  SearchType linearSearch;
 
   // Create the patch inpainter
   PatchInpainter patchInpainter;
@@ -117,7 +122,7 @@ int main(int argc, char *argv[])
   inpainting_grid_no_init<VertexListGraphType, InpaintingVisitorType, 
                           TopologyType, GridIndexMapType, 
                           ColorMapType, PriorityMapType,
-                          PriorityCompareType, LinearSearch, PatchInpainter>
+                          PriorityCompareType, SearchType, PatchInpainter>
                     (graph, visitor, space, gridIndexMap,
                      colorMap, priorityMap, 
                      lessThanFunctor, linearSearch, patchInpainter);

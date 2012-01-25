@@ -77,6 +77,7 @@ if(BuildTests)
   add_subdirectory(Tests)
   add_subdirectory(Priority/Tests)
   add_subdirectory(ImageProcessing/Tests)
+  add_subdirectory(NearestNeighbor/Tests)
   #add_subdirectory(Helpers/Tests)
 ENDIF(BuildTests)
 

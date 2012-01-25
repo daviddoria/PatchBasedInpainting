@@ -2,7 +2,7 @@
 
 #include <boost/graph/grid_graph.hpp>
 
-#include "metric_space_search.hpp"
+#include "NearestNeighbor/topological_search.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
   typedef boost::iterator_property_map<std::vector<PointType>::iterator, IndexMapType> MapType;
   MapType myMap(vertexData.begin(), indexMap);
 
-  typedef dvp_tree<VertexDescriptor, TopologyType, MapType> TreeType;
+  typedef linear_neighbor_search<> SearchType;
 
   // Add vertices to the graph and corresponding points increasin integer points to the tree.
   // The experiment here is to query the nearest neighbor of a point like (5.2, 5.2, 5.1, 5.3, 5.2, 5.1)
@@ -46,20 +46,16 @@ int main(int argc, char *argv[])
     boost::put(myMap, v, p);
   };
 
-  // Prefer to initialize the DVP-tree with a filled graph, this way, the entire DVP-tree will be initialized at once (gets best results).
-  TreeType tree(graph, myTopology, myMap);
-
-  
-  multi_dvp_tree_search<GraphType, TreeType> nearestNeighborFinder;
-  nearestNeighborFinder.graph_tree_map[&graph] = &tree;
-
   PointType queryPoint;
   for(unsigned int dim = 0; dim < dimension; ++dim)
     {
     queryPoint[dim] = 5.2;
     }
 
-  VertexDescriptor nearestNeighbor = nearestNeighborFinder(queryPoint, graph, myTopology, myMap);
+  SearchType search;
+
+  //VertexDescriptor nearestNeighbor = search(queryPoint, graph, myTopology, myMap);
+  VertexDescriptor nearestNeighbor = search.operator()<GraphType, TopologyType, MapType>(queryPoint, graph, myTopology, myMap);
   std::cout << "nearestNeighbor[0]: " << nearestNeighbor[0] << std::endl;
 
   return 0;

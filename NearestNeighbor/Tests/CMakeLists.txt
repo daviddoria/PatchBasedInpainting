@@ -1,0 +1,16 @@
+
+add_executable(TestDVPTree TestDVPTree.cpp)
+target_link_libraries(TestDVPTree)
+add_test(TestDVPTree TestDVPTree)
+
+add_executable(TestDVPTreeHypercubeTopology TestDVPTreeHypercubeTopology.cpp)
+target_link_libraries(TestDVPTreeHypercubeTopology)
+add_test(TestDVPTreeHypercubeTopology TestDVPTreeHypercubeTopology)
+
+add_executable(TestDVPTreeGridGraph TestDVPTreeGridGraph.cpp)
+target_link_libraries(TestDVPTree)
+add_test(TestDVPTreeGridGraph TestDVPTreeGridGraph)
+
+add_executable(TestLinearNeighborSearchGridGraph TestLinearNeighborSearchGridGraph.cpp)
+target_link_libraries(TestLinearNeighborSearchGridGraph)
+add_test(TestLinearNeighborSearchGridGraph TestLinearNeighborSearchGridGraph)
