@@ -33,28 +33,24 @@ endif(BuildTests OR BuildInteractive OR BuildNonInteractive)
 if(BuildInteractive OR BuildNonInteractive)
   add_library(PatchBasedInpainting
   CandidatePairs.cpp
-  Derivatives.cpp
-  ImageParent.cpp
-  ImagePatch.cpp
-  itkCommandLineArgumentParser.cxx
-  ITKImageCollection.cpp
-  Isophotes.cpp
-  Mask.cpp
-  MaskOperations.cpp
+  ImageProcessing/Derivatives.cpp
+  Utilities/itkCommandLineArgumentParser.cxx
+  ImageProcessing/Isophotes.cpp
+  ImageProcessing/Mask.cpp
+  ImageProcessing/MaskOperations.cpp
   PatchBasedInpainting.cpp
   PatchPair.cpp
   PatchPairDifferences.cpp
   PixelCollection.cpp
-  Priority.cpp
-  PriorityCriminisi.cpp
-  PriorityDepth.cpp
-  
-  PriorityManual.cpp
-  PriorityOnionPeel.cpp
-  PriorityRandom.cpp
-  PrioritySearchHighest.cpp
-  SelfPatchCompare.cpp
+  Priority/Priority.cpp
+  Priority/PriorityCriminisi.cpp
+  Priority/PriorityDepth.cpp
+  Priority/PriorityManual.cpp
+  Priority/PriorityOnionPeel.cpp
+  Priority/PriorityRandom.cpp
+  Priority/PrioritySearchHighest.cpp
   SourcePatchCollection.cpp
+  ValidRegionIterator.cpp
   )
   set_target_properties(PatchBasedInpainting PROPERTIES COMPILE_DEFINITIONS "${compileflags}")
 endif()

@@ -152,7 +152,7 @@ void PatchBasedInpainting<TImage>::InitializeBoundaryNodes()
     {
     VertexDescriptor boundaryDescriptor = { { boundaryPixels[pixelId][0], boundaryPixels[pixelId][0] } };
 
-    this->BoundaryNodes.insert(boundaryDescriptor);
+    //this->BoundaryNodes.insert(boundaryDescriptor);
     }
 }
 
@@ -163,13 +163,13 @@ void PatchBasedInpainting<TImage>::InitializeDVPTree()
 
   while(!iterator.IsAtEnd())
     {
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(iterator.GetIndex(), this->PatchRadius);
-    if(this->MaskImage->IsValid(region))
-      {
-      TopologyPointType p;
-      // TODO: How to create an object here?
-      // boost::put(positionMap, v, p);
-      }
+//     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(iterator.GetIndex(), this->PatchRadius);
+//     if(this->MaskImage->IsValid(region))
+//       {
+//       TopologyPointType p;
+//       // TODO: How to create an object here?
+//       // boost::put(positionMap, v, p);
+//       }
     ++iterator;
     }
 
@@ -216,7 +216,8 @@ template <typename TImage>
 SourceTargetPair PatchBasedInpainting<TImage>::Iterate()
 {
   // This gets the node at the "front" of the "queue" (it is actually a set, but the elements are still sorted).
-  VertexDescriptor targetNode = *(this->BoundaryNodes.begin());
+  //VertexDescriptor targetNode = *(this->BoundaryNodes.begin());
+  VertexDescriptor targetNode ;
 
   VertexDescriptor sourceNode = FindBestMatch(targetNode);
 
@@ -231,10 +232,10 @@ SourceTargetPair PatchBasedInpainting<TImage>::Iterate()
   sourcePixel[1] = sourceNode[1];
   itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, this->GetPatchRadius());
   
-  ITKHelpers::CopySelfRegion(this->CurrentInpaintedImage, sourceRegion, targetRegion);
-
-  // Update the mask
-  ITKHelpers::CopySelfRegion(this->MaskImage, sourceRegion, targetRegion);
+//   ITKHelpers::CopySelfRegion(this->CurrentInpaintedImage, sourceRegion, targetRegion);
+// 
+//   // Update the mask
+//   ITKHelpers::CopySelfRegion(this->MaskImage, sourceRegion, targetRegion);
 
   // Update the priority function
   this->PriorityFunction->Update(targetRegion);
@@ -277,7 +278,7 @@ void PatchBasedInpainting<TImage>::Inpaint()
 template <typename TImage>
 bool PatchBasedInpainting<TImage>::HasMoreToInpaint()
 {
-  return this->BoundaryPixels.empty();
+  //return this->BoundaryPixels.empty();
 }
 
 template <typename TImage>
