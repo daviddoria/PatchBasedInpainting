@@ -84,7 +84,7 @@ add_executable(TestPatchDifference TestPatchDifference.cpp ../ImagePatchItem.cpp
 target_link_libraries(TestPatchDifference ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
 add_test(TestPatchDifference TestPatchDifference)
 
-add_executable(TestPatchBasedInpainting TestPatchBasedInpainting.cpp ../PatchBasedInpainting.cpp ../PatchBasedInpaintingDebugging.cpp
+add_executable(TestPatchBasedInpainting TestPatchBasedInpainting.cpp ../PatchBasedInpainting.cpp
 ../CandidatePairs.cpp ../PatchPairDifferences.cpp
 ../Priority/Priority.cpp ../Priority/PriorityCriminisi.cpp ../Priority/PriorityOnionPeel.cpp ../Priority/PriorityRandom.cpp ../Priority/PriorityManual.cpp ../Priority/PriorityDepth.cpp
 ../Priority/PrioritySearchHighest.cpp ../PixelCollection.cpp

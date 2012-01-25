@@ -33,7 +33,6 @@ endif(BuildTests OR BuildInteractive OR BuildNonInteractive)
 if(BuildInteractive OR BuildNonInteractive)
   add_library(PatchBasedInpainting
   CandidatePairs.cpp
-  DebugOutputs.cpp
   Derivatives.cpp
   ImageParent.cpp
   ImagePatch.cpp
@@ -43,7 +42,6 @@ if(BuildInteractive OR BuildNonInteractive)
   Mask.cpp
   MaskOperations.cpp
   PatchBasedInpainting.cpp
-  PatchBasedInpaintingDebugging.cpp
   PatchPair.cpp
   PatchPairDifferences.cpp
   PixelCollection.cpp
