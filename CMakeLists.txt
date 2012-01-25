@@ -92,3 +92,4 @@ if(BuildDemos)
 ENDIF(BuildDemos)
 
 add_subdirectory(Utilities/Tests)
+add_subdirectory(NearestNeighbor)

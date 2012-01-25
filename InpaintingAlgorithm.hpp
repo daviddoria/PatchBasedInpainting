@@ -1,6 +1,8 @@
 #ifndef InpaintingAlgorithm_hpp
 #define InpaintingAlgorithm_hpp
 
+#include <boost/graph/properties.hpp>
+
 template <typename VertexListGraph, typename WrappedInpaintingVisitor,
           typename Topology, typename PositionMap,
           typename ColorMap, typename PriorityQueue, 

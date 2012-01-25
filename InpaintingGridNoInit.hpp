@@ -1,7 +1,8 @@
-#ifndef InpaintingNoInit_HPP
-#define InpaintingNoInit_HPP
+#ifndef InpaintingGridNoInit_HPP
+#define InpaintingGridNoInit_HPP
 
 // Custom
+#include "InpaintingAlgorithm.hpp"
 #include "InpaintingVisitorConcept.hpp"
 #include "InpaintingVisitorWrapper.hpp"
 
@@ -42,7 +43,7 @@ template <typename VertexListGraph, typename InpaintingVisitor,
           typename NearestNeighborFinder, 
           typename PatchInpainter>
 inline
-void inpainting_no_init(VertexListGraph& g, InpaintingVisitor vis,
+void inpainting_grid_no_init(VertexListGraph& g, InpaintingVisitor vis,
                         const Topology& space, PositionMap position,
                         ColorMap color, PriorityMap priority, 
                         PriorityCompare compare_priority,
@@ -57,29 +58,23 @@ void inpainting_no_init(VertexListGraph& g, InpaintingVisitor vis,
   typedef typename boost::property_traits<PriorityMap>::value_type PriorityValue;
   typedef boost::vector_property_map<std::size_t> IndexInHeapMap;
   IndexInHeapMap index_in_heap;
-  {
-    typename boost::graph_traits<VertexListGraph>::vertex_iterator graphIterator, graphIterator_end;
-    for (boost::tie(graphIterator, graphIterator_end) = boost::vertices(g); graphIterator != graphIterator_end; ++graphIterator) 
-    {
-      put(index_in_heap,*graphIterator, (std::size_t)(-1)); //this ugly C-style cast is required to match the boost::d_ary_heap_indirect implementation.
-    };
-  };
-  
+
   typedef boost::d_ary_heap_indirect<Vertex, 4, IndexInHeapMap, PriorityMap, PriorityCompare> MutableQueue;
-  MutableQueue Q(priority, index_in_heap, compare_priority); //priority queue
-  
-  // add all the black vertices (holes) to the priority-queue:
-  {
-    typename boost::graph_traits<VertexListGraph>::vertex_iterator ui, ui_end;
-    for (boost::tie(ui, ui_end) = boost::vertices(g); ui != ui_end; ++ui) {
-      if( get(color, *ui) == Color::black() )
-        Q.push(*ui);  // the priority-queue will automatically get the priority and put the vertex in the right order.
-    };
-  };
-  
+  MutableQueue boundaryNodeQueue(priority, index_in_heap, compare_priority); //priority queue
+
+    // add all the black vertices (holes) to the priority-queue:
+  for (typename boost::graph_traits<VertexListGraph>::vertices_size_type v_index = 0; v_index < num_vertices(g); ++v_index) 
+    {
+    put(index_in_heap, vertex(v_index, g), (std::size_t)(-1)); //this ugly C-style cast is required to match the boost::d_ary_heap_indirect implementation.
+    if( get(color, vertex(v_index, g)) == Color::black() )
+      {
+      boundaryNodeQueue.push(vertex(v_index, g));  // the priority-queue will automatically get the priority and put the vertex in the right order (hence the "indirect")
+      }
+    }
+
   // start the in-painting loop:
   inpainting_loop(g, inpainting_visitor_wrapper<InpaintingVisitor,ColorMap>(vis,color),
-                          space, position, color, Q, find_inpainting_source, inpaint_patch);
+                          space, position, color, boundaryNodeQueue, find_inpainting_source, inpaint_patch);
   
 };
 
