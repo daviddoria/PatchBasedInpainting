@@ -91,14 +91,11 @@ int main(int argc, char *argv[])
   TopologyType space;
 
   // Create the position map
-  typedef boost::property_map<VertexListGraphType, TopologyType::point_type>::const_type PositionMapType; // no type named 'kind'
+  typedef boost::property_map<VertexListGraphType, TopologyType::point_type>::const_type PositionMapType; // TODO: error: no type named 'kind'
   PositionMapType gridIndexMap(get(boost::vertex_index, graph));
 
   // Create the color map
   std::vector<boost::default_color_type> vertexColorData(num_vertices(graph), boost::white_color);
-  //typedef boost::iterator_property_map<std::vector<boost::default_color_type>::iterator, GridIndexMapType> ColorMapType;
-  //ColorMapType colorMap(vertexColorData.begin(), gridIndexMap);
-  //ColorMapType colorMap(vertexColorData, gridIndexMap);
   typedef boost::vector_property_map<boost::default_color_type, PositionMapType> ColorMapType;
   ColorMapType colorMap(num_vertices(graph), gridIndexMap);
 
