@@ -9,7 +9,7 @@
  * This is a visitor that complies with the InpaintingVisitorConcept. It creates
  * and differences ImagePatch objects at each pixel.
  */
-template <typename TImage, typename TBoundaryNodeQueue, typename TFillStatusMap, typename TDescriptorMap>
+template <typename TImage, typename TBoundaryNodeQueue, typename TFillStatusMap, typename TDescriptorMap, typename TPriorityMap>
 struct ImagePatch_inpainting_visitor 
 {
   TImage* image;
@@ -17,12 +17,14 @@ struct ImagePatch_inpainting_visitor
   Priority* priorityFunction;
   TFillStatusMap* fillStatusMap;
   TDescriptorMap* descriptorMap;
+  TPriorityMap* priorityMap;
 
   unsigned int half_width;
 
   ImagePatch_inpainting_visitor(TImage* const in_image, TBoundaryNodeQueue* const in_boundaryNodeQueue, TFillStatusMap* const in_fillStatusMap, TDescriptorMap* const in_descriptorMap,  
-                                Priority* const in_priorityFunction, const unsigned int in_half_width) : 
-  image(in_image), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorMap(in_descriptorMap), half_width(in_half_width)
+                                TPriorityMap* const in_priorityMap, Priority* const in_priorityFunction, const unsigned int in_half_width) : 
+  image(in_image), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorMap(in_descriptorMap), 
+  priorityMap(in_priorityMap), half_width(in_half_width)
   {
   }
 
@@ -85,15 +87,25 @@ struct ImagePatch_inpainting_visitor
 
     this->priorityFunction->Update(index);
 
-    // Add all nodes on the boundary of the patch around this node to the boundaryNodeQueue
+    // Add all nodes on the boundary of the patch around this node to the boundaryNodeQueue, and update their priority
     for(unsigned int i = v[0] - half_width; i <= v[0] + half_width; ++i)
       {
       VertexType v;
       v[0] = i;
       v[1] = v[1] - half_width;
       this->boundaryNodeQueue->push(v);
+
+      itk::Index<2> index;
+      index[0] = v[0];
+      index[1] = v[1];
+      put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
+
       v[1] = v[1] + half_width;
       this->boundaryNodeQueue->push(v);
+
+      index[1] = v[1];
+      put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
+
       }
 
     for(unsigned int j = v[1] - half_width; j <= v[1] + half_width; ++j)
@@ -102,8 +114,17 @@ struct ImagePatch_inpainting_visitor
       v[0] = v[0] - half_width;;
       v[1] = j;
       this->boundaryNodeQueue->push(v);
+
+      itk::Index<2> index;
+      index[0] = v[0];
+      index[1] = v[1];
+      put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
+
       v[0] = v[0] + half_width;
       this->boundaryNodeQueue->push(v);
+
+      index[1] = v[1];
+      put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
       }
 
     // TODO: Mark all nodes in the patch around this node as filled (in the FillStatusMap). This makes them ignored if they are still in the boundaryNodeQueue.

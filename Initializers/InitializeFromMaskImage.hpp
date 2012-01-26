@@ -1,14 +1,15 @@
-#ifndef InitializeBoundaryQueueFromMaskImage_HPP
-#define InitializeBoundaryQueueFromMaskImage_HPP
+#ifndef InitializeFromMaskImage_HPP
+#define InitializeFromMaskImage_HPP
 
 // ITK
 #include "itkImageRegionConstIteratorWithIndex.h"
 
 // Custom
 #include "ImageProcessing/Mask.h"
+#include "Priority/Priority.h"
 
-template <typename TBoundaryNodeQueue>
-inline void InitializeBoundaryQueueFromMaskImage(Mask* const maskImage, TBoundaryNodeQueue* const boundaryNodeQueue)
+template <typename TBoundaryNodeQueue, typename TPriorityMap>
+inline void InitializeFromMaskImage(Mask* const maskImage, TBoundaryNodeQueue* const boundaryNodeQueue, TPriorityMap* const priorityMap, Priority* const priorityFunction)
 {
   Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
   maskImage->FindBoundary(boundaryImage);
@@ -22,6 +23,11 @@ inline void InitializeBoundaryQueueFromMaskImage(Mask* const maskImage, TBoundar
       node[0] = imageIterator.GetIndex()[0];
       node[1] = imageIterator.GetIndex()[1];
       boundaryNodeQueue->push(node);
+    
+      itk::Index<2> index;
+      index[0] = node[0];
+      index[1] = node[1];
+      put(*priorityMap, node, priorityFunction->ComputePriority(index));
       }
     ++imageIterator;
     }

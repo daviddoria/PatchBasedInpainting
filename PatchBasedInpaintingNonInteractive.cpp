@@ -33,7 +33,7 @@
 #include "Topologies/ImagePatchTopology.hpp"
 
 // Initializers
-#include "Initializers/InitializeBoundaryQueueFromMaskImage.hpp"
+#include "Initializers/InitializeFromMaskImage.hpp"
 
 // Inpainters
 #include "Inpainters/MaskedGridPatchInpainter.hpp"
@@ -111,82 +111,73 @@ int main(int argc, char *argv[])
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
 
   // Create the topology
-  //typedef boost::hypercube_topology<0, boost::minstd_rand> TopologyType;
   typedef ImagePatchTopology<ImageType> TopologyType;
   TopologyType space;
 
   // Get the index map
   typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
   IndexMapType indexMap(get(boost::vertex_index, graph));
-  
+
   // Create the position map
   typedef boost::vector_property_map<TopologyType::point_type, IndexMapType> PositionMapType;
   PositionMapType positionMap(num_vertices(graph), indexMap);
 
-  // Create the color map
-//   typedef boost::vector_property_map<boost::default_color_type, IndexMapType> ColorMapType;
-//   ColorMapType colorMap(num_vertices(graph), indexMap);
-
   // Create the priority map
   typedef boost::vector_property_map<float, IndexMapType> PriorityMapType;
   PriorityMapType priorityMap(num_vertices(graph), indexMap);
-  
-  // Create the node fill status map
+
+  // Create the node fill status map. Each pixel is either filled (true) or not filled (false).
   typedef boost::vector_property_map<bool, IndexMapType> FillStatusMapType;
   FillStatusMapType fillStatusMap(num_vertices(graph), indexMap);
-  
-  // Create the boundary status map. A node is on the current boundary if this property is true.
+
+  // Create the boundary status map. A node is on the current boundary if this property is true. 
+  // This property helps the boundaryNodeQueue because we can mark here if a node has become no longer
+  // part of the boundary, so when the queue is popped we can check this property to see if it should
+  // actually be processed.
   typedef boost::vector_property_map<bool, IndexMapType> BoundaryStatusMapType;
   BoundaryStatusMapType boundaryStatusMap(num_vertices(graph), indexMap);
 
   // Create the nearby hole map. A node is on the current boundary if this property is true.
   typedef boost::vector_property_map<std::vector<VertexDescriptorType>, IndexMapType> NearbyHoleMapType;
   NearbyHoleMapType nearbyHoleMap(num_vertices(graph), indexMap);
-  
+
   // Create the priority compare functor
   typedef std::less<float> PriorityCompareType;
   PriorityCompareType lessThanFunctor;
-  
-  // Create the patch map
-  typedef boost::vector_property_map<std::vector<ImagePatchPixelDescriptor<ImageType> >, IndexMapType> DescriptorMapType;
+
+  // Create the descriptor map. This is where the data for each pixel is stored. The Topology
+  typedef boost::vector_property_map<std::vector<TopologyType::point_type>, IndexMapType> DescriptorMapType;
   DescriptorMapType descriptorMap(num_vertices(graph), indexMap);
 
   // Create the nearest neighbor finder
   typedef linear_neighbor_search<> SearchType;
   SearchType linearSearch;
 
-  // Create the patch inpainter
+  // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
   typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
   InpainterType patchInpainter(patch_half_width, fillStatusMap);
 
   // Create the priority function
   Priority* priorityFunction = new PriorityRandom;
 
-  // Create the boundary node queue
+  // Create the boundary node queue. The priority of each node is used to order the queue.
   typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;
   IndexInHeapMap index_in_heap(indexMap);
-  
+
   typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType> BoundaryNodeQueueType;
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
-  InitializeBoundaryQueueFromMaskImage(maskReader->GetOutput(), &boundaryNodeQueue);
+  // Initialize the boundary node queue from the user provided mask image.
+  InitializeFromMaskImage(maskReader->GetOutput(), &boundaryNodeQueue, &priorityMap, priorityFunction);
 
   // Create the visitor
   //typedef default_inpainting_visitor InpaintingVisitorType;
   // InpaintingVisitorType visitor;
-  typedef ImagePatch_inpainting_visitor<ImageType, BoundaryNodeQueueType, FillStatusMapType, DescriptorMapType> InpaintingVisitorType;
-  InpaintingVisitorType visitor(imageReader->GetOutput(), &boundaryNodeQueue, &fillStatusMap, &descriptorMap, priorityFunction, patch_half_width);
-  
+  typedef ImagePatch_inpainting_visitor<ImageType, BoundaryNodeQueueType, FillStatusMapType, DescriptorMapType, PriorityMapType> InpaintingVisitorType;
+  InpaintingVisitorType visitor(imageReader->GetOutput(), &boundaryNodeQueue, &fillStatusMap, &descriptorMap, &priorityMap, priorityFunction, patch_half_width);
+
   // Perform the inpainting
   inpainting_loop(graph, visitor, space, positionMap, fillStatusMap, boundaryNodeQueue, linearSearch, patchInpainter);
-  
-//   inpainting_grid_no_init<VertexListGraphType, InpaintingVisitorType, 
-//                           TopologyType, PositionMapType, 
-//                           FillStatusMapType, PriorityMapType,
-//                           PriorityCompareType, SearchType, PatchInpainter>
-//                     (graph, visitor, space, positionMap,
-//                      fillStatusMap, priorityMap, 
-//                      lessThanFunctor, linearSearch, patchInpainter, priorityFunction);
 
 //   HelpersOutput::WriteImage<ImageType>(inpainting->GetCurrentOutputImage(), outputFilename + ".mha");
 //   HelpersOutput::WriteVectorImageAsRGB(inpainting->GetCurrentOutputImage(), outputFilename);
