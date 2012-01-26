@@ -49,7 +49,6 @@ int main(int argc, char *argv[])
   // Prefer to initialize the DVP-tree with a filled graph, this way, the entire DVP-tree will be initialized at once (gets best results).
   TreeType tree(graph, myTopology, myMap);
 
-  
   multi_dvp_tree_search<GraphType, TreeType> nearestNeighborFinder;
   nearestNeighborFinder.graph_tree_map[&graph] = &tree;
 

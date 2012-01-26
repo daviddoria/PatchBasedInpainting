@@ -15,11 +15,11 @@ void inpainting_loop(VertexListGraph& g, WrappedInpaintingVisitor vis,
                       NearestNeighborFinder find_inpainting_source, 
                       PatchInpainter inpaint_patch) 
 {
-  using namespace boost;
-  typedef typename graph_traits<VertexListGraph>::vertex_descriptor Vertex;
-  typedef typename graph_traits<VertexListGraph>::edge_descriptor Edge;
-  typedef typename property_traits<ColorMap>::value_type ColorValue;
-  typedef color_traits<ColorValue> Color;
+  typedef typename boost::graph_traits<VertexListGraph>::vertex_descriptor Vertex;
+  typedef typename boost::graph_traits<VertexListGraph>::edge_descriptor Edge;
+  typedef typename boost::property_traits<ColorMap>::value_type ColorValue;
+  typedef typename boost::property_traits<PositionMap>::value_type PositionValueType;
+  typedef boost::color_traits<ColorValue> Color;
   
   // When this function is called, the priority-queue should already be filled 
   // with all the hole-vertices (which should also have "Color::black()" color value).
@@ -30,7 +30,7 @@ void inpainting_loop(VertexListGraph& g, WrappedInpaintingVisitor vis,
   {
     // find the next target to in-paint:
     Vertex target_patch_center;
-    do 
+    do
     {
       if( boundaryNodeQueue.empty() )
       {
@@ -44,16 +44,17 @@ void inpainting_loop(VertexListGraph& g, WrappedInpaintingVisitor vis,
     vis.discover_vertex(target_patch_center, g);
 
     // next, we want to find a source patch-center that matches best to our target-patch:
-    //  the nearest-neighbor finder will possibly need the target-patch, the graph, the topology 
+    //  the nearest-neighbor finder will possibly need the target-patch, the graph, the topology
     //  and a property-map to get the "position" value ("position" is a point in the topology).
     //  Note, this is the standard form of my nearest-neighbor finders (any, linear, approximate, DVP-tree, etc.).
-    Vertex source_patch_center = find_inpainting_source( target_patch_center, g, space, position );
-    vis.vertex_match_made(target_patch_center, source_patch_center, g);  //notify the visitor.
-
-    // finally, do the in-painting of the target patch from the source patch.
-    //  the inpaint_patch functor should take care of iterating through the vertices in both 
-    //  patches and call "vis.paint_vertex(target, source, g)" on the individual vertices.
-    inpaint_patch(target_patch_center, source_patch_center, g, vis);
+    PositionValueType targetPosition = get(position, target_patch_center);
+    Vertex source_patch_center = find_inpainting_source( targetPosition, g, space, position );
+//     vis.vertex_match_made(target_patch_center, source_patch_center, g);  //notify the visitor.
+// 
+//     // finally, do the in-painting of the target patch from the source patch.
+//     //  the inpaint_patch functor should take care of iterating through the vertices in both
+//     //  patches and call "vis.paint_vertex(target, source, g)" on the individual vertices.
+//     inpaint_patch(target_patch_center, source_patch_center, g, vis);
 
   } // end main iteration loop
   

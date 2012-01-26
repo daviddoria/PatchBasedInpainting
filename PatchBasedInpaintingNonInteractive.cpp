@@ -74,38 +74,36 @@ int main(int argc, char *argv[])
   MaskReaderType::Pointer maskReader = MaskReaderType::New();
   maskReader->SetFileName(maskFilename);
   maskReader->Update();
-  
+
   // Create the graph
   typedef boost::grid_graph<2> VertexListGraphType;
-  boost::array<std::size_t, 2> graphSideLengths = { { imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0], imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[1] } };
+  boost::array<std::size_t, 2> graphSideLengths = { { imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0],
+                                                      imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[1] } };
   VertexListGraphType graph(graphSideLengths);
 
   // Create the visitor
   //typedef default_inpainting_visitor<VertexListGraphType, boost::graph_traits<InpaintingVisitorType>::vertex_descriptor> InpaintingVisitorType;
   typedef default_inpainting_visitor InpaintingVisitorType;
   InpaintingVisitorType visitor;
-  
+
   // Create the topology
-  typedef boost::hypercube_topology<0> TopologyType;
+  typedef boost::hypercube_topology<0, boost::minstd_rand> TopologyType;
   TopologyType space;
-  
+
   // Create the position map
-  typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type GridIndexMapType;
-  GridIndexMapType gridIndexMap(get(boost::vertex_index, graph));
+  typedef boost::property_map<VertexListGraphType, TopologyType::point_type>::const_type PositionMapType; // no type named 'kind'
+  PositionMapType gridIndexMap(get(boost::vertex_index, graph));
 
   // Create the color map
   std::vector<boost::default_color_type> vertexColorData(num_vertices(graph), boost::white_color);
   //typedef boost::iterator_property_map<std::vector<boost::default_color_type>::iterator, GridIndexMapType> ColorMapType;
   //ColorMapType colorMap(vertexColorData.begin(), gridIndexMap);
   //ColorMapType colorMap(vertexColorData, gridIndexMap);
-  typedef boost::vector_property_map<boost::default_color_type, GridIndexMapType> ColorMapType;
+  typedef boost::vector_property_map<boost::default_color_type, PositionMapType> ColorMapType;
   ColorMapType colorMap(num_vertices(graph), gridIndexMap);
-  
+
   // Create the priority map
-  //std::vector<float> vertexPriorityData(num_vertices(graph), 0.0f);
-  //typedef boost::iterator_property_map<std::vector<float>::iterator, GridIndexMapType> PriorityMapType;
-  //PriorityMapType priorityMap(vertexPriorityData.begin(), gridIndexMap);
-  typedef boost::vector_property_map<float, GridIndexMapType> PriorityMapType;
+  typedef boost::vector_property_map<float, PositionMapType> PriorityMapType;
   PriorityMapType priorityMap(num_vertices(graph), gridIndexMap);
 
   // Create the priority compare functor

@@ -79,7 +79,7 @@ void inpainting_grid_no_init(VertexListGraph& g, InpaintingVisitor vis,
 
   // start the in-painting loop:
   inpainting_loop(g, inpainting_visitor_wrapper<InpaintingVisitor,ColorMap>(vis,color),
-                          space, position, color, boundaryNodeQueue, find_inpainting_source, inpaint_patch);
+                  space, position, color, boundaryNodeQueue, find_inpainting_source, inpaint_patch);
   
 };
 
