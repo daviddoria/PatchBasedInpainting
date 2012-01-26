@@ -5,6 +5,7 @@
 #include "InpaintingAlgorithm.hpp"
 #include "InpaintingVisitorConcept.hpp"
 #include "InpaintingVisitorWrapper.hpp"
+#include "Priority/Priority.h"
 
 // Boost
 #include <boost/graph/detail/d_ary_heap.hpp>
@@ -48,7 +49,8 @@ void inpainting_grid_no_init(VertexListGraph& g, InpaintingVisitor vis,
                         ColorMap color, PriorityMap priority, 
                         PriorityCompare compare_priority,
                         NearestNeighborFinder find_inpainting_source, 
-                        PatchInpainter inpaint_patch) {
+                        PatchInpainter inpaint_patch, Priority* priorityFunction) 
+{
   
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<InpaintingVisitor,VertexListGraph>));
   

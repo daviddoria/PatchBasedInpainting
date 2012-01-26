@@ -22,6 +22,7 @@
 #include "NearestNeighbor/topological_search.hpp"
 #include "PatchInpainter.hpp"
 #include "InpaintingGridNoInit.hpp"
+#include "Priority/PriorityRandom.h"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -31,13 +32,21 @@
 #include <boost/property_map/property_map.hpp>
 #include <boost/graph/topology.hpp>
 
-namespace boost {
+namespace boost 
+{
 
   enum vertex_hole_priority_t { vertex_hole_priority };
-  
   BOOST_INSTALL_PROPERTY(vertex, hole_priority);
+  
+  enum vertex_image_patch_t { vertex_image_patch };
+  BOOST_INSTALL_PROPERTY(vertex, image_patch);
+  
+  enum vertex_filled_t { vertex_filled };
+  BOOST_INSTALL_PROPERTY(vertex, filled);
 
 };
+
+//enum FillStatusEnum {HOLE, VALID};
 
 int main(int argc, char *argv[])
 {
@@ -99,12 +108,16 @@ int main(int argc, char *argv[])
   PositionMapType positionMap(num_vertices(graph), indexMap);
 
   // Create the color map
-  typedef boost::vector_property_map<boost::default_color_type, IndexMapType> ColorMapType;
-  ColorMapType colorMap(num_vertices(graph), indexMap);
+//   typedef boost::vector_property_map<boost::default_color_type, IndexMapType> ColorMapType;
+//   ColorMapType colorMap(num_vertices(graph), indexMap);
 
   // Create the priority map
   typedef boost::vector_property_map<float, IndexMapType> PriorityMapType;
   PriorityMapType priorityMap(num_vertices(graph), indexMap);
+  
+  // Create the node fill status map
+  typedef boost::vector_property_map<bool, IndexMapType> FillStatusMapType;
+  FillStatusMapType fillStatusMap(num_vertices(graph), indexMap);
 
   // Create the priority compare functor
   typedef std::less<float> PriorityCompareType;
@@ -117,13 +130,16 @@ int main(int argc, char *argv[])
   // Create the patch inpainter
   PatchInpainter patchInpainter;
 
+  // Create the priority function
+  Priority* priorityFunction = new PriorityRandom;
+
   inpainting_grid_no_init<VertexListGraphType, InpaintingVisitorType, 
                           TopologyType, PositionMapType, 
-                          ColorMapType, PriorityMapType,
+                          FillStatusMapType, PriorityMapType,
                           PriorityCompareType, SearchType, PatchInpainter>
                     (graph, visitor, space, positionMap,
-                     colorMap, priorityMap, 
-                     lessThanFunctor, linearSearch, patchInpainter);
+                     fillStatusMap, priorityMap, 
+                     lessThanFunctor, linearSearch, patchInpainter, priorityFunction);
 
 //   HelpersOutput::WriteImage<FloatVectorImageType>(inpainting->GetCurrentOutputImage(), outputFilename + ".mha");
 //   HelpersOutput::WriteVectorImageAsRGB(inpainting->GetCurrentOutputImage(), outputFilename);
