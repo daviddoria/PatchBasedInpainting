@@ -33,7 +33,7 @@ public:
   float ComputePriority(const itk::Index<2>& queryPixel) const;
 
   /** There is no reason to update anything.*/
-  void Update(const itk::ImageRegion<2>& filledRegion){}
+  void Update(const itk::Index<2>& filledPixel){}
 };
 
 #include "PriorityRandom.hxx"

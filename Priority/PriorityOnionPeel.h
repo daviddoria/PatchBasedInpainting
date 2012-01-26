@@ -40,12 +40,12 @@ public:
 
   float ComputePriority(const itk::Index<2>& queryPixel) const;
 
-  void Update(const itk::ImageRegion<2>& filledRegion);
+  void Update(const itk::Index<2>& filledPixel);
 
 protected:
 
   /** Compute the Confidence values for pixels that were just inpainted.*/
-  void UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value);
+  void UpdateConfidences(const itk::Index<2>& targetPixel, const float value);
 
   /** Compute the Confidence at a pixel.*/
   float ComputeConfidenceTerm(const itk::Index<2>& queryPixel) const;

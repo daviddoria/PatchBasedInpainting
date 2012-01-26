@@ -46,7 +46,7 @@ public:
   // New functions
   void SetManualPriorityImage(UnsignedCharScalarImageType* const);
 
-  void Update(const itk::ImageRegion<2>& filledRegion);
+  void Update(const itk::Index<2>& filledPixel);
 
   //void SetPriorityFunction(Priority* const priorityFunction);
 

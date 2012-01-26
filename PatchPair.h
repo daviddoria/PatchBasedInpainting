@@ -20,7 +20,7 @@
 #define PATCHPAIR_H
 
 #include "PatchPairDifferences.h"
-#include "ImagePatchPixelDescriptor.h"
+#include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 #include "PixelPairVisitor.h"
 
 #include <memory>

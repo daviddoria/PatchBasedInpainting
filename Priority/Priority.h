@@ -38,7 +38,7 @@ public:
   virtual ~Priority(){}
 
   // At the end of an iteration, update anything that needs to be updated.
-  virtual void Update(const itk::ImageRegion<2>& filledRegion) = 0;
+  virtual void Update(const itk::Index<2>& filledPixel) = 0;
 
 };
 

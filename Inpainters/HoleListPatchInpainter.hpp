@@ -13,7 +13,8 @@
  * \tparam InverseCoordMap A property-map to obtain the vertex descriptor for a given set of coordinates.
  */
 template <typename CoordinateMap, typename HoleListMap, typename InverseCoordMap>
-struct hole_list_patch_inpainter {
+struct hole_list_patch_inpainter 
+{
   CoordinateMap coord;   //property-map used to get the grid-coordinates of a vertex.
   HoleListMap nearby_holes;   //property-map used to get the list of nearby holes around a target center vertex.
   InverseCoordMap inv_coord;   //property-map used to get the vertex-descriptor from some given grid-coordinates
@@ -36,7 +37,8 @@ struct hole_list_patch_inpainter {
     CoordType source_center = get(coord, source);
     CoordType target_to_source = source_center - target_center;
     
-    for( typename HoleList::iterator it = hole_list.begin(); it != hole_list.end(); ++it) {
+    for( typename HoleList::iterator it = hole_list.begin(); it != hole_list.end(); ++it) 
+    {
       
       Vertex target_vertex = *it;
       Vertex source_vertex = get(inv_coord, get(coord, target_vertex) + target_to_source);

@@ -10,12 +10,12 @@
  * \tparam ColorMap A property-map to obtain the vertex color for a given vertex descriptor.
  */
 template <typename FillStatusMap>
-struct masked_grid_patch_inpainter 
+struct MaskedGridPatchInpainter 
 {
   std::size_t patch_half_width;
   FillStatusMap fillStatusMap;
   
-  masked_grid_patch_inpainter(std::size_t aPatchWidth, FillStatusMap aFillStatusMap) : patch_half_width(aPatchWidth / 2), fillStatusMap(aFillStatusMap) { };
+  MaskedGridPatchInpainter(std::size_t aPatchWidth, FillStatusMap aFillStatusMap) : patch_half_width(aPatchWidth / 2), fillStatusMap(aFillStatusMap) { };
 
   template <typename Vertex, typename GridGraph, typename InpaintingVisitor>
   void operator()(Vertex target, Vertex source, GridGraph& g, InpaintingVisitor vis) 
@@ -34,12 +34,16 @@ struct masked_grid_patch_inpainter
     {
       for(std::size_t j = 0; j < patch_half_width * 2 + 1; ++j) 
       {
-        target_node = g.next(target_left, Dim);
-        source_node = g.next(source_left, Dim);
+        target_node[0] = target_patch_corner[0] + i;
+        target_node[1] = target_patch_corner[1] + j;
+        
+        source_node[0] = source_patch_corner[0] + i;
+        source_node[1] = source_patch_corner[1] + j;
+        
         // check the mask value:
         if( get(fillStatusMap, target_node) == false )
         {
-          vis.paint_vertex(target_left, source_left, g); //paint the vertex.
+          vis.paint_vertex(target_node, source_node, g); //paint the vertex.
         }
 
       }

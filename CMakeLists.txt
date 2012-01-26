@@ -94,3 +94,7 @@ ENDIF(BuildDemos)
 
 add_subdirectory(Utilities/Tests)
 add_subdirectory(NearestNeighbor)
+add_subdirectory(Visitors)
+add_subdirectory(Inpainters)
+add_subdirectory(Initializers)
+add_subdirectory(PixelDescriptors)

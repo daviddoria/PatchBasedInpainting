@@ -110,7 +110,8 @@ public:
   void DeepCopyFrom(const Mask* inputMask);
 
   /** Find the boundary of the Mask.*/
-  void FindBoundary(UnsignedCharScalarImageType* boundary) const;
+  typedef UnsignedCharScalarImageType BoundaryImageType;
+  void FindBoundary(BoundaryImageType* boundary) const;
 
   /** Recolor the hole pixels in 'image' a specified 'color'.*/
   template<typename TImage, typename TColor>

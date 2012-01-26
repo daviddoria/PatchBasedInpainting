@@ -62,7 +62,7 @@ float PriorityManual<TImage, TPriority>::ComputePriority(const itk::Index<2>& qu
 // }
 
 template< typename TImage, typename TPriority>
-void PriorityManual<TImage, TPriority>::Update(const itk::ImageRegion<2>& filledRegion)
+void PriorityManual<TImage, TPriority>::Update(const itk::Index<2>& filledPixel)
 {
 
 }

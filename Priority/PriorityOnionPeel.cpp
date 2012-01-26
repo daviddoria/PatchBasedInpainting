@@ -59,13 +59,12 @@ PriorityOnionPeel::PriorityOnionPeel(const Mask* const maskImage, unsigned int p
 //   return namedImages;
 // }
 
-void PriorityOnionPeel::Update(const itk::ImageRegion<2>& filledRegion)
+void PriorityOnionPeel::Update(const itk::Index<2>& filledPixel)
 {
   //EnterFunction("PriorityOnionPeel::Update()");
   // Get the center pixel (the pixel around which the region was filled)
-  itk::Index<2> centerPixel = ITKHelpers::GetRegionCenter(filledRegion);
-  float value = ComputeConfidenceTerm(centerPixel);
-  UpdateConfidences(filledRegion, value);
+  float value = ComputeConfidenceTerm(filledPixel);
+  UpdateConfidences(filledPixel, value);
 
 }
 
@@ -76,13 +75,17 @@ float PriorityOnionPeel::ComputePriority(const itk::Index<2>& queryPixel) const
   return priority;
 }
 
-void PriorityOnionPeel::UpdateConfidences(const itk::ImageRegion<2>& targetRegion, const float value)
+void PriorityOnionPeel::UpdateConfidences(const itk::Index<2>& targetPixel, const float value)
 {
-  //EnterFunction("PriorityOnionPeel::UpdateConfidences()");
+  itk::Size<2> regionSize;
+  regionSize.Fill(this->PatchRadius);
+
+  itk::ImageRegion<2> inputRegion(targetPixel, regionSize);
+  
   //std::cout << "Updating confidences with value " << value << std::endl;
 
   // Force the region to update to be entirely inside the image
-  itk::ImageRegion<2> region = ITKHelpers::CropToRegion(targetRegion, this->MaskImage->GetLargestPossibleRegion());
+  itk::ImageRegion<2> region = ITKHelpers::CropToRegion(region, this->MaskImage->GetLargestPossibleRegion());
 
   // Use an iterator to find masked pixels. Compute their new value, and save it in a vector of pixels and their new values.
   // Do not update the pixels until after all new values have been computed, because we want to use the old values in all of

@@ -77,7 +77,7 @@ float PriorityDepth<TImage>::ComputePriority(const itk::Index<2>& queryPixel) co
 }
 
 template <typename TImage>
-void PriorityDepth<TImage>::Update(const itk::ImageRegion<2>& filledRegion)
+void PriorityDepth<TImage>::Update(const itk::Index<2>& filledPixel)
 {
   typedef itk::VectorIndexSelectionCastImageFilter<FloatVectorImageType, FloatScalarImageType> IndexSelectionType;
   IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
@@ -86,5 +86,5 @@ void PriorityDepth<TImage>::Update(const itk::ImageRegion<2>& filledRegion)
   indexSelectionFilter->Update();
 
   MaskOperations::MaskedBlur<FloatScalarImageType>(indexSelectionFilter->GetOutput(), this->MaskImage, 2.0f, this->BlurredDepth);
-  Isophotes::ComputeMaskedIsophotesInRegion(indexSelectionFilter->GetOutput(), this->MaskImage, filledRegion, this->DepthIsophoteImage);
+  //Isophotes::ComputeMaskedIsophotesInRegion(indexSelectionFilter->GetOutput(), this->MaskImage, filledRegion, this->DepthIsophoteImage);
 }

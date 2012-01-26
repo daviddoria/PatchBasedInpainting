@@ -40,7 +40,7 @@ public:
 
   float ComputePriority(const itk::Index<2>& queryPixel) const;
 
-  void Update(const itk::ImageRegion<2>& filledRegion);
+  void Update(const itk::Index<2>& filledPixel);
 
 //   std::vector<NamedVTKImage> GetNamedImages();
 // 

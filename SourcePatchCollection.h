@@ -21,7 +21,7 @@
 
 // Custom
 #include "ImageProcessing/Mask.h"
-#include "ImagePatchPixelDescriptor.h"
+#include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
 // STL
 #include <set>

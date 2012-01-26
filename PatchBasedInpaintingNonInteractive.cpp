@@ -18,10 +18,28 @@
 
 // Custom
 #include "Helpers/HelpersOutput.h"
-#include "DefaultInpaintingVisitor.hpp"
+
+// Pixel descriptors
+#include "PixelDescriptors/ImagePatchPixelDescriptor.h"
+
+// Visitors
+#include "Visitors/DefaultInpaintingVisitor.hpp"
+#include "Visitors/ImagePatchInpaintingVisitor.hpp"
+
+// Nearest neighbors
 #include "NearestNeighbor/topological_search.hpp"
-#include "PatchInpainter.hpp"
-#include "InpaintingGridNoInit.hpp"
+
+// Topologies
+#include "Topologies/ImagePatchTopology.hpp"
+
+// Initializers
+#include "Initializers/InitializeBoundaryQueueFromMaskImage.hpp"
+
+// Inpainters
+#include "Inpainters/MaskedGridPatchInpainter.hpp"
+#include "Inpainters/HoleListPatchInpainter.hpp"
+
+#include "InpaintingAlgorithm.hpp"
 #include "Priority/PriorityRandom.h"
 
 // ITK
@@ -30,7 +48,8 @@
 // Boost
 #include <boost/graph/grid_graph.hpp>
 #include <boost/property_map/property_map.hpp>
-#include <boost/graph/topology.hpp>
+// #include <boost/graph/topology.hpp>
+#include <boost/graph/detail/d_ary_heap.hpp>
 
 namespace boost 
 {
@@ -45,8 +64,6 @@ namespace boost
   BOOST_INSTALL_PROPERTY(vertex, filled);
 
 };
-
-//enum FillStatusEnum {HOLE, VALID};
 
 int main(int argc, char *argv[])
 {
@@ -63,18 +80,20 @@ int main(int argc, char *argv[])
 
   std::stringstream ssPatchRadius;
   ssPatchRadius << argv[3];
-  int patchRadius = 0;
-  ssPatchRadius >> patchRadius;
+  unsigned int patch_half_width = 0;
+  ssPatchRadius >> patch_half_width;
 
   std::string outputFilename = argv[4];
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
-  std::cout << "Patch radius: " << patchRadius << std::endl;
+  std::cout << "Patch half width: " << patch_half_width << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
-  typedef  itk::ImageFileReader<FloatVectorImageType> ImageReaderType;
+  typedef FloatVectorImageType ImageType;
+
+  typedef  itk::ImageFileReader<ImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
   imageReader->SetFileName(imageFilename.c_str());
   imageReader->Update();
@@ -89,14 +108,11 @@ int main(int argc, char *argv[])
   boost::array<std::size_t, 2> graphSideLengths = { { imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0],
                                                       imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[1] } };
   VertexListGraphType graph(graphSideLengths);
-
-  // Create the visitor
-  //typedef default_inpainting_visitor<VertexListGraphType, boost::graph_traits<InpaintingVisitorType>::vertex_descriptor> InpaintingVisitorType;
-  typedef default_inpainting_visitor InpaintingVisitorType;
-  InpaintingVisitorType visitor;
+  typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
 
   // Create the topology
-  typedef boost::hypercube_topology<0, boost::minstd_rand> TopologyType;
+  //typedef boost::hypercube_topology<0, boost::minstd_rand> TopologyType;
+  typedef ImagePatchTopology<ImageType> TopologyType;
   TopologyType space;
 
   // Get the index map
@@ -118,30 +134,61 @@ int main(int argc, char *argv[])
   // Create the node fill status map
   typedef boost::vector_property_map<bool, IndexMapType> FillStatusMapType;
   FillStatusMapType fillStatusMap(num_vertices(graph), indexMap);
+  
+  // Create the boundary status map. A node is on the current boundary if this property is true.
+  typedef boost::vector_property_map<bool, IndexMapType> BoundaryStatusMapType;
+  BoundaryStatusMapType boundaryStatusMap(num_vertices(graph), indexMap);
 
+  // Create the nearby hole map. A node is on the current boundary if this property is true.
+  typedef boost::vector_property_map<std::vector<VertexDescriptorType>, IndexMapType> NearbyHoleMapType;
+  NearbyHoleMapType nearbyHoleMap(num_vertices(graph), indexMap);
+  
   // Create the priority compare functor
   typedef std::less<float> PriorityCompareType;
   PriorityCompareType lessThanFunctor;
+  
+  // Create the patch map
+  typedef boost::vector_property_map<std::vector<ImagePatchPixelDescriptor<ImageType> >, IndexMapType> DescriptorMapType;
+  DescriptorMapType descriptorMap(num_vertices(graph), indexMap);
 
   // Create the nearest neighbor finder
   typedef linear_neighbor_search<> SearchType;
   SearchType linearSearch;
 
   // Create the patch inpainter
-  PatchInpainter patchInpainter;
+  typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
+  InpainterType patchInpainter(patch_half_width, fillStatusMap);
 
   // Create the priority function
   Priority* priorityFunction = new PriorityRandom;
 
-  inpainting_grid_no_init<VertexListGraphType, InpaintingVisitorType, 
-                          TopologyType, PositionMapType, 
-                          FillStatusMapType, PriorityMapType,
-                          PriorityCompareType, SearchType, PatchInpainter>
-                    (graph, visitor, space, positionMap,
-                     fillStatusMap, priorityMap, 
-                     lessThanFunctor, linearSearch, patchInpainter, priorityFunction);
+  // Create the boundary node queue
+  typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;
+  IndexInHeapMap index_in_heap(indexMap);
+  
+  typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType> BoundaryNodeQueueType;
+  BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
-//   HelpersOutput::WriteImage<FloatVectorImageType>(inpainting->GetCurrentOutputImage(), outputFilename + ".mha");
+  InitializeBoundaryQueueFromMaskImage(maskReader->GetOutput(), &boundaryNodeQueue);
+
+  // Create the visitor
+  //typedef default_inpainting_visitor InpaintingVisitorType;
+  // InpaintingVisitorType visitor;
+  typedef ImagePatch_inpainting_visitor<ImageType, BoundaryNodeQueueType, FillStatusMapType, DescriptorMapType> InpaintingVisitorType;
+  InpaintingVisitorType visitor(imageReader->GetOutput(), &boundaryNodeQueue, &fillStatusMap, &descriptorMap, priorityFunction, patch_half_width);
+  
+  // Perform the inpainting
+  inpainting_loop(graph, visitor, space, positionMap, fillStatusMap, boundaryNodeQueue, linearSearch, patchInpainter);
+  
+//   inpainting_grid_no_init<VertexListGraphType, InpaintingVisitorType, 
+//                           TopologyType, PositionMapType, 
+//                           FillStatusMapType, PriorityMapType,
+//                           PriorityCompareType, SearchType, PatchInpainter>
+//                     (graph, visitor, space, positionMap,
+//                      fillStatusMap, priorityMap, 
+//                      lessThanFunctor, linearSearch, patchInpainter, priorityFunction);
+
+//   HelpersOutput::WriteImage<ImageType>(inpainting->GetCurrentOutputImage(), outputFilename + ".mha");
 //   HelpersOutput::WriteVectorImageAsRGB(inpainting->GetCurrentOutputImage(), outputFilename);
 
   return EXIT_SUCCESS;

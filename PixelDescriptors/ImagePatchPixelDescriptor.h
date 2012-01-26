@@ -33,8 +33,17 @@ class ImagePatchPixelDescriptor
 {
 public:
 
+  /** Default constructor to allow ImagePatch objects to be stored in a container.*/
+  ImagePatchPixelDescriptor(){}
+
   /** Construct a patch from a region.*/
   ImagePatchPixelDescriptor(const TImage* const image, const itk::ImageRegion<2>& region);
+
+  /** Compute the difference to another ImagePatch.*/
+  void SetImage(const TImage* const image) {this->Image = image;}
+  
+  /** Compute the difference to another ImagePatch.*/
+  void SetRegion(const itk::ImageRegion<2>& region) {this->Region = region;}
 
   /** Compute the difference to another ImagePatch.*/
   float Compare(const ImagePatchPixelDescriptor* const item) const;
