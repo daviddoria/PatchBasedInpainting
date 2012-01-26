@@ -35,8 +35,6 @@ int main(int argc, char *argv[])
 
   typedef boost::graph_traits<GraphType>::vertex_descriptor VertexDescriptor;
 
-  VertexDescriptor v = { { 0, 1 } };
-
   typedef custom_topology TopologyType;
   TopologyType myTopology;
   typedef TopologyType::point_type PointType;
@@ -53,12 +51,14 @@ int main(int argc, char *argv[])
 
   typedef linear_neighbor_search<> SearchType;
 
-  // Add vertices to the graph and corresponding points increasin integer points to the tree.
-  // The experiment here is to query the nearest neighbor of a point like (5.2, 5.2, 5.1, 5.3, 5.2, 5.1)
-  // and ensure we get back (5,5,5,5,5,5)
-  unsigned int numberOfVertices = 100;
+  // Add integer positions to the graph vertices.
+  // The experiment here is to query the nearest neighbor of a point like 5.2
+  // and ensure we get back 5.
+  unsigned int numberOfVertices = 10;
   for(unsigned int vertexId = 0; vertexId < numberOfVertices; ++vertexId)
   {
+    VertexDescriptor v = vertex(vertexId, graph);
+    std::cout << "adding " << vertexId << " to " << v[0] << " " << v[1] << std::endl;
     PointType p = vertexId;
 
     boost::put(myMap, v, p);
@@ -68,9 +68,9 @@ int main(int argc, char *argv[])
 
   SearchType search;
 
-  //VertexDescriptor nearestNeighbor = search(queryPoint, graph, myTopology, myMap);
-  VertexDescriptor nearestNeighbor = search.operator()<GraphType, TopologyType, MapType>(queryPoint, graph, myTopology, myMap);
-  std::cout << "nearestNeighbor[0]: " << nearestNeighbor[0] << std::endl;
+  VertexDescriptor nearestNeighbor = search(queryPoint, graph, myTopology, myMap);
+
+  std::cout << "nearestNeighbor: " << nearestNeighbor[0] << " " << nearestNeighbor[1] << std::endl;
 
   return 0;
 }
