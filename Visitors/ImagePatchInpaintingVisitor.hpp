@@ -5,6 +5,8 @@
 
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
+#include <boost/graph/graph_traits.hpp>
+#include <boost/property_map/property_map.hpp>
 /**
  * This is a visitor that complies with the InpaintingVisitorConcept. It creates
  * and differences ImagePatch objects at each pixel.
@@ -38,9 +40,11 @@ struct ImagePatch_inpainting_visitor
     itk::Size<2> regionSize;
     regionSize.Fill(half_width);
     itk::ImageRegion<2> region(index, regionSize);
-    ImagePatchPixelDescriptor<TImage> descriptor(this->image, region);
     
-    put(descriptorMap, v, descriptor);
+    typename boost::property_traits<TDescriptorMap>::value_type descriptor(this->image, region);
+
+    put(*descriptorMap, v, descriptor);
+
   };
 
   template <typename VertexType, typename Graph>

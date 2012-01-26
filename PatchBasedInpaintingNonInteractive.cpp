@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
   PriorityCompareType lessThanFunctor;
 
   // Create the descriptor map. This is where the data for each pixel is stored. The Topology
-  typedef boost::vector_property_map<std::vector<TopologyType::point_type>, IndexMapType> DescriptorMapType;
+  typedef boost::vector_property_map<TopologyType::point_type, IndexMapType> DescriptorMapType;
   DescriptorMapType descriptorMap(num_vertices(graph), indexMap);
 
   // Create the nearest neighbor finder
@@ -167,14 +167,14 @@ int main(int argc, char *argv[])
   typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType> BoundaryNodeQueueType;
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
-  // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage(maskReader->GetOutput(), &boundaryNodeQueue, &priorityMap, priorityFunction);
-
   // Create the visitor
   //typedef default_inpainting_visitor InpaintingVisitorType;
   // InpaintingVisitorType visitor;
   typedef ImagePatch_inpainting_visitor<ImageType, BoundaryNodeQueueType, FillStatusMapType, DescriptorMapType, PriorityMapType> InpaintingVisitorType;
   InpaintingVisitorType visitor(imageReader->GetOutput(), &boundaryNodeQueue, &fillStatusMap, &descriptorMap, &priorityMap, priorityFunction, patch_half_width);
+
+  // Initialize the boundary node queue from the user provided mask image.
+  InitializeFromMaskImage(maskReader->GetOutput(), &boundaryNodeQueue, &priorityMap, priorityFunction, &visitor, &graph);
 
   // Perform the inpainting
   inpainting_loop(graph, visitor, space, positionMap, fillStatusMap, boundaryNodeQueue, linearSearch, patchInpainter);
