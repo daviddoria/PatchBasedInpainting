@@ -1,5 +1,5 @@
 /**
- * \file metric_space_concept.hpp
+ * \file weak_metric_space_concept.hpp
  * 
  * This library defines the traits and concepts that pertain to what can be considered 
  * a metric-space, as used in ReaK::pp. Metric-spaces are based on the Topology concept 
@@ -34,8 +34,8 @@
  *    If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef METRIC_SPACE_CONCEPT_HPP
-#define METRIC_SPACE_CONCEPT_HPP
+#ifndef WEAK_METRIC_SPACE_CONCEPT_HPP
+#define WEAK_METRIC_SPACE_CONCEPT_HPP
 
 
 #include <boost/config.hpp>
@@ -60,10 +60,7 @@ struct metric_topology_traits {
 };
 
 /**
- * This concept defines the requirements to fulfill in order to model a distance-metric 
- * as used in ReaK::pp. A distance-metric is essentially a callable type that can compute 
- * both the distance between two points and the corresponding norm of a difference between 
- * two points.
+ * This concept defines the requirements to fulfill in order to model a distance-metric.
  * 
  * Required concepts:
  * 

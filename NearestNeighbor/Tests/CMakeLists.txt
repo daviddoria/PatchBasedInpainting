@@ -14,3 +14,7 @@ add_test(TestDVPTreeGridGraph TestDVPTreeGridGraph)
 add_executable(TestLinearNeighborSearchGridGraph TestLinearNeighborSearchGridGraph.cpp)
 target_link_libraries(TestLinearNeighborSearchGridGraph)
 add_test(TestLinearNeighborSearchGridGraph TestLinearNeighborSearchGridGraph)
+
+add_executable(TestCustomTopology TestCustomTopology.cpp)
+target_link_libraries(TestCustomTopology)
+add_test(TestCustomTopology TestCustomTopology)
