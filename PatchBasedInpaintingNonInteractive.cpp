@@ -90,18 +90,21 @@ int main(int argc, char *argv[])
   typedef boost::hypercube_topology<0, boost::minstd_rand> TopologyType;
   TopologyType space;
 
+  // Get the index map
+  typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
+  IndexMapType indexMap(get(boost::vertex_index, graph));
+  
   // Create the position map
-  typedef boost::property_map<VertexListGraphType, TopologyType::point_type>::const_type PositionMapType; // TODO: error: no type named 'kind'
-  PositionMapType gridIndexMap(get(boost::vertex_index, graph));
+  typedef boost::vector_property_map<TopologyType::point_type, IndexMapType> PositionMapType;
+  PositionMapType positionMap(num_vertices(graph), indexMap);
 
   // Create the color map
-  std::vector<boost::default_color_type> vertexColorData(num_vertices(graph), boost::white_color);
-  typedef boost::vector_property_map<boost::default_color_type, PositionMapType> ColorMapType;
-  ColorMapType colorMap(num_vertices(graph), gridIndexMap);
+  typedef boost::vector_property_map<boost::default_color_type, IndexMapType> ColorMapType;
+  ColorMapType colorMap(num_vertices(graph), indexMap);
 
   // Create the priority map
-  typedef boost::vector_property_map<float, PositionMapType> PriorityMapType;
-  PriorityMapType priorityMap(num_vertices(graph), gridIndexMap);
+  typedef boost::vector_property_map<float, IndexMapType> PriorityMapType;
+  PriorityMapType priorityMap(num_vertices(graph), indexMap);
 
   // Create the priority compare functor
   typedef std::less<float> PriorityCompareType;
@@ -115,10 +118,10 @@ int main(int argc, char *argv[])
   PatchInpainter patchInpainter;
 
   inpainting_grid_no_init<VertexListGraphType, InpaintingVisitorType, 
-                          TopologyType, GridIndexMapType, 
+                          TopologyType, PositionMapType, 
                           ColorMapType, PriorityMapType,
                           PriorityCompareType, SearchType, PatchInpainter>
-                    (graph, visitor, space, gridIndexMap,
+                    (graph, visitor, space, positionMap,
                      colorMap, priorityMap, 
                      lessThanFunctor, linearSearch, patchInpainter);
 
