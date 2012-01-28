@@ -124,9 +124,9 @@ int main(int argc, char *argv[])
   typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
   IndexMapType indexMap(get(boost::vertex_index, graph));
 
-  // Create the position map
-  typedef boost::vector_property_map<TopologyType::point_type, IndexMapType> PositionMapType;
-  PositionMapType positionMap(num_vertices(graph), indexMap);
+  // Create the position map (we use the descriptorMap instead to indicate the values (positions) in the topology)
+//   typedef boost::vector_property_map<TopologyType::point_type, IndexMapType> PositionMapType;
+//   PositionMapType positionMap(num_vertices(graph), indexMap);
 
   // Create the priority map
   typedef boost::vector_property_map<float, IndexMapType> PriorityMapType;
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
   InitializeFromMaskImage(maskReader->GetOutput(), &boundaryNodeQueue, &priorityMap, priorityFunction, &visitor, &graph, &fillStatusMap);
 
   // Perform the inpainting
-  inpainting_loop(graph, visitor, space, positionMap, fillStatusMap, boundaryNodeQueue, linearSearch, patchInpainter);
+  inpainting_loop(graph, visitor, space, descriptorMap, fillStatusMap, boundaryNodeQueue, linearSearch, patchInpainter);
 
 //   HelpersOutput::WriteImage<ImageType>(inpainting->GetCurrentOutputImage(), outputFilename + ".mha");
 //   HelpersOutput::WriteVectorImageAsRGB(inpainting->GetCurrentOutputImage(), outputFilename);

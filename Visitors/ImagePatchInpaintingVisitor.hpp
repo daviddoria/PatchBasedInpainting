@@ -46,10 +46,17 @@ struct ImagePatch_inpainting_visitor
     itk::Size<2> regionSize;
     regionSize.Fill(half_width);
     itk::ImageRegion<2> region(index, regionSize);
-    
-    typename boost::property_traits<TDescriptorMap>::value_type descriptor(this->image, region);
 
-    put(*descriptorMap, v, descriptor);
+    if(image->GetLargestPossibleRegion().IsInside(region))
+    {
+      typename boost::property_traits<TDescriptorMap>::value_type descriptor(this->image, region);
+      put(*descriptorMap, v, descriptor);
+    }
+    else
+    {
+      // The region is not entirely inside the image so it cannot be used as a source patch
+      // QUESTION: What to do in this case?
+    }
 
   };
 
@@ -155,6 +162,7 @@ struct ImagePatch_inpainting_visitor
     // Mark all nodes in the patch around this node as filled (in the FillStatusMap). This makes them ignored if they are still in the boundaryNodeQueue.
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, half_width);
 
+    region.Crop(image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
     itk::ImageRegionIterator<TImage> imageIterator(image, region);
 
     while(!imageIterator.IsAtEnd())
