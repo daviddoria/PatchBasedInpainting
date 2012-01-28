@@ -33,8 +33,8 @@ struct ImagePatch_inpainting_visitor
   ImagePatch_inpainting_visitor(TImage* const in_image, TBoundaryNodeQueue* const in_boundaryNodeQueue, TFillStatusMap* const in_fillStatusMap,
                                 TDescriptorMap* const in_descriptorMap, TPriorityMap* const in_priorityMap, Priority* const in_priorityFunction,
                                 const unsigned int in_half_width, TBoundaryStatusMap* in_boundaryStatusMap) :
-  image(in_image), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorMap(in_descriptorMap), 
-  priorityMap(in_priorityMap), half_width(in_half_width), NumberOfFinishedVertices(0), boundaryStatusMap(in_boundaryStatusMap)
+  image(in_image), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorMap(in_descriptorMap),
+  priorityMap(in_priorityMap), boundaryStatusMap(in_boundaryStatusMap), half_width(in_half_width), NumberOfFinishedVertices(0)
   {
   }
 
@@ -107,13 +107,38 @@ struct ImagePatch_inpainting_visitor
     indexToFinish[0] = v[0];
     indexToFinish[1] = v[1];
 
+    // Create a mask image from the fillStatusMap. We need to to determine if pixels have hole neighbors.
+    Mask::Pointer mask = Mask::New();
+    mask->SetRegions(image->GetLargestPossibleRegion());
+    mask->Allocate();
+
+    itk::ImageRegionIterator<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
+
+    while(!maskIterator.IsAtEnd())
+      {
+      VertexType v;
+      v[0] = maskIterator.GetIndex()[0];
+      v[1] = maskIterator.GetIndex()[1];
+      bool fillStatus = get(*fillStatusMap, v);
+      if(fillStatus)
+        {
+        maskIterator.Set(mask->GetValidValue());
+        }
+      else
+        {
+        maskIterator.Set(mask->GetHoleValue());
+        }
+
+      ++maskIterator;
+      }
+
     this->priorityFunction->Update(indexToFinish);
 
     // Mark all nodes in the patch around this node as filled (in the FillStatusMap). This makes them ignored if they are still in the boundaryNodeQueue.
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, half_width);
 
     region.Crop(image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
-    itk::ImageRegionIterator<TImage> imageIterator(image, region);
+    itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(mask, region);
 
     while(!imageIterator.IsAtEnd())
       {
@@ -121,92 +146,24 @@ struct ImagePatch_inpainting_visitor
       v[0] = imageIterator.GetIndex()[0];
       v[1] = imageIterator.GetIndex()[1];
       put(*fillStatusMap, v, true);
-      put(*boundaryStatusMap, v, false); // This will be set back to true for boundary pixels in the next loop.
+
+      if(ITKHelpers::HasNeighborWithValue(imageIterator.GetIndex(), mask.GetPointer(), mask->GetHoleValue()))
+        {
+        put(*boundaryStatusMap, v, true);
+        this->boundaryNodeQueue->push(v);
+        put(*priorityMap, v, this->priorityFunction->ComputePriority(imageIterator.GetIndex()));
+        }
+      else
+        {
+        put(*boundaryStatusMap, v, false);
+        }
 
       ++imageIterator;
       }
 
-    // Add all nodes on the boundary of the patch around this node to the boundaryNodeQueue, and update their priority
-    for(unsigned int i = v[0] - half_width; i <= v[0] + half_width; ++i)
-      {
-      VertexType v;
-      v[0] = i;
-      v[1] = v[1] - half_width;
-
-      itk::Index<2> index;
-      index[0] = v[0];
-      index[1] = v[1];
-
-      if(image->GetLargestPossibleRegion().IsInside(index))
-        {
-        this->boundaryNodeQueue->push(v);
-
-        put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
-        }
-
-      v[1] = v[1] + half_width;
-      index[1] = v[1];
-
-      if(image->GetLargestPossibleRegion().IsInside(index))
-        {
-        this->boundaryNodeQueue->push(v);
-        put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
-        }
-
-      }
-
-    for(unsigned int j = v[1] - half_width; j <= v[1] + half_width; ++j)
-      {
-      VertexType v;
-      v[0] = v[0] - half_width;;
-      v[1] = j;
-
-      itk::Index<2> index;
-      index[0] = v[0];
-      index[1] = v[1];
-
-      if(image->GetLargestPossibleRegion().IsInside(index))
-        {
-        this->boundaryNodeQueue->push(v);
-        put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
-        }
-
-      v[0] = v[0] + half_width;
-      index[1] = v[1];
-
-      if(image->GetLargestPossibleRegion().IsInside(index))
-        {
-        this->boundaryNodeQueue->push(v);
-        put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
-        }
-      }
-
     {
     // Debug only - write the mask to a file
-    Mask::Pointer debugMask = Mask::New();
-    debugMask->SetRegions(image->GetLargestPossibleRegion());
-    debugMask->Allocate();
-
-    itk::ImageRegionIterator<Mask> debugMaskIterator(debugMask, debugMask->GetLargestPossibleRegion());
-
-    while(!debugMaskIterator.IsAtEnd())
-      {
-      VertexType v;
-      v[0] = debugMaskIterator.GetIndex()[0];
-      v[1] = debugMaskIterator.GetIndex()[1];
-      bool fillStatus = get(*fillStatusMap, v);
-      if(fillStatus)
-        {
-        debugMaskIterator.Set(debugMask->GetValidValue());
-        }
-      else
-        {
-        debugMaskIterator.Set(debugMask->GetHoleValue());
-        }
-
-      ++debugMaskIterator;
-      }
-    HelpersOutput::WriteImage(debugMask.GetPointer(), Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
+    HelpersOutput::WriteImage(mask.GetPointer(), Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
     this->NumberOfFinishedVertices++;
     }
   }; // finish_vertex

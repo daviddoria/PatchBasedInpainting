@@ -176,9 +176,10 @@ int main(int argc, char *argv[])
   // Create the visitor
   //typedef default_inpainting_visitor InpaintingVisitorType;
   // InpaintingVisitorType visitor;
-  typedef ImagePatch_inpainting_visitor<ImageType, BoundaryNodeQueueType, FillStatusMapType, DescriptorMapType, PriorityMapType> InpaintingVisitorType;
+  typedef ImagePatch_inpainting_visitor<ImageType, BoundaryNodeQueueType, FillStatusMapType,
+                                        DescriptorMapType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
   InpaintingVisitorType visitor(imageReader->GetOutput(), &boundaryNodeQueue, &fillStatusMap,
-                                &descriptorMap, &priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
+                                &descriptorMap, &priorityMap, priorityFunction, patch_half_width, &boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
   InitializeFromMaskImage(maskReader->GetOutput(), &boundaryNodeQueue, &priorityMap, priorityFunction, &visitor, &graph, &fillStatusMap);
