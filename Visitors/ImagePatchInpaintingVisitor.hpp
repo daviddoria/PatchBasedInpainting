@@ -16,7 +16,7 @@
  * This is a visitor that complies with the InpaintingVisitorConcept. It creates
  * and differences ImagePatch objects at each pixel.
  */
-template <typename TImage, typename TBoundaryNodeQueue, typename TFillStatusMap, typename TDescriptorMap, typename TPriorityMap>
+template <typename TImage, typename TBoundaryNodeQueue, typename TFillStatusMap, typename TDescriptorMap, typename TPriorityMap, typename TBoundaryStatusMap>
 struct ImagePatch_inpainting_visitor 
 {
   TImage* image;
@@ -25,15 +25,16 @@ struct ImagePatch_inpainting_visitor
   TFillStatusMap* fillStatusMap;
   TDescriptorMap* descriptorMap;
   TPriorityMap* priorityMap;
+  TBoundaryStatusMap* boundaryStatusMap;
 
   unsigned int half_width;
   unsigned int NumberOfFinishedVertices;
 
   ImagePatch_inpainting_visitor(TImage* const in_image, TBoundaryNodeQueue* const in_boundaryNodeQueue, TFillStatusMap* const in_fillStatusMap,
                                 TDescriptorMap* const in_descriptorMap, TPriorityMap* const in_priorityMap, Priority* const in_priorityFunction,
-                                const unsigned int in_half_width) :
+                                const unsigned int in_half_width, TBoundaryStatusMap* in_boundaryStatusMap) :
   image(in_image), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorMap(in_descriptorMap), 
-  priorityMap(in_priorityMap), half_width(in_half_width), NumberOfFinishedVertices(0)
+  priorityMap(in_priorityMap), half_width(in_half_width), NumberOfFinishedVertices(0), boundaryStatusMap(in_boundaryStatusMap)
   {
   }
 
@@ -108,6 +109,23 @@ struct ImagePatch_inpainting_visitor
 
     this->priorityFunction->Update(indexToFinish);
 
+    // Mark all nodes in the patch around this node as filled (in the FillStatusMap). This makes them ignored if they are still in the boundaryNodeQueue.
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, half_width);
+
+    region.Crop(image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
+    itk::ImageRegionIterator<TImage> imageIterator(image, region);
+
+    while(!imageIterator.IsAtEnd())
+      {
+      VertexType v;
+      v[0] = imageIterator.GetIndex()[0];
+      v[1] = imageIterator.GetIndex()[1];
+      put(*fillStatusMap, v, true);
+      put(*boundaryStatusMap, v, false); // This will be set back to true for boundary pixels in the next loop.
+
+      ++imageIterator;
+      }
+
     // Add all nodes on the boundary of the patch around this node to the boundaryNodeQueue, and update their priority
     for(unsigned int i = v[0] - half_width; i <= v[0] + half_width; ++i)
       {
@@ -161,22 +179,6 @@ struct ImagePatch_inpainting_visitor
         this->boundaryNodeQueue->push(v);
         put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
         }
-      }
-
-    // Mark all nodes in the patch around this node as filled (in the FillStatusMap). This makes them ignored if they are still in the boundaryNodeQueue.
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, half_width);
-
-    region.Crop(image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
-    itk::ImageRegionIterator<TImage> imageIterator(image, region);
-
-    while(!imageIterator.IsAtEnd())
-      {
-      VertexType v;
-      v[0] = imageIterator.GetIndex()[0];
-      v[1] = imageIterator.GetIndex()[1];
-      put(*fillStatusMap, v, true);
-
-      ++imageIterator;
       }
 
     {
