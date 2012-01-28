@@ -43,7 +43,6 @@ inline void InitializeFromMaskImage(Mask* const maskImage, TBoundaryNodeQueue* c
   itk::ImageRegionConstIteratorWithIndex<Mask::BoundaryImageType> imageIterator(boundaryImage, boundaryImage->GetLargestPossibleRegion());
   while(!imageIterator.IsAtEnd())
     {
-
     if(imageIterator.Get() != 0) // boundary pixel found
       {
       typename TBoundaryNodeQueue::value_type node;

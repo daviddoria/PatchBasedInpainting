@@ -18,7 +18,7 @@ struct MaskedGridPatchInpainter
   MaskedGridPatchInpainter(std::size_t aPatchWidth, FillStatusMap aFillStatusMap) : patch_half_width(aPatchWidth / 2), fillStatusMap(aFillStatusMap) { };
 
   template <typename Vertex, typename GridGraph, typename InpaintingVisitor>
-  void operator()(Vertex target, Vertex source, GridGraph& g, InpaintingVisitor vis) 
+  void operator()(Vertex target, Vertex source, GridGraph& g, InpaintingVisitor vis)
   {
     Vertex target_patch_corner;
     target_patch_corner[0] = target[0] - patch_half_width;
@@ -40,7 +40,7 @@ struct MaskedGridPatchInpainter
         source_node[0] = source_patch_corner[0] + i;
         source_node[1] = source_patch_corner[1] + j;
         
-        // check the mask value:
+        // check the mask value
         if( get(fillStatusMap, target_node) == false )
         {
           vis.paint_vertex(target_node, source_node, g); //paint the vertex.

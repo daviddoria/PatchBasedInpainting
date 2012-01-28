@@ -27,12 +27,13 @@ struct ImagePatch_inpainting_visitor
   TPriorityMap* priorityMap;
 
   unsigned int half_width;
+  unsigned int NumberOfFinishedVertices;
 
   ImagePatch_inpainting_visitor(TImage* const in_image, TBoundaryNodeQueue* const in_boundaryNodeQueue, TFillStatusMap* const in_fillStatusMap,
                                 TDescriptorMap* const in_descriptorMap, TPriorityMap* const in_priorityMap, Priority* const in_priorityFunction,
                                 const unsigned int in_half_width) :
   image(in_image), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorMap(in_descriptorMap), 
-  priorityMap(in_priorityMap), half_width(in_half_width)
+  priorityMap(in_priorityMap), half_width(in_half_width), NumberOfFinishedVertices(0)
   {
   }
 
@@ -47,15 +48,18 @@ struct ImagePatch_inpainting_visitor
     regionSize.Fill(half_width);
     itk::ImageRegion<2> region(index, regionSize);
 
+    typedef typename boost::property_traits<TDescriptorMap>::value_type DescriptorType;
+
     if(image->GetLargestPossibleRegion().IsInside(region))
     {
-      typename boost::property_traits<TDescriptorMap>::value_type descriptor(this->image, region);
+      DescriptorType descriptor(this->image, region);
       put(*descriptorMap, v, descriptor);
     }
     else
     {
       // The region is not entirely inside the image so it cannot be used as a source patch
-      // QUESTION: What to do in this case?
+      DescriptorType descriptor; // This descriptor is invalid, so any comparison to it will return infinity.
+      put(*descriptorMap, v, descriptor);
     }
 
   };
@@ -94,15 +98,15 @@ struct ImagePatch_inpainting_visitor
   };
 
   template <typename VertexType, typename Graph>
-  void finish_vertex(VertexType v, Graph& g) const
+  void finish_vertex(VertexType v, Graph& g)
   {
     // Update the priority function
     // Construct the region around the vertex
-    itk::Index<2> index;
-    index[0] = v[0];
-    index[1] = v[1];
+    itk::Index<2> indexToFinish;
+    indexToFinish[0] = v[0];
+    indexToFinish[1] = v[1];
 
-    this->priorityFunction->Update(index);
+    this->priorityFunction->Update(indexToFinish);
 
     // Add all nodes on the boundary of the patch around this node to the boundaryNodeQueue, and update their priority
     for(unsigned int i = v[0] - half_width; i <= v[0] + half_width; ++i)
@@ -160,7 +164,7 @@ struct ImagePatch_inpainting_visitor
       }
 
     // Mark all nodes in the patch around this node as filled (in the FillStatusMap). This makes them ignored if they are still in the boundaryNodeQueue.
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, half_width);
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, half_width);
 
     region.Crop(image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
     itk::ImageRegionIterator<TImage> imageIterator(image, region);
@@ -174,7 +178,37 @@ struct ImagePatch_inpainting_visitor
 
       ++imageIterator;
       }
-  };
-};
+
+    {
+    // Debug only - write the mask to a file
+    Mask::Pointer debugMask = Mask::New();
+    debugMask->SetRegions(image->GetLargestPossibleRegion());
+    debugMask->Allocate();
+
+    itk::ImageRegionIterator<Mask> debugMaskIterator(debugMask, debugMask->GetLargestPossibleRegion());
+
+    while(!debugMaskIterator.IsAtEnd())
+      {
+      VertexType v;
+      v[0] = debugMaskIterator.GetIndex()[0];
+      v[1] = debugMaskIterator.GetIndex()[1];
+      bool fillStatus = get(*fillStatusMap, v);
+      if(fillStatus)
+        {
+        debugMaskIterator.Set(debugMask->GetValidValue());
+        }
+      else
+        {
+        debugMaskIterator.Set(debugMask->GetHoleValue());
+        }
+
+      ++debugMaskIterator;
+      }
+    HelpersOutput::WriteImage(debugMask.GetPointer(), Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
+    this->NumberOfFinishedVertices++;
+    }
+  }; // finish_vertex
+
+}; // ImagePatch_inpainting_visitor
 
 #endif

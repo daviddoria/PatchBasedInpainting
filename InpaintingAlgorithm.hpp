@@ -3,14 +3,14 @@
 
 #include <boost/graph/properties.hpp>
 
-template <typename VertexListGraph, typename WrappedInpaintingVisitor,
+template <typename VertexListGraph, typename InpaintingVisitorType,
           typename Topology, typename PositionMap,
           typename BoundaryStatusMap, typename PriorityQueue, 
           typename NearestNeighborFinder, 
           typename PatchInpainter>
 inline
-void inpainting_loop(VertexListGraph& g, WrappedInpaintingVisitor vis,
-                      const Topology& space, PositionMap position,
+void inpainting_loop(VertexListGraph& g, InpaintingVisitorType vis,
+                      const Topology& space, PositionMap positionMap,
                       BoundaryStatusMap boundaryStatusMap, PriorityQueue& boundaryNodeQueue,
                       NearestNeighborFinder find_inpainting_source, 
                       PatchInpainter inpaint_patch) 
@@ -45,8 +45,8 @@ void inpainting_loop(VertexListGraph& g, WrappedInpaintingVisitor vis,
     //  the nearest-neighbor finder will possibly need the target-patch, the graph, the topology
     //  and a property-map to get the "position" value ("position" is a point in the topology).
     //  Note, this is the standard form of my nearest-neighbor finders (any, linear, approximate, DVP-tree, etc.).
-    PositionValueType targetPosition = get(position, targetNode);
-    Vertex source_patch_center = find_inpainting_source( targetPosition, g, space, position );
+    PositionValueType targetPosition = get(positionMap, targetNode);
+    Vertex source_patch_center = find_inpainting_source( targetPosition, g, space, positionMap );
     vis.vertex_match_made(targetNode, source_patch_center, g);
 
     // finally, do the in-painting of the target patch from the source patch.

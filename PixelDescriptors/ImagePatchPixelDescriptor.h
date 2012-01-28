@@ -36,8 +36,8 @@ public:
   /** Default constructor to allow ImagePatch objects to be stored in a container.*/
   ImagePatchPixelDescriptor();
 
-  /** Construct a patch from a region.*/
-  ImagePatchPixelDescriptor(const TImage* const image, const itk::ImageRegion<2>& region);
+  /** Construct a patch from a region. Ideally 'image' would be const, but we also need a default constructor.*/
+  ImagePatchPixelDescriptor(TImage* const image, const itk::ImageRegion<2>& region);
 
   /** Compute the difference to another ImagePatch.*/
   void SetImage(const TImage* const image);
