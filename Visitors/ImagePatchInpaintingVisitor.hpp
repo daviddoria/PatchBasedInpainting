@@ -5,8 +5,13 @@
 
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
+// Boost
 #include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
+
+// Helpers
+#include "Helpers/ITKHelpers.h"
+
 /**
  * This is a visitor that complies with the InpaintingVisitorConcept. It creates
  * and differences ImagePatch objects at each pixel.
@@ -23,8 +28,9 @@ struct ImagePatch_inpainting_visitor
 
   unsigned int half_width;
 
-  ImagePatch_inpainting_visitor(TImage* const in_image, TBoundaryNodeQueue* const in_boundaryNodeQueue, TFillStatusMap* const in_fillStatusMap, TDescriptorMap* const in_descriptorMap,  
-                                TPriorityMap* const in_priorityMap, Priority* const in_priorityFunction, const unsigned int in_half_width) : 
+  ImagePatch_inpainting_visitor(TImage* const in_image, TBoundaryNodeQueue* const in_boundaryNodeQueue, TFillStatusMap* const in_fillStatusMap,
+                                TDescriptorMap* const in_descriptorMap, TPriorityMap* const in_priorityMap, Priority* const in_priorityFunction,
+                                const unsigned int in_half_width) :
   image(in_image), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorMap(in_descriptorMap), 
   priorityMap(in_priorityMap), half_width(in_half_width)
   {
@@ -146,8 +152,20 @@ struct ImagePatch_inpainting_visitor
         }
       }
 
-    // TODO: Mark all nodes in the patch around this node as filled (in the FillStatusMap). This makes them ignored if they are still in the boundaryNodeQueue.
+    // Mark all nodes in the patch around this node as filled (in the FillStatusMap). This makes them ignored if they are still in the boundaryNodeQueue.
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, half_width);
 
+    itk::ImageRegionIterator<TImage> imageIterator(image, region);
+
+    while(!imageIterator.IsAtEnd())
+      {
+      VertexType v;
+      v[0] = imageIterator.GetIndex()[0];
+      v[1] = imageIterator.GetIndex()[1];
+      put(*fillStatusMap, v, true);
+
+      ++imageIterator;
+      }
   };
 };
 
