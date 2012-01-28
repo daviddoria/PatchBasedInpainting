@@ -97,18 +97,26 @@ struct ImagePatch_inpainting_visitor
       VertexType v;
       v[0] = i;
       v[1] = v[1] - half_width;
-      this->boundaryNodeQueue->push(v);
 
       itk::Index<2> index;
       index[0] = v[0];
       index[1] = v[1];
-      put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
+
+      if(image->GetLargestPossibleRegion().IsInside(index))
+        {
+        this->boundaryNodeQueue->push(v);
+
+        put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
+        }
 
       v[1] = v[1] + half_width;
-      this->boundaryNodeQueue->push(v);
-
       index[1] = v[1];
-      put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
+
+      if(image->GetLargestPossibleRegion().IsInside(index))
+        {
+        this->boundaryNodeQueue->push(v);
+        put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
+        }
 
       }
 
@@ -117,18 +125,25 @@ struct ImagePatch_inpainting_visitor
       VertexType v;
       v[0] = v[0] - half_width;;
       v[1] = j;
-      this->boundaryNodeQueue->push(v);
 
       itk::Index<2> index;
       index[0] = v[0];
       index[1] = v[1];
-      put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
+
+      if(image->GetLargestPossibleRegion().IsInside(index))
+        {
+        this->boundaryNodeQueue->push(v);
+        put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
+        }
 
       v[0] = v[0] + half_width;
-      this->boundaryNodeQueue->push(v);
-
       index[1] = v[1];
-      put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
+
+      if(image->GetLargestPossibleRegion().IsInside(index))
+        {
+        this->boundaryNodeQueue->push(v);
+        put(*priorityMap, v, this->priorityFunction->ComputePriority(index));
+        }
       }
 
     // TODO: Mark all nodes in the patch around this node as filled (in the FillStatusMap). This makes them ignored if they are still in the boundaryNodeQueue.

@@ -20,6 +20,11 @@
 \class Mask
 \brief This class is a subclass of itkImage that provides the concept of "valid" pixels
        and hole pixels. Pixels that are any other value are never used in computations.
+       Using itkImageFileReader, the first channel of any input image will be attempted
+       to be converted to a Mask. NOTE: If the image is a 4 channel image where the 4th
+       channel represents alpha, the reader sometimes produces a blank image. Ideally
+       a 3 channel grayscale (all channels are the same) or 1 channel image is used
+       as input.
 */
 
 #ifndef MASK_H
@@ -115,26 +120,32 @@ public:
 
   /** Recolor the hole pixels in 'image' a specified 'color'.*/
   template<typename TImage, typename TColor>
-  void ApplyColorToImage(const typename TImage::Pointer image, const TColor& color);
+  void ApplyColorToImage(const TImage* const image, const TColor& color) const;
 
   /** Change the hole pixels in 'image' to a specified 'holeValue'.*/
   template<typename TImage>
-  void ApplyToImage(TImage* image, const typename TImage::PixelType& holeValue);
+  void ApplyToImage(TImage* const image, const typename TImage::PixelType& holeValue) const;
 
   /** Recolor the hole pixels in 'image' a specified 'color'.*/
   template<typename TImage, typename TColor>
-  void ApplyToVectorImage(TImage* image, const TColor& color);
+  void ApplyToVectorImage(TImage* const image, const TColor& color)const ;
 
   /** Create a VTK image from the mask.*/
   template<typename TColor>
-  void MakeVTKImage(vtkImageData* image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent) const;
+  void MakeVTKImage(vtkImageData* const image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent) const;
 
   /** Create a mask from a mask image.*/
   template<typename TImage>
-  void CreateFromImage(const TImage* image, const typename TImage::PixelType& holeColor);
+  void CreateFromImage(const TImage* const image, const typename TImage::PixelType& holeColor);
 
-  std::vector<itk::Index<2> > GetValidPixelsInRegion(const itk::ImageRegion<2>& region);
-  std::vector<itk::Index<2> > GetHolePixelsInRegion(const itk::ImageRegion<2>& region);
+  std::vector<itk::Index<2> > GetValidPixelsInRegion(const itk::ImageRegion<2>& region) const;
+  std::vector<itk::Index<2> > GetHolePixelsInRegion(const itk::ImageRegion<2>& region) const;
+
+  unsigned int CountHolePixels(const itk::ImageRegion<2>& region) const;
+  unsigned int CountHolePixels() const;
+
+  unsigned int CountValidPixels(const itk::ImageRegion<2>& region) const;
+  unsigned int CountValidPixels() const;
 
 private:
 

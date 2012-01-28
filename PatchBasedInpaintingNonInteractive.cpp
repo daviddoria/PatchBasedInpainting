@@ -51,6 +51,9 @@
 // #include <boost/graph/topology.hpp>
 #include <boost/graph/detail/d_ary_heap.hpp>
 
+// Debug
+#include "Helpers/HelpersOutput.h"
+
 namespace boost 
 {
 
@@ -99,9 +102,12 @@ int main(int argc, char *argv[])
   imageReader->Update();
 
   typedef  itk::ImageFileReader<Mask> MaskReaderType;
+
   MaskReaderType::Pointer maskReader = MaskReaderType::New();
   maskReader->SetFileName(maskFilename);
   maskReader->Update();
+  std::cout << "hole pixels: " << maskReader->GetOutput()->CountHolePixels() << std::endl;
+  std::cout << "valid pixels: " << maskReader->GetOutput()->CountValidPixels() << std::endl;
 
   // Create the graph
   typedef boost::grid_graph<2> VertexListGraphType;
@@ -174,7 +180,7 @@ int main(int argc, char *argv[])
   InpaintingVisitorType visitor(imageReader->GetOutput(), &boundaryNodeQueue, &fillStatusMap, &descriptorMap, &priorityMap, priorityFunction, patch_half_width);
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage(maskReader->GetOutput(), &boundaryNodeQueue, &priorityMap, priorityFunction, &visitor, &graph);
+  InitializeFromMaskImage(maskReader->GetOutput(), &boundaryNodeQueue, &priorityMap, priorityFunction, &visitor, &graph, &fillStatusMap);
 
   // Perform the inpainting
   inpainting_loop(graph, visitor, space, positionMap, fillStatusMap, boundaryNodeQueue, linearSearch, patchInpainter);

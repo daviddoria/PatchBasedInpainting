@@ -19,7 +19,7 @@
 #include <vtkImageData.h>
 
 template<typename TImage, typename TColor>
-void Mask::ApplyToVectorImage(TImage* image, const TColor& color)
+void Mask::ApplyToVectorImage(TImage* const image, const TColor& color) const
 {
   // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
   // to be used to specify the color.
@@ -56,7 +56,7 @@ void Mask::ApplyToVectorImage(TImage* image, const TColor& color)
 }
 
 template<typename TImage, typename TColor>
-void Mask::ApplyColorToImage(const typename TImage::Pointer image, const TColor& color)
+void Mask::ApplyColorToImage(const TImage* const image, const TColor& color) const
 {
   // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
   // to be used to specify the color.
@@ -94,7 +94,7 @@ void Mask::ApplyColorToImage(const typename TImage::Pointer image, const TColor&
 
 
 template<typename TImage>
-void Mask::ApplyToImage(TImage* image, const typename TImage::PixelType& holeValue)
+void Mask::ApplyToImage(TImage* const image, const typename TImage::PixelType& holeValue) const
 {
   // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
   // to be used to specify the color.
@@ -121,7 +121,7 @@ void Mask::ApplyToImage(TImage* image, const typename TImage::PixelType& holeVal
 }
 
 template <typename TColor>
-void Mask::MakeVTKImage(vtkImageData* image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent) const
+void Mask::MakeVTKImage(vtkImageData* const image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent) const
 {
   int dims[3];
   dims[0] = this->GetLargestPossibleRegion().GetSize()[0];

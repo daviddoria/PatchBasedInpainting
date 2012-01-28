@@ -37,14 +37,34 @@ Mask::Mask()
   this->ValidValue = 0;
 }
 
-std::vector<itk::Index<2> > Mask::GetValidPixelsInRegion(const itk::ImageRegion<2>& inputRegion)
+unsigned int Mask::CountHolePixels(const itk::ImageRegion<2>& region) const
+{
+  return GetHolePixelsInRegion(region).size();
+}
+
+unsigned int Mask::CountHolePixels() const
+{
+  return CountHolePixels(this->GetLargestPossibleRegion());
+}
+
+unsigned int Mask::CountValidPixels(const itk::ImageRegion<2>& region) const
+{
+  return GetValidPixelsInRegion(region).size();
+}
+
+unsigned int Mask::CountValidPixels() const
+{
+  return CountValidPixels(this->GetLargestPossibleRegion());
+}
+
+std::vector<itk::Index<2> > Mask::GetValidPixelsInRegion(const itk::ImageRegion<2>& inputRegion) const
 {
   itk::ImageRegion<2> region = inputRegion;
   region.Crop(this->GetLargestPossibleRegion());
 
   std::vector<itk::Index<2> > validPixels;
 
-  itk::ImageRegionIterator<Mask> iterator(this, region);
+  itk::ImageRegionConstIterator<Mask> iterator(this, region);
 
   while(!iterator.IsAtEnd())
     {
@@ -58,14 +78,14 @@ std::vector<itk::Index<2> > Mask::GetValidPixelsInRegion(const itk::ImageRegion<
   return validPixels;
 }
 
-std::vector<itk::Index<2> > Mask::GetHolePixelsInRegion(const itk::ImageRegion<2>& inputRegion)
+std::vector<itk::Index<2> > Mask::GetHolePixelsInRegion(const itk::ImageRegion<2>& inputRegion) const
 {
   itk::ImageRegion<2> region = inputRegion;
   region.Crop(this->GetLargestPossibleRegion());
 
   std::vector<itk::Index<2> > holePixels;
 
-  typename itk::ImageRegionIterator<Mask> iterator(this, region);
+  typename itk::ImageRegionConstIterator<Mask> iterator(this, region);
 
   while(!iterator.IsAtEnd())
     {
