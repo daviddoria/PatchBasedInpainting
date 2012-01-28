@@ -69,6 +69,7 @@ struct ImagePatch_inpainting_visitor
   void discover_vertex(VertexType v, Graph& g) const
   {
     // QUESTION: what would be done in this function?
+    std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
   };
 
   template <typename VertexType, typename Graph>
@@ -107,11 +108,29 @@ struct ImagePatch_inpainting_visitor
     indexToFinish[0] = v[0];
     indexToFinish[1] = v[1];
 
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, half_width);
+
+    region.Crop(image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
+
+    // Mark all the pixels in this region as filled. This must be done before creating the mask image to use to check for boundary pixels.
+    // It does not matter which image we iterate over, we just want the indices.
+    itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(image, region);
+
+    while(!gridIterator.IsAtEnd())
+      {
+      VertexType v;
+      v[0] = gridIterator.GetIndex()[0];
+      v[1] = gridIterator.GetIndex()[1];
+      put(*fillStatusMap, v, true);
+
+      ++gridIterator;
+      }
     // Create a mask image from the fillStatusMap. We need to to determine if pixels have hole neighbors.
     Mask::Pointer mask = Mask::New();
     mask->SetRegions(image->GetLargestPossibleRegion());
     mask->Allocate();
 
+    // This could instead just generate the mask image in the region around the pixel (plus a 1 pixel boundary around the region, because these are the important pixels to check to see if the node is on the new boundary).
     itk::ImageRegionIterator<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
 
     while(!maskIterator.IsAtEnd())
@@ -134,10 +153,6 @@ struct ImagePatch_inpainting_visitor
 
     this->priorityFunction->Update(indexToFinish);
 
-    // Mark all nodes in the patch around this node as filled (in the FillStatusMap). This makes them ignored if they are still in the boundaryNodeQueue.
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, half_width);
-
-    region.Crop(image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
     itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(mask, region);
 
     while(!imageIterator.IsAtEnd())
@@ -147,6 +162,8 @@ struct ImagePatch_inpainting_visitor
       v[1] = imageIterator.GetIndex()[1];
       put(*fillStatusMap, v, true);
 
+      // Mark all nodes in the patch around this node as filled (in the FillStatusMap).
+      // This makes them ignored if they are still in the boundaryNodeQueue.
       if(ITKHelpers::HasNeighborWithValue(imageIterator.GetIndex(), mask.GetPointer(), mask->GetHoleValue()))
         {
         put(*boundaryStatusMap, v, true);
