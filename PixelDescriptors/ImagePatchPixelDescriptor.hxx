@@ -27,6 +27,25 @@
 #include "itkImageRegionConstIterator.h"
 
 template <typename TImage>
+ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor() : Valid(false)
+{
+
+}
+
+template <typename TImage>
+ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor(const TImage* const image, const itk::ImageRegion<2>& region) : Region(region)
+{
+  if(image->GetLargestPossibleRegion().IsInside(region))
+    {
+    this->Valid = true;
+    }
+  else
+    {
+    this->Valid = false;
+    }
+}
+
+template <typename TImage>
 void ImagePatchPixelDescriptor<TImage>::VisitAllPixels(const TImage* const image, PixelVisitor<typename TImage::PixelType> &visitor)
 {
   itk::ImageRegionConstIterator<TImage> imageIterator(image, this->Region);
@@ -38,12 +57,66 @@ void ImagePatchPixelDescriptor<TImage>::VisitAllPixels(const TImage* const image
     }
 }
 
+template <typename TImage>
+bool ImagePatchPixelDescriptor<TImage>::IsValid() const
+{
+  return this->Valid;
+}
 
 template <typename TImage>
-float ImagePatchPixelDescriptor<TImage>::Compare(const ImagePatchPixelDescriptor* const item) const
+float ImagePatchPixelDescriptor<TImage>::Compare(const ImagePatchPixelDescriptor* const other) const
 {
-  // TODO: Implement this.
-  return 0.0f;
+  if(!this->Valid || !other->IsValid())
+    {
+    return std::numeric_limits<float>::infinity();
+    }
+
+  float totalDifference = 0.0f;
+
+  itk::Offset<2> offsetToOther = other->GetCorner() - this->GetCorner();
+
+  // Compare all corresponding pixels and sum their differences
+  itk::ImageRegionConstIteratorWithIndex<TImage> imageIterator(this->Image, this->Region);
+  while(!imageIterator.IsAtEnd())
+    {
+    //float difference = fabs(imageIterator.Get() - this->Image->GetPixel(imageIterator.GetIndex() + offsetToOther));
+    float difference = (imageIterator.Get() - this->Image->GetPixel(imageIterator.GetIndex() + offsetToOther)).GetNorm();
+    totalDifference += difference;
+
+    ++imageIterator;
+    }
+  return totalDifference;
+}
+
+template <typename TImage>
+float ImagePatchPixelDescriptor<TImage>::Compare(const ImagePatchPixelDescriptor* const other, const std::vector<itk::Offset<2> >& offsets) const
+{
+  if(!this->Valid || !other->IsValid())
+    {
+    return std::numeric_limits<float>::infinity();
+    }
+
+  float totalDifference = 0.0f;
+
+  for(unsigned int offsetId = 0; offsetId < offsets.size(); ++offsetId)
+  {
+    float difference = fabs(this->Image->GetPixel(this->GetCorner() + offsets[offsetId]) - this->Image->GetPixel(other->GetCorner() + offsets[offsetId]));
+    totalDifference += difference;
+  }
+
+  return totalDifference;
+}
+
+template <typename TImage>
+void ImagePatchPixelDescriptor<TImage>::SetImage(const TImage* const image)
+{
+  this->Image = image;
+}
+
+template <typename TImage>
+void ImagePatchPixelDescriptor<TImage>::SetRegion(const itk::ImageRegion<2>& region)
+{
+  this->Region = region;
 }
 
 template <typename TImage>
@@ -76,12 +149,6 @@ void ImagePatchPixelDescriptor<TImage>::VisitOffsets(const TImage* const image, 
     {
     visitor.Visit(image->GetPixel(corner + offsets[offsetId]));
     }
-}
-
-template <typename TImage>
-ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor(const TImage* const image, const itk::ImageRegion<2>& region)
-{
-  this->Region = region;
 }
 
 template <typename TImage>

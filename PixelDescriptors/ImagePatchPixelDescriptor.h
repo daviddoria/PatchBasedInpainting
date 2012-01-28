@@ -34,20 +34,23 @@ class ImagePatchPixelDescriptor
 public:
 
   /** Default constructor to allow ImagePatch objects to be stored in a container.*/
-  ImagePatchPixelDescriptor(){}
+  ImagePatchPixelDescriptor();
 
   /** Construct a patch from a region.*/
   ImagePatchPixelDescriptor(const TImage* const image, const itk::ImageRegion<2>& region);
 
   /** Compute the difference to another ImagePatch.*/
-  void SetImage(const TImage* const image) {this->Image = image;}
-  
+  void SetImage(const TImage* const image);
+
   /** Compute the difference to another ImagePatch.*/
-  void SetRegion(const itk::ImageRegion<2>& region) {this->Region = region;}
+  void SetRegion(const itk::ImageRegion<2>& region);
 
   /** Compute the difference to another ImagePatch.*/
   float Compare(const ImagePatchPixelDescriptor* const item) const;
-  
+
+    /** Compute the difference to another ImagePatch only at specified offets.*/
+  float Compare(const ImagePatchPixelDescriptor* const item, const std::vector<itk::Offset<2> >& offsets) const;
+
   /** Check if two patches are the same.*/
   bool operator==(const ImagePatchPixelDescriptor& other) const;
 
@@ -76,7 +79,11 @@ public:
   /** Visit the pixels in a patch specified by a list of offsets from the corner of the patch. */
   void VisitOffsets(const TImage* const image, const std::vector<itk::Offset<2> >& offsets, PixelVisitor<typename TImage::PixelType> &visitor);
 
+  /** Get the image to which this patch refers. */
   TImage* GetImage() const;
+
+  /** Determine if this patch is valid. A patch is invalid if it is not entirely within the image. */
+  bool IsValid() const;
 
 private:
   /** The region in the image defining the location of the patch. */
@@ -84,6 +91,9 @@ private:
 
   /** The image that the patch points to. */
   TImage* Image;
+
+  /** Indicate if this image patch is valid or not. */
+  bool Valid;
 
 };
 
