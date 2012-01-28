@@ -178,14 +178,14 @@ int main(int argc, char *argv[])
   // InpaintingVisitorType visitor;
   typedef ImagePatch_inpainting_visitor<ImageType, BoundaryNodeQueueType, FillStatusMapType,
                                         DescriptorMapType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
-  InpaintingVisitorType visitor(imageReader->GetOutput(), &boundaryNodeQueue, &fillStatusMap,
-                                &descriptorMap, &priorityMap, priorityFunction, patch_half_width, &boundaryStatusMap);
+  InpaintingVisitorType visitor(imageReader->GetOutput(), maskReader->GetOutput(), boundaryNodeQueue, fillStatusMap,
+                                descriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage(maskReader->GetOutput(), &boundaryNodeQueue, &priorityMap, priorityFunction, &visitor, &graph, &fillStatusMap);
-
+  InitializeFromMaskImage(maskReader->GetOutput(), boundaryNodeQueue, priorityMap, priorityFunction, &visitor, graph, fillStatusMap, boundaryStatusMap);
+  std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size() << " nodes in the boundaryNodeQueue" << std::endl;
   // Perform the inpainting
-  inpainting_loop(graph, visitor, space, descriptorMap, fillStatusMap, boundaryNodeQueue, linearSearch, patchInpainter);
+  inpainting_loop(graph, visitor, space, descriptorMap, boundaryStatusMap, boundaryNodeQueue, linearSearch, patchInpainter);
 
 //   HelpersOutput::WriteImage<ImageType>(inpainting->GetCurrentOutputImage(), outputFilename + ".mha");
 //   HelpersOutput::WriteVectorImageAsRGB(inpainting->GetCurrentOutputImage(), outputFilename);

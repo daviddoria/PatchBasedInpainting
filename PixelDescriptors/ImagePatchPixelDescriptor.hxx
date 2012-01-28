@@ -66,7 +66,7 @@ bool ImagePatchPixelDescriptor<TImage>::IsValid() const
 template <typename TImage>
 float ImagePatchPixelDescriptor<TImage>::Compare(const ImagePatchPixelDescriptor* const other) const
 {
-  if(!this->Valid || !other->IsValid())
+  if(!(this->Valid && other->IsValid()))
     {
     return std::numeric_limits<float>::infinity();
     }
@@ -85,6 +85,7 @@ float ImagePatchPixelDescriptor<TImage>::Compare(const ImagePatchPixelDescriptor
 
     ++imageIterator;
     }
+  std::cout << "Difference: " << totalDifference << std::endl;
   return totalDifference;
 }
 

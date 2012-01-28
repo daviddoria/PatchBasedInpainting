@@ -20,20 +20,21 @@ template <typename TImage, typename TBoundaryNodeQueue, typename TFillStatusMap,
 struct ImagePatch_inpainting_visitor 
 {
   TImage* image;
-  TBoundaryNodeQueue* boundaryNodeQueue;
+  Mask* mask;
+  TBoundaryNodeQueue& boundaryNodeQueue;
   Priority* priorityFunction;
-  TFillStatusMap* fillStatusMap;
-  TDescriptorMap* descriptorMap;
-  TPriorityMap* priorityMap;
-  TBoundaryStatusMap* boundaryStatusMap;
+  TFillStatusMap& fillStatusMap;
+  TDescriptorMap& descriptorMap;
+  TPriorityMap& priorityMap;
+  TBoundaryStatusMap& boundaryStatusMap;
 
   unsigned int half_width;
   unsigned int NumberOfFinishedVertices;
 
-  ImagePatch_inpainting_visitor(TImage* const in_image, TBoundaryNodeQueue* const in_boundaryNodeQueue, TFillStatusMap* const in_fillStatusMap,
-                                TDescriptorMap* const in_descriptorMap, TPriorityMap* const in_priorityMap, Priority* const in_priorityFunction,
-                                const unsigned int in_half_width, TBoundaryStatusMap* in_boundaryStatusMap) :
-  image(in_image), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorMap(in_descriptorMap),
+  ImagePatch_inpainting_visitor(TImage* const in_image, Mask* const in_mask, TBoundaryNodeQueue& in_boundaryNodeQueue, TFillStatusMap& in_fillStatusMap,
+                                TDescriptorMap& in_descriptorMap, TPriorityMap& in_priorityMap, Priority* const in_priorityFunction,
+                                const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
+  image(in_image), mask(in_mask), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorMap(in_descriptorMap),
   priorityMap(in_priorityMap), boundaryStatusMap(in_boundaryStatusMap), half_width(in_half_width), NumberOfFinishedVertices(0)
   {
   }
@@ -51,16 +52,16 @@ struct ImagePatch_inpainting_visitor
 
     typedef typename boost::property_traits<TDescriptorMap>::value_type DescriptorType;
 
-    if(image->GetLargestPossibleRegion().IsInside(region))
+    if(image->GetLargestPossibleRegion().IsInside(region) && mask->IsValid(region) && mask->IsValid(index))
     {
       DescriptorType descriptor(this->image, region);
-      put(*descriptorMap, v, descriptor);
+      put(descriptorMap, v, descriptor);
     }
     else
     {
       // The region is not entirely inside the image so it cannot be used as a source patch
       DescriptorType descriptor; // This descriptor is invalid, so any comparison to it will return infinity.
-      put(*descriptorMap, v, descriptor);
+      put(descriptorMap, v, descriptor);
     }
 
   };
@@ -113,7 +114,7 @@ struct ImagePatch_inpainting_visitor
     region.Crop(image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
 
     // Mark all the pixels in this region as filled. This must be done before creating the mask image to use to check for boundary pixels.
-    // It does not matter which image we iterate over, we just want the indices.
+    // It does not matter which image we iterate over, we just want the indices. Additionally, initialize these vertices because they may now be valid.
     itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(image, region);
 
     while(!gridIterator.IsAtEnd())
@@ -121,38 +122,16 @@ struct ImagePatch_inpainting_visitor
       VertexType v;
       v[0] = gridIterator.GetIndex()[0];
       v[1] = gridIterator.GetIndex()[1];
-      put(*fillStatusMap, v, true);
-
+      put(fillStatusMap, v, true);
+      mask->SetPixel(gridIterator.GetIndex(), mask->GetValidValue());
+      initialize_vertex(v, g);
       ++gridIterator;
       }
-    // Create a mask image from the fillStatusMap. We need to to determine if pixels have hole neighbors.
-    Mask::Pointer mask = Mask::New();
-    mask->SetRegions(image->GetLargestPossibleRegion());
-    mask->Allocate();
 
-    // This could instead just generate the mask image in the region around the pixel (plus a 1 pixel boundary around the region, because these are the important pixels to check to see if the node is on the new boundary).
-    itk::ImageRegionIterator<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
-
-    while(!maskIterator.IsAtEnd())
-      {
-      VertexType v;
-      v[0] = maskIterator.GetIndex()[0];
-      v[1] = maskIterator.GetIndex()[1];
-      bool fillStatus = get(*fillStatusMap, v);
-      if(fillStatus)
-        {
-        maskIterator.Set(mask->GetValidValue());
-        }
-      else
-        {
-        maskIterator.Set(mask->GetHoleValue());
-        }
-
-      ++maskIterator;
-      }
-
+    // Update the priority function.
     this->priorityFunction->Update(indexToFinish);
 
+    // Add pixels that are on the new boundary to the queue, and mark other pixels as not in the queue.
     itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(mask, region);
 
     while(!imageIterator.IsAtEnd())
@@ -160,19 +139,18 @@ struct ImagePatch_inpainting_visitor
       VertexType v;
       v[0] = imageIterator.GetIndex()[0];
       v[1] = imageIterator.GetIndex()[1];
-      put(*fillStatusMap, v, true);
 
       // Mark all nodes in the patch around this node as filled (in the FillStatusMap).
       // This makes them ignored if they are still in the boundaryNodeQueue.
-      if(ITKHelpers::HasNeighborWithValue(imageIterator.GetIndex(), mask.GetPointer(), mask->GetHoleValue()))
+      if(ITKHelpers::HasNeighborWithValue(imageIterator.GetIndex(), mask, mask->GetHoleValue()))
         {
-        put(*boundaryStatusMap, v, true);
-        this->boundaryNodeQueue->push(v);
-        put(*priorityMap, v, this->priorityFunction->ComputePriority(imageIterator.GetIndex()));
+        put(boundaryStatusMap, v, true);
+        this->boundaryNodeQueue.push(v);
+        put(priorityMap, v, this->priorityFunction->ComputePriority(imageIterator.GetIndex()));
         }
       else
         {
-        put(*boundaryStatusMap, v, false);
+        put(boundaryStatusMap, v, false);
         }
 
       ++imageIterator;
@@ -180,7 +158,7 @@ struct ImagePatch_inpainting_visitor
 
     {
     // Debug only - write the mask to a file
-    HelpersOutput::WriteImage(mask.GetPointer(), Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
+    HelpersOutput::WriteImage(mask, Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
     this->NumberOfFinishedVertices++;
     }
   }; // finish_vertex

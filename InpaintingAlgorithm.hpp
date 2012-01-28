@@ -10,8 +10,8 @@ template <typename VertexListGraph, typename InpaintingVisitorType,
           typename PatchInpainter>
 inline
 void inpainting_loop(VertexListGraph& g, InpaintingVisitorType vis,
-                      const Topology& space, PositionMap positionMap,
-                      BoundaryStatusMap boundaryStatusMap, PriorityQueue& boundaryNodeQueue,
+                      const Topology& space, PositionMap& positionMap,
+                      BoundaryStatusMap& boundaryStatusMap, PriorityQueue& boundaryNodeQueue,
                       NearestNeighborFinder find_inpainting_source, 
                       PatchInpainter inpaint_patch) 
 {
@@ -32,6 +32,7 @@ void inpainting_loop(VertexListGraph& g, InpaintingVisitorType vis,
     {
       if( boundaryNodeQueue.empty() )
       {
+        std::cout << "Queue is empty, exiting." << std::endl;
         return;  //terminate if the queue is empty.
       }
       targetNode = boundaryNodeQueue.top();
