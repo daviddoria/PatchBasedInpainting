@@ -48,7 +48,6 @@ if(BuildInteractive OR BuildNonInteractive)
   Priority/PriorityManual.cpp
   Priority/PriorityOnionPeel.cpp
   Priority/PriorityRandom.cpp
-  Priority/PrioritySearchHighest.cpp
   #SourcePatchCollection.cpp
   #ValidRegionIterator.cpp
   )
