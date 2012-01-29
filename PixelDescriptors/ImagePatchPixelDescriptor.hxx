@@ -27,16 +27,19 @@
 #include "itkImageRegionConstIterator.h"
 
 template <typename TImage>
-ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor() : Image(NULL), Valid(false)
+ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor() : Image(NULL), Valid(false), InsideImage(false)
 {
 
 }
 
 template <typename TImage>
 ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor(TImage* const image, const itk::ImageRegion<2>& region, const bool valid) :
-Region(region), Image(image), Valid(valid)
+Region(region), Image(image), Valid(valid), InsideImage(false)
 {
-
+  if(image->GetLargestPossibleRegion().IsInside(region))
+    {
+    this->InsideImage = true;
+    }
 }
 /*
 template <typename TImage>
@@ -58,11 +61,22 @@ bool ImagePatchPixelDescriptor<TImage>::IsValid() const
 }
 
 template <typename TImage>
+bool ImagePatchPixelDescriptor<TImage>::IsInsideImage() const
+{
+  return this->InsideImage;
+}
+
+template <typename TImage>
 float ImagePatchPixelDescriptor<TImage>::Compare(const ImagePatchPixelDescriptor* const other) const
 {
+  // If either patch is not entirely inside the image, the comparison cannot be performed.
+  if(!this->IsInsideImage() || !other->IsInsideImage())
+    {
+    return std::numeric_limits<float>::infinity();
+    }
+
   // We allow 'this' to be invalid but not 'other' because we want to
   // compare target patches that definitely have invalid (hole) pixels to completely valid patches.
-
   if(!other->IsValid())
     {
     //std::cout << "Invalid difference comparison!" << std::endl;

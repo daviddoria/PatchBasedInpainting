@@ -16,6 +16,7 @@ inline void InitializeFromMaskImage(Mask* const maskImage, TBoundaryNodeQueue& b
                                     Priority* const priorityFunction, TVisitor* const visitor, TGraph& g,
                                     TFillStatusMap& fillStatusMap, TBoundaryStatusMap& boundaryStatusMap)
 {
+  std::cout << "InitializeFromMaskImage" << std::endl;
   // Initialize the fill status
   itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(maskImage, maskImage->GetLargestPossibleRegion());
   while(!maskIterator.IsAtEnd())
@@ -61,6 +62,7 @@ inline void InitializeFromMaskImage(Mask* const maskImage, TBoundaryNodeQueue& b
       index[0] = node[0];
       index[1] = node[1];
       float priority = priorityFunction->ComputePriority(index);
+      std::cout << "initial priority: " << priority << std::endl;
       put(priorityMap, node, priority);
       }
     else

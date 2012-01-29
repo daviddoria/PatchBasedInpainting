@@ -155,15 +155,6 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<TopologyType::point_type, IndexMapType> DescriptorMapType;
   DescriptorMapType descriptorMap(num_vertices(graph), indexMap);
 
-  // Create the nearest neighbor finder
-  //typedef linear_neighbor_search<> SearchType;
-  //SearchType nearestNeighborFinder;
-  typedef dvp_tree<VertexDescriptorType, TopologyType, DescriptorMapType > TreeType;
-  TreeType tree(graph, space, descriptorMap);
-  typedef multi_dvp_tree_search<VertexListGraphType, TreeType> SearchType;
-  SearchType nearestNeighborFinder;
-  nearestNeighborFinder.graph_tree_map[&graph] = &tree;
-
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
   typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
   InpainterType patchInpainter(patch_half_width, fillStatusMap);
@@ -189,10 +180,22 @@ int main(int argc, char *argv[])
   // Initialize the boundary node queue from the user provided mask image.
   InitializeFromMaskImage(maskReader->GetOutput(), boundaryNodeQueue, priorityMap, priorityFunction, &visitor, graph, fillStatusMap, boundaryStatusMap);
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size() << " nodes in the boundaryNodeQueue" << std::endl;
-  // Perform the inpainting
-  inpainting_loop(graph, visitor, space, descriptorMap, boundaryStatusMap, boundaryNodeQueue, nearestNeighborFinder, patchInpainter);
 
-  HelpersOutput::WriteImage<ImageType>(image, outputFilename);
+  // Create the nearest neighbor finder
+  //typedef linear_neighbor_search<> SearchType;
+  //SearchType nearestNeighborFinder;
+  std::cout << "Creating tree..." << std::endl;
+  typedef dvp_tree<VertexDescriptorType, TopologyType, DescriptorMapType > TreeType;
+  TreeType tree(graph, space, descriptorMap);
+  typedef multi_dvp_tree_search<VertexListGraphType, TreeType> SearchType;
+  SearchType nearestNeighborFinder;
+  nearestNeighborFinder.graph_tree_map[&graph] = &tree;
+  std::cout << "Finished creating tree." << std::endl;
+  
+  // Perform the inpainting
+//   inpainting_loop(graph, visitor, space, descriptorMap, boundaryStatusMap, boundaryNodeQueue, nearestNeighborFinder, patchInpainter);
+// 
+//   HelpersOutput::WriteImage<ImageType>(image, outputFilename);
 
   return EXIT_SUCCESS;
 }

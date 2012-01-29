@@ -42,6 +42,7 @@ struct ImagePatch_inpainting_visitor
   template <typename VertexType, typename Graph>
   void initialize_vertex(VertexType v, Graph& g) const
   {
+    //std::cout << "Initializing " << v[0] << " " << v[1] << std::endl;
     // Create the patch object and associate with the node
     itk::Index<2> index;
     index[0] = v[0];
@@ -150,7 +151,9 @@ struct ImagePatch_inpainting_visitor
         {
         put(boundaryStatusMap, v, true);
         this->boundaryNodeQueue.push(v);
-        put(priorityMap, v, this->priorityFunction->ComputePriority(imageIterator.GetIndex()));
+        float priority = this->priorityFunction->ComputePriority(imageIterator.GetIndex());
+        std::cout << "updated priority: " << priority << std::endl;
+        put(priorityMap, v, priority);
         }
       else
         {

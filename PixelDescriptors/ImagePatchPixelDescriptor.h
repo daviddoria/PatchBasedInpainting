@@ -70,8 +70,11 @@ public:
   /** Get the image to which this patch refers. */
   TImage* GetImage() const;
 
-  /** Determine if this patch is valid. A patch is invalid if it is not entirely within the image. */
+  /** Determine if this patch is valid. A valid patch must be InsideImage, but also has had a valid descriptor attached to it. */
   bool IsValid() const;
+
+  /** Determine if this patch is entirely within the image. */
+  bool IsInsideImage() const;
 
 private:
   /** The region in the image defining the location of the patch. */
@@ -80,8 +83,11 @@ private:
   /** The image that the patch points to. */
   TImage* Image;
 
-  /** Indicate if this image patch is valid or not. */
+  /** Indicate if every pixel in this image patch is valid or not. */
   bool Valid;
+
+  /** Indicate if the patch region is entirely inside the image region. */
+  bool InsideImage;
 
 };
 
