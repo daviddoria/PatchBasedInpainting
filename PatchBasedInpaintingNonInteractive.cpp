@@ -28,6 +28,7 @@
 
 // Nearest neighbors
 #include "NearestNeighbor/topological_search.hpp"
+#include "NearestNeighbor/metric_space_search.hpp"
 
 // Topologies
 #include "Topologies/ImagePatchTopology.hpp"
@@ -127,10 +128,6 @@ int main(int argc, char *argv[])
   typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
   IndexMapType indexMap(get(boost::vertex_index, graph));
 
-  // Create the position map (we use the descriptorMap instead to indicate the values (positions) in the topology)
-//   typedef boost::vector_property_map<TopologyType::point_type, IndexMapType> PositionMapType;
-//   PositionMapType positionMap(num_vertices(graph), indexMap);
-
   // Create the priority map
   typedef boost::vector_property_map<float, IndexMapType> PriorityMapType;
   PriorityMapType priorityMap(num_vertices(graph), indexMap);
@@ -159,8 +156,13 @@ int main(int argc, char *argv[])
   DescriptorMapType descriptorMap(num_vertices(graph), indexMap);
 
   // Create the nearest neighbor finder
-  typedef linear_neighbor_search<> SearchType;
-  SearchType linearSearch;
+  //typedef linear_neighbor_search<> SearchType;
+  //SearchType nearestNeighborFinder;
+  typedef dvp_tree<VertexDescriptorType, TopologyType, DescriptorMapType > TreeType;
+  TreeType tree(graph, space, descriptorMap);
+  typedef multi_dvp_tree_search<VertexListGraphType, TreeType> SearchType;
+  SearchType nearestNeighborFinder;
+  nearestNeighborFinder.graph_tree_map[&graph] = &tree;
 
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
   typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
@@ -188,7 +190,7 @@ int main(int argc, char *argv[])
   InitializeFromMaskImage(maskReader->GetOutput(), boundaryNodeQueue, priorityMap, priorityFunction, &visitor, graph, fillStatusMap, boundaryStatusMap);
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size() << " nodes in the boundaryNodeQueue" << std::endl;
   // Perform the inpainting
-  inpainting_loop(graph, visitor, space, descriptorMap, boundaryStatusMap, boundaryNodeQueue, linearSearch, patchInpainter);
+  inpainting_loop(graph, visitor, space, descriptorMap, boundaryStatusMap, boundaryNodeQueue, nearestNeighborFinder, patchInpainter);
 
   HelpersOutput::WriteImage<ImageType>(image, outputFilename);
 

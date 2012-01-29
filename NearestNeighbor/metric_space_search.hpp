@@ -94,8 +94,9 @@ class random_best_vp_chooser {
      * \return A random-access iterator to the chosen vantage-point.
      */
     template <typename RandomAccessIter, typename Topology, typename PositionMap>
-    RandomAccessIter operator() (RandomAccessIter aBegin, RandomAccessIter aEnd, const Topology& aSpace, PositionMap aPosition) {
-      BOOST_CONCEPT_ASSERT((MetricSpaceConcept<Topology>));
+    RandomAccessIter operator() (RandomAccessIter aBegin, RandomAccessIter aEnd, const Topology& aSpace, PositionMap aPosition)
+    {
+      // BOOST_CONCEPT_ASSERT((MetricSpaceConcept<Topology>)); // not necessary - just need distance() function
       typedef typename metric_topology_traits<Topology>::point_type Point;
       RandomAccessIter best_pt = aEnd;
       double best_dev = -1;
@@ -142,7 +143,7 @@ template <typename Key,
 class dvp_tree
 {
   public:
-    BOOST_CONCEPT_ASSERT((MetricSpaceConcept<Topology>));
+    //BOOST_CONCEPT_ASSERT((MetricSpaceConcept<Topology>)); // This actually is not necessary, all that is required is a distance() function.
     
     typedef typename metric_topology_traits<Topology>::point_type point_type;
     typedef typename metric_topology_traits<Topology>::point_difference_type point_difference_type;
