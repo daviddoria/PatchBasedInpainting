@@ -52,17 +52,9 @@ struct ImagePatch_inpainting_visitor
 
     typedef typename boost::property_traits<TDescriptorMap>::value_type DescriptorType;
 
-    if(image->GetLargestPossibleRegion().IsInside(region) && mask->IsValid(region) && mask->IsValid(index))
-    {
-      DescriptorType descriptor(this->image, region);
-      put(descriptorMap, v, descriptor);
-    }
-    else
-    {
-      // The region is not entirely inside the image so it cannot be used as a source patch
-      DescriptorType descriptor; // This descriptor is invalid, so any comparison to it will return infinity.
-      put(descriptorMap, v, descriptor);
-    }
+    bool valid = image->GetLargestPossibleRegion().IsInside(region) && mask->IsValid(region) && mask->IsValid(index);
+    DescriptorType descriptor(this->image, region, valid);
+    put(descriptorMap, v, descriptor);
 
   };
 
@@ -85,11 +77,11 @@ struct ImagePatch_inpainting_visitor
     itk::Index<2> target_index;
     target_index[0] = target[0];
     target_index[1] = target[1];
-    
+
     itk::Index<2> source_index;
     source_index[0] = source[0];
     source_index[1] = source[1];
-    
+
     image->SetPixel(target_index, image->GetPixel(source_index));
   };
 
@@ -103,7 +95,6 @@ struct ImagePatch_inpainting_visitor
   template <typename VertexType, typename Graph>
   void finish_vertex(VertexType v, Graph& g)
   {
-    // Update the priority function
     // Construct the region around the vertex
     itk::Index<2> indexToFinish;
     indexToFinish[0] = v[0];

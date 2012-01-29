@@ -37,7 +37,7 @@ public:
   ImagePatchPixelDescriptor();
 
   /** Construct a patch from a region. Ideally 'image' would be const, but we also need a default constructor.*/
-  ImagePatchPixelDescriptor(TImage* const image, const itk::ImageRegion<2>& region);
+  ImagePatchPixelDescriptor(TImage* const image, const itk::ImageRegion<2>& region, const bool valid);
 
   /** Compute the difference to another ImagePatch.*/
   void SetImage(const TImage* const image);

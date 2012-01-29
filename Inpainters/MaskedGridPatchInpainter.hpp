@@ -13,9 +13,9 @@ template <typename FillStatusMap>
 struct MaskedGridPatchInpainter 
 {
   std::size_t patch_half_width;
-  FillStatusMap fillStatusMap;
+  FillStatusMap& fillStatusMap;
   
-  MaskedGridPatchInpainter(std::size_t aPatchWidth, FillStatusMap aFillStatusMap) : patch_half_width(aPatchWidth / 2), fillStatusMap(aFillStatusMap) { };
+  MaskedGridPatchInpainter(std::size_t aPatchWidth, FillStatusMap& aFillStatusMap) : patch_half_width(aPatchWidth / 2), fillStatusMap(aFillStatusMap) { };
 
   template <typename Vertex, typename GridGraph, typename InpaintingVisitor>
   void operator()(Vertex target, Vertex source, GridGraph& g, InpaintingVisitor vis)

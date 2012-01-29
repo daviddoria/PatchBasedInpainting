@@ -33,16 +33,10 @@ ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor() : Image(NULL), Va
 }
 
 template <typename TImage>
-ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor(TImage* const image, const itk::ImageRegion<2>& region) : Region(region), Image(image)
+ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor(TImage* const image, const itk::ImageRegion<2>& region, const bool valid) :
+Region(region), Image(image), Valid(valid)
 {
-  if(image->GetLargestPossibleRegion().IsInside(region))
-    {
-    this->Valid = true;
-    }
-  else
-    {
-    this->Valid = false;
-    }
+
 }
 
 template <typename TImage>
@@ -66,8 +60,11 @@ bool ImagePatchPixelDescriptor<TImage>::IsValid() const
 template <typename TImage>
 float ImagePatchPixelDescriptor<TImage>::Compare(const ImagePatchPixelDescriptor* const other) const
 {
-  if(!(this->Valid && other->IsValid()))
+  // We allow 'this' to be invalid but not 'other' because we want to
+  // compare target patches that definitely have invalid (hole) pixels to completely valid patches.
+  if(!other->IsValid())
     {
+    //std::cout << "Invalid difference comparison!" << std::endl;
     return std::numeric_limits<float>::infinity();
     }
 

@@ -34,12 +34,14 @@ inline void InitializeFromMaskImage(Mask* const maskImage, TBoundaryNodeQueue& b
     ++maskIterator;
     }
 
+  // Compute the boundary image
   Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
   maskImage->FindBoundary(boundaryImage);
 
   HelpersOutput::WriteImage(maskImage, "mask.png");
   HelpersOutput::WriteImage(boundaryImage.GetPointer(), "boundary.png");
 
+  // Add boundary nodes to the queue, compute their priority, and set their boundary status to true.
   itk::ImageRegionConstIteratorWithIndex<Mask::BoundaryImageType> imageIterator(boundaryImage, boundaryImage->GetLargestPossibleRegion());
   while(!imageIterator.IsAtEnd())
     {
