@@ -49,10 +49,10 @@ inline void InitializeFromMaskImage(Mask* const maskImage, TBoundaryNodeQueue& b
     node[0] = imageIterator.GetIndex()[0];
     node[1] = imageIterator.GetIndex()[1];
 
+    visitor->initialize_vertex(node, g);
+
     if(imageIterator.Get() != 0) // boundary pixel found
       {
-      visitor->initialize_vertex(node, g);
-
       boundaryNodeQueue.push(node);
 
       put(boundaryStatusMap, node, true);

@@ -46,13 +46,12 @@ struct ImagePatch_inpainting_visitor
     itk::Index<2> index;
     index[0] = v[0];
     index[1] = v[1];
-    itk::Size<2> regionSize;
-    regionSize.Fill(half_width);
-    itk::ImageRegion<2> region(index, regionSize);
+
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, half_width);
 
     typedef typename boost::property_traits<TDescriptorMap>::value_type DescriptorType;
 
-    bool valid = image->GetLargestPossibleRegion().IsInside(region) && mask->IsValid(region) && mask->IsValid(index);
+    bool valid = image->GetLargestPossibleRegion().IsInside(region) && mask->IsValid(region);
     DescriptorType descriptor(this->image, region, valid);
     put(descriptorMap, v, descriptor);
 
@@ -68,7 +67,9 @@ struct ImagePatch_inpainting_visitor
   template <typename VertexType, typename Graph>
   void vertex_match_made(VertexType target, VertexType source, Graph& g) const
   {
-    std::cout << "Filled " << target[0] << " " << target[1] << " with " << source[0] << " " << source[1] << std::endl;
+    std::cout << "Match made: target: " << target[0] << " " << target[1] << " with source: " << source[0] << " " << source[1] << std::endl;
+    assert(get(fillStatusMap, source));
+    assert(get(descriptorMap, source).IsValid());
   };
 
   template <typename VertexType, typename Graph>
@@ -81,6 +82,9 @@ struct ImagePatch_inpainting_visitor
     itk::Index<2> source_index;
     source_index[0] = source[0];
     source_index[1] = source[1];
+
+    assert(image->GetLargestPossibleRegion().IsInside(source_index));
+    assert(image->GetLargestPossibleRegion().IsInside(target_index));
 
     image->SetPixel(target_index, image->GetPixel(source_index));
   };
@@ -115,6 +119,15 @@ struct ImagePatch_inpainting_visitor
       v[1] = gridIterator.GetIndex()[1];
       put(fillStatusMap, v, true);
       mask->SetPixel(gridIterator.GetIndex(), mask->GetValidValue());
+      ++gridIterator;
+      }
+
+    gridIterator.GoToBegin();
+    while(!gridIterator.IsAtEnd())
+      {
+      VertexType v;
+      v[0] = gridIterator.GetIndex()[0];
+      v[1] = gridIterator.GetIndex()[1];
       initialize_vertex(v, g);
       ++gridIterator;
       }
@@ -150,6 +163,7 @@ struct ImagePatch_inpainting_visitor
     {
     // Debug only - write the mask to a file
     HelpersOutput::WriteImage(mask, Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
+    HelpersOutput::WriteVectorImageAsRGB(image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
     this->NumberOfFinishedVertices++;
     }
   }; // finish_vertex

@@ -63,21 +63,9 @@ public:
   /** Get the corner of the patch.*/
   itk::Index<2> GetCorner() const;
 
-  /** Sort the patches by index (so they can be stored in a container such as std::set).*/
-  bool operator<(const ImagePatchPixelDescriptor& other) const;
-
   /** Output information about the patch. Even though this is inside a class template definition, we still need to declare it as a function template. */
   template <typename T>
   friend std::ostream& operator<<(std::ostream& output,  const ImagePatchPixelDescriptor<T>& patch);
-
-  /** Visit all pixels in a patch.*/
-  void VisitAllPixels(const TImage* const image, PixelVisitor<typename TImage::PixelType> &visitor);
-
-  /** Visit all pixels in a patch where the mask value is valid.*/
-  void VisitAllValidPixels(const TImage* const image, const Mask* const mask, PixelVisitor<typename TImage::PixelType> &visitor);
-
-  /** Visit the pixels in a patch specified by a list of offsets from the corner of the patch. */
-  void VisitOffsets(const TImage* const image, const std::vector<itk::Offset<2> >& offsets, PixelVisitor<typename TImage::PixelType> &visitor);
 
   /** Get the image to which this patch refers. */
   TImage* GetImage() const;

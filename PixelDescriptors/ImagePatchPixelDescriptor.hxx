@@ -38,7 +38,7 @@ Region(region), Image(image), Valid(valid)
 {
 
 }
-
+/*
 template <typename TImage>
 void ImagePatchPixelDescriptor<TImage>::VisitAllPixels(const TImage* const image, PixelVisitor<typename TImage::PixelType> &visitor)
 {
@@ -49,7 +49,7 @@ void ImagePatchPixelDescriptor<TImage>::VisitAllPixels(const TImage* const image
     visitor.Visit(imageIterator.Get());
     ++imageIterator;
     }
-}
+}*/
 
 template <typename TImage>
 bool ImagePatchPixelDescriptor<TImage>::IsValid() const
@@ -62,6 +62,7 @@ float ImagePatchPixelDescriptor<TImage>::Compare(const ImagePatchPixelDescriptor
 {
   // We allow 'this' to be invalid but not 'other' because we want to
   // compare target patches that definitely have invalid (hole) pixels to completely valid patches.
+
   if(!other->IsValid())
     {
     //std::cout << "Invalid difference comparison!" << std::endl;
@@ -82,7 +83,7 @@ float ImagePatchPixelDescriptor<TImage>::Compare(const ImagePatchPixelDescriptor
 
     ++imageIterator;
     }
-  std::cout << "Difference: " << totalDifference << std::endl;
+  //std::cout << "Difference: " << totalDifference << std::endl;
   return totalDifference;
 }
 
@@ -122,7 +123,7 @@ TImage* ImagePatchPixelDescriptor<TImage>::GetImage() const
 {
   return this->Image;
 }
-
+/*
 template <typename TImage>
 void ImagePatchPixelDescriptor<TImage>::VisitAllValidPixels(const TImage* const image, const Mask* const mask, PixelVisitor<typename TImage::PixelType> &visitor)
 {
@@ -147,7 +148,7 @@ void ImagePatchPixelDescriptor<TImage>::VisitOffsets(const TImage* const image, 
     {
     visitor.Visit(image->GetPixel(corner + offsets[offsetId]));
     }
-}
+}*/
 
 template <typename TImage>
 itk::Index<2> ImagePatchPixelDescriptor<TImage>::GetCorner() const
@@ -183,7 +184,7 @@ bool ImagePatchPixelDescriptor<TImage>::operator!=(const ImagePatchPixelDescript
 {
   return !operator==(other);
 }
-
+/*
 template <typename TImage>
 bool ImagePatchPixelDescriptor<TImage>::operator<(const ImagePatchPixelDescriptor& other) const
 {
@@ -207,6 +208,6 @@ bool ImagePatchPixelDescriptor<TImage>::operator<(const ImagePatchPixelDescripto
     }
   assert(0); // This should never be reached
   return true;
-}
+}*/
 
 #endif

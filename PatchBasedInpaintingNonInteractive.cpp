@@ -101,6 +101,9 @@ int main(int argc, char *argv[])
   imageReader->SetFileName(imageFilename.c_str());
   imageReader->Update();
 
+  ImageType::Pointer image = ImageType::New();
+  ITKHelpers::DeepCopy(imageReader->GetOutput(), image.GetPointer());
+
   typedef  itk::ImageFileReader<Mask> MaskReaderType;
 
   MaskReaderType::Pointer maskReader = MaskReaderType::New();
@@ -178,7 +181,7 @@ int main(int argc, char *argv[])
   // InpaintingVisitorType visitor;
   typedef ImagePatch_inpainting_visitor<ImageType, BoundaryNodeQueueType, FillStatusMapType,
                                         DescriptorMapType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
-  InpaintingVisitorType visitor(imageReader->GetOutput(), maskReader->GetOutput(), boundaryNodeQueue, fillStatusMap,
+  InpaintingVisitorType visitor(image, maskReader->GetOutput(), boundaryNodeQueue, fillStatusMap,
                                 descriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
@@ -187,8 +190,7 @@ int main(int argc, char *argv[])
   // Perform the inpainting
   inpainting_loop(graph, visitor, space, descriptorMap, boundaryStatusMap, boundaryNodeQueue, linearSearch, patchInpainter);
 
-//   HelpersOutput::WriteImage<ImageType>(inpainting->GetCurrentOutputImage(), outputFilename + ".mha");
-//   HelpersOutput::WriteVectorImageAsRGB(inpainting->GetCurrentOutputImage(), outputFilename);
+  HelpersOutput::WriteImage<ImageType>(image, outputFilename);
 
   return EXIT_SUCCESS;
 }

@@ -15,16 +15,18 @@ struct MaskedGridPatchInpainter
   std::size_t patch_half_width;
   FillStatusMap& fillStatusMap;
   
-  MaskedGridPatchInpainter(std::size_t aPatchWidth, FillStatusMap& aFillStatusMap) : patch_half_width(aPatchWidth / 2), fillStatusMap(aFillStatusMap) { };
+  MaskedGridPatchInpainter(std::size_t aPatchHalfWidth, FillStatusMap& aFillStatusMap) : patch_half_width(aPatchHalfWidth), fillStatusMap(aFillStatusMap) { };
 
   template <typename Vertex, typename GridGraph, typename InpaintingVisitor>
   void operator()(Vertex target, Vertex source, GridGraph& g, InpaintingVisitor vis)
   {
+    std::cout << "Painting " << target[0] << " " << target[1] << " with " << source[0] << " " << source[1] << std::endl;
+
     Vertex target_patch_corner;
     target_patch_corner[0] = target[0] - patch_half_width;
     target_patch_corner[1] = target[1] - patch_half_width;
 
-    Vertex source_patch_corner = source;
+    Vertex source_patch_corner;
     source_patch_corner[0] = source[0] - patch_half_width;
     source_patch_corner[1] = source[1] - patch_half_width;
 
@@ -36,10 +38,12 @@ struct MaskedGridPatchInpainter
       {
         target_node[0] = target_patch_corner[0] + i;
         target_node[1] = target_patch_corner[1] + j;
-        
+
         source_node[0] = source_patch_corner[0] + i;
         source_node[1] = source_patch_corner[1] + j;
-        
+
+        assert(get(fillStatusMap, source_node));
+
         // check the mask value
         if( get(fillStatusMap, target_node) == false )
         {
