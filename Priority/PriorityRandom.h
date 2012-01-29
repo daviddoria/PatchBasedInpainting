@@ -36,6 +36,4 @@ public:
   void Update(const itk::Index<2>& filledPixel){}
 };
 
-#include "PriorityRandom.hxx"
-
 #endif
