@@ -30,11 +30,10 @@ int main()
 
   PriorityRandom priority;
 
-  itk::ImageRegion<2> filledRegion;
-  priority.Update(filledRegion);
+  itk::Index<2> filledIndex = {{0,0}};
+  priority.Update(filledIndex);
 
-  itk::Index<2> queryPixel;
-  queryPixel.Fill(0);
+  itk::Index<2> queryPixel = {{0,0}};
   priority.ComputePriority(queryPixel);
 
   return EXIT_SUCCESS;

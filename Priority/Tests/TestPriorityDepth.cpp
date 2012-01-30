@@ -31,10 +31,10 @@ int main()
   unsigned int patchRadius = 5;
   PriorityDepth<FloatVectorImageType> priority(image, mask, patchRadius);
 
-  itk::ImageRegion<2> filledRegion;
-  priority.Update(filledRegion);
+  itk::Index<2> filledPixel = {{0,0}};
+  priority.Update(filledPixel);
 
-  itk::Index<2> queryPixel;
+  itk::Index<2> queryPixel = {{0,0}};
   priority.ComputePriority(queryPixel);
 
   return EXIT_SUCCESS;

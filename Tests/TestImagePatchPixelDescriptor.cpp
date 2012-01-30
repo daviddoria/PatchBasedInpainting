@@ -16,7 +16,7 @@
  *
  *=========================================================================*/
 
-#include "ImagePatchPixelDescriptor.h"
+#include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
 #include <stdexcept>
 
@@ -37,7 +37,7 @@ int main(int argc, char*argv[])
 
   itk::ImageRegion<2> region0(corner0, patchSize);
   UnsignedCharScalarImageType::Pointer image = UnsignedCharScalarImageType::New();
-  ImagePatchPixelDescriptor<UnsignedCharScalarImageType> patch0(image.GetPointer(), region0);
+  ImagePatchPixelDescriptor<UnsignedCharScalarImageType> patch0(image.GetPointer(), region0, true);
 
   if(patch0.GetRegion() != region0)
     {
@@ -68,7 +68,7 @@ int main(int argc, char*argv[])
   corner1.Fill(5);
 
   itk::ImageRegion<2> region1(corner1, patchSize);
-  ImagePatchPixelDescriptor<UnsignedCharScalarImageType> patch1(image.GetPointer(), region1);
+  ImagePatchPixelDescriptor<UnsignedCharScalarImageType> patch1(image.GetPointer(), region1, true);
 
   if(patch0 == patch1)
     {
@@ -84,14 +84,14 @@ int main(int argc, char*argv[])
     throw std::runtime_error("patch0 != patch1 failed - they should not be equal!");
     }
 
-  if(patch0 < patch1)
-    {
-    // Good, this is what we want.
-    }
-  else
-    {
-    throw std::runtime_error("patch0 < patch1 failed!");
-    }
+//   if(patch0 < patch1)
+//     {
+//     // Good, this is what we want.
+//     }
+//   else
+//     {
+//     throw std::runtime_error("patch0 < patch1 failed!");
+//     }
 
   return EXIT_SUCCESS;
 }

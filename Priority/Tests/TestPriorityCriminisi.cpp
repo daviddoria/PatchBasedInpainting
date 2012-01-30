@@ -31,8 +31,9 @@ int main()
   unsigned int patchRadius = 5;
   PriorityCriminisi<FloatVectorImageType> priority(image, mask, patchRadius);
 
-  itk::ImageRegion<2> filledRegion;
-  priority.Update(filledRegion);
+  itk::Index<2> filledPixel;
+  filledPixel.Fill(0);
+  priority.Update(filledPixel);
 
   itk::Index<2> queryPixel = {{0,0}};
   priority.ComputePriority(queryPixel);

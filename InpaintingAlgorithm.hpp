@@ -1,7 +1,11 @@
 #ifndef InpaintingAlgorithm_hpp
 #define InpaintingAlgorithm_hpp
 
+// Boost
 #include <boost/graph/properties.hpp>
+
+// STL
+#include <stdexcept>
 
 template <typename VertexListGraph, typename InpaintingVisitorType,
           typename Topology, typename PositionMap,
@@ -54,6 +58,11 @@ void inpainting_loop(VertexListGraph& g, InpaintingVisitorType vis,
     //  the inpaint_patch functor should take care of iterating through the vertices in both
     //  patches and call "vis.paint_vertex(target, source, g)" on the individual vertices.
     inpaint_patch(targetNode, source_patch_center, g, vis);
+
+    if(!vis.accept_painted_vertex(targetNode, g))
+      {
+      throw std::runtime_error("Vertex was not painted successfully!");
+      }
 
     vis.finish_vertex(targetNode, g);
   } // end main iteration loop

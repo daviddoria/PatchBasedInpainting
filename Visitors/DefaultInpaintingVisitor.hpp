@@ -2,11 +2,11 @@
 #define DefaultInpaintingVisitor_HPP
 
 /**
- * This is a default visitor type that complies with the InpaintingVisitorConcept and does 
+ * This is a default visitor type that models with the InpaintingVisitorConcept and does 
  * nothing in all cases (can be used if there are no exogenous operations to do during the 
  * inpainting algorithm, which would be surprising given the nature of the algorithm).
  */
-struct default_inpainting_visitor 
+struct DefaultInpaintingVisitor 
 {
   template <typename VertexType, typename Graph>
   void initialize_vertex(VertexType, Graph&) const { };

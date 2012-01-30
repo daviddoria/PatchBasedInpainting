@@ -15,6 +15,14 @@ add_executable(TestLinearNeighborSearchGridGraph TestLinearNeighborSearchGridGra
 target_link_libraries(TestLinearNeighborSearchGridGraph)
 add_test(TestLinearNeighborSearchGridGraph TestLinearNeighborSearchGridGraph)
 
+add_executable(TestLinearNeighborSearchSubset TestLinearNeighborSearchSubset.cpp)
+target_link_libraries(TestLinearNeighborSearchSubset)
+add_test(TestLinearNeighborSearchSubset TestLinearNeighborSearchSubset)
+
 add_executable(TestCustomTopology TestCustomTopology.cpp)
 target_link_libraries(TestCustomTopology)
 add_test(TestCustomTopology TestCustomTopology)
+
+add_executable(TestDVPTreeImagePatches TestDVPTreeImagePatches.cpp ../../ImageProcessing/Mask.cpp)
+target_link_libraries(TestDVPTreeImagePatches ${ITK_LIBRARIES} libHelpers)
+add_test(TestDVPTreeImagePatches TestDVPTreeImagePatches)

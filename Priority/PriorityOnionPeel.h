@@ -59,7 +59,7 @@ protected:
   /** The mask image. */
   const Mask* MaskImage;
 
-private:
+  /** The radius of the patch. */
   const unsigned int PatchRadius;
 };
 

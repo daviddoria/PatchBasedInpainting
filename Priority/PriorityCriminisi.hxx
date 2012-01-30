@@ -85,11 +85,12 @@ PriorityOnionPeel(maskImage, patchRadius), Image(image)
 // }
 
 template <typename TImage>
-void PriorityCriminisi<TImage>::Update(const itk::ImageRegion<2>& filledRegion)
+void PriorityCriminisi<TImage>::Update(const itk::Index<2>& filledPixel)
 {
-  Superclass::Update(filledRegion);
+  Superclass::Update(filledPixel);
 
-  Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage, filledRegion, this->IsophoteImage);
+  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(filledPixel, this->PatchRadius);
+  Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage, region, this->IsophoteImage);
 
   unsigned int blurVariance = 2;
   ComputeBoundaryNormals(blurVariance);

@@ -61,8 +61,9 @@ struct ImagePatch_inpainting_visitor
   template <typename VertexType, typename Graph>
   void discover_vertex(VertexType v, Graph& g) const
   {
-    // QUESTION: what would be done in this function?
+    // TODO: Create the list of hole pixels here
     std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
+    std::cout << "Priority: " << get(priorityMap, v) << std::endl;
   };
 
   template <typename VertexType, typename Graph>
@@ -93,7 +94,6 @@ struct ImagePatch_inpainting_visitor
   template <typename VertexType, typename Graph>
   bool accept_painted_vertex(VertexType v, Graph& g) const
   {
-    // QUESTION: What would be done in this function?
     return true;
   };
 
