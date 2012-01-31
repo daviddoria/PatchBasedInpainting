@@ -46,6 +46,7 @@ namespace boost
   BOOST_INSTALL_PROPERTY(vertex, image_patch);
 };
 
+// Run with: Data/trashcan.mha Data/trashcan_mask.mha 15
 int main(int argc, char *argv[])
 {
   // Verify arguments
