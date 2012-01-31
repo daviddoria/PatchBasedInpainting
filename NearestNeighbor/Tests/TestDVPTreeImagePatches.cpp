@@ -103,25 +103,6 @@ int main(int argc, char *argv[])
   typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
   IndexMapType indexMap(get(boost::vertex_index, graph));
 
-  // Create the priority map
-  typedef boost::vector_property_map<float, IndexMapType> PriorityMapType;
-  PriorityMapType priorityMap(num_vertices(graph), indexMap);
-
-  // Create the node fill status map. Each pixel is either filled (true) or not filled (false).
-  typedef boost::vector_property_map<bool, IndexMapType> FillStatusMapType;
-  FillStatusMapType fillStatusMap(num_vertices(graph), indexMap);
-
-  // Create the boundary status map. A node is on the current boundary if this property is true. 
-  // This property helps the boundaryNodeQueue because we can mark here if a node has become no longer
-  // part of the boundary, so when the queue is popped we can check this property to see if it should
-  // actually be processed.
-  typedef boost::vector_property_map<bool, IndexMapType> BoundaryStatusMapType;
-  BoundaryStatusMapType boundaryStatusMap(num_vertices(graph), indexMap);
-
-  // Create the nearby hole map. A node is on the current boundary if this property is true.
-  typedef boost::vector_property_map<std::vector<VertexDescriptorType>, IndexMapType> NearbyHoleMapType;
-  NearbyHoleMapType nearbyHoleMap(num_vertices(graph), indexMap);
-
   // Create the descriptor map. This is where the data for each pixel is stored. The Topology
   typedef boost::vector_property_map<TopologyType::point_type, IndexMapType> DescriptorMapType;
   DescriptorMapType descriptorMap(num_vertices(graph), indexMap);
