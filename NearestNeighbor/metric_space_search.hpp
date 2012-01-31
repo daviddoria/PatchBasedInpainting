@@ -100,6 +100,7 @@ class random_best_vp_chooser {
       typedef typename metric_topology_traits<Topology>::point_type Point;
       RandomAccessIter best_pt = aEnd;
       double best_dev = -1;
+      std::cout << "Number of loops: " << (aEnd - aBegin) / m_divider + 1 << std::endl;
       for(unsigned int i=0; i < (aEnd - aBegin) / m_divider + 1;++i) {
 	RandomAccessIter current_pt = aBegin + (m_rand() % (aEnd - aBegin));
 	double current_mean = 0.0;

@@ -19,8 +19,9 @@
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
-// Visitor
-#include "Visitors/DefaultInpaintingVisitor.hpp"
+// Visitors
+//#include "Visitors/DefaultInpaintingVisitor.hpp"
+#include "Visitors/ImagePatchCreatorVisitor.hpp"
 
 // Nearest neighbors
 #include "NearestNeighbor/metric_space_search.hpp"
@@ -120,27 +121,42 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<std::vector<VertexDescriptorType>, IndexMapType> NearbyHoleMapType;
   NearbyHoleMapType nearbyHoleMap(num_vertices(graph), indexMap);
 
-  // Create the priority compare functor
-  typedef std::less<float> PriorityCompareType;
-  PriorityCompareType lessThanFunctor;
-
   // Create the descriptor map. This is where the data for each pixel is stored. The Topology
   typedef boost::vector_property_map<TopologyType::point_type, IndexMapType> DescriptorMapType;
   DescriptorMapType descriptorMap(num_vertices(graph), indexMap);
 
-  DefaultInpaintingVisitor visitor;
+  //DefaultInpaintingVisitor visitor;
+  ImagePatchCreatorVisitor<ImageType, DescriptorMapType> visitor(imageReader->GetOutput(), maskReader->GetOutput(), descriptorMap, patch_half_width);
 
   // Initialize
   SimpleInitializer(maskReader->GetOutput(), &visitor, graph);
 
-  // Create the nearest neighbor finder
+  // Create the tree
   std::cout << "Creating tree..." << std::endl;
   typedef dvp_tree<VertexDescriptorType, TopologyType, DescriptorMapType > TreeType;
-  TreeType tree(graph, space, descriptorMap);
+  // TreeType tree(graph, space, descriptorMap); // Create from all positions on the graph_traits - don't want to do this unless all positions on the topology are valid.
+  
+  // std::vector<TopologyType::point_type> validPositions; // Don't store the positions, but rather store the vertex_descriptors
+  std::vector<VertexDescriptorType> validPositions;
+  typename boost::graph_traits<VertexListGraphType>::vertex_iterator vi,vi_end;
+  
+  for (tie(vi,vi_end) = vertices(graph); vi != vi_end; ++vi)
+  {
+    if(get(descriptorMap, *vi).IsFullyValid())
+      {
+      validPositions.push_back(*vi);
+      }
+  }
+
+  std::cout << "There are " << validPositions.size() << " validPositions" << " (out of " << imageReader->GetOutput()->GetLargestPossibleRegion().GetNumberOfPixels() << ")" << std::endl;
+
+  TreeType tree(validPositions.begin(), validPositions.end(), space, descriptorMap);
+  std::cout << "Finished creating tree." << std::endl;
+
+  // Create the nearest neighbor finder
   typedef multi_dvp_tree_search<VertexListGraphType, TreeType> SearchType;
   SearchType nearestNeighborFinder;
   nearestNeighborFinder.graph_tree_map[&graph] = &tree;
-  std::cout << "Finished creating tree." << std::endl;
 
   return EXIT_SUCCESS;
 }

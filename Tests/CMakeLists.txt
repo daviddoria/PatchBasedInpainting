@@ -68,9 +68,9 @@ add_executable(TestPixelDifferences TestPixelDifferences.cpp)
 target_link_libraries(TestPixelDifferences ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
 add_test(TestPixelDifferences TestPixelDifferences)
 
-add_executable(TestPatchDifference TestPatchDifference.cpp ../ImagePatchItem.cpp ../PatchPair.cpp ../PatchPairDifferences.cpp)
-target_link_libraries(TestPatchDifference ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
-add_test(TestPatchDifference TestPatchDifference)
+# add_executable(TestPatchDifference TestPatchDifference.cpp ../ImagePatchItem.cpp ../PatchPair.cpp ../PatchPairDifferences.cpp)
+# target_link_libraries(TestPatchDifference ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
+# add_test(TestPatchDifference TestPatchDifference)
 
 # add_executable(TestPatchBasedInpainting TestPatchBasedInpainting.cpp ../PatchBasedInpainting.cpp
 # ../CandidatePairs.cpp ../PatchPairDifferences.cpp

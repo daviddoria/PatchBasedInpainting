@@ -37,19 +37,13 @@ public:
   ImagePatchPixelDescriptor();
 
   /** Construct a patch from a region. Ideally 'image' would be const, but we also need a default constructor.*/
-  ImagePatchPixelDescriptor(TImage* const image, const itk::ImageRegion<2>& region, const bool valid);
+  ImagePatchPixelDescriptor(TImage* const image, Mask* const maskImage, const itk::ImageRegion<2>& region);
 
   /** Compute the difference to another ImagePatch.*/
   void SetImage(const TImage* const image);
 
   /** Compute the difference to another ImagePatch.*/
   void SetRegion(const itk::ImageRegion<2>& region);
-
-  /** Compute the difference to another ImagePatch.*/
-  float Compare(const ImagePatchPixelDescriptor* const item) const;
-
-    /** Compute the difference to another ImagePatch only at specified offets.*/
-  float Compare(const ImagePatchPixelDescriptor* const item, const std::vector<itk::Offset<2> >& offsets) const;
 
   /** Check if two patches are the same.*/
   bool operator==(const ImagePatchPixelDescriptor& other) const;
@@ -71,7 +65,7 @@ public:
   TImage* GetImage() const;
 
   /** Determine if this patch is valid. A valid patch must be InsideImage, but also has had a valid descriptor attached to it. */
-  bool IsValid() const;
+  bool IsFullyValid() const;
 
   /** Determine if this patch is entirely within the image. */
   bool IsInsideImage() const;
@@ -83,13 +77,24 @@ private:
   /** The image that the patch points to. */
   TImage* Image;
 
+  /** The Mask that describes the valid pixels in the patch. */
+  Mask* MaskImage;
+
   /** Indicate if every pixel in this image patch is valid or not. */
-  bool Valid;
+  bool FullyValid;
 
   /** Indicate if the patch region is entirely inside the image region. */
   bool InsideImage;
 
 };
+
+
+/** Compute the difference to another ImagePatch.*/
+template <typename TImage>
+float Compare(const ImagePatchPixelDescriptor<TImage>* const a, const ImagePatchPixelDescriptor<TImage>* const b);
+
+  /** Compute the difference to another ImagePatch only at specified offets.*/
+// float Compare(const ImagePatchPixelDescriptor* const item, const std::vector<itk::Offset<2> >& offsets) const;
 
 #include "ImagePatchPixelDescriptor.hxx"
 

@@ -15,8 +15,7 @@ public:
     */
   double distance(const point_type& a, const point_type& b) const 
   {
-    return a.Compare(&b);
-    //return b.Compare(&a);
+    return Compare(&a, &b);
   }
 
 };

@@ -27,19 +27,38 @@
 #include "itkImageRegionConstIterator.h"
 
 template <typename TImage>
-ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor() : Image(NULL), Valid(false), InsideImage(false)
+ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor() : Image(NULL), FullyValid(false), InsideImage(false)
 {
 
 }
 
 template <typename TImage>
-ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor(TImage* const image, const itk::ImageRegion<2>& region, const bool valid) :
-Region(region), Image(image), Valid(valid), InsideImage(false)
+ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor(TImage* const image, Mask* const maskImage, const itk::ImageRegion<2>& region) :
+Region(region), Image(image), MaskImage(maskImage), InsideImage(false)
 {
   if(image->GetLargestPossibleRegion().IsInside(region))
     {
     this->InsideImage = true;
     }
+  else
+    {
+    this->FullyValid = false;
+    return;
+    }
+
+  this->FullyValid = maskImage->IsValid(region);
+//   this->FullyValid = true;
+//   itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(maskImage, region);
+//   while(!maskIterator.IsAtEnd())
+//     {
+//     if(maskImage->IsHole(maskIterator.GetIndex()))
+//       {
+//       this->FullyValid = false;
+//       break;
+//       }
+// 
+//     ++maskIterator;
+//     }
 }
 /*
 template <typename TImage>
@@ -55,69 +74,15 @@ void ImagePatchPixelDescriptor<TImage>::VisitAllPixels(const TImage* const image
 }*/
 
 template <typename TImage>
-bool ImagePatchPixelDescriptor<TImage>::IsValid() const
+bool ImagePatchPixelDescriptor<TImage>::IsFullyValid() const
 {
-  return this->Valid;
+  return this->FullyValid;
 }
 
 template <typename TImage>
 bool ImagePatchPixelDescriptor<TImage>::IsInsideImage() const
 {
   return this->InsideImage;
-}
-
-template <typename TImage>
-float ImagePatchPixelDescriptor<TImage>::Compare(const ImagePatchPixelDescriptor* const other) const
-{
-  // If either patch is not entirely inside the image, the comparison cannot be performed.
-  if(!this->IsInsideImage() || !other->IsInsideImage())
-    {
-    return std::numeric_limits<float>::infinity();
-    }
-
-  // We allow 'this' to be invalid but not 'other' because we want to
-  // compare target patches that definitely have invalid (hole) pixels to completely valid patches.
-  if(!other->IsValid())
-    {
-    //std::cout << "Invalid difference comparison!" << std::endl;
-    return std::numeric_limits<float>::infinity();
-    }
-
-  float totalDifference = 0.0f;
-
-  itk::Offset<2> offsetToOther = other->GetCorner() - this->GetCorner();
-
-  // Compare all corresponding pixels and sum their differences
-  itk::ImageRegionConstIteratorWithIndex<TImage> imageIterator(this->Image, this->Region);
-  while(!imageIterator.IsAtEnd())
-    {
-    //float difference = fabs(imageIterator.Get() - this->Image->GetPixel(imageIterator.GetIndex() + offsetToOther));
-    float difference = (imageIterator.Get() - this->Image->GetPixel(imageIterator.GetIndex() + offsetToOther)).GetNorm();
-    totalDifference += difference;
-
-    ++imageIterator;
-    }
-  //std::cout << "Difference: " << totalDifference << std::endl;
-  return totalDifference;
-}
-
-template <typename TImage>
-float ImagePatchPixelDescriptor<TImage>::Compare(const ImagePatchPixelDescriptor* const other, const std::vector<itk::Offset<2> >& offsets) const
-{
-  if(!this->Valid || !other->IsValid())
-    {
-    return std::numeric_limits<float>::infinity();
-    }
-
-  float totalDifference = 0.0f;
-
-  for(unsigned int offsetId = 0; offsetId < offsets.size(); ++offsetId)
-  {
-    float difference = fabs(this->Image->GetPixel(this->GetCorner() + offsets[offsetId]) - this->Image->GetPixel(other->GetCorner() + offsets[offsetId]));
-    totalDifference += difference;
-  }
-
-  return totalDifference;
 }
 
 template <typename TImage>
@@ -223,5 +188,69 @@ bool ImagePatchPixelDescriptor<TImage>::operator<(const ImagePatchPixelDescripto
   assert(0); // This should never be reached
   return true;
 }*/
+
+////////////// Non-member functions ////////////////
+template <typename TImage>
+float Compare(const ImagePatchPixelDescriptor<TImage>* const a, const ImagePatchPixelDescriptor<TImage>* const b)
+{
+  // This comparison must allow source patches to be compared to source patches (to create the tree) as well as source patches
+  // to be symmetrically compared to target patches.
+
+  assert(a->IsInsideImage());
+  assert(b->IsInsideImage());
+  assert(a->GetImage() == b->GetImage());
+
+  // If either patch is not entirely inside the image, the comparison cannot be performed.
+//   if(!this->IsInsideImage() || !other->IsInsideImage())
+//     {
+//     return std::numeric_limits<float>::infinity();
+//     }
+
+  // We allow 'this' to be invalid but not 'other' because we want to
+  // compare target patches that definitely have invalid (hole) pixels to completely valid patches.
+//   if(!other->IsValid())
+//     {
+//     //std::cout << "Invalid difference comparison!" << std::endl;
+//     return std::numeric_limits<float>::infinity();
+//     }
+
+  TImage* image = a->GetImage(); // For now this image is required to be the same for both patches.
+
+  float totalDifference = 0.0f;
+
+  itk::Offset<2> offsetAToB = b->GetCorner() - a->GetCorner();
+
+  // Compare all corresponding pixels and sum their differences
+  itk::ImageRegionConstIteratorWithIndex<TImage> imageIterator(image, a->GetRegion());
+  while(!imageIterator.IsAtEnd())
+    {
+    //float difference = fabs(imageIterator.Get() - this->Image->GetPixel(imageIterator.GetIndex() + offsetToOther));
+    float difference = (imageIterator.Get() - image->GetPixel(imageIterator.GetIndex() + offsetAToB)).GetNorm();
+    totalDifference += difference;
+
+    ++imageIterator;
+    }
+  //std::cout << "Difference: " << totalDifference << std::endl;
+  return totalDifference;
+}
+
+// template <typename TImage>
+// float ImagePatchPixelDescriptor<TImage>::Compare(const ImagePatchPixelDescriptor* const other, const std::vector<itk::Offset<2> >& offsets) const
+// {
+//   if(!this->Valid || !other->IsValid())
+//     {
+//     return std::numeric_limits<float>::infinity();
+//     }
+// 
+//   float totalDifference = 0.0f;
+// 
+//   for(unsigned int offsetId = 0; offsetId < offsets.size(); ++offsetId)
+//   {
+//     float difference = fabs(this->Image->GetPixel(this->GetCorner() + offsets[offsetId]) - this->Image->GetPixel(other->GetCorner() + offsets[offsetId]));
+//     totalDifference += difference;
+//   }
+// 
+//   return totalDifference;
+// }
 
 #endif
