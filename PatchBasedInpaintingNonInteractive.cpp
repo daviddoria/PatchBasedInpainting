@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
   std::cout << "Finished creating tree." << std::endl;
   
   // Perform the inpainting
-//   inpainting_loop(graph, visitor, space, descriptorMap, boundaryStatusMap, boundaryNodeQueue, nearestNeighborFinder, patchInpainter);
+//   inpainting_loop(graph, visitor, boundaryStatusMap, boundaryNodeQueue, nearestNeighborFinder, patchInpainter);
 // 
 //   HelpersOutput::WriteImage<ImageType>(image, outputFilename);
 

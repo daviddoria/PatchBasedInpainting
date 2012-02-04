@@ -26,3 +26,7 @@ add_test(TestCustomTopology TestCustomTopology)
 add_executable(TestDVPTreeImagePatches TestDVPTreeImagePatches.cpp ../../ImageProcessing/Mask.cpp)
 target_link_libraries(TestDVPTreeImagePatches ${ITK_LIBRARIES} libHelpers)
 add_test(TestDVPTreeImagePatches TestDVPTreeImagePatches)
+
+add_executable(TestDVPTreeIteratorConstruction TestDVPTreeIteratorConstruction.cpp ../../ImageProcessing/Mask.cpp)
+target_link_libraries(TestDVPTreeIteratorConstruction ${ITK_LIBRARIES} libHelpers)
+add_test(TestDVPTreeIteratorConstruction TestDVPTreeIteratorConstruction)

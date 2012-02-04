@@ -52,8 +52,7 @@ struct ImagePatch_inpainting_visitor
 
     typedef typename boost::property_traits<TDescriptorMap>::value_type DescriptorType;
 
-    bool valid = image->GetLargestPossibleRegion().IsInside(region) && mask->IsValid(region);
-    DescriptorType descriptor(this->image, region, valid);
+    DescriptorType descriptor(this->image, this->mask, region);
     put(descriptorMap, v, descriptor);
 
   };
@@ -61,7 +60,17 @@ struct ImagePatch_inpainting_visitor
   template <typename VertexType, typename Graph>
   void discover_vertex(VertexType v, Graph& g) const
   {
-    // TODO: Create the list of hole pixels here
+    // Create the list of hole pixels here
+    itk::Index<2> index = {{v[0], v[1]}};
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, half_width);
+    std::vector<itk::Index<2> > holePixels = mask->GetHolePixelsInRegion(region);
+    std::vector<itk::Offset<2> > holeOffsets;
+    for(size_t i = 0; i < holePixels.size(); ++i)
+      {
+      itk::Offset<2> offset = holePixels[i] - region.GetIndex();
+      holeOffsets.push_back(offset);
+      }
+
     std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
     std::cout << "Priority: " << get(priorityMap, v) << std::endl;
   };
