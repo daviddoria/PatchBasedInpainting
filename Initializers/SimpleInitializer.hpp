@@ -1,31 +1,17 @@
 #ifndef SimpleInitializer_HPP
 #define SimpleInitializer_HPP
 
-// ITK
-#include "itkImageRegionConstIteratorWithIndex.h"
-
-// Custom
-#include "ImageProcessing/Mask.h"
-#include "Priority/Priority.h"
-
-// Debug
-#include "Helpers/HelpersOutput.h"
-
 template <typename TVisitor, typename TGraph>
-inline void SimpleInitializer(Mask* const maskImage, TVisitor* const visitor, TGraph& g)
+inline void SimpleInitializer(TVisitor* const visitor, TGraph& g)
 {
   std::cout << "SimpleInitializer" << std::endl;
 
-  itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(maskImage, maskImage->GetLargestPossibleRegion());
-  while(!maskIterator.IsAtEnd())
+  typedef typename boost::graph_traits<TGraph>::vertex_iterator VertexIter;
+  // typename boost::graph_traits<TGraph>::vertex_descriptor node;
+  VertexIter ui,ui_end; tie(ui,ui_end) = vertices(g);
+  for(VertexIter iter = ui; iter != ui_end; ++iter)
     {
-    typename boost::graph_traits<TGraph>::vertex_descriptor node;
-    node[0] = maskIterator.GetIndex()[0];
-    node[1] = maskIterator.GetIndex()[1];
-    //std::cout << "Initializing " << maskIterator.GetIndex() << std::endl;
-    visitor->initialize_vertex(node, g);
-
-    ++maskIterator;
+    visitor->initialize_vertex(*iter, g);
     }
 
 }

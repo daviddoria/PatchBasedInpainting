@@ -31,7 +31,7 @@
 
 // Initializers
 //#include "Initializers/InitializeFromMaskImage.hpp"
-#include "Initializers/SimpleInitializer.hpp"
+#include "Initializers/SimpleInitializerFromMask.hpp"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
   ImagePatchCreatorVisitor<ImageType, DescriptorMapType> visitor(imageReader->GetOutput(), maskReader->GetOutput(), descriptorMap, patch_half_width);
 
   // Initialize
-  SimpleInitializer(maskReader->GetOutput(), &visitor, graph);
+  SimpleInitializerFromMask(maskReader->GetOutput(), &visitor, graph);
 
   // Create the tree
   std::cout << "Creating tree..." << std::endl;
