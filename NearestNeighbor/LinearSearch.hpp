@@ -30,12 +30,18 @@ inline ForwardIterator LinearSearch(ForwardIterator first,
                                               CompareFunction compare = CompareFunction(),
                                               DistanceValue inf = std::numeric_limits<DistanceValue>::infinity())
 {
-  if(first == last) return last;
+  if(first == last)
+  {
+    return last;
+  }
+
   DistanceValue d_best = inf;
   ForwardIterator result = last;
-  for(; first != last; ++first) {
+  for(; first != last; ++first)
+  {
     DistanceValue d = distanceFunction(*first);
-    if(compare(d, d_best)) {
+    if(compare(d, d_best))
+    {
       d_best = d;
       result = first;
     };
@@ -44,4 +50,3 @@ inline ForwardIterator LinearSearch(ForwardIterator first,
 }
 
 #endif
-  

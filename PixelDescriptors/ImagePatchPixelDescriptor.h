@@ -33,6 +33,8 @@ class ImagePatchPixelDescriptor
 {
 public:
 
+  typedef TImage ImageType;
+
   /** Default constructor to allow ImagePatch objects to be stored in a container.*/
   ImagePatchPixelDescriptor();
 
@@ -87,14 +89,6 @@ private:
   bool InsideImage;
 
 };
-
-
-/** Compute the difference to another ImagePatch.*/
-template <typename TImage>
-float Compare(const ImagePatchPixelDescriptor<TImage>* const a, const ImagePatchPixelDescriptor<TImage>* const b);
-
-  /** Compute the difference to another ImagePatch only at specified offets.*/
-// float Compare(const ImagePatchPixelDescriptor* const item, const std::vector<itk::Offset<2> >& offsets) const;
 
 #include "ImagePatchPixelDescriptor.hxx"
 

@@ -2,6 +2,7 @@
 #define ImagePatchTopology_HPP
 
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
+#include "DifferenceFunctions/ImagePatchDifference.hpp"
 
 template <typename TImage>
 class ImagePatchTopology
@@ -15,9 +16,11 @@ public:
     */
   double distance(const point_type& a, const point_type& b) const 
   {
-    return Compare(&a, &b);
+    return DifferenceFunction(a, b);
   }
 
+private:
+  ImagePatchDifference<point_type> DifferenceFunction;
 };
 
 #endif
