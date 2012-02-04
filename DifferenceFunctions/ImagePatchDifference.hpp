@@ -72,7 +72,8 @@ struct ImagePatchDifference
 //
 //   for(unsigned int offsetId = 0; offsetId < offsets.size(); ++offsetId)
 //   {
-//     float difference = fabs(this->Image->GetPixel(this->GetCorner() + offsets[offsetId]) - this->Image->GetPixel(other->GetCorner() + offsets[offsetId]));
+//     float difference = fabs(this->Image->GetPixel(this->GetCorner() + offsets[offsetId]) -
+//                                this->Image->GetPixel(other->GetCorner() + offsets[offsetId]));
 //     totalDifference += difference;
 //   }
 //

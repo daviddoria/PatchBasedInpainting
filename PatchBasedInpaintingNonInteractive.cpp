@@ -27,9 +27,10 @@
 #include "Visitors/ImagePatchInpaintingVisitor.hpp"
 
 // Nearest neighbors
-#include "NearestNeighbor/topological_search.hpp"
-#include "NearestNeighbor/metric_space_search.hpp"
-#include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
+// #include "NearestNeighbor/topological_search.hpp"
+// #include "NearestNeighbor/metric_space_search.hpp"
+// #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
+#include "NearestNeighbor/SearchFunctor.hpp"
 
 // Topologies
 #include "Topologies/ImagePatchTopology.hpp"
@@ -40,6 +41,9 @@
 // Inpainters
 #include "Inpainters/MaskedGridPatchInpainter.hpp"
 #include "Inpainters/HoleListPatchInpainter.hpp"
+
+// Difference functions
+#include "DifferenceFunctions/ImagePatchDifference.hpp"
 
 // Inpainting
 #include "InpaintingAlgorithm.hpp"
@@ -115,6 +119,8 @@ int main(int argc, char *argv[])
   std::cout << "hole pixels: " << maskReader->GetOutput()->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << maskReader->GetOutput()->CountValidPixels() << std::endl;
 
+  typedef ImagePatchPixelDescriptor<ImageType> PixelDescriptorType;
+
   // Create the graph
   typedef boost::grid_graph<2> VertexListGraphType;
   boost::array<std::size_t, 2> graphSideLengths = { { imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0],
@@ -123,8 +129,8 @@ int main(int argc, char *argv[])
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
 
   // Create the topology
-  typedef ImagePatchTopology<ImageType> TopologyType;
-  TopologyType space;
+//   typedef ImagePatchTopology<ImageType> TopologyType;
+//   TopologyType space;
 
   // Get the index map
   typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
@@ -153,8 +159,8 @@ int main(int argc, char *argv[])
   typedef std::less<float> PriorityCompareType;
   PriorityCompareType lessThanFunctor;
 
-  // Create the descriptor map. This is where the data for each pixel is stored. The Topology
-  typedef boost::vector_property_map<TopologyType::point_type, IndexMapType> DescriptorMapType;
+  // Create the descriptor map. This is where the data for each pixel is stored.
+  typedef boost::vector_property_map<PixelDescriptorType, IndexMapType> DescriptorMapType;
   DescriptorMapType descriptorMap(num_vertices(graph), indexMap);
 
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
@@ -174,8 +180,8 @@ int main(int argc, char *argv[])
   // Create the visitor
   //typedef default_inpainting_visitor InpaintingVisitorType;
   // InpaintingVisitorType visitor;
-  typedef ImagePatch_inpainting_visitor<ImageType, BoundaryNodeQueueType, FillStatusMapType,
-                                        DescriptorMapType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
+  typedef ImagePatchInpaintingVisitor<ImageType, BoundaryNodeQueueType, FillStatusMapType,
+                                      DescriptorMapType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
   InpaintingVisitorType visitor(image, maskReader->GetOutput(), boundaryNodeQueue, fillStatusMap,
                                 descriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
 
@@ -186,23 +192,11 @@ int main(int argc, char *argv[])
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
+  SearchFunctor<VertexDescriptorType, ImagePatchDifference<PixelDescriptorType> > nearestNeighborFinder;
 
-  // Linear
-  //typedef linear_neighbor_search<> SearchType;
-  //SearchType nearestNeighborFinder;
-
-  // DVP tree
-//   std::cout << "Creating tree..." << std::endl;
-//   typedef dvp_tree<VertexDescriptorType, TopologyType, DescriptorMapType > TreeType;
-//   TreeType tree(graph, space, descriptorMap);
-//   typedef multi_dvp_tree_search<VertexListGraphType, TreeType> SearchType;
-//   SearchType nearestNeighborFinder;
-//   nearestNeighborFinder.graph_tree_map[&graph] = &tree;
-//   std::cout << "Finished creating tree." << std::endl;
-  
   // Perform the inpainting
-//   inpainting_loop(graph, visitor, boundaryStatusMap, boundaryNodeQueue, nearestNeighborFinder, patchInpainter);
-// 
+   inpainting_loop(graph, visitor, boundaryStatusMap, boundaryNodeQueue, nearestNeighborFinder, patchInpainter);
+
 //   HelpersOutput::WriteImage<ImageType>(image, outputFilename);
 
   return EXIT_SUCCESS;

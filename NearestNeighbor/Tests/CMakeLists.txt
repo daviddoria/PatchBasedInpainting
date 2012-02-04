@@ -31,6 +31,10 @@ add_executable(TestDVPTreeIteratorConstruction TestDVPTreeIteratorConstruction.c
 target_link_libraries(TestDVPTreeIteratorConstruction ${ITK_LIBRARIES} libHelpers)
 add_test(TestDVPTreeIteratorConstruction TestDVPTreeIteratorConstruction)
 
-add_executable(TestLinearSearch TestLinearSearch.cpp)
-target_link_libraries(TestLinearSearch)
-add_test(TestLinearSearch TestLinearSearch)
+add_executable(TestLinearSearchBest TestLinearSearchBest.cpp)
+target_link_libraries(TestLinearSearchBest)
+add_test(TestLinearSearchBest TestLinearSearchBest)
+
+add_executable(TestLinearSearchKNN TestLinearSearchKNN.cpp)
+target_link_libraries(TestLinearSearchKNN)
+add_test(TestLinearSearchKNN TestLinearSearchKNN)

@@ -50,10 +50,14 @@ int main(int argc, char *argv[])
   DescriptorType queryDescriptor(descriptorDimension, 5.3);
   DifferenceFunctor differenceObject;
   differenceObject.objectToCompare = queryDescriptor;
-  DescriptorCollectionType::iterator result = LinearSearch(descriptors.begin(), descriptors.end(),
-                                                           differenceObject);
+  std::vector<DescriptorType> kNeighbors;
+  const unsigned int numberOfNeighbors = 3;
+  LinearSearchKNN(descriptors.begin(), descriptors.end(), kNeighbors, differenceObject, numberOfNeighbors);
 
-  std::cout << "Result: " << (*result)[0] << std::endl; // Output the first component of the best match
+  for(unsigned int i = 0; i < numberOfNeighbors; ++i)
+    {
+    std::cout << kNeighbors[i][0] << std::endl; // The 0th element of the ith neighbor
+    }
 
   return 0;
 }

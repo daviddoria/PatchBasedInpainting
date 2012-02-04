@@ -13,42 +13,32 @@
   * of the graph whose position value is closest to a given position value.
   * \tparam CompareFunction The functor type that can compare two distance measures (strict weak-ordering).
   */
-template <typename VertexDescriptor, typename Topology1, typename PositionMap1,
-          typename Topology2, typename PositionMap2, typename DVPTreeType, typename CompareFunction = std::less<double> >
+template <typename VertexDescriptor, typename NearestNeighborFinderType1, typename NearestNeighborFinderType2>
 struct TwoStepNearestNeighbor
 {
+  NearestNeighborFinderType1 NearestNeighborFinder1;
+  NearestNeighborFinderType2 NearestNeighborFinder2;
 
-  CompareFunction m_compare;
-  Topology1 m_topology1;
-  PositionMap1 m_positionMap1;
-
-  Topology2 m_topology2;
-  PositionMap2 m_positionMap2;
- 
   /** The number of nearest neighbors to use from the first step of the search. */
   unsigned int K;
-  
-  /** The tree to use in the first step of the search. */
-  DVPTreeType* DVPTree;
 
   /**
-    * Default constructor.
-    * \param compare The comparison functor for ordering the distances (strict weak ordering).
+    * Constructor.
+    * \param nearestNeighborFinder1 The functor to do the K-NN first step of the search.
+    * \param nearestNeighborFinder2 The functor to do the 1-NN second step of the search.
     */
-  TwoStepNearestNeighbor(Topology1 topology1, PositionMap1 positionMap1, Topology2 topology2, PositionMap2 positionMap2, const unsigned int k, DVPTreeType* dvpTree, CompareFunction compare = CompareFunction()) :
-  m_compare(compare), m_topology1(topology1), m_positionMap1(positionMap1), m_topology2(topology2), m_positionMap2(positionMap2), K(k), DVPTree(dvpTree)
+  TwoStepNearestNeighbor(NearestNeighborFinderType1 nearestNeighborFinder1, NearestNeighborFinderType2 nearestNeighborFinder2) :
+  NearestNeighborFinder1(nearestNeighborFinder1), NearestNeighborFinder2(nearestNeighborFinder2)
   { };
 
   VertexDescriptor operator()(VertexDescriptor v)
   {
     // Step 1 - K-NN search on first topology
     std::multimap<float, VertexDescriptor> outputMap;
-    this->DVPtree->find_nearest(v, outputMap, K);
+    this->NearestNeighborFinder1->find_nearest(v, outputMap, K);
 
     // Step 2 - 1-NN search on result of first search, on second topology
-    typedef linear_neighbor_search<> LinearSearchType;
-    LinearSearchType linearSearch;
-    VertexDescriptor nearestNeighbor = linearSearch(queryPoint, graph, m_topology2, m_positionMap2);
+    VertexDescriptor nearestNeighbor = this->NearestNeighborFinder2(queryPoint);
 
   }
 };
