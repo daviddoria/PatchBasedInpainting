@@ -285,11 +285,15 @@
 		    const Topology& space, 
 		    PositionMap position, 
 		    unsigned int max_neighbors = 1, 
-		    double radius = std::numeric_limits<double>::infinity()) {
+		    double radius = std::numeric_limits<double>::infinity())
+    {
       typedef typename boost::graph_traits<Graph>::vertex_descriptor Vertex;
       typedef typename boost::graph_traits<Graph>::vertex_iterator VertexIter;
       VertexIter ui,ui_end; tie(ui,ui_end) = boost::vertices(g);
-      min_dist_linear_search(ui,ui_end,output,boost::bind(&linear_neighbor_search::distance<Vertex,Topology,PositionMap>,this,p,_1,space,position),m_compare,max_neighbors,radius);
+      min_dist_linear_search(ui,ui_end,output,
+                             boost::bind(&linear_neighbor_search::distance<Vertex,Topology,PositionMap>,
+                                                          this,p,_1,space,position),
+                             m_compare,max_neighbors,radius);
     };
   };
 

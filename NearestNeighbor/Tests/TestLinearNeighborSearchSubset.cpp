@@ -54,8 +54,6 @@ int main(int argc, char *argv[])
 
   SearchType search;
 
-  // QUESTION: How to only search a subset? I thought the topology was automatically applied to every point in the graph.
-
   //VertexDescriptor nearestNeighbor = search(queryPoint, graph, myTopology, myMap);
   VertexDescriptor nearestNeighbor = search.operator()<GraphType, TopologyType, MapType>(queryPoint, graph, myTopology, myMap);
   std::cout << "nearestNeighbor[0]: " << nearestNeighbor[0] << std::endl;

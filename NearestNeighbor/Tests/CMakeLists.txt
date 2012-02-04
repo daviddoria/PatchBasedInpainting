@@ -30,3 +30,7 @@ add_test(TestDVPTreeImagePatches TestDVPTreeImagePatches)
 add_executable(TestDVPTreeIteratorConstruction TestDVPTreeIteratorConstruction.cpp ../../ImageProcessing/Mask.cpp)
 target_link_libraries(TestDVPTreeIteratorConstruction ${ITK_LIBRARIES} libHelpers)
 add_test(TestDVPTreeIteratorConstruction TestDVPTreeIteratorConstruction)
+
+add_executable(TestLinearSearch TestLinearSearch.cpp)
+target_link_libraries(TestLinearSearch)
+add_test(TestLinearSearch TestLinearSearch)

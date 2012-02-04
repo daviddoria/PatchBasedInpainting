@@ -13,7 +13,8 @@
   * of the graph whose position value is closest to a given position value.
   * \tparam CompareFunction The functor type that can compare two distance measures (strict weak-ordering).
   */
-template <typename VertexDescriptor, typename Topology1, typename PositionMap1, typename Topology2, typename PositionMap2, typename DVPTreeType, typename CompareFunction = std::less<double> >
+template <typename VertexDescriptor, typename Topology1, typename PositionMap1,
+          typename Topology2, typename PositionMap2, typename DVPTreeType, typename CompareFunction = std::less<double> >
 struct TwoStepNearestNeighbor
 {
 
@@ -38,7 +39,7 @@ struct TwoStepNearestNeighbor
   m_compare(compare), m_topology1(topology1), m_positionMap1(positionMap1), m_topology2(topology2), m_positionMap2(positionMap2), K(k), DVPTree(dvpTree)
   { };
 
-  VertexDescriptor find_nearest(VertexDescriptor v)
+  VertexDescriptor operator()(VertexDescriptor v)
   {
     // Step 1 - K-NN search on first topology
     std::multimap<float, VertexDescriptor> outputMap;

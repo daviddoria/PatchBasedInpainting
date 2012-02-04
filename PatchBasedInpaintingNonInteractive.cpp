@@ -29,6 +29,7 @@
 // Nearest neighbors
 #include "NearestNeighbor/topological_search.hpp"
 #include "NearestNeighbor/metric_space_search.hpp"
+#include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
 // Topologies
 #include "Topologies/ImagePatchTopology.hpp"
@@ -40,6 +41,7 @@
 #include "Inpainters/MaskedGridPatchInpainter.hpp"
 #include "Inpainters/HoleListPatchInpainter.hpp"
 
+// Inpainting
 #include "InpaintingAlgorithm.hpp"
 #include "Priority/PriorityRandom.h"
 
@@ -178,19 +180,25 @@ int main(int argc, char *argv[])
                                 descriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage(maskReader->GetOutput(), boundaryNodeQueue, priorityMap, priorityFunction, &visitor, graph, fillStatusMap, boundaryStatusMap);
-  std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size() << " nodes in the boundaryNodeQueue" << std::endl;
+  InitializeFromMaskImage(maskReader->GetOutput(), boundaryNodeQueue, priorityMap,
+                          priorityFunction, &visitor, graph, fillStatusMap, boundaryStatusMap);
+  std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
+            << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
+
+  // Linear
   //typedef linear_neighbor_search<> SearchType;
   //SearchType nearestNeighborFinder;
-  std::cout << "Creating tree..." << std::endl;
-  typedef dvp_tree<VertexDescriptorType, TopologyType, DescriptorMapType > TreeType;
-  TreeType tree(graph, space, descriptorMap);
-  typedef multi_dvp_tree_search<VertexListGraphType, TreeType> SearchType;
-  SearchType nearestNeighborFinder;
-  nearestNeighborFinder.graph_tree_map[&graph] = &tree;
-  std::cout << "Finished creating tree." << std::endl;
+
+  // DVP tree
+//   std::cout << "Creating tree..." << std::endl;
+//   typedef dvp_tree<VertexDescriptorType, TopologyType, DescriptorMapType > TreeType;
+//   TreeType tree(graph, space, descriptorMap);
+//   typedef multi_dvp_tree_search<VertexListGraphType, TreeType> SearchType;
+//   SearchType nearestNeighborFinder;
+//   nearestNeighborFinder.graph_tree_map[&graph] = &tree;
+//   std::cout << "Finished creating tree." << std::endl;
   
   // Perform the inpainting
 //   inpainting_loop(graph, visitor, boundaryStatusMap, boundaryNodeQueue, nearestNeighborFinder, patchInpainter);
