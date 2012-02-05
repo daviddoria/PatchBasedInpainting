@@ -37,6 +37,7 @@
 
 // Initializers
 #include "Initializers/InitializeFromMaskImage.hpp"
+#include "Initializers/InitializePriority.hpp"
 
 // Inpainters
 #include "Inpainters/MaskedGridPatchInpainter.hpp"
@@ -185,9 +186,11 @@ int main(int argc, char *argv[])
   InpaintingVisitorType visitor(image, maskReader->GetOutput(), boundaryNodeQueue, fillStatusMap,
                                 descriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
 
+  InitializePriority(maskReader->GetOutput(), boundaryNodeQueue, priorityMap,
+                     priorityFunction, boundaryStatusMap);
+
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage(maskReader->GetOutput(), boundaryNodeQueue, priorityMap,
-                          priorityFunction, &visitor, graph, fillStatusMap, boundaryStatusMap);
+  InitializeFromMaskImage(maskReader->GetOutput(), &visitor, graph, fillStatusMap);
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
