@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PatchBasedInpaintingViewer</class>
- <widget class="QMainWindow" name="PatchBasedInpaintingViewer">
+ <class>PatchBasedInpaintingViewerWidget</class>
+ <widget class="QMainWindow" name="PatchBasedInpaintingViewerWidget">
   <property name="geometry">
    <rect>
     <x>0</x>

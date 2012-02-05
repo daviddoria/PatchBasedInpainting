@@ -29,7 +29,7 @@ class QTableWidget;
 
 // Custom
 #include "DisplayStyle.h"
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
 
 namespace HelpersQt
 {

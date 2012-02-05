@@ -63,18 +63,8 @@ struct ImagePatchInpaintingVisitor
   template <typename VertexType, typename Graph>
   void discover_vertex(VertexType v, Graph& g) const
   {
-    
     itk::Index<2> index = {{v[0], v[1]}};
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, half_width);
-
-    // Create the list of hole pixels
-//     std::vector<itk::Index<2> > holePixels = mask->GetHolePixelsInRegion(region);
-//     std::vector<itk::Offset<2> > holeOffsets;
-//     for(size_t i = 0; i < holePixels.size(); ++i)
-//       {
-//       itk::Offset<2> offset = holePixels[i] - region.GetIndex();
-//       holeOffsets.push_back(offset);
-//       }
 
     // Create the list of valid pixels
     std::vector<itk::Index<2> > validPixels = mask->GetValidPixelsInRegion(region);
@@ -98,7 +88,7 @@ struct ImagePatchInpaintingVisitor
     std::cout << "Match made: target: " << target[0] << " " << target[1]
               << " with source: " << source[0] << " " << source[1] << std::endl;
     assert(get(fillStatusMap, source));
-    //assert(get(descriptorMap, source).IsValid());
+    assert(get(descriptorMap, source).IsFullyValid());
   };
 
   template <typename VertexType, typename Graph>

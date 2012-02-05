@@ -60,6 +60,12 @@ if(BuildInteractive)
   add_subdirectory(Interactive)
 endif()
 
+SET(BuildViewer CACHE BOOL "Build the viewer.")
+if(BuildViewer)
+  message("Building the viewer.")
+  add_subdirectory(Interactive)
+endif()
+
 # Non-interactive
 SET(BuildNonInteractive CACHE BOOL "Build the non-interactive version.")
 if(BuildNonInteractive)

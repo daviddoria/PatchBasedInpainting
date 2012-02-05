@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PatchBasedInpaintingGUI</class>
- <widget class="QMainWindow" name="PatchBasedInpaintingGUI">
+ <class>PatchBasedInpaintingWidget</class>
+ <widget class="QMainWindow" name="PatchBasedInpaintingWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -968,7 +968,7 @@
      <x>0</x>
      <y>0</y>
      <width>1457</width>
-     <height>28</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLeft_Pane">

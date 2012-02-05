@@ -56,25 +56,10 @@
 // Boost
 #include <boost/graph/grid_graph.hpp>
 #include <boost/property_map/property_map.hpp>
-// #include <boost/graph/topology.hpp>
 #include <boost/graph/detail/d_ary_heap.hpp>
 
 // Debug
 #include "Helpers/HelpersOutput.h"
-
-namespace boost 
-{
-
-  enum vertex_hole_priority_t { vertex_hole_priority };
-  BOOST_INSTALL_PROPERTY(vertex, hole_priority);
-  
-  enum vertex_image_patch_t { vertex_image_patch };
-  BOOST_INSTALL_PROPERTY(vertex, image_patch);
-  
-  enum vertex_filled_t { vertex_filled };
-  BOOST_INSTALL_PROPERTY(vertex, filled);
-
-};
 
 int main(int argc, char *argv[])
 {
@@ -129,10 +114,6 @@ int main(int argc, char *argv[])
   VertexListGraphType graph(graphSideLengths);
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
 
-  // Create the topology
-//   typedef ImagePatchTopology<ImageType> TopologyType;
-//   TopologyType space;
-
   // Get the index map
   typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
   IndexMapType indexMap(get(boost::vertex_index, graph));
@@ -152,14 +133,6 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<bool, IndexMapType> BoundaryStatusMapType;
   BoundaryStatusMapType boundaryStatusMap(num_vertices(graph), indexMap);
 
-  // Create the nearby hole map. A node is on the current boundary if this property is true.
-  typedef boost::vector_property_map<std::vector<VertexDescriptorType>, IndexMapType> NearbyHoleMapType;
-  NearbyHoleMapType nearbyHoleMap(num_vertices(graph), indexMap);
-
-  // Create the priority compare functor
-  typedef std::less<float> PriorityCompareType;
-  PriorityCompareType lessThanFunctor;
-
   // Create the descriptor map. This is where the data for each pixel is stored.
   typedef boost::vector_property_map<PixelDescriptorType, IndexMapType> DescriptorMapType;
   DescriptorMapType descriptorMap(num_vertices(graph), indexMap);
@@ -175,12 +148,14 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;
   IndexInHeapMap index_in_heap(indexMap);
 
+  // Create the priority compare functor
+  typedef std::less<float> PriorityCompareType;
+  PriorityCompareType lessThanFunctor;
+
   typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType> BoundaryNodeQueueType;
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
   // Create the visitor
-  //typedef default_inpainting_visitor InpaintingVisitorType;
-  // InpaintingVisitorType visitor;
   typedef ImagePatchInpaintingVisitor<ImageType, BoundaryNodeQueueType, FillStatusMapType,
                                       DescriptorMapType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
   InpaintingVisitorType visitor(image, maskReader->GetOutput(), boundaryNodeQueue, fillStatusMap,

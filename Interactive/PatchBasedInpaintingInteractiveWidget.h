@@ -39,7 +39,6 @@
 // Custom
 #include "InpaintingIterationRecordViewer.h"
 
-#include "DebugOutputs.h"
 #include "DisplayState.h"
 #include "ImageCamera.h"
 #include "ImageInput.h"
