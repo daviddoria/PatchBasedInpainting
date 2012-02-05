@@ -1,6 +1,9 @@
 #ifndef ImagePatchDifference_hpp
 #define ImagePatchDifference_hpp
 
+// STL
+#include <stdexcept>
+
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
 /** Compute the difference to another ImagePatch.*/
@@ -24,8 +27,6 @@ struct ImagePatchDifference
       return std::numeric_limits<float>::infinity();
       }
 
-    assert(a.GetImage() == b.GetImage());
-
     // If we are comparing a patch to itself, return inf. Otherwise, the best match would always be the same patch!
     if(a.GetRegion() == b.GetRegion())
       {
@@ -38,22 +39,49 @@ struct ImagePatchDifference
       return std::numeric_limits<float>::infinity();
       }
 
-    typename ImagePatchType::ImageType* image = a.GetImage(); // For now this image is required to be the same for both patches.
+    // For now this image is required to be the same for both patches.
+    assert(a.GetImage() == b.GetImage());
+    typename ImagePatchType::ImageType* image = a.GetImage();
 
     float totalDifference = 0.0f;
 
-    itk::Offset<2> offsetAToB = b.GetCorner() - a.GetCorner();
+    if(a.GetStatus() == ImagePatchType::SOURCE_PATCH && b.GetStatus() == ImagePatchType::SOURCE_PATCH)
+    {
+      itk::Offset<2> offsetAToB = b.GetCorner() - a.GetCorner();
+      // Compare all corresponding pixels and sum their differences
+      itk::ImageRegionConstIteratorWithIndex<typename ImagePatchType::ImageType> patchAIterator(image, a.GetRegion());
+      while(!patchAIterator.IsAtEnd())
+        {
+        //float difference = fabs(imageIterator.Get() - this->Image->GetPixel(imageIterator.GetIndex() + offsetToOther));
+        float difference = (patchAIterator.Get() - image->GetPixel(patchAIterator.GetIndex() + offsetAToB)).GetNorm();
+        totalDifference += difference;
 
-    // Compare all corresponding pixels and sum their differences
-    itk::ImageRegionConstIteratorWithIndex<typename ImagePatchType::ImageType> imageIterator(image, a.GetRegion());
-    while(!imageIterator.IsAtEnd())
-      {
-      //float difference = fabs(imageIterator.Get() - this->Image->GetPixel(imageIterator.GetIndex() + offsetToOther));
-      float difference = (imageIterator.Get() - image->GetPixel(imageIterator.GetIndex() + offsetAToB)).GetNorm();
-      totalDifference += difference;
+        ++patchAIterator;
+        }
+    }
+    else if(a.GetStatus() == ImagePatchType::TARGET_PATCH || b.GetStatus() == ImagePatchType::TARGET_PATCH)
+    {
+      const std::vector<itk::Offset<2> >* validOffsets;
+      if(a.GetStatus() == ImagePatchType::TARGET_PATCH)
+        {
+        validOffsets = a.GetValidOffsetsAddress();
+        }
+      if(b.GetStatus() == ImagePatchType::TARGET_PATCH)
+        {
+        validOffsets = b.GetValidOffsetsAddress();
+        }
+      for(unsigned int i = 0; i < validOffsets->size(); ++i)
+        {
+        float difference = (image->GetPixel(a.GetCorner() + (*validOffsets)[i]) -
+                            image->GetPixel(b.GetCorner() + (*validOffsets)[i])).GetNorm();
+        totalDifference += difference;
+        }
+    }
+    else
+    {
+      throw std::runtime_error("Patch statuses are not correct!");
+    }
 
-      ++imageIterator;
-      }
     //std::cout << "Difference: " << totalDifference << std::endl;
     return totalDifference;
   }

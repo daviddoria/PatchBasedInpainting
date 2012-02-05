@@ -198,4 +198,10 @@ bool ImagePatchPixelDescriptor<TImage>::operator<(const ImagePatchPixelDescripto
   return true;
 }*/
 
+template <typename TImage>
+void ImagePatchPixelDescriptor<TImage>::SetValidOffsets(const std::vector<itk::Offset<2> >& validOffsets)
+{
+  this->ValidOffsets = validOffsets;
+}
+
 #endif

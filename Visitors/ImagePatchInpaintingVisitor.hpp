@@ -63,21 +63,33 @@ struct ImagePatchInpaintingVisitor
   template <typename VertexType, typename Graph>
   void discover_vertex(VertexType v, Graph& g) const
   {
-    // Create the list of hole pixels
+    
     itk::Index<2> index = {{v[0], v[1]}};
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, half_width);
-    std::vector<itk::Index<2> > holePixels = mask->GetHolePixelsInRegion(region);
-    std::vector<itk::Offset<2> > holeOffsets;
-    for(size_t i = 0; i < holePixels.size(); ++i)
+
+    // Create the list of hole pixels
+//     std::vector<itk::Index<2> > holePixels = mask->GetHolePixelsInRegion(region);
+//     std::vector<itk::Offset<2> > holeOffsets;
+//     for(size_t i = 0; i < holePixels.size(); ++i)
+//       {
+//       itk::Offset<2> offset = holePixels[i] - region.GetIndex();
+//       holeOffsets.push_back(offset);
+//       }
+
+    // Create the list of valid pixels
+    std::vector<itk::Index<2> > validPixels = mask->GetValidPixelsInRegion(region);
+    std::vector<itk::Offset<2> > validOffsets;
+    for(size_t i = 0; i < validPixels.size(); ++i)
       {
-      itk::Offset<2> offset = holePixels[i] - region.GetIndex();
-      holeOffsets.push_back(offset);
+      itk::Offset<2> offset = validPixels[i] - region.GetIndex();
+      validOffsets.push_back(offset);
       }
 
     std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
     std::cout << "Priority: " << get(priorityMap, v) << std::endl;
     DescriptorType& descriptor = get(descriptorMap, v);
     descriptor.SetStatus(DescriptorType::TARGET_PATCH);
+    descriptor.SetValidOffsets(validOffsets);
   };
 
   template <typename VertexType, typename Graph>
