@@ -6,24 +6,28 @@
 template <typename TVertexDescriptor, typename TObject, typename TDistanceFunction, typename TDescriptorMap>
 struct SearchFunctor
 {
-  typedef std::vector<TObject> ObjectContainer;
-  ObjectContainer Objects;
+  typedef std::vector<TObject> ContainerType;
+  ContainerType Objects;
   TDistanceFunction DistanceFunction;
 
   TDescriptorMap DescriptorMap;
 
   SearchFunctor(TDescriptorMap& descriptorMap) : DescriptorMap(descriptorMap){}
 
-  typename ObjectContainer::iterator operator()(const TObject& query)
-  {
-    return LinearSearchBest(Objects.begin(), Objects.end(), DistanceFunction);
-  }
+//   TVertexDescriptor operator()(const TObject& query)
+//   {
+//     typename ObjectContainer::iterator result = LinearSearchBest(Objects.begin(), Objects.end(), DistanceFunction, query);
+//     return *result;
+//   }
 
-  typename ObjectContainer::iterator operator()(const TVertexDescriptor& query)
+  TVertexDescriptor operator()(const TVertexDescriptor& query)
   {
     TObject object = get(DescriptorMap, query);
-    DistanceFunction.
-    return LinearSearchBest(Objects.begin(), Objects.end(), DistanceFunction);
+    typename ContainerType::iterator result = LinearSearchBest<ContainerType>(Objects.begin(),
+                                                                              Objects.end(), DistanceFunction, object);
+    ContainerType::iterator it = find(Objects.begin(), Objects.end(), *result);
+    // linearId = it - Objects.begin()
+    return *result;
   }
 };
 

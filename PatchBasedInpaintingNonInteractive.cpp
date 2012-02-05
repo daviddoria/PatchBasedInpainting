@@ -192,10 +192,11 @@ int main(int argc, char *argv[])
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
-  SearchFunctor<VertexDescriptorType, ImagePatchDifference<PixelDescriptorType> > nearestNeighborFinder;
+  SearchFunctor<VertexDescriptorType, PixelDescriptorType,
+                ImagePatchDifference<PixelDescriptorType>, DescriptorMapType > nearestNeighborFinder(descriptorMap);
 
   // Perform the inpainting
-   inpainting_loop(graph, visitor, boundaryStatusMap, boundaryNodeQueue, nearestNeighborFinder, patchInpainter);
+  inpainting_loop(graph, visitor, boundaryStatusMap, boundaryNodeQueue, nearestNeighborFinder, patchInpainter);
 
 //   HelpersOutput::WriteImage<ImageType>(image, outputFilename);
 

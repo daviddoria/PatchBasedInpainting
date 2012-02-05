@@ -16,7 +16,7 @@ void inpainting_loop(VertexListGraph& g, InpaintingVisitorType vis,
                       NearestNeighborFinder find_inpainting_source, 
                       PatchInpainter inpaint_patch) 
 {
-  typedef typename boost::graph_traits<VertexListGraph>::vertex_descriptor Vertex;
+  typedef typename boost::graph_traits<VertexListGraph>::vertex_descriptor VertexDescriptorType;
 
   // When this function is called, the priority-queue should already be filled 
   // with all the hole-vertices (which should also have their boundaryStatusMap set appropriately).
@@ -31,7 +31,7 @@ void inpainting_loop(VertexListGraph& g, InpaintingVisitorType vis,
     // a target node). So we do not just process the node at the front of the queue,
     // we also check that it has not been filled (by looking at its boundaryStatusMap
     // value).
-    Vertex targetNode;
+    VertexDescriptorType targetNode;
     do
     {
       if( boundaryNodeQueue.empty() )
@@ -47,7 +47,7 @@ void inpainting_loop(VertexListGraph& g, InpaintingVisitorType vis,
     vis.discover_vertex(targetNode, g);
 
     // Find the source node that matches best to the target node
-    Vertex source_patch_center = find_inpainting_source(targetNode);
+    VertexDescriptorType source_patch_center = find_inpainting_source(targetNode);
     vis.vertex_match_made(targetNode, source_patch_center, g);
 
     // Do the in-painting of the target patch from the source patch.

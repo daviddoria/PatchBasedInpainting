@@ -21,13 +21,14 @@
    * \param inf A DistanceValue which represents infinity (i.e. the very worst value with which to initialize the search).
    * \return The iterator to the best element in the range (best is defined as the one which would compare favorably to all the elements in the range with respect to the distance metric).
    */
-template <typename ForwardIterator,
+template <typename TContainer,
           typename DistanceFunction,
           typename DistanceValue = float,
           typename CompareFunction = std::less<DistanceValue> >
-inline ForwardIterator LinearSearchBest(ForwardIterator first,
-                                        ForwardIterator last,
+inline typename TContainer::iterator LinearSearchBest(typename TContainer::iterator first,
+                                        typename TContainer::iterator last,
                                         DistanceFunction distanceFunction,
+                                        typename TContainer::value_type query,
                                         CompareFunction compare = CompareFunction(),
                                         DistanceValue inf = std::numeric_limits<DistanceValue>::infinity())
 {
@@ -37,10 +38,10 @@ inline ForwardIterator LinearSearchBest(ForwardIterator first,
   }
 
   DistanceValue d_best = inf;
-  ForwardIterator result = last;
+  typename TContainer::iterator result = last;
   for(; first != last; ++first)
   {
-    DistanceValue d = distanceFunction(*first);
+    DistanceValue d = distanceFunction(*first, query);
     if(compare(d, d_best))
     {
       d_best = d;
