@@ -47,18 +47,27 @@ Region(region), Image(image), MaskImage(maskImage), InsideImage(false)
     }
 
   this->FullyValid = maskImage->IsValid(region);
-//   this->FullyValid = true;
-//   itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(maskImage, region);
-//   while(!maskIterator.IsAtEnd())
-//     {
-//     if(maskImage->IsHole(maskIterator.GetIndex()))
-//       {
-//       this->FullyValid = false;
-//       break;
-//       }
-// 
-//     ++maskIterator;
-//     }
+  this->FullyValid = true;
+  itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(maskImage, region);
+  while(!maskIterator.IsAtEnd())
+    {
+    if(maskImage->IsHole(maskIterator.GetIndex()))
+      {
+      this->FullyValid = false;
+      break;
+      }
+
+    ++maskIterator;
+    }
+
+  if(this->FullyValid)
+    {
+    this->Status = SOURCE_PATCH;
+    }
+  else
+    {
+    this->Status = INVALID;
+    }
 }
 /*
 template <typename TImage>

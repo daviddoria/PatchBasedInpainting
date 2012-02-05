@@ -23,19 +23,11 @@ struct ImagePatchDifference
     assert(b.IsInsideImage());
     assert(a.GetImage() == b.GetImage());
 
-    // If either patch is not entirely inside the image, the comparison cannot be performed.
-  //   if(!this->IsInsideImage() || !other->IsInsideImage())
-  //     {
-  //     return std::numeric_limits<float>::infinity();
-  //     }
-
-    // We allow 'this' to be invalid but not 'other' because we want to
-    // compare target patches that definitely have invalid (hole) pixels to completely valid patches.
-  //   if(!other->IsValid())
-  //     {
-  //     //std::cout << "Invalid difference comparison!" << std::endl;
-  //     return std::numeric_limits<float>::infinity();
-  //     }
+    // If either patch is invalid, the comparison cannot be performed.
+    if(a.GetStatus() == ImagePatchType::INVALID || b.GetStatus() == ImagePatchType::INVALID)
+      {
+      return std::numeric_limits<float>::infinity();
+      }
 
     typename ImagePatchType::ImageType* image = a.GetImage(); // For now this image is required to be the same for both patches.
 

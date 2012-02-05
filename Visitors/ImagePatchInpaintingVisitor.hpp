@@ -77,6 +77,8 @@ struct ImagePatchInpaintingVisitor
 
     std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
     std::cout << "Priority: " << get(priorityMap, v) << std::endl;
+    typename boost::property_traits<TDescriptorMap>::value_type& descriptor = get(descriptorMap, v);
+    descriptor.SetStatus(boost::property_traits<TDescriptorMap>::value_type::TARGET_PATCH);
   };
 
   template <typename VertexType, typename Graph>
@@ -85,7 +87,7 @@ struct ImagePatchInpaintingVisitor
     std::cout << "Match made: target: " << target[0] << " " << target[1]
               << " with source: " << source[0] << " " << source[1] << std::endl;
     assert(get(fillStatusMap, source));
-    assert(get(descriptorMap, source).IsValid());
+    //assert(get(descriptorMap, source).IsValid());
   };
 
   template <typename VertexType, typename Graph>

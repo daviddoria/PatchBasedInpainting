@@ -66,6 +66,14 @@ public:
   /** Get the image to which this patch refers. */
   TImage* GetImage() const;
 
+  /** If a patch is invalid, it means any comparison with it should return inf. */
+  enum StatusEnum {SOURCE_PATCH, TARGET_PATCH, INVALID};
+
+  StatusEnum Status;
+
+  StatusEnum GetStatus() const {return Status;}
+  void SetStatus(StatusEnum status) {Status = status;}
+  
   /** Determine if this patch is valid. A valid patch must be InsideImage, but also has had a valid descriptor attached to it. */
   bool IsFullyValid() const;
 

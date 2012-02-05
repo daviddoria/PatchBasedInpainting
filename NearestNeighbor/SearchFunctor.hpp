@@ -3,31 +3,24 @@
 
 #include "LinearSearchAlgorithm.hpp"
 
-template <typename TVertexDescriptor, typename TObject, typename TDistanceFunction, typename TDescriptorMap>
+template <typename TGraph, typename TDistanceFunction, typename TDescriptorMap>
 struct SearchFunctor
 {
-  typedef std::vector<TObject> ContainerType;
-  ContainerType Objects;
+  typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
   TDistanceFunction DistanceFunction;
-
+  TGraph Graph;
   TDescriptorMap DescriptorMap;
 
-  SearchFunctor(TDescriptorMap& descriptorMap) : DescriptorMap(descriptorMap){}
+  SearchFunctor(TGraph& g, TDescriptorMap& descriptorMap) : Graph(g), DescriptorMap(descriptorMap){}
 
-//   TVertexDescriptor operator()(const TObject& query)
-//   {
-//     typename ObjectContainer::iterator result = LinearSearchBest(Objects.begin(), Objects.end(), DistanceFunction, query);
-//     return *result;
-//   }
-
-  TVertexDescriptor operator()(const TVertexDescriptor& query)
+  VertexDescriptorType operator()(const VertexDescriptorType& queryVertexDescriptor)
   {
-    TObject object = get(DescriptorMap, query);
-    typename ContainerType::iterator result = LinearSearchBest<ContainerType>(Objects.begin(),
-                                                                              Objects.end(), DistanceFunction, object);
-    ContainerType::iterator it = find(Objects.begin(), Objects.end(), *result);
-    // linearId = it - Objects.begin()
-    return *result;
+    typedef typename boost::graph_traits<TGraph>::vertex_iterator VertexIteratorType;
+    VertexIteratorType ui,ui_end; tie(ui,ui_end) = vertices(Graph);
+
+    VertexDescriptorType result = LinearSearchPropertyBest(ui, ui_end,
+                                                         DistanceFunction, DescriptorMap, queryVertexDescriptor);
+    return result;
   }
 };
 
