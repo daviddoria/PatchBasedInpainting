@@ -19,9 +19,6 @@
 #ifndef ImagePatchPixelDescriptor_H
 #define ImagePatchPixelDescriptor_H
 
-#include "PixelVisitor.h"
-#include "Types.h"
-
 class Mask;
 
 /**

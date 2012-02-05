@@ -64,7 +64,8 @@ endif()
 SET(BuildNonInteractive CACHE BOOL "Build the non-interactive version.")
 if(BuildNonInteractive)
   ADD_EXECUTABLE(PatchBasedInpaintingNonInteractive
-  PatchBasedInpaintingNonInteractive.cpp)
+  PatchBasedInpaintingNonInteractive.cpp
+  PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
   TARGET_LINK_LIBRARIES(PatchBasedInpaintingNonInteractive PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
   INSTALL( TARGETS PatchBasedInpaintingNonInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
