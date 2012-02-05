@@ -27,6 +27,7 @@ struct ImagePatchInpaintingVisitor
   Priority* priorityFunction;
   TFillStatusMap& fillStatusMap;
   TDescriptorMap& descriptorMap;
+  typedef typename boost::property_traits<TDescriptorMap>::value_type DescriptorType;
   TPriorityMap& priorityMap;
   TBoundaryStatusMap& boundaryStatusMap;
 
@@ -54,8 +55,6 @@ struct ImagePatchInpaintingVisitor
 
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, half_width);
 
-    typedef typename boost::property_traits<TDescriptorMap>::value_type DescriptorType;
-
     DescriptorType descriptor(this->image, this->mask, region);
     put(descriptorMap, v, descriptor);
 
@@ -77,8 +76,8 @@ struct ImagePatchInpaintingVisitor
 
     std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
     std::cout << "Priority: " << get(priorityMap, v) << std::endl;
-    typename boost::property_traits<TDescriptorMap>::value_type& descriptor = get(descriptorMap, v);
-    descriptor.SetStatus(boost::property_traits<TDescriptorMap>::value_type::TARGET_PATCH);
+    DescriptorType& descriptor = get(descriptorMap, v);
+    descriptor.SetStatus(DescriptorType::TARGET_PATCH);
   };
 
   template <typename VertexType, typename Graph>
@@ -170,7 +169,7 @@ struct ImagePatchInpaintingVisitor
         put(boundaryStatusMap, v, true);
         this->boundaryNodeQueue.push(v);
         float priority = this->priorityFunction->ComputePriority(imageIterator.GetIndex());
-        std::cout << "updated priority: " << priority << std::endl;
+        //std::cout << "updated priority: " << priority << std::endl;
         put(priorityMap, v, priority);
         }
       else

@@ -19,9 +19,18 @@ struct ImagePatchDifference
     // This comparison must allow source patches to be compared to source patches (to create the tree) as well as source patches
     // to be symmetrically compared to target patches.
 
-    assert(a.IsInsideImage());
-    assert(b.IsInsideImage());
+    if(!a.IsInsideImage() || !b.IsInsideImage())
+      {
+      return std::numeric_limits<float>::infinity();
+      }
+
     assert(a.GetImage() == b.GetImage());
+
+    // If we are comparing a patch to itself, return inf. Otherwise, the best match would always be the same patch!
+    if(a.GetRegion() == b.GetRegion())
+      {
+      return std::numeric_limits<float>::infinity();
+      }
 
     // If either patch is invalid, the comparison cannot be performed.
     if(a.GetStatus() == ImagePatchType::INVALID || b.GetStatus() == ImagePatchType::INVALID)

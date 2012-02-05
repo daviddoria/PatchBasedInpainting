@@ -1,6 +1,8 @@
 #ifndef MaskedGridPatchInpainter_HPP
 #define MaskedGridPatchInpainter_HPP
 
+#include "Helpers/BoostHelpers.h"
+
 /**
  * This class template is a patch inpainter (i.e. paints the holes in one patch with the values of 
  * some given source patch). This class requires that the graph be a 2D grid-graph (like BGL's grid_graph).
@@ -47,6 +49,7 @@ struct MaskedGridPatchInpainter
         // check the mask value
         if( get(fillStatusMap, target_node) == false )
         {
+          std::cout << "Copying " << source_node << " to " << target_node << std::endl;
           vis.paint_vertex(target_node, source_node, g); //paint the vertex.
         }
 
