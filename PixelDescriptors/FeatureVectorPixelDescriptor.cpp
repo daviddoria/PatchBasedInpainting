@@ -24,7 +24,7 @@ FeatureVector(featureVector)
 
 }
 
-FeatureVectorPixelDescriptor::FeatureVectorType FeatureVectorPixelDescriptor::GetFeatureVector() const
+const FeatureVectorPixelDescriptor::FeatureVectorType& FeatureVectorPixelDescriptor::GetFeatureVector() const
 {
   return this->FeatureVector;
 }

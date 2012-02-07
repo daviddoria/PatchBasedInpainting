@@ -50,7 +50,7 @@ public:
     this->Vertex = v;
   }
 
-  VertexType GetVertex()
+  VertexType GetVertex() const
   {
     return this->Vertex;
   }

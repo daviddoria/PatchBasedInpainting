@@ -21,10 +21,12 @@
 
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
+#include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
 
 // Visitors
 #include "Visitors/DefaultInpaintingVisitor.hpp"
 #include "Visitors/ImagePatchInpaintingVisitor.hpp"
+#include "Visitors/FeatureVectorInpaintingVisitor.hpp"
 
 // Nearest neighbors
 // #include "NearestNeighbor/topological_search.hpp"
@@ -45,6 +47,7 @@
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/FeatureVectorDifference.hpp"
 
 // Inpainting
 #include "InpaintingAlgorithm.hpp"
@@ -105,7 +108,8 @@ int main(int argc, char *argv[])
   std::cout << "hole pixels: " << maskReader->GetOutput()->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << maskReader->GetOutput()->CountValidPixels() << std::endl;
 
-  typedef ImagePatchPixelDescriptor<ImageType> PixelDescriptorType;
+  typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
+  typedef FeatureVectorPixelDescriptor FeatureVectorPixelDescriptorType;
 
   // Create the graph
   typedef boost::grid_graph<2> VertexListGraphType;
@@ -134,9 +138,13 @@ int main(int argc, char *argv[])
   BoundaryStatusMapType boundaryStatusMap(num_vertices(graph), indexMap);
 
   // Create the descriptor map. This is where the data for each pixel is stored.
-  typedef boost::vector_property_map<PixelDescriptorType, IndexMapType> DescriptorMapType;
-  DescriptorMapType descriptorMap(num_vertices(graph), indexMap);
+  typedef boost::vector_property_map<ImagePatchPixelDescriptorType, IndexMapType> ImagePatchDescriptorMapType;
+  ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
 
+  // Create the descriptor map. This is where the data for each pixel is stored.
+  typedef boost::vector_property_map<FeatureVectorPixelDescriptorType, IndexMapType> FeatureVectorDescriptorMapType;
+  FeatureVectorDescriptorMapType featureVectorDescriptorMap(num_vertices(graph), indexMap);
+  
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
   typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
   InpainterType patchInpainter(patch_half_width, fillStatusMap);
@@ -156,10 +164,16 @@ int main(int argc, char *argv[])
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
   // Create the visitor
-  typedef ImagePatchInpaintingVisitor<ImageType, BoundaryNodeQueueType, FillStatusMapType,
-                                      DescriptorMapType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
+//   typedef ImagePatchInpaintingVisitor<ImageType, BoundaryNodeQueueType, FillStatusMapType,
+//                                       ImagePatchDescriptorMapType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
+//   InpaintingVisitorType visitor(image, maskReader->GetOutput(), boundaryNodeQueue, fillStatusMap,
+//                                 imagePatchDescriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
+  
+  typedef FeatureVectorInpaintingVisitor<ImageType, BoundaryNodeQueueType, FillStatusMapType,
+                                         FeatureVectorDescriptorMapType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
+
   InpaintingVisitorType visitor(image, maskReader->GetOutput(), boundaryNodeQueue, fillStatusMap,
-                                descriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
+                                featureVectorDescriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
 
   InitializePriority(maskReader->GetOutput(), boundaryNodeQueue, priorityMap,
                      priorityFunction, boundaryStatusMap);
@@ -170,8 +184,10 @@ int main(int argc, char *argv[])
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
-  SearchFunctor<VertexListGraphType, ImagePatchDifference<PixelDescriptorType>,
-                DescriptorMapType > nearestNeighborFinder(graph, descriptorMap);
+//   SearchFunctor<VertexListGraphType, ImagePatchDifference<ImagePatchPixelDescriptorType>,
+//                 ImagePatchPixelDescriptorType > nearestNeighborFinder(graph, imagePatchDescriptorMap);
+    SearchFunctor<VertexListGraphType, FeatureVectorDifference,
+        FeatureVectorDescriptorMapType > nearestNeighborFinder(graph, featureVectorDescriptorMap);
 
   // Perform the inpainting
   inpainting_loop(graph, visitor, boundaryStatusMap, boundaryNodeQueue, nearestNeighborFinder, patchInpainter);

@@ -54,11 +54,11 @@ struct FeatureVectorInpaintingVisitor
   unsigned int half_width;
   unsigned int NumberOfFinishedVertices;
 
-  ImagePatchInpaintingVisitor(TImage* const in_image, Mask* const in_mask,
-                              TBoundaryNodeQueue& in_boundaryNodeQueue, TFillStatusMap& in_fillStatusMap,
-                              TDescriptorMap& in_descriptorMap, TPriorityMap& in_priorityMap,
-                              Priority* const in_priorityFunction,
-                              const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
+  FeatureVectorInpaintingVisitor(TImage* const in_image, Mask* const in_mask,
+                                TBoundaryNodeQueue& in_boundaryNodeQueue, TFillStatusMap& in_fillStatusMap,
+                                TDescriptorMap& in_descriptorMap, TPriorityMap& in_priorityMap,
+                                Priority* const in_priorityFunction,
+                                const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
   image(in_image), mask(in_mask), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorMap(in_descriptorMap),
   priorityMap(in_priorityMap), boundaryStatusMap(in_boundaryStatusMap), half_width(in_half_width), NumberOfFinishedVertices(0)
   {

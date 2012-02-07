@@ -42,7 +42,7 @@ public:
   FeatureVectorPixelDescriptor(const FeatureVectorType& v);
 
   /** Get the feature vector.*/
-  FeatureVectorType GetFeatureVector() const;
+  const FeatureVectorType& GetFeatureVector() const;
 
   /** Output information about the descriptor. */
   friend std::ostream& operator<<(std::ostream& output, const FeatureVectorType& descriptor);
