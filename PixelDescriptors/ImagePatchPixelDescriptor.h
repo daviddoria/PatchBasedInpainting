@@ -19,6 +19,11 @@
 #ifndef ImagePatchPixelDescriptor_H
 #define ImagePatchPixelDescriptor_H
 
+#include "PixelDescriptor.h"
+
+// ITK
+#include "itkImageRegion.h"
+
 class Mask;
 
 /**
@@ -26,7 +31,7 @@ class Mask;
 \brief This class indicates a rectangular region in an image.
 */
 template <typename TImage>
-class ImagePatchPixelDescriptor
+class ImagePatchPixelDescriptor : public PixelDescriptor
 {
 public:
 

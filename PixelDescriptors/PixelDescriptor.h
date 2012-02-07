@@ -1,0 +1,50 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2011 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
+#ifndef PixelDescriptor_H
+#define PixelDescriptor_H
+
+// STL
+#include <iostream>
+
+// Boost
+#include <boost/array.hpp>
+
+/**
+\class PixelDescriptor
+\brief This class is the parent class for all descriptors.
+       Its main job is to store the vertex at which the descriptor was generated.
+*/
+class PixelDescriptor
+{
+private:
+  typedef boost::array<size_t, 2> VertexType;
+  VertexType Vertex;
+public:
+  void SetVertex(VertexType& v)
+  {
+    this->Vertex = v;
+  }
+
+  VertexType GetVertex()
+  {
+    return this->Vertex;
+  }
+};
+
+#endif

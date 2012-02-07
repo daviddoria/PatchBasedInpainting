@@ -19,6 +19,8 @@
 #ifndef FeatureVectorPixelDescriptor_H
 #define FeatureVectorPixelDescriptor_H
 
+#include "PixelDescriptor.h"
+
 // STL
 #include <vector>
 #include <iostream>
@@ -27,7 +29,7 @@
 \class FeatureVectorPixelDescriptor
 \brief This class stores a vector of floats - a vector valued descriptor.
 */
-class FeatureVectorPixelDescriptor
+class FeatureVectorPixelDescriptor : public PixelDescriptor
 {
 public:
 
