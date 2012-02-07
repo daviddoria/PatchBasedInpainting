@@ -1,6 +1,8 @@
 #ifndef CompositeInpaintingVisitor_HPP
 #define CompositeInpaintingVisitor_HPP
 
+#include "InpaintingVisitor.hpp"
+
 /**
  * This is a default visitor type that complies with the InpaintingVisitorConcept and does 
  * nothing in all cases (can be used if there are no exogenous operations to do during the 
@@ -65,7 +67,7 @@ struct composite_inpainting_visitor
   };
 
 private:
-  std::vector<VisitorParent*> Visitors;
+  std::vector<InpaintingVisitor*> Visitors;
 };
 
 #endif

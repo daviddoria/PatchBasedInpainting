@@ -1,9 +1,7 @@
-#ifndef ImagePatchInpaintingVisitor_HPP
-#define ImagePatchInpaintingVisitor_HPP
+#ifndef InpaintingVisitor_HPP
+#define InpaintingVisitor_HPP
 
 #include "Priority/Priority.h"
-
-#include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
 // Boost
 #include <boost/graph/graph_traits.hpp>
@@ -14,7 +12,7 @@
 
 /**
  * This is a visitor that complies with the InpaintingVisitorConcept. It creates
- * and differences ImagePatchPixelDescriptor objects at each pixel.
+ * and differences ImagePatch objects at each pixel.
  */
 template <typename TImage, typename TBoundaryNodeQueue,
           typename TFillStatusMap, typename TDescriptorMap,
@@ -34,11 +32,11 @@ struct ImagePatchInpaintingVisitor
   unsigned int half_width;
   unsigned int NumberOfFinishedVertices;
 
-  ImagePatchInpaintingVisitor(TImage* const in_image, Mask* const in_mask,
-                              TBoundaryNodeQueue& in_boundaryNodeQueue, TFillStatusMap& in_fillStatusMap,
-                              TDescriptorMap& in_descriptorMap, TPriorityMap& in_priorityMap,
-                              Priority* const in_priorityFunction,
-                              const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
+  InpaintingVisitor(TImage* const in_image, Mask* const in_mask,
+                    TBoundaryNodeQueue& in_boundaryNodeQueue, TFillStatusMap& in_fillStatusMap,
+                    TDescriptorMap& in_descriptorMap, TPriorityMap& in_priorityMap,
+                    Priority* const in_priorityFunction,
+                    const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
   image(in_image), mask(in_mask), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorMap(in_descriptorMap),
   priorityMap(in_priorityMap), boundaryStatusMap(in_boundaryStatusMap), half_width(in_half_width), NumberOfFinishedVertices(0)
   {
@@ -191,6 +189,6 @@ struct ImagePatchInpaintingVisitor
     }
   }; // finish_vertex
 
-}; // ImagePatchInpaintingVisitor
+}; // ImagePatch_inpainting_visitor
 
 #endif
