@@ -54,8 +54,8 @@ int main(int argc, char *argv[])
 
   SearchType search;
 
-  //VertexDescriptor nearestNeighbor = search(queryPoint, graph, myTopology, myMap);
-  VertexDescriptor nearestNeighbor = search.operator()<GraphType, TopologyType, MapType>(queryPoint, graph, myTopology, myMap);
+  VertexDescriptor nearestNeighbor = search(queryPoint, graph, myTopology, myMap);
+  //VertexDescriptor nearestNeighbor = search.operator()<GraphType, TopologyType, MapType>(queryPoint, graph, myTopology, myMap);
   std::cout << "nearestNeighbor[0]: " << nearestNeighbor[0] << std::endl;
 
   return 0;

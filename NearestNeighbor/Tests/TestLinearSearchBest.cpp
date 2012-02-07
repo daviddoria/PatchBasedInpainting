@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
   DescriptorCollectionType::iterator result = linearSearchBest(descriptors.begin(), descriptors.end(),
                                                                differenceObject, queryDescriptor);
 
-  std::cout << "Result: " << (*result)[0] << std::endl; // Output the first component of the best match
+  std::cout << "Closest integer point to: " << queryDescriptor[0] << " is " << (*result)[0] << std::endl; // Output the first component of the best match
 
   return 0;
 }

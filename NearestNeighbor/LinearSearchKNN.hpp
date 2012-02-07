@@ -26,15 +26,30 @@
   */
 template <typename ForwardIterator,
           typename OutputContainer,
-          typename GetDistanceFunction,
-          typename DistanceValue = float,
-          typename CompareFunction = std::less<DistanceValue> >
+          typename DistanceFunctionType,
+          typename DistanceValueType = float,
+          typename CompareFunctionType = std::less<DistanceValueType> >
 struct LinearSearchKNN
 {
+  DistanceFunctionType DistanceFunction;
+  CompareFunctionType CompareFunction;
+  
+  LinearSearchKNN(DistanceFunctionType distanceFunction, const unsigned int k = 1000) : DistanceFunction(distanceFunction), K(k)
+  {
+  }
+
+  void SetK(const unsigned int k)
+  {
+    this->K = k;
+  }
+  
+  unsigned int GetK() const
+  {
+    return this->K;
+  }
+
   void operator()(ForwardIterator first, ForwardIterator last,
-                  OutputContainer& output, GetDistanceFunction distance,
-                  unsigned int max_neighbors = 1, CompareFunction compare = CompareFunction(),
-                  DistanceValue radius = std::numeric_limits<DistanceValue>::infinity())
+                  OutputContainer& output)
   {
     output.clear();
     if(first == last)
@@ -42,23 +57,23 @@ struct LinearSearchKNN
       return;
     }
 
-    std::vector<DistanceValue> output_dist;
+    std::vector<DistanceValueType> output_dist;
     for(; first != last; ++first)
     {
-      DistanceValue d = distance(*first);
-      if(!compare(d, radius))
+      DistanceValueType d = DistanceFunction(*first);
+      if(!CompareFunction(d, std::numeric_limits<DistanceValueType>::infinity()))
       {
         continue;
       }
-      typename std::vector<DistanceValue>::iterator it_lo = std::lower_bound(output_dist.begin(),output_dist.end(),d,compare);
-      if((it_lo != output_dist.end()) || (output_dist.size() < max_neighbors))
+      typename std::vector<DistanceValueType>::iterator it_lo = std::lower_bound(output_dist.begin(),output_dist.end(), d, CompareFunction);
+      if((it_lo != output_dist.end()) || (output_dist.size() < this->K))
       {
         output_dist.insert(it_lo, d);
         typename OutputContainer::iterator itv = output.begin();
-        for(typename std::vector<DistanceValue>::iterator it = output_dist.begin();
+        for(typename std::vector<DistanceValueType>::iterator it = output_dist.begin();
             (itv != output.end()) && (it != it_lo); ++itv,++it) ;
         output.insert(itv, *first);
-        if(output.size() > max_neighbors)
+        if(output.size() > this->K)
         {
           output.pop_back();
           output_dist.pop_back();
@@ -66,6 +81,9 @@ struct LinearSearchKNN
       }
     }
   }
+  
+private:
+  unsigned int K;
 };
 
 #endif

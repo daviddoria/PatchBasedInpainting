@@ -53,9 +53,10 @@ int main(int argc, char *argv[])
   typedef std::vector<DescriptorType> OutputContainer;
   OutputContainer kNeighbors;
   const unsigned int numberOfNeighbors = 3;
-  LinearSearchKNN<DescriptorCollectionType::iterator, OutputContainer, DifferenceFunctor> linearSearchKNN;
-  linearSearchKNN(descriptors.begin(), descriptors.end(), kNeighbors, differenceObject, numberOfNeighbors);
+  LinearSearchKNN<DescriptorCollectionType::iterator, OutputContainer, DifferenceFunctor> linearSearchKNN(differenceObject, numberOfNeighbors);
+  linearSearchKNN(descriptors.begin(), descriptors.end(), kNeighbors);
 
+  std::cout << "Closest integer points to " << queryDescriptor[0] << " are " << std::endl;
   for(unsigned int i = 0; i < numberOfNeighbors; ++i)
     {
     std::cout << kNeighbors[i][0] << std::endl; // The 0th element of the ith neighbor
