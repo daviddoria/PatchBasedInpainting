@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-#include "NearestNeighbor/LinearSearchAlgorithm.hpp"
+#include "NearestNeighbor/LinearSearchKNN.hpp"
 
 typedef std::vector<float> DescriptorType;
 
@@ -50,9 +50,11 @@ int main(int argc, char *argv[])
   DescriptorType queryDescriptor(descriptorDimension, 5.3);
   DifferenceFunctor differenceObject;
   differenceObject.objectToCompare = queryDescriptor;
-  std::vector<DescriptorType> kNeighbors;
+  typedef std::vector<DescriptorType> OutputContainer;
+  OutputContainer kNeighbors;
   const unsigned int numberOfNeighbors = 3;
-  LinearSearchKNN(descriptors.begin(), descriptors.end(), kNeighbors, differenceObject, numberOfNeighbors);
+  LinearSearchKNN<DescriptorCollectionType::iterator, OutputContainer, DifferenceFunctor> linearSearchKNN;
+  linearSearchKNN(descriptors.begin(), descriptors.end(), kNeighbors, differenceObject, numberOfNeighbors);
 
   for(unsigned int i = 0; i < numberOfNeighbors; ++i)
     {

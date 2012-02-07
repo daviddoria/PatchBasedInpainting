@@ -14,7 +14,7 @@
   * \tparam CompareFunction The functor type that can compare two distance measures (strict weak-ordering).
   */
 template <typename VertexDescriptor, typename NearestNeighborFinderType1, typename NearestNeighborFinderType2>
-struct TwoStepNearestNeighbor
+struct TwoStepNearestNeighbor :
 {
   NearestNeighborFinderType1 NearestNeighborFinder1;
   NearestNeighborFinderType2 NearestNeighborFinder2;
@@ -27,19 +27,19 @@ struct TwoStepNearestNeighbor
     * \param nearestNeighborFinder1 The functor to do the K-NN first step of the search.
     * \param nearestNeighborFinder2 The functor to do the 1-NN second step of the search.
     */
-  TwoStepNearestNeighbor(NearestNeighborFinderType1 nearestNeighborFinder1, NearestNeighborFinderType2 nearestNeighborFinder2) :
-  NearestNeighborFinder1(nearestNeighborFinder1), NearestNeighborFinder2(nearestNeighborFinder2)
+  TwoStepNearestNeighbor(NearestNeighborFinderType1 nearestNeighborFinder1, NearestNeighborFinderType2 nearestNeighborFinder2, unsigned int k_in = 1000) :
+  NearestNeighborFinder1(nearestNeighborFinder1), NearestNeighborFinder2(nearestNeighborFinder2), K(k_in)
   { };
 
-  VertexDescriptor operator()(VertexDescriptor v)
+  VertexDescriptor operator()(VertexDescriptor queryNode)
   {
     // Step 1 - K-NN search on first topology
     std::multimap<float, VertexDescriptor> outputMap;
-    this->NearestNeighborFinder1->find_nearest(v, outputMap, K);
+    this->NearestNeighborFinder1->find_nearest(queryNode, outputMap, this->K);
 
     // Step 2 - 1-NN search on result of first search, on second topology
     VertexDescriptor nearestNeighbor = this->NearestNeighborFinder2(queryPoint);
-
+LinearSearchKNN(descriptors.begin(), descriptors.end(), kNeighbors, differenceObject, numberOfNeighbors);
   }
 };
 
