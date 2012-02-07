@@ -170,10 +170,12 @@ struct ImagePatchInpaintingVisitor
       if(ITKHelpers::HasNeighborWithValue(imageIterator.GetIndex(), mask, mask->GetHoleValue()))
         {
         put(boundaryStatusMap, v, true);
-        this->boundaryNodeQueue.push(v);
+
+        // Note: the priority must be set before the node is pushed into the queue.
         float priority = this->priorityFunction->ComputePriority(imageIterator.GetIndex());
         //std::cout << "updated priority: " << priority << std::endl;
         put(priorityMap, v, priority);
+        this->boundaryNodeQueue.push(v);
         }
       else
         {
