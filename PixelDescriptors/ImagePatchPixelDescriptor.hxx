@@ -62,11 +62,11 @@ Region(region), Image(image), MaskImage(maskImage), InsideImage(false)
 
   if(this->FullyValid)
     {
-    this->Status = SOURCE_PATCH;
+    this->SetStatus(SOURCE_PATCH);
     }
   else
     {
-    this->Status = INVALID;
+    this->SetStatus(INVALID);
     }
 }
 /*

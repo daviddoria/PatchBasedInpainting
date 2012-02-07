@@ -68,15 +68,6 @@ public:
   /** Get the image to which this patch refers. */
   TImage* GetImage() const;
 
-  /** If a patch is invalid, it means any comparison with it should return inf. */
-  enum StatusEnum {SOURCE_PATCH, TARGET_PATCH, INVALID};
-
-  /** Get the status of the patch. */
-  StatusEnum GetStatus() const {return Status;}
-
-  /** Set the status of the patch. */
-  void SetStatus(StatusEnum status) {Status = status;}
-
   /** Determine if this patch is valid. A valid patch must be InsideImage, but also has had a valid descriptor attached to it. */
   bool IsFullyValid() const;
 
@@ -108,9 +99,8 @@ private:
   /** Indicate if the patch region is entirely inside the image region. */
   bool InsideImage;
 
-  /** Indicate if the patch is a source patch, a target patch, or invalid. */
-  StatusEnum Status;
-
+  /** A list of offsets from the patch corner that contain valid pixels.
+      This is only used during the comparison to another patch if this patch has status TARGET_PATCH.*/
   std::vector<itk::Offset<2> > ValidOffsets;
 
 };

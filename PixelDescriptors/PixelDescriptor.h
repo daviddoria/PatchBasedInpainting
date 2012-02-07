@@ -32,9 +32,18 @@
 */
 class PixelDescriptor
 {
+public:
+
+  /** If a patch is invalid, it means any comparison with it should return inf. */
+  enum StatusEnum {SOURCE_PATCH, TARGET_PATCH, INVALID};
+
 private:
   typedef boost::array<size_t, 2> VertexType;
   VertexType Vertex;
+
+  /** Indicate if the patch is a source patch, a target patch, or invalid. */
+  StatusEnum Status;
+  
 public:
   void SetVertex(VertexType& v)
   {
@@ -45,6 +54,13 @@ public:
   {
     return this->Vertex;
   }
+
+  /** Get the status of the patch. */
+  StatusEnum GetStatus() const {return Status;}
+
+  /** Set the status of the patch. */
+  void SetStatus(StatusEnum status) {Status = status;}
+  
 };
 
 #endif

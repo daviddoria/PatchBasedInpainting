@@ -47,21 +47,9 @@ public:
   /** Output information about the descriptor. */
   friend std::ostream& operator<<(std::ostream& output, const FeatureVectorType& descriptor);
 
-  /** If a patch is invalid, it means any comparison with it should return inf. */
-  enum StatusEnum {SOURCE_PATCH, TARGET_PATCH, INVALID};
-
-  /** Get the status of the patch. */
-  StatusEnum GetStatus() const {return Status;}
-
-  /** Set the status of the patch. */
-  void SetStatus(StatusEnum status) {Status = status;}
-
 private:
   /** The feature vector. */
   FeatureVectorType FeatureVector;
-
-  /** Indicate if the patch is a source patch, a target patch, or invalid. */
-  StatusEnum Status;
 
 };
 

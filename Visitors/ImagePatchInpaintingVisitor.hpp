@@ -56,6 +56,7 @@ struct ImagePatchInpaintingVisitor
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, half_width);
 
     DescriptorType descriptor(this->image, this->mask, region);
+    descriptor.SetVertex(v);
     put(descriptorMap, v, descriptor);
 
   };
