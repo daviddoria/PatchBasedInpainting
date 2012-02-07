@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-#include "NearestNeighbor/LinearSearch.hpp"
+#include "NearestNeighbor/LinearSearchAlgorithm.hpp"
 
 typedef std::vector<float> DescriptorType;
 
@@ -10,7 +10,7 @@ struct DifferenceFunctor
 {
   DescriptorType objectToCompare;
 
-  float compare(const DescriptorType& a, const DescriptorType& b)
+  float operator()(const DescriptorType& a, const DescriptorType& b)
   {
     float difference = 0.0f;
     for(unsigned int i = 0; i < a.size(); ++i)
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
   DifferenceFunctor differenceObject;
   differenceObject.objectToCompare = queryDescriptor;
   DescriptorCollectionType::iterator result = LinearSearchBest(descriptors.begin(), descriptors.end(),
-                                                               differenceObject);
+                                                               differenceObject, queryDescriptor);
 
   std::cout << "Result: " << (*result)[0] << std::endl; // Output the first component of the best match
 

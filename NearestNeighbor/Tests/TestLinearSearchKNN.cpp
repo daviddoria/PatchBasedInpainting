@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-#include "NearestNeighbor/LinearSearch.hpp"
+#include "NearestNeighbor/LinearSearchAlgorithm.hpp"
 
 typedef std::vector<float> DescriptorType;
 

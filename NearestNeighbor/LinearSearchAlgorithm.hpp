@@ -77,11 +77,11 @@ template <typename TIterator,
           typename DistanceValue = float,
           typename CompareFunction = std::less<DistanceValue> >
 inline TIterator LinearSearchBest(TIterator first,
-                                                      TIterator last,
-                                                      DistanceFunction distanceFunction,
-                                                      typename TIterator::value_type query,
-                                                      CompareFunction compare = CompareFunction(),
-                                                      DistanceValue inf = std::numeric_limits<DistanceValue>::infinity())
+                                  TIterator last,
+                                  DistanceFunction distanceFunction,
+                                  typename TIterator::value_type query,
+                                  CompareFunction compare = CompareFunction(),
+                                  DistanceValue inf = std::numeric_limits<DistanceValue>::infinity())
 {
   if(first == last)
   {
