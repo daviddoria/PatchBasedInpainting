@@ -7,6 +7,16 @@
 // Boost
 #include <boost/array.hpp>
 
+// Global namespace
 std::ostream& operator<<(std::ostream& output, const boost::array<size_t, 2>& vertexDescriptor);
+
+namespace BoostHelpers
+{
+  template <typename TQueue>
+  void OutputQueue(TQueue queue);
+
+}
+
+#include "BoostHelpers.hpp"
 
 #endif

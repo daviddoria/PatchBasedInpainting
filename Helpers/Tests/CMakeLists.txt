@@ -17,3 +17,7 @@ add_test(TestVTKHelpers TestVTKHelpers)
 add_executable(TestITKVTKHelpers TestITKVTKHelpers.cpp ../ITKVTKHelpers.cpp ../ITKHelpers.cpp ../VTKHelpers.cpp ../Helpers.cpp)
 target_link_libraries(TestITKVTKHelpers ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
 add_test(TestITKVTKHelpers TestITKVTKHelpers)
+
+add_executable(TestBoostHelpers TestBoostHelpers.cpp ../BoostHelpers.cpp)
+target_link_libraries(TestBoostHelpers )
+add_test(TestBoostHelpers TestBoostHelpers)
