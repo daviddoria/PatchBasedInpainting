@@ -21,21 +21,24 @@
 
 #include "itkSize.h"
 
-// Custom
-#include "Types.h"
-
 // VTK
 class vtkImageData;
 class vtkPolyData;
 
 // ITK
+#include "itkCovariantVector.h"
+#include "itkImage.h"
 #include "itkImageRegion.h"
+#include "itkVectorImage.h"
 
 namespace ITKVTKHelpers
 {
-  
-void CreateTransparentVTKImage(const itk::Size<2>& size, vtkImageData* const outputImage);
 
+typedef itk::VectorImage<float, 2> FloatVectorImageType;
+typedef itk::CovariantVector<float, 2> FloatVector2Type;
+typedef itk::Image<FloatVector2Type , 2> FloatVector2ImageType;
+
+void CreateTransparentVTKImage(const itk::Size<2>& size, vtkImageData* const outputImage);
 
 // Set the center pixel of a 'region' in an 'image' to the specified 'color'. The region is assumed to have odd dimensions.
 void SetRegionCenterPixel(vtkImageData* const image, const itk::ImageRegion<2>& region, const unsigned char color[3]);
@@ -47,10 +50,6 @@ void ITKVectorImageToVTKImageFromDimension(const FloatVectorImageType* const ima
 void ITKImageToVTKRGBImage(const FloatVectorImageType* const image, vtkImageData* const outputImage);
 void ITKImageToVTKMagnitudeImage(const FloatVectorImageType* const image, vtkImageData* const outputImage);
 void ITKImageChannelToVTKImage(const FloatVectorImageType* const image, const unsigned int channel, vtkImageData* const outputImage);
-
-
-// Create a VTK image of a patch of an image.
-void CreatePatchVTKImage(const FloatVectorImageType* image, const itk::ImageRegion<2>& region, vtkImageData* outputImage);
 
 // Create a VTK image filled with values representing vectors. (There is no concept of a "vector image" in VTK).
 void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType* image, vtkImageData* outputImage);
@@ -74,6 +73,11 @@ void BlankRegion(vtkImageData* const image, const itk::ImageRegion<2>& region);
 
 template <typename TImage>
 void ITKScalarImageToScaledVTKImage(const TImage* const image, vtkImageData* const outputImage);
+
+
+// Create a VTK image of a patch of an image.
+template <typename TImage>
+void CreatePatchVTKImage(const TImage* image, const itk::ImageRegion<2>& region, vtkImageData* outputImage);
 
 
 } // end namespace

@@ -20,7 +20,6 @@
 #define PRIORITYONIONPEEL_H
 
 #include "Priority.h"
-#include "Types.h"
 
 /**
 \class PriorityOnionPeel
@@ -44,6 +43,8 @@ public:
 
 protected:
 
+  typedef itk::Image<float, 2> ConfidenceImageType;
+  
   /** Compute the Confidence values for pixels that were just inpainted.*/
   void UpdateConfidences(const itk::Index<2>& targetPixel, const float value);
 
@@ -51,7 +52,7 @@ protected:
   float ComputeConfidenceTerm(const itk::Index<2>& queryPixel) const;
 
   /** Keep track of the Confidence of each pixel*/
-  FloatScalarImageType::Pointer ConfidenceMapImage;
+  ConfidenceImageType::Pointer ConfidenceMapImage;
 
   /** The initial confidence is 0 in the hole and 1 outside the hole.*/
   void InitializeConfidenceMap();

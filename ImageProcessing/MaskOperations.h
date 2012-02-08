@@ -20,7 +20,7 @@
 #define MaskOperations_H
 
 // Custom
-#include "Types.h"
+#include "ImageTypes.h"
 class Mask;
 
 // ITK

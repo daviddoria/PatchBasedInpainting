@@ -16,8 +16,11 @@
  *
  *=========================================================================*/
 
+#ifndef Isophotes_H
+#define Isophotes_H
+
 #include "Mask.h"
-#include "Types.h"
+#include "ImageTypes.h"
 
 namespace Isophotes
 {
@@ -28,3 +31,5 @@ void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* const image, con
                                     FloatVector2ImageType* const outputIsophotes);
 
 }
+
+#endif

@@ -19,7 +19,7 @@
 #ifndef DERIVATVIES_H
 #define DERIVATVIES_H
 
-#include "Types.h"
+#include "ImageTypes.h"
 
 class Mask;
 

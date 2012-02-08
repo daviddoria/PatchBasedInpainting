@@ -19,8 +19,8 @@
 #ifndef HELPERS_H
 #define HELPERS_H
 
-// Custom
-#include "Types.h"
+// STL
+#include <string>
 
 namespace Helpers
 {

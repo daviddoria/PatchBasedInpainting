@@ -20,11 +20,26 @@
 #define ITKHELPERS_H
 
 // Custom
-#include "Types.h"
 class Mask;
+
+// STL
+#include <string>
+
+// ITK
+#include "itkImage.h"
+#include "itkIndex.h"
+#include "itkRGBPixel.h"
+#include "itkSize.h"
+#include "itkVectorImage.h"
 
 namespace ITKHelpers
 {
+  
+typedef itk::Image<float, 2> FloatScalarImageType;
+typedef itk::Image<unsigned char, 2> UnsignedCharScalarImageType;
+typedef itk::CovariantVector<float, 2> FloatVector2Type;
+typedef itk::Image<itk::RGBPixel<unsigned char>, 2> RGBImageType;
+typedef itk::VectorImage<float, 2> FloatVectorImageType;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
@@ -142,8 +157,8 @@ float MinValue(const TImage* const image);
 template <class TImage>
 itk::Index<2> MinValueLocation(const TImage* const image);
 
-template <typename TImage>
-void ColorToGrayscale(const TImage* const colorImage, UnsignedCharScalarImageType* const grayscaleImage);
+template <typename TInputImage, typename TOutputImage>
+void ColorToGrayscale(const TInputImage* const colorImage, TOutputImage* const grayscaleImage);
 
 template<typename TImage>
 void BlankAndOutlineRegion(TImage* const image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& blankValue,

@@ -179,18 +179,6 @@ void ITKImageChannelToVTKImage(const FloatVectorImageType* const image, const un
   ITKScalarImageToScaledVTKImage<FloatScalarImageType>(channelImage, outputImage);
 }
 
-void CreatePatchVTKImage(const FloatVectorImageType* image, const itk::ImageRegion<2>& region, vtkImageData* outputImage)
-{
-  typedef itk::RegionOfInterestImageFilter<FloatVectorImageType,FloatVectorImageType> ExtractFilterType;
-  typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
-  extractFilter->SetRegionOfInterest(region);
-  extractFilter->SetInput(image);
-  extractFilter->Update();
-
-  ITKVectorImageToVTKImageFromDimension(extractFilter->GetOutput(), outputImage);
-}
-
-
 void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType* const image, vtkImageData* const outputImage)
 {
   //std::cout << "ITKImagetoVTKVectorFieldImage()" << std::endl;

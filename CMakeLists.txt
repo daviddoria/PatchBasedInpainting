@@ -41,7 +41,6 @@ if(BuildInteractive OR BuildNonInteractive)
   #PatchBasedInpainting.cpp
   #PatchPair.cpp
   #PatchPairDifferences.cpp
-  PixelCollection.cpp
   Priority/Priority.cpp
   Priority/PriorityCriminisi.cpp
   Priority/PriorityDepth.cpp

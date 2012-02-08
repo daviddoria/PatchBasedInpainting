@@ -17,6 +17,7 @@
  *=========================================================================*/
 
 // ITK
+#include "itkRegionOfInterestImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
 
 // VTK
@@ -25,7 +26,9 @@
 
 namespace ITKVTKHelpers
 {
-  
+
+typedef itk::Image<unsigned char, 2> UnsignedCharScalarImageType;
+
 template <typename TImage>
 void ITKScalarImageToScaledVTKImage(const TImage* const image, vtkImageData* const outputImage)
 {
@@ -62,6 +65,18 @@ void ITKScalarImageToScaledVTKImage(const TImage* const image, vtkImageData* con
     }
 
   outputImage->Modified();
+}
+
+template <typename TImage>
+void CreatePatchVTKImage(const TImage* image, const itk::ImageRegion<2>& region, vtkImageData* outputImage)
+{
+  typedef itk::RegionOfInterestImageFilter<TImage, TImage> ExtractFilterType;
+  typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+  extractFilter->SetRegionOfInterest(region);
+  extractFilter->SetInput(image);
+  extractFilter->Update();
+
+  ITKVectorImageToVTKImageFromDimension(extractFilter->GetOutput(), outputImage);
 }
 
 } // end namespace

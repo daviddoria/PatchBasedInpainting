@@ -36,7 +36,7 @@
 class vtkImageData;
 
 // Custom
-#include "Types.h"
+#include "ImageTypes.h"
 
 class Mask : public itk::Image< unsigned char, 2>
 {

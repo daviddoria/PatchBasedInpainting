@@ -22,7 +22,7 @@
 #include "Derivatives.h"
 #include "Helpers/Helpers.h"
 #include "MaskOperations.h"
-#include "RotateVectors.h"
+#include "Utilities/RotateVectors.h"
 
 // ITK
 #include "itkRGBToLuminanceImageFilter.h"

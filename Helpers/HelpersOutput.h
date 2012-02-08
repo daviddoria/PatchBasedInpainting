@@ -23,12 +23,19 @@
 class vtkImageData;
 class vtkPolyData;
 
+// ITK
+#include "itkCovariantVector.h"
+#include "itkImage.h"
+#include "itkVectorImage.h"
+
 // Custom
 class Mask;
-#include "Types.h"
 
 namespace HelpersOutput
 {
+typedef itk::CovariantVector<float, 2> FloatVector2Type;
+typedef itk::Image<FloatVector2Type , 2> FloatVector2ImageType;
+typedef itk::VectorImage<float, 2> FloatVectorImageType;
 
 /** Write a vtkPolyData to a .vtp file. */
 void WritePolyData(vtkPolyData* const polyData, const std::string& fileName);
@@ -47,9 +54,9 @@ void Write2DVectorImage(const FloatVector2ImageType* const image, const std::str
 /**  Write the first 3 channels of a FloatVectorImageType as an unsigned char (RGB) image. */
 void WriteVectorImageAsRGB(const FloatVectorImageType* const image, const std::string& fileName);
 
-////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 ///////// Function templates (defined in HelpersOutput.hxx) /////////
-////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 
 /**  Write the first 3 channels of an image to a file as unsigned chars. */
 template<typename TImage>

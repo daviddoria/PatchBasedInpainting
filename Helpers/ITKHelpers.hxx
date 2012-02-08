@@ -285,16 +285,16 @@ void CopyRegion(const TImage* sourceImage, TImage* targetImage,
   CopyPatchIntoImage<TImage>(extractFilter->GetOutput(), targetImage, targetPosition);
 }
 
-template <typename TImage>
-void ColorToGrayscale(const TImage* colorImage, UnsignedCharScalarImageType* grayscaleImage)
+template <typename TInputImage, typename TOutputImage>
+void ColorToGrayscale(const TInputImage* const colorImage, TOutputImage* const grayscaleImage)
 {
   grayscaleImage->SetRegions(colorImage->GetLargestPossibleRegion());
   grayscaleImage->Allocate();
 
-  itk::ImageRegionConstIterator<TImage> colorImageIterator(colorImage, colorImage->GetLargestPossibleRegion());
-  itk::ImageRegionIterator<UnsignedCharScalarImageType> grayscaleImageIterator(grayscaleImage, grayscaleImage->GetLargestPossibleRegion());
+  typename itk::ImageRegionConstIterator<TInputImage> colorImageIterator(colorImage, colorImage->GetLargestPossibleRegion());
+  typename itk::ImageRegionIterator<TOutputImage> grayscaleImageIterator(grayscaleImage, grayscaleImage->GetLargestPossibleRegion());
 
-  typename TImage::PixelType largestPixel;
+  typename TInputImage::PixelType largestPixel;
   largestPixel.Fill(255);
 
   float largestNorm = largestPixel.GetNorm();
