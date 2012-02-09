@@ -34,8 +34,10 @@
 // #include "NearestNeighbor/metric_space_search.hpp"
 // #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 //#include "NearestNeighbor/SearchFunctor.hpp"
-#include "NearestNeighbor/LinearSearchBest.hpp"
-#include "NearestNeighbor/LinearSearchKNN.hpp"
+// #include "NearestNeighbor/LinearSearchBest.hpp"
+// #include "NearestNeighbor/LinearSearchKNN.hpp"
+#include "NearestNeighbor/LinearSearchBestProperty.hpp"
+#include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
 // Topologies
@@ -192,21 +194,21 @@ int main(int argc, char *argv[])
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
-  typedef LinearSearchKNN<boost::graph_traits<VertexListGraphType>::vertex_iterator, std::vector<FeatureVectorPixelDescriptor>, FeatureVectorDifference> KNNSearchType;
+  typedef LinearSearchKNNProperty<FeatureVectorDescriptorMapType, FeatureVectorDifference> KNNSearchType;
   //KNNSearchType linearSearchKNN(graph, featureVectorDescriptorMap, 1000);
   //KNNSearchType linearSearchKNN(featureVectorDifference, 1000);
-  KNNSearchType linearSearchKNN;
+  KNNSearchType linearSearchKNN(featureVectorDescriptorMap);
 
-  typedef LinearSearchBest<boost::graph_traits<VertexListGraphType>::vertex_iterator, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
+  typedef LinearSearchBestProperty<ImagePatchDifference<ImagePatchPixelDescriptorType>, ImagePatchDescriptorMapType> BestSearchType;
   //BestSearchType linearSearchBest(graph, imagePatchDescriptorMap);
-  BestSearchType linearSearchBest;
+  BestSearchType linearSearchBest(imagePatchDescriptorMap);
 
-  TwoStepNearestNeighbor<boost::graph_traits<VertexListGraphType>::vertex_descriptor, KNNSearchType, BestSearchType> twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
+  TwoStepNearestNeighbor<KNNSearchType, BestSearchType> twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
   // Perform the inpainting
   // inpainting_loop(graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchKNN, patchInpainter); // Can't do this, because it returns a list of vertices, not a single best vertex
-  inpainting_loop(graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
-  //inpainting_loop(graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepNearestNeighbor, patchInpainter);
+  //inpainting_loop(graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
+  inpainting_loop(graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepNearestNeighbor, patchInpainter);
 
 //   HelpersOutput::WriteImage<ImageType>(image, outputFilename);
 

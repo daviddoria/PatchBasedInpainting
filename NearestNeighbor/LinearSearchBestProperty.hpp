@@ -1,5 +1,5 @@
-#ifndef LinearSearchBest_HPP
-#define LinearSearchBest_HPP
+#ifndef LinearSearchBestProperty_HPP
+#define LinearSearchBestProperty_HPP
 
 // STL
 #include <limits>
@@ -21,34 +21,40 @@
    * \param inf A DistanceValue which represents infinity (i.e. the very worst value with which to initialize the search).
    * \return The iterator to the best element in the range (best is defined as the one which would compare favorably to all the elements in the range with respect to the distance metric).
    */
-template <typename ForwardIteratorType,
-          typename DistanceFunctionType,
+template <typename DistanceFunctionType,
+          typename PropertyMapType,
           typename DistanceValueType = float,
           typename CompareFunctionType = std::less<DistanceValueType> >
-struct LinearSearchBest
+struct LinearSearchBestProperty
 {
+  PropertyMapType PropertyMap;
   DistanceFunctionType DistanceFunction;
   CompareFunctionType CompareFunction;
 
-  ForwardIteratorType operator()(ForwardIteratorType first, ForwardIteratorType last, typename ForwardIteratorType::value_type query)
+  LinearSearchBestProperty(PropertyMapType propertyMap, DistanceFunctionType distanceFunction = DistanceFunctionType(), CompareFunctionType compareFunction = CompareFunctionType()) :
+  PropertyMap(propertyMap), DistanceFunction(distanceFunction), CompareFunction(compareFunction){}
+
+  template <typename TIterator>
+  typename TIterator::value_type operator()(TIterator first, TIterator last, typename TIterator::value_type query)
   {
     if(first == last)
     {
-      return last;
+      return *last;
     }
 
     DistanceValueType d_best = std::numeric_limits<DistanceValueType>::infinity();
-    ForwardIteratorType result = last;
+    TIterator result = last;
     for(; first != last; ++first)
     {
-      DistanceValueType d = DistanceFunction(*first, query);
+      //DistanceValueType d = DistanceFunction(*first, query);
+      DistanceValueType d = DistanceFunction(get(PropertyMap, *first), get(PropertyMap, query));
       if(CompareFunction(d, d_best))
       {
         d_best = d;
         result = first;
       };
     };
-    return result;
+    return *result;
   }
 };
 

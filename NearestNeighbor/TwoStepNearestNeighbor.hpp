@@ -14,7 +14,7 @@
   * \tparam NeighborFinderKNN The functor that can find K-nearest neighbors.
   * \tparam NeighborFinderBest The functor that can find the best neighbor.
   */
-template <typename VertexDescriptor, typename NeighborFinderKNNType, typename NearestNeighborBestType>
+template <typename NeighborFinderKNNType, typename NearestNeighborBestType>
 struct TwoStepNearestNeighbor
 {
   NeighborFinderKNNType NeighborFinderKNN;
@@ -29,15 +29,18 @@ struct TwoStepNearestNeighbor
   NeighborFinderKNN(neighborFinderKNN), NeighborFinderBest(neighborFinderBest)
   { };
 
-  VertexDescriptor operator()(VertexDescriptor queryNode)
+  template <typename TIterator>
+  typename TIterator::value_type operator()(TIterator first, TIterator last, typename TIterator::value_type queryNode)
   {
+    typedef typename TIterator::value_type VertexDescriptor;
+
     // Step 1 - K-NN search on first topology
     std::vector<VertexDescriptor> outputMap;
-    this->NeighborFinderKNN(queryNode, outputMap);
+    this->NeighborFinderKNN(first, last, queryNode, outputMap);
 
     // Step 2 - 1-NN search on result of first search, on second topology
-    VertexDescriptor nearestNeighbor = this->NeighborFinderBest(queryNode);
-    NeighborFinderBest(outputMap.begin(), outputMap.end());
+    VertexDescriptor nearestNeighbor = this->NeighborFinderBest(outputMap.begin(), outputMap.end(), queryNode);
+    return nearestNeighbor;
   }
 
 };
