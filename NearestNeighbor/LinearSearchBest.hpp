@@ -22,29 +22,27 @@
    * \return The iterator to the best element in the range (best is defined as the one which would compare favorably to all the elements in the range with respect to the distance metric).
    */
 template <typename TIterator,
-          typename DistanceFunction,
-          typename DistanceValue = float,
-          typename CompareFunction = std::less<DistanceValue> >
+          typename DistanceFunctionType,
+          typename DistanceValueType = float,
+          typename CompareFunctionType = std::less<DistanceValueType> >
 struct LinearSearchBest
 {
-  TIterator operator()(TIterator first,
-                        TIterator last,
-                        DistanceFunction distanceFunction,
-                        typename TIterator::value_type query,
-                        CompareFunction compare = CompareFunction(),
-                        DistanceValue inf = std::numeric_limits<DistanceValue>::infinity())
+  DistanceFunctionType DistanceFunction;
+  CompareFunctionType CompareFunction;
+
+  TIterator operator()(TIterator first, TIterator last, typename TIterator::value_type query)
   {
     if(first == last)
     {
       return last;
     }
 
-    DistanceValue d_best = inf;
+    DistanceValueType d_best = std::numeric_limits<DistanceValueType>::infinity();
     TIterator result = last;
     for(; first != last; ++first)
     {
-      DistanceValue d = distanceFunction(*first, query);
-      if(compare(d, d_best))
+      DistanceValueType d = DistanceFunction(*first, query);
+      if(CompareFunction(d, d_best))
       {
         d_best = d;
         result = first;

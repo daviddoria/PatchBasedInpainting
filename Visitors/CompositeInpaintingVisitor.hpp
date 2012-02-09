@@ -49,12 +49,13 @@ struct CompositeInpaintingVisitor
   template <typename VertexType, typename Graph>
   bool accept_painted_vertex(VertexType v, Graph& g) const 
   {
-    bool accept;
+    bool acceptAll = true;
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
-      Visitors[visitorId]->accept_painted_vertex(v, g);
+      bool accept = Visitors[visitorId]->accept_painted_vertex(v, g);
+      acceptAll = acceptAll && accept;
       }
-    return true; 
+    return acceptAll;
   };
 
   template <typename VertexType, typename Graph>
@@ -70,7 +71,7 @@ struct CompositeInpaintingVisitor
   {
     this->Visitors.push_back(vis);
   }
-  
+
 private:
   std::vector<InpaintingVisitorParent<TGraph>*> Visitors;
 };

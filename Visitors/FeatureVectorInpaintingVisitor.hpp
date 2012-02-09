@@ -2,21 +2,6 @@
  * This is a visitor type that complies with the InpaintingVisitorConcept. It computes
  * and differences feature vectors (std::vector<float>) at each pixel.
  */
-// template <typename TImage, typename TBoundaryNodeQueue,
-//           typename TFillStatusMap, typename TDescriptorMap,
-//           typename TPriorityMap, typename TBoundaryStatusMap>
-// struct FeatureVectorInpaintingVisitor : public InpaintingVisitor<TImage, TBoundaryNodeQueue, TFillStatusMap, TDescriptorMap, TPriorityMap, TBoundaryStatusMap>
-// {
-// 
-//   FeatureVectorInpaintingVisitor(TImage* const in_image, Mask* const in_mask,
-//                     TBoundaryNodeQueue& in_boundaryNodeQueue, TFillStatusMap& in_fillStatusMap,
-//                     TDescriptorMap& in_descriptorMap, TPriorityMap& in_priorityMap,
-//                     Priority* const in_priorityFunction,
-//                     const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
-//   InpaintingVisitor<TImage, TBoundaryNodeQueue, TFillStatusMap, TDescriptorMap, TPriorityMap, TBoundaryStatusMap>(in_image, in_mask, in_boundaryNodeQueue, in_priorityFunction, in_fillStatusMap, in_descriptorMap,
-//                     in_priorityMap, in_boundaryStatusMap, in_half_width)
-//   {
-//   }
 
 #ifndef FeatureVectorInpaintingVisitor_HPP
 #define FeatureVectorInpaintingVisitor_HPP

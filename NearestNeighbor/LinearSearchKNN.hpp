@@ -34,7 +34,7 @@ struct LinearSearchKNN
   DistanceFunctionType DistanceFunction;
   CompareFunctionType CompareFunction;
   
-  LinearSearchKNN(DistanceFunctionType distanceFunction, const unsigned int k = 1000) : DistanceFunction(distanceFunction), K(k)
+  LinearSearchKNN(DistanceFunctionType distanceFunction = DistanceFunctionType(), const unsigned int k = 1000) : DistanceFunction(distanceFunction), K(k)
   {
   }
 
@@ -48,8 +48,7 @@ struct LinearSearchKNN
     return this->K;
   }
 
-  void operator()(ForwardIterator first, ForwardIterator last,
-                  OutputContainer& output)
+  void operator()(ForwardIterator first, ForwardIterator last, OutputContainer& output)
   {
     output.clear();
     if(first == last)
@@ -81,7 +80,7 @@ struct LinearSearchKNN
       }
     }
   }
-  
+
 private:
   unsigned int K;
 };

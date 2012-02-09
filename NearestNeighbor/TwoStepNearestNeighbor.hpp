@@ -20,40 +20,26 @@ struct TwoStepNearestNeighbor
   NeighborFinderKNNType NeighborFinderKNN;
   NearestNeighborBestType NeighborFinderBest;
 
-
   /**
     * Constructor.
-    * \param nearestNeighborFinder1 The functor to do the K-NN first step of the search.
-    * \param nearestNeighborFinder2 The functor to do the 1-NN second step of the search.
+    * \param NeighborFinderKNN The functor to do the K-NN first step of the search.
+    * \param NeighborFinderBest The functor to do the 1-NN second step of the search.
     */
-  TwoStepNearestNeighbor(NearestNeighborFinderType1 nearestNeighborFinder1, NearestNeighborFinderType2 nearestNeighborFinder2, unsigned int k_in = 1000) :
-  NearestNeighborFinder1(nearestNeighborFinder1), NearestNeighborFinder2(nearestNeighborFinder2), K(k_in)
+  TwoStepNearestNeighbor(NeighborFinderKNNType neighborFinderKNN, NearestNeighborBestType neighborFinderBest) :
+  NeighborFinderKNN(neighborFinderKNN), NeighborFinderBest(neighborFinderBest)
   { };
 
   VertexDescriptor operator()(VertexDescriptor queryNode)
   {
     // Step 1 - K-NN search on first topology
-    std::multimap<float, VertexDescriptor> outputMap;
-    this->NeighborFinderKNN(queryNode, outputMap, this->K);
+    std::vector<VertexDescriptor> outputMap;
+    this->NeighborFinderKNN(queryNode, outputMap);
 
     // Step 2 - 1-NN search on result of first search, on second topology
-    VertexDescriptor nearestNeighbor = this->NearestNeighborFinder2(queryPoint);
-    NeighborFinderLinear(outputMap.begin(), outputMap.end(), differenceObject, numberOfNeighbors);
+    VertexDescriptor nearestNeighbor = this->NeighborFinderBest(queryNode);
+    NeighborFinderBest(outputMap.begin(), outputMap.end());
   }
 
-  void SetK(const unsigned int k)
-  {
-    this->K = k;
-  }
-  
-  unsigned int GetK() const
-  {
-    return this->K;
-  }
-private:
-
-  /** The number of nearest neighbors to use from the first step of the search. */
-  unsigned int K;
 };
 
 #endif

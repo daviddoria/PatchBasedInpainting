@@ -51,8 +51,7 @@ int main(int argc, char *argv[])
   DifferenceFunctor differenceObject;
   differenceObject.objectToCompare = queryDescriptor;
   LinearSearchBest<DescriptorCollectionType::iterator, DifferenceFunctor> linearSearchBest;
-  DescriptorCollectionType::iterator result = linearSearchBest(descriptors.begin(), descriptors.end(),
-                                                               differenceObject, queryDescriptor);
+  DescriptorCollectionType::iterator result = linearSearchBest(descriptors.begin(), descriptors.end(), queryDescriptor);
 
   std::cout << "Closest integer point to: " << queryDescriptor[0] << " is " << (*result)[0] << std::endl; // Output the first component of the best match
 

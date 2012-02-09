@@ -7,16 +7,16 @@
 // STL
 #include <stdexcept>
 
-template <typename VertexListGraph, typename InpaintingVisitorType,
-          typename BoundaryStatusMap, typename PriorityQueue, 
-          typename NearestNeighborFinder, typename PatchInpainter>
+template <typename VertexListGraphType, typename InpaintingVisitorType,
+          typename BoundaryStatusMapType, typename PriorityQueueType, 
+          typename NearestNeighborFinderType, typename PatchInpainterType>
 inline
-void inpainting_loop(VertexListGraph& g, InpaintingVisitorType vis,
-                      BoundaryStatusMap& boundaryStatusMap, PriorityQueue& boundaryNodeQueue,
-                      NearestNeighborFinder find_inpainting_source, 
-                      PatchInpainter inpaint_patch) 
+void inpainting_loop(VertexListGraphType& g, InpaintingVisitorType vis,
+                      BoundaryStatusMapType& boundaryStatusMap, PriorityQueueType& boundaryNodeQueue,
+                      NearestNeighborFinderType find_inpainting_source, 
+                      PatchInpainterType inpaint_patch) 
 {
-  typedef typename boost::graph_traits<VertexListGraph>::vertex_descriptor VertexDescriptorType;
+  typedef typename boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
 
   // When this function is called, the priority-queue should already be filled 
   // with all the hole-vertices (which should also have their boundaryStatusMap set appropriately).
@@ -47,13 +47,15 @@ void inpainting_loop(VertexListGraph& g, InpaintingVisitorType vis,
     vis.discover_vertex(targetNode, g);
 
     // Find the source node that matches best to the target node
-    VertexDescriptorType source_patch_center = find_inpainting_source(targetNode);
-    vis.vertex_match_made(targetNode, source_patch_center, g);
+    typename boost::graph_traits<VertexListGraphType>::vertex_iterator vi,vi_end;
+    tie(vi,vi_end) = vertices(g);
+    VertexDescriptorType sourceNode = find_inpainting_source(vi, vi_end, targetNode);
+    vis.vertex_match_made(targetNode, sourceNode, g);
 
     // Do the in-painting of the target patch from the source patch.
     // the inpaint_patch functor should take care of iterating through the vertices in both
     // patches and call "vis.paint_vertex(target, source, g)" on the individual vertices.
-    inpaint_patch(targetNode, source_patch_center, g, vis);
+    inpaint_patch(targetNode, sourceNode, g, vis);
 
     if(!vis.accept_painted_vertex(targetNode, g))
       {
