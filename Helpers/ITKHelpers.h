@@ -45,6 +45,9 @@ typedef itk::VectorImage<float, 2> FloatVectorImageType;
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Get the number of components per pixel in an image file.
+unsigned int GetNumberOfComponentsPerPixelInFile(const std::string& filename);
+
 // Get a short string of an itk::Index
 std::string GetIndexString(const itk::Index<2>& index);
 

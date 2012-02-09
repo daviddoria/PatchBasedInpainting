@@ -138,14 +138,26 @@ public:
   template<typename TImage>
   void CreateFromImage(const TImage* const image, const typename TImage::PixelType& holeColor);
 
+  /** Get a list of the valid pixels in a region.*/
   std::vector<itk::Index<2> > GetValidPixelsInRegion(const itk::ImageRegion<2>& region) const;
+  
+  /** Get a list of the hole pixels in a region.*/
   std::vector<itk::Index<2> > GetHolePixelsInRegion(const itk::ImageRegion<2>& region) const;
 
+  /** Count hole pixels in a region.*/
   unsigned int CountHolePixels(const itk::ImageRegion<2>& region) const;
+  
+  /** Count hole pixels in the whole mask.*/
   unsigned int CountHolePixels() const;
 
+  /** Count valid pixels in a region.*/
   unsigned int CountValidPixels(const itk::ImageRegion<2>& region) const;
+  
+  /** Count valid pixels in the whole mask.*/
   unsigned int CountValidPixels() const;
+
+  /** Read the mask from a file.*/
+  void Read(const std::string& filename);
 
 private:
 

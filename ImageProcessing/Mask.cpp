@@ -37,6 +37,34 @@ Mask::Mask()
   this->ValidValue = 0;
 }
 
+void Mask::Read(const std::string& filename)
+{
+  // Ensure the input image can be interpreted as a mask.
+  {
+  typedef itk::VectorImage<float, 2> TestImageType;
+  typedef  itk::ImageFileReader<TestImageType> ImageReaderType;
+  ImageReaderType::Pointer imageReader = ImageReaderType::New();
+  imageReader->SetFileName(filename);
+  imageReader->Update();
+
+  unsigned int numberOfComponents = imageReader->GetOutput()->GetNumberOfComponentsPerPixel();
+  if(!(numberOfComponents == 1 || numberOfComponents == 3))
+    {
+    std::stringstream ss;
+    ss << "Number of components for a mask must be 1 or 3! (" << filename << " is " << numberOfComponents << ")";
+    throw std::runtime_error(ss.str());
+    }
+  }
+
+  // Should probably check that all 3 components are the same for all pixels (if numberOfComponents == 3)
+  typedef itk::ImageFileReader<Mask> ImageReaderType;
+  ImageReaderType::Pointer imageReader = ImageReaderType::New();
+  imageReader->SetFileName(filename);
+  imageReader->Update();
+  
+  DeepCopyFrom(imageReader->GetOutput());
+}
+
 unsigned int Mask::CountHolePixels(const itk::ImageRegion<2>& region) const
 {
   return GetHolePixelsInRegion(region).size();

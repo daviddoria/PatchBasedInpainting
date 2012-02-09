@@ -100,19 +100,21 @@ int main(int argc, char *argv[])
 
   typedef  itk::ImageFileReader<ImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
-  imageReader->SetFileName(imageFilename.c_str());
+  imageReader->SetFileName(imageFilename);
   imageReader->Update();
 
   ImageType::Pointer image = ImageType::New();
   ITKHelpers::DeepCopy(imageReader->GetOutput(), image.GetPointer());
 
-  typedef  itk::ImageFileReader<Mask> MaskReaderType;
+//   typedef  itk::ImageFileReader<Mask> MaskReaderType;
+//   MaskReaderType::Pointer maskReader = MaskReaderType::New();
+//   maskReader->SetFileName(maskFilename);
+//   maskReader->Update();
+  Mask::Pointer mask = Mask::New();
+  mask->Read(maskFilename);
 
-  MaskReaderType::Pointer maskReader = MaskReaderType::New();
-  maskReader->SetFileName(maskFilename);
-  maskReader->Update();
-  std::cout << "hole pixels: " << maskReader->GetOutput()->CountHolePixels() << std::endl;
-  std::cout << "valid pixels: " << maskReader->GetOutput()->CountValidPixels() << std::endl;
+  std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
+  std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
 
   typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
   typedef FeatureVectorPixelDescriptor FeatureVectorPixelDescriptorType;
@@ -172,24 +174,24 @@ int main(int argc, char *argv[])
   // Create the visitor
   typedef ImagePatchInpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
                                       ImagePatchDescriptorMapType, PriorityMapType, BoundaryStatusMapType> ImagePatchInpaintingVisitorType;
-  ImagePatchInpaintingVisitorType imagePatchVisitor(image, maskReader->GetOutput(), boundaryNodeQueue, fillStatusMap,
+  ImagePatchInpaintingVisitorType imagePatchVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
                                                     imagePatchDescriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
   
   typedef FeatureVectorInpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
                                          FeatureVectorDescriptorMapType, PriorityMapType, BoundaryStatusMapType> FeatureVectorInpaintingVisitorType;
 
-  FeatureVectorInpaintingVisitorType featureVectorVisitor(image, maskReader->GetOutput(), boundaryNodeQueue, fillStatusMap,
+  FeatureVectorInpaintingVisitorType featureVectorVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
                                                           featureVectorDescriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
 
   CompositeInpaintingVisitor<VertexListGraphType> compositeVisitor;
   compositeVisitor.AddVisitor(&imagePatchVisitor);
   compositeVisitor.AddVisitor(&featureVectorVisitor);
   
-  InitializePriority(maskReader->GetOutput(), boundaryNodeQueue, priorityMap,
+  InitializePriority(mask, boundaryNodeQueue, priorityMap,
                      priorityFunction, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage(maskReader->GetOutput(), &compositeVisitor, graph, fillStatusMap);
+  InitializeFromMaskImage(mask, &compositeVisitor, graph, fillStatusMap);
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 

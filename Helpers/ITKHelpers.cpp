@@ -46,6 +46,17 @@
 namespace ITKHelpers
 {
 
+unsigned int GetNumberOfComponentsPerPixelInFile(const std::string& filename)
+{
+  typedef itk::VectorImage<float, 2> TestImageType;
+  typedef  itk::ImageFileReader<TestImageType> ImageReaderType;
+  ImageReaderType::Pointer imageReader = ImageReaderType::New();
+  imageReader->SetFileName(filename);
+  imageReader->Update();
+
+  return imageReader->GetOutput()->GetNumberOfComponentsPerPixel();
+}
+
 std::string GetIndexString(const itk::Index<2>& index)
 {
   std::stringstream ss;
