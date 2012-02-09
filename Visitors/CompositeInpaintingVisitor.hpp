@@ -1,14 +1,14 @@
 #ifndef CompositeInpaintingVisitor_HPP
 #define CompositeInpaintingVisitor_HPP
 
-#include "InpaintingVisitor.hpp"
+#include "InpaintingVisitorParent.h"
 
 /**
- * This is a default visitor type that complies with the InpaintingVisitorConcept and does 
- * nothing in all cases (can be used if there are no exogenous operations to do during the 
- * inpainting algorithm, which would be surprising given the nature of the algorithm).
+ * This is a composite visitor type that complies with the InpaintingVisitorConcept and forwards
+ * all calls to all of its internal visitors.
  */
-struct composite_inpainting_visitor 
+template <typename TGraph>
+struct CompositeInpaintingVisitor 
 {
   template <typename VertexType, typename Graph>
   void initialize_vertex(VertexType v, Graph& g) const
@@ -66,8 +66,13 @@ struct composite_inpainting_visitor
       }
   };
 
+  void AddVisitor(InpaintingVisitorParent<TGraph>* vis)
+  {
+    this->Visitors.push_back(vis);
+  }
+  
 private:
-  std::vector<InpaintingVisitor*> Visitors;
+  std::vector<InpaintingVisitorParent<TGraph>*> Visitors;
 };
 
 #endif

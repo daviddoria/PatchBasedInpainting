@@ -5,6 +5,8 @@
 
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
+#include "InpaintingVisitorParent.h"
+
 // Boost
 #include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
@@ -16,11 +18,13 @@
  * This is a visitor that complies with the InpaintingVisitorConcept. It creates
  * and differences ImagePatchPixelDescriptor objects at each pixel.
  */
-template <typename TImage, typename TBoundaryNodeQueue,
+template <typename TGraph, typename TImage, typename TBoundaryNodeQueue,
           typename TFillStatusMap, typename TDescriptorMap,
           typename TPriorityMap, typename TBoundaryStatusMap>
-struct ImagePatchInpaintingVisitor
+struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
 {
+  typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
+
   TImage* image;
   Mask* mask;
   TBoundaryNodeQueue& boundaryNodeQueue;
@@ -44,8 +48,7 @@ struct ImagePatchInpaintingVisitor
   {
   }
 
-  template <typename VertexType, typename Graph>
-  void initialize_vertex(VertexType v, Graph& g) const
+  void initialize_vertex(VertexDescriptorType v, TGraph& g) const
   {
     //std::cout << "Initializing " << v[0] << " " << v[1] << std::endl;
     // Create the patch object and associate with the node
@@ -61,8 +64,7 @@ struct ImagePatchInpaintingVisitor
 
   };
 
-  template <typename VertexType, typename Graph>
-  void discover_vertex(VertexType v, Graph& g) const
+  void discover_vertex(VertexDescriptorType v, TGraph& g) const
   {
     itk::Index<2> index = {{v[0], v[1]}};
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, half_width);
@@ -83,8 +85,7 @@ struct ImagePatchInpaintingVisitor
     descriptor.SetValidOffsets(validOffsets);
   };
 
-  template <typename VertexType, typename Graph>
-  void vertex_match_made(VertexType target, VertexType source, Graph& g) const
+  void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
     std::cout << "Match made: target: " << target[0] << " " << target[1]
               << " with source: " << source[0] << " " << source[1] << std::endl;
@@ -92,8 +93,7 @@ struct ImagePatchInpaintingVisitor
     assert(get(descriptorMap, source).IsFullyValid());
   };
 
-  template <typename VertexType, typename Graph>
-  void paint_vertex(VertexType target, VertexType source, Graph& g) const
+  void paint_vertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
     itk::Index<2> target_index;
     target_index[0] = target[0];
@@ -109,14 +109,12 @@ struct ImagePatchInpaintingVisitor
     image->SetPixel(target_index, image->GetPixel(source_index));
   };
 
-  template <typename VertexType, typename Graph>
-  bool accept_painted_vertex(VertexType v, Graph& g) const
+  bool accept_painted_vertex(VertexDescriptorType v, TGraph& g) const
   {
     return true;
   };
 
-  template <typename VertexType, typename Graph>
-  void finish_vertex(VertexType v, Graph& g)
+  void finish_vertex(VertexDescriptorType v, TGraph& g)
   {
     // Construct the region around the vertex
     itk::Index<2> indexToFinish;
@@ -135,7 +133,7 @@ struct ImagePatchInpaintingVisitor
 
     while(!gridIterator.IsAtEnd())
       {
-      VertexType v;
+      VertexDescriptorType v;
       v[0] = gridIterator.GetIndex()[0];
       v[1] = gridIterator.GetIndex()[1];
       put(fillStatusMap, v, true);
@@ -146,7 +144,7 @@ struct ImagePatchInpaintingVisitor
     gridIterator.GoToBegin();
     while(!gridIterator.IsAtEnd())
       {
-      VertexType v;
+      VertexDescriptorType v;
       v[0] = gridIterator.GetIndex()[0];
       v[1] = gridIterator.GetIndex()[1];
       initialize_vertex(v, g);
@@ -161,7 +159,7 @@ struct ImagePatchInpaintingVisitor
 
     while(!imageIterator.IsAtEnd())
       {
-      VertexType v;
+      VertexDescriptorType v;
       v[0] = imageIterator.GetIndex()[0];
       v[1] = imageIterator.GetIndex()[1];
 

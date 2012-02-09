@@ -11,13 +11,13 @@
 #include "Helpers/ITKHelpers.h"
 
 /**
- * This is a visitor that complies with the InpaintingVisitorConcept. It creates
- * and differences ImagePatch objects at each pixel.
+ * This is a visitor that complies with the InpaintingVisitorConcept. It does
+ * some work that would be duplicated by standalone visitors.
  */
 template <typename TImage, typename TBoundaryNodeQueue,
           typename TFillStatusMap, typename TDescriptorMap,
           typename TPriorityMap, typename TBoundaryStatusMap>
-struct ImagePatchInpaintingVisitor
+struct InpaintingVisitor
 {
   TImage* image;
   Mask* mask;
@@ -128,7 +128,6 @@ struct ImagePatchInpaintingVisitor
     // Mark all the pixels in this region as filled. This must be done before creating
     // the mask image to use to check for boundary pixels.
     // It does not matter which image we iterate over, we just want the indices.
-    // Additionally, initialize these vertices because they may now be valid.
     itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(image, region);
 
     while(!gridIterator.IsAtEnd())
@@ -141,6 +140,7 @@ struct ImagePatchInpaintingVisitor
       ++gridIterator;
       }
 
+    // Initialize the newly filled vertices because they may now be valid source nodes.
     gridIterator.GoToBegin();
     while(!gridIterator.IsAtEnd())
       {

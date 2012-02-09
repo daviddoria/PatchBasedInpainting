@@ -27,6 +27,7 @@
 #include "Visitors/DefaultInpaintingVisitor.hpp"
 #include "Visitors/ImagePatchInpaintingVisitor.hpp"
 #include "Visitors/FeatureVectorInpaintingVisitor.hpp"
+#include "Visitors/CompositeInpaintingVisitor.hpp"
 
 // Nearest neighbors
 // #include "NearestNeighbor/topological_search.hpp"
@@ -164,33 +165,37 @@ int main(int argc, char *argv[])
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
   // Create the visitor
-//   typedef ImagePatchInpaintingVisitor<ImageType, BoundaryNodeQueueType, FillStatusMapType,
-//                                       ImagePatchDescriptorMapType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
-//   InpaintingVisitorType visitor(image, maskReader->GetOutput(), boundaryNodeQueue, fillStatusMap,
-//                                 imagePatchDescriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
+  typedef ImagePatchInpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
+                                      ImagePatchDescriptorMapType, PriorityMapType, BoundaryStatusMapType> ImagePatchInpaintingVisitorType;
+  ImagePatchInpaintingVisitorType imagePatchVisitor(image, maskReader->GetOutput(), boundaryNodeQueue, fillStatusMap,
+                                                    imagePatchDescriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
   
-  typedef FeatureVectorInpaintingVisitor<ImageType, BoundaryNodeQueueType, FillStatusMapType,
-                                         FeatureVectorDescriptorMapType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
+  typedef FeatureVectorInpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
+                                         FeatureVectorDescriptorMapType, PriorityMapType, BoundaryStatusMapType> FeatureVectorInpaintingVisitorType;
 
-  InpaintingVisitorType visitor(image, maskReader->GetOutput(), boundaryNodeQueue, fillStatusMap,
-                                featureVectorDescriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
+  FeatureVectorInpaintingVisitorType featureVectorVisitor(image, maskReader->GetOutput(), boundaryNodeQueue, fillStatusMap,
+                                                          featureVectorDescriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
 
+  CompositeInpaintingVisitor<VertexListGraphType> compositeVisitor;
+  compositeVisitor.AddVisitor(&imagePatchVisitor);
+  compositeVisitor.AddVisitor(&featureVectorVisitor);
+  
   InitializePriority(maskReader->GetOutput(), boundaryNodeQueue, priorityMap,
                      priorityFunction, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage(maskReader->GetOutput(), &visitor, graph, fillStatusMap);
+  InitializeFromMaskImage(maskReader->GetOutput(), &compositeVisitor, graph, fillStatusMap);
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
 //   SearchFunctor<VertexListGraphType, ImagePatchDifference<ImagePatchPixelDescriptorType>,
 //                 ImagePatchPixelDescriptorType > nearestNeighborFinder(graph, imagePatchDescriptorMap);
-    SearchFunctor<VertexListGraphType, FeatureVectorDifference,
-        FeatureVectorDescriptorMapType > nearestNeighborFinder(graph, featureVectorDescriptorMap);
+  SearchFunctor<VertexListGraphType, FeatureVectorDifference,
+      FeatureVectorDescriptorMapType > nearestNeighborFinder(graph, featureVectorDescriptorMap);
 
   // Perform the inpainting
-  inpainting_loop(graph, visitor, boundaryStatusMap, boundaryNodeQueue, nearestNeighborFinder, patchInpainter);
+  inpainting_loop(graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, nearestNeighborFinder, patchInpainter);
 
 //   HelpersOutput::WriteImage<ImageType>(image, outputFilename);
 
