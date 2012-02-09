@@ -81,7 +81,7 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
     std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
     std::cout << "Priority: " << get(priorityMap, v) << std::endl;
     DescriptorType& descriptor = get(descriptorMap, v);
-    descriptor.SetStatus(DescriptorType::TARGET_PATCH);
+    descriptor.SetStatus(DescriptorType::TARGET_NODE);
     descriptor.SetValidOffsets(validOffsets);
   };
 

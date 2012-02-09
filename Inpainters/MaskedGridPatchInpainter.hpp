@@ -49,7 +49,7 @@ struct MaskedGridPatchInpainter
         // check the mask value
         if( get(fillStatusMap, target_node) == false )
         {
-          std::cout << "Copying " << source_node << " to " << target_node << std::endl;
+          //std::cout << "Copying pixel " << source_node << " to pixel " << target_node << std::endl;
           vis.paint_vertex(target_node, source_node, g); //paint the vertex.
         }
 

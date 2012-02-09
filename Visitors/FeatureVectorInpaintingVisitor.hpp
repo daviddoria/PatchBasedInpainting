@@ -16,6 +16,11 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
 
+// VTK
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+
 // Helpers
 #include "Helpers/ITKHelpers.h"
 
@@ -43,29 +48,102 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
   unsigned int half_width;
   unsigned int NumberOfFinishedVertices;
 
+  vtkPolyData* FeaturePolyData;
+
+  std::string FeatureName;
+
+  vtkFloatArray* FeatureArray;
+  
+  typedef std::map<itk::Index<2>, unsigned int, itk::Index<2>::LexicographicCompare> CoordinateMapType;
+  CoordinateMapType CoordinateMap;
+
   FeatureVectorInpaintingVisitor(TImage* const in_image, Mask* const in_mask,
                                 TBoundaryNodeQueue& in_boundaryNodeQueue, TFillStatusMap& in_fillStatusMap,
                                 TDescriptorMap& in_descriptorMap, TPriorityMap& in_priorityMap,
                                 Priority* const in_priorityFunction,
-                                const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
+                                const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap, vtkPolyData* const featurePolyData, const std::string& featureName) :
   image(in_image), mask(in_mask), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorMap(in_descriptorMap),
-  priorityMap(in_priorityMap), boundaryStatusMap(in_boundaryStatusMap), half_width(in_half_width), NumberOfFinishedVertices(0)
+  priorityMap(in_priorityMap), boundaryStatusMap(in_boundaryStatusMap), half_width(in_half_width), NumberOfFinishedVertices(0), FeaturePolyData(featurePolyData), FeatureName(featureName),
+  FeatureArray(NULL)
   {
+    CreateIndexMap();
+  }
+
+  void CreateIndexMap()
+  {
+    std::cout << "Creating index map..." << std::endl;
+
+    this->FeatureArray = vtkFloatArray::SafeDownCast(this->FeaturePolyData->GetPointData()->GetArray(this->FeatureName.c_str()));
+    if(!this->FeatureArray)
+      {
+      std::stringstream ss;
+      ss << "\"" << FeatureName << "\" array must exist in the PolyData's PointData!";
+      throw std::runtime_error(ss.str());
+      }
+
+    // Add a map from all of the pixels to their corresponding point id. 
+    vtkIntArray* indexArray = vtkIntArray::SafeDownCast(this->FeaturePolyData->GetPointData()->GetArray("OriginalPixel"));
+    if(!indexArray)
+      {
+      throw std::runtime_error("\"OriginalPixel\" array must exist in the PolyData's PointData!");
+      }
+
+    for(vtkIdType pointId = 0; pointId < this->FeaturePolyData->GetNumberOfPoints(); ++pointId)
+      {
+      //int* pixelIndexArray;
+      int pixelIndexArray[2];
+      indexArray->GetTupleValue(pointId, pixelIndexArray);
+
+      itk::Index<2> pixelIndex;
+      pixelIndex[0] = pixelIndexArray[0];
+      pixelIndex[1] = pixelIndexArray[1];
+      this->CoordinateMap[pixelIndex] = pointId;
+      }
+    std::cout << "Finished creating index map." << std::endl;
   }
 
   void initialize_vertex(VertexDescriptorType v, TGraph& g) const
   {
     //std::cout << "Initializing " << v[0] << " " << v[1] << std::endl;
     // Create the patch object and associate with the node
-//     itk::Index<2> index;
-//     index[0] = v[0];
-//     index[1] = v[1];
+    itk::Index<2> index;
+    index[0] = v[0];
+    index[1] = v[1];
 
-    std::vector<float> featureVector; // TODO: read this from a vtp file
-    DescriptorType descriptor(featureVector);
-    descriptor.SetVertex(v);
-    put(descriptorMap, v, descriptor);
+    unsigned int pointId = 0;
+    unsigned int numberOfMissingPoints = 0;
+    // Look for 'index' in the map
+    CoordinateMapType::const_iterator iter = this->CoordinateMap.find(index);
+    if(iter != this->CoordinateMap.end())
+      {
+      pointId = iter->second;
 
+      float descriptorValues[this->FeatureArray->GetNumberOfComponents()];
+      this->FeatureArray->GetTupleValue(pointId, descriptorValues);
+
+      std::vector<float> featureVector(descriptorValues, descriptorValues + sizeof(descriptorValues) / sizeof(float) );
+
+      DescriptorType descriptor(featureVector);
+      descriptor.SetVertex(v);
+      descriptor.SetStatus(PixelDescriptor::SOURCE_NODE);
+      put(descriptorMap, v, descriptor);
+
+      }
+    else
+      {
+      //std::cout << index << " not found in the map!" << std::endl;
+      numberOfMissingPoints++;
+
+      std::vector<float> featureVector(this->FeatureArray->GetNumberOfComponents(), 0);
+
+      DescriptorType descriptor(featureVector);
+      descriptor.SetVertex(v);
+      descriptor.SetStatus(PixelDescriptor::INVALID);
+      put(descriptorMap, v, descriptor);
+
+      }
+
+    //std::cout << "There were " << numberOfMissingPoints << " missing points when computing the descriptor for node " << index << std::endl;
   };
 
   void discover_vertex(VertexDescriptorType v, TGraph& g) const
@@ -73,7 +151,7 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
     std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
     std::cout << "Priority: " << get(priorityMap, v) << std::endl;
     DescriptorType& descriptor = get(descriptorMap, v);
-    descriptor.SetStatus(DescriptorType::TARGET_PATCH);
+    descriptor.SetStatus(DescriptorType::TARGET_NODE);
   };
 
   void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
@@ -81,7 +159,7 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
     std::cout << "Match made: target: " << target[0] << " " << target[1]
               << " with source: " << source[0] << " " << source[1] << std::endl;
     assert(get(fillStatusMap, source));
-    assert(get(descriptorMap, source).IsFullyValid());
+    assert(get(descriptorMap, source).GetStatus() == PixelDescriptor::SOURCE_NODE);
   };
 
   void paint_vertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const

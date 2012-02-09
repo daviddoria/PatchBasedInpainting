@@ -42,6 +42,7 @@ static void TestMakeValueTransparent();
 
 static void TestMakeImageTransparent();
 
+static void TestOpaque();
 int main()
 {
   TestGetCellCenter();
@@ -51,7 +52,7 @@ int main()
   TestKeepNonZeroVectors();
   TestMakeValueTransparent();
   TestMakeImageTransparent();
-
+  TestOpaque();
   return EXIT_SUCCESS;
 }
 
@@ -155,6 +156,16 @@ void TestKeepNonZeroVectors()
   vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
   VTKHelpers::KeepNonZeroVectors(image, polyData);
 
+}
+
+void TestOpaque()
+{
+  // Suppress warning about OPAQUE defined but not used.
+  unsigned int opaque = VTKHelpers::OPAQUE;
+  if(opaque == VTKHelpers::TRANSPARENT)
+    {
+    throw std::runtime_error("OPAQUE value incorrect!");
+    }
 }
 
 void TestMakeValueTransparent()

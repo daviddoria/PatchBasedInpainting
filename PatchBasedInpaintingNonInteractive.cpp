@@ -30,12 +30,6 @@
 #include "Visitors/CompositeInpaintingVisitor.hpp"
 
 // Nearest neighbors
-// #include "NearestNeighbor/topological_search.hpp"
-// #include "NearestNeighbor/metric_space_search.hpp"
-// #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
-//#include "NearestNeighbor/SearchFunctor.hpp"
-// #include "NearestNeighbor/LinearSearchBest.hpp"
-// #include "NearestNeighbor/LinearSearchKNN.hpp"
 #include "NearestNeighbor/LinearSearchBestProperty.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
@@ -62,6 +56,10 @@
 // ITK
 #include "itkImageFileReader.h"
 
+// ITK
+#include <vtkPolyData.h>
+#include <vtkXMLPolyDataReader.h>
+
 // Boost
 #include <boost/graph/grid_graph.hpp>
 #include <boost/property_map/property_map.hpp>
@@ -70,12 +68,18 @@
 // Debug
 #include "Helpers/HelpersOutput.h"
 
+// Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 Data/trashcan.vtp Intensity filled.mha
 int main(int argc, char *argv[])
 {
   // Verify arguments
-  if(argc != 5)
+  if(argc != 7)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patchRadius output.mha" << std::endl;
+    std::cerr << "Required arguments: image.mha imageMask.mha patchRadius polydata.vtp featureName output.mha" << std::endl;
+    std::cerr << "Input arguments: ";
+    for(int i = 1; i < argc; ++i)
+      {
+      std::cerr << argv[i] << " ";
+      }
     return EXIT_FAILURE;
     }
 
@@ -88,13 +92,22 @@ int main(int argc, char *argv[])
   unsigned int patch_half_width = 0;
   ssPatchRadius >> patch_half_width;
 
-  std::string outputFilename = argv[4];
+  std::string polyDataFileName = argv[4];
+  std::string featureName = argv[5];
+  
+  std::string outputFilename = argv[6];
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
   std::cout << "Patch half width: " << patch_half_width << std::endl;
+  std::cout << "Reading polydata: " << polyDataFileName << std::endl;
+  std::cout << "Feature name: " << featureName << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
+
+  vtkSmartPointer<vtkXMLPolyDataReader> polyDataReader = vtkSmartPointer<vtkXMLPolyDataReader>::New();
+  polyDataReader->SetFileName(polyDataFileName.c_str());
+  polyDataReader->Update();
 
   typedef FloatVectorImageType ImageType;
 
@@ -181,7 +194,7 @@ int main(int argc, char *argv[])
                                          FeatureVectorDescriptorMapType, PriorityMapType, BoundaryStatusMapType> FeatureVectorInpaintingVisitorType;
 
   FeatureVectorInpaintingVisitorType featureVectorVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
-                                                          featureVectorDescriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
+                                                          featureVectorDescriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap, polyDataReader->GetOutput(), featureName);
 
   CompositeInpaintingVisitor<VertexListGraphType> compositeVisitor;
   compositeVisitor.AddVisitor(&imagePatchVisitor);

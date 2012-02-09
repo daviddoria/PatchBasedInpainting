@@ -34,8 +34,10 @@ class PixelDescriptor
 {
 public:
 
-  /** If a patch is invalid, it means any comparison with it should return inf. */
-  enum StatusEnum {SOURCE_PATCH, TARGET_PATCH, INVALID};
+  /** If a descriptor is invalid, it means any comparison with it should return inf. 
+   A descriptor is a SOURCE_NODE if it can be validly compared fully. A descriptor is
+   a TARGET_NODE if it is one that is looking for a good match.*/
+  enum StatusEnum {SOURCE_NODE, TARGET_NODE, INVALID};
 
 private:
   typedef boost::array<size_t, 2> VertexType;

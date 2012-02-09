@@ -45,7 +45,7 @@ struct ImagePatchDifference
 
     float totalDifference = 0.0f;
 
-    if(a.GetStatus() == ImagePatchType::SOURCE_PATCH && b.GetStatus() == ImagePatchType::SOURCE_PATCH)
+    if(a.GetStatus() == ImagePatchType::SOURCE_NODE && b.GetStatus() == ImagePatchType::SOURCE_NODE)
     {
       itk::Offset<2> offsetAToB = b.GetCorner() - a.GetCorner();
       // Compare all corresponding pixels and sum their differences
@@ -59,14 +59,14 @@ struct ImagePatchDifference
         ++patchAIterator;
         }
     }
-    else if(a.GetStatus() == ImagePatchType::TARGET_PATCH || b.GetStatus() == ImagePatchType::TARGET_PATCH)
+    else if(a.GetStatus() == ImagePatchType::TARGET_NODE || b.GetStatus() == ImagePatchType::TARGET_NODE)
     {
       const std::vector<itk::Offset<2> >* validOffsets;
-      if(a.GetStatus() == ImagePatchType::TARGET_PATCH)
+      if(a.GetStatus() == ImagePatchType::TARGET_NODE)
         {
         validOffsets = a.GetValidOffsetsAddress();
         }
-      if(b.GetStatus() == ImagePatchType::TARGET_PATCH)
+      if(b.GetStatus() == ImagePatchType::TARGET_NODE)
         {
         validOffsets = b.GetValidOffsetsAddress();
         }
