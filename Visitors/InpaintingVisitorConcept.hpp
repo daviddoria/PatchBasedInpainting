@@ -2,6 +2,7 @@
 #define InpaintingVisitorConcept_HPP
 
 #include <boost/graph/graph_concepts.hpp>
+#include <boost/concept_check.hpp>
 
 /**
  * This concept-check class defines the functions that a visitor must have in order to be 
@@ -46,6 +47,7 @@ struct InpaintingVisitorConcept {
     vis.vertex_match_made(target, source, g);  //function called when a source vertex has been found that matches well to the current target-vertex (the same vertex that was just discovered). 
     vis.paint_vertex(target, source, g);  //function called to paint the value of a target vertex with the value of the source vertex.
     bool was_successfully_painted = vis.accept_painted_vertex(target, g);  //function called to check if the in-painting of the target vertex was successful.
+    boost::ignore_unused_variable_warning(was_successfully_painted);
     vis.finish_vertex(u, g);  //function called when a vertex has been inpainted and removed from the set of target pixels.
   };
   

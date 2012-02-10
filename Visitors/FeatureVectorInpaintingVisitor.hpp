@@ -12,6 +12,8 @@
 
 #include "InpaintingVisitorParent.h"
 
+#include "DescriptorConcept.hpp"
+
 // Boost
 #include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
@@ -33,6 +35,9 @@ template <typename TGraph, typename TImage, typename TBoundaryNodeQueue,
           typename TPriorityMap, typename TBoundaryStatusMap>
 struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
 {
+  typedef typename boost::property_traits<TDescriptorMap>::value_type DescriptorType;
+  BOOST_CONCEPT_ASSERT((DescriptorConcept<DescriptorType, TGraph>));
+
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
   TImage* image;
@@ -41,7 +46,7 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
   Priority* priorityFunction;
   TFillStatusMap& fillStatusMap;
   TDescriptorMap& descriptorMap;
-  typedef typename boost::property_traits<TDescriptorMap>::value_type DescriptorType;
+  
   TPriorityMap& priorityMap;
   TBoundaryStatusMap& boundaryStatusMap;
 

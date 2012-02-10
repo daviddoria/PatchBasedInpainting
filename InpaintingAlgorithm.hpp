@@ -1,6 +1,8 @@
 #ifndef InpaintingAlgorithm_hpp
 #define InpaintingAlgorithm_hpp
 
+#include "Visitors/InpaintingVisitorConcept.hpp"
+
 // Boost
 #include <boost/graph/properties.hpp>
 
@@ -16,6 +18,8 @@ void inpainting_loop(VertexListGraphType& g, InpaintingVisitorType vis,
                       NearestNeighborFinderType find_inpainting_source, 
                       PatchInpainterType inpaint_patch) 
 {
+  BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<InpaintingVisitorType, VertexListGraphType>));
+  
   typedef typename boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
 
   // When this function is called, the priority-queue should already be filled 
