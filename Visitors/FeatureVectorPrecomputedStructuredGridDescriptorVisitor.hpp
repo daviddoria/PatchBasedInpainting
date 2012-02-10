@@ -1,10 +1,5 @@
-/**
- * This is a visitor type that complies with the InpaintingVisitorConcept. It computes
- * and differences feature vectors (std::vector<float>) at each pixel.
- */
-
-#ifndef FeatureVectorDescriptorVisitor_HPP
-#define FeatureVectorDescriptorVisitor_HPP
+#ifndef FeatureVectorPrecomputedStructuredGridDescriptorVisitor_HPP
+#define FeatureVectorPrecomputedStructuredGridDescriptorVisitor_HPP
 
 // Custom
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
@@ -20,17 +15,19 @@
 // VTK
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
-#include <vtkPolyData.h>
+#include <vtkStructuredGrid.h>
 
 // STL
 #include <map>
 
 /**
  * This is a visitor that complies with the DescriptorVisitorConcept. It creates
- * FeatureVectorPixelDescriptor objects at each node.
+ * FeatureVectorPixelDescriptor objects at each node. These descriptors are computed
+ * before hand and read in from a vts file (into a vtkStructuredGrid). The mapping from
+ * 3D points to pixels is provided implicity by the grid.
  */
 template <typename TGraph, typename TDescriptorMap>
-struct FeatureVectorDescriptorVisitor
+struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor
 {
   typedef typename boost::property_traits<TDescriptorMap>::value_type DescriptorType;
   BOOST_CONCEPT_ASSERT((DescriptorConcept<DescriptorType, TGraph>));
@@ -39,7 +36,7 @@ struct FeatureVectorDescriptorVisitor
 
   TDescriptorMap& descriptorMap;
 
-  vtkPolyData* FeaturePolyData;
+  vtkStructuredGrid* FeatureStructuredGrid;
 
   std::string FeatureName;
 
@@ -48,43 +45,10 @@ struct FeatureVectorDescriptorVisitor
   typedef std::map<itk::Index<2>, unsigned int, itk::Index<2>::LexicographicCompare> CoordinateMapType;
   CoordinateMapType CoordinateMap;
 
-  FeatureVectorDescriptorVisitor(TDescriptorMap& in_descriptorMap, vtkPolyData* const featurePolyData, const std::string& featureName) :
-  descriptorMap(in_descriptorMap), FeaturePolyData(featurePolyData), FeatureName(featureName), FeatureArray(NULL)
+  FeatureVectorPrecomputedStructuredGridDescriptorVisitor(TDescriptorMap& in_descriptorMap, vtkStructuredGrid* const featureStructuredGrid, const std::string& featureName) :
+  descriptorMap(in_descriptorMap), FeatureStructuredGrid(featureStructuredGrid), FeatureName(featureName), FeatureArray(NULL)
   {
-    CreateIndexMap();
-  }
 
-  void CreateIndexMap()
-  {
-    std::cout << "Creating index map..." << std::endl;
-
-    this->FeatureArray = vtkFloatArray::SafeDownCast(this->FeaturePolyData->GetPointData()->GetArray(this->FeatureName.c_str()));
-    if(!this->FeatureArray)
-      {
-      std::stringstream ss;
-      ss << "\"" << FeatureName << "\" array must exist in the PolyData's PointData!";
-      throw std::runtime_error(ss.str());
-      }
-
-    // Add a map from all of the pixels to their corresponding point id. 
-    vtkIntArray* indexArray = vtkIntArray::SafeDownCast(this->FeaturePolyData->GetPointData()->GetArray("OriginalPixel"));
-    if(!indexArray)
-      {
-      throw std::runtime_error("\"OriginalPixel\" array must exist in the PolyData's PointData!");
-      }
-
-    for(vtkIdType pointId = 0; pointId < this->FeaturePolyData->GetNumberOfPoints(); ++pointId)
-      {
-      //int* pixelIndexArray;
-      int pixelIndexArray[2];
-      indexArray->GetTupleValue(pointId, pixelIndexArray);
-
-      itk::Index<2> pixelIndex;
-      pixelIndex[0] = pixelIndexArray[0];
-      pixelIndex[1] = pixelIndexArray[1];
-      this->CoordinateMap[pixelIndex] = pointId;
-      }
-    std::cout << "Finished creating index map." << std::endl;
   }
 
   void initialize_vertex(VertexDescriptorType v, TGraph& g) const
@@ -138,6 +102,6 @@ struct FeatureVectorDescriptorVisitor
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
   };
 
-}; // FeatureVectorDescriptorVisitor
+}; // FeatureVectorPrecomputedPolyDataDescriptorVisitor
 
 #endif

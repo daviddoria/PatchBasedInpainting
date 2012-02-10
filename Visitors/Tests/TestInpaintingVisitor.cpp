@@ -24,7 +24,7 @@
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
 
 // Visitors
-#include "Visitors/FeatureVectorDescriptorVisitor.hpp"
+#include "Visitors/FeatureVectorPrecomputedPolyDataDescriptorVisitor.hpp"
 #include "Visitors/InpaintingVisitor.hpp"
 
 // Nearest neighbors
@@ -110,12 +110,12 @@ int main(int argc, char *argv[])
   vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
   std::string featureName = "test";
 
-  typedef FeatureVectorDescriptorVisitor<VertexListGraphType, FeatureVectorDescriptorMapType> FeatureVectorDescriptorVisitorType;
-  FeatureVectorDescriptorVisitorType featureVectorDescriptorVisitor(featureVectorDescriptorMap, polydata, featureName);
+  typedef FeatureVectorPrecomputedPolyDataDescriptorVisitor<VertexListGraphType, FeatureVectorDescriptorMapType> FeatureVectorPrecomputedPolyDataDescriptorVisitorType;
+  FeatureVectorPrecomputedPolyDataDescriptorVisitorType featureVectorPrecomputedPolyDataDescriptorVisitor(featureVectorDescriptorMap, polydata, featureName);
 
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
-                            FeatureVectorDescriptorVisitorType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
+                            FeatureVectorPrecomputedPolyDataDescriptorVisitorType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
   InpaintingVisitorType visitor(image, mask, boundaryNodeQueue, fillStatusMap,
-                                featureVectorDescriptorVisitor, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
+                                featureVectorPrecomputedPolyDataDescriptorVisitor, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
   return 0;
 }

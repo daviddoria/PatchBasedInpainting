@@ -20,10 +20,10 @@
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
 
 // Visitors
-#include "Visitors/FeatureVectorDescriptorVisitor.hpp"
+#include "Visitors/FeatureVectorPrecomputedStructuredGridDescriptorVisitor.hpp"
 
 // VTK
-#include <vtkPolyData.h>
+#include <vtkStructuredGrid.h>
 #include <vtkSmartPointer.h>
 
 // Boost
@@ -53,9 +53,9 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<FeatureVectorPixelDescriptorType, IndexMapType> FeatureVectorDescriptorMapType;
   FeatureVectorDescriptorMapType featureVectorDescriptorMap(num_vertices(graph), indexMap);
 
-  vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
+  vtkSmartPointer<vtkStructuredGrid> structuredGrid = vtkSmartPointer<vtkStructuredGrid>::New();
   std::string featureName = "test";
-  typedef FeatureVectorDescriptorVisitor<VertexListGraphType, FeatureVectorDescriptorMapType> FeatureVectorDescriptorVisitorType;
-  FeatureVectorDescriptorVisitorType featureVectorDescriptorVisitor(featureVectorDescriptorMap, polydata, featureName);
+  typedef FeatureVectorPrecomputedStructuredGridDescriptorVisitor<VertexListGraphType, FeatureVectorDescriptorMapType> FeatureVectorPrecomputedStructuredGridDescriptorVisitorType;
+  FeatureVectorPrecomputedStructuredGridDescriptorVisitorType featureVectorPrecomputedStructuredGridDescriptorVisitor(featureVectorDescriptorMap, structuredGrid, featureName);
   return 0;
 }
