@@ -56,7 +56,7 @@
 // ITK
 #include "itkImageFileReader.h"
 
-// ITK
+// VTK
 #include <vtkPolyData.h>
 #include <vtkXMLPolyDataReader.h>
 

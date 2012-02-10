@@ -15,7 +15,7 @@
  * some work that would be duplicated by standalone visitors.
  */
 template <typename TImage, typename TBoundaryNodeQueue,
-          typename TFillStatusMap, typename TDescriptorMap,
+          typename TFillStatusMap, typename TDescriptorVisitor,
           typename TPriorityMap, typename TBoundaryStatusMap>
 struct InpaintingVisitor
 {
@@ -24,7 +24,7 @@ struct InpaintingVisitor
   TBoundaryNodeQueue& boundaryNodeQueue;
   Priority* priorityFunction;
   TFillStatusMap& fillStatusMap;
-  TDescriptorMap& descriptorMap;
+  TDescriptorVisitor& descriptorVisitor;
   typedef typename boost::property_traits<TDescriptorMap>::value_type DescriptorType;
   TPriorityMap& priorityMap;
   TBoundaryStatusMap& boundaryStatusMap;
@@ -34,10 +34,10 @@ struct InpaintingVisitor
 
   InpaintingVisitor(TImage* const in_image, Mask* const in_mask,
                     TBoundaryNodeQueue& in_boundaryNodeQueue, TFillStatusMap& in_fillStatusMap,
-                    TDescriptorMap& in_descriptorMap, TPriorityMap& in_priorityMap,
+                    TDescriptorVisitor& in_descriptorVisitor, TPriorityMap& in_priorityMap,
                     Priority* const in_priorityFunction,
                     const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
-  image(in_image), mask(in_mask), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorMap(in_descriptorMap),
+  image(in_image), mask(in_mask), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorVisitor(in_descriptorVisitor),
   priorityMap(in_priorityMap), boundaryStatusMap(in_boundaryStatusMap), half_width(in_half_width), NumberOfFinishedVertices(0)
   {
   }
@@ -45,40 +45,13 @@ struct InpaintingVisitor
   template <typename VertexType, typename Graph>
   void initialize_vertex(VertexType v, Graph& g) const
   {
-    //std::cout << "Initializing " << v[0] << " " << v[1] << std::endl;
-    // Create the patch object and associate with the node
-    itk::Index<2> index;
-    index[0] = v[0];
-    index[1] = v[1];
-
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, half_width);
-
-    DescriptorType descriptor(this->image, this->mask, region);
-    descriptor.SetVertex(v);
-    put(descriptorMap, v, descriptor);
-
+    descriptorVisitor.initialize_vertex(v, g);
   };
 
   template <typename VertexType, typename Graph>
   void discover_vertex(VertexType v, Graph& g) const
   {
-    itk::Index<2> index = {{v[0], v[1]}};
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, half_width);
-
-    // Create the list of valid pixels
-    std::vector<itk::Index<2> > validPixels = mask->GetValidPixelsInRegion(region);
-    std::vector<itk::Offset<2> > validOffsets;
-    for(size_t i = 0; i < validPixels.size(); ++i)
-      {
-      itk::Offset<2> offset = validPixels[i] - region.GetIndex();
-      validOffsets.push_back(offset);
-      }
-
-    std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
-    std::cout << "Priority: " << get(priorityMap, v) << std::endl;
-    DescriptorType& descriptor = get(descriptorMap, v);
-    descriptor.SetStatus(DescriptorType::TARGET_PATCH);
-    descriptor.SetValidOffsets(validOffsets);
+    descriptorVisitor.discover_vertex(v, g);
   };
 
   template <typename VertexType, typename Graph>
@@ -189,6 +162,6 @@ struct InpaintingVisitor
     }
   }; // finish_vertex
 
-}; // ImagePatch_inpainting_visitor
+}; // InpaintingVisitor
 
 #endif
