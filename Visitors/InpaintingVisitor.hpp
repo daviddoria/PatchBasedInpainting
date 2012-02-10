@@ -11,21 +11,24 @@
 #include "Helpers/ITKHelpers.h"
 
 /**
- * This is a visitor that complies with the InpaintingVisitorConcept. It does
- * some work that would be duplicated by standalone visitors.
+ * This is a visitor that complies with the InpaintingVisitorConcept. It forwards
+ * initialize_vertex and discover_vertex, the only two functions that need to know about
+ * the descriptor type, to a visitor that models DescriptorVisitorConcept.
  */
-template <typename TImage, typename TBoundaryNodeQueue,
+template <typename TGraph, typename TImage, typename TBoundaryNodeQueue,
           typename TFillStatusMap, typename TDescriptorVisitor,
           typename TPriorityMap, typename TBoundaryStatusMap>
 struct InpaintingVisitor
 {
+  typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
+
   TImage* image;
   Mask* mask;
   TBoundaryNodeQueue& boundaryNodeQueue;
   Priority* priorityFunction;
   TFillStatusMap& fillStatusMap;
   TDescriptorVisitor& descriptorVisitor;
-  typedef typename boost::property_traits<TDescriptorMap>::value_type DescriptorType;
+
   TPriorityMap& priorityMap;
   TBoundaryStatusMap& boundaryStatusMap;
 
@@ -42,20 +45,17 @@ struct InpaintingVisitor
   {
   }
 
-  template <typename VertexType, typename Graph>
-  void initialize_vertex(VertexType v, Graph& g) const
+  void initialize_vertex(VertexDescriptorType v, TGraph& g) const
   {
     descriptorVisitor.initialize_vertex(v, g);
   };
 
-  template <typename VertexType, typename Graph>
-  void discover_vertex(VertexType v, Graph& g) const
+  void discover_vertex(VertexDescriptorType v, TGraph& g) const
   {
     descriptorVisitor.discover_vertex(v, g);
   };
 
-  template <typename VertexType, typename Graph>
-  void vertex_match_made(VertexType target, VertexType source, Graph& g) const
+  void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
     std::cout << "Match made: target: " << target[0] << " " << target[1]
               << " with source: " << source[0] << " " << source[1] << std::endl;
@@ -63,8 +63,7 @@ struct InpaintingVisitor
     assert(get(descriptorMap, source).IsFullyValid());
   };
 
-  template <typename VertexType, typename Graph>
-  void paint_vertex(VertexType target, VertexType source, Graph& g) const
+  void paint_vertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
     itk::Index<2> target_index;
     target_index[0] = target[0];
@@ -80,14 +79,12 @@ struct InpaintingVisitor
     image->SetPixel(target_index, image->GetPixel(source_index));
   };
 
-  template <typename VertexType, typename Graph>
-  bool accept_painted_vertex(VertexType v, Graph& g) const
+  bool accept_painted_vertex(VertexDescriptorType v, TGraph& g) const
   {
     return true;
   };
 
-  template <typename VertexType, typename Graph>
-  void finish_vertex(VertexType v, Graph& g)
+  void finish_vertex(VertexDescriptorType v, TGraph& g)
   {
     // Construct the region around the vertex
     itk::Index<2> indexToFinish;
@@ -105,7 +102,7 @@ struct InpaintingVisitor
 
     while(!gridIterator.IsAtEnd())
       {
-      VertexType v;
+      VertexDescriptorType v;
       v[0] = gridIterator.GetIndex()[0];
       v[1] = gridIterator.GetIndex()[1];
       put(fillStatusMap, v, true);
@@ -117,7 +114,7 @@ struct InpaintingVisitor
     gridIterator.GoToBegin();
     while(!gridIterator.IsAtEnd())
       {
-      VertexType v;
+      VertexDescriptorType v;
       v[0] = gridIterator.GetIndex()[0];
       v[1] = gridIterator.GetIndex()[1];
       initialize_vertex(v, g);
@@ -132,7 +129,7 @@ struct InpaintingVisitor
 
     while(!imageIterator.IsAtEnd())
       {
-      VertexType v;
+      VertexDescriptorType v;
       v[0] = imageIterator.GetIndex()[0];
       v[1] = imageIterator.GetIndex()[1];
 
