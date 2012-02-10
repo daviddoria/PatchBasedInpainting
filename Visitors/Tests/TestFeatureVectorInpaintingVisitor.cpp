@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
   unsigned int patch_half_width = 10;
-  vtkPolyData* polydata;
+  vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
   std::string featureName = "test";
   typedef FeatureVectorInpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
                                          FeatureVectorDescriptorMapType, PriorityMapType, BoundaryStatusMapType> FeatureVectorInpaintingVisitorType;
