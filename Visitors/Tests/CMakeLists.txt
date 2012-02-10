@@ -22,3 +22,14 @@ add_executable(TestInpaintingVisitor TestInpaintingVisitor.cpp
 target_link_libraries(TestInpaintingVisitor ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
 add_test(TestInpaintingVisitor TestInpaintingVisitor)
 
+add_executable(TestImagePatchDescriptorVisitor TestImagePatchDescriptorVisitor.cpp
+../../ImageProcessing/Mask.cpp )
+target_link_libraries(TestImagePatchDescriptorVisitor ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
+add_test(TestImagePatchDescriptorVisitor TestImagePatchDescriptorVisitor)
+
+add_executable(TestCompositeDescriptorVisitor TestCompositeDescriptorVisitor.cpp
+../../ImageProcessing/Mask.cpp 
+../../PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
+target_link_libraries(TestCompositeDescriptorVisitor ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
+add_test(TestCompositeDescriptorVisitor TestCompositeDescriptorVisitor)
+

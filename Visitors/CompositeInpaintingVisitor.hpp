@@ -3,6 +3,8 @@
 
 #include "InpaintingVisitorParent.h"
 
+#include <boost/graph/graph_traits.hpp>
+
 /**
  * This is a composite visitor type that complies with the InpaintingVisitorConcept and forwards
  * all calls to all of its internal visitors.
@@ -10,8 +12,9 @@
 template <typename TGraph>
 struct CompositeInpaintingVisitor 
 {
-  template <typename VertexType, typename Graph>
-  void initialize_vertex(VertexType v, Graph& g) const
+  typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
+
+  void initialize_vertex(VertexDescriptorType v, TGraph& g) const
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
@@ -19,8 +22,7 @@ struct CompositeInpaintingVisitor
       }
   };
 
-  template <typename VertexType, typename Graph>
-  void discover_vertex(VertexType v, Graph& g) const 
+  void discover_vertex(VertexDescriptorType v, TGraph& g) const 
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
@@ -28,8 +30,7 @@ struct CompositeInpaintingVisitor
       }
   };
 
-  template <typename VertexType, typename Graph>
-  void vertex_match_made(VertexType a, VertexType b, Graph& g) const 
+  void vertex_match_made(VertexDescriptorType a, VertexDescriptorType b, TGraph& g) const 
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
@@ -37,8 +38,7 @@ struct CompositeInpaintingVisitor
       }
   };
 
-  template <typename VertexType, typename Graph>
-  void paint_vertex(VertexType a, VertexType b, Graph& g) const 
+  void paint_vertex(VertexDescriptorType a, VertexDescriptorType b, TGraph& g) const 
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
@@ -46,8 +46,7 @@ struct CompositeInpaintingVisitor
       }
   };
 
-  template <typename VertexType, typename Graph>
-  bool accept_painted_vertex(VertexType v, Graph& g) const 
+  bool accept_painted_vertex(VertexDescriptorType v, TGraph& g) const 
   {
     bool acceptAll = true;
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
@@ -58,8 +57,7 @@ struct CompositeInpaintingVisitor
     return acceptAll;
   };
 
-  template <typename VertexType, typename Graph>
-  void finish_vertex(VertexType v, Graph& g) const 
+  void finish_vertex(VertexDescriptorType v, TGraph& g) const 
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
