@@ -14,9 +14,9 @@ template <typename VertexListGraphType, typename InpaintingVisitorType,
           typename NearestNeighborFinderType, typename PatchInpainterType>
 inline
 void inpainting_loop(VertexListGraphType& g, InpaintingVisitorType vis,
-                      BoundaryStatusMapType& boundaryStatusMap, PriorityQueueType& boundaryNodeQueue,
-                      NearestNeighborFinderType find_inpainting_source, 
-                      PatchInpainterType inpaint_patch) 
+                     BoundaryStatusMapType& boundaryStatusMap, PriorityQueueType& boundaryNodeQueue,
+                     NearestNeighborFinderType find_inpainting_source, 
+                     PatchInpainterType inpaint_patch) 
 {
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<InpaintingVisitorType, VertexListGraphType>));
   

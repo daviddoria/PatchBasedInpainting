@@ -4,6 +4,7 @@
 // Custom
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
 #include "DescriptorConcept.hpp"
+#include "DescriptorVisitorParent.h"
 
 // Boost
 #include <boost/graph/graph_traits.hpp>
@@ -27,7 +28,7 @@
  * 3D points to pixels is provided in an int array (vtkIntArray) called "OriginalPixel".
  */
 template <typename TGraph, typename TDescriptorMap>
-struct FeatureVectorPrecomputedPolyDataDescriptorVisitor
+struct FeatureVectorPrecomputedPolyDataDescriptorVisitor : public DescriptorVisitorParent<TGraph>
 {
   typedef typename boost::property_traits<TDescriptorMap>::value_type DescriptorType;
   BOOST_CONCEPT_ASSERT((DescriptorConcept<DescriptorType, TGraph>));

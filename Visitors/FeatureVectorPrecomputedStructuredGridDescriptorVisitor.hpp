@@ -4,6 +4,7 @@
 // Custom
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
 #include "DescriptorConcept.hpp"
+#include "DescriptorVisitorParent.h"
 
 // Boost
 #include <boost/graph/graph_traits.hpp>
@@ -17,9 +18,6 @@
 #include <vtkPointData.h>
 #include <vtkStructuredGrid.h>
 
-// STL
-#include <map>
-
 /**
  * This is a visitor that complies with the DescriptorVisitorConcept. It creates
  * FeatureVectorPixelDescriptor objects at each node. These descriptors are computed
@@ -27,7 +25,7 @@
  * 3D points to pixels is provided implicity by the grid.
  */
 template <typename TGraph, typename TDescriptorMap>
-struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor
+struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor : public DescriptorVisitorParent<TGraph>
 {
   typedef typename boost::property_traits<TDescriptorMap>::value_type DescriptorType;
   BOOST_CONCEPT_ASSERT((DescriptorConcept<DescriptorType, TGraph>));
@@ -42,9 +40,6 @@ struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor
 
   vtkFloatArray* FeatureArray;
 
-  typedef std::map<itk::Index<2>, unsigned int, itk::Index<2>::LexicographicCompare> CoordinateMapType;
-  CoordinateMapType CoordinateMap;
-
   FeatureVectorPrecomputedStructuredGridDescriptorVisitor(TDescriptorMap& in_descriptorMap, vtkStructuredGrid* const featureStructuredGrid, const std::string& featureName) :
   descriptorMap(in_descriptorMap), FeatureStructuredGrid(featureStructuredGrid), FeatureName(featureName), FeatureArray(NULL)
   {
@@ -54,19 +49,14 @@ struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor
   void initialize_vertex(VertexDescriptorType v, TGraph& g) const
   {
     //std::cout << "Initializing " << v[0] << " " << v[1] << std::endl;
-    // Create the patch object and associate with the node
-    itk::Index<2> index;
-    index[0] = v[0];
-    index[1] = v[1];
-
-    unsigned int pointId = 0;
     unsigned int numberOfMissingPoints = 0;
-    // Look for 'index' in the map
-    CoordinateMapType::const_iterator iter = this->CoordinateMap.find(index);
-    if(iter != this->CoordinateMap.end())
-      {
-      pointId = iter->second;
 
+    int queryPoint[3] = {v[0], v[1], 0};
+    int dimensions[3];
+    FeatureStructuredGrid->GetDimensions(dimensions);
+    vtkIdType pointId = vtkStructuredData::ComputePointId(dimensions, queryPoint);
+    if(FeatureStructuredGrid->IsPointVisible (pointId))
+      {
       float descriptorValues[this->FeatureArray->GetNumberOfComponents()];
       this->FeatureArray->GetTupleValue(pointId, descriptorValues);
 
@@ -76,7 +66,6 @@ struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::SOURCE_NODE);
       put(descriptorMap, v, descriptor);
-
       }
     else
       {
@@ -89,7 +78,6 @@ struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::INVALID);
       put(descriptorMap, v, descriptor);
-
       }
 
     //std::cout << "There were " << numberOfMissingPoints << " missing points when computing the descriptor for node " << index << std::endl;
