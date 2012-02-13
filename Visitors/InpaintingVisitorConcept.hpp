@@ -39,7 +39,8 @@ struct InpaintingVisitorConcept {
   
   BOOST_CONCEPT_ASSERT((boost::CopyConstructibleConcept<InpaintingVisitor>));
   
-  BOOST_CONCEPT_USAGE(InpaintingVisitorConcept) {
+  BOOST_CONCEPT_USAGE(InpaintingVisitorConcept) 
+  {
     vis.initialize_vertex(u, g);  //function called on all vertices during the initialization phase.
     vis.discover_vertex(u, g);  //function called when a live vertex is taken out of the priority-queue.
     const Vertex& target = u;
@@ -48,7 +49,7 @@ struct InpaintingVisitorConcept {
     vis.paint_vertex(target, source, g);  //function called to paint the value of a target vertex with the value of the source vertex.
     bool was_successfully_painted = vis.accept_painted_vertex(target, g);  //function called to check if the in-painting of the target vertex was successful.
     boost::ignore_unused_variable_warning(was_successfully_painted);
-    vis.finish_vertex(u, g);  //function called when a vertex has been inpainted and removed from the set of target pixels.
+    vis.finish_vertex(u, u, g);  //function called when a vertex has been inpainted and removed from the set of target pixels.
   };
   
 };

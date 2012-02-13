@@ -25,7 +25,7 @@ struct InpaintingVisitorParent
 
   virtual bool accept_painted_vertex(VertexDescriptorType v, TGraph& g) const = 0;
 
-  virtual void finish_vertex(VertexDescriptorType v, TGraph& g) = 0;
+  virtual void finish_vertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g) = 0;
 
 }; // InpaintingVisitorParent
 

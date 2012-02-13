@@ -35,9 +35,9 @@
 // VTK
 #include <vtkSmartPointer.h>
 
-template <typename TImage>
-PriorityCriminisi<TImage>::PriorityCriminisi(const TImage* const image, const Mask* const maskImage, unsigned int patchRadius) :
-PriorityOnionPeel(maskImage, patchRadius), Image(image)
+template <typename TNode, typename TImage>
+PriorityCriminisi<TNode, TImage>::PriorityCriminisi(const TImage* const image, const Mask* const maskImage, unsigned int patchRadius) :
+PriorityOnionPeel<TNode>(maskImage, patchRadius), Image(image)
 {
   this->BoundaryNormalsImage = FloatVector2ImageType::New();
   ITKHelpers::InitializeImage<FloatVector2ImageType>(this->BoundaryNormalsImage, image->GetLargestPossibleRegion());
@@ -84,8 +84,8 @@ PriorityOnionPeel(maskImage, patchRadius), Image(image)
 //   return namedImages;
 // }
 
-template <typename TImage>
-void PriorityCriminisi<TImage>::Update(const itk::Index<2>& filledPixel)
+template <typename TNode, typename TImage>
+void PriorityCriminisi<TNode, TImage>::Update(const TNode& filledPixel)
 {
   Superclass::Update(filledPixel);
 
@@ -96,8 +96,8 @@ void PriorityCriminisi<TImage>::Update(const itk::Index<2>& filledPixel)
   ComputeBoundaryNormals(blurVariance);
 }
 
-template <typename TImage>
-float PriorityCriminisi<TImage>::ComputePriority(const itk::Index<2>& queryPixel) const
+template <typename TNode, typename TImage>
+float PriorityCriminisi<TNode, TImage>::ComputePriority(const TNode& queryPixel) const
 {
   //std::cout << "PriorityCriminisi::ComputePriority()" << std::endl;
   float confidenceTerm = ComputeConfidenceTerm(queryPixel);
@@ -109,8 +109,8 @@ float PriorityCriminisi<TImage>::ComputePriority(const itk::Index<2>& queryPixel
 }
 
 
-template <typename TImage>
-float PriorityCriminisi<TImage>::ComputeDataTerm(const itk::Index<2>& queryPixel) const
+template <typename TNode, typename TImage>
+float PriorityCriminisi<TNode, TImage>::ComputeDataTerm(const itk::Index<2>& queryPixel) const
 {
   // D(p) = |dot(isophote at p, normalized normal of the front at p)|/alpha
 
@@ -127,8 +127,8 @@ float PriorityCriminisi<TImage>::ComputeDataTerm(const itk::Index<2>& queryPixel
   return dataTerm;
 }
 
-template <typename TImage>
-void PriorityCriminisi<TImage>::ComputeBoundaryNormals(const float blurVariance)
+template <typename TNode, typename TImage>
+void PriorityCriminisi<TNode, TImage>::ComputeBoundaryNormals(const float blurVariance)
 {
   // TODO: The boundary image is no longer stored, so should we just blur the mask image locally
   // to compute the boundary normal for each pixel separately (per ComputePriority() call)?
@@ -138,8 +138,8 @@ void PriorityCriminisi<TImage>::ComputeBoundaryNormals(const float blurVariance)
   //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(this->BoundaryNormalsImage, "Debug/ComputeBoundaryNormals.BoundaryNormals.mha", this->DebugImages);
 }
 
-template <typename TImage>
-FloatScalarImageType* PriorityCriminisi<TImage>::GetDataImage()
+template <typename TNode, typename TImage>
+FloatScalarImageType* PriorityCriminisi<TNode, TImage>::GetDataImage()
 {
   // TODO: Actually create the data image. This is not used for the algorithm, but just for debugging output.
   FloatScalarImageType::Pointer dataImage = FloatScalarImageType::New();

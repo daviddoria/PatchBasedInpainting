@@ -30,8 +30,9 @@ int main()
 
   PriorityRandom priority;
 
+  itk::Index<2> sourceIndex = {{0,0}};
   itk::Index<2> filledIndex = {{0,0}};
-  priority.Update(filledIndex);
+  priority.Update(sourceIndex, filledIndex);
 
   itk::Index<2> queryPixel = {{0,0}};
   priority.ComputePriority(queryPixel);

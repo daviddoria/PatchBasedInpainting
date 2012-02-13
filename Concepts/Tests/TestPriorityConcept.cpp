@@ -30,7 +30,7 @@ void Test(TPriority priority)
 
 int main()
 {
-  PriorityRandom<itk::Index<2> > priority;
+  PriorityRandom priority;
   Test(priority);
 
   return EXIT_SUCCESS;

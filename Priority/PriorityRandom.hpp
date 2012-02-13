@@ -6,7 +6,7 @@
 #include <cstdlib> // drand48()
 
 template <typename TNode>
-float PriorityRandom<TNode>::ComputePriority(const TNode& queryNode) const
+float PriorityRandom::ComputePriority(const TNode& queryNode) const
 {
   return drand48();
 }

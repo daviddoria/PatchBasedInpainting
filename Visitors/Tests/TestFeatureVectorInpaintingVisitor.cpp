@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
   FeatureVectorDescriptorMapType featureVectorDescriptorMap(num_vertices(graph), indexMap);
 
   // Create the priority function
-  typedef PriorityRandom<itk::Index<2> > PriorityType;
+  typedef PriorityRandom PriorityType;
   PriorityType priorityFunction;
 
   // Create the boundary node queue. The priority of each node is used to order the queue.

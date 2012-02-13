@@ -23,17 +23,18 @@
 \class PriorityRandom
 \brief This class returns a random value as the priority of each boundary pixel.
 */
-template <typename TNode>
+
 class PriorityRandom
 {
 public:
-  typedef TNode NodeType;
 
   /** Return a random value.*/
+  template <typename TNode>
   float ComputePriority(const TNode& queryPixel) const;
 
   /** There is no reason to update anything.*/
-  void Update(const TNode& filledPixel){}
+  template <typename TNode>
+  void Update(const TNode& sourceNode, const TNode& targetNode){}
 
 };
 

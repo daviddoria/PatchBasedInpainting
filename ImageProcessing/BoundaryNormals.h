@@ -20,11 +20,12 @@
 #define BoundaryNormals_H
 
 #include "Mask.h"
-#include "Types.h"
 
 class BoundaryNormals
 {
 public:
+  typedef itk::Image<unsigned char, 2> UnsignedCharScalarImageType;
+  
   BoundaryNormals(const UnsignedCharScalarImageType* const boundaryImage, const Mask* const mask);
 
   FloatVector2ImageType* ComputeBoundaryNormals(const float blurVariance);

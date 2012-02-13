@@ -28,3 +28,7 @@ add_executable(TestPriorityCriminisi TestPriorityCriminisi.cpp ../PriorityCrimin
 ../../ImageProcessing/Isophotes.cpp ../../ImageProcessing/Mask.cpp ../../ImageProcessing/Derivatives.cpp)
 target_link_libraries(TestPriorityCriminisi ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers libTesting)
 add_test(TestPriorityCriminisi TestPriorityCriminisi)
+
+add_executable(TestPriorityCurvature TestPriorityCurvature.cpp ../../ImageProcessing/Mask.cpp)
+target_link_libraries(TestPriorityCurvature ${ITK_LIBRARIES} ${VTK_LIBRARIES} libTesting libHelpers)
+add_test(TestPriorityCurvature TestPriorityCurvature)

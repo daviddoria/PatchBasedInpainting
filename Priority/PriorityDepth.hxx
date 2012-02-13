@@ -27,7 +27,7 @@ PriorityDepth<TNode, TImage>::PriorityDepth(const TImage* const image, const Mas
 
   //HelpersOutput::WriteImage<FloatScalarImageType>(indexSelectionFilter->GetOutput(), "Debug/Depth.mha");
 
-  this->BlurredDepth = FloatScalarImageType::New();
+  this->DepthImage = FloatScalarImageType::New();
   //Helpers::MaskedBlur<FloatScalarImageType>(indexSelectionFilter->GetOutput(), maskImage, 2.0f, this->BlurredDepth);
 
   typedef itk::BilateralImageFilter<FloatScalarImageType, FloatScalarImageType>  BilateralImageFilterType;
@@ -39,11 +39,11 @@ PriorityDepth<TNode, TImage>::PriorityDepth(const TImage* const image, const Mas
   bilateralImageFilter->SetRangeSigma(rangeSigma);
   bilateralImageFilter->Update();
 
-  ITKHelpers::DeepCopy<FloatScalarImageType>(bilateralImageFilter->GetOutput(), this->BlurredDepth);
+  ITKHelpers::DeepCopy<FloatScalarImageType>(bilateralImageFilter->GetOutput(), this->DepthImage);
 
   //HelpersOutput::WriteImage<FloatScalarImageType>(this->BlurredDepth, "Debug/BlurredDepth.mha");
 
-  Isophotes::ComputeMaskedIsophotesInRegion(this->BlurredDepth, maskImage, image->GetLargestPossibleRegion(), this->DepthIsophoteImage);
+  Isophotes::ComputeMaskedIsophotesInRegion(this->DepthImage, maskImage, image->GetLargestPossibleRegion(), this->DepthIsophoteImage);
   //HelpersOutput::Write2DVectorImage(this->DepthIsophoteImage, "Debug/BlurredDepthIsophoteImage.mha");
 
 }
@@ -85,6 +85,6 @@ void PriorityDepth<TNode, TImage>::Update(const TNode& filledPixel)
   indexSelectionFilter->SetInput(this->Image);
   indexSelectionFilter->Update();
 
-  MaskOperations::MaskedBlur<FloatScalarImageType>(indexSelectionFilter->GetOutput(), this->MaskImage, 2.0f, this->BlurredDepth);
+  MaskOperations::MaskedBlur<FloatScalarImageType>(indexSelectionFilter->GetOutput(), this->MaskImage, 2.0f, this->DepthImage);
   //Isophotes::ComputeMaskedIsophotesInRegion(indexSelectionFilter->GetOutput(), this->MaskImage, filledRegion, this->DepthIsophoteImage);
 }

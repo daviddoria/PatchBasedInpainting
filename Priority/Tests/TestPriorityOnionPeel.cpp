@@ -30,7 +30,7 @@ int main()
   Testing::GetFullyValidMask(mask.GetPointer());
 
   unsigned int patchRadius = 5;
-  PriorityOnionPeel priority(mask, patchRadius);
+  PriorityOnionPeel<itk::Index<2> > priority(mask, patchRadius);
 
   itk::Index<2> filledIndex = {{0,0}};
   priority.Update(filledIndex);

@@ -29,7 +29,7 @@ int main()
   Testing::GetFullyValidMask(mask.GetPointer());
 
   unsigned int patchRadius = 5;
-  PriorityDepth<FloatVectorImageType> priority(image, mask, patchRadius);
+  PriorityDepth<itk::Index<2>, FloatVectorImageType> priority(image, mask, patchRadius);
 
   itk::Index<2> filledPixel = {{0,0}};
   priority.Update(filledPixel);

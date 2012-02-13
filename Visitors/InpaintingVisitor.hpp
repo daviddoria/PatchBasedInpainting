@@ -85,7 +85,7 @@ struct InpaintingVisitor
     return true;
   };
 
-  void finish_vertex(VertexDescriptorType v, TGraph& g)
+  void finish_vertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
   {
     // Construct the region around the vertex
     itk::Index<2> indexToFinish;
@@ -123,7 +123,7 @@ struct InpaintingVisitor
       }
 
     // Update the priority function.
-    this->PriorityFunction->Update(indexToFinish);
+    this->PriorityFunction->Update(sourceNode, v);
 
     // Add pixels that are on the new boundary to the queue, and mark other pixels as not in the queue.
     itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(MaskImage, region);

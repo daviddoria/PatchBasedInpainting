@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
   InpainterType patchInpainter(patch_half_width, fillStatusMap);
 
   // Create the priority function
-  typedef PriorityRandom<itk::Index<2> > PriorityType;
+  typedef PriorityRandom PriorityType;
   PriorityType priorityFunction;
 
   // Create the boundary node queue. The priority of each node is used to order the queue.

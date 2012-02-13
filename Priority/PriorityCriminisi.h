@@ -20,33 +20,32 @@
 #define PriorityCriminisi_H
 
 #include "PriorityOnionPeel.h"
-#include "Types.h"
 
 /**
 \class PriorityCriminisi
 \brief This class implements Criminisi's priority function. It includes a Data term ontop of
        the confidence term of PriorityOnionPeel.
 */
-template <typename TImage>
-class PriorityCriminisi : public PriorityOnionPeel
+template <typename TNode, typename TImage>
+class PriorityCriminisi : public PriorityOnionPeel <TNode>
 {
 public:
+
+  PriorityCriminisi(const TImage* const image, const Mask* const maskImage, unsigned int patchRadius);
 
   ///////////////////////////////////////////
   // Functions reimplemented from Priority //
   ///////////////////////////////////////////
 
-  PriorityCriminisi(const TImage* image, const Mask* maskImage, unsigned int patchRadius);
+  float ComputePriority(const TNode& queryPixel) const;
 
-  float ComputePriority(const itk::Index<2>& queryPixel) const;
-
-  void Update(const itk::Index<2>& filledPixel);
+  void Update(const TNode& filledPixel);
 
 //   std::vector<NamedVTKImage> GetNamedImages();
 // 
 //   static std::vector<std::string> GetImageNames();
 
-  using PriorityOnionPeel::ComputeConfidenceTerm;
+  using PriorityOnionPeel<TNode>::ComputeConfidenceTerm;
   ///////////////////////////////////////////
   //////////////// New functions   //////////
   ///////////////////////////////////////////
@@ -56,7 +55,8 @@ public:
 
 protected:
 
-  typedef PriorityOnionPeel Superclass;
+  typedef PriorityOnionPeel<TNode> Superclass;
+
   // Compute the Data at a pixel.
   float ComputeDataTerm(const itk::Index<2>& queryPixel) const;
 

@@ -33,9 +33,10 @@ int main()
   Testing::GetBlankImage(manualPriorityImage.GetPointer());
 
   unsigned int patchRadius = 5;
-  PriorityOnionPeel priorityOnionPeel(mask, patchRadius);
+  typedef PriorityOnionPeel<itk::Index<2> > OnionPeelType;
+  OnionPeelType priorityOnionPeel(mask, patchRadius);
   
-  PriorityManual<UnsignedCharScalarImageType, PriorityOnionPeel> priority(manualPriorityImage, &priorityOnionPeel);
+  PriorityManual<itk::Index<2>, UnsignedCharScalarImageType, OnionPeelType> priority(manualPriorityImage, &priorityOnionPeel);
 
   itk::Index<2> filledPixel = {{0,0}};
   priority.Update(filledPixel);

@@ -314,7 +314,7 @@ void OutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const
   image->Modified();
 }
 
-void CreateImageFromStructuredGridArray(vtkStructuredGrid* const structuredGrid, const std::string& arrayName, FloatVectorImageType* const outputImage)
+void CreateVectorImageFromStructuredGridArray(vtkStructuredGrid* const structuredGrid, const std::string& arrayName, FloatVectorImageType* const outputImage)
 {
   itk::ImageRegionIteratorWithIndex<FloatVectorImageType> imageIterator(outputImage, outputImage->GetLargestPossibleRegion());
   imageIterator.GoToBegin();
@@ -363,6 +363,56 @@ void CreateImageFromStructuredGridArray(vtkStructuredGrid* const structuredGrid,
         {
         p[component] = 0;
         }
+      }
+
+    imageIterator.Set(p);
+    ++imageIterator;
+    }
+}
+
+
+void CreateScalarImageFromStructuredGridArray(vtkStructuredGrid* const structuredGrid, const std::string& arrayName, FloatScalarImageType* const outputImage)
+{
+  itk::ImageRegionIteratorWithIndex<FloatScalarImageType> imageIterator(outputImage, outputImage->GetLargestPossibleRegion());
+  imageIterator.GoToBegin();
+
+  vtkDataArray* dataArray = structuredGrid->GetPointData()->GetArray(arrayName.c_str());
+  if(!dataArray)
+    {
+    std::stringstream ss;
+    ss << "Array \"" << arrayName << "\" does not exist!";
+    throw std::runtime_error(ss.str());
+    }
+
+  int dimensions[3];
+  structuredGrid->GetDimensions(dimensions);
+
+  outputImage->SetNumberOfComponentsPerPixel(1);
+  itk::Index<2> corner = {{0,0}};
+  itk::Size<2> imageSize = {{dimensions[0], dimensions[1]}};
+  itk::ImageRegion<2> region(corner, imageSize);
+  outputImage->SetRegions(region);
+  outputImage->Allocate();
+
+  while(!imageIterator.IsAtEnd())
+    {
+    int queryPoint[3] = {imageIterator.GetIndex()[0], imageIterator.GetIndex()[1], 0};
+    vtkIdType pointId = vtkStructuredData::ComputePointId(dimensions, queryPoint);
+
+    FloatScalarImageType::PixelType p;
+
+    if(structuredGrid->IsPointVisible(pointId))
+      {
+      double value[1];
+      dataArray->GetTuple(pointId, value);
+
+      p = value[0];
+
+      imageIterator.Set(p);
+      }
+    else
+      {
+      p = 0;
       }
 
     imageIterator.Set(p);

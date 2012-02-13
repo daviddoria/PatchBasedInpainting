@@ -66,7 +66,7 @@ void inpainting_loop(VertexListGraphType& g, InpaintingVisitorType vis,
       throw std::runtime_error("Vertex was not painted successfully!");
       }
 
-    vis.finish_vertex(targetNode, g);
+    vis.finish_vertex(targetNode, sourceNode, g);
   } // end main iteration loop
 
 };

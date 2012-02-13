@@ -17,12 +17,14 @@ struct PriorityConcept
 {
   TPriority priority;
 
-  typename TPriority::NodeType node;
+  struct Node { void operator[](int) {return 0;} };
 
+  Node node;
+  
   BOOST_CONCEPT_USAGE(PriorityConcept ) 
   {
     priority.ComputePriority(node);
-    priority.Update(node);
+    priority.Update(node, node); // Many of the priority functions need to copy data from the source region to the target region, so these functions must take both the source and target node location.
   };
 
 };

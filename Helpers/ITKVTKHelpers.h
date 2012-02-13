@@ -35,14 +35,20 @@ class vtkStructuredGrid;
 namespace ITKVTKHelpers
 {
 
+typedef itk::Image<float, 2> FloatScalarImageType;
+
 typedef itk::VectorImage<float, 2> FloatVectorImageType;
+
 typedef itk::CovariantVector<float, 2> FloatVector2Type;
 typedef itk::Image<FloatVector2Type , 2> FloatVector2ImageType;
 
 void CreateTransparentVTKImage(const itk::Size<2>& size, vtkImageData* const outputImage);
 
 // Create an image from the values in an array of the corresponding structured grid points.
-void CreateImageFromStructuredGridArray(vtkStructuredGrid* const structuredGrid, FloatVectorImageType* const outputImage);
+void CreateVectorImageFromStructuredGridArray(vtkStructuredGrid* const structuredGrid, const std::string& arrayName, FloatVectorImageType* const outputImage);
+
+// Create an image from the values in an array of the corresponding structured grid points.
+void CreateScalarImageFromStructuredGridArray(vtkStructuredGrid* const structuredGrid, const std::string& arrayName, FloatScalarImageType* const outputImage);
 
 // Set the center pixel of a 'region' in an 'image' to the specified 'color'. The region is assumed to have odd dimensions.
 void SetRegionCenterPixel(vtkImageData* const image, const itk::ImageRegion<2>& region, const unsigned char color[3]);

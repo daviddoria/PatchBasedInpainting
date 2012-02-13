@@ -20,6 +20,10 @@
 #include "../ImageProcessing/Mask.h"
 #include "../Testing/Testing.h"
 
+// VTK
+#include <vtkSmartPointer.h>
+#include <vtkStructuredGrid.h>
+
 int main()
 {
   FloatVectorImageType::Pointer image = FloatVectorImageType::New();
@@ -28,11 +32,14 @@ int main()
   Mask::Pointer mask = Mask::New();
   Testing::GetFullyValidMask(mask.GetPointer());
 
+  vtkSmartPointer<vtkStructuredGrid> structuredGrid = vtkSmartPointer<vtkStructuredGrid>::New();
+
   unsigned int patchRadius = 5;
-  PriorityCurvature priority(patchRadius);
+  PriorityCurvature<itk::Index<2> > priority(structuredGrid, patchRadius);
 
   itk::Index<2> filledPixel = {{0,0}};
-  priority.Update(filledPixel);
+  itk::Index<2> sourcePixel = {{0,0}};
+  priority.Update(sourcePixel, filledPixel);
 
   itk::Index<2> queryPixel = {{0,0}};
   priority.ComputePriority(queryPixel);
