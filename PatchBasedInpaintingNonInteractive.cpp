@@ -25,7 +25,7 @@
 
 // Descriptor visitors
 #include "Visitors/ImagePatchDescriptorVisitor.hpp"
-#include "Visitors/FeatureVectorPrecomputedPolyDataDescriptorVisitor.hpp"
+#include "Visitors/FeatureVectorPrecomputedStructuredGridDescriptorVisitor.hpp"
 #include "Visitors/CompositeDescriptorVisitor.hpp"
 
 // Inpainting visitors
@@ -61,7 +61,8 @@
 // VTK
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
-#include <vtkXMLPolyDataReader.h>
+//#include <vtkXMLPolyDataReader.h>
+#include <vtkXMLStructuredGridReader.h>
 
 // Boost
 #include <boost/graph/grid_graph.hpp>
@@ -77,7 +78,7 @@ int main(int argc, char *argv[])
   // Verify arguments
   if(argc != 7)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width polydata.vtp featureName output.mha" << std::endl;
+    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width structuredGrid.vts featureName output.mha" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
   unsigned int patch_half_width = 0;
   ssPatchRadius >> patch_half_width;
 
-  std::string polyDataFileName = argv[4];
+  std::string structuredGridFileName = argv[4];
   std::string featureName = argv[5];
   
   std::string outputFilename = argv[6];
@@ -104,13 +105,13 @@ int main(int argc, char *argv[])
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
   std::cout << "Patch half width: " << patch_half_width << std::endl;
-  std::cout << "Reading polydata: " << polyDataFileName << std::endl;
+  std::cout << "Reading structured grid: " << structuredGridFileName << std::endl;
   std::cout << "Feature name: " << featureName << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
-  vtkSmartPointer<vtkXMLPolyDataReader> polyDataReader = vtkSmartPointer<vtkXMLPolyDataReader>::New();
-  polyDataReader->SetFileName(polyDataFileName.c_str());
-  polyDataReader->Update();
+  vtkSmartPointer<vtkXMLStructuredGridReader> structuredGridReader = vtkSmartPointer<vtkXMLStructuredGridReader>::New();
+  structuredGridReader->SetFileName(structuredGridFileName.c_str());
+  structuredGridReader->Update();
 
   typedef FloatVectorImageType ImageType;
 
@@ -122,10 +123,6 @@ int main(int argc, char *argv[])
   ImageType::Pointer image = ImageType::New();
   ITKHelpers::DeepCopy(imageReader->GetOutput(), image.GetPointer());
 
-//   typedef  itk::ImageFileReader<Mask> MaskReaderType;
-//   MaskReaderType::Pointer maskReader = MaskReaderType::New();
-//   maskReader->SetFileName(maskFilename);
-//   maskReader->Update();
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
 
@@ -189,9 +186,8 @@ int main(int argc, char *argv[])
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
   // Create the descriptor visitors
-  vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
-  typedef FeatureVectorPrecomputedPolyDataDescriptorVisitor<VertexListGraphType, FeatureVectorDescriptorMapType> FeatureVectorPrecomputedPolyDataDescriptorVisitorType;
-  FeatureVectorPrecomputedPolyDataDescriptorVisitorType featureVectorPrecomputedPolyDataDescriptorVisitor(featureVectorDescriptorMap, polydata, featureName);
+  typedef FeatureVectorPrecomputedStructuredGridDescriptorVisitor<VertexListGraphType, FeatureVectorDescriptorMapType> FeatureVectorPrecomputedPolyDataDescriptorVisitorType;
+  FeatureVectorPrecomputedPolyDataDescriptorVisitorType featureVectorPrecomputedPolyDataDescriptorVisitor(featureVectorDescriptorMap, structuredGridReader->GetOutput(), featureName);
   
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patch_half_width);

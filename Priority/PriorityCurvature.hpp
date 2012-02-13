@@ -49,9 +49,10 @@ void PriorityCurvature<TNode>::Update(const TNode& sourceNode, const TNode& targ
 }
 
 template <typename TNode>
-float PriorityCurvature<TNode>::ComputePriority(const TNode& queryPixel) const
+float PriorityCurvature<TNode>::ComputePriority(const TNode& queryNode) const
 {
-  float priority;
+  itk::Index<2> queryPixel = {{queryNode[0], queryNode[1]}};
+  float priority = this->CurvatureImage->GetPixel(queryPixel);
   return priority;
 }
 
