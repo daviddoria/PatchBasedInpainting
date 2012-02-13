@@ -316,7 +316,6 @@ void OutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const
 
 void CreateImageFromStructuredGridArray(vtkStructuredGrid* const structuredGrid, const std::string& arrayName, FloatVectorImageType* const outputImage)
 {
-  
   itk::ImageRegionIteratorWithIndex<FloatVectorImageType> imageIterator(outputImage, outputImage->GetLargestPossibleRegion());
   imageIterator.GoToBegin();
 
@@ -337,19 +336,33 @@ void CreateImageFromStructuredGridArray(vtkStructuredGrid* const structuredGrid,
   itk::ImageRegion<2> region(corner, imageSize);
   outputImage->SetRegions(region);
   outputImage->Allocate();
-  
+
   while(!imageIterator.IsAtEnd())
     {
     int queryPoint[3] = {imageIterator.GetIndex()[0], imageIterator.GetIndex()[1], 0};
     vtkIdType pointId = vtkStructuredData::ComputePointId(dimensions, queryPoint);
+
     FloatVectorImageType::PixelType p;
     p.SetSize(dataArray->GetNumberOfComponents());
-    double value[dataArray->GetNumberOfComponents()];
-    dataArray->GetTuple(pointId, value);
 
-    for(unsigned int component = 0; component < dataArray->GetNumberOfComponents(); ++component)
+    if(structuredGrid->IsPointVisible(pointId))
       {
-      p[component] = value[component];
+      double value[dataArray->GetNumberOfComponents()];
+      dataArray->GetTuple(pointId, value);
+
+      for(vtkIdType component = 0; component < dataArray->GetNumberOfComponents(); ++component)
+        {
+        p[component] = value[component];
+        }
+
+      imageIterator.Set(p);
+      }
+    else
+      {
+      for(vtkIdType component = 0; component < dataArray->GetNumberOfComponents(); ++component)
+        {
+        p[component] = 0;
+        }
       }
 
     imageIterator.Set(p);
