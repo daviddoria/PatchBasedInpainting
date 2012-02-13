@@ -24,6 +24,7 @@
 #include <vtkImageData.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
+#include <vtkStructuredGrid.h>
 
 // ITK
 #include "itkVectorMagnitudeImageFilter.h"
@@ -311,6 +312,49 @@ void OutlineRegion(vtkImageData* image, const itk::ImageRegion<2>& region, const
     }
 
   image->Modified();
+}
+
+void CreateImageFromStructuredGridArray(vtkStructuredGrid* const structuredGrid, const std::string& arrayName, FloatVectorImageType* const outputImage)
+{
+  
+  itk::ImageRegionIteratorWithIndex<FloatVectorImageType> imageIterator(outputImage, outputImage->GetLargestPossibleRegion());
+  imageIterator.GoToBegin();
+
+  vtkDataArray* dataArray = structuredGrid->GetPointData()->GetArray(arrayName.c_str());
+  if(!dataArray)
+    {
+    std::stringstream ss;
+    ss << "Array \"" << arrayName << "\" does not exist!";
+    throw std::runtime_error(ss.str());
+    }
+
+  int dimensions[3];
+  structuredGrid->GetDimensions(dimensions);
+
+  outputImage->SetNumberOfComponentsPerPixel(dataArray->GetNumberOfComponents());
+  itk::Index<2> corner = {{0,0}};
+  itk::Size<2> imageSize = {{dimensions[0], dimensions[1]}};
+  itk::ImageRegion<2> region(corner, imageSize);
+  outputImage->SetRegions(region);
+  outputImage->Allocate();
+  
+  while(!imageIterator.IsAtEnd())
+    {
+    int queryPoint[3] = {imageIterator.GetIndex()[0], imageIterator.GetIndex()[1], 0};
+    vtkIdType pointId = vtkStructuredData::ComputePointId(dimensions, queryPoint);
+    FloatVectorImageType::PixelType p;
+    p.SetSize(dataArray->GetNumberOfComponents());
+    double value[dataArray->GetNumberOfComponents()];
+    dataArray->GetTuple(pointId, value);
+
+    for(unsigned int component = 0; component < dataArray->GetNumberOfComponents(); ++component)
+      {
+      p[component] = value[component];
+      }
+
+    imageIterator.Set(p);
+    ++imageIterator;
+    }
 }
 
 } // end namespace
