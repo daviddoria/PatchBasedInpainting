@@ -23,11 +23,13 @@
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
 
-// Visitors
-#include "Visitors/DefaultInpaintingVisitor.hpp"
-#include "Visitors/ImagePatchInpaintingVisitor.hpp"
-#include "Visitors/FeatureVectorInpaintingVisitor.hpp"
-#include "Visitors/CompositeInpaintingVisitor.hpp"
+// Descriptor visitors
+#include "Visitors/ImagePatchDescriptorVisitor.hpp"
+#include "Visitors/FeatureVectorPrecomputedPolyDataDescriptorVisitor.hpp"
+#include "Visitors/CompositeDescriptorVisitor.hpp"
+
+// Inpainting visitors
+#include "Visitors/InpaintingVisitor.hpp"
 
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchBestProperty.hpp"
@@ -74,7 +76,7 @@ int main(int argc, char *argv[])
   // Verify arguments
   if(argc != 7)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patchRadius polydata.vtp featureName output.mha" << std::endl;
+    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width polydata.vtp featureName output.mha" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
@@ -184,27 +186,30 @@ int main(int argc, char *argv[])
   typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType> BoundaryNodeQueueType;
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
-  // Create the visitor
-  typedef ImagePatchInpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
-                                      ImagePatchDescriptorMapType, PriorityMapType, BoundaryStatusMapType> ImagePatchInpaintingVisitorType;
-  ImagePatchInpaintingVisitorType imagePatchVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
-                                                    imagePatchDescriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
+  // Create the descriptor visitors
+  vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
+  typedef FeatureVectorPrecomputedPolyDataDescriptorVisitor<VertexListGraphType, FeatureVectorDescriptorMapType> FeatureVectorPrecomputedPolyDataDescriptorVisitorType;
+  FeatureVectorPrecomputedPolyDataDescriptorVisitorType featureVectorPrecomputedPolyDataDescriptorVisitor(featureVectorDescriptorMap, polydata, featureName);
   
-  typedef FeatureVectorInpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
-                                         FeatureVectorDescriptorMapType, PriorityMapType, BoundaryStatusMapType> FeatureVectorInpaintingVisitorType;
-
-  FeatureVectorInpaintingVisitorType featureVectorVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
-                                                          featureVectorDescriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap, polyDataReader->GetOutput(), featureName);
-
-  CompositeInpaintingVisitor<VertexListGraphType> compositeVisitor;
-  compositeVisitor.AddVisitor(&imagePatchVisitor);
-  compositeVisitor.AddVisitor(&featureVectorVisitor);
+  typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> ImagePatchDescriptorVisitorType;
+  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patch_half_width);
+  
+  typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
+  CompositeDescriptorVisitorType compositeDescriptorVisitor;
+  compositeDescriptorVisitor.AddVisitor(&imagePatchDescriptorVisitor);
+  compositeDescriptorVisitor.AddVisitor(&featureVectorPrecomputedPolyDataDescriptorVisitor);
+  
+  // Create the inpainting visitor
+  typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
+                            FeatureVectorPrecomputedPolyDataDescriptorVisitorType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
+  InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
+                                          featureVectorPrecomputedPolyDataDescriptorVisitor, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
   
   InitializePriority(mask, boundaryNodeQueue, priorityMap,
                      priorityFunction, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage(mask, &compositeVisitor, graph, fillStatusMap);
+  InitializeFromMaskImage(mask, &inpaintingVisitor, graph, fillStatusMap);
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
@@ -221,11 +226,9 @@ int main(int argc, char *argv[])
   TwoStepNearestNeighbor<KNNSearchType, BestSearchType> twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
   // Perform the inpainting
-  // inpainting_loop(graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchKNN, patchInpainter); // Can't do this, because it returns a list of vertices, not a single best vertex
-  //inpainting_loop(graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
-  inpainting_loop(graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepNearestNeighbor, patchInpainter);
+  inpainting_loop(graph, inpaintingVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepNearestNeighbor, patchInpainter);
 
-//   HelpersOutput::WriteImage<ImageType>(image, outputFilename);
+  HelpersOutput::WriteImage<ImageType>(image, outputFilename);
 
   return EXIT_SUCCESS;
 }

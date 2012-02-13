@@ -25,6 +25,7 @@
 
 // Helpers
 #include "Helpers/ITKHelpers.h"
+#include "Helpers/VTKHelpers.h"
 
 /**
  * This is a visitor that complies with the InpaintingVisitorConcept. It creates
@@ -83,6 +84,7 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
       {
       std::stringstream ss;
       ss << "\"" << FeatureName << "\" array must exist in the PolyData's PointData!";
+      VTKHelpers::OutputAllArrayNames(this->FeaturePolyData);
       throw std::runtime_error(ss.str());
       }
 

@@ -5,6 +5,7 @@
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
 #include "DescriptorConcept.hpp"
 #include "DescriptorVisitorParent.h"
+#include "Helpers/VTKHelpers.h"
 
 // Boost
 #include <boost/graph/graph_traits.hpp>
@@ -61,6 +62,7 @@ struct FeatureVectorPrecomputedPolyDataDescriptorVisitor : public DescriptorVisi
       {
       std::stringstream ss;
       ss << "\"" << FeatureName << "\" array must exist in the PolyData's PointData!";
+      VTKHelpers::OutputAllArrayNames(this->FeaturePolyData);
       throw std::runtime_error(ss.str());
       }
 

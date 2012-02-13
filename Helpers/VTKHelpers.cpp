@@ -216,5 +216,13 @@ void MakeValueTransparent(vtkImageData* const image, const unsigned char value[3
     } // end for i
 }
 
+void OutputAllArrayNames(vtkPolyData* const polyData)
+{
+  std::cout << "Arrays in polyData (there are " << polyData->GetPointData()->GetNumberOfArrays() << ") : " << std::endl;
+  for(vtkIdType arrayId = 0; arrayId < polyData->GetPointData()->GetNumberOfArrays(); arrayId++)
+    {
+    std::cout << polyData->GetPointData()->GetArrayName(arrayId) << std::endl;
+    }
+}
 
 } // end namespace

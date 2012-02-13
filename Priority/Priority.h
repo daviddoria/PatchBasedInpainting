@@ -21,7 +21,6 @@
 
 // ITK
 #include "itkIndex.h"
-#include "itkImageRegion.h"
 
 /**
 \class Priority
@@ -37,7 +36,7 @@ public:
 
   virtual ~Priority(){}
 
-  // At the end of an iteration, update anything that needs to be updated.
+  /** At the end of an iteration, update anything that needs to be updated. */
   virtual void Update(const itk::Index<2>& filledPixel) = 0;
 
 };

@@ -51,6 +51,9 @@ void MakeValueTransparent(vtkImageData* const inputImage, const unsigned char va
 // Make an entire image transparent.
 void MakeImageTransparent(vtkImageData* const image);
 
+// Output the names of all arrays in the PointData of a PolyData
+void OutputAllArrayNames(vtkPolyData* const polyData);
+
 } // end namespace
 
 #endif
