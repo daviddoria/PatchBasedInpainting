@@ -11,9 +11,9 @@
 // Debug
 #include "Helpers/HelpersOutput.h"
 
-template <typename TBoundaryNodeQueue, typename TPriorityMap, typename TBoundaryStatusMap>
+template <typename TBoundaryNodeQueue, typename TPriorityMap, typename TBoundaryStatusMap, typename TPriority>
 inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& boundaryNodeQueue, TPriorityMap& priorityMap,
-                               Priority* const priorityFunction, 
+                               TPriority* const priorityFunction, 
                                TBoundaryStatusMap& boundaryStatusMap)
 {
   std::cout << "InitializePriority" << std::endl;

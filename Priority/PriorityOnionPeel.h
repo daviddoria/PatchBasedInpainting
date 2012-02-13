@@ -21,35 +21,36 @@
 
 #include "Priority.h"
 
+#include "ImageProcessing/Mask.h"
+
 /**
 \class PriorityOnionPeel
 \brief This class ranks the priority of a patch based on its closeness to the hole boundary.
 */
-class PriorityOnionPeel : public Priority
+template <typename TNode>
+class PriorityOnionPeel
 {
 public:
 
-  ///////////////////////////////////////////
-  // Functions reimplemented from Priority //
-  ///////////////////////////////////////////
-
   PriorityOnionPeel(const Mask* const maskImage, const unsigned int patchRadius);
 
-  virtual ~PriorityOnionPeel(){}
+  ///////////////////////////////////////////
+  // Required to model PriorityConcept //
+  ///////////////////////////////////////////
 
-  float ComputePriority(const itk::Index<2>& queryPixel) const;
+  float ComputePriority(const TNode& queryPixel) const;
 
-  void Update(const itk::Index<2>& filledPixel);
+  void Update(const TNode& filledPixel);
 
 protected:
 
   typedef itk::Image<float, 2> ConfidenceImageType;
   
   /** Compute the Confidence values for pixels that were just inpainted.*/
-  void UpdateConfidences(const itk::Index<2>& targetPixel, const float value);
+  void UpdateConfidences(const TNode& targetPixel, const float value);
 
   /** Compute the Confidence at a pixel.*/
-  float ComputeConfidenceTerm(const itk::Index<2>& queryPixel) const;
+  float ComputeConfidenceTerm(const TNode& queryPixel) const;
 
   /** Keep track of the Confidence of each pixel*/
   ConfidenceImageType::Pointer ConfidenceMapImage;

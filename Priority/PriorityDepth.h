@@ -25,16 +25,16 @@
 \class PriorityDepth
 \brief This class computes a patch's priority based on its depth channel.
 */
-template <typename TImage>
-class PriorityDepth : public Priority
+template <typename TNode, typename TImage>
+class PriorityDepth
 {
 public:
   // Reimplemented from Priority
-  PriorityDepth(const TImage* image, const Mask* maskImage, unsigned int patchRadius);
+  PriorityDepth(const TImage* const image, const Mask* const maskImage, const unsigned int patchRadius);
 
-  float ComputePriority(const itk::Index<2>& queryPixel) const;
+  float ComputePriority(const TNode& queryPixel) const;
 
-  void Update(const itk::Index<2>& filledPixel);
+  void Update(const TNode& filledPixel);
 
 protected:
   // Isophotes of the depth channel.

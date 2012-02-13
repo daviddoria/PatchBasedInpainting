@@ -34,19 +34,21 @@
 */
 // template< class TImage, template<class> class TPriority>
 // class PriorityManual : public TPriority<TImage>
-template< typename TImage, typename TPriority>
+template< typename TNode, typename TImage, typename TPriority>
 class PriorityManual
 {
 public:
+  typedef TNode NodeType;
+  
   // Reimplemented
-  PriorityManual(const TImage* manualPriorityImage, Priority* const priorityFunction);
+  PriorityManual(const TImage* const manualPriorityImage, TPriority* const priorityFunction);
 
-  float ComputePriority(const itk::Index<2>& queryPixel) const;
+  float ComputePriority(const TNode& queryPixel) const;
 
   // New functions
-  void SetManualPriorityImage(UnsignedCharScalarImageType* const);
+  void SetManualPriorityImage(const UnsignedCharScalarImageType* const);
 
-  void Update(const itk::Index<2>& filledPixel);
+  void Update(const TNode& filledPixel);
 
   //void SetPriorityFunction(Priority* const priorityFunction);
 

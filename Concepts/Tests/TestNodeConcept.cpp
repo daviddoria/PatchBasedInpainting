@@ -16,4 +16,20 @@
  *
  *=========================================================================*/
 
-#include "PriorityRandom.h"
+#include "../NodeConcept.hpp"
+
+#include "itkIndex.h"
+
+template <typename TNode>
+void Test(TNode node)
+{
+  BOOST_CONCEPT_ASSERT((NodeConcept<TNode>));
+}
+
+int main()
+{
+  itk::Index<2> index;
+  Test(index);
+
+  return EXIT_SUCCESS;
+}

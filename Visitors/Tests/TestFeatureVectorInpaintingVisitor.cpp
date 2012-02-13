@@ -55,6 +55,7 @@
 
 // VTK
 #include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
 #include <vtkXMLPolyDataReader.h>
 
 // Boost
@@ -107,7 +108,8 @@ int main(int argc, char *argv[])
   FeatureVectorDescriptorMapType featureVectorDescriptorMap(num_vertices(graph), indexMap);
 
   // Create the priority function
-  Priority* priorityFunction = new PriorityRandom;
+  typedef PriorityRandom<itk::Index<2> > PriorityType;
+  PriorityType priorityFunction;
 
   // Create the boundary node queue. The priority of each node is used to order the queue.
   typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;
@@ -124,8 +126,8 @@ int main(int argc, char *argv[])
   vtkSmartPointer<vtkPolyData> polydata = vtkSmartPointer<vtkPolyData>::New();
   std::string featureName = "test";
   typedef FeatureVectorInpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
-                                         FeatureVectorDescriptorMapType, PriorityMapType, BoundaryStatusMapType> FeatureVectorInpaintingVisitorType;
+                                         FeatureVectorDescriptorMapType, PriorityType, PriorityMapType, BoundaryStatusMapType> FeatureVectorInpaintingVisitorType;
   FeatureVectorInpaintingVisitorType featureVectorVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
-                                                          featureVectorDescriptorMap, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap, polydata, featureName);
+                                                          featureVectorDescriptorMap, priorityMap, &priorityFunction, patch_half_width, boundaryStatusMap, polydata, featureName);
   return 0;
 }

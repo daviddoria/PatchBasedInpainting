@@ -19,21 +19,24 @@
 #ifndef PriorityRandom_H
 #define PriorityRandom_H
 
-#include "Priority.h"
-
 /**
 \class PriorityRandom
 \brief This class returns a random value as the priority of each boundary pixel.
 */
-class PriorityRandom : public Priority
+template <typename TNode>
+class PriorityRandom
 {
 public:
+  typedef TNode NodeType;
 
   /** Return a random value.*/
-  float ComputePriority(const itk::Index<2>& queryPixel) const;
+  float ComputePriority(const TNode& queryPixel) const;
 
   /** There is no reason to update anything.*/
-  void Update(const itk::Index<2>& filledPixel){}
+  void Update(const TNode& filledPixel){}
+
 };
+
+#include "PriorityRandom.hpp"
 
 #endif

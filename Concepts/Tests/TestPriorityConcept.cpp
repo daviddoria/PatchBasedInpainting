@@ -16,4 +16,22 @@
  *
  *=========================================================================*/
 
-#include "PriorityRandom.h"
+#include "../PriorityConcept.hpp"
+
+#include "Priority/PriorityRandom.h"
+
+#include "itkIndex.h"
+
+template <typename TPriority>
+void Test(TPriority priority)
+{
+  BOOST_CONCEPT_ASSERT((PriorityConcept<TPriority>));
+}
+
+int main()
+{
+  PriorityRandom<itk::Index<2> > priority;
+  Test(priority);
+
+  return EXIT_SUCCESS;
+}

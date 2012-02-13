@@ -21,6 +21,9 @@
 
 #include "Priority.h"
 
+// VTK
+class vtkStructuredGrid;
+
 /**
 \class PriorityCurvature
 \brief This class returns a random value as the priority of each boundary pixel.
@@ -28,6 +31,10 @@
 class PriorityCurvature : public Priority
 {
 public:
+
+  typedef itk::Image<float, 2> CurvatureImageType;
+
+  PriorityCurvature(vtkStructuredGrid* const structuredGrid, const unsigned int patchRadius);
 
   /** Return the curvature - the higher the curvature, the more we want to fill this node.*/
   float ComputePriority(const itk::Index<2>& queryPixel) const;
@@ -37,6 +44,7 @@ public:
 
 private:
   unsigned int PatchRadius;
+  CurvatureImageType::Pointer CurvatureImage;
 };
 
 #endif

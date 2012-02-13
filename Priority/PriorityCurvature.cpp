@@ -25,16 +25,18 @@
 
 // VTK
 #include <vtkSmartPointer.h>
+#include <vtkStructuredGrid.h>
 
-PriorityCurvature::PriorityCurvature(unsigned int patchRadius) : PatchRadius(patchRadius)
+PriorityCurvature::PriorityCurvature(vtkStructuredGrid* const structuredGrid, const unsigned int patchRadius) : PatchRadius(patchRadius)
 {
-
+  ITKVTKHelpers::CreateImageFromStructuredGridArray(structuredGrid, "Curvature", this->CurvatureImage);
 }
-
 
 void PriorityCurvature::Update(const itk::Index<2>& filledPixel)
 {
-  
+  itk::ImageRegion<2> sourceRegion
+  itk::ImageRegion<2> targetRegion
+  ITKHelpers::CopySelfRegion(this->CurvatureImage, sourceRegion, targetRegion);
 }
 
 float PriorityCurvature::ComputePriority(const itk::Index<2>& queryPixel) const

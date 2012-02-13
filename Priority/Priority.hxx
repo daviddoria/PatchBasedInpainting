@@ -17,26 +17,3 @@
  *=========================================================================*/
 
 #include "Priority.h"
-
-// Custom
-#include "Helpers/Helpers.h"
-#include "Helpers/HelpersOutput.h"
-#include "Helpers/ITKHelpers.h"
-#include "Helpers/ITKVTKHelpers.h"
-
-// VTK
-#include <vtkSmartPointer.h>
-
-
-/*
-template <typename TImage>
-FloatScalarImageType* Priority<TImage>::GetPriorityImage()
-{
-  return this->PriorityImage;
-}*/
-/*
-template <typename TImage>
-UnsignedCharScalarImageType* Priority<TImage>::GetBoundaryImage()
-{
-  return this->BoundaryImage;
-}*/

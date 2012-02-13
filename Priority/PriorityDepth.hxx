@@ -8,8 +8,8 @@
 
 #include <stdexcept>
 
-template <typename TImage>
-PriorityDepth<TImage>::PriorityDepth(const TImage* image, const Mask* maskImage, unsigned int patchRadius) : MaskImage(maskImage), Image(image)
+template <typename TNode, typename TImage>
+PriorityDepth<TNode, TImage>::PriorityDepth(const TImage* const image, const Mask* const maskImage, const unsigned int patchRadius) : MaskImage(maskImage), Image(image)
 {
   if(image->GetNumberOfComponentsPerPixel() < 4)
     {
@@ -55,8 +55,8 @@ PriorityDepth<TImage>::PriorityDepth(const TImage* image, const Mask* maskImage,
 //   return priority;
 // }
 
-template <typename TImage>
-float PriorityDepth<TImage>::ComputePriority(const itk::Index<2>& queryPixel) const
+template <typename TNode, typename TImage>
+float PriorityDepth<TNode, TImage>::ComputePriority(const TNode& queryPixel) const
 {
   FloatVector2Type isophote = this->DepthIsophoteImage->GetPixel(queryPixel);
   isophote.Normalize();
@@ -76,8 +76,8 @@ float PriorityDepth<TImage>::ComputePriority(const itk::Index<2>& queryPixel) co
   return priority;
 }
 
-template <typename TImage>
-void PriorityDepth<TImage>::Update(const itk::Index<2>& filledPixel)
+template <typename TNode, typename TImage>
+void PriorityDepth<TNode, TImage>::Update(const TNode& filledPixel)
 {
   typedef itk::VectorIndexSelectionCastImageFilter<FloatVectorImageType, FloatScalarImageType> IndexSelectionType;
   IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();

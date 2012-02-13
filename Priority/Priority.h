@@ -24,21 +24,17 @@
 
 /**
 \class Priority
-\brief This is an abstract class that indicates the interface for Priority functions.
+\brief This is an abstract class to serve as a parent so that subclasses can be stored as parent pointers in a container.
+       E.g. std::vector<Priority*> priorityFunctions
 */
+template <typename TNode>
 class Priority
 {
 public:
-  Priority();
 
-  /** Compute the priority of a specific pixel. */
-  virtual float ComputePriority(const itk::Index<2>& queryPixel) const = 0;
+  virtual float ComputePriority(const TNode& queryPixel) = 0;
 
-  virtual ~Priority(){}
-
-  /** At the end of an iteration, update anything that needs to be updated. */
-  virtual void Update(const itk::Index<2>& filledPixel) = 0;
-
+  virtual void Update(const TNode& filledPixel) = 0;
 };
 
 #include "Priority.hxx"

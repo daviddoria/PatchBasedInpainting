@@ -60,6 +60,7 @@
 
 // VTK
 #include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
 #include <vtkXMLPolyDataReader.h>
 
 // Boost
@@ -173,7 +174,8 @@ int main(int argc, char *argv[])
   InpainterType patchInpainter(patch_half_width, fillStatusMap);
 
   // Create the priority function
-  Priority* priorityFunction = new PriorityRandom;
+  typedef PriorityRandom<itk::Index<2> > PriorityType;
+  PriorityType priorityFunction;
 
   // Create the boundary node queue. The priority of each node is used to order the queue.
   typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;
@@ -201,12 +203,11 @@ int main(int argc, char *argv[])
   
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
-                            FeatureVectorPrecomputedPolyDataDescriptorVisitorType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
+                            CompositeDescriptorVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
-                                          featureVectorPrecomputedPolyDataDescriptorVisitor, priorityMap, priorityFunction, patch_half_width, boundaryStatusMap);
+                                          compositeDescriptorVisitor, priorityMap, &priorityFunction, patch_half_width, boundaryStatusMap);
   
-  InitializePriority(mask, boundaryNodeQueue, priorityMap,
-                     priorityFunction, boundaryStatusMap);
+  InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
   InitializeFromMaskImage(mask, &inpaintingVisitor, graph, fillStatusMap);

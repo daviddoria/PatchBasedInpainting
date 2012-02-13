@@ -32,7 +32,7 @@
  * and differences FeatureVectorPixelDescriptor objects at each pixel.
  */
 template <typename TGraph, typename TImage, typename TBoundaryNodeQueue,
-          typename TFillStatusMap, typename TDescriptorMap,
+          typename TFillStatusMap, typename TDescriptorMap, typename TPriority,
           typename TPriorityMap, typename TBoundaryStatusMap>
 struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
 {
@@ -41,17 +41,17 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  TImage* image;
-  Mask* mask;
-  TBoundaryNodeQueue& boundaryNodeQueue;
-  Priority* priorityFunction;
-  TFillStatusMap& fillStatusMap;
-  TDescriptorMap& descriptorMap;
+  TImage* Image;
+  Mask* MaskImage;
+  TBoundaryNodeQueue& BoundaryNodeQueue;
+  TPriority* PriorityFunction;
+  TFillStatusMap& FillStatusMap;
+  TDescriptorMap& DescriptorMap;
   
-  TPriorityMap& priorityMap;
-  TBoundaryStatusMap& boundaryStatusMap;
+  TPriorityMap& PriorityMap;
+  TBoundaryStatusMap& BoundaryStatusMap;
 
-  unsigned int half_width;
+  unsigned int HalfWidth;
   unsigned int NumberOfFinishedVertices;
 
   vtkPolyData* FeaturePolyData;
@@ -66,10 +66,10 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
   FeatureVectorInpaintingVisitor(TImage* const in_image, Mask* const in_mask,
                                 TBoundaryNodeQueue& in_boundaryNodeQueue, TFillStatusMap& in_fillStatusMap,
                                 TDescriptorMap& in_descriptorMap, TPriorityMap& in_priorityMap,
-                                Priority* const in_priorityFunction,
+                                TPriority* const in_priorityFunction,
                                 const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap, vtkPolyData* const featurePolyData, const std::string& featureName) :
-  image(in_image), mask(in_mask), boundaryNodeQueue(in_boundaryNodeQueue), priorityFunction(in_priorityFunction), fillStatusMap(in_fillStatusMap), descriptorMap(in_descriptorMap),
-  priorityMap(in_priorityMap), boundaryStatusMap(in_boundaryStatusMap), half_width(in_half_width), NumberOfFinishedVertices(0), FeaturePolyData(featurePolyData), FeatureName(featureName),
+  Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue), PriorityFunction(in_priorityFunction), FillStatusMap(in_fillStatusMap), DescriptorMap(in_descriptorMap),
+  PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap), HalfWidth(in_half_width), NumberOfFinishedVertices(0), FeaturePolyData(featurePolyData), FeatureName(featureName),
   FeatureArray(NULL)
   {
     CreateIndexMap();
@@ -133,7 +133,7 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
       DescriptorType descriptor(featureVector);
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::SOURCE_NODE);
-      put(descriptorMap, v, descriptor);
+      put(DescriptorMap, v, descriptor);
 
       }
     else
@@ -146,7 +146,7 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
       DescriptorType descriptor(featureVector);
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::INVALID);
-      put(descriptorMap, v, descriptor);
+      put(DescriptorMap, v, descriptor);
 
       }
 
@@ -156,8 +156,8 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
   void discover_vertex(VertexDescriptorType v, TGraph& g) const
   {
     std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
-    std::cout << "Priority: " << get(priorityMap, v) << std::endl;
-    DescriptorType& descriptor = get(descriptorMap, v);
+    std::cout << "Priority: " << get(PriorityMap, v) << std::endl;
+    DescriptorType& descriptor = get(DescriptorMap, v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
   };
 
@@ -182,7 +182,7 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
     assert(image->GetLargestPossibleRegion().IsInside(source_index));
     assert(image->GetLargestPossibleRegion().IsInside(target_index));
 
-    image->SetPixel(target_index, image->GetPixel(source_index));
+    Image->SetPixel(target_index, Image->GetPixel(source_index));
   };
 
   bool accept_painted_vertex(VertexDescriptorType v, TGraph& g) const
@@ -197,21 +197,21 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
     indexToFinish[0] = v[0];
     indexToFinish[1] = v[1];
 
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, half_width);
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
 
-    region.Crop(image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
+    region.Crop(Image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
 
     // Mark all the pixels in this region as filled.
     // It does not matter which image we iterate over, we just want the indices.
-    itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(image, region);
+    itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(Image, region);
 
     while(!gridIterator.IsAtEnd())
       {
       VertexDescriptorType v;
       v[0] = gridIterator.GetIndex()[0];
       v[1] = gridIterator.GetIndex()[1];
-      put(fillStatusMap, v, true);
-      mask->SetPixel(gridIterator.GetIndex(), mask->GetValidValue());
+      put(FillStatusMap, v, true);
+      MaskImage->SetPixel(gridIterator.GetIndex(), MaskImage->GetValidValue());
       ++gridIterator;
       }
 
@@ -228,10 +228,10 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
       }
 
     // Update the priority function.
-    this->priorityFunction->Update(indexToFinish);
+    this->PriorityFunction->Update(indexToFinish);
 
     // Add pixels that are on the new boundary to the queue, and mark other pixels as not in the queue.
-    itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(mask, region);
+    itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(MaskImage, region);
 
     while(!imageIterator.IsAtEnd())
       {
@@ -241,17 +241,17 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
       // Mark all nodes in the patch around this node as filled (in the FillStatusMap).
       // This makes them ignored if they are still in the boundaryNodeQueue.
-      if(ITKHelpers::HasNeighborWithValue(imageIterator.GetIndex(), mask, mask->GetHoleValue()))
+      if(ITKHelpers::HasNeighborWithValue(imageIterator.GetIndex(), MaskImage, MaskImage->GetHoleValue()))
         {
-        put(boundaryStatusMap, v, true);
-        this->boundaryNodeQueue.push(v);
-        float priority = this->priorityFunction->ComputePriority(imageIterator.GetIndex());
+        put(BoundaryStatusMap, v, true);
+        this->BoundaryNodeQueue.push(v);
+        float priority = this->PriorityFunction->ComputePriority(imageIterator.GetIndex());
         //std::cout << "updated priority: " << priority << std::endl;
-        put(priorityMap, v, priority);
+        put(PriorityMap, v, priority);
         }
       else
         {
-        put(boundaryStatusMap, v, false);
+        put(BoundaryStatusMap, v, false);
         }
 
       ++imageIterator;
@@ -259,8 +259,8 @@ struct FeatureVectorInpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
     {
     // Debug only - write the mask to a file
-    HelpersOutput::WriteImage(mask, Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
-    HelpersOutput::WriteVectorImageAsRGB(image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
+    HelpersOutput::WriteImage(MaskImage, Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
+    HelpersOutput::WriteVectorImageAsRGB(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
     this->NumberOfFinishedVertices++;
     }
   }; // finish_vertex
