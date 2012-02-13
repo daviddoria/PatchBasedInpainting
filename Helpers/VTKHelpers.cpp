@@ -37,6 +37,9 @@
 namespace VTKHelpers
 {
 
+unsigned char TRANSPARENT = 0;
+unsigned char OPAQUE = 255;
+
 void GetCellCenter(vtkImageData* const imageData, const unsigned int cellId, double center[3])
 {
   double pcoords[3] = {0,0,0};

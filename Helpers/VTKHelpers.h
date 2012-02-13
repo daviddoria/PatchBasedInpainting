@@ -25,8 +25,10 @@ class vtkPolyData;
 namespace VTKHelpers
 {
 
-static unsigned char TRANSPARENT = 0;
-static unsigned char OPAQUE = 255;
+extern unsigned char TRANSPARENT;
+extern unsigned char OPAQUE;
+
+void InitializeStaticVariables();
 
 void GetCellCenter(vtkImageData* const imageData, const unsigned int cellId, double center[3]);
 
