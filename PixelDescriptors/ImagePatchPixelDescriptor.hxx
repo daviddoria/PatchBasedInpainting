@@ -69,18 +69,6 @@ Region(region), Image(image), MaskImage(maskImage), InsideImage(false)
     this->SetStatus(INVALID);
     }
 }
-/*
-template <typename TImage>
-void ImagePatchPixelDescriptor<TImage>::VisitAllPixels(const TImage* const image, PixelVisitor<typename TImage::PixelType> &visitor)
-{
-  itk::ImageRegionConstIterator<TImage> imageIterator(image, this->Region);
-
-  while(!imageIterator.IsAtEnd())
-    {
-    visitor.Visit(imageIterator.Get());
-    ++imageIterator;
-    }
-}*/
 
 template <typename TImage>
 bool ImagePatchPixelDescriptor<TImage>::IsFullyValid() const
@@ -111,32 +99,6 @@ TImage* ImagePatchPixelDescriptor<TImage>::GetImage() const
 {
   return this->Image;
 }
-/*
-template <typename TImage>
-void ImagePatchPixelDescriptor<TImage>::VisitAllValidPixels(const TImage* const image, const Mask* const mask, PixelVisitor<typename TImage::PixelType> &visitor)
-{
-  itk::ImageRegionConstIteratorWithIndex<TImage> imageIterator(image, this->Region);
-
-  while(!imageIterator.IsAtEnd())
-    {
-    if(mask->IsValid(imageIterator.GetIndex()))
-      {
-      visitor.Visit(imageIterator.Get());
-      }
-    ++imageIterator;
-    }
-}
-
-template <typename TImage>
-void ImagePatchPixelDescriptor<TImage>::VisitOffsets(const TImage* const image, const std::vector<itk::Offset<2> >& offsets, PixelVisitor<typename TImage::PixelType> &visitor)
-{
-  itk::Index<2> corner = this->Region.GetIndex();
-
-  for(unsigned int offsetId = 0; offsetId < offsets.size(); ++offsetId)
-    {
-    visitor.Visit(image->GetPixel(corner + offsets[offsetId]));
-    }
-}*/
 
 template <typename TImage>
 itk::Index<2> ImagePatchPixelDescriptor<TImage>::GetCorner() const
@@ -156,47 +118,6 @@ std::ostream& operator<<(std::ostream& output, const ImagePatchPixelDescriptor<T
   output << "Patch: " << patch.GetRegion() << std::endl;
   return output;
 }
-
-template <typename TImage>
-bool ImagePatchPixelDescriptor<TImage>::operator==(const ImagePatchPixelDescriptor& other) const
-{
-  if(this->Region == other.Region)
-    {
-    return true;
-    }
-  return false;
-}
-
-template <typename TImage>
-bool ImagePatchPixelDescriptor<TImage>::operator!=(const ImagePatchPixelDescriptor& other) const
-{
-  return !operator==(other);
-}
-/*
-template <typename TImage>
-bool ImagePatchPixelDescriptor<TImage>::operator<(const ImagePatchPixelDescriptor& other) const
-{
-  // TODO: Use the itk::Index LexicalCompare functor
-  if(this->Region.GetIndex()[0] < other.Region.GetIndex()[0])
-    {
-    return true;
-    }
-  else if (other.Region.GetIndex()[0] < this->Region.GetIndex()[0])
-    {
-    return false;
-    }
-
-  if (this->Region.GetIndex()[1] < other.Region.GetIndex()[1])
-    {
-    return true;
-    }
-  else if (other.Region.GetIndex()[1] < this->Region.GetIndex()[1])
-    {
-    return false;
-    }
-  assert(0); // This should never be reached
-  return true;
-}*/
 
 template <typename TImage>
 void ImagePatchPixelDescriptor<TImage>::SetValidOffsets(const std::vector<itk::Offset<2> >& validOffsets)

@@ -25,7 +25,7 @@
 
 // Descriptor visitors
 #include "Visitors/ImagePatchDescriptorVisitor.hpp"
-#include "Visitors/FeatureVectorPrecomputedStructuredGridDescriptorVisitor.hpp"
+#include "Visitors/FeatureVectorPrecomputedPCLNormalsDescriptorVisitor.hpp"
 #include "Visitors/CompositeDescriptorVisitor.hpp"
 
 // Inpainting visitors
@@ -57,11 +57,9 @@
 // ITK
 #include "itkImageFileReader.h"
 
-// VTK
-#include <vtkPolyData.h>
-#include <vtkSmartPointer.h>
-#include <vtkXMLPolyDataReader.h>
-#include <vtkXMLStructuredGridReader.h>
+// PCL
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
 
 // Boost
 #include <boost/graph/grid_graph.hpp>
@@ -75,9 +73,9 @@
 int main(int argc, char *argv[])
 {
   // Verify arguments
-  if(argc != 7)
+  if(argc != 6)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width structuredGrid.vts featureName output.mha" << std::endl;
+    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width normals.pcd output.mha" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
@@ -95,23 +93,25 @@ int main(int argc, char *argv[])
   unsigned int patch_half_width = 0;
   ssPatchRadius >> patch_half_width;
 
-  std::string structuredGridFileName = argv[4];
-  std::string featureName = argv[5];
+  std::string normalsFileName = argv[4];
 
-  std::string outputFilename = argv[6];
+  std::string outputFilename = argv[5];
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
   std::cout << "Patch half width: " << patch_half_width << std::endl;
-  std::cout << "Reading structured grid: " << structuredGridFileName << std::endl;
-  std::cout << "Feature name: " << featureName << std::endl;
+  std::cout << "Reading normals: " << normalsFileName << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
-  vtkSmartPointer<vtkXMLStructuredGridReader> structuredGridReader = vtkSmartPointer<vtkXMLStructuredGridReader>::New();
-  structuredGridReader->SetFileName(structuredGridFileName.c_str());
-  structuredGridReader->Update();
+  pcl::PointCloud<pcl::Normal>::Ptr cloudNormals(new pcl::PointCloud<pcl::Normal>);
 
+  if (pcl::io::loadPCDFile<pcl::Normal> (normalsFileName, *cloudNormals) == -1) //* load the file
+  {
+    PCL_ERROR ("Couldn't read file test_pcd.pcd \n");
+    return (-1);
+  }
+  
   typedef FloatVectorImageType ImageType;
 
   typedef  itk::ImageFileReader<ImageType> ImageReaderType;
@@ -185,8 +185,8 @@ int main(int argc, char *argv[])
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
   // Create the descriptor visitors
-  typedef FeatureVectorPrecomputedStructuredGridDescriptorVisitor<VertexListGraphType, FeatureVectorDescriptorMapType> FeatureVectorPrecomputedStructuredGridDescriptorVisitorType;
-  FeatureVectorPrecomputedStructuredGridDescriptorVisitorType featureVectorPrecomputedStructuredGridDescriptorVisitor(featureVectorDescriptorMap, structuredGridReader->GetOutput(), featureName);
+  typedef FeatureVectorPrecomputedPCLNormalsDescriptorVisitor<VertexListGraphType, FeatureVectorDescriptorMapType> FeatureVectorPrecomputedPCLNormalsDescriptorVisitorType;
+  FeatureVectorPrecomputedPCLNormalsDescriptorVisitorType featureVectorPrecomputedPCLNormalsDescriptorVisitor(featureVectorDescriptorMap, *cloudNormals);
 
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patch_half_width);
@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
   typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
   CompositeDescriptorVisitorType compositeDescriptorVisitor;
   compositeDescriptorVisitor.AddVisitor(&imagePatchDescriptorVisitor);
-  compositeDescriptorVisitor.AddVisitor(&featureVectorPrecomputedStructuredGridDescriptorVisitor);
+  compositeDescriptorVisitor.AddVisitor(&featureVectorPrecomputedPCLNormalsDescriptorVisitor);
 
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,

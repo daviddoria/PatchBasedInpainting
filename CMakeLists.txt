@@ -10,11 +10,19 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+# VTK
 FIND_PACKAGE(VTK REQUIRED)
 INCLUDE(${VTK_USE_FILE})
 
+# ITK
 FIND_PACKAGE(ITK REQUIRED)
 INCLUDE(${ITK_USE_FILE})
+
+# PCL
+find_package(PCL 1.4 REQUIRED)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
 # Check for Qt4. If it is available, build the PatchBasedInpainting library using it so that SelfPatchCompare can use QtConcurrent.
 FIND_PACKAGE(Qt4)
@@ -61,19 +69,11 @@ if(BuildViewer)
   add_subdirectory(Interactive)
 endif()
 
-SET(NormalImageInpainting CACHE BOOL "Build a traditional patch comparison image inpainting.")
+SET(ClassicalImageInpainting CACHE BOOL "Build a traditional patch comparison image inpainting.")
 if(NormalImageInpainting)
-  ADD_EXECUTABLE(NormalImageInpainting
-  NormalImageInpainting.cpp)
-  TARGET_LINK_LIBRARIES(NormalImageInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
-  INSTALL( TARGETS NormalImageInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
-
-SET(TwoStepInpainting CACHE BOOL "Build a two step (features, then patch comparison) image inpainting.")
-if(TwoStepInpainting)
-  ADD_EXECUTABLE(TwoStepInpainting TwoStepInpainting.cpp PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
-  TARGET_LINK_LIBRARIES(TwoStepInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
-  INSTALL( TARGETS TwoStepInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+  ADD_EXECUTABLE(ClassicalImageInpainting ClassicalImageInpainting.cpp)
+  TARGET_LINK_LIBRARIES(ClassicalImageInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+  INSTALL( TARGETS ClassicalImageInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
 SET(SmallPatchBigPatchInpainting CACHE BOOL "Build a two step (compare small patches, then compare big patches at the best of the small patches) image inpainting.")
@@ -81,6 +81,20 @@ if(SmallPatchBigPatchInpainting)
   ADD_EXECUTABLE(SmallPatchBigPatchInpainting SmallPatchBigPatchInpainting.cpp)
   TARGET_LINK_LIBRARIES(SmallPatchBigPatchInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
   INSTALL( TARGETS SmallPatchBigPatchInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
+SET(TwoStepInpainting CACHE BOOL "Build a two step (features, then patch comparison) image inpainting.")
+if(TwoStepInpainting)
+  ADD_EXECUTABLE(TwoStepInpainting TwoStepInpainting.cpp PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
+  TARGET_LINK_LIBRARIES(TwoStepInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} libHelpers)
+  INSTALL( TARGETS TwoStepInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
+SET(NarrowSearchByNormals CACHE BOOL "Build a two step (normals, then patch comparison) image inpainting.")
+if(NarrowSearchByNormals)
+  ADD_EXECUTABLE(NarrowSearchByNormals NarrowSearchByNormals.cpp PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
+  TARGET_LINK_LIBRARIES(NarrowSearchByNormals PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} libHelpers)
+  INSTALL( TARGETS NarrowSearchByNormals RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
 SET(BuildTests CACHE BOOL "Build tests.")

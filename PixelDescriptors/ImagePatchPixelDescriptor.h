@@ -43,17 +43,11 @@ public:
   /** Construct a patch from a region. Ideally 'image' would be const, but we also need a default constructor.*/
   ImagePatchPixelDescriptor(TImage* const image, Mask* const maskImage, const itk::ImageRegion<2>& region);
 
-  /** Compute the difference to another ImagePatch.*/
+  /** Set the image which this region refers to.*/
   void SetImage(const TImage* const image);
 
-  /** Compute the difference to another ImagePatch.*/
+  /** Set the region which this patch indicates.*/
   void SetRegion(const itk::ImageRegion<2>& region);
-
-  /** Check if two patches are the same.*/
-  bool operator==(const ImagePatchPixelDescriptor& other) const;
-
-  /** Check if two patches are different.*/
-  bool operator!=(const ImagePatchPixelDescriptor& other) const;
 
   /** Get the region described by the patch.*/
   itk::ImageRegion<2> GetRegion() const;
