@@ -15,6 +15,8 @@
  * This is a visitor that complies with the InpaintingVisitorConcept. It forwards
  * initialize_vertex and discover_vertex, the only two functions that need to know about
  * the descriptor type, to a visitor that models DescriptorVisitorConcept.
+ * The visitor needs to know the patch size of the patch to be inpainted because it uses
+ * this size to traverse the inpainted region to update the boundary.
  */
 template <typename TGraph, typename TImage, typename TBoundaryNodeQueue,
           typename TFillStatusMap, typename TDescriptorVisitor, typename TPriority,

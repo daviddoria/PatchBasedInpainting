@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 
   std::string structuredGridFileName = argv[4];
   std::string featureName = argv[5];
-  
+
   std::string outputFilename = argv[6];
 
   // Output arguments
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
   // Create the descriptor map. This is where the data for each pixel is stored.
   typedef boost::vector_property_map<FeatureVectorPixelDescriptorType, IndexMapType> FeatureVectorDescriptorMapType;
   FeatureVectorDescriptorMapType featureVectorDescriptorMap(num_vertices(graph), indexMap);
-  
+
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
   typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
   InpainterType patchInpainter(patch_half_width, fillStatusMap);
@@ -190,21 +190,21 @@ int main(int argc, char *argv[])
   // Create the descriptor visitors
   typedef FeatureVectorPrecomputedStructuredGridDescriptorVisitor<VertexListGraphType, FeatureVectorDescriptorMapType> FeatureVectorPrecomputedPolyDataDescriptorVisitorType;
   FeatureVectorPrecomputedPolyDataDescriptorVisitorType featureVectorPrecomputedPolyDataDescriptorVisitor(featureVectorDescriptorMap, structuredGridReader->GetOutput(), featureName);
-  
+
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patch_half_width);
-  
+
   typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
   CompositeDescriptorVisitorType compositeDescriptorVisitor;
   compositeDescriptorVisitor.AddVisitor(&imagePatchDescriptorVisitor);
   compositeDescriptorVisitor.AddVisitor(&featureVectorPrecomputedPolyDataDescriptorVisitor);
-  
+
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
                             CompositeDescriptorVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
                                           compositeDescriptorVisitor, priorityMap, &priorityFunction, patch_half_width, boundaryStatusMap);
-  
+
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
@@ -214,8 +214,6 @@ int main(int argc, char *argv[])
 
   // Create the nearest neighbor finder
   typedef LinearSearchKNNProperty<FeatureVectorDescriptorMapType, FeatureVectorDifference> KNNSearchType;
-  //KNNSearchType linearSearchKNN(graph, featureVectorDescriptorMap, 1000);
-  //KNNSearchType linearSearchKNN(featureVectorDifference, 1000);
   KNNSearchType linearSearchKNN(featureVectorDescriptorMap);
 
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;

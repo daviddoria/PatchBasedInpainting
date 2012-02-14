@@ -61,7 +61,7 @@
 // Debug
 #include "Helpers/HelpersOutput.h"
 
-// Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 Data/trashcan.vtp Intensity filled.mha
+// Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 filled.mha
 int main(int argc, char *argv[])
 {
   // Verify arguments

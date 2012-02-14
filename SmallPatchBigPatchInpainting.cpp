@@ -66,13 +66,13 @@
 // Debug
 #include "Helpers/HelpersOutput.h"
 
-// Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 Data/trashcan.vtp Intensity filled.mha
+// Run with: Data/trashcan.mha Data/trashcan_mask.mha 5  10 filled.mha
 int main(int argc, char *argv[])
 {
   // Verify arguments
-  if(argc != 5)
+  if(argc != 6)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width output.mha" << std::endl;
+    std::cerr << "Required arguments: image.mha imageMask.mha small_patch_half_width big_patch_half_width output.mha" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
@@ -85,17 +85,23 @@ int main(int argc, char *argv[])
   std::string imageFilename = argv[1];
   std::string maskFilename = argv[2];
 
-  std::stringstream ssPatchRadius;
-  ssPatchRadius << argv[3];
-  unsigned int patch_half_width = 0;
-  ssPatchRadius >> patch_half_width;
+  std::stringstream ssSmallPatchHalfWidth;
+  ssSmallPatchHalfWidth << argv[3];
+  unsigned int small_patch_half_width = 0;
+  ssSmallPatchHalfWidth >> small_patch_half_width;
+  
+  std::stringstream ssBigPatchHalfWidth;
+  ssBigPatchHalfWidth << argv[3];
+  unsigned int big_patch_half_width = 0;
+  ssBigPatchHalfWidth >> big_patch_half_width;
 
   std::string outputFilename = argv[4];
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
-  std::cout << "Patch half width: " << patch_half_width << std::endl;
+  std::cout << "Small Patch half width: " << small_patch_half_width << std::endl;
+  std::cout << "Big Patch half width: " << big_patch_half_width << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
   typedef FloatVectorImageType ImageType;
@@ -111,8 +117,8 @@ int main(int argc, char *argv[])
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
 
-  std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
-  std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
+  std::cout << "number of hole pixels: " << mask->CountHolePixels() << std::endl;
+  std::cout << "number of valid pixels: " << mask->CountValidPixels() << std::endl;
 
   typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
 
@@ -149,7 +155,7 @@ int main(int argc, char *argv[])
 
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
   typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
-  InpainterType patchInpainter(patch_half_width, fillStatusMap);
+  InpainterType patchInpainter(big_patch_half_width, fillStatusMap);
 
   // Create the priority function
   typedef PriorityRandom PriorityType;
@@ -168,21 +174,21 @@ int main(int argc, char *argv[])
 
   // Create the descriptor visitors
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> ImagePatchDescriptorVisitorType;
-  ImagePatchDescriptorVisitorType smallImagePatchDescriptorVisitor(image, mask, smallImagePatchDescriptorMap, patch_half_width);
+  ImagePatchDescriptorVisitorType smallImagePatchDescriptorVisitor(image, mask, smallImagePatchDescriptorMap, small_patch_half_width);
   
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> ImagePatchDescriptorVisitorType;
-  ImagePatchDescriptorVisitorType bigImagePatchDescriptorVisitor(image, mask, bigImagePatchDescriptorMap, patch_half_width);
+  ImagePatchDescriptorVisitorType bigImagePatchDescriptorVisitor(image, mask, bigImagePatchDescriptorMap, big_patch_half_width);
   
   typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
   CompositeDescriptorVisitorType compositeDescriptorVisitor;
   compositeDescriptorVisitor.AddVisitor(&smallImagePatchDescriptorVisitor);
   compositeDescriptorVisitor.AddVisitor(&bigImagePatchDescriptorVisitor);
   
-  // Create the inpainting visitor
+  // Create the inpainting visitor. The big patch size is used to actually inpaint.
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
                             CompositeDescriptorVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
-                                          compositeDescriptorVisitor, priorityMap, &priorityFunction, patch_half_width, boundaryStatusMap);
+                                          compositeDescriptorVisitor, priorityMap, &priorityFunction, big_patch_half_width, boundaryStatusMap);
 
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
