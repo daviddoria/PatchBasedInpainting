@@ -46,6 +46,7 @@ public:
 
   /** Output information about the descriptor. */
   friend std::ostream& operator<<(std::ostream& output, const FeatureVectorType& descriptor);
+  friend std::ostream& operator<<(std::ostream& output, const FeatureVectorPixelDescriptor& descriptor);
 
 private:
   /** The feature vector. */

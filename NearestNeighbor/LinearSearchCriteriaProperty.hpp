@@ -27,7 +27,7 @@ template <typename PropertyMapType,
 class LinearSearchCriteriaProperty
 {
   PropertyMapType PropertyMap;
-  unsigned int DistanceThreshold;
+  float DistanceThreshold;
   DistanceFunctionType DistanceFunction;
   CompareFunctionType CompareFunction;
 
@@ -35,16 +35,17 @@ public:
   LinearSearchCriteriaProperty(PropertyMapType propertyMap, const float distanceThreshold, DistanceFunctionType distanceFunction = DistanceFunctionType(), CompareFunctionType compareFunction = CompareFunctionType()) : 
   PropertyMap(propertyMap), DistanceThreshold(distanceThreshold), DistanceFunction(distanceFunction), CompareFunction(compareFunction)
   {
+    std::cout << "DistanceThreshold: " << DistanceThreshold << std::endl;
   }
 
-  void SetK(const unsigned int k)
+  void SetDistanceThreshold(const float distanceThreshold)
   {
-    this->K = k;
+    this->DistanceThreshold = distanceThreshold;
   }
   
-  unsigned int GetK() const
+  float GetDistanceThreshold() const
   {
-    return this->K;
+    return this->DistanceThreshold;
   }
 
   template <typename ForwardIteratorType, typename OutputContainerType>
@@ -56,19 +57,24 @@ public:
       return;
     }
 
-    std::vector<DistanceValueType> output_dist;
     for(; first != last; ++first)
     {
       DistanceValueType d = DistanceFunction(get(PropertyMap, *first), get(PropertyMap, queryNode));
-      
+      std::cout << "First: " << *first << " : " << get(PropertyMap, *first) << " query: " << queryNode << " : " << get(PropertyMap, queryNode) << std::endl;
       // If the distance is not less than infinity, it is useless, so do not continue
       if(!CompareFunction(d, std::numeric_limits<DistanceValueType>::infinity()))
       {
         continue;
       }
+
       if(CompareFunction(d, DistanceThreshold))
       {
+        std::cout << d << " was less than " << DistanceThreshold << std::endl;
         output.push_back(*first);
+      }
+      else
+      {
+        std::cout << d << " was NOT less than " << DistanceThreshold << std::endl;
       }
     }
   }

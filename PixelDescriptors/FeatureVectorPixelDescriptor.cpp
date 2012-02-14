@@ -29,9 +29,20 @@ const FeatureVectorPixelDescriptor::FeatureVectorType& FeatureVectorPixelDescrip
   return this->FeatureVector;
 }
 
-template <typename TImage>
+std::ostream& operator<<(std::ostream& output, const std::vector<float>& descriptor)
+{
+  for(unsigned int i = 0; i < descriptor.size(); ++i)
+    {
+    output << descriptor[i] << " ";
+    }
+  //output << std::endl;
+  
+  return output;
+}
+
 std::ostream& operator<<(std::ostream& output, const FeatureVectorPixelDescriptor& descriptor)
 {
   output << "Descriptor size: " << descriptor.GetFeatureVector().size() << std::endl;
+  output << descriptor.GetFeatureVector() << std::endl;
   return output;
 }

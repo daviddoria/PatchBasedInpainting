@@ -7,6 +7,9 @@
 
 #ifndef TwoStepNearestNeighbor_HPP
 #define TwoStepNearestNeighbor_HPP
+
+#include <stdexcept>
+
 /**
   * This functor template performs a KNN search, and then a best-search on the resulting K neighbors.
   *
@@ -14,19 +17,19 @@
   * \tparam NeighborFinderKNN The functor that can find K-nearest neighbors.
   * \tparam NeighborFinderBest The functor that can find the best neighbor.
   */
-template <typename NeighborFinderKNNType, typename NearestNeighborBestType>
+template <typename MultipleNeighborFinderType, typename NearestNeighborFinderType>
 struct TwoStepNearestNeighbor
 {
-  NeighborFinderKNNType NeighborFinderKNN;
-  NearestNeighborBestType NeighborFinderBest;
+  MultipleNeighborFinderType MultipleNeighborFinder;
+  NearestNeighborFinderType NearestNeighborFinder;
 
   /**
     * Constructor.
     * \param NeighborFinderKNN The functor to do the K-NN first step of the search.
     * \param NeighborFinderBest The functor to do the 1-NN second step of the search.
     */
-  TwoStepNearestNeighbor(NeighborFinderKNNType neighborFinderKNN, NearestNeighborBestType neighborFinderBest) :
-  NeighborFinderKNN(neighborFinderKNN), NeighborFinderBest(neighborFinderBest)
+  TwoStepNearestNeighbor(MultipleNeighborFinderType multipleNeighborFinder, NearestNeighborFinderType nearestNeighborFinder) :
+  MultipleNeighborFinder(multipleNeighborFinder), NearestNeighborFinder(nearestNeighborFinder)
   { };
 
   template <typename TIterator>
@@ -35,11 +38,17 @@ struct TwoStepNearestNeighbor
     typedef typename TIterator::value_type VertexDescriptor;
 
     // Step 1 - K-NN search on first topology
-    std::vector<VertexDescriptor> outputMap;
-    this->NeighborFinderKNN(first, last, queryNode, outputMap);
+    std::vector<VertexDescriptor> outputContainer;
+    this->MultipleNeighborFinder(first, last, queryNode, outputContainer);
+    
+    std::cout << "There are " << outputContainer.size() << " items to search in the second step." << std::endl;
+    if(outputContainer.size() <= 0)
+      {
+      throw std::runtime_error("MultipleNeighborFinder did not find any neighbors!");
+      }
 
     // Step 2 - 1-NN search on result of first search, on second topology
-    VertexDescriptor nearestNeighbor = this->NeighborFinderBest(outputMap.begin(), outputMap.end(), queryNode);
+    VertexDescriptor nearestNeighbor = this->NearestNeighborFinder(outputContainer.begin(), outputContainer.end(), queryNode);
     return nearestNeighbor;
   }
 

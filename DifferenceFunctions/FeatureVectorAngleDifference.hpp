@@ -37,7 +37,12 @@ struct FeatureVectorAngleDifference
     //std::cout << "dotProduct: " << dotProduct << std::endl;
     
     float angle = acos(dotProduct); // This is only correct if this is the dot product of the normalized vectors
-
+    //std::cout << "angle: " << angle << std::endl;
+    //std::cout << "a[0]: " << a.GetFeatureVector()[0] << " b[0]: " << b.GetFeatureVector()[0] << std::endl;
+    if(angle > 1.5)
+      {
+      std::cout << "angle: " << angle << " a[0]: " << a.GetFeatureVector()[0] << " b[0]: " << b.GetFeatureVector()[0] << std::endl;
+      }
     return angle;
   }
 };

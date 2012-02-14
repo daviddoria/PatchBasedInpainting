@@ -224,6 +224,7 @@ int main(int argc, char *argv[])
   TwoStepNearestNeighbor<ThresholdSearchType, BestSearchType> twoStepNearestNeighbor(thresholdSearchType, linearSearchBest);
 
   // Perform the inpainting
+  std::cout << "Performing inpainting...: " << std::endl;
   inpainting_loop(graph, inpaintingVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepNearestNeighbor, patchInpainter);
 
   HelpersOutput::WriteImage<ImageType>(image, outputFilename);
