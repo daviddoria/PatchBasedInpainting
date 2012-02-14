@@ -34,6 +34,7 @@
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchBestProperty.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
+#include "NearestNeighbor/LinearSearchCriteriaProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
 // Initializers
@@ -47,6 +48,7 @@
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
 #include "DifferenceFunctions/FeatureVectorDifference.hpp"
+#include "DifferenceFunctions/FeatureVectorAngleDifference.hpp"
 
 // Inpainting
 #include "Algorithms/InpaintingAlgorithm.hpp"
@@ -210,13 +212,16 @@ int main(int argc, char *argv[])
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
-  typedef LinearSearchKNNProperty<FeatureVectorDescriptorMapType, FeatureVectorDifference> KNNSearchType;
-  KNNSearchType linearSearchKNN(featureVectorDescriptorMap);
+//   typedef LinearSearchKNNProperty<FeatureVectorDescriptorMapType, FeatureVectorAngleDifference> KNNSearchType;
+//   KNNSearchType linearSearchKNN(featureVectorDescriptorMap);
+  typedef LinearSearchCriteriaProperty<FeatureVectorDescriptorMapType, FeatureVectorAngleDifference> ThresholdSearchType;
+  float maximumAngle = 0.34906585; // deg2rad(20)
+  ThresholdSearchType thresholdSearchType(featureVectorDescriptorMap, maximumAngle);
 
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
 
-  TwoStepNearestNeighbor<KNNSearchType, BestSearchType> twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
+  TwoStepNearestNeighbor<ThresholdSearchType, BestSearchType> twoStepNearestNeighbor(thresholdSearchType, linearSearchBest);
 
   // Perform the inpainting
   inpainting_loop(graph, inpaintingVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepNearestNeighbor, patchInpainter);
