@@ -21,8 +21,8 @@
    * \param inf A DistanceValue which represents infinity (i.e. the very worst value with which to initialize the search).
    * \return The iterator to the best element in the range (best is defined as the one which would compare favorably to all the elements in the range with respect to the distance metric).
    */
-template <typename DistanceFunctionType,
-          typename PropertyMapType,
+template <typename PropertyMapType,
+          typename DistanceFunctionType,
           typename DistanceValueType = float,
           typename CompareFunctionType = std::less<DistanceValueType> >
 struct LinearSearchBestProperty

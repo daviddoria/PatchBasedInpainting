@@ -26,32 +26,28 @@ else ( QT4_FOUND )
   message ( "QT4 NOT found successfully." )
 endif ( QT4_FOUND )
 
-if(BuildTests OR BuildInteractive OR BuildNonInteractive)
-  add_subdirectory(Helpers)
-endif(BuildTests OR BuildInteractive OR BuildNonInteractive)
 
-if(BuildInteractive OR BuildNonInteractive)
-  add_library(PatchBasedInpainting
-  #CandidatePairs.cpp
-  ImageProcessing/Derivatives.cpp
-  Utilities/itkCommandLineArgumentParser.cxx
-  ImageProcessing/Isophotes.cpp
-  ImageProcessing/Mask.cpp
-  ImageProcessing/MaskOperations.cpp
-  #PatchBasedInpainting.cpp
-  #PatchPair.cpp
-  #PatchPairDifferences.cpp
-  Priority/Priority.cpp
-  Priority/PriorityCriminisi.cpp
-  Priority/PriorityDepth.cpp
-  Priority/PriorityManual.cpp
-  Priority/PriorityOnionPeel.cpp
-  Priority/PriorityRandom.cpp
-  #SourcePatchCollection.cpp
-  #ValidRegionIterator.cpp
-  )
-  set_target_properties(PatchBasedInpainting PROPERTIES COMPILE_DEFINITIONS "${compileflags}")
-endif()
+add_subdirectory(Helpers)
+
+add_library(PatchBasedInpainting
+#CandidatePairs.cpp
+ImageProcessing/Derivatives.cpp
+Utilities/itkCommandLineArgumentParser.cxx
+ImageProcessing/Isophotes.cpp
+ImageProcessing/Mask.cpp
+ImageProcessing/MaskOperations.cpp
+#PatchBasedInpainting.cpp
+#PatchPair.cpp
+#PatchPairDifferences.cpp
+Priority/Priority.cpp
+Priority/PriorityCriminisi.cpp
+Priority/PriorityDepth.cpp
+Priority/PriorityManual.cpp
+Priority/PriorityOnionPeel.cpp
+Priority/PriorityRandom.cpp
+#SourcePatchCollection.cpp
+#ValidRegionIterator.cpp
+)
 
 # Interactive
 SET(BuildInteractive CACHE BOOL "Build the interactive version.")
@@ -65,14 +61,26 @@ if(BuildViewer)
   add_subdirectory(Interactive)
 endif()
 
-# Non-interactive
-SET(BuildNonInteractive CACHE BOOL "Build the non-interactive version.")
-if(BuildNonInteractive)
-  ADD_EXECUTABLE(PatchBasedInpaintingNonInteractive
-  PatchBasedInpaintingNonInteractive.cpp
-  PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
-  TARGET_LINK_LIBRARIES(PatchBasedInpaintingNonInteractive PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
-  INSTALL( TARGETS PatchBasedInpaintingNonInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
+SET(NormalImageInpainting CACHE BOOL "Build a traditional patch comparison image inpainting.")
+if(NormalImageInpainting)
+  ADD_EXECUTABLE(NormalImageInpainting
+  NormalImageInpainting.cpp)
+  TARGET_LINK_LIBRARIES(NormalImageInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+  INSTALL( TARGETS NormalImageInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
+SET(TwoStepInpainting CACHE BOOL "Build a two step (features, then patch comparison) image inpainting.")
+if(TwoStepInpainting)
+  ADD_EXECUTABLE(TwoStepInpainting TwoStepInpainting.cpp PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
+  TARGET_LINK_LIBRARIES(TwoStepInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+  INSTALL( TARGETS TwoStepInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
+SET(SmallPatchBigPatchInpainting CACHE BOOL "Build a two step (compare small patches, then compare big patches at the best of the small patches) image inpainting.")
+if(SmallPatchBigPatchInpainting)
+  ADD_EXECUTABLE(SmallPatchBigPatchInpainting SmallPatchBigPatchInpainting.cpp)
+  TARGET_LINK_LIBRARIES(SmallPatchBigPatchInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+  INSTALL( TARGETS SmallPatchBigPatchInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
 SET(BuildTests CACHE BOOL "Build tests.")

@@ -52,7 +52,9 @@
 #include "DifferenceFunctions/FeatureVectorDifference.hpp"
 
 // Inpainting
-#include "InpaintingAlgorithm.hpp"
+#include "Algorithms/InpaintingAlgorithm.hpp"
+
+// Priority
 #include "Priority/PriorityRandom.h"
 
 // ITK
@@ -216,7 +218,7 @@ int main(int argc, char *argv[])
   //KNNSearchType linearSearchKNN(featureVectorDifference, 1000);
   KNNSearchType linearSearchKNN(featureVectorDescriptorMap);
 
-  typedef LinearSearchBestProperty<ImagePatchDifference<ImagePatchPixelDescriptorType>, ImagePatchDescriptorMapType> BestSearchType;
+  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
   //BestSearchType linearSearchBest(graph, imagePatchDescriptorMap);
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
 
