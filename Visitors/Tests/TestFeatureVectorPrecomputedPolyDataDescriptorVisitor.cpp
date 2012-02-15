@@ -20,7 +20,7 @@
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
 
 // Visitors
-#include "Visitors/FeatureVectorPrecomputedPolyDataDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/FeatureVectorPrecomputedPolyDataDescriptorVisitor.hpp"
 
 // VTK
 #include <vtkPolyData.h>

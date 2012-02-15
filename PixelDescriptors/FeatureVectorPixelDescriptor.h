@@ -45,7 +45,6 @@ public:
   const FeatureVectorType& GetFeatureVector() const;
 
   /** Output information about the descriptor. */
-  friend std::ostream& operator<<(std::ostream& output, const FeatureVectorType& descriptor);
   friend std::ostream& operator<<(std::ostream& output, const FeatureVectorPixelDescriptor& descriptor);
 
 private:
@@ -53,5 +52,7 @@ private:
   FeatureVectorType FeatureVector;
 
 };
+
+std::ostream& operator<<(std::ostream& output, const std::vector<float>& descriptor);
 
 #endif

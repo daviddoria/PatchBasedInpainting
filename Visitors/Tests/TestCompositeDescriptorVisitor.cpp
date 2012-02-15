@@ -21,9 +21,9 @@
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
 // Visitors
-#include "Visitors/FeatureVectorPrecomputedPolyDataDescriptorVisitor.hpp"
-#include "Visitors/ImagePatchDescriptorVisitor.hpp"
-#include "Visitors/CompositeDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/FeatureVectorPrecomputedPolyDataDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/CompositeDescriptorVisitor.hpp"
 
 // VTK
 #include <vtkPolyData.h>

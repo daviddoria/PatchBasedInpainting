@@ -5,10 +5,10 @@
 
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
-#include "InpaintingVisitorParent.h"
+#include "Visitors/InpaintingVisitorParent.h"
 
-#include "DescriptorConcept.hpp"
-#include "DescriptorVisitorParent.h"
+#include "Concepts/DescriptorConcept.hpp"
+#include "Visitors/DescriptorVisitors/DescriptorVisitorParent.h"
 
 // Boost
 #include <boost/graph/graph_traits.hpp>

@@ -24,7 +24,7 @@
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
 
 // Visitors
-#include "Visitors/FeatureVectorPrecomputedPolyDataDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/FeatureVectorPrecomputedPolyDataDescriptorVisitor.hpp"
 #include "Visitors/InpaintingVisitor.hpp"
 
 // Nearest neighbors

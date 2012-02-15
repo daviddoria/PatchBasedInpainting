@@ -1,7 +1,7 @@
 #ifndef InpaintingAlgorithm_hpp
 #define InpaintingAlgorithm_hpp
 
-#include "Visitors/InpaintingVisitorConcept.hpp"
+#include "Concepts/InpaintingVisitorConcept.hpp"
 
 // Boost
 #include <boost/graph/properties.hpp>

@@ -60,7 +60,9 @@ public:
     for(; first != last; ++first)
     {
       DistanceValueType d = DistanceFunction(get(PropertyMap, *first), get(PropertyMap, queryNode));
-      std::cout << "First: " << *first << " : " << get(PropertyMap, *first) << " query: " << queryNode << " : " << get(PropertyMap, queryNode) << std::endl;
+
+      //std::cout << "First: " << *first << " : " << get(PropertyMap, *first) << " query: " << queryNode << " : " << get(PropertyMap, queryNode) << std::endl;
+
       // If the distance is not less than infinity, it is useless, so do not continue
       if(!CompareFunction(d, std::numeric_limits<DistanceValueType>::infinity()))
       {

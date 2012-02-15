@@ -24,9 +24,9 @@
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
 
 // Descriptor visitors
-#include "Visitors/ImagePatchDescriptorVisitor.hpp"
-#include "Visitors/FeatureVectorPrecomputedPCLNormalsDescriptorVisitor.hpp"
-#include "Visitors/CompositeDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/FeatureVectorPrecomputedPCLNormalsDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/CompositeDescriptorVisitor.hpp"
 
 // Inpainting visitors
 #include "Visitors/InpaintingVisitor.hpp"

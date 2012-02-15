@@ -7,7 +7,7 @@
 
 #include "InpaintingVisitorParent.h"
 
-#include "DescriptorConcept.hpp"
+#include "Concepts/DescriptorConcept.hpp"
 
 // Boost
 #include <boost/graph/graph_traits.hpp>

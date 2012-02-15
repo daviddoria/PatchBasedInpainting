@@ -3,8 +3,8 @@
 
 // Custom
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
-#include "DescriptorConcept.hpp"
-#include "DescriptorVisitorParent.h"
+#include "Concepts/DescriptorConcept.hpp"
+#include "Visitors/DescriptorVisitors/DescriptorVisitorParent.h"
 
 // Boost
 #include <boost/graph/graph_traits.hpp>
@@ -49,7 +49,8 @@ struct FeatureVectorPrecomputedPCLNormalsDescriptorVisitor : public DescriptorVi
       //std::vector<float> featureVector(descriptorValues, descriptorValues + sizeof(descriptorValues) / sizeof(float) );
       std::vector<float> featureVector(n.normal, n.normal + sizeof(n.normal) / sizeof(float) );
       // std::cout << "Normal has length: " << featureVector.size() << std::endl; // To test if the above worked correctly
-      //std::cout << "n: " << featureVector[0] << " " << featureVector[1] << " " << featureVector[2] << std::endl;
+      assert(featureVector.size() == 3);
+      std::cout << "initialize_vertex: featureVector: " << featureVector << std::endl;
       DescriptorType descriptor(featureVector);
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::SOURCE_NODE);
@@ -57,6 +58,8 @@ struct FeatureVectorPrecomputedPCLNormalsDescriptorVisitor : public DescriptorVi
       }
     else
       {
+      std::cout << "Not finite! " << n.normal_x << " " << n.normal_y << " " << n.normal_z << std::endl;
+
       std::vector<float> featureVector(3, 0);
 
       DescriptorType descriptor(featureVector);
@@ -73,7 +76,6 @@ struct FeatureVectorPrecomputedPCLNormalsDescriptorVisitor : public DescriptorVi
     std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
     DescriptorType& descriptor = get(descriptorMap, v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
-    // put(descriptorMap, v, descriptor); // TODO: This shouldn't be necessary since we retrieve it as a reference, but we put it here just for good measure. It should be tested and removed.
   };
 
 }; // FeatureVectorPrecomputedPolyDataDescriptorVisitor

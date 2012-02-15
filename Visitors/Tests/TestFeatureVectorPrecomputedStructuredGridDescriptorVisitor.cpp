@@ -20,7 +20,7 @@
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
 
 // Visitors
-#include "Visitors/FeatureVectorPrecomputedStructuredGridDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/FeatureVectorPrecomputedStructuredGridDescriptorVisitor.hpp"
 
 // VTK
 #include <vtkStructuredGrid.h>

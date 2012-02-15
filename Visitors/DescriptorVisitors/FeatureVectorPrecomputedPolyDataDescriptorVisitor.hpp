@@ -3,7 +3,7 @@
 
 // Custom
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
-#include "DescriptorConcept.hpp"
+#include "Concepts/DescriptorConcept.hpp"
 #include "DescriptorVisitorParent.h"
 #include "Helpers/VTKHelpers.h"
 

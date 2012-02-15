@@ -42,7 +42,24 @@ std::ostream& operator<<(std::ostream& output, const std::vector<float>& descrip
 
 std::ostream& operator<<(std::ostream& output, const FeatureVectorPixelDescriptor& descriptor)
 {
-  output << "Descriptor size: " << descriptor.GetFeatureVector().size() << std::endl;
-  output << descriptor.GetFeatureVector() << std::endl;
+  if(descriptor.GetStatus() == PixelDescriptor::INVALID)
+  {
+    //output << "invalid";
+  }
+  else if(descriptor.GetStatus() == PixelDescriptor::TARGET_NODE)
+  {
+//     output << "Descriptor size: " << descriptor.GetFeatureVector().size() << std::endl;
+//     output << "Status: target" << std::endl;;
+//     output << std::endl << "Descriptor: ";
+//     output << descriptor.GetFeatureVector() << std::endl;
+  }
+  else if(descriptor.GetStatus() == PixelDescriptor::SOURCE_NODE)
+  {
+    output << "Descriptor size: " << descriptor.GetFeatureVector().size() << std::endl;
+    output << "Status: source" << std::endl;;
+    output << std::endl << "Descriptor: ";
+    output << descriptor.GetFeatureVector() << std::endl;
+  }
+
   return output;
 }
