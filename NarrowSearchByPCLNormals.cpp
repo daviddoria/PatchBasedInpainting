@@ -25,7 +25,7 @@
 
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
-#include "Visitors/DescriptorVisitors/FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/FeatureVectorPrecomputedPCLNormalsDescriptorVisitor.hpp"
 #include "Visitors/DescriptorVisitors/CompositeDescriptorVisitor.hpp"
 
 // Inpainting visitors
@@ -71,18 +71,13 @@
 // Debug
 #include "Helpers/HelpersOutput.h"
 
-// VTK
-#include <vtkSmartPointer.h>
-#include <vtkStructuredGrid.h>
-#include <vtkXMLStructuredGridReader.h>
-
 // Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 Data/trashcan.vtp Intensity filled.mha
 int main(int argc, char *argv[])
 {
   // Verify arguments
   if(argc != 6)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width normals.vts output.mha" << std::endl;
+    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width normals.pcd output.mha" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
@@ -111,9 +106,13 @@ int main(int argc, char *argv[])
   std::cout << "Reading normals: " << normalsFileName << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
-  vtkSmartPointer<vtkXMLStructuredGridReader> structuredGridReader = vtkSmartPointer<vtkXMLStructuredGridReader>::New();
-  structuredGridReader->SetFileName(normalsFileName.c_str());
-  structuredGridReader->Update();
+  pcl::PointCloud<pcl::Normal>::Ptr cloudNormals(new pcl::PointCloud<pcl::Normal>);
+
+  if (pcl::io::loadPCDFile<pcl::Normal> (normalsFileName, *cloudNormals) == -1) //* load the file
+  {
+    PCL_ERROR ("Couldn't read file test_pcd.pcd \n");
+    return (-1);
+  }
   
   typedef FloatVectorImageType ImageType;
 
@@ -188,8 +187,8 @@ int main(int argc, char *argv[])
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
   // Create the descriptor visitors
-  typedef FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitor<VertexListGraphType, FeatureVectorDescriptorMapType> FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitorType;
-  FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitorType featureVectorPrecomputedStructuredGridNormalsDescriptorVisitor(featureVectorDescriptorMap, structuredGridReader->GetOutput());
+  typedef FeatureVectorPrecomputedPCLNormalsDescriptorVisitor<VertexListGraphType, FeatureVectorDescriptorMapType> FeatureVectorPrecomputedPCLNormalsDescriptorVisitorType;
+  FeatureVectorPrecomputedPCLNormalsDescriptorVisitorType featureVectorPrecomputedPCLNormalsDescriptorVisitor(featureVectorDescriptorMap, *cloudNormals);
 
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patch_half_width);
@@ -197,7 +196,7 @@ int main(int argc, char *argv[])
   typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
   CompositeDescriptorVisitorType compositeDescriptorVisitor;
   compositeDescriptorVisitor.AddVisitor(&imagePatchDescriptorVisitor);
-  compositeDescriptorVisitor.AddVisitor(&featureVectorPrecomputedStructuredGridNormalsDescriptorVisitor);
+  compositeDescriptorVisitor.AddVisitor(&featureVectorPrecomputedPCLNormalsDescriptorVisitor);
 
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,

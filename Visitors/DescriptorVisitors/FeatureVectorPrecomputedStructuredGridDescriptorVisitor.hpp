@@ -41,9 +41,15 @@ struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor : public Descript
   vtkFloatArray* FeatureArray;
 
   FeatureVectorPrecomputedStructuredGridDescriptorVisitor(TDescriptorMap& in_descriptorMap, vtkStructuredGrid* const featureStructuredGrid, const std::string& featureName) :
-  descriptorMap(in_descriptorMap), FeatureStructuredGrid(featureStructuredGrid), FeatureName(featureName), FeatureArray(NULL)
+  descriptorMap(in_descriptorMap), FeatureStructuredGrid(featureStructuredGrid), FeatureName(featureName)
   {
-
+    FeatureArray = vtkFloatArray::SafeDownCast(FeatureStructuredGrid->GetPointData()->GetArray(featureName.c_str()));
+    if(!FeatureArray)
+      {
+      std::stringstream ss;
+      ss << "Structured grid does not have an array named \"" << featureName << "\"!";
+      throw std::runtime_error(ss.str());
+      }
   }
 
   void initialize_vertex(VertexDescriptorType v, TGraph& g) const
