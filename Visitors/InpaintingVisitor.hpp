@@ -56,6 +56,18 @@ struct InpaintingVisitor
   void discover_vertex(VertexDescriptorType v, TGraph& g) const
   {
     DescriptorVisitor.discover_vertex(v, g);
+
+    { // Debug only
+    // Construct the region around the vertex
+    itk::Index<2> indexToFinish;
+    indexToFinish[0] = v[0];
+    indexToFinish[1] = v[1];
+
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
+
+    HelpersOutput::WriteVectorImageRegionAsRGB(Image, region, Helpers::GetSequentialFileName("targetPatch", this->NumberOfFinishedVertices, "png"));
+    HelpersOutput::WriteRegion(MaskImage, region, Helpers::GetSequentialFileName("maskPatch", this->NumberOfFinishedVertices, "png"));
+    }
   };
 
   void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
@@ -89,19 +101,23 @@ struct InpaintingVisitor
 
   void finish_vertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
   {
+    // Mark this pixel as filled, the area around it as filled, and the mask in this region as filled.
+    // Determine the new boundary, and setup the nodes in the boundary queue.
+
     // Construct the region around the vertex
     itk::Index<2> indexToFinish;
     indexToFinish[0] = v[0];
     indexToFinish[1] = v[1];
 
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
+    itk::ImageRegion<2> regionToFinish = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
 
-    region.Crop(Image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
+
+    regionToFinish.Crop(Image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
 
     // Mark all the pixels in this region as filled. This must be done before creating
     // the mask image to use to check for boundary pixels.
     // It does not matter which image we iterate over, we just want the indices.
-    itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(Image, region);
+    itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(Image, regionToFinish);
 
     while(!gridIterator.IsAtEnd())
       {
@@ -128,7 +144,7 @@ struct InpaintingVisitor
     this->PriorityFunction->Update(sourceNode, v);
 
     // Add pixels that are on the new boundary to the queue, and mark other pixels as not in the queue.
-    itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(MaskImage, region);
+    itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(MaskImage, regionToFinish);
 
     while(!imageIterator.IsAtEnd())
       {
@@ -155,10 +171,20 @@ struct InpaintingVisitor
       }
 
     {
-    // Debug only - write the mask to a file
+    // Debug only
+    itk::Index<2> sourceIndex;
+    sourceIndex[0] = sourceNode[0];
+    sourceIndex[1] = sourceNode[1];
+
+    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, HalfWidth);
+
+    HelpersOutput::WriteVectorImageRegionAsRGB(Image, sourceRegion, Helpers::GetSequentialFileName("sourcePatch", this->NumberOfFinishedVertices, "png"));
+
     HelpersOutput::WriteImage(MaskImage, Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
     HelpersOutput::WriteVectorImageAsRGB(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
     this->NumberOfFinishedVertices++;
+
+    std::cout << "Finished node " << this->NumberOfFinishedVertices << std::endl;
     }
   }; // finish_vertex
 

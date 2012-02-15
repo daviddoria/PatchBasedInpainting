@@ -23,8 +23,8 @@
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
 // Descriptor visitors
-#include "Visitors/ImagePatchDescriptorVisitor.hpp"
-#include "Visitors/CompositeDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/CompositeDescriptorVisitor.hpp"
 
 // Inpainting visitors
 #include "Visitors/InpaintingVisitor.hpp"
@@ -91,11 +91,11 @@ int main(int argc, char *argv[])
   ssSmallPatchHalfWidth >> small_patch_half_width;
   
   std::stringstream ssBigPatchHalfWidth;
-  ssBigPatchHalfWidth << argv[3];
+  ssBigPatchHalfWidth << argv[4];
   unsigned int big_patch_half_width = 0;
   ssBigPatchHalfWidth >> big_patch_half_width;
 
-  std::string outputFilename = argv[4];
+  std::string outputFilename = argv[5];
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
 
   // Create the nearest neighbor finder
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
-  KNNSearchType linearSearchKNN(smallImagePatchDescriptorMap);
+  KNNSearchType linearSearchKNN(smallImagePatchDescriptorMap, 1000);
 
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
   BestSearchType linearSearchBest(bigImagePatchDescriptorMap);

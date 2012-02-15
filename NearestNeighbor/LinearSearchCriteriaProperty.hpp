@@ -2,23 +2,21 @@
 #define LinearSearchCriteriaProperty_HPP
 
 // STL
+#include <iostream>
 #include <limits> // for infinity()
 #include <algorithm> // for lower_bound()
+
+// ITK
+#include "itkImage.h"
+#include "itkImageFileWriter.h"
 
 /**
   * This function will search for the compute the difference between a query node's property and
   * all other nodes properties, and return only those which have a difference (float) below a specified
   * threshold.
   * \tparam DistanceValue The value-type for the distance measures.
-  * \tparam ForwardIterator The forward-iterator type.
-  * \tparam OutputContainer The container type which can contain the list of nearest-neighbors (STL like container, with iterators, insert, size, and pop_back).
-  * \tparam GetDistanceFunction The functor type to compute the distance measure.
-  * \tparam CompareFunction The functor type that can compare two distance measures (strict weak-ordering).
-  * \param first Start of the range in which to search.
-  * \param last One element past the last element in the range in which to search.
-  * \param output The container that will have the sorted list of elements with the smallest distance.
-  * \param distance A callable object that returns a DistanceValue for a given element from the ForwardIterator dereferencing.
-  * \param compare A callable object that returns true if the first element is the preferred one (less-than) of the two.
+  * \tparam DistanceFunctionType The functor type to compute the distance measure.
+  * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
   */
 template <typename PropertyMapType,
           typename DistanceFunctionType,
@@ -32,6 +30,13 @@ class LinearSearchCriteriaProperty
   CompareFunctionType CompareFunction;
 
 public:
+  /**
+  * This function will search for the compute the difference between a query node's property and
+  * all other nodes properties, and return only those which have a difference (float) below a specified
+  * threshold.
+  * \param propertyMap The property map from which to get the values to compare.
+  * \param distanceThreshold The value which the distance must be less than to pass the test.
+  */
   LinearSearchCriteriaProperty(PropertyMapType propertyMap, const float distanceThreshold, DistanceFunctionType distanceFunction = DistanceFunctionType(), CompareFunctionType compareFunction = CompareFunctionType()) : 
   PropertyMap(propertyMap), DistanceThreshold(distanceThreshold), DistanceFunction(distanceFunction), CompareFunction(compareFunction)
   {
@@ -48,6 +53,17 @@ public:
     return this->DistanceThreshold;
   }
 
+  /**
+  * This function will search for the compute the difference between a query node's property and
+  * all other nodes properties, and return only those which have a difference (float) below a specified
+  * threshold.
+  * \tparam ForwardIteratorType The forward-iterator type.
+  * \tparam OutputContainerType The container type which can contain the list of nearest-neighbors (STL like container, with iterators, insert, size, and pop_back).
+  * \param first Start of the range in which to search.
+  * \param last One element past the last element in the range in which to search.
+  * \param output The container that will have the sorted list of elements with the smallest distance.
+  * \param queryNode The node at which to compare the property.
+  */
   template <typename ForwardIteratorType, typename OutputContainerType>
   void operator()(ForwardIteratorType first, ForwardIteratorType last, typename ForwardIteratorType::value_type queryNode, OutputContainerType& output)
   {
@@ -90,8 +106,20 @@ public:
         output.push_back(*iter);
         }
       }
+      
+    OutputPassingRegion(output);
   }
 
+  template <typename OutputContainerType>
+  void OutputPassingRegion(const OutputContainerType& output)
+  {
+//     itk::Image<unsigned char, 2>::Pointer image = itk::Image<unsigned char, 2>::New();
+//     itk::Index<2> index = {{0,0}};
+//     itk::Size<2> size = // How to get the size at this point?
+//     
+//     itk::ImageRegion<2> region;
+//     image->SetRegions(region);
+  }
 };
 
 #endif

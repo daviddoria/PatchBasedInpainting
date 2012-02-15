@@ -54,6 +54,8 @@ struct LinearSearchBestProperty
         result = first;
       };
     };
+    
+    std::cout << "Best score: " << d_best << std::endl;
     return *result;
   }
 };

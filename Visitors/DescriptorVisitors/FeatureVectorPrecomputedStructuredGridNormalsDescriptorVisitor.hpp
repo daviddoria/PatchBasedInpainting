@@ -93,7 +93,7 @@ struct FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitor : public D
 
   void discover_vertex(VertexDescriptorType v, TGraph& g) const
   {
-    std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
+    // std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
     DescriptorType& descriptor = get(descriptorMap, v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
   };

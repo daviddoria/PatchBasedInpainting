@@ -44,7 +44,7 @@ inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& bounda
       index[0] = node[0];
       index[1] = node[1];
       float priority = priorityFunction->ComputePriority(index);
-      std::cout << "initial priority: " << priority << std::endl;
+      // std::cout << "initial priority: " << priority << std::endl;
       put(priorityMap, node, priority);
       }
     else

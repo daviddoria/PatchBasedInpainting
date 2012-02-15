@@ -25,7 +25,7 @@
 
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
-#include "Visitors/DescriptorVisitors/FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/FeatureVectorPrecomputedStructuredGridDescriptorVisitor.hpp"
 #include "Visitors/DescriptorVisitors/CompositeDescriptorVisitor.hpp"
 
 // Inpainting visitors
@@ -34,7 +34,6 @@
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchBestProperty.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
-#include "NearestNeighbor/LinearSearchCriteriaProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
 // Initializers
@@ -48,7 +47,6 @@
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
 #include "DifferenceFunctions/FeatureVectorDifference.hpp"
-#include "DifferenceFunctions/FeatureVectorAngleDifference.hpp"
 
 // Inpainting
 #include "Algorithms/InpaintingAlgorithm.hpp"
@@ -59,9 +57,11 @@
 // ITK
 #include "itkImageFileReader.h"
 
-// PCL
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
+// VTK
+#include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
+#include <vtkXMLPolyDataReader.h>
+#include <vtkXMLStructuredGridReader.h>
 
 // Boost
 #include <boost/graph/grid_graph.hpp>
@@ -71,18 +71,13 @@
 // Debug
 #include "Helpers/HelpersOutput.h"
 
-// VTK
-#include <vtkSmartPointer.h>
-#include <vtkStructuredGrid.h>
-#include <vtkXMLStructuredGridReader.h>
-
 // Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 Data/trashcan.vtp Intensity filled.mha
 int main(int argc, char *argv[])
 {
   // Verify arguments
-  if(argc != 6)
+  if(argc != 7)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width normals.vts output.mha" << std::endl;
+    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width structuredGrid.vts featureName output.mha" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
@@ -100,21 +95,23 @@ int main(int argc, char *argv[])
   unsigned int patch_half_width = 0;
   ssPatchRadius >> patch_half_width;
 
-  std::string normalsFileName = argv[4];
+  std::string structuredGridFileName = argv[4];
+  std::string featureName = argv[5];
 
-  std::string outputFilename = argv[5];
+  std::string outputFilename = argv[6];
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
   std::cout << "Patch half width: " << patch_half_width << std::endl;
-  std::cout << "Reading normals: " << normalsFileName << std::endl;
+  std::cout << "Reading structured grid: " << structuredGridFileName << std::endl;
+  std::cout << "Feature name: " << featureName << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
   vtkSmartPointer<vtkXMLStructuredGridReader> structuredGridReader = vtkSmartPointer<vtkXMLStructuredGridReader>::New();
-  structuredGridReader->SetFileName(normalsFileName.c_str());
+  structuredGridReader->SetFileName(structuredGridFileName.c_str());
   structuredGridReader->Update();
-  
+
   typedef FloatVectorImageType ImageType;
 
   typedef  itk::ImageFileReader<ImageType> ImageReaderType;
@@ -188,8 +185,8 @@ int main(int argc, char *argv[])
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
   // Create the descriptor visitors
-  typedef FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitor<VertexListGraphType, FeatureVectorDescriptorMapType> FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitorType;
-  FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitorType featureVectorPrecomputedStructuredGridNormalsDescriptorVisitor(featureVectorDescriptorMap, structuredGridReader->GetOutput());
+  typedef FeatureVectorPrecomputedStructuredGridDescriptorVisitor<VertexListGraphType, FeatureVectorDescriptorMapType> FeatureVectorPrecomputedStructuredGridDescriptorVisitorType;
+  FeatureVectorPrecomputedStructuredGridDescriptorVisitorType featureVectorPrecomputedStructuredGridDescriptorVisitor(featureVectorDescriptorMap, structuredGridReader->GetOutput(), featureName);
 
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patch_half_width);
@@ -197,7 +194,7 @@ int main(int argc, char *argv[])
   typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
   CompositeDescriptorVisitorType compositeDescriptorVisitor;
   compositeDescriptorVisitor.AddVisitor(&imagePatchDescriptorVisitor);
-  compositeDescriptorVisitor.AddVisitor(&featureVectorPrecomputedStructuredGridNormalsDescriptorVisitor);
+  compositeDescriptorVisitor.AddVisitor(&featureVectorPrecomputedStructuredGridDescriptorVisitor);
 
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
@@ -213,21 +210,15 @@ int main(int argc, char *argv[])
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
-//   typedef LinearSearchKNNProperty<FeatureVectorDescriptorMapType, FeatureVectorAngleDifference> KNNSearchType;
-//   KNNSearchType linearSearchKNN(featureVectorDescriptorMap);
-  typedef LinearSearchCriteriaProperty<FeatureVectorDescriptorMapType, FeatureVectorAngleDifference> ThresholdSearchType;
-  //float maximumAngle = 0.34906585; // ~ 20 degrees
-  //float maximumAngle = 0.15; // ~ 10 degrees
-  float maximumAngle = 0.08; // ~ 5 degrees
-  ThresholdSearchType thresholdSearchType(featureVectorDescriptorMap, maximumAngle);
+  typedef LinearSearchKNNProperty<FeatureVectorDescriptorMapType, FeatureVectorDifference> KNNSearchType;
+  KNNSearchType linearSearchKNN(featureVectorDescriptorMap);
 
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
 
-  TwoStepNearestNeighbor<ThresholdSearchType, BestSearchType> twoStepNearestNeighbor(thresholdSearchType, linearSearchBest);
+  TwoStepNearestNeighbor<KNNSearchType, BestSearchType> twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
   // Perform the inpainting
-  std::cout << "Performing inpainting...: " << std::endl;
   inpainting_loop(graph, inpaintingVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepNearestNeighbor, patchInpainter);
 
   HelpersOutput::WriteImage<ImageType>(image, outputFilename);

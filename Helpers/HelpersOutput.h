@@ -54,6 +54,9 @@ void Write2DVectorImage(const FloatVector2ImageType* const image, const std::str
 /**  Write the first 3 channels of a FloatVectorImageType as an unsigned char (RGB) image. */
 void WriteVectorImageAsRGB(const FloatVectorImageType* const image, const std::string& fileName);
 
+/** Write a 'region' of an 'image' to 'filename'.*/
+void WriteVectorImageRegionAsRGB(const FloatVectorImageType* const image, const itk::ImageRegion<2>& region, const std::string& filename);
+
 ////////////////////////////////////////////////////////////////////////
 ///////// Function templates (defined in HelpersOutput.hxx) /////////
 ////////////////////////////////////////////////////////////////////////
@@ -86,6 +89,7 @@ void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::I
 /** Write a 'region' of an 'image' to 'filename'.*/
 template<typename TImage>
 void WriteRegion(const TImage* const image, const itk::ImageRegion<2>& region, const std::string& filename);
+
 
 } // end namespace
 

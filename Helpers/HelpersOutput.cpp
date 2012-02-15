@@ -110,4 +110,20 @@ void WriteVectorImageAsRGB(const FloatVectorImageType* const image, const std::s
   WriteImage<RGBImageType>(rgbImage, fileName);
 }
 
+void WriteVectorImageRegionAsRGB(const FloatVectorImageType* const image, const itk::ImageRegion<2>& region, const std::string& filename)
+{
+  //std::cout << "WriteRegion() " << filename << std::endl;
+  //std::cout << "region " << region << std::endl;
+  typedef itk::RegionOfInterestImageFilter<FloatVectorImageType, FloatVectorImageType> RegionOfInterestImageFilterType;
+
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  regionOfInterestImageFilter->SetRegionOfInterest(region);
+  regionOfInterestImageFilter->SetInput(image);
+  regionOfInterestImageFilter->Update();
+
+  RGBImageType::Pointer rgbImage = RGBImageType::New();
+  ITKHelpers::VectorImageToRGBImage(regionOfInterestImageFilter->GetOutput(), rgbImage);
+  WriteImage<RGBImageType>(rgbImage, filename);
+}
+
 } // end namespace

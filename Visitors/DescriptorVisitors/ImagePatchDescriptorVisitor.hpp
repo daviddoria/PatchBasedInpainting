@@ -71,7 +71,7 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
       validOffsets.push_back(offset);
       }
 
-    std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
+    // std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
     DescriptorType& descriptor = get(descriptorMap, v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
     descriptor.SetValidOffsets(validOffsets);
