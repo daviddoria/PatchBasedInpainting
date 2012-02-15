@@ -216,7 +216,9 @@ int main(int argc, char *argv[])
 //   typedef LinearSearchKNNProperty<FeatureVectorDescriptorMapType, FeatureVectorAngleDifference> KNNSearchType;
 //   KNNSearchType linearSearchKNN(featureVectorDescriptorMap);
   typedef LinearSearchCriteriaProperty<FeatureVectorDescriptorMapType, FeatureVectorAngleDifference> ThresholdSearchType;
-  float maximumAngle = 0.34906585; // deg2rad(20)
+  //float maximumAngle = 0.34906585; // ~ 20 degrees
+  //float maximumAngle = 0.15; // ~ 10 degrees
+  float maximumAngle = 0.08; // ~ 5 degrees
   ThresholdSearchType thresholdSearchType(featureVectorDescriptorMap, maximumAngle);
 
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;

@@ -57,9 +57,9 @@ public:
       return;
     }
 
-    for(; first != last; ++first)
+    for(ForwardIteratorType iter = first; iter != last; ++iter)
     {
-      DistanceValueType d = DistanceFunction(get(PropertyMap, *first), get(PropertyMap, queryNode));
+      DistanceValueType d = DistanceFunction(get(PropertyMap, *iter), get(PropertyMap, queryNode));
 
       //std::cout << "First: " << *first << " : " << get(PropertyMap, *first) << " query: " << queryNode << " : " << get(PropertyMap, queryNode) << std::endl;
 
@@ -71,14 +71,25 @@ public:
 
       if(CompareFunction(d, DistanceThreshold))
       {
-        std::cout << d << " was less than " << DistanceThreshold << std::endl;
-        output.push_back(*first);
+        // std::cout << d << " was less than " << DistanceThreshold << std::endl;
+        output.push_back(*iter);
       }
       else
       {
-        std::cout << d << " was NOT less than " << DistanceThreshold << std::endl;
+        // std::cout << d << " was NOT less than " << DistanceThreshold << std::endl;
       }
     }
+    
+    std::cout << output.size() << " items passed the threshold test." << std::endl;
+    
+    // If no items passed the threshold, we must return all of the items for further inspection in a later step.
+    if(output.size() <= 0)
+      {
+      for(ForwardIteratorType iter = first; iter != last; ++iter)
+        {
+        output.push_back(*iter);
+        }
+      }
   }
 
 };
