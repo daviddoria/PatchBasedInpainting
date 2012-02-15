@@ -32,7 +32,7 @@ struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor : public Descript
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  TDescriptorMap& descriptorMap;
+  TDescriptorMap& DescriptorMap;
 
   vtkStructuredGrid* FeatureStructuredGrid;
 
@@ -41,7 +41,7 @@ struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor : public Descript
   vtkFloatArray* FeatureArray;
 
   FeatureVectorPrecomputedStructuredGridDescriptorVisitor(TDescriptorMap& in_descriptorMap, vtkStructuredGrid* const featureStructuredGrid, const std::string& featureName) :
-  descriptorMap(in_descriptorMap), FeatureStructuredGrid(featureStructuredGrid), FeatureName(featureName)
+  DescriptorMap(in_descriptorMap), FeatureStructuredGrid(featureStructuredGrid), FeatureName(featureName)
   {
     FeatureArray = vtkFloatArray::SafeDownCast(FeatureStructuredGrid->GetPointData()->GetArray(featureName.c_str()));
     if(!FeatureArray)
@@ -50,6 +50,7 @@ struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor : public Descript
       ss << "Structured grid does not have an array named \"" << featureName << "\"!";
       throw std::runtime_error(ss.str());
       }
+    std::cout << "Feature " << featureName << " has " << FeatureArray->GetNumberOfComponents() << " components." << std::endl;
   }
 
   void initialize_vertex(VertexDescriptorType v, TGraph& g) const
@@ -71,7 +72,7 @@ struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor : public Descript
       DescriptorType descriptor(featureVector);
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::SOURCE_NODE);
-      put(descriptorMap, v, descriptor);
+      put(DescriptorMap, v, descriptor);
       }
     else
       {
@@ -83,7 +84,7 @@ struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor : public Descript
       DescriptorType descriptor(featureVector);
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::INVALID);
-      put(descriptorMap, v, descriptor);
+      put(DescriptorMap, v, descriptor);
       }
 
     //std::cout << "There were " << numberOfMissingPoints << " missing points when computing the descriptor for node " << index << std::endl;
@@ -92,7 +93,7 @@ struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor : public Descript
   void discover_vertex(VertexDescriptorType v, TGraph& g) const
   {
     // std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
-    DescriptorType& descriptor = get(descriptorMap, v);
+    DescriptorType& descriptor = get(DescriptorMap, v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
   };
 

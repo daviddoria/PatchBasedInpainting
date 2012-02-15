@@ -1,6 +1,7 @@
 #ifndef FeatureVectorPixelDescriptor_HPP
 #define FeatureVectorPixelDescriptor_HPP
 
+
 // template <typename TImage>
 // std::ostream& operator<<(std::ostream& output, const FeatureVectorPixelDescriptor& descriptor)
 // {

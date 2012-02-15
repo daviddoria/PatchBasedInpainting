@@ -39,6 +39,7 @@ public:
   FeatureVectorPixelDescriptor(){};
 
   /** Construct a descriptor.*/
+  FeatureVectorPixelDescriptor(const unsigned int length);
   FeatureVectorPixelDescriptor(const FeatureVectorType& v);
 
   /** Get the feature vector.*/

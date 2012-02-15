@@ -1,8 +1,6 @@
 #ifndef ImagePatchDescriptorVisitor_HPP
 #define ImagePatchDescriptorVisitor_HPP
 
-#include "Priority/Priority.h"
-
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
 #include "Visitors/InpaintingVisitorParent.h"
@@ -29,15 +27,15 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
   
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  TImage* image;
-  Mask* mask;
-  TDescriptorMap& descriptorMap;
+  TImage* Image;
+  Mask* MaskImage;
+  TDescriptorMap& DescriptorMap;
 
-  unsigned int half_width;
+  unsigned int HalfWidth;
 
   ImagePatchDescriptorVisitor(TImage* const in_image, Mask* const in_mask,
                               TDescriptorMap& in_descriptorMap, const unsigned int in_half_width) :
-  image(in_image), mask(in_mask), descriptorMap(in_descriptorMap), half_width(in_half_width)
+  Image(in_image), MaskImage(in_mask), DescriptorMap(in_descriptorMap), HalfWidth(in_half_width)
   {
   }
 
@@ -49,21 +47,26 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
     index[0] = v[0];
     index[1] = v[1];
 
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, half_width);
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, HalfWidth);
 
-    DescriptorType descriptor(this->image, this->mask, region);
+    DescriptorType descriptor(this->Image, this->MaskImage, region);
     descriptor.SetVertex(v);
-    put(descriptorMap, v, descriptor);
+    put(DescriptorMap, v, descriptor);
 
+    // This is done in the descriptor constructor
+//     if(mask->IsValid(region))
+//       {
+//       descriptor.SetStatus(DescriptorType::SOURCE_NODE);
+//       }
   };
 
   void discover_vertex(VertexDescriptorType v, TGraph& g) const
   {
     itk::Index<2> index = {{v[0], v[1]}};
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, half_width);
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, HalfWidth);
 
     // Create the list of valid pixels
-    std::vector<itk::Index<2> > validPixels = mask->GetValidPixelsInRegion(region);
+    std::vector<itk::Index<2> > validPixels = MaskImage->GetValidPixelsInRegion(region);
     std::vector<itk::Offset<2> > validOffsets;
     for(size_t i = 0; i < validPixels.size(); ++i)
       {
@@ -72,7 +75,7 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
       }
 
     // std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
-    DescriptorType& descriptor = get(descriptorMap, v);
+    DescriptorType& descriptor = get(DescriptorMap, v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
     descriptor.SetValidOffsets(validOffsets);
   };

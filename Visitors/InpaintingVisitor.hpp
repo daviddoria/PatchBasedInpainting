@@ -130,6 +130,8 @@ struct InpaintingVisitor
       }
 
     // Initialize the newly filled vertices because they may now be valid source nodes.
+    // You may not want to do this in some cases (i.e. if the descriptors needed cannot be 
+    // computed on newly filled regions)
     gridIterator.GoToBegin();
     while(!gridIterator.IsAtEnd())
       {

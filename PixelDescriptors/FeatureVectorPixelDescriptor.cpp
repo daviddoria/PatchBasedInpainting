@@ -18,10 +18,18 @@
 
 #include "FeatureVectorPixelDescriptor.h"
 
+#include <algorithm>
+
 FeatureVectorPixelDescriptor::FeatureVectorPixelDescriptor(const FeatureVectorType& featureVector) :
 FeatureVector(featureVector)
 {
 
+}
+
+FeatureVectorPixelDescriptor::FeatureVectorPixelDescriptor(const unsigned int length)
+{
+  FeatureVector.resize(length);
+  std::fill(FeatureVector.begin(), FeatureVector.end(), 0);
 }
 
 const FeatureVectorPixelDescriptor::FeatureVectorType& FeatureVectorPixelDescriptor::GetFeatureVector() const

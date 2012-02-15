@@ -71,7 +71,7 @@
 // Debug
 #include "Helpers/HelpersOutput.h"
 
-// Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 Data/trashcan.vtp Intensity filled.mha
+// Run with: trashcan.mha trashcan_mask.mha 15 trashcan.vts Intensity filled.mha
 int main(int argc, char *argv[])
 {
   // Verify arguments
@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
 
   // Create the nearest neighbor finder
   typedef LinearSearchKNNProperty<FeatureVectorDescriptorMapType, FeatureVectorDifference> KNNSearchType;
-  KNNSearchType linearSearchKNN(featureVectorDescriptorMap);
+  KNNSearchType linearSearchKNN(featureVectorDescriptorMap, 1000);
 
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
