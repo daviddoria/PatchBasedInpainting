@@ -1,4 +1,3 @@
-
 add_executable(TestDVPTree TestDVPTree.cpp)
 target_link_libraries(TestDVPTree)
 add_test(TestDVPTree TestDVPTree)
@@ -38,3 +37,11 @@ add_test(TestLinearSearchBest TestLinearSearchBest)
 add_executable(TestLinearSearchKNN TestLinearSearchKNN.cpp)
 target_link_libraries(TestLinearSearchKNN)
 add_test(TestLinearSearchKNN TestLinearSearchKNN)
+
+add_executable(TestTwoStepSearch TestTwoStepSearch.cpp)
+target_link_libraries(TestTwoStepSearch)
+add_test(TestTwoStepSearch TestTwoStepSearch)
+
+add_executable(TestThreeStepSearch TestThreeStepSearch.cpp)
+target_link_libraries(TestThreeStepSearch)
+add_test(TestThreeStepSearch TestThreeStepSearch)
