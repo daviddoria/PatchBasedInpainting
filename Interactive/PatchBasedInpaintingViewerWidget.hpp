@@ -30,13 +30,16 @@
 // Custom
 #include "Helpers/Helpers.h"
 #include "Helpers/HelpersOutput.h"
-#include "HelpersQt.h"
+#include "Helpers/ITKVTKHelpers.h"
+#include "Interactive/HelpersQt.h"
 #include "InteractorStyleImageWithDrag.h"
 #include "ImageProcessing/Mask.h"
 
 template <typename TImage>
 PatchBasedInpaintingViewerWidget<TImage>::PatchBasedInpaintingViewerWidget(TImage* const image) : Image(image)
 {
+  qRegisterMetaType<itk::ImageRegion<2> >("itkImageRegion");
+
   // This function is called by both constructors. This avoid code duplication.
   this->setupUi(this);
 
@@ -47,16 +50,13 @@ PatchBasedInpaintingViewerWidget<TImage>::PatchBasedInpaintingViewerWidget(TImag
   this->Renderer = vtkSmartPointer<vtkRenderer>::New();
   this->qvtkWidget->GetRenderWindow()->AddRenderer(this->Renderer);
 
+  this->Renderer->AddViewProp(ImageLayer.ImageSlice);
+
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
   this->InteractorStyle->Init();
 
-  this->UserImage = FloatVectorImageType::New();
-
   this->Camera = new ImageCamera(this->Renderer);
-
-  this->UserMaskImage = Mask::New();
-
 }
 
 template <typename TImage>
@@ -80,46 +80,44 @@ void PatchBasedInpaintingViewerWidget<TImage>::SetupScenes()
 }
 
 template <typename TImage>
-void PatchBasedInpaintingViewerWidget<TImage>::DisplaySourcePatch()
+void PatchBasedInpaintingViewerWidget<TImage>::slot_UpdateImage()
 {
-  // TODO: Fix this
-//   QImage sourceImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, this->SourcePatchToDisplay.Region, this->ImageDisplayStyle);
-//   //sourceImage = HelpersQt::FitToGraphicsView(sourceImage, gfxSource);
-//   QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
-//   gfxSource->fitInView(item);
-//   LeaveFunction("DisplaySourcePatch()");
+  std::cout << "Update image." << std::endl;
+  ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
+
+  this->Renderer->ResetCamera(); // Definitely need to do this once - if we do it every time the zoom will be reset so you cannot watch a region closely.
+  this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 template <typename TImage>
-void PatchBasedInpaintingViewerWidget<TImage>::DisplayTargetPatch()
+void PatchBasedInpaintingViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& region)
 {
+  std::cout << "Update source." << std::endl;
+
+  QImage sourceImage = HelpersQt::GetQImageColor(Image, region);
+  //sourceImage = HelpersQt::FitToGraphicsView(sourceImage, gfxSource);
+  QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
+  gfxSource->fitInView(item);
+}
+
+template <typename TImage>
+void PatchBasedInpaintingViewerWidget<TImage>::slot_UpdateTarget(const itk::ImageRegion<2>& region)
+{
+  std::cout << "Update target." << std::endl;
   // We use the previous image and previous mask, but the current PotentialPairSets,
   // as these are the sets that were used to get to this state.
 
-  // The last iteration record will not have any potential patches, because there is nothing left to inpaint!
-//   if(!RecordToDisplay)
-//     {
-//     LeaveFunction("DisplayTargetPatch()");
-//     return;
-//     }
-//   FloatVectorImageType::Pointer currentImage = dynamic_cast<FloatVectorImageType*>(this->RecordToDisplay->GetImageByName("Image").Image);
-
-  // If we have chosen to display the masked target patch, we need to use the mask from the previous iteration
-  // (as the current mask has been cleared where the target patch was copied).
-  //Mask::Pointer currentMask = dynamic_cast<Mask*>(this->RecordToDisplay->Images.FindImageByName("Mask").Image.GetPointer());
-
   // Target
-  // TODO: Fix this.
-//   QImage targetImage = HelpersQt::GetQImage<FloatVectorImageType>(currentImage, this->TargetPatchToDisplay.GetRegion(), this->ImageDisplayStyle);
-// 
-//   //targetImage = HelpersQt::FitToGraphicsView(targetImage, gfxTarget);
-//   QGraphicsPixmapItem* item = this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
-//   gfxTarget->fitInView(item);
+  QImage targetImage = HelpersQt::GetQImageColor(Image, region);
+
+  //targetImage = HelpersQt::FitToGraphicsView(targetImage, gfxTarget);
+  QGraphicsPixmapItem* item = this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
+  gfxTarget->fitInView(item);
 }
 
-template <typename TImage>
-void PatchBasedInpaintingViewerWidget<TImage>::DisplayResultPatch()
-{
+// template <typename TImage>
+// void PatchBasedInpaintingViewerWidget<TImage>::DisplayResultPatch()
+// {
   //QImage qimage(regionSize[0], regionSize[1], QImage::Format_RGB888);
 
   // TODO: Fix this
@@ -171,7 +169,7 @@ void PatchBasedInpaintingViewerWidget<TImage>::DisplayResultPatch()
 //   //this->ResultPatchScene->addPixmap(QPixmap());
 //   //std::cout << "Set result patch." << std::endl;
 
-}
+//}
 
 /*
 void PatchBasedInpaintingViewerWidget::IterationComplete(const PatchPair& usedPatchPair)

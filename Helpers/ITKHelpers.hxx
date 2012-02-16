@@ -696,4 +696,12 @@ void NormalizeVectorImage(TImage* const image)
     }
 }
 
+
+template<typename T>
+itk::Index<2> CreateIndex(T& v)
+{
+  itk::Index<2> index = {{v[0], v[1]}};
+  return index;
+}
+
 }// end namespace

@@ -34,6 +34,8 @@
 // Custom
 #include "ImageCamera.h"
 #include "ImageProcessing/Mask.h"
+#include "Node.h"
+#include "Interactive/Layer.h"
 
 class InteractorStyleImageWithDrag;
 
@@ -43,8 +45,10 @@ Q_OBJECT
 
 public slots:
 
-  void slot_Update(){};
-
+  virtual void slot_UpdateImage() = 0;
+  virtual void slot_UpdateSource(const itk::ImageRegion<2>& region) = 0;
+  virtual void slot_UpdateTarget(const itk::ImageRegion<2>& region) = 0;
+  
 };
 
 template <typename TImage>
@@ -52,10 +56,15 @@ class PatchBasedInpaintingViewerWidget : public WidgetSlotParent
 {
 private:
   TImage* Image;
+  Layer ImageLayer;
 
 public:
   // Constructor
   PatchBasedInpaintingViewerWidget(TImage* const image);
+
+  void slot_UpdateImage();
+  void slot_UpdateSource(const itk::ImageRegion<2>& region);
+  void slot_UpdateTarget(const itk::ImageRegion<2>& region);
 
 private:
 
@@ -72,11 +81,6 @@ private:
 
   // The mask that the user loads
   Mask::Pointer UserMaskImage;
-
-  // Display zoomed in versions of the patches used at the current iteration
-  void DisplaySourcePatch();
-  void DisplayTargetPatch();
-  void DisplayResultPatch();
 
   QGraphicsScene* SourcePatchScene;
   QGraphicsScene* TargetPatchScene;

@@ -73,6 +73,7 @@ typename std::enable_if<std::is_fundamental<T>::value, T&>::type index(T& t, siz
 template<typename T>
 typename T::value_type& index(T& v, size_t i);
 
+
 }// end namespace
 
 #include "Helpers.hxx"

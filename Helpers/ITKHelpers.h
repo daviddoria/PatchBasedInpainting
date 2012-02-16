@@ -219,6 +219,10 @@ void FilterImage(const TInputImage* const input, TOutputImage* const output);
 template<typename TImage>
 void NormalizeVectorImage(TImage* const image);
 
+template<typename T>
+itk::Index<2> CreateIndex(T& v);
+
+
 }// end namespace
 
 #include "ITKHelpers.hxx"

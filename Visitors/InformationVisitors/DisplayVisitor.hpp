@@ -8,6 +8,7 @@
 #include "ImageProcessing/Mask.h"
 #include "Helpers/HelpersOutput.h"
 #include "Helpers/ITKHelpers.h"
+#include "Node.h"
 
 // ITK
 #include "itkImage.h"
@@ -28,7 +29,9 @@ Q_OBJECT
 
 signals:
   // This signal is emitted to start the progress bar
-  void Refresh();
+  void signal_RefreshImage();
+  void signal_RefreshSource(itk::ImageRegion<2>);
+  void signal_RefreshTarget(itk::ImageRegion<2>);
 
 };
 
@@ -51,7 +54,7 @@ public:
   {
 
   }
-  
+
   void initialize_vertex(VertexDescriptorType v, TGraph& g) const
   { 
 
@@ -62,10 +65,16 @@ public:
 
   };
 
-  void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
   {
-    std::cout << "Match made: target: " << target[0] << " " << target[1]
-              << " with source: " << source[0] << " " << source[1] << std::endl;
+    //Node targetNode;
+    itk::Index<2> targetIndex = ITKHelpers::CreateIndex(target);
+    itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->HalfWidth);
+    emit signal_RefreshTarget(targetRegion);
+
+    itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(source);
+    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, this->HalfWidth);
+    emit signal_RefreshSource(sourceRegion);
   };
 
   void paint_vertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
@@ -80,7 +89,7 @@ public:
 
   void finish_vertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
   {
-    emit Refresh();
+    emit signal_RefreshImage();
   };
 
 };

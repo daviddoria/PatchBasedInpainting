@@ -65,7 +65,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     DescriptorVisitor.discover_vertex(v, g);
   };
 
-  void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
   {
     assert(get(fillStatusMap, source));
     assert(get(descriptorMap, source).IsFullyValid());

@@ -69,7 +69,8 @@ if(ClassicalImageInpaintingWithVisualOutput)
   QT4_WRAP_UI(UISrcs Interactive/PatchBasedInpaintingViewerWidget.ui)
   QT4_WRAP_CPP(MOCSrcs Interactive/PatchBasedInpaintingViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp)
 
-  ADD_EXECUTABLE(ClassicalImageInpaintingWithVisualOutput ClassicalImageInpaintingWithVisualOutput.cpp 
+  ADD_EXECUTABLE(ClassicalImageInpaintingWithVisualOutput ClassicalImageInpaintingWithVisualOutput.cpp
+    Interactive/Layer.cpp
     Interactive/PatchBasedInpaintingViewerWidget.cpp Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
     ${UISrcs} ${MOCSrcs})
 

@@ -31,6 +31,9 @@ class QTableWidget;
 #include "DisplayStyle.h"
 #include "ImageProcessing/Mask.h"
 
+Q_DECLARE_METATYPE(itk::ImageRegion<2>)
+
+
 namespace HelpersQt
 {
 // Convert a QColor to an unsigned char[3]

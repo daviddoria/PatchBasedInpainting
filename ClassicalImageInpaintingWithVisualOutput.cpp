@@ -177,15 +177,15 @@ int main(int argc, char *argv[])
                             ImagePatchDescriptorVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
                                           imagePatchDescriptorVisitor, priorityMap, &priorityFunction, patchHalfWidth, boundaryStatusMap);
-  
+
   typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
   DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
-  
+
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeVisitorType;
   CompositeVisitorType compositeVisitor;
   compositeVisitor.AddVisitor(&inpaintingVisitor);
   compositeVisitor.AddVisitor(&displayVisitor);
-  
+
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
@@ -194,7 +194,6 @@ int main(int argc, char *argv[])
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
-
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
 
@@ -205,24 +204,12 @@ int main(int argc, char *argv[])
 
   patchBasedInpaintingViewerWidget.show();
 
-  QObject::connect(&displayVisitor, SIGNAL(Refresh()), &patchBasedInpaintingViewerWidget, SLOT(slot_Update()));
-  
-  // Can't do this - must specify template parameters
-  //QtConcurrent::run ( inpainting_loop, graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
-  
-  // Can't do this because function has more than 5 parameters
-//   QtConcurrent::run ( inpainting_loop<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>,
-//                       graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &patchBasedInpaintingViewerWidget, SLOT(slot_UpdateImage()));
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&)), &patchBasedInpaintingViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&)));
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)), &patchBasedInpaintingViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)));
 
-QtConcurrent::run(boost::bind(inpainting_loop<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>,
+  QtConcurrent::run(boost::bind(inpainting_loop<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>,
                               graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter));
-  // template <typename VertexListGraphType, typename InpaintingVisitorType,
-//           typename BoundaryStatusMapType, typename PriorityQueueType, 
-//           typename NearestNeighborFinderType, typename PatchInpainterType>
-  
-  // Perform the inpainting
-  //inpainting_loop(graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
 
   return app.exec();
-
 }

@@ -30,8 +30,7 @@
 #include "DisplayState.h"
 #include "InpaintingIterationRecord.h"
 #include "Layer.h"
-#include "Mask.h"
-#include "PatchPair.h"
+#include "ImageProcessing/Mask.h"
 #include "InpaintingDisplaySettings.h"
 
 // STL

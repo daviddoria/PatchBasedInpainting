@@ -86,4 +86,5 @@ typename T::value_type VectorMedian(T v)
   return v[n];
 }
 
+
 }// end namespace

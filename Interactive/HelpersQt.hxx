@@ -80,7 +80,7 @@ QImage GetQImageColor(const TImage* image, const itk::ImageRegion<2>& region)
     int r = static_cast<int>(pixel[0]);
     int g = static_cast<int>(pixel[1]);
     int b = static_cast<int>(pixel[2]);
-    
+
     if(Helpers::IsValidRGB(r,g,b))
       {
       QColor pixelColor(r,g,b);
