@@ -21,9 +21,6 @@
 
 #include "ui_TopPatchesWidget.h"
 
-// VTK
-#include <vtkSmartPointer.h>
-
 // ITK
 #include "itkImage.h"
 
@@ -35,8 +32,6 @@
 #include "ImageCamera.h"
 #include "ImageProcessing/Mask.h"
 #include "Interactive/ModelView/ListModelPatches.h"
-
-class InteractorStyleImageWithDrag;
 
 /** This class is necessary because a class template cannot have the Q_OBJECT macro directly. */
 class TopPatchesWidgetParent : public QMainWindow, public Ui::TopPatchesWidget

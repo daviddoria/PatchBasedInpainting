@@ -23,6 +23,9 @@
 #include <QAbstractTableModel>
 #include <QItemSelection>
 
+// ITK
+#include "itkIndex.h"
+
 // STL
 #include <vector>
 
@@ -30,7 +33,7 @@ template <typename TImage>
 class ListModelPatches : public QAbstractTableModel
 {
 public:
-  ListModelPatches(QObject * parent);
+  ListModelPatches(TImage* const image, QObject * const parent = 0);
 
   int rowCount(const QModelIndex& parent) const;
   int columnCount(const QModelIndex& parent) const;
@@ -51,6 +54,9 @@ private:
 
   /** This is the image that the displayed patches are created from. */
   TImage* Image;
+
+  /** This is an ordered list of the nodes at which to display the corresponding patches. */
+  std::vector<itk::Index<2> > Nodes;
 
   /** This is the side length, in pixels, of the display of the patches (they will be scaled to this size from whatever size they actually are in the algorithm). */
   unsigned int PatchDisplaySize;

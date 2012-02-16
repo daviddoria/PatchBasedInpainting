@@ -34,6 +34,10 @@
 
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchBestProperty.hpp"
+#include "NearestNeighbor/LinearSearchKNNProperty.hpp"
+#include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
+
+#include "Visitors/NearestNeighborsVisitor.hpp"
 
 // Initializers
 #include "Initializers/InitializeFromMaskImage.hpp"
@@ -194,23 +198,35 @@ int main(int argc, char *argv[])
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
-  // Create the nearest neighbor finder
+  // Create the nearest neighbor finders
+  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
+  KNNSearchType knnSearch(imagePatchDescriptorMap, 1000);
+  
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
+
+//   typedef TwoStepNearestNeighbor<KNNSearchType, BestSearchType> TwoStepSearchType;
+//   TwoStepSearchType twoStepSearch(knnSearch, linearSearchBest);
+
+  NearestNeighborsVisitor nearestNeighborsVisitor;
+  typedef TwoStepNearestNeighbor<KNNSearchType, BestSearchType, NearestNeighborsVisitor> TwoStepSearchType;
+  TwoStepSearchType twoStepSearch(knnSearch, linearSearchBest, nearestNeighborsVisitor);
 
   // Setup the GUI
   QApplication app( argc, argv );
 
   PatchBasedInpaintingViewerWidget<ImageType> patchBasedInpaintingViewerWidget(image);
-
   patchBasedInpaintingViewerWidget.show();
-
   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &patchBasedInpaintingViewerWidget, SLOT(slot_UpdateImage()));
   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&)), &patchBasedInpaintingViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&)));
   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)), &patchBasedInpaintingViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)));
 
-  QtConcurrent::run(boost::bind(inpainting_loop<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>,
-                              graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter));
+  TopPatchesWidget<ImageType> topPatchesWidget(image);
+  topPatchesWidget.show();
+  //QObject::connect(&displayVisitor, SIGNAL(signal_Refresh()), &topPatchesWidget, SLOT(slot_Update()));
+
+  QtConcurrent::run(boost::bind(inpainting_loop<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, TwoStepSearchType, InpainterType>,
+                              graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepSearch, patchInpainter));
 
   return app.exec();
 }

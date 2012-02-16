@@ -8,6 +8,8 @@
 #ifndef TwoStepNearestNeighbor_HPP
 #define TwoStepNearestNeighbor_HPP
 
+#include "Visitors/NearestNeighborsDefaultVisitor.hpp"
+
 #include <stdexcept>
 
 /**
@@ -17,19 +19,21 @@
   * \tparam NeighborFinderKNN The functor that can find K-nearest neighbors.
   * \tparam NeighborFinderBest The functor that can find the best neighbor.
   */
-template <typename MultipleNeighborFinderType, typename NearestNeighborFinderType>
+template <typename MultipleNeighborFinderType, typename NearestNeighborFinderType, typename VisitorType = NearestNeighborsDefaultVisitor>
 struct TwoStepNearestNeighbor
 {
   MultipleNeighborFinderType MultipleNeighborFinder;
   NearestNeighborFinderType NearestNeighborFinder;
+  VisitorType Visitor;
 
   /**
     * Constructor.
     * \param NeighborFinderKNN The functor to do the K-NN first step of the search.
     * \param NeighborFinderBest The functor to do the 1-NN second step of the search.
     */
-  TwoStepNearestNeighbor(MultipleNeighborFinderType multipleNeighborFinder, NearestNeighborFinderType nearestNeighborFinder) :
-  MultipleNeighborFinder(multipleNeighborFinder), NearestNeighborFinder(nearestNeighborFinder)
+  TwoStepNearestNeighbor(MultipleNeighborFinderType multipleNeighborFinder, NearestNeighborFinderType nearestNeighborFinder,
+                         VisitorType visitor = VisitorType()) :
+  MultipleNeighborFinder(multipleNeighborFinder), NearestNeighborFinder(nearestNeighborFinder), Visitor(visitor)
   { };
 
   template <typename TIterator>
@@ -46,6 +50,8 @@ struct TwoStepNearestNeighbor
       {
       throw std::runtime_error("MultipleNeighborFinder did not find any neighbors!");
       }
+
+    Visitor.FoundNeighbors(outputContainer);
 
     // Step 2 - 1-NN search on result of first search, on second topology
     VertexDescriptor nearestNeighbor = this->NearestNeighborFinder(outputContainer.begin(), outputContainer.end(), queryNode);

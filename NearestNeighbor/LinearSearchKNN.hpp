@@ -24,13 +24,15 @@
   * \param compare A callable object that returns true if the first element is the preferred one (less-than) of the two.
   * \param max_neighbors The maximum number of elements of smallest distance to output in the sorted list.
   */
-template <typename ForwardIterator,
-          typename OutputContainer,
+template <typename ForwardIteratorType,
+          typename TOutputContainer,
           typename DistanceFunctionType,
           typename DistanceValueType = float,
           typename CompareFunctionType = std::less<DistanceValueType> >
 struct LinearSearchKNN
 {
+  typedef TOutputContainer OutputContainerType;
+
   DistanceFunctionType DistanceFunction;
   CompareFunctionType CompareFunction;
   
@@ -48,7 +50,7 @@ struct LinearSearchKNN
     return this->K;
   }
 
-  void operator()(ForwardIterator first, ForwardIterator last, OutputContainer& output)
+  void operator()(ForwardIteratorType first, ForwardIteratorType last, OutputContainerType& output)
   {
     output.clear();
     if(first == last)
