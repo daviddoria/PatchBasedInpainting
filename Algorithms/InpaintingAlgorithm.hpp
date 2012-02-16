@@ -69,6 +69,8 @@ void inpainting_loop(VertexListGraphType& g, InpaintingVisitorType vis,
     vis.finish_vertex(targetNode, sourceNode, g);
   } // end main iteration loop
 
+  // Should probably go in the visitor as a inpainting_finished() function
+  //HelpersOutput::WriteImage<ImageType>(image, outputFilename);
 };
 
 #endif

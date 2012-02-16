@@ -67,7 +67,7 @@ endif()
 SET(ClassicalImageInpaintingWithVisualOutput CACHE BOOL "Build a traditional patch comparison image inpainting.")
 if(ClassicalImageInpaintingWithVisualOutput)
   QT4_WRAP_UI(UISrcs Interactive/PatchBasedInpaintingViewerWidget.ui)
-  QT4_WRAP_CPP(MOCSrcs Interactive/PatchBasedInpaintingViewerWidget.h)
+  QT4_WRAP_CPP(MOCSrcs Interactive/PatchBasedInpaintingViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp)
 
   ADD_EXECUTABLE(ClassicalImageInpaintingWithVisualOutput ClassicalImageInpaintingWithVisualOutput.cpp 
     Interactive/PatchBasedInpaintingViewerWidget.cpp Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp

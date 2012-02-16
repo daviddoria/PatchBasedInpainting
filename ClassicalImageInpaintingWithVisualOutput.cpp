@@ -26,7 +26,7 @@
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
 
 // Information visitors
-#include "Visitors/InformationVisitors/DebugVisitor.hpp"
+#include "Visitors/InformationVisitors/DisplayVisitor.hpp"
 
 // Inpainting visitors
 #include "Visitors/InpaintingVisitor.hpp"
@@ -34,8 +34,6 @@
 
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchBestProperty.hpp"
-#include "NearestNeighbor/LinearSearchKNNProperty.hpp"
-#include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
 // Initializers
 #include "Initializers/InitializeFromMaskImage.hpp"
@@ -43,7 +41,6 @@
 
 // Inpainters
 #include "Inpainters/MaskedGridPatchInpainter.hpp"
-#include "Inpainters/HoleListPatchInpainter.hpp"
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
@@ -67,7 +64,7 @@
 
 // Qt
 #include <QApplication>
-#include <QCleanlooksStyle>
+#include <QtConcurrentRun>
 
 // Custom
 #include "Interactive/PatchBasedInpaintingViewerWidget.h"
@@ -86,14 +83,6 @@ int main(int argc, char *argv[])
       }
     return EXIT_FAILURE;
     }
-
-  QApplication app( argc, argv );
-
-  PatchBasedInpaintingViewerWidget patchBasedInpaintingViewerWidget;
-
-  patchBasedInpaintingViewerWidget.show();
-
-  return app.exec();
 
   // Parse arguments
   std::string imageFilename = argv[1];
@@ -189,13 +178,13 @@ int main(int argc, char *argv[])
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
                                           imagePatchDescriptorVisitor, priorityMap, &priorityFunction, patchHalfWidth, boundaryStatusMap);
   
-  typedef DebugVisitor<VertexListGraphType, ImageType> DebugVisitorType;
-  DebugVisitorType debugVisitor(image, mask, patchHalfWidth);
+  typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
+  DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
   
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeVisitorType;
   CompositeVisitorType compositeVisitor;
   compositeVisitor.AddVisitor(&inpaintingVisitor);
-  compositeVisitor.AddVisitor(&debugVisitor);
+  compositeVisitor.AddVisitor(&displayVisitor);
   
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
@@ -209,10 +198,31 @@ int main(int argc, char *argv[])
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
 
+  // Setup the GUI
+  QApplication app( argc, argv );
+
+  PatchBasedInpaintingViewerWidget<ImageType> patchBasedInpaintingViewerWidget(image);
+
+  patchBasedInpaintingViewerWidget.show();
+
+  QObject::connect(&displayVisitor, SIGNAL(Refresh()), &patchBasedInpaintingViewerWidget, SLOT(slot_Update()));
+  
+  // Can't do this - must specify template parameters
+  //QtConcurrent::run ( inpainting_loop, graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
+  
+  // Can't do this because function has more than 5 parameters
+//   QtConcurrent::run ( inpainting_loop<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>,
+//                       graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
+
+QtConcurrent::run(boost::bind(inpainting_loop<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>,
+                              graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter));
+  // template <typename VertexListGraphType, typename InpaintingVisitorType,
+//           typename BoundaryStatusMapType, typename PriorityQueueType, 
+//           typename NearestNeighborFinderType, typename PatchInpainterType>
+  
   // Perform the inpainting
-  inpainting_loop(graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
+  //inpainting_loop(graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
 
-  HelpersOutput::WriteImage<ImageType>(image, outputFilename);
+  return app.exec();
 
-  return EXIT_SUCCESS;
 }

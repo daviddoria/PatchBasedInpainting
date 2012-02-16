@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef PatchBasedInpaintingViewer_H
-#define PatchBasedInpaintingViewer_H
+#ifndef PatchBasedInpaintingViewerWidget_H
+#define PatchBasedInpaintingViewerWidget_H
 
 #include "ui_PatchBasedInpaintingViewerWidget.h"
 
@@ -37,15 +37,25 @@
 
 class InteractorStyleImageWithDrag;
 
-class PatchBasedInpaintingViewerWidget : public QMainWindow, public Ui::PatchBasedInpaintingViewerWidget
+class WidgetSlotParent : public QMainWindow, public Ui::PatchBasedInpaintingViewerWidget
 {
-  Q_OBJECT
-public:
-
-  // Constructor
-  PatchBasedInpaintingViewerWidget();
+Q_OBJECT
 
 public slots:
+
+  void slot_Update(){};
+
+};
+
+template <typename TImage>
+class PatchBasedInpaintingViewerWidget : public WidgetSlotParent
+{
+private:
+  TImage* Image;
+
+public:
+  // Constructor
+  PatchBasedInpaintingViewerWidget(TImage* const image);
 
 private:
 
@@ -80,5 +90,7 @@ private:
 
   ImageCamera* Camera;
 };
+
+#include "PatchBasedInpaintingViewerWidget.hpp"
 
 #endif // PatchBasedInpaintingViewerWidget_H

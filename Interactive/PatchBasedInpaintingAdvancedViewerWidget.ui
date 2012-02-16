@@ -38,7 +38,35 @@
          <enum>QLayout::SetNoConstraint</enum>
         </property>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_10"/>
+         <layout class="QHBoxLayout" name="horizontalLayout_10">
+          <item>
+           <widget class="QRadioButton" name="radDisplayColorImage">
+            <property name="text">
+             <string>Color</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radDisplayMagnitudeImage">
+            <property name="text">
+             <string>Magnitude</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radDisplayChannel">
+            <property name="text">
+             <string>Channel</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinChannelToDisplay"/>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="QVTKWidget" name="qvtkWidget"/>
@@ -203,7 +231,7 @@
      <x>0</x>
      <y>0</y>
      <width>845</width>
-     <height>28</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLeft_Pane">
@@ -213,9 +241,17 @@
     <addaction name="actionOpen"/>
     <addaction name="actionFlipImageVertically"/>
     <addaction name="actionFlipImageHorizontally"/>
+    <addaction name="actionSaveResult"/>
     <addaction name="actionQuit"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionHelp"/>
+   </widget>
    <addaction name="menuLeft_Pane"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">

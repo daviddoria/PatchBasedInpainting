@@ -16,12 +16,27 @@
 // VTK
 #include <vtkRenderWindow.h>
 
+// Qt
+#include <QObject>
 /**
 
  */
-template <typename TGraph, typename TImage>
-struct DisplayVisitor : public InpaintingVisitorParent<TGraph>
+
+class SignalParent : public QObject
 {
+Q_OBJECT
+
+signals:
+  // This signal is emitted to start the progress bar
+  void Refresh();
+
+};
+
+template <typename TGraph, typename TImage>
+class DisplayVisitor : public InpaintingVisitorParent<TGraph>, public SignalParent
+{
+
+private:
   TImage* Image;
   Mask* MaskImage;
 
@@ -30,7 +45,8 @@ struct DisplayVisitor : public InpaintingVisitorParent<TGraph>
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  DebugVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth) :
+public:
+  DisplayVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth) :
   Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0)
   {
 
@@ -43,15 +59,7 @@ struct DisplayVisitor : public InpaintingVisitorParent<TGraph>
 
   void discover_vertex(VertexDescriptorType v, TGraph& g) const 
   { 
-    // Construct the region around the vertex
-    itk::Index<2> indexToFinish;
-    indexToFinish[0] = v[0];
-    indexToFinish[1] = v[1];
 
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
-
-    HelpersOutput::WriteVectorImageRegionAsRGB(Image, region, Helpers::GetSequentialFileName("targetPatch", this->NumberOfFinishedVertices, "png"));
-    HelpersOutput::WriteRegion(MaskImage, region, Helpers::GetSequentialFileName("maskPatch", this->NumberOfFinishedVertices, "png"));
   };
 
   void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
@@ -62,7 +70,7 @@ struct DisplayVisitor : public InpaintingVisitorParent<TGraph>
 
   void paint_vertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
-    
+    // Do nothing
   };
 
   bool accept_painted_vertex(VertexDescriptorType v, TGraph& g) const
@@ -72,20 +80,7 @@ struct DisplayVisitor : public InpaintingVisitorParent<TGraph>
 
   void finish_vertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
   {
-    // Debug only
-    itk::Index<2> sourceIndex;
-    sourceIndex[0] = sourceNode[0];
-    sourceIndex[1] = sourceNode[1];
-
-    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, HalfWidth);
-
-    HelpersOutput::WriteVectorImageRegionAsRGB(Image, sourceRegion, Helpers::GetSequentialFileName("sourcePatch", this->NumberOfFinishedVertices, "png"));
-
-    HelpersOutput::WriteImage(MaskImage, Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
-    HelpersOutput::WriteVectorImageAsRGB(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
-    this->NumberOfFinishedVertices++;
-
-    std::cout << "Finished node " << this->NumberOfFinishedVertices << std::endl;
+    emit Refresh();
   };
 
 };
