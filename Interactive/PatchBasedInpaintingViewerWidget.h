@@ -39,7 +39,7 @@
 
 class InteractorStyleImageWithDrag;
 
-class WidgetSlotParent : public QMainWindow, public Ui::PatchBasedInpaintingViewerWidget
+class PatchBasedInpaintingViewerWidgetParent : public QMainWindow, public Ui::PatchBasedInpaintingViewerWidget
 {
 Q_OBJECT
 
@@ -52,7 +52,7 @@ public slots:
 };
 
 template <typename TImage>
-class PatchBasedInpaintingViewerWidget : public WidgetSlotParent
+class PatchBasedInpaintingViewerWidget : public PatchBasedInpaintingViewerWidgetParent
 {
 private:
   /** The image that will be displayed, and the from which the patches will be extracted before being displayed. */

@@ -64,14 +64,14 @@ if(BuildViewer)
   add_subdirectory(Interactive)
 endif()
 
-SET(ClassicalImageInpaintingWithVisualOutput CACHE BOOL "Build a traditional patch comparison image inpainting.")
+SET(ClassicalImageInpaintingWithVisualOutput CACHE BOOL "Build a traditional patch comparison image inpainting that displays the image at every iteration.")
 if(ClassicalImageInpaintingWithVisualOutput)
   QT4_WRAP_UI(UISrcs Interactive/PatchBasedInpaintingViewerWidget.ui)
   QT4_WRAP_CPP(MOCSrcs Interactive/PatchBasedInpaintingViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp)
 
   ADD_EXECUTABLE(ClassicalImageInpaintingWithVisualOutput ClassicalImageInpaintingWithVisualOutput.cpp
     Interactive/Layer.cpp
-    Interactive/PatchBasedInpaintingViewerWidget.cpp Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+    Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
     ${UISrcs} ${MOCSrcs})
 
   TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithVisualOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
@@ -79,7 +79,19 @@ if(ClassicalImageInpaintingWithVisualOutput)
 endif()
 
 
+SET(InpaintingWithTopPatchDisplay CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for inspection.")
+if(InpaintingWithTopPatchDisplay)
+  QT4_WRAP_UI(UISrcs Interactive/PatchBasedInpaintingViewerWidget.ui Interactive/TopPatchesWidget.ui)
+  QT4_WRAP_CPP(MOCSrcs Interactive/PatchBasedInpaintingViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp Interactive/TopPatchesWidget.h)
 
+  ADD_EXECUTABLE(InpaintingWithTopPatchDisplay InpaintingWithTopPatchDisplay.cpp
+    Interactive/Layer.cpp
+    Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+    ${UISrcs} ${MOCSrcs})
+
+  TARGET_LINK_LIBRARIES(InpaintingWithTopPatchDisplay PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+  INSTALL( TARGETS InpaintingWithTopPatchDisplay RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
 
 
 
