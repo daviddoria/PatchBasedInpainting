@@ -1,6 +1,12 @@
 #ifndef InpaintingVisitor_HPP
 #define InpaintingVisitor_HPP
 
+#include "Visitors/InpaintingVisitorParent.h"
+
+// Concepts
+#include "Concepts/DescriptorVisitorConcept.hpp"
+
+// Custom
 #include "Priority/Priority.h"
 
 // Boost
@@ -21,8 +27,10 @@
 template <typename TGraph, typename TImage, typename TBoundaryNodeQueue,
           typename TFillStatusMap, typename TDescriptorVisitor, typename TPriority,
           typename TPriorityMap, typename TBoundaryStatusMap>
-struct InpaintingVisitor
+struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 {
+  BOOST_CONCEPT_ASSERT((DescriptorVisitorConcept<TDescriptorVisitor, TGraph>));
+  
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
   TImage* Image;

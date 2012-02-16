@@ -20,7 +20,7 @@
 template <typename TDescriptorVisitor, typename TVertexListGraph>
 struct DescriptorVisitorConcept 
 {
-  typedef typename boost::graph_traits<VertexListGraph>::vertex_descriptor Vertex;
+  typedef typename boost::graph_traits<TVertexListGraph>::vertex_descriptor Vertex;
   Vertex u;
   TVertexListGraph g;
   TDescriptorVisitor vis;
