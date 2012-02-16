@@ -104,6 +104,6 @@ private:
   ImageCamera* Camera;
 };
 
-#include "PatchBasedInpaintingViewerWidget.hpp"
+#include "BasicViewerWidget.hpp"
 
 #endif // PatchBasedInpaintingViewerWidget_H

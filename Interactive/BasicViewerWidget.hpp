@@ -2,7 +2,7 @@
 #define PatchBasedInpaintingViewerWidget_HPP
 
 
-#include "PatchBasedInpaintingViewerWidget.h" // Appease syntax parser
+#include "BasicViewerWidget.h" // Appease syntax parser
 
 // ITK
 #include "itkCastImageFilter.h"

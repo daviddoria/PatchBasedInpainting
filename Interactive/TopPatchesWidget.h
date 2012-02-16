@@ -34,6 +34,7 @@
 // Custom
 #include "ImageCamera.h"
 #include "ImageProcessing/Mask.h"
+#include "Interactive/ModelView/ListModelPatches.h"
 
 class InteractorStyleImageWithDrag;
 

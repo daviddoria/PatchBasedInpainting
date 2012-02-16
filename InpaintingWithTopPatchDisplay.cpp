@@ -66,8 +66,9 @@
 #include <QApplication>
 #include <QtConcurrentRun>
 
-// Custom
-#include "Interactive/PatchBasedInpaintingViewerWidget.h"
+// GUI
+#include "Interactive/BasicViewerWidget.h"
+#include "Interactive/TopPatchesWidget.h"
 
 // Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 filled.mha
 int main(int argc, char *argv[])
