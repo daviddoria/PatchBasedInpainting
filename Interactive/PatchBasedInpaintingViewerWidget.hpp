@@ -40,8 +40,11 @@ PatchBasedInpaintingViewerWidget<TImage>::PatchBasedInpaintingViewerWidget(TImag
 {
   qRegisterMetaType<itk::ImageRegion<2> >("itkImageRegion");
 
-  // This function is called by both constructors. This avoid code duplication.
   this->setupUi(this);
+
+  this->ImageDimension[0] = 0;
+  this->ImageDimension[1] = 0;
+  this->ImageDimension[2] = 0;
 
   SetupScenes();
 
@@ -85,7 +88,16 @@ void PatchBasedInpaintingViewerWidget<TImage>::slot_UpdateImage()
   std::cout << "Update image." << std::endl;
   ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
 
-  this->Renderer->ResetCamera(); // Definitely need to do this once - if we do it every time the zoom will be reset so you cannot watch a region closely.
+  int dims[3];
+  this->ImageLayer.ImageData->GetDimensions(dims);
+  if(dims[0] != ImageDimension[0] || dims[1] != ImageDimension[1] || dims[2] != ImageDimension[2])
+    {
+    this->Renderer->ResetCamera();
+    ImageDimension[0] = dims[0];
+    ImageDimension[1] = dims[1];
+    ImageDimension[2] = dims[2];
+    }
+
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 

@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef ITKVTKHELPERS_H
-#define ITKVTKHELPERS_H
+#ifndef ITKVTKHelpers_H
+#define ITKVTKHelpers_H
 
 #include "itkSize.h"
 

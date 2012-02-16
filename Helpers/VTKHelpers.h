@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef VTKHELPERS_H
-#define VTKHELPERS_H
+#ifndef VTKHelpers_H
+#define VTKHelpers_H
 
 class vtkImageData;
 class vtkPolyData;
