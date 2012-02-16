@@ -86,15 +86,15 @@ int main(int argc, char *argv[])
 
   std::stringstream ssPatchRadius;
   ssPatchRadius << argv[3];
-  unsigned int patch_half_width = 0;
-  ssPatchRadius >> patch_half_width;
+  unsigned int patchHalfWidth = 0;
+  ssPatchRadius >> patchHalfWidth;
 
   std::string outputFilename = argv[4];
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
-  std::cout << "Patch half width: " << patch_half_width << std::endl;
+  std::cout << "Patch half width: " << patchHalfWidth << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
   typedef FloatVectorImageType ImageType;
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
 
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
   typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
-  InpainterType patchInpainter(patch_half_width, fillStatusMap);
+  InpainterType patchInpainter(patchHalfWidth, fillStatusMap);
 
   // Create the priority function
   typedef PriorityRandom PriorityType;
@@ -166,16 +166,16 @@ int main(int argc, char *argv[])
 
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> ImagePatchDescriptorVisitorType;
-  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patch_half_width);
+  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
                             ImagePatchDescriptorVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
-                                          imagePatchDescriptorVisitor, priorityMap, &priorityFunction, patch_half_width, boundaryStatusMap);
+                                          imagePatchDescriptorVisitor, priorityMap, &priorityFunction, patchHalfWidth, boundaryStatusMap);
   
-  typedef DebugVisitor<VertexListGraphType> DebugVisitorType;
-  DebugVisitorType debugVisitor;
+  typedef DebugVisitor<VertexListGraphType, ImageType> DebugVisitorType;
+  DebugVisitorType debugVisitor(image, mask, patchHalfWidth);
   
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeVisitorType;
   CompositeVisitorType compositeVisitor;
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
 
   // Perform the inpainting
-  inpainting_loop(graph, inpaintingVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
+  inpainting_loop(graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
 
   HelpersOutput::WriteImage<ImageType>(image, outputFilename);
 

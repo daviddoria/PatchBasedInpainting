@@ -57,11 +57,11 @@ struct CompositeInpaintingVisitor
     return acceptAll;
   };
 
-  void finish_vertex(VertexDescriptorType v, TGraph& g) const 
+  void finish_vertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g) const 
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
-      Visitors[visitorId]->finish_vertex(v, g);
+      Visitors[visitorId]->finish_vertex(v, sourceNode, g);
       }
   };
 

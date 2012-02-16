@@ -43,8 +43,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   TPriorityMap& PriorityMap;
   TBoundaryStatusMap& BoundaryStatusMap;
 
-  unsigned int HalfWidth;
-  unsigned int NumberOfFinishedVertices;
+  const unsigned int HalfWidth;
 
   InpaintingVisitor(TImage* const in_image, Mask* const in_mask,
                     TBoundaryNodeQueue& in_boundaryNodeQueue, TFillStatusMap& in_fillStatusMap,
@@ -52,7 +51,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
                     TPriority* const in_priorityFunction,
                     const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
   Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue), PriorityFunction(in_priorityFunction), FillStatusMap(in_fillStatusMap), DescriptorVisitor(in_descriptorVisitor),
-  PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap), HalfWidth(in_half_width), NumberOfFinishedVertices(0)
+  PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap), HalfWidth(in_half_width)
   {
   }
 
@@ -64,24 +63,10 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   void discover_vertex(VertexDescriptorType v, TGraph& g) const
   {
     DescriptorVisitor.discover_vertex(v, g);
-
-    { // Debug only
-    // Construct the region around the vertex
-    itk::Index<2> indexToFinish;
-    indexToFinish[0] = v[0];
-    indexToFinish[1] = v[1];
-
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
-
-    HelpersOutput::WriteVectorImageRegionAsRGB(Image, region, Helpers::GetSequentialFileName("targetPatch", this->NumberOfFinishedVertices, "png"));
-    HelpersOutput::WriteRegion(MaskImage, region, Helpers::GetSequentialFileName("maskPatch", this->NumberOfFinishedVertices, "png"));
-    }
   };
 
   void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
-    std::cout << "Match made: target: " << target[0] << " " << target[1]
-              << " with source: " << source[0] << " " << source[1] << std::endl;
     assert(get(fillStatusMap, source));
     assert(get(descriptorMap, source).IsFullyValid());
   };
@@ -180,22 +165,6 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       ++imageIterator;
       }
 
-    {
-    // Debug only
-    itk::Index<2> sourceIndex;
-    sourceIndex[0] = sourceNode[0];
-    sourceIndex[1] = sourceNode[1];
-
-    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, HalfWidth);
-
-    HelpersOutput::WriteVectorImageRegionAsRGB(Image, sourceRegion, Helpers::GetSequentialFileName("sourcePatch", this->NumberOfFinishedVertices, "png"));
-
-    HelpersOutput::WriteImage(MaskImage, Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
-    HelpersOutput::WriteVectorImageAsRGB(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
-    this->NumberOfFinishedVertices++;
-
-    std::cout << "Finished node " << this->NumberOfFinishedVertices << std::endl;
-    }
   }; // finish_vertex
 
 }; // InpaintingVisitor
