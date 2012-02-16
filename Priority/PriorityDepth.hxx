@@ -2,7 +2,7 @@
 #include "PriorityDepth.h"
 
 #include "ImageProcessing/Derivatives.h"
-#include "Helpers/HelpersOutput.h"
+#include "Helpers/OutputHelpers.h"
 #include "ImageProcessing/Isophotes.h"
 #include "ImageProcessing/MaskOperations.h"
 

@@ -16,7 +16,7 @@
  *
  *=========================================================================*/
 
-#include "HelpersOutput.h"
+#include "OutputHelpers.h"
 #include "ITKHelpers.h"
 
 #include <vtkSmartPointer.h>

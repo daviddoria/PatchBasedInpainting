@@ -9,7 +9,7 @@
 #include "Priority/Priority.h"
 
 // Debug
-#include "Helpers/HelpersOutput.h"
+#include "Helpers/OutputHelpers.h"
 
 template <typename TBoundaryNodeQueue, typename TPriorityMap, typename TBoundaryStatusMap, typename TPriority>
 inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& boundaryNodeQueue, TPriorityMap& priorityMap,

@@ -15,7 +15,7 @@
 
 // Helpers
 #include "Helpers/ITKHelpers.h"
-#include "Helpers/HelpersOutput.h"
+#include "Helpers/OutputHelpers.h"
 
 /**
  * This is a visitor that complies with the InpaintingVisitorConcept. It forwards

@@ -29,7 +29,7 @@
 
 // Custom
 #include "Helpers/Helpers.h"
-#include "Helpers/HelpersOutput.h"
+#include "Helpers/OutputHelpers.h"
 #include "Helpers/ITKVTKHelpers.h"
 #include "Interactive/HelpersQt.h"
 #include "InteractorStyleImageWithDrag.h"

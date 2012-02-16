@@ -102,6 +102,6 @@ void WriteRegion(const TImage* const image, const itk::ImageRegion<2>& region, c
 //template<typename TImage>
 //void WriteMaskedImagePatch(const Mask* mask, const ImagePatch<TImage>& patch, const std::string& fileName, const typename TImage::PixelType& holeColor);
 
-#include "HelpersOutput.hxx"
+#include "OutputHelpers.hxx"
 
 #endif

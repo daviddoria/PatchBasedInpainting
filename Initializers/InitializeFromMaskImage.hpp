@@ -9,7 +9,7 @@
 #include "Priority/Priority.h"
 
 // Debug
-#include "Helpers/HelpersOutput.h"
+#include "Helpers/OutputHelpers.h"
 
 template <typename TVisitor, typename TGraph, typename TFillStatusMap>
 inline void InitializeFromMaskImage(Mask* const maskImage, TVisitor* const visitor, TGraph& g,

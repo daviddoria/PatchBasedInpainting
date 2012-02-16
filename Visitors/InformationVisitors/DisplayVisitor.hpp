@@ -6,7 +6,7 @@
 // Custom
 #include "Visitors/InpaintingVisitorParent.h"
 #include "ImageProcessing/Mask.h"
-#include "Helpers/HelpersOutput.h"
+#include "Helpers/OutputHelpers.h"
 #include "Helpers/ITKHelpers.h"
 #include "Node.h"
 
