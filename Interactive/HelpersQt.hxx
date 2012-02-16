@@ -24,14 +24,12 @@
 // Custom
 #include "Helpers/Helpers.h"
 #include "Helpers/ITKHelpers.h"
-#include "Types.h"
 
 // Qt
 #include <QColor>
 
 namespace HelpersQt
 {
-
 
 template <typename TImage>
 QImage GetQImage(const TImage* image, const itk::ImageRegion<2>& region, const DisplayStyle& style)

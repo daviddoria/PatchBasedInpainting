@@ -8,7 +8,8 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) #fix the dynamic linking error (RPAT
 # This is needed for shared_ptr and the trick using enable_if and if_fundamental to allow scalars to be treated as the 0th component of a vector.
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 # VTK
 FIND_PACKAGE(VTK REQUIRED)
@@ -38,23 +39,17 @@ endif ( QT4_FOUND )
 add_subdirectory(Helpers)
 
 add_library(PatchBasedInpainting
-#CandidatePairs.cpp
 ImageProcessing/Derivatives.cpp
 Utilities/itkCommandLineArgumentParser.cxx
 ImageProcessing/Isophotes.cpp
 ImageProcessing/Mask.cpp
 ImageProcessing/MaskOperations.cpp
-#PatchBasedInpainting.cpp
-#PatchPair.cpp
-#PatchPairDifferences.cpp
 Priority/Priority.cpp
 Priority/PriorityCriminisi.cpp
 Priority/PriorityDepth.cpp
 Priority/PriorityManual.cpp
 Priority/PriorityOnionPeel.cpp
 Priority/PriorityRandom.cpp
-#SourcePatchCollection.cpp
-#ValidRegionIterator.cpp
 )
 
 # Interactive
@@ -69,6 +64,34 @@ if(BuildViewer)
   add_subdirectory(Interactive)
 endif()
 
+SET(ClassicalImageInpaintingWithVisualOutput CACHE BOOL "Build a traditional patch comparison image inpainting.")
+if(ClassicalImageInpaintingWithVisualOutput)
+  QT4_WRAP_UI(UISrcs Interactive/PatchBasedInpaintingViewerWidget.ui)
+  QT4_WRAP_CPP(MOCSrcs Interactive/PatchBasedInpaintingViewerWidget.h)
+
+  ADD_EXECUTABLE(ClassicalImageInpaintingWithVisualOutput ClassicalImageInpaintingWithVisualOutput.cpp 
+    Interactive/PatchBasedInpaintingViewerWidget.cpp Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+    ${UISrcs} ${MOCSrcs})
+
+  TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithVisualOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+  INSTALL( TARGETS ClassicalImageInpaintingWithVisualOutput RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 SET(ClassicalImageInpainting CACHE BOOL "Build a traditional patch comparison image inpainting.")
 if(ClassicalImageInpainting)
   ADD_EXECUTABLE(ClassicalImageInpainting ClassicalImageInpainting.cpp)
@@ -82,6 +105,8 @@ if(ClassicalImageInpaintingWithTextOutput)
   TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithTextOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
   INSTALL( TARGETS ClassicalImageInpaintingWithTextOutput RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
+
+
 
 SET(SmallPatchBigPatchInpainting CACHE BOOL "Build a two step (compare small patches, then compare big patches at the best of the small patches) image inpainting.")
 if(SmallPatchBigPatchInpainting)
@@ -113,6 +138,7 @@ if(BuildTests)
   #add_subdirectory(ImageProcessing/Tests)
   add_subdirectory(NearestNeighbor/Tests)
   add_subdirectory(Helpers/Tests)
+  add_subdirectory(Utilities/Tests)
 ENDIF(BuildTests)
 
 SET(BuildInteractiveTests CACHE BOOL "Build interactive tests.")
@@ -126,7 +152,6 @@ if(BuildDemos)
   add_subdirectory(Demos)
 ENDIF(BuildDemos)
 
-add_subdirectory(Utilities/Tests)
 add_subdirectory(NearestNeighbor)
 add_subdirectory(Visitors)
 add_subdirectory(Inpainters)

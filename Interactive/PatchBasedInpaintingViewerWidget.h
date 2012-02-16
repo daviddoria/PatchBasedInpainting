@@ -32,10 +32,7 @@
 #include <QThread>
 
 // Custom
-#include "DisplayState.h"
 #include "ImageCamera.h"
-#include "InpaintingDisplaySettings.h"
-#include "Types.h"
 #include "ImageProcessing/Mask.h"
 
 class InteractorStyleImageWithDrag;
@@ -49,17 +46,6 @@ public:
   PatchBasedInpaintingViewerWidget();
 
 public slots:
-
-//   void on_radDisplayColorImage_clicked();
-//   void on_radDisplayMagnitudeImage_clicked();
-//   void on_radDisplayChannel_clicked();
-//   void on_spinChannelToDisplay_valueChanged(int unused);
-
-//   void on_actionHelp_activated();
-//   void on_actionQuit_activated();
-
-//   void on_actionFlipImageVertically_activated();
-//   void on_actionFlipImageHorizontally_activated();
 
 private:
 
@@ -88,8 +74,6 @@ private:
 
   // The color to use as the background of the QGraphicsScenes
   QColor SceneBackground;
-
-  InpaintingDisplaySettings Settings;
 
   // Connect all signals and slots.
   void SetupConnections();

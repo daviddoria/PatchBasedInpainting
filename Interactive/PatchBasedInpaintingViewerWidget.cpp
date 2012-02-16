@@ -60,7 +60,6 @@
 #include "HelpersQt.h"
 #include "InteractorStyleImageWithDrag.h"
 #include "ImageProcessing/Mask.h"
-#include "Types.h"
 
 PatchBasedInpaintingViewerWidget::PatchBasedInpaintingViewerWidget()
 {
