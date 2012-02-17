@@ -61,6 +61,8 @@ public:
     }
 
     std::vector<DistanceValueType> output_dist;
+    typedef std::multimap<DistanceValueType, typename OutputContainerType::value_type> InternalOutputMapType;
+    InternalOutputMapType internal_output_map;
     for(; first != last; ++first)
     {
       DistanceValueType d = DistanceFunction(get(PropertyMap, *first), get(PropertyMap, queryNode));
@@ -72,6 +74,8 @@ public:
       if((it_lo != output_dist.end()) || (output_dist.size() < this->K))
       {
         output_dist.insert(it_lo, d);
+        //internal_output_map[d] = *first;
+        internal_output_map.insert(typename InternalOutputMapType::value_type(d, *first));
         typename OutputContainerType::iterator itv = output.begin();
         for(typename std::vector<DistanceValueType>::iterator it = output_dist.begin();
             (itv != output.end()) && (it != it_lo); ++itv,++it) ;
@@ -83,6 +87,11 @@ public:
         }
       }
     }
+    output.clear();
+    for(typename InternalOutputMapType::const_iterator iter = internal_output_map.begin(); iter != internal_output_map.end(); ++iter)
+      {
+      output.push_back(iter->second);
+      }
   }
 
 };
