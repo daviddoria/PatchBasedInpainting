@@ -52,22 +52,27 @@ void HighlightCenterPixel(QImage& qimage, const QColor& color);
 ///////// Function templates (defined in HelpersQt.hxx) /////////
 ////////////////////////////////////
 template <typename TImage>
-QImage GetQImage(const TImage* image, const itk::ImageRegion<2>& region, const DisplayStyle& style);
+QImage GetQImage(const TImage* const image, const itk::ImageRegion<2>& region, const DisplayStyle& style);
 
 template <typename TImage>
-QImage GetQImageColor(const TImage* image, const itk::ImageRegion<2>& region);
+QImage GetQImageColor(const TImage* const image, const itk::ImageRegion<2>& region);
 
 template <typename TImage>
-QImage GetQImageMagnitude(const TImage* image, const itk::ImageRegion<2>& region);
+QImage GetQImageMagnitude(const TImage* const image, const itk::ImageRegion<2>& region);
 
 template <typename TImage>
-QImage GetQImageScalar(const TImage* image, const itk::ImageRegion<2>& region);
+QImage GetQImageScalar(const TImage* const image, const itk::ImageRegion<2>& region);
 
 template <typename TImage>
-QImage GetQImageChannel(const TImage* image, const itk::ImageRegion<2>& region, const unsigned int channel);
+QImage GetQImageChannel(const TImage* const image, const itk::ImageRegion<2>& region, const unsigned int channel);
 
+/** Convert an image to a QImage, but changed the corresponding masked pixels to the specified 'color'.*/
 template <typename TImage>
-QImage GetQImageMasked(const TImage* image, const Mask::Pointer mask, const itk::ImageRegion<2>& region);
+QImage GetQImageMasked(const TImage* const image, const Mask* const mask, const itk::ImageRegion<2>& region, const QColor& color = QColor(0, 255, 0));
+
+/** Convert an image to a QImage, but changed the pixels from 'image' in 'imageRegion' to 'color' if the corresponding mask pixels in "maskRegion" are masked.*/
+template <typename TImage>
+QImage GetQImageMasked(const TImage* const image, const itk::ImageRegion<2>& imageRegion, const Mask* const mask, const itk::ImageRegion<2>& maskRegion, const QColor& color = QColor(0, 255, 0));
 
 } // end namespace
 

@@ -1,5 +1,5 @@
-#ifndef PatchBasedInpaintingViewerWidget_HPP
-#define PatchBasedInpaintingViewerWidget_HPP
+#ifndef BasicViewerWidget_HPP
+#define BasicViewerWidget_HPP
 
 
 #include "BasicViewerWidget.h" // Appease syntax parser
@@ -36,7 +36,7 @@
 #include "ImageProcessing/Mask.h"
 
 template <typename TImage>
-PatchBasedInpaintingViewerWidget<TImage>::PatchBasedInpaintingViewerWidget(TImage* const image) : Image(image)
+BasicViewerWidget<TImage>::BasicViewerWidget(TImage* const image, Mask* const mask) : Image(image), MaskImage(mask)
 {
   qRegisterMetaType<itk::ImageRegion<2> >("itkImageRegion");
 
@@ -63,7 +63,7 @@ PatchBasedInpaintingViewerWidget<TImage>::PatchBasedInpaintingViewerWidget(TImag
 }
 
 template <typename TImage>
-void PatchBasedInpaintingViewerWidget<TImage>::SetupScenes()
+void BasicViewerWidget<TImage>::SetupScenes()
 {
   QBrush brush;
   brush.setStyle(Qt::SolidPattern);
@@ -80,10 +80,18 @@ void PatchBasedInpaintingViewerWidget<TImage>::SetupScenes()
   this->ResultPatchScene = new QGraphicsScene();
   this->ResultPatchScene->setBackgroundBrush(brush);
   this->gfxResult->setScene(ResultPatchScene);
+
+  this->MaskedSourcePatchScene = new QGraphicsScene();
+  this->MaskedSourcePatchScene->setBackgroundBrush(brush);
+  this->gfxMaskedSource->setScene(MaskedSourcePatchScene);
+
+  this->MaskedTargetPatchScene = new QGraphicsScene();
+  this->MaskedTargetPatchScene->setBackgroundBrush(brush);
+  this->gfxMaskedTarget->setScene(MaskedTargetPatchScene);
 }
 
 template <typename TImage>
-void PatchBasedInpaintingViewerWidget<TImage>::slot_UpdateImage()
+void BasicViewerWidget<TImage>::slot_UpdateImage()
 {
   std::cout << "Update image." << std::endl;
   ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
@@ -102,106 +110,83 @@ void PatchBasedInpaintingViewerWidget<TImage>::slot_UpdateImage()
 }
 
 template <typename TImage>
-void PatchBasedInpaintingViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& region)
+void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
 {
   std::cout << "Update source." << std::endl;
 
-  QImage sourceImage = HelpersQt::GetQImageColor(Image, region);
-  //sourceImage = HelpersQt::FitToGraphicsView(sourceImage, gfxSource);
+  QImage sourceImage = HelpersQt::GetQImageColor(Image, sourceRegion);
   QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
   gfxSource->fitInView(item);
+
+  QImage maskedSourceImage = HelpersQt::GetQImageMasked(Image, sourceRegion, MaskImage, targetRegion);
+  QGraphicsPixmapItem* maskedItem = this->MaskedSourcePatchScene->addPixmap(QPixmap::fromImage(maskedSourceImage));
+  gfxMaskedSource->fitInView(maskedItem);
 }
 
 template <typename TImage>
-void PatchBasedInpaintingViewerWidget<TImage>::slot_UpdateTarget(const itk::ImageRegion<2>& region)
+void BasicViewerWidget<TImage>::slot_UpdateTarget(const itk::ImageRegion<2>& region)
 {
   std::cout << "Update target." << std::endl;
-  // We use the previous image and previous mask, but the current PotentialPairSets,
-  // as these are the sets that were used to get to this state.
 
-  // Target
+  // Target patch
   QImage targetImage = HelpersQt::GetQImageColor(Image, region);
-
-  //targetImage = HelpersQt::FitToGraphicsView(targetImage, gfxTarget);
   QGraphicsPixmapItem* item = this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
   gfxTarget->fitInView(item);
+
+  // Masked target patch
+  QImage maskedTargetImage = HelpersQt::GetQImageMasked(Image, MaskImage, region);
+  QGraphicsPixmapItem* maskedItem = this->MaskedTargetPatchScene->addPixmap(QPixmap::fromImage(maskedTargetImage));
+  gfxMaskedTarget->fitInView(maskedItem);
 }
 
-// template <typename TImage>
-// void PatchBasedInpaintingViewerWidget<TImage>::DisplayResultPatch()
-// {
-  //QImage qimage(regionSize[0], regionSize[1], QImage::Format_RGB888);
-
-  // TODO: Fix this
-//   itk::ImageRegionIterator<FloatVectorImageType> sourceIterator(currentImage, this->SourcePatchToDisplay.GetRegion());
-//   itk::ImageRegionIterator<FloatVectorImageType> targetIterator(currentImage, this->TargetPatchToDisplay.GetRegion());
-//   itk::ImageRegionIterator<Mask> maskIterator(currentMask, this->TargetPatchToDisplay.GetRegion());
-// 
-//   FloatVectorImageType::Pointer resultPatch = FloatVectorImageType::New();
-//   resultPatch->SetNumberOfComponentsPerPixel(currentImage->GetNumberOfComponentsPerPixel());
-//   itk::Size<2> patchSize = ITKHelpers::SizeFromRadius(this->Settings.PatchRadius);
-//   itk::ImageRegion<2> region;
-//   region.SetSize(patchSize);
-//   resultPatch->SetRegions(region);
-//   resultPatch->Allocate();
-// 
-//   while(!maskIterator.IsAtEnd())
-//     {
-//     FloatVectorImageType::PixelType pixel;
-// 
-//     if(currentMask->IsHole(maskIterator.GetIndex()))
-//       {
-//       pixel = sourceIterator.Get();
-//       }
-//     else
-//       {
-//       pixel = targetIterator.Get();
-//       }
-
-//     itk::Offset<2> offset = sourceIterator.GetIndex() - this->SourcePatchToDisplay.GetRegion().GetIndex();
-//     itk::Index<2> offsetIndex;
-//     offsetIndex[0] = offset[0];
-//     offsetIndex[1] = offset[1];
-//     resultPatch->SetPixel(offsetIndex, pixel);
-
-//     ++sourceIterator;
-//     ++targetIterator;
-//     ++maskIterator;
-//     }
-
-  // Color the center pixel
-  //qimage.setPixel(regionSize[0]/2, regionSize[1]/2, this->CenterPixelColor.rgb());
-
-//   qimage = HelpersQt::GetQImage<FloatVectorImageType>(resultPatch, resultPatch->GetLargestPossibleRegion(), this->ImageDisplayStyle);
-// 
-//   //qimage = HelpersQt::FitToGraphicsView(qimage, gfxResult);
-//   this->ResultPatchScene->clear();
-//   QGraphicsPixmapItem* item = this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
-//   gfxResult->fitInView(item);
-//   //this->ResultPatchScene->addPixmap(QPixmap());
-//   //std::cout << "Set result patch." << std::endl;
-
-//}
-
-/*
-void PatchBasedInpaintingViewerWidget::IterationComplete(const PatchPair& usedPatchPair)
+template <typename TImage>
+void BasicViewerWidget<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
 {
-  // TODO: The interfaces used in this function have changed.
+  assert(sourceRegion.GetSize() == targetRegion.GetSize());
 
-  InpaintingIterationRecord iterationRecord;
-  for(unsigned int i = 0; i < this->Inpainting->GetImagesToUpdate().size(); ++i)
+  QImage qimage(sourceRegion.GetSize()[0], sourceRegion.GetSize()[1], QImage::Format_RGB888);
+
+  itk::ImageRegionIterator<TImage> sourceIterator(Image, sourceRegion);
+  itk::ImageRegionIterator<TImage> targetIterator(Image, targetRegion);
+  itk::ImageRegionIterator<Mask> maskIterator(MaskImage, targetRegion);
+
+  typename TImage::Pointer resultPatch = TImage::New();
+  resultPatch->SetNumberOfComponentsPerPixel(Image->GetNumberOfComponentsPerPixel());
+  itk::ImageRegion<2> resultPatchRegion;
+  resultPatchRegion.SetSize(sourceRegion.GetSize());
+  resultPatch->SetRegions(resultPatchRegion);
+  resultPatch->Allocate();
+
+  while(!maskIterator.IsAtEnd())
     {
-    std::cout << "Updating image " << i << std::endl;
+    FloatVectorImageType::PixelType pixel;
 
-    ITKHelpers::OutputImageType(this->Inpainting->GetImagesToUpdate()[i]);
-    itk::ImageBase<2>::Pointer newImage = ITKHelpers::CreateImageWithSameType(this->Inpainting->GetImagesToUpdate()[i]);
-    ITKHelpers::OutputImageType(newImage);
-    // TODO: Make this deep copy work
-    //ITKHelpers::DeepCopy(this->Inpainting->GetImagesToUpdate()[i], newImage);
+    if(MaskImage->IsHole(maskIterator.GetIndex()))
+      {
+      pixel = sourceIterator.Get();
+      }
+    else
+      {
+      pixel = targetIterator.Get();
+      }
+
+    itk::Offset<2> offset = sourceIterator.GetIndex() - sourceRegion.GetIndex();
+    itk::Index<2> offsetIndex;
+    offsetIndex[0] = offset[0];
+    offsetIndex[1] = offset[1];
+    resultPatch->SetPixel(offsetIndex, pixel);
+
+    ++sourceIterator;
+    ++targetIterator;
+    ++maskIterator;
     }
-  std::cout << "Finished creating record images." << std::endl;
 
-}*/
+  qimage = HelpersQt::GetQImageColor(resultPatch.GetPointer(), resultPatch->GetLargestPossibleRegion());
 
+  this->ResultPatchScene->clear();
+  QGraphicsPixmapItem* item = this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
+  gfxResult->fitInView(item);
+
+}
 
 #endif

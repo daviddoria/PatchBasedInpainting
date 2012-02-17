@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PatchBasedInpaintingViewerWidget</class>
- <widget class="QMainWindow" name="PatchBasedInpaintingViewerWidget">
+ <class>BasicViewerWidget</class>
+ <widget class="QMainWindow" name="BasicViewerWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -143,6 +143,52 @@
              <blue>0</blue>
             </color>
            </brush>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Masked Target</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGraphicsView" name="gfxMaskedTarget">
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Masked Source</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGraphicsView" name="gfxMaskedSource">
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
           </property>
          </widget>
         </item>

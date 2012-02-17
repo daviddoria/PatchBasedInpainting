@@ -60,7 +60,7 @@ QImage GetQImage(const TImage* image, const itk::ImageRegion<2>& region, const D
 }
 
 template <typename TImage>
-QImage GetQImageColor(const TImage* image, const itk::ImageRegion<2>& region)
+QImage GetQImageColor(const TImage* const image, const itk::ImageRegion<2>& region)
 {
   // Get a color QImage from an ITK image.
   QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888);
@@ -189,26 +189,34 @@ QImage GetQImageScalar(const TImage* image, const itk::ImageRegion<2>& region)
 }
 
 template <typename TImage>
-QImage GetQImageMasked(const TImage* image, const Mask::Pointer mask, const itk::ImageRegion<2>& region)
+QImage GetQImageMasked(const TImage* image, const Mask* const mask, const itk::ImageRegion<2>& region, const QColor& color)
 {
-  QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_RGB888);
+  // Call the stronger function with the same 'region' for both the image and mask.
+  return GetQImageMasked(image, region, mask, region, color);
+}
+
+template <typename TImage>
+QImage GetQImageMasked(const TImage* image, const itk::ImageRegion<2>& imageRegion, const Mask* const mask, const itk::ImageRegion<2>& maskRegion, const QColor& holeColor)
+{
+  assert(imageRegion.GetSize() == maskRegion.GetSize());
+
+  QImage qimage(imageRegion.GetSize()[0], imageRegion.GetSize()[1], QImage::Format_RGB888);
 
   typedef itk::RegionOfInterestImageFilter< TImage, TImage > RegionOfInterestImageFilterType;
   typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
-  regionOfInterestImageFilter->SetRegionOfInterest(region);
+  regionOfInterestImageFilter->SetRegionOfInterest(imageRegion);
   regionOfInterestImageFilter->SetInput(image);
   regionOfInterestImageFilter->Update();
 
   typedef itk::RegionOfInterestImageFilter< Mask, Mask> RegionOfInterestMaskFilterType;
   typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter = RegionOfInterestMaskFilterType::New();
-  regionOfInterestMaskFilter->SetRegionOfInterest(region);
+  regionOfInterestMaskFilter->SetRegionOfInterest(maskRegion);
   regionOfInterestMaskFilter->SetInput(mask);
   regionOfInterestMaskFilter->Update();
 
   itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
 
-  QColor holeColor(0, 255, 0);
-
+  unsigned int numberOfHolePixels = 0;
   while(!imageIterator.IsAtEnd())
     {
     typename TImage::PixelType pixel = imageIterator.Get();
@@ -218,6 +226,7 @@ QImage GetQImageMasked(const TImage* image, const Mask::Pointer mask, const itk:
     if(regionOfInterestMaskFilter->GetOutput()->IsHole(index))
       {
       qimage.setPixel(index[0], index[1], holeColor.rgb());
+      numberOfHolePixels++;
       }
     else
       {
@@ -228,8 +237,7 @@ QImage GetQImageMasked(const TImage* image, const Mask::Pointer mask, const itk:
     ++imageIterator;
     }
 
-  QColor highlightColor(255, 0, 255);
-  qimage.setPixel(region.GetSize()[0]/2, region.GetSize()[1]/2, highlightColor.rgb());
+  std::cout << "There were " << numberOfHolePixels << " hole pixels." << std::endl;
 
   //return qimage; // The actual image region
   return qimage.mirrored(false, true); // The flipped image region

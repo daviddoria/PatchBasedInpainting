@@ -30,8 +30,12 @@ Q_OBJECT
 signals:
   // This signal is emitted to start the progress bar
   void signal_RefreshImage();
-  void signal_RefreshSource(itk::ImageRegion<2>);
-  void signal_RefreshTarget(itk::ImageRegion<2>);
+
+  // We need the target region as well while updating the source region because we may want to mask the source patch with the target patch's mask.
+  void signal_RefreshSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
+  
+  void signal_RefreshTarget(const itk::ImageRegion<2>);
+  void signal_RefreshResult(const itk::ImageRegion<2> sourceRegion, const itk::ImageRegion<2> targetRegion);
 
 };
 
@@ -67,14 +71,15 @@ public:
 
   void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
   {
-    //Node targetNode;
+    // Target node
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(target);
     itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->HalfWidth);
     emit signal_RefreshTarget(targetRegion);
 
+    // Source node
     itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(source);
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, this->HalfWidth);
-    emit signal_RefreshSource(sourceRegion);
+    emit signal_RefreshSource(sourceRegion, targetRegion);
   };
 
   void paint_vertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
@@ -89,6 +94,13 @@ public:
 
   void finish_vertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
   {
+    itk::Index<2> targetIndex = ITKHelpers::CreateIndex(v);
+    itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->HalfWidth);
+
+    itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(sourceNode);
+    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, this->HalfWidth);
+
+    emit signal_RefreshResult(sourceRegion, targetRegion);
     emit signal_RefreshImage();
   };
 

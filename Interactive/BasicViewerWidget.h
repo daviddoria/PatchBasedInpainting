@@ -16,10 +16,10 @@
  *
  *=========================================================================*/
 
-#ifndef PatchBasedInpaintingViewerWidget_H
-#define PatchBasedInpaintingViewerWidget_H
+#ifndef BasicViewerWidget_H
+#define BasicViewerWidget_H
 
-#include "ui_PatchBasedInpaintingViewerWidget.h"
+#include "ui_BasicViewerWidget.h"
 
 // VTK
 #include <vtkSmartPointer.h>
@@ -39,25 +39,29 @@
 
 class InteractorStyleImageWithDrag;
 
-class PatchBasedInpaintingViewerWidgetParent : public QMainWindow, public Ui::PatchBasedInpaintingViewerWidget
+class BasicViewerWidgetParent : public QMainWindow, public Ui::BasicViewerWidget
 {
 Q_OBJECT
 
 public slots:
 
   virtual void slot_UpdateImage() = 0;
-  virtual void slot_UpdateSource(const itk::ImageRegion<2>& region) = 0;
+  virtual void slot_UpdateSource(const itk::ImageRegion<2>& region, const itk::ImageRegion<2>& targetregion) = 0;
   virtual void slot_UpdateTarget(const itk::ImageRegion<2>& region) = 0;
+  virtual void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion) = 0;
 
 };
 
 template <typename TImage>
-class PatchBasedInpaintingViewerWidget : public PatchBasedInpaintingViewerWidgetParent
+class BasicViewerWidget : public BasicViewerWidgetParent
 {
 private:
   /** The image that will be displayed, and the from which the patches will be extracted before being displayed. */
   TImage* Image;
 
+  /** The mask that will be used to mask the patches that are displayed. */
+  Mask* MaskImage;
+  
   /** This variable is used to track whether or not the image size changed between this refresh and the last refresh.
    * Typically it is simply used to determine if ResetCamera should be called before rendering. We typically do not
    * want to call ResetCamera if only the image content has been changed, but we do want to call it if the image
@@ -69,12 +73,16 @@ private:
 
 public:
   // Constructor
-  PatchBasedInpaintingViewerWidget(TImage* const image);
+  BasicViewerWidget(TImage* const image, Mask* const mask);
 
   void slot_UpdateImage();
-  void slot_UpdateSource(const itk::ImageRegion<2>& region);
-  void slot_UpdateTarget(const itk::ImageRegion<2>& region);
 
+  // We need the target region as well while updating the source region because we may want to mask the source patch with the target patch's mask.
+  void slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
+
+  void slot_UpdateTarget(const itk::ImageRegion<2>& region);
+  void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
+  
 private:
 
   void SetupScenes();
@@ -85,15 +93,11 @@ private:
   // The only renderer
   vtkSmartPointer<vtkRenderer> Renderer;
 
-  // The image that the user loads
-  FloatVectorImageType::Pointer UserImage;
-
-  // The mask that the user loads
-  Mask::Pointer UserMaskImage;
-
   QGraphicsScene* SourcePatchScene;
   QGraphicsScene* TargetPatchScene;
   QGraphicsScene* ResultPatchScene;
+  QGraphicsScene* MaskedSourcePatchScene;
+  QGraphicsScene* MaskedTargetPatchScene;
 
   // The color to use as the background of the QGraphicsScenes
   QColor SceneBackground;
@@ -106,4 +110,4 @@ private:
 
 #include "BasicViewerWidget.hpp"
 
-#endif // PatchBasedInpaintingViewerWidget_H
+#endif // BasicViewerWidget_H

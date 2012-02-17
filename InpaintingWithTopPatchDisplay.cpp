@@ -212,11 +212,16 @@ int main(int argc, char *argv[])
   // Setup the GUI
   QApplication app( argc, argv );
 
-  PatchBasedInpaintingViewerWidget<ImageType> patchBasedInpaintingViewerWidget(image);
-  patchBasedInpaintingViewerWidget.show();
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &patchBasedInpaintingViewerWidget, SLOT(slot_UpdateImage()));
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&)), &patchBasedInpaintingViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&)));
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)), &patchBasedInpaintingViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)));
+  BasicViewerWidget<ImageType> basicViewerWidget(image, mask);
+  basicViewerWidget.show();
+  // These connections are Qt::BlockingQueuedConnection because the algorithm quickly goes on to fill the hole, and since we are sharing the image memory, we want to make sure these things are
+  // refreshed at the right time, not after the hole has already been filled (this actually happens, it is not just a theoretical thing).
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()), Qt::BlockingQueuedConnection);
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
+                   &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)), Qt::BlockingQueuedConnection);
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)), &basicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)), Qt::BlockingQueuedConnection);
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
+                   &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)), Qt::BlockingQueuedConnection);
 
   TopPatchesWidget<ImageType> topPatchesWidget(image, patchHalfWidth);
   topPatchesWidget.show();
