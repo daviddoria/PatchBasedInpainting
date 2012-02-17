@@ -42,13 +42,13 @@ public:
 
   Qt::ItemFlags flags(const QModelIndex& index) const;
 
-  void SetNumberOfTopPatchesToDisplay(const unsigned int);
+  // void SetNumberOfTopPatchesToDisplay(const unsigned int);
 
   void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
   void Refresh();
 
-  void SetPatchDisplaySize(const unsigned int sideLength);
+  // void SetPatchDisplaySize(const unsigned int sideLength);
 
 private:
 
@@ -56,14 +56,17 @@ private:
   TImage* Image;
 
   /** This is an ordered list of the nodes at which to display the corresponding patches. */
-  std::vector<itk::Index<2> > Nodes;
+  // std::vector<itk::Index<2> > Nodes;
+  std::vector<itk::ImageRegion<2> > Regions;
 
   /** This is the side length, in pixels, of the display of the patches (they will be scaled to this size from whatever size they actually are in the algorithm). */
-  unsigned int PatchDisplaySize;
+  // unsigned int PatchDisplaySize; // This should be determined by the width of the view
 
   /** The number of patches to display in the view. */
-  unsigned int NumberOfTopPatchesToDisplay;
+  // unsigned int NumberOfTopPatchesToDisplay; // This should instead be determined by the length of the Regions vector
 
 };
+
+#include "ListModelPatches.hpp"
 
 #endif

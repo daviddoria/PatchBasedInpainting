@@ -10,15 +10,15 @@
 
 template <typename TImage>
 ListModelPatches<TImage>::ListModelPatches(TImage* const image, QObject * const parent) :
-    QAbstractTableModel(parent), PatchDisplaySize(100), NumberOfTopPatchesToDisplay(10)
+    QAbstractTableModel(parent)
 {
 }
 
-template <typename TImage>
-void ListModelPatches<TImage>::SetPatchDisplaySize(const unsigned int value)
-{
-  this->PatchDisplaySize = value;
-}
+// template <typename TImage>
+// void ListModelPatches<TImage>::SetPatchDisplaySize(const unsigned int value)
+// {
+//   this->PatchDisplaySize = value;
+// }
 
 template <typename TImage>
 Qt::ItemFlags ListModelPatches<TImage>::flags(const QModelIndex& index) const
@@ -31,7 +31,7 @@ Qt::ItemFlags ListModelPatches<TImage>::flags(const QModelIndex& index) const
 template <typename TImage>
 int ListModelPatches<TImage>::rowCount(const QModelIndex& parent) const
 {
-  return this->NumberOfTopPatchesToDisplay;
+  return this->Regions.size();
 }
 
 template <typename TImage>
@@ -40,11 +40,11 @@ int ListModelPatches<TImage>::columnCount(const QModelIndex& parent) const
   return 1;
 }
 
-template <typename TImage>
-void ListModelPatches<TImage>::SetNumberOfTopPatchesToDisplay(const unsigned int number)
-{
-  this->NumberOfTopPatchesToDisplay = number;
-}
+// template <typename TImage>
+// void ListModelPatches<TImage>::SetNumberOfTopPatchesToDisplay(const unsigned int number)
+// {
+//   this->NumberOfTopPatchesToDisplay = number;
+// }
 
 template <typename TImage>
 QVariant ListModelPatches<TImage>::data(const QModelIndex& index, int role) const
@@ -52,9 +52,9 @@ QVariant ListModelPatches<TImage>::data(const QModelIndex& index, int role) cons
   QVariant returnValue;
   if(role == Qt::DisplayRole && index.row() >= 0)
     {
-    QImage patchImage = HelpersQt::GetQImage<FloatVectorImageType>(this->Image, sourcePatch->GetRegion(), this->ImageDisplayStyle);
+    QImage patchImage = HelpersQt::GetQImageColor<FloatVectorImageType>(this->Image, this->Regions[index.row()]);
 
-    patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
+    // patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
 
     returnValue = QPixmap::fromImage(patchImage);
     } // end if DisplayRole

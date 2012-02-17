@@ -68,6 +68,7 @@ private:
   // Connect all signals and slots.
   void SetupConnections();
 
+  ListModelPatches<TImage>* PatchesModel;
 };
 
 #include "TopPatchesWidget.hpp"

@@ -21,6 +21,7 @@
 
 // Qt
 #include <QImage>
+#include <QMetaType>
 class QGraphicsView;
 class QTableWidget;
 
@@ -32,7 +33,6 @@ class QTableWidget;
 #include "ImageProcessing/Mask.h"
 
 Q_DECLARE_METATYPE(itk::ImageRegion<2>)
-
 
 namespace HelpersQt
 {
@@ -59,6 +59,9 @@ QImage GetQImageMagnitude(const TImage* image, const itk::ImageRegion<2>& region
 
 template <typename TImage>
 QImage GetQImageScalar(const TImage* image, const itk::ImageRegion<2>& region);
+
+template <typename TImage>
+QImage GetQImageChannel(const TImage* image, const itk::ImageRegion<2>& region, const unsigned int channel);
 
 template <typename TImage>
 QImage GetQImageMasked(const TImage* image, const Mask::Pointer mask, const itk::ImageRegion<2>& region);

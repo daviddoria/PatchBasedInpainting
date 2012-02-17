@@ -67,7 +67,7 @@
 #include <QtConcurrentRun>
 
 // Custom
-#include "Interactive/PatchBasedInpaintingViewerWidget.h"
+#include "Interactive/BasicViewerWidget.h"
 
 // Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 filled.mha
 int main(int argc, char *argv[])
@@ -200,13 +200,13 @@ int main(int argc, char *argv[])
   // Setup the GUI
   QApplication app( argc, argv );
 
-  PatchBasedInpaintingViewerWidget<ImageType> patchBasedInpaintingViewerWidget(image);
+  BasicViewerWidget<ImageType> basicViewerWidget(image);
 
-  patchBasedInpaintingViewerWidget.show();
+  basicViewerWidget.show();
 
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &patchBasedInpaintingViewerWidget, SLOT(slot_UpdateImage()));
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&)), &patchBasedInpaintingViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&)));
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)), &patchBasedInpaintingViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)));
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()));
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&)), &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&)));
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)), &basicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)));
 
   QtConcurrent::run(boost::bind(inpainting_loop<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>,
                               graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter));

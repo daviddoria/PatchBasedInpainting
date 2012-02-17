@@ -31,6 +31,8 @@ TopPatchesWidget<TImage>::TopPatchesWidget(TImage* const image) : Image(image)
 
   SetupScenes();
 
+  PatchesModel = new ListModelPatches<TImage>(image);
+  this->listView->setModel(PatchesModel);
 }
 
 template <typename TImage>

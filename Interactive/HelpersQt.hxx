@@ -18,8 +18,9 @@
 
 // ITK
 #include "itkRegionOfInterestImageFilter.h"
-#include "itkVectorMagnitudeImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
+#include "itkVectorIndexSelectionCastImageFilter.h"
+#include "itkVectorMagnitudeImageFilter.h"
 
 // Custom
 #include "Helpers/Helpers.h"
@@ -147,6 +148,18 @@ QImage GetQImageMagnitude(const TImage* image, const itk::ImageRegion<2>& region
   return qimage.mirrored(false, true); // The flipped image region
 }
 
+template <typename TImage>
+QImage GetQImageChannel(const TImage* image, const itk::ImageRegion<2>& region, const unsigned int channel)
+{
+  typedef itk::Image<float, 2> ScalarImageType;
+  typedef itk::VectorIndexSelectionCastImageFilter<TImage, ScalarImageType> IndexSelectionType;
+  typename IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+  indexSelectionFilter->SetIndex(channel);
+  indexSelectionFilter->SetInput(image);
+  indexSelectionFilter->Update();
+
+  return GetQImageScalar(indexSelectionFilter->GetOutput(), region);
+}
 
 template <typename TImage>
 QImage GetQImageScalar(const TImage* image, const itk::ImageRegion<2>& region)
