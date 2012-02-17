@@ -22,13 +22,36 @@
 
 #include <iostream>
 
+
+PixmapDelegate::PixmapDelegate() : Padding(4)
+{
+
+}
+
+void PixmapDelegate::SetPadding(const unsigned int padding)
+{
+  this->Padding = padding;
+}
+
 void PixmapDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
+  QStyledItemDelegate::paint(painter, option, index);
+
   QPixmap pixmap = index.data(Qt::DisplayRole).value<QPixmap>();
-  //std::cout << pixmap.width() << " " << pixmap.height() << std::endl;
-  //std::cout << "rect: " << option.rect.width() << " " << option.rect.height() << std::endl;
 
   QRect rect = option.rect;
-  //rect.adjust(rect.width()/3, 0, -rect.width()/3, 0);
+
+  unsigned int originalWidth = rect.width();
+  unsigned int originalHeight = rect.height();
+
+  int minSize = std::min(rect.width(), rect.height()) - Padding*2; // We have to double the padding because we want it taken off from both sides.
+
+  // These setLeft and setTop calls must come before setHeight and setWidth
+  rect.setLeft(originalWidth/2 - minSize/2 + Padding);
+  rect.setTop(rect.top() + originalHeight/2 - minSize/2 + Padding);
+
+  rect.setHeight(minSize);
+  rect.setWidth(minSize);
+
   painter->drawPixmap(rect, pixmap, pixmap.rect());
 }

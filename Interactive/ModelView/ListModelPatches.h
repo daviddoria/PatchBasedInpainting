@@ -20,23 +20,23 @@
 #define ListModelPatches_H
 
 // Qt
-#include <QAbstractTableModel>
+#include <QAbstractListModel>
 #include <QItemSelection>
 
 // ITK
 #include "itkIndex.h"
+#include "itkImageRegion.h"
 
 // STL
 #include <vector>
 
 template <typename TImage>
-class ListModelPatches : public QAbstractTableModel
+class ListModelPatches : public QAbstractListModel
 {
 public:
   ListModelPatches(TImage* const image, QObject * const parent = 0);
 
   int rowCount(const QModelIndex& parent) const;
-  int columnCount(const QModelIndex& parent) const;
   QVariant data(const QModelIndex& index, int role) const;
   QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
@@ -49,6 +49,9 @@ public:
   void Refresh();
 
   // void SetPatchDisplaySize(const unsigned int sideLength);
+  void SetRegions(const std::vector<itk::ImageRegion<2> >& regions);
+
+  void SetRowHeight(const unsigned int rowHeight);
 
 private:
 
@@ -65,6 +68,7 @@ private:
   /** The number of patches to display in the view. */
   // unsigned int NumberOfTopPatchesToDisplay; // This should instead be determined by the length of the Regions vector
 
+  unsigned int RowHeight;
 };
 
 #include "ListModelPatches.hpp"

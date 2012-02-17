@@ -21,6 +21,7 @@
 #include "Interactive/HelpersQt.h"
 #include "InteractorStyleImageWithDrag.h"
 #include "ImageProcessing/Mask.h"
+#include "Interactive/Delegates/PixmapDelegate.h"
 
 template <typename TImage>
 TopPatchesWidget<TImage>::TopPatchesWidget(TImage* const image) : Image(image)
@@ -33,6 +34,22 @@ TopPatchesWidget<TImage>::TopPatchesWidget(TImage* const image) : Image(image)
 
   PatchesModel = new ListModelPatches<TImage>(image);
   this->listView->setModel(PatchesModel);
+
+  PixmapDelegate* pixmapDelegate = new PixmapDelegate;
+  //this->listView->setItemDelegateForColumn(0, pixmapDelegate);
+  this->listView->setItemDelegate(pixmapDelegate);
+}
+
+template <typename TImage>
+ListModelPatches<TImage>* TopPatchesWidget<TImage>::GetPatchesModel()
+{
+  return this->PatchesModel;
+}
+
+template <typename TImage>
+void TopPatchesWidget<TImage>::on_btnRefresh_clicked()
+{
+  this->PatchesModel->Refresh();;
 }
 
 template <typename TImage>

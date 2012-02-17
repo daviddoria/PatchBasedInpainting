@@ -44,14 +44,12 @@ bool GetColumnIdByHeader(const QTableWidget* table, const std::string& header, i
   return false;
 }
 
-
 void QColorToUCharColor(const QColor& color, unsigned char outputColor[3])
 {
   outputColor[0] = color.red();
   outputColor[1] = color.green();
   outputColor[2] = color.blue();
 }
-
 
 QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx)
 {
@@ -66,6 +64,11 @@ QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx)
     {
     return qimage.scaledToWidth(gfx->width() - fudge);
     }
+}
+
+void HighlightCenterPixel(QImage& qimage, const QColor& color)
+{
+  qimage.setPixel(qimage.size().width()/2, qimage.size().height()/2, color.rgb());
 }
 
 } // end namespace

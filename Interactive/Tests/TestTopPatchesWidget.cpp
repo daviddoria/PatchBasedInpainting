@@ -24,17 +24,31 @@ int main(int argc, char*argv[])
 {
   typedef itk::VectorImage<float, 2> ImageType;
   itk::Index<2> corner = {{0,0}};
-  itk::Size<2> size = {{100,100}};
-  itk::ImageRegion<2> region(corner, size);
+  itk::Size<2> imageSize = {{100,100}};
+  itk::ImageRegion<2> region(corner, imageSize);
 
   ImageType::Pointer image = ImageType::New();
-  image->SetRegions(region);
   image->SetNumberOfComponentsPerPixel(3);
+  image->SetRegions(region);
   image->Allocate();
 
   QApplication app( argc, argv );
 
+  const unsigned int patchHalfWidth = 5;
+  itk::Size<2> regionSize = {{patchHalfWidth * 2 + 1, patchHalfWidth * 2 + 1}};
+  
+  itk::Index<2> corner0 = {{0,0}};
+  itk::ImageRegion<2> region0(corner0, regionSize);
+
+  itk::Index<2> corner1 = {{10,10}};
+  itk::ImageRegion<2> region1(corner1, regionSize);
+
+  std::vector<itk::ImageRegion<2> > regions;
+  regions.push_back(region0);
+  regions.push_back(region1);
+
   TopPatchesWidget<ImageType> topPatchesWidget(image);
+  topPatchesWidget.GetPatchesModel()->SetRegions(regions);
   topPatchesWidget.show();
 
   return app.exec();

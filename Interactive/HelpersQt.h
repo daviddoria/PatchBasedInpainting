@@ -36,14 +36,17 @@ Q_DECLARE_METATYPE(itk::ImageRegion<2>)
 
 namespace HelpersQt
 {
-// Convert a QColor to an unsigned char[3]
+/** Convert a QColor to an unsigned char[3] */
 void QColorToUCharColor(const QColor& color, unsigned char outputColor[3]);
 
-// Get a columns location in the table based on its header string
+/** Get a columns location in the table based on its header string */
 bool GetColumnIdByHeader(const QTableWidget* table, const std::string& header, int& columnId);
 
-// Scale an image so that it fits in a QGraphicsView
+/** Scale an image so that it fits in a QGraphicsView */
 QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx);
+
+/** Change the center pixel (in-place) to the specified 'color' */
+void HighlightCenterPixel(QImage& qimage, const QColor& color);
 
 ////////////////////////////////////
 ///////// Function templates (defined in HelpersQt.hxx) /////////

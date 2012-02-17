@@ -27,8 +27,6 @@
 #include <vector>
 
 // Custom
-#include "CandidatePairs.h"
-#include "DebugOutputs.h"
 #include "DisplayStyle.h"
 #include "InpaintingIterationRecord.h"
 

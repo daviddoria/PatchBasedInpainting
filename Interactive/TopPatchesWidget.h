@@ -40,7 +40,7 @@ Q_OBJECT
 
 public slots:
 
-  //virtual void slot_UpdateImage() = 0;
+  virtual void on_btnRefresh_clicked() = 0;
 
 };
 
@@ -55,6 +55,10 @@ private:
 public:
   // Constructor
   TopPatchesWidget(TImage* const image);
+
+  ListModelPatches<TImage>* GetPatchesModel();
+
+  void on_btnRefresh_clicked();
 
 private:
 

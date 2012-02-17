@@ -15,3 +15,27 @@
  *  limitations under the License.
  *
  *=========================================================================*/
+
+#ifndef PIXMAPDELEGATE_H
+#define PIXMAPDELEGATE_H
+
+#include <QStyledItemDelegate>
+
+class PixmapDelegate : public QStyledItemDelegate
+{
+Q_OBJECT
+
+public:
+
+  PixmapDelegate();
+
+  void paint(QPainter *painter, const QStyleOptionViewItem &option,
+                const QModelIndex &index) const;
+
+  void SetPadding(const unsigned int padding);
+
+private:
+  unsigned int Padding; // This padding will be placed around the entire image in the cell
+};
+
+#endif

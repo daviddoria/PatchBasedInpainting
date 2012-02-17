@@ -175,3 +175,5 @@ add_subdirectory(Initializers)
 add_subdirectory(PixelDescriptors)
 add_subdirectory(DifferenceFunctions)
 add_subdirectory(Concepts)
+
+add_subdirectory(Interactive/Delegates)

@@ -23,9 +23,8 @@
 #include <QAbstractItemView>
 
 // Custom
-#include "NamedITKImageCollection.h"
 #include "Helpers/Helpers.h"
-#include "HelpersQt.h"
+#include "Interactive/HelpersQt.h"
 
 TableModelForwardLook::TableModelForwardLook(QObject * parent, std::vector<InpaintingIterationRecord> const& iterationRecords, DisplayStyle const& style) :
     QAbstractTableModel(parent), IterationRecords(iterationRecords), ImageDisplayStyle(style), IterationToDisplay(0), PatchDisplaySize(100)
