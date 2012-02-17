@@ -29,14 +29,19 @@ private:
   int coord[2];
 public:
 
-  Node(){}
+  Node()
+  {
+    coord[0] = -1;
+    coord[1] = -1;
+  }
+  
   Node(int component0, int component1)
   {
     coord[0] = component0;
     coord[1] = component1;
   }
 
-  int operator[](const unsigned int& component)
+  int operator[](const unsigned int& component) const
   {
     return coord[component];
   }

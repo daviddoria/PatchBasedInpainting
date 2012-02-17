@@ -82,10 +82,13 @@ endif()
 SET(InpaintingWithTopPatchDisplay CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for inspection.")
 if(InpaintingWithTopPatchDisplay)
   QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui Interactive/TopPatchesWidget.ui)
-  QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp Interactive/TopPatchesWidget.h)
+  QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
+                       Visitors/NearestNeighborsDisplayVisitor.hpp
+                       Interactive/TopPatchesWidget.h Interactive/Delegates/PixmapDelegate.h)
 
   ADD_EXECUTABLE(InpaintingWithTopPatchDisplay InpaintingWithTopPatchDisplay.cpp
-    Interactive/Layer.cpp Interactive/ModelView/ListModelPatches.cpp
+    Interactive/Layer.cpp
+    Interactive/Delegates/PixmapDelegate.cpp
     Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
     ${UISrcs} ${MOCSrcs})
 

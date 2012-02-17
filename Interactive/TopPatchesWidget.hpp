@@ -23,16 +23,19 @@
 #include "ImageProcessing/Mask.h"
 #include "Interactive/Delegates/PixmapDelegate.h"
 
+Q_DECLARE_METATYPE(std::vector<Node>)
+
 template <typename TImage>
-TopPatchesWidget<TImage>::TopPatchesWidget(TImage* const image) : Image(image)
+TopPatchesWidget<TImage>::TopPatchesWidget(TImage* const image, const unsigned int patchHalfWidth) : Image(image)
 {
-  qRegisterMetaType<itk::ImageRegion<2> >("itkImageRegion");
+  //qRegisterMetaType<itk::ImageRegion<2> >("itkImageRegion");
+  qRegisterMetaType<std::vector<Node> >("VectorOfNodes");
 
   this->setupUi(this);
 
   SetupScenes();
 
-  PatchesModel = new ListModelPatches<TImage>(image);
+  PatchesModel = new ListModelPatches<TImage>(image, patchHalfWidth);
   this->listView->setModel(PatchesModel);
 
   PixmapDelegate* pixmapDelegate = new PixmapDelegate;
@@ -41,39 +44,34 @@ TopPatchesWidget<TImage>::TopPatchesWidget(TImage* const image) : Image(image)
 }
 
 template <typename TImage>
-ListModelPatches<TImage>* TopPatchesWidget<TImage>::GetPatchesModel()
+void TopPatchesWidget<TImage>::SetNodes(const std::vector<Node>& nodes)
 {
-  return this->PatchesModel;
+  std::cout << "Forwarding nodes to the mode..." << std::endl;
+  this->PatchesModel->SetNodes(nodes);
 }
 
+// template <typename TImage>
+// ListModelPatches<TImage>* TopPatchesWidget<TImage>::GetPatchesModel()
+// {
+//   return this->PatchesModel;
+// }
+
+// template <typename TImage>
+// void TopPatchesWidget<TImage>::on_btnRefresh_clicked()
+// {
+//   this->PatchesModel->Refresh();;
+// }
+
 template <typename TImage>
-void TopPatchesWidget<TImage>::on_btnRefresh_clicked()
+void TopPatchesWidget<TImage>::slot_Refresh()
 {
-  this->PatchesModel->Refresh();;
+  this->PatchesModel->Refresh();
 }
 
 template <typename TImage>
 void TopPatchesWidget<TImage>::SetupScenes()
 {
-  QBrush brush;
-  brush.setStyle(Qt::SolidPattern);
-  brush.setColor(this->SceneBackground);
-
-  this->SourcePatchScene = new QGraphicsScene();
-  this->SourcePatchScene->setBackgroundBrush(brush);
-  //this->gfxSource->setScene(SourcePatchScene);
 
 }
-
-// template <typename TImage>
-// void TopPatchesWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& region)
-// {
-//   std::cout << "Update source." << std::endl;
-// 
-//   QImage sourceImage = HelpersQt::GetQImageColor(Image, region);
-//   //sourceImage = HelpersQt::FitToGraphicsView(sourceImage, gfxSource);
-//   QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
-//   gfxSource->fitInView(item);
-// }
 
 #endif

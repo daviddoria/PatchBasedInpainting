@@ -32,6 +32,7 @@
 #include "ImageCamera.h"
 #include "ImageProcessing/Mask.h"
 #include "Interactive/ModelView/ListModelPatches.h"
+#include "Node.h"
 
 /** This class is necessary because a class template cannot have the Q_OBJECT macro directly. */
 class TopPatchesWidgetParent : public QMainWindow, public Ui::TopPatchesWidget
@@ -40,8 +41,10 @@ Q_OBJECT
 
 public slots:
 
-  virtual void on_btnRefresh_clicked() = 0;
+  // virtual void on_btnRefresh_clicked() = 0;
+  virtual void slot_Refresh() = 0;
 
+  virtual void SetNodes(const std::vector<Node>& nodes) = 0;
 };
 
 /** This class displays a set of patches in an ordered list. */
@@ -52,13 +55,18 @@ private:
   /** The image that will be displayed, and the from which the patches will be extracted before being displayed. */
   TImage* Image;
 
+public: // Required implementation from TopPatchesWidgetParent
+  void slot_Refresh();
+
+  void SetNodes(const std::vector<Node>& nodes);
+
 public:
   // Constructor
-  TopPatchesWidget(TImage* const image);
+  TopPatchesWidget(TImage* const image, const unsigned int patchHalfWidth);
 
-  ListModelPatches<TImage>* GetPatchesModel();
+  // ListModelPatches<TImage>* GetPatchesModel();
 
-  void on_btnRefresh_clicked();
+  // void on_btnRefresh_clicked();
 
 private:
 

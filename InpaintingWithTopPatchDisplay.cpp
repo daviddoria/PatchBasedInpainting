@@ -37,7 +37,7 @@
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
-#include "Visitors/NearestNeighborsVisitor.hpp"
+#include "Visitors/NearestNeighborsDisplayVisitor.hpp"
 
 // Initializers
 #include "Initializers/InitializeFromMaskImage.hpp"
@@ -201,16 +201,13 @@ int main(int argc, char *argv[])
   // Create the nearest neighbor finders
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
   KNNSearchType knnSearch(imagePatchDescriptorMap, 1000);
-  
+
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
 
-//   typedef TwoStepNearestNeighbor<KNNSearchType, BestSearchType> TwoStepSearchType;
-//   TwoStepSearchType twoStepSearch(knnSearch, linearSearchBest);
-
-  NearestNeighborsVisitor nearestNeighborsVisitor;
-  typedef TwoStepNearestNeighbor<KNNSearchType, BestSearchType, NearestNeighborsVisitor> TwoStepSearchType;
-  TwoStepSearchType twoStepSearch(knnSearch, linearSearchBest, nearestNeighborsVisitor);
+  NearestNeighborsDisplayVisitor nearestNeighborsDisplayVisitor;
+  typedef TwoStepNearestNeighbor<KNNSearchType, BestSearchType, NearestNeighborsDisplayVisitor> TwoStepSearchType;
+  TwoStepSearchType twoStepSearch(knnSearch, linearSearchBest, nearestNeighborsDisplayVisitor);
 
   // Setup the GUI
   QApplication app( argc, argv );
@@ -221,9 +218,9 @@ int main(int argc, char *argv[])
   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&)), &patchBasedInpaintingViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&)));
   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)), &patchBasedInpaintingViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)));
 
-  TopPatchesWidget<ImageType> topPatchesWidget(image);
+  TopPatchesWidget<ImageType> topPatchesWidget(image, patchHalfWidth);
   topPatchesWidget.show();
-  //QObject::connect(&displayVisitor, SIGNAL(signal_Refresh()), &topPatchesWidget, SLOT(slot_Update()));
+  QObject::connect(&nearestNeighborsDisplayVisitor, SIGNAL(signal_Refresh(const std::vector<Node>&)), &topPatchesWidget, SLOT(SetNodes(const std::vector<Node>&)));
 
   QtConcurrent::run(boost::bind(inpainting_loop<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, TwoStepSearchType, InpainterType>,
                               graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepSearch, patchInpainter));

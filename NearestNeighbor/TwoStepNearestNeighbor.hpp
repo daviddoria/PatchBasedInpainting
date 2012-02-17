@@ -24,7 +24,7 @@ struct TwoStepNearestNeighbor
 {
   MultipleNeighborFinderType MultipleNeighborFinder;
   NearestNeighborFinderType NearestNeighborFinder;
-  VisitorType Visitor;
+  VisitorType& Visitor;
 
   /**
     * Constructor.
@@ -32,7 +32,7 @@ struct TwoStepNearestNeighbor
     * \param NeighborFinderBest The functor to do the 1-NN second step of the search.
     */
   TwoStepNearestNeighbor(MultipleNeighborFinderType multipleNeighborFinder, NearestNeighborFinderType nearestNeighborFinder,
-                         VisitorType visitor = VisitorType()) :
+                         VisitorType& visitor) :
   MultipleNeighborFinder(multipleNeighborFinder), NearestNeighborFinder(nearestNeighborFinder), Visitor(visitor)
   { };
 

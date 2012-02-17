@@ -1,12 +1,16 @@
 #include "ListModelPatches.h" // Appease the syntax parser
 
+// Qt
+#include <QPixmap>
+
 // Custom
 #include "Helpers/Helpers.h"
 #include "Interactive/HelpersQt.h"
+#include "Helpers/ITKHelpers.h"
 
 template <typename TImage>
-ListModelPatches<TImage>::ListModelPatches(TImage* const image, QObject * const parent) :
-    QAbstractListModel(parent), Image(image), RowHeight(50)
+ListModelPatches<TImage>::ListModelPatches(TImage* const image, const unsigned int patchHalfWidth, QObject * const parent) :
+    QAbstractListModel(parent), Image(image), RowHeight(50), PatchHalfWidth(patchHalfWidth)
 {
 }
 
@@ -45,6 +49,21 @@ void ListModelPatches<TImage>::SetRegions(const std::vector<itk::ImageRegion<2> 
 }
 
 template <typename TImage>
+void ListModelPatches<TImage>::SetNodes(const std::vector<Node>& nodes)
+{
+  std::cout << "SetNodes called with " << nodes.size() << " nodes." << std::endl;
+  this->Regions.clear();
+  for(std::vector<Node>::const_iterator iter = nodes.begin(); iter != nodes.end(); ++iter)
+    {
+    itk::Index<2> index = ITKHelpers::CreateIndex(*iter);
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, this->PatchHalfWidth);
+    this->Regions.push_back(region);
+    }
+
+  Refresh();
+}
+
+template <typename TImage>
 QVariant ListModelPatches<TImage>::data(const QModelIndex& index, int role) const
 {
   QVariant returnValue;
@@ -56,7 +75,7 @@ QVariant ListModelPatches<TImage>::data(const QModelIndex& index, int role) cons
 
     returnValue = QPixmap::fromImage(patchImage);
     } // end if DisplayRole
-  else if(role == Qt::SizeHintRole)
+  else if(role == Qt::SizeHintRole) // This sets the row height in the QListView
     {
     QSize size;
     size.setHeight(RowHeight);
@@ -89,12 +108,6 @@ void ListModelPatches<TImage>::Refresh()
 {
   beginResetModel();
   endResetModel();
-}
-
-template <typename TImage>
-void ListModelPatches<TImage>::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
-{
-  //std::cout << "TopPatchesTableModel::selectionChanged()" << std::endl;
 }
 
 template <typename TImage>

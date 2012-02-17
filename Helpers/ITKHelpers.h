@@ -34,7 +34,7 @@ class Mask;
 
 namespace ITKHelpers
 {
-  
+
 typedef itk::Image<float, 2> FloatScalarImageType;
 typedef itk::Image<unsigned char, 2> UnsignedCharScalarImageType;
 typedef itk::CovariantVector<float, 2> FloatVector2Type;
@@ -220,7 +220,7 @@ template<typename TImage>
 void NormalizeVectorImage(TImage* const image);
 
 template<typename T>
-itk::Index<2> CreateIndex(T& v);
+itk::Index<2> CreateIndex(const T& v);
 
 
 }// end namespace

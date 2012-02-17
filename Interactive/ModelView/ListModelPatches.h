@@ -30,11 +30,14 @@
 // STL
 #include <vector>
 
+// Custom
+#include "Node.h"
+
 template <typename TImage>
 class ListModelPatches : public QAbstractListModel
 {
 public:
-  ListModelPatches(TImage* const image, QObject * const parent = 0);
+  ListModelPatches(TImage* const image, const unsigned int patchHalfWidth, QObject * const parent = 0);
 
   int rowCount(const QModelIndex& parent) const;
   QVariant data(const QModelIndex& index, int role) const;
@@ -44,12 +47,12 @@ public:
 
   // void SetNumberOfTopPatchesToDisplay(const unsigned int);
 
-  void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
-
   void Refresh();
 
   // void SetPatchDisplaySize(const unsigned int sideLength);
   void SetRegions(const std::vector<itk::ImageRegion<2> >& regions);
+
+  void SetNodes(const std::vector<Node>& nodes);
 
   void SetRowHeight(const unsigned int rowHeight);
 
@@ -69,6 +72,8 @@ private:
   // unsigned int NumberOfTopPatchesToDisplay; // This should instead be determined by the length of the Regions vector
 
   unsigned int RowHeight;
+
+  unsigned int PatchHalfWidth;
 };
 
 #include "ListModelPatches.hpp"
