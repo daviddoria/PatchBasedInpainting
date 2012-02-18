@@ -74,8 +74,8 @@ template<typename T>
 typename T::value_type& index(T& v, size_t i);
 
 // Convert any type with operator[] to any other type with operator[]
-template<typename T, typename U>
-T ConvertFrom(U& u);
+template<typename TTo, typename TFrom>
+TTo ConvertFrom(const TFrom& object);
 
 
 }// end namespace

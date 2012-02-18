@@ -195,7 +195,8 @@ int main(int argc, char*argv[])
   if(retrievedVectorValue != correct_retrievedVectorValue)
     {
     std::stringstream ss;
-    ss << "Vector index() not working - returned " << retrievedVectorValue << " but should have been " << correct_retrievedVectorValue;
+    ss << "Vector index() not working - returned " << retrievedVectorValue
+       << " but should have been " << correct_retrievedVectorValue;
     throw std::runtime_error(ss.str());
     }
   }
@@ -211,6 +212,13 @@ int main(int argc, char*argv[])
     ss << "Vector index() not working - returned " << retrievedVectorValue << " but should have been " << value;
     throw std::runtime_error(ss.str());
     }
+  }
+
+  {
+  struct NodeA {int values[2]; void operator[](const unsigned int component){return values[component];}};
+  struct NodeB {int values[2]; void operator[](const unsigned int component){return values[component];}};
+  NodeA nodeA;
+  NodeB nodeB = Helpers::ConvertFrom(nodeA);
   }
   return EXIT_SUCCESS;
 }

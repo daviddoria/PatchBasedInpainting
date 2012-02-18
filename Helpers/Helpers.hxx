@@ -87,12 +87,12 @@ typename T::value_type VectorMedian(T v)
   return v[n];
 }
 
-template<typename T, typename U>
-T ConvertFrom(U& u)
+template<typename TTo, typename TFrom>
+TTo ConvertFrom(const TFrom& object)
 {
-  T t;
-  t[0] = u[0];
-  t[1] = u[1];
+  TTo t;
+  t[0] = object[0];
+  t[1] = object[1];
   return t;
 }
 

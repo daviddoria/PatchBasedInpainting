@@ -73,13 +73,9 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   void paint_vertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
-    itk::Index<2> target_index;
-    target_index[0] = target[0];
-    target_index[1] = target[1];
+    itk::Index<2> target_index = ITKHelpers::CreateIndex(target);
 
-    itk::Index<2> source_index;
-    source_index[0] = source[0];
-    source_index[1] = source[1];
+    itk::Index<2> source_index = ITKHelpers::CreateIndex(source);
 
     assert(Image->GetLargestPossibleRegion().IsInside(source_index));
     assert(Image->GetLargestPossibleRegion().IsInside(target_index));
@@ -98,9 +94,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     // Determine the new boundary, and setup the nodes in the boundary queue.
 
     // Construct the region around the vertex
-    itk::Index<2> indexToFinish;
-    indexToFinish[0] = v[0];
-    indexToFinish[1] = v[1];
+    itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(v);
 
     itk::ImageRegion<2> regionToFinish = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
 
@@ -113,9 +107,8 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
     while(!gridIterator.IsAtEnd())
       {
-      VertexDescriptorType v;
-      v[0] = gridIterator.GetIndex()[0];
-      v[1] = gridIterator.GetIndex()[1];
+      VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(gridIterator.GetIndex());
+
       put(FillStatusMap, v, true);
       MaskImage->SetPixel(gridIterator.GetIndex(), MaskImage->GetValidValue());
       ++gridIterator;
@@ -127,9 +120,8 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     gridIterator.GoToBegin();
     while(!gridIterator.IsAtEnd())
       {
-      VertexDescriptorType v;
-      v[0] = gridIterator.GetIndex()[0];
-      v[1] = gridIterator.GetIndex()[1];
+      VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(gridIterator.GetIndex());
+
       initialize_vertex(v, g);
       ++gridIterator;
       }
@@ -142,9 +134,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
     while(!imageIterator.IsAtEnd())
       {
-      VertexDescriptorType v;
-      v[0] = imageIterator.GetIndex()[0];
-      v[1] = imageIterator.GetIndex()[1];
+      VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(imageIterator.GetIndex());
 
       // Mark all nodes in the patch around this node as filled (in the FillStatusMap).
       // This makes them ignored if they are still in the boundaryNodeQueue.
