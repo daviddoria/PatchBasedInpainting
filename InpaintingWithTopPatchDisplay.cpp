@@ -74,6 +74,9 @@
 #include "Interactive/BasicViewerWidget.h"
 #include "Interactive/TopPatchesWidget.h"
 
+// Manual selection
+#include "Visitors/ManualSelectionDefaultVisitor.hpp"
+
 // Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 filled.mha
 int main(int argc, char *argv[])
 {
@@ -227,8 +230,13 @@ int main(int argc, char *argv[])
   topPatchesWidget.show();
   QObject::connect(&nearestNeighborsDisplayVisitor, SIGNAL(signal_Refresh(const std::vector<Node>&)), &topPatchesWidget, SLOT(SetNodes(const std::vector<Node>&)));
 
-  QtConcurrent::run(boost::bind(inpainting_loop<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, TwoStepSearchType, InpainterType>,
-                              graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepSearch, patchInpainter));
+  typedef ManualSelectionDefaultVisitor<VertexDescriptorType> ManualSelectionVisitorType;
+  ManualSelectionVisitorType manualSelectionDefaultVisitor;
+
+  QtConcurrent::run(boost::bind(inpainting_loop<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType,
+                                BoundaryNodeQueueType, TwoStepSearchType, InpainterType, ManualSelectionVisitorType>,
+                              graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepSearch, patchInpainter,
+                              manualSelectionDefaultVisitor));
 
   return app.exec();
 }

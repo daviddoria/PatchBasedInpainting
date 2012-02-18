@@ -10,18 +10,19 @@
 // STL
 #include <stdexcept>
 
-template <typename VertexListGraphType, typename InpaintingVisitorType,
-          typename BoundaryStatusMapType, typename PriorityQueueType, 
-          typename NearestNeighborFinderType, typename PatchInpainterType>
+template <typename TVertexListGraph, typename TInpaintingVisitor,
+          typename TBoundaryStatusMap, typename TPriorityQueue,
+          typename TNearestNeighborFinder, typename TPatchInpainter,
+          typename TManualSelectionVisitor>
 inline
-void inpainting_loop(VertexListGraphType& g, InpaintingVisitorType vis,
-                     BoundaryStatusMapType& boundaryStatusMap, PriorityQueueType& boundaryNodeQueue,
-                     NearestNeighborFinderType find_inpainting_source, 
-                     PatchInpainterType inpaint_patch) 
+void inpainting_loop(TVertexListGraph& g, TInpaintingVisitor vis,
+                     TBoundaryStatusMap& boundaryStatusMap, TPriorityQueue& boundaryNodeQueue,
+                     TNearestNeighborFinder find_inpainting_source,
+                     TPatchInpainter inpaint_patch, TManualSelectionVisitor manualSelectionVisitor)
 {
-  BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<InpaintingVisitorType, VertexListGraphType>));
+  BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<TInpaintingVisitor, TVertexListGraph>));
 
-  typedef typename boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
+  typedef typename boost::graph_traits<TVertexListGraph>::vertex_descriptor VertexDescriptorType;
 
   // When this function is called, the priority-queue must already be filled with
   // all the boundary nodes (which should also have their boundaryStatusMap set appropriately).
@@ -52,14 +53,14 @@ void inpainting_loop(VertexListGraphType& g, InpaintingVisitorType vis,
     vis.discover_vertex(targetNode, g);
 
     // Find the source node that matches best to the target node
-    typename boost::graph_traits<VertexListGraphType>::vertex_iterator vi,vi_end;
+    typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
     tie(vi,vi_end) = vertices(g);
     VertexDescriptorType sourceNode = find_inpainting_source(vi, vi_end, targetNode);
     vis.vertex_match_made(targetNode, sourceNode, g);
 
     if(!vis.accept_match(targetNode, g))
       {
-      //throw std::runtime_error("Vertex was not painted successfully!");
+      sourceNode = manualSelectionVisitor.select(targetNode, vi, vi_end);
       }
 
     // Do the in-painting of the target patch from the source patch.

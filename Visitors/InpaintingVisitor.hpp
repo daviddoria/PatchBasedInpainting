@@ -30,7 +30,7 @@ template <typename TGraph, typename TImage, typename TBoundaryNodeQueue,
 struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 {
   BOOST_CONCEPT_ASSERT((DescriptorVisitorConcept<TDescriptorVisitor, TGraph>));
-  
+
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
   TImage* Image;
@@ -43,6 +43,8 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   TPriorityMap& PriorityMap;
   TBoundaryStatusMap& BoundaryStatusMap;
 
+  //TMatchVerificationVisitor MatchVerificationVisitor;
+
   const unsigned int HalfWidth;
 
   InpaintingVisitor(TImage* const in_image, Mask* const in_mask,
@@ -50,8 +52,10 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
                     TDescriptorVisitor& in_descriptorVisitor, TPriorityMap& in_priorityMap,
                     TPriority* const in_priorityFunction,
                     const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
+                    //TMatchVerificationVisitor matchVerificationVisitor) :
   Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue), PriorityFunction(in_priorityFunction), FillStatusMap(in_fillStatusMap), DescriptorVisitor(in_descriptorVisitor),
-  PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap), HalfWidth(in_half_width)
+  PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap),// MatchVerificationVisitor(matchVerificationVisitor),
+  HalfWidth(in_half_width)
   {
   }
 
@@ -89,7 +93,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   bool accept_match(VertexDescriptorType v, TGraph& g) const
   {
-    // return true;
+    return true;
   };
 
   void finish_vertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
@@ -103,7 +107,6 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     indexToFinish[1] = v[1];
 
     itk::ImageRegion<2> regionToFinish = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
-
 
     regionToFinish.Crop(Image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
 
