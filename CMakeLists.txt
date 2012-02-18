@@ -64,13 +64,16 @@ Priority/PriorityRandom.cpp
 #   add_subdirectory(Interactive)
 # endif()
 
+add_subdirectory(Interactive)
 SET(InpaintingWithManualSelection CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for manual selection.")
 if(InpaintingWithManualSelection)
-  QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui Interactive/TopPatchesWidget.ui)
+  QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui)
   QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
                        Visitors/NearestNeighborsDisplayVisitor.hpp
-                       NearestNeighbor/VisualSelectionBest.hpp
-                       Interactive/TopPatchesWidget.h Interactive/Delegates/PixmapDelegate.h)
+                       #NearestNeighbor/VisualSelectionBest.hpp
+                       Interactive/TopPatchesWidget.h
+                       Interactive/TopPatchesDialog.h
+                       Interactive/Delegates/PixmapDelegate.h)
 
   ADD_EXECUTABLE(InpaintingWithManualSelection InpaintingWithManualSelection.cpp
                 Interactive/Layer.cpp
@@ -82,39 +85,39 @@ if(InpaintingWithManualSelection)
                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
   INSTALL( TARGETS InpaintingWithManualSelection RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
-
-SET(InpaintingWithTopPatchDisplay CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for passive inspection.")
-if(InpaintingWithTopPatchDisplay)
-  QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui Interactive/TopPatchesWidget.ui)
-  QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
-                       Visitors/NearestNeighborsDisplayVisitor.hpp
-                       Interactive/TopPatchesWidget.h Interactive/Delegates/PixmapDelegate.h)
-
-  ADD_EXECUTABLE(InpaintingWithTopPatchDisplay InpaintingWithTopPatchDisplay.cpp
-                Interactive/Layer.cpp
-                Interactive/Delegates/PixmapDelegate.cpp
-                Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
-                ${UISrcs} ${MOCSrcs})
-
-  TARGET_LINK_LIBRARIES(InpaintingWithTopPatchDisplay PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
-  INSTALL( TARGETS InpaintingWithTopPatchDisplay RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
-
-
-SET(ClassicalImageInpaintingWithVisualOutput CACHE BOOL "Build a traditional patch comparison image inpainting that displays the image at every iteration.")
-if(ClassicalImageInpaintingWithVisualOutput)
-  QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui)
-  QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp)
-
-  ADD_EXECUTABLE(ClassicalImageInpaintingWithVisualOutput ClassicalImageInpaintingWithVisualOutput.cpp
-    Interactive/Layer.cpp
-    Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
-    ${UISrcs} ${MOCSrcs})
-
-  TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithVisualOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
-  INSTALL( TARGETS ClassicalImageInpaintingWithVisualOutput RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
+# 
+# SET(InpaintingWithTopPatchDisplay CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for passive inspection.")
+# if(InpaintingWithTopPatchDisplay)
+#   QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui Interactive/TopPatchesWidget.ui)
+#   QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
+#                        Visitors/NearestNeighborsDisplayVisitor.hpp
+#                        Interactive/TopPatchesWidget.h Interactive/Delegates/PixmapDelegate.h)
+# 
+#   ADD_EXECUTABLE(InpaintingWithTopPatchDisplay InpaintingWithTopPatchDisplay.cpp
+#                 Interactive/Layer.cpp
+#                 Interactive/Delegates/PixmapDelegate.cpp
+#                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+#                 ${UISrcs} ${MOCSrcs})
+# 
+#   TARGET_LINK_LIBRARIES(InpaintingWithTopPatchDisplay PatchBasedInpainting
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+#   INSTALL( TARGETS InpaintingWithTopPatchDisplay RUNTIME DESTINATION ${INSTALL_DIR} )
+# endif()
+# 
+# 
+# SET(ClassicalImageInpaintingWithVisualOutput CACHE BOOL "Build a traditional patch comparison image inpainting that displays the image at every iteration.")
+# if(ClassicalImageInpaintingWithVisualOutput)
+#   QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui)
+#   QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp)
+# 
+#   ADD_EXECUTABLE(ClassicalImageInpaintingWithVisualOutput ClassicalImageInpaintingWithVisualOutput.cpp
+#     Interactive/Layer.cpp
+#     Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+#     ${UISrcs} ${MOCSrcs})
+# 
+#   TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithVisualOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+#   INSTALL( TARGETS ClassicalImageInpaintingWithVisualOutput RUNTIME DESTINATION ${INSTALL_DIR} )
+# endif()
 
 
 

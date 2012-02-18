@@ -30,13 +30,6 @@
     <item>
      <widget class="QListView" name="listView"/>
     </item>
-    <item>
-     <widget class="QPushButton" name="btnRefresh">
-      <property name="text">
-       <string>Refresh</string>
-      </property>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -45,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>178</width>
-     <height>28</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLeft_Pane">

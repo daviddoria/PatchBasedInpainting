@@ -3,41 +3,53 @@
 
 // Custom
 #include "Node.h"
-
-// Qt
-#include <QObject>
+#include "Interactive/TopPatchesDialog.h"
 
 // STL
 #include <iostream>
 
 /**
-
+  Display a list of patches and let the user select the one to use.
  */
-
-// class VisualSelectionBestParent : public QObject
-// {
-// Q_OBJECT
-// };
-
+template <typename TImage>
 class VisualSelectionBest : public QObject
 {
-Q_OBJECT
-
-signals:
-  //void signal_Refresh();
-
-  // void signal_Refresh();
+private:
+  TImage* Image;
+  unsigned int PatchHalfWidth;
+  TopPatchesDialog<TImage>* Dialog;
 
 public:
 
-  // VisualSelectionBest(){}
+  VisualSelectionBest(TImage* const image, const unsigned int patchHalfWidth, TopPatchesDialog<TImage>* dialog) :
+  Image(image), PatchHalfWidth(patchHalfWidth), Dialog(dialog)
+  {
+  }
 
   /** Return the best source node for a specified target node. */
   template <typename TVertexDescriptor, typename TForwardIterator>
   TVertexDescriptor operator()(TForwardIterator possibleNodesBegin, TForwardIterator possibleNodesEnd,
                                const TVertexDescriptor& queryNode)
   {
-    // TODO: This should pop up a window and ask the user to select the patch they want to use (from the possibleNodes container)
+//     TopPatchesWidget<TImage> topPatchesWidget(Image, PatchHalfWidth);
+//     topPatchesWidget.show();
+
+    // return *possibleNodesBegin; // As a placeholder, just return the first patch
+
+    std::vector<Node> nodes;
+    for(TForwardIterator iter = possibleNodesBegin; iter != possibleNodesEnd; ++iter)
+      {
+      Node node(*iter);
+      nodes.push_back(node);
+      }
+    Dialog->SetNodes(nodes);
+
+    QMetaObject::invokeMethod(Dialog, "exec", Qt::BlockingQueuedConnection);
+
+    unsigned int selection = Dialog->GetSelectedItem();
+    std::cout << "Selection: " << selection << std::endl;
+
+    return *(possibleNodesBegin + selection);
   }
 
 }; // VisualSelectionBest

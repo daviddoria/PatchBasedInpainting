@@ -75,6 +75,7 @@
 // GUI
 #include "Interactive/BasicViewerWidget.h"
 #include "Interactive/TopPatchesWidget.h"
+#include "Interactive/TopPatchesDialog.h"
 
 // Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 filled.mha
 int main(int argc, char *argv[])
@@ -90,6 +91,9 @@ int main(int argc, char *argv[])
       }
     return EXIT_FAILURE;
     }
+
+  // Setup the GUI system
+  QApplication app( argc, argv );
 
   // Parse arguments
   std::string imageFilename = argv[1];
@@ -209,16 +213,14 @@ int main(int argc, char *argv[])
                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
   KNNSearchType knnSearch(imagePatchDescriptorMap, 1000);
 
-  typedef VisualSelectionBest BestSearchType;
-  BestSearchType linearSearchBest;
+  TopPatchesDialog<ImageType> topPatchesDialog(image, patchHalfWidth);
+  typedef VisualSelectionBest<ImageType> BestSearchType;
+  BestSearchType linearSearchBest(image, patchHalfWidth, &topPatchesDialog);
 
   NearestNeighborsDisplayVisitor nearestNeighborsDisplayVisitor;
 
   typedef TwoStepNearestNeighbor<KNNSearchType, BestSearchType, NearestNeighborsDisplayVisitor> TwoStepSearchType;
   TwoStepSearchType twoStepSearch(knnSearch, linearSearchBest, nearestNeighborsDisplayVisitor);
-
-  // Setup the GUI
-  QApplication app( argc, argv );
 
   BasicViewerWidget<ImageType> basicViewerWidget(image, mask);
   basicViewerWidget.show();

@@ -62,9 +62,27 @@
 # target_link_libraries(TestMovablePatch ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
 # add_test(TestMovablePatch TestMovablePatch)
 
+# include_directories(${CMAKE_CURRENT_BINARY_DIR})
+# QT4_WRAP_UI(UISrcs ../TopPatchesWidget.ui)
+# QT4_WRAP_CPP(MOCSrcs ../TopPatchesWidget.h ../Delegates/PixmapDelegate.h)
+# add_executable(TestTopPatchesWidget TestTopPatchesWidget.cpp ../Delegates/PixmapDelegate.cpp ../HelpersQt.cpp ${UISrcs} ${MOCSrcs})
+# target_link_libraries(TestTopPatchesWidget ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
+# add_test(TestTopPatchesWidget TestTopPatchesWidget)
+# 
+# include_directories(${CMAKE_CURRENT_BINARY_DIR})
+# QT4_WRAP_UI(UISrcs ../TopPatchesWidget.ui)
+# QT4_WRAP_CPP(MOCSrcs ../TopPatchesWidget.h ../TopPatchesDialog.h ../Delegates/PixmapDelegate.h)
+# add_executable(TestTopPatchesDialog TestTopPatchesDialog.cpp ../Delegates/PixmapDelegate.cpp ../HelpersQt.cpp
+#                ${UISrcs} ${MOCSrcs})
+# target_link_libraries(TestTopPatchesDialog ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
+# add_test(TestTopPatchesDialog TestTopPatchesDialog)
+
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-QT4_WRAP_UI(UISrcs ../TopPatchesWidget.ui)
-QT4_WRAP_CPP(MOCSrcs ../TopPatchesWidget.h ../Delegates/PixmapDelegate.h)
-add_executable(TestTopPatchesWidget TestTopPatchesWidget.cpp ../Delegates/PixmapDelegate.cpp ../HelpersQt.cpp ${UISrcs} ${MOCSrcs})
-target_link_libraries(TestTopPatchesWidget ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
-add_test(TestTopPatchesWidget TestTopPatchesWidget)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}../)
+QT4_WRAP_UI(UISrcs ../TopPatchesDialog.ui)
+QT4_WRAP_CPP(MOCSrcs ../TopPatchesDialog.h ../Delegates/PixmapDelegate.h)
+add_executable(TestTopPatchesDialog TestTopPatchesDialog.cpp ../Delegates/PixmapDelegate.cpp ../HelpersQt.cpp
+               ${UISrcs} ${MOCSrcs})
+target_link_libraries(TestTopPatchesDialog ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
+add_test(TestTopPatchesDialog TestTopPatchesDialog)

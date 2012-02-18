@@ -41,11 +41,23 @@ public:
     coord[1] = component1;
   }
 
+  template <typename T>
+  Node(const T& object)
+  {
+    CreateFromObject(object);
+  }
+
   int operator[](const unsigned int& component) const
   {
     return coord[component];
   }
 
+  template <typename T>
+  void CreateFromObject(const T& object)
+  {
+    coord[0] = object[0];
+    coord[1] = object[1];
+  }
 };
 
 #endif
