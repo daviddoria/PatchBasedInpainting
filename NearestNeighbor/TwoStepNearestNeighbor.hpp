@@ -19,7 +19,8 @@
   * \tparam NeighborFinderKNN The functor that can find K-nearest neighbors.
   * \tparam NeighborFinderBest The functor that can find the best neighbor.
   */
-template <typename MultipleNeighborFinderType, typename NearestNeighborFinderType, typename VisitorType = NearestNeighborsDefaultVisitor>
+template <typename MultipleNeighborFinderType, typename NearestNeighborFinderType,
+          typename VisitorType = NearestNeighborsDefaultVisitor>
 struct TwoStepNearestNeighbor
 {
   MultipleNeighborFinderType MultipleNeighborFinder;

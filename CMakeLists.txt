@@ -53,16 +53,54 @@ Priority/PriorityRandom.cpp
 )
 
 # Interactive
-SET(BuildInteractive CACHE BOOL "Build the interactive version.")
-if(BuildInteractive)
-  add_subdirectory(Interactive)
+# SET(BuildInteractive CACHE BOOL "Build the interactive version.")
+# if(BuildInteractive)
+#   add_subdirectory(Interactive)
+# endif()
+# 
+# SET(BuildViewer CACHE BOOL "Build the viewer.")
+# if(BuildViewer)
+#   message("Building the viewer.")
+#   add_subdirectory(Interactive)
+# endif()
+
+SET(InpaintingWithManualSelection CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for manual selection.")
+if(InpaintingWithManualSelection)
+  QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui Interactive/TopPatchesWidget.ui)
+  QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
+                       Visitors/NearestNeighborsDisplayVisitor.hpp
+                       Visitors/ManualSelectionVisitor.hpp
+                       Interactive/TopPatchesWidget.h Interactive/Delegates/PixmapDelegate.h)
+
+  ADD_EXECUTABLE(InpaintingWithManualSelection InpaintingWithManualSelection.cpp
+                Interactive/Layer.cpp
+                Interactive/Delegates/PixmapDelegate.cpp
+                Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+                ${UISrcs} ${MOCSrcs})
+
+  TARGET_LINK_LIBRARIES(InpaintingWithManualSelection PatchBasedInpainting
+                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+  INSTALL( TARGETS InpaintingWithManualSelection RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(BuildViewer CACHE BOOL "Build the viewer.")
-if(BuildViewer)
-  message("Building the viewer.")
-  add_subdirectory(Interactive)
+SET(InpaintingWithTopPatchDisplay CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for passive inspection.")
+if(InpaintingWithTopPatchDisplay)
+  QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui Interactive/TopPatchesWidget.ui)
+  QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
+                       Visitors/NearestNeighborsDisplayVisitor.hpp
+                       Interactive/TopPatchesWidget.h Interactive/Delegates/PixmapDelegate.h)
+
+  ADD_EXECUTABLE(InpaintingWithTopPatchDisplay InpaintingWithTopPatchDisplay.cpp
+                Interactive/Layer.cpp
+                Interactive/Delegates/PixmapDelegate.cpp
+                Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+                ${UISrcs} ${MOCSrcs})
+
+  TARGET_LINK_LIBRARIES(InpaintingWithTopPatchDisplay PatchBasedInpainting
+                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+  INSTALL( TARGETS InpaintingWithTopPatchDisplay RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
+
 
 SET(ClassicalImageInpaintingWithVisualOutput CACHE BOOL "Build a traditional patch comparison image inpainting that displays the image at every iteration.")
 if(ClassicalImageInpaintingWithVisualOutput)
@@ -79,22 +117,7 @@ if(ClassicalImageInpaintingWithVisualOutput)
 endif()
 
 
-SET(InpaintingWithTopPatchDisplay CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for inspection.")
-if(InpaintingWithTopPatchDisplay)
-  QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui Interactive/TopPatchesWidget.ui)
-  QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
-                       Visitors/NearestNeighborsDisplayVisitor.hpp
-                       Interactive/TopPatchesWidget.h Interactive/Delegates/PixmapDelegate.h)
 
-  ADD_EXECUTABLE(InpaintingWithTopPatchDisplay InpaintingWithTopPatchDisplay.cpp
-    Interactive/Layer.cpp
-    Interactive/Delegates/PixmapDelegate.cpp
-    Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
-    ${UISrcs} ${MOCSrcs})
-
-  TARGET_LINK_LIBRARIES(InpaintingWithTopPatchDisplay PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
-  INSTALL( TARGETS InpaintingWithTopPatchDisplay RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
 
 
 

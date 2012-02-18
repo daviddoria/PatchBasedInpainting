@@ -18,7 +18,7 @@ inline
 void inpainting_loop(TVertexListGraph& g, TInpaintingVisitor vis,
                      TBoundaryStatusMap& boundaryStatusMap, TPriorityQueue& boundaryNodeQueue,
                      TNearestNeighborFinder find_inpainting_source,
-                     TPatchInpainter inpaint_patch, TManualSelectionVisitor manualSelectionVisitor)
+                     TPatchInpainter inpaint_patch, TManualSelectionVisitor& manualSelectionVisitor)
 {
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<TInpaintingVisitor, TVertexListGraph>));
 

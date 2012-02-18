@@ -9,7 +9,6 @@
 
 // STL
 #include <iostream>
-#include <vector>
 
 /**
 
@@ -27,14 +26,14 @@ Q_OBJECT
 signals:
   //void signal_Refresh();
 
-  void signal_Refresh(const std::vector<Node>&);
+  // void signal_Refresh();
 
 public:
 
-  // ManualSelectionVisitor(){}
+  ManualSelectionVisitor(){}
 
   /** Return the best source node for a specified target node. */
-  template <typename TForwardIterator>
+  template <typename TVertexDescriptor, typename TForwardIterator>
   TVertexDescriptor select(const TVertexDescriptor& targetNode,
                            TForwardIterator possibleNodesBegin, TForwardIterator possibleNodesEnd)
   {
