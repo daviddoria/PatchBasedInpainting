@@ -46,12 +46,12 @@ struct CompositeInpaintingVisitor
       }
   };
 
-  bool accept_painted_vertex(VertexDescriptorType v, TGraph& g) const 
+  bool accept_match(VertexDescriptorType v, TGraph& g) const
   {
     bool acceptAll = true;
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
-      bool accept = Visitors[visitorId]->accept_painted_vertex(v, g);
+      bool accept = Visitors[visitorId]->accept_match(v, g);
       acceptAll = acceptAll && accept;
       }
     return acceptAll;

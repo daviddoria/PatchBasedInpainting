@@ -87,7 +87,7 @@ public:
     // Do nothing
   };
 
-  bool accept_painted_vertex(VertexDescriptorType v, TGraph& g) const
+  bool accept_match(VertexDescriptorType v, TGraph& g) const
   {
     return true;
   };

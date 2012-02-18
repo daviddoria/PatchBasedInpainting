@@ -30,28 +30,38 @@
  * \tparam VertexListGraph The type of the graph on which the visitor will be applied.
  */
 template <typename InpaintingVisitor, typename VertexListGraph>
-struct InpaintingVisitorConcept {
-  
+struct InpaintingVisitorConcept
+{
+
   typedef typename boost::graph_traits<VertexListGraph>::vertex_descriptor Vertex;
   Vertex u;
   VertexListGraph g;
   InpaintingVisitor vis;
-  
+
   BOOST_CONCEPT_ASSERT((boost::CopyConstructibleConcept<InpaintingVisitor>));
-  
+
   BOOST_CONCEPT_USAGE(InpaintingVisitorConcept) 
   {
     vis.initialize_vertex(u, g);  //function called on all vertices during the initialization phase.
     vis.discover_vertex(u, g);  //function called when a live vertex is taken out of the priority-queue.
     const Vertex& target = u;
     const Vertex& source = u;
-    vis.vertex_match_made(target, source, g);  //function called when a source vertex has been found that matches well to the current target-vertex (the same vertex that was just discovered). 
-    vis.paint_vertex(target, source, g);  //function called to paint the value of a target vertex with the value of the source vertex.
-    bool was_successfully_painted = vis.accept_painted_vertex(target, g);  //function called to check if the in-painting of the target vertex was successful.
+
+    // function called when a source vertex has been found that matches well to the
+    // current target-vertex (the same vertex that was just discovered).
+    vis.vertex_match_made(target, source, g);
+
+    //function called to paint the value of a target vertex with the value of the source vertex.
+    vis.paint_vertex(target, source, g);
+
+    //function called to check if the match that was determined should be accepted.
+    bool was_successfully_painted = vis.accept_match(target, g);
     boost::ignore_unused_variable_warning(was_successfully_painted);
-    vis.finish_vertex(u, u, g);  //function called when a vertex has been inpainted and removed from the set of target pixels.
+
+    //function called when a vertex has been inpainted and removed from the set of target pixels.
+    vis.finish_vertex(u, u, g);
   };
-  
+
 };
 
 #endif

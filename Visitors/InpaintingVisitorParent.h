@@ -22,14 +22,14 @@ struct InpaintingVisitorParent
 
   virtual void paint_vertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const = 0;
 
-  virtual bool accept_painted_vertex(VertexDescriptorType v, TGraph& g) const = 0;
+  virtual bool accept_match(VertexDescriptorType v, TGraph& g) const = 0;
+
+  virtual void inpainting_complete() const = 0;
 
   // Non-const functions
   virtual void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) = 0;
 
   virtual void finish_vertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g) = 0;
-
-  virtual void inpainting_complete() const = 0;
 
 }; // InpaintingVisitorParent
 

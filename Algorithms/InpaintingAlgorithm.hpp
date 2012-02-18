@@ -57,15 +57,15 @@ void inpainting_loop(VertexListGraphType& g, InpaintingVisitorType vis,
     VertexDescriptorType sourceNode = find_inpainting_source(vi, vi_end, targetNode);
     vis.vertex_match_made(targetNode, sourceNode, g);
 
-    // Do the in-painting of the target patch from the source patch.
-    // the inpaint_patch functor should take care of iterating through the vertices in both
-    // patches and call "vis.paint_vertex(target, source, g)" on the individual vertices.
-    inpaint_patch(targetNode, sourceNode, g, vis);
-
-    if(!vis.accept_painted_vertex(targetNode, g))
+    if(!vis.accept_match(targetNode, g))
       {
-      throw std::runtime_error("Vertex was not painted successfully!");
+      //throw std::runtime_error("Vertex was not painted successfully!");
       }
+
+    // Do the in-painting of the target patch from the source patch.
+    // the inpaint_patch functor should take care of calling
+    // "vis.paint_vertex(target, source, g)" on the individual vertices in the patch.
+    inpaint_patch(targetNode, sourceNode, g, vis);
 
     vis.finish_vertex(targetNode, sourceNode, g);
   } // end main iteration loop

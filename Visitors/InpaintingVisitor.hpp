@@ -87,9 +87,9 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     Image->SetPixel(target_index, Image->GetPixel(source_index));
   };
 
-  bool accept_painted_vertex(VertexDescriptorType v, TGraph& g) const
+  bool accept_match(VertexDescriptorType v, TGraph& g) const
   {
-    return true;
+    // return true;
   };
 
   void finish_vertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
