@@ -167,6 +167,11 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   }; // finish_vertex
 
+  void inpainting_complete() const
+  {
+    HelpersOutput::WriteImage(Image, "output.mha");
+  }
+
 }; // InpaintingVisitor
 
 #endif

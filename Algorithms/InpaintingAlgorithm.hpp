@@ -1,6 +1,7 @@
 #ifndef InpaintingAlgorithm_hpp
 #define InpaintingAlgorithm_hpp
 
+// Concepts
 #include "Concepts/InpaintingVisitorConcept.hpp"
 
 // Boost
@@ -19,11 +20,11 @@ void inpainting_loop(VertexListGraphType& g, InpaintingVisitorType vis,
                      PatchInpainterType inpaint_patch) 
 {
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<InpaintingVisitorType, VertexListGraphType>));
-  
+
   typedef typename boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
 
-  // When this function is called, the priority-queue should already be filled 
-  // with all the hole-vertices (which should also have their boundaryStatusMap set appropriately).
+  // When this function is called, the priority-queue must already be filled with
+  // all the boundary nodes (which should also have their boundaryStatusMap set appropriately).
   // The only thing this function does is run the inpainting loop. All of the
   // actual code is externalized in the functors and visitors (vis, find_inpainting_source,
   // inpaint_patch, etc.).
@@ -69,8 +70,8 @@ void inpainting_loop(VertexListGraphType& g, InpaintingVisitorType vis,
     vis.finish_vertex(targetNode, sourceNode, g);
   } // end main iteration loop
 
-  // Should probably go in the visitor as a inpainting_finished() function
-  //HelpersOutput::WriteImage<ImageType>(image, outputFilename);
+  vis.inpainting_complete();
+
 };
 
 #endif

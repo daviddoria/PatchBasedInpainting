@@ -65,6 +65,14 @@ struct CompositeInpaintingVisitor
       }
   };
 
+  void inpainting_complete() const
+  {
+    for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
+      {
+      Visitors[visitorId]->inpainting_complete();
+      }
+  };
+
   void AddVisitor(InpaintingVisitorParent<TGraph>* vis)
   {
     this->Visitors.push_back(vis);

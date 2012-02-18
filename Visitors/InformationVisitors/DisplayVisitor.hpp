@@ -104,6 +104,10 @@ public:
     emit signal_RefreshImage();
   };
 
+  void inpainting_complete() const
+  {
+  }
+
 };
 
 #endif

@@ -29,6 +29,8 @@ struct InpaintingVisitorParent
 
   virtual void finish_vertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g) = 0;
 
+  virtual void inpainting_complete() const = 0;
+
 }; // InpaintingVisitorParent
 
 #endif
