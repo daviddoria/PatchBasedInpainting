@@ -33,10 +33,12 @@
 #include "Visitors/CompositeInpaintingVisitor.hpp"
 
 // Nearest neighbors
-#include "NearestNeighbor/LinearSearchBestProperty.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
+//#include "NearestNeighbor/LinearSearchBestProperty.hpp"
+#include "NearestNeighbor/VisualSelectionBest.hpp"
 
+// Nearest neighbors visitor
 #include "Visitors/NearestNeighborsDisplayVisitor.hpp"
 
 // Initializers
@@ -73,9 +75,6 @@
 // GUI
 #include "Interactive/BasicViewerWidget.h"
 #include "Interactive/TopPatchesWidget.h"
-
-// Manual selection
-#include "Visitors/ManualSelectionVisitor.hpp"
 
 // Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 filled.mha
 int main(int argc, char *argv[])
@@ -210,11 +209,11 @@ int main(int argc, char *argv[])
                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
   KNNSearchType knnSearch(imagePatchDescriptorMap, 1000);
 
-  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
-                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
-  BestSearchType linearSearchBest(imagePatchDescriptorMap);
+  typedef VisualSelectionBest BestSearchType;
+  BestSearchType linearSearchBest;
 
   NearestNeighborsDisplayVisitor nearestNeighborsDisplayVisitor;
+
   typedef TwoStepNearestNeighbor<KNNSearchType, BestSearchType, NearestNeighborsDisplayVisitor> TwoStepSearchType;
   TwoStepSearchType twoStepSearch(knnSearch, linearSearchBest, nearestNeighborsDisplayVisitor);
 
@@ -239,18 +238,16 @@ int main(int argc, char *argv[])
                    &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
                    Qt::BlockingQueuedConnection);
 
-  TopPatchesWidget<ImageType> topPatchesWidget(image, patchHalfWidth);
-  topPatchesWidget.show();
-  QObject::connect(&nearestNeighborsDisplayVisitor, SIGNAL(signal_Refresh(const std::vector<Node>&)),
-                   &topPatchesWidget, SLOT(SetNodes(const std::vector<Node>&)));
+//   TopPatchesWidget<ImageType> topPatchesWidget(image, patchHalfWidth);
+//   topPatchesWidget.show();
+//   QObject::connect(&nearestNeighborsDisplayVisitor, SIGNAL(signal_Refresh(const std::vector<Node>&)),
+//                    &topPatchesWidget, SLOT(SetNodes(const std::vector<Node>&)));
 
-  typedef ManualSelectionVisitor ManualSelectionVisitorType;
-  ManualSelectionVisitorType manualSelectionDefaultVisitor;
-
-  QtConcurrent::run(boost::bind(inpainting_loop<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType,
-                                BoundaryNodeQueueType, TwoStepSearchType, InpainterType, ManualSelectionVisitorType>,
-                                graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepSearch, patchInpainter,
-                                boost::ref(manualSelectionDefaultVisitor)));
+  QtConcurrent::run(boost::bind(InpaintingAlgorithm<
+                                VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType,
+                                BoundaryNodeQueueType, TwoStepSearchType, InpainterType>,
+                                graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, boost::ref(twoStepSearch),
+                                patchInpainter));
 
   return app.exec();
 }

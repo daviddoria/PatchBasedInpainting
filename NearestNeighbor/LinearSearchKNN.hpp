@@ -24,19 +24,19 @@
   * \param compare A callable object that returns true if the first element is the preferred one (less-than) of the two.
   * \param max_neighbors The maximum number of elements of smallest distance to output in the sorted list.
   */
-template <typename ForwardIteratorType,
+template <typename TForwardIterator,
           typename TOutputContainer,
-          typename DistanceFunctionType,
-          typename DistanceValueType = float,
-          typename CompareFunctionType = std::less<DistanceValueType> >
+          typename TDistanceFunction,
+          typename TDistanceValue = float,
+          typename TCompareFunction = std::less<TDistanceValue> >
 struct LinearSearchKNN
 {
   typedef TOutputContainer OutputContainerType;
 
-  DistanceFunctionType DistanceFunction;
-  CompareFunctionType CompareFunction;
+  TDistanceFunction DistanceFunction;
+  TCompareFunction CompareFunction;
   
-  LinearSearchKNN(DistanceFunctionType distanceFunction = DistanceFunctionType(), const unsigned int k = 1000) : DistanceFunction(distanceFunction), K(k)
+  LinearSearchKNN(TDistanceFunction distanceFunction = TDistanceFunction(), const unsigned int k = 1000) : DistanceFunction(distanceFunction), K(k)
   {
   }
 
@@ -50,7 +50,7 @@ struct LinearSearchKNN
     return this->K;
   }
 
-  void operator()(ForwardIteratorType first, ForwardIteratorType last, OutputContainerType& output)
+  void operator()(TForwardIterator first, TForwardIterator last, OutputContainerType& output)
   {
     output.clear();
     if(first == last)
@@ -58,20 +58,20 @@ struct LinearSearchKNN
       return;
     }
 
-    std::vector<DistanceValueType> output_dist;
+    std::vector<TDistanceValue> output_dist;
     for(; first != last; ++first)
     {
-      DistanceValueType d = DistanceFunction(*first);
-      if(!CompareFunction(d, std::numeric_limits<DistanceValueType>::infinity()))
+      TDistanceValue d = DistanceFunction(*first);
+      if(!CompareFunction(d, std::numeric_limits<TDistanceValue>::infinity()))
       {
         continue;
       }
-      typename std::vector<DistanceValueType>::iterator it_lo = std::lower_bound(output_dist.begin(),output_dist.end(), d, CompareFunction);
+      typename std::vector<TDistanceValue>::iterator it_lo = std::lower_bound(output_dist.begin(),output_dist.end(), d, CompareFunction);
       if((it_lo != output_dist.end()) || (output_dist.size() < this->K))
       {
         output_dist.insert(it_lo, d);
-        typename OutputContainer::iterator itv = output.begin();
-        for(typename std::vector<DistanceValueType>::iterator it = output_dist.begin();
+        typename OutputContainerType::iterator itv = output.begin();
+        for(typename std::vector<TDistanceValue>::iterator it = output_dist.begin();
             (itv != output.end()) && (it != it_lo); ++itv,++it) ;
         output.insert(itv, *first);
         if(output.size() > this->K)

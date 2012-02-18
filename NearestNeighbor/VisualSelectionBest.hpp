@@ -1,5 +1,5 @@
-#ifndef ManualSelectionVisitor_HPP
-#define ManualSelectionVisitor_HPP
+#ifndef VisualSelectionBest_HPP
+#define VisualSelectionBest_HPP
 
 // Custom
 #include "Node.h"
@@ -14,12 +14,12 @@
 
  */
 
-// class ManualSelectionVisitorParent : public QObject
+// class VisualSelectionBestParent : public QObject
 // {
 // Q_OBJECT
 // };
 
-class ManualSelectionVisitor : public QObject
+class VisualSelectionBest : public QObject
 {
 Q_OBJECT
 
@@ -30,16 +30,16 @@ signals:
 
 public:
 
-  ManualSelectionVisitor(){}
+  // VisualSelectionBest(){}
 
   /** Return the best source node for a specified target node. */
   template <typename TVertexDescriptor, typename TForwardIterator>
-  TVertexDescriptor select(const TVertexDescriptor& targetNode,
-                           TForwardIterator possibleNodesBegin, TForwardIterator possibleNodesEnd)
+  TVertexDescriptor operator()(TForwardIterator possibleNodesBegin, TForwardIterator possibleNodesEnd,
+                               const TVertexDescriptor& queryNode)
   {
     // TODO: This should pop up a window and ask the user to select the patch they want to use (from the possibleNodes container)
   }
 
-}; // ManualSelectionVisitor
+}; // VisualSelectionBest
 
 #endif

@@ -10,25 +10,24 @@
 // STL
 #include <stdexcept>
 
+/** When this function is called, the priority-queue must already be filled with
+  * all the boundary nodes (which should also have their boundaryStatusMap set appropriately).
+  * The only thing this function does is run the inpainting loop. All of the
+  * actual code is externalized in the functors and visitors (vis, find_inpainting_source,
+  * inpaint_patch, etc.).
+  */
 template <typename TVertexListGraph, typename TInpaintingVisitor,
           typename TBoundaryStatusMap, typename TPriorityQueue,
-          typename TNearestNeighborFinder, typename TPatchInpainter,
-          typename TManualSelectionVisitor>
+          typename TNearestNeighborFinder, typename TPatchInpainter>
 inline
-void inpainting_loop(TVertexListGraph& g, TInpaintingVisitor vis,
-                     TBoundaryStatusMap& boundaryStatusMap, TPriorityQueue& boundaryNodeQueue,
-                     TNearestNeighborFinder find_inpainting_source,
-                     TPatchInpainter inpaint_patch, TManualSelectionVisitor& manualSelectionVisitor)
+void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
+                        TBoundaryStatusMap& boundaryStatusMap, TPriorityQueue& boundaryNodeQueue,
+                        TNearestNeighborFinder find_inpainting_source,
+                        TPatchInpainter inpaint_patch)
 {
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<TInpaintingVisitor, TVertexListGraph>));
 
   typedef typename boost::graph_traits<TVertexListGraph>::vertex_descriptor VertexDescriptorType;
-
-  // When this function is called, the priority-queue must already be filled with
-  // all the boundary nodes (which should also have their boundaryStatusMap set appropriately).
-  // The only thing this function does is run the inpainting loop. All of the
-  // actual code is externalized in the functors and visitors (vis, find_inpainting_source,
-  // inpaint_patch, etc.).
 
   while(true) 
   {
@@ -57,11 +56,6 @@ void inpainting_loop(TVertexListGraph& g, TInpaintingVisitor vis,
     tie(vi,vi_end) = vertices(g);
     VertexDescriptorType sourceNode = find_inpainting_source(vi, vi_end, targetNode);
     vis.vertex_match_made(targetNode, sourceNode, g);
-
-    if(!vis.accept_match(targetNode, g))
-      {
-      sourceNode = manualSelectionVisitor.select(targetNode, vi, vi_end);
-      }
 
     // Do the in-painting of the target patch from the source patch.
     // the inpaint_patch functor should take care of calling

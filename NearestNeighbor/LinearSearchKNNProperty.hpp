@@ -52,7 +52,8 @@ public:
   }
 
   template <typename ForwardIteratorType, typename OutputContainerType>
-  void operator()(ForwardIteratorType first, ForwardIteratorType last, typename ForwardIteratorType::value_type queryNode, OutputContainerType& output)
+  void operator()(ForwardIteratorType first, ForwardIteratorType last,
+                  typename ForwardIteratorType::value_type queryNode, OutputContainerType& output)
   {
     output.clear();
     if(first == last)
@@ -61,8 +62,6 @@ public:
     }
 
     std::vector<DistanceValueType> output_dist;
-    typedef std::multimap<DistanceValueType, typename OutputContainerType::value_type> InternalOutputMapType;
-    InternalOutputMapType internal_output_map;
     for(; first != last; ++first)
     {
       DistanceValueType d = DistanceFunction(get(PropertyMap, *first), get(PropertyMap, queryNode));
@@ -70,15 +69,19 @@ public:
       {
         continue;
       }
-      typename std::vector<DistanceValueType>::iterator it_lo = std::lower_bound(output_dist.begin(),output_dist.end(), d, CompareFunction);
+      // First, find the appropriate placement for the new distance value 'd' in the 'output_dist' vector
+      typename std::vector<DistanceValueType>::iterator it_lo = std::lower_bound(output_dist.begin(),output_dist.end(),
+                                                                                 d, CompareFunction);
       if((it_lo != output_dist.end()) || (output_dist.size() < this->K))
       {
+        // Then, insert the new distance value 'd' at that position
         output_dist.insert(it_lo, d);
-        //internal_output_map[d] = *first;
-        internal_output_map.insert(typename InternalOutputMapType::value_type(d, *first));
+
+        // Then, advance to the same position (i.e. "it_lo - output_dist.begin()") in the 'output' container:
         typename OutputContainerType::iterator itv = output.begin();
         for(typename std::vector<DistanceValueType>::iterator it = output_dist.begin();
             (itv != output.end()) && (it != it_lo); ++itv,++it) ;
+        // Finally, insert the key-value at that position in the 'output' container.
         output.insert(itv, *first);
         if(output.size() > this->K)
         {
@@ -87,11 +90,7 @@ public:
         }
       }
     }
-    output.clear();
-    for(typename InternalOutputMapType::const_iterator iter = internal_output_map.begin(); iter != internal_output_map.end(); ++iter)
-      {
-      output.push_back(iter->second);
-      }
+
   }
 
 };

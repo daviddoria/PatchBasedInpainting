@@ -69,7 +69,7 @@ if(InpaintingWithManualSelection)
   QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui Interactive/TopPatchesWidget.ui)
   QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
                        Visitors/NearestNeighborsDisplayVisitor.hpp
-                       Visitors/ManualSelectionVisitor.hpp
+                       NearestNeighbor/VisualSelectionBest.hpp
                        Interactive/TopPatchesWidget.h Interactive/Delegates/PixmapDelegate.h)
 
   ADD_EXECUTABLE(InpaintingWithManualSelection InpaintingWithManualSelection.cpp
