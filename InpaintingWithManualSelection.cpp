@@ -213,9 +213,9 @@ int main(int argc, char *argv[])
                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
   KNNSearchType knnSearch(imagePatchDescriptorMap, 1000);
 
-  TopPatchesDialog<ImageType> topPatchesDialog(image, patchHalfWidth);
+  TopPatchesDialog<ImageType> topPatchesDialog(image, mask, patchHalfWidth);
   typedef VisualSelectionBest<ImageType> BestSearchType;
-  BestSearchType linearSearchBest(image, patchHalfWidth, &topPatchesDialog);
+  BestSearchType linearSearchBest(image, mask, patchHalfWidth, &topPatchesDialog);
 
   NearestNeighborsDisplayVisitor nearestNeighborsDisplayVisitor;
 

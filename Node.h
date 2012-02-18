@@ -19,6 +19,12 @@
 #ifndef Node_H
 #define Node_H
 
+// Qt
+#include <QMetaType>
+
+// STL
+#include <vector>
+
 /**
 \class Node
 \brief This is a class to represent a position on an integer 2D grid.
@@ -31,10 +37,12 @@ public:
 
   Node()
   {
+    qRegisterMetaType<Node>("Node");
+    qRegisterMetaType<std::vector<Node> >("VectorOfNodes");
     coord[0] = -1;
     coord[1] = -1;
   }
-  
+
   Node(int component0, int component1)
   {
     coord[0] = component0;
@@ -59,5 +67,8 @@ public:
     coord[1] = object[1];
   }
 };
+
+
+Q_DECLARE_METATYPE(Node)
 
 #endif

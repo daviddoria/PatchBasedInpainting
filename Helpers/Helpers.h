@@ -73,6 +73,10 @@ typename std::enable_if<std::is_fundamental<T>::value, T&>::type index(T& t, siz
 template<typename T>
 typename T::value_type& index(T& v, size_t i);
 
+// Convert any type with operator[] to any other type with operator[]
+template<typename T, typename U>
+T ConvertFrom(U& u);
+
 
 }// end namespace
 

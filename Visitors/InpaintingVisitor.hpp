@@ -43,8 +43,6 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   TPriorityMap& PriorityMap;
   TBoundaryStatusMap& BoundaryStatusMap;
 
-  //TMatchVerificationVisitor MatchVerificationVisitor;
-
   const unsigned int HalfWidth;
 
   InpaintingVisitor(TImage* const in_image, Mask* const in_mask,
@@ -52,7 +50,6 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
                     TDescriptorVisitor& in_descriptorVisitor, TPriorityMap& in_priorityMap,
                     TPriority* const in_priorityFunction,
                     const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
-                    //TMatchVerificationVisitor matchVerificationVisitor) :
   Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue), PriorityFunction(in_priorityFunction), FillStatusMap(in_fillStatusMap), DescriptorVisitor(in_descriptorVisitor),
   PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap),// MatchVerificationVisitor(matchVerificationVisitor),
   HalfWidth(in_half_width)
@@ -71,8 +68,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
   {
-    assert(get(fillStatusMap, source));
-    assert(get(descriptorMap, source).IsFullyValid());
+    assert(get(FillStatusMap, source));
   };
 
   void paint_vertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
@@ -85,8 +81,8 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     source_index[0] = source[0];
     source_index[1] = source[1];
 
-    assert(image->GetLargestPossibleRegion().IsInside(source_index));
-    assert(image->GetLargestPossibleRegion().IsInside(target_index));
+    assert(Image->GetLargestPossibleRegion().IsInside(source_index));
+    assert(Image->GetLargestPossibleRegion().IsInside(target_index));
 
     Image->SetPixel(target_index, Image->GetPixel(source_index));
   };

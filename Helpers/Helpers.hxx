@@ -16,6 +16,7 @@
  *
  *=========================================================================*/
 
+// ITK
 #include "itkCastImageFilter.h"
 
 // STL
@@ -86,5 +87,13 @@ typename T::value_type VectorMedian(T v)
   return v[n];
 }
 
+template<typename T, typename U>
+T ConvertFrom(U& u)
+{
+  T t;
+  t[0] = u[0];
+  t[1] = u[1];
+  return t;
+}
 
 }// end namespace
