@@ -18,3 +18,11 @@ add_test(TestIsophotes TestIsophotes)
 add_executable(TestMaskOperations TestMaskOperations.cpp ../MaskOperations.cpp ../Mask.cpp)
 target_link_libraries(TestMaskOperations ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
 add_test(TestMaskOperations TestMaskOperations)
+
+add_executable(TestBoundaryEnergy TestBoundaryEnergy.cpp ../BoundaryEnergy.cpp ../Mask.cpp)
+target_link_libraries(TestBoundaryEnergy ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
+add_test(TestBoundaryEnergy TestBoundaryEnergy)
+
+add_executable(TestBoundaryNormals TestBoundaryNormals.cpp ../BoundaryNormals.cpp ../Mask.cpp)
+target_link_libraries(TestBoundaryNormals ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
+add_test(TestBoundaryNormals TestBoundaryNormals)

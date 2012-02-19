@@ -37,6 +37,9 @@ static void TestAngleBetween();
 static void TestGetRegionCenter();
 static void TestGetRegionInRadiusAroundPixel();
 static void TestGet8NeighborOffsets();
+static void TestGet8NeighborsWithValue();
+static void TestAverageNeighborValue();
+static void TestAverageNonMaskedNeighborValue();
 
 //////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// Function template tests (defined in ITKHelpers.hxx) ///////////////////
@@ -62,6 +65,9 @@ int main()
   TestGetRegionCenter();
   TestGetRegionInRadiusAroundPixel();
   TestGet8NeighborOffsets();
+  TestGet8NeighborsWithValue();
+  TestAverageNeighborValue();
+  TestAverageNonMaskedNeighborValue();
 
   // Function template tests (defined in ITKHelpers.hxx)
   TestHasNeighborWithValue();
@@ -469,23 +475,23 @@ void TestGet8NeighborOffsets()
 
 void TestHasNeighborWithValue()
 {
-itk::Index<2> pixel = {{5,5}};
-FloatScalarImageType::Pointer image = FloatScalarImageType::New();
-Testing::GetBlankImage(image.GetPointer());
-float value = 2;
-bool hasNeighbor = ITKHelpers::HasNeighborWithValue(pixel, image.GetPointer(), value);
-if(hasNeighbor)
-  {
-  throw std::runtime_error("Image should not have a neighbor with this value!");
-  }
-itk::Index<2> neighborPixel = {{6,5}};
+  itk::Index<2> pixel = {{5,5}};
+  FloatScalarImageType::Pointer image = FloatScalarImageType::New();
+  Testing::GetBlankImage(image.GetPointer());
+  float value = 2;
+  bool hasNeighbor = ITKHelpers::HasNeighborWithValue(pixel, image.GetPointer(), value);
+  if(hasNeighbor)
+    {
+    throw std::runtime_error("Image should not have a neighbor with this value!");
+    }
+  itk::Index<2> neighborPixel = {{6,5}};
 
-image->SetPixel(neighborPixel, value);
-hasNeighbor = ITKHelpers::HasNeighborWithValue(pixel, image.GetPointer(), value);
-if(!hasNeighbor)
-  {
-  throw std::runtime_error("Image should have a neighbor with this value!");
-  }
+  image->SetPixel(neighborPixel, value);
+  hasNeighbor = ITKHelpers::HasNeighborWithValue(pixel, image.GetPointer(), value);
+  if(!hasNeighbor)
+    {
+    throw std::runtime_error("Image should have a neighbor with this value!");
+    }
 }
 
 void TestDeepCopy_Scalar()
@@ -518,4 +524,32 @@ void TestDeepCopy_Vector()
     {
     throw std::runtime_error("DeepCopy FloatVectorImageType: Images are not equal!");
     }
+}
+
+void TestGet8NeighborsWithValue()
+{
+  // TODO:
+  FloatScalarImageType::Pointer image = FloatScalarImageType::New();
+  Testing::GetBlankImage(image.GetPointer());
+
+  itk::Index<2>& queryPixel = {{0,0}};
+  float value = 4;
+  unsigned int correctNumberOfNeighbors = 3;
+  std::vector<itk::Index<2> > neighbors = ITKHelpers::Get8NeighborsWithValue(queryPixel, image, value);
+  if(!neighbors.size() == correctNumberOfNeighbors)
+    {
+    std::stringstream ss;
+    ss << "There are " << neighbors.size() << " neighbors but should be " << correctNumberOfNeighbors;
+    throw std::runtime_error(ss.str());
+    }
+}
+
+void TestAverageNeighborValue()
+{
+  throw std::runtime_error("TestAverageNeighborValue not yet written!");
+}
+
+void TestAverageNonMaskedNeighborValue()
+{
+  throw std::runtime_error("TestAverageNonMaskedNeighborValue not yet written!");
 }

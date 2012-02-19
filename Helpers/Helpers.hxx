@@ -96,4 +96,16 @@ TTo ConvertFrom(const TFrom& object)
   return t;
 }
 
+template<typename T>
+typename T::value_type Average(const T& v)
+{
+  typename T::value_type vectorSum = 0.0f;
+
+  for(unsigned int i = 0; i < v.size(); ++i)
+    {
+    vectorSum += v[i];
+    }
+  return vectorSum / static_cast<float>(v.size());
+}
+
 }// end namespace

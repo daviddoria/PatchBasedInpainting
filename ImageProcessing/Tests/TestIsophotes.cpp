@@ -40,14 +40,14 @@ void TestComputeColorIsophotesInRegion()
   //void ComputeColorIsophotesInRegion(const FloatVectorImageType* image, const Mask* mask,
     //                               const itk::ImageRegion<2>& region , FloatVector2ImageType* isophotes);
 
-  throw;
+  throw std::runtime_error("TestComputeColorIsophotesInRegion not yet written!");
 }
 
 void TestComputeMaskedIsophotesInRegion()
 {
   //void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* const image, const Mask* const mask, const itk::ImageRegion<2>& region,
     //                                FloatVector2ImageType* const outputIsophotes);
-  throw;
+  throw std::runtime_error("TestComputeMaskedIsophotesInRegion not yet written!");
 }
 /*
 void CreateMask(Mask* const mask)

@@ -51,41 +51,41 @@ int main(int argc, char*argv[])
 void TestMaskedDerivativePrewitt()
 {
   //(const TImage* const image, const Mask* const mask, const unsigned int direction, FloatScalarImageType* const output);
-  throw;
+  throw std::runtime_error("TestMaskedDerivativePrewitt not yet written!");
 }
 
 
 void TestMaskedDerivativeSobel()
 {
   //(const TImage* const image, const Mask* const mask, const unsigned int direction, FloatScalarImageType* const output);
-  throw;
+  throw std::runtime_error("TestMaskedDerivativeSobel not yet written!");
 }
 
 void TestMaskedDerivativeGaussian()
 {
-//const TImage* const image, const Mask* const mask, const unsigned int direction, FloatScalarImageType* const output);
-throw;
+  //const TImage* const image, const Mask* const mask, const unsigned int direction, FloatScalarImageType* const output);
+  throw std::runtime_error("TestMaskedDerivativeGaussian not yet written!");
 }
 
 
 void TestMaskedDerivativeGaussianInRegion()
 {
-//const TImage* const image, const Mask* const mask, const unsigned int direction,
-  //                                    const itk::ImageRegion<2>& region, FloatScalarImageType* const output);
-throw;
+  //const TImage* const image, const Mask* const mask, const unsigned int direction,
+    //                                    const itk::ImageRegion<2>& region, FloatScalarImageType* const output);
+  throw std::runtime_error("TestMaskedDerivativeGaussianInRegion not yet written!");
 }
 
 void TestMaskedGradientInRegion()
 {
   //const TImage* const image, const Mask* const mask, const itk::ImageRegion<2>& region, FloatVector2ImageType* const output);
-  throw;
+  throw std::runtime_error("TestMaskedGradientInRegion not yet written!");
 }
 
 void TestGradientFromDerivatives()
 {
 //const itk::Image<TPixel, 2>* const xDerivative,
  //                            const typename itk::Image<TPixel, 2>* const yDerivative, itk::Image<itk::CovariantVector<TPixel, 2> >* const output);
- throw;
+ throw std::runtime_error("TestGradientFromDerivatives not yet written!");
 }
 
 
@@ -93,7 +93,7 @@ void TestGradientFromDerivativesInRegion()
 {
   //const itk::Image<TPixel, 2>* const xDerivative, const itk::Image<TPixel, 2>* const yDerivative,
     //                                 const itk::ImageRegion<2>& region, itk::Image<itk::CovariantVector<TPixel, 2> >* const output);
-  throw;
+  throw std::runtime_error("TestGradientFromDerivativesInRegion not yet written!");
 }
 
 void TestMaskedDerivative()

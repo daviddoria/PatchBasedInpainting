@@ -17,11 +17,9 @@
  *=========================================================================*/
 
 // Custom
-#include "Helpers.h"
-#include "HelpersOutput.h"
-#include "Mask.h"
-#include "PatchBasedInpainting.h"
-#include "Types.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/OutputHelpers.h"
+#include "ImageProcessing/Mask.h"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -57,7 +55,7 @@ int main(int argc, char *argv[])
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   Helpers::VectorImageToRGBImage(imageReader->GetOutput(), rgbImage);
 
-  HelpersOutput::WriteImage<RGBImageType>(rgbImage, "Test/TestIsophotes.rgb.mha");
+  HelpersOutput::WriteImage(rgbImage.GetPointer(), "Test/TestIsophotes.rgb.mha");
 
   typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
   LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
@@ -67,7 +65,8 @@ int main(int argc, char *argv[])
   FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
   // Blur with a Gaussian kernel
   unsigned int kernelRadius = 5;
-  Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), maskReader->GetOutput(), kernelRadius, blurredLuminance);
+  Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), maskReader->GetOutput(), kernelRadius,
+                                            blurredLuminance);
 
   HelpersOutput::WriteImage<FloatScalarImageType>(blurredLuminance, "Test/TestIsophotes.blurred.mha");
 
@@ -103,7 +102,8 @@ int main(int argc, char *argv[])
 
   //inpainting.FindBoundary();
 
-  //std::vector<itk::Index<2> > borderPixels = Helpers::GetNonZeroPixels<UnsignedCharScalarImageType>(inpainting.GetBoundaryImage(), targetRegion);
+//   std::vector<itk::Index<2> > borderPixels =
+//     ITKHelpers::GetNonZeroPixels(inpainting.GetBoundaryImage(), targetRegion);
 
   itk::RGBPixel<unsigned char> black;
   black.SetRed(0);
@@ -145,18 +145,18 @@ int main(int argc, char *argv[])
   output->Allocate();
   output->FillBuffer(black);
 
-  Helpers::BlankAndOutlineRegion<RGBImageType>(output, targetRegion, black, red);
-  Helpers::BlankAndOutlineRegion<RGBImageType>(output, sourceRegion, black, green);
+  ITKHelpers::BlankAndOutlineRegion(output.GetPointer(), targetRegion, black, red);
+  ITKHelpers::BlankAndOutlineRegion(output.GetPointer(), sourceRegion, black, green);
 
   RGBImageType::Pointer target = RGBImageType::New();
   target->SetRegions(imageReader->GetOutput()->GetLargestPossibleRegion());
   target->Allocate();
-  Helpers::BlankAndOutlineRegion<RGBImageType>(target, targetRegion, black, red);
+  ITKHelpers::BlankAndOutlineRegion(target.GetPointer(), targetRegion, black, red);
 
   RGBImageType::Pointer source = RGBImageType::New();
   source->SetRegions(imageReader->GetOutput()->GetLargestPossibleRegion());
   source->Allocate();
-  Helpers::BlankAndOutlineRegion<RGBImageType>(source, sourceRegion, black, green);
+  ITKHelpers::BlankAndOutlineRegion(source.GetPointer(), sourceRegion, black, green);
 
   itk::Offset<2> offset = targetIndex - sourceIndex;
   /*

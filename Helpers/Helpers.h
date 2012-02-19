@@ -73,9 +73,13 @@ typename std::enable_if<std::is_fundamental<T>::value, T&>::type index(T& t, siz
 template<typename T>
 typename T::value_type& index(T& v, size_t i);
 
-// Convert any type with operator[] to any other type with operator[]
+/** Convert any type with operator[] to any other type with operator[] */
 template<typename TTo, typename TFrom>
 TTo ConvertFrom(const TFrom& object);
+
+/** Average the values in a vector. */
+template<typename T>
+typename T::value_type Average(const T& v);
 
 
 }// end namespace

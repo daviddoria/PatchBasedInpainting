@@ -43,6 +43,7 @@
 
 // Custom
 #include "ImageProcessing/Mask.h"
+#include "Helpers/Helpers.h"
 
 namespace ITKHelpers
 {
@@ -702,6 +703,48 @@ itk::Index<2> CreateIndex(const T& v)
 {
   itk::Index<2> index = {{v[0], v[1]}};
   return index;
+}
+
+template<typename TImage>
+typename TImage::PixelType AverageNeighborValue(const TImage* const image, const itk::Index<2>& pixel)
+{
+  itk::ImageRegion<2> neighborhoodRegion = GetRegionInRadiusAroundPixel(pixel, 1);
+  neighborhoodRegion.Crop(image->GetLargestPossibleRegion());
+
+  std::vector<itk::Index<2> > neighbors = Get8NeighborsInRegion(neighborhoodRegion, pixel);
+
+  typename TImage::PixelType pixelSum = 0.0f;
+
+  for(unsigned int i = 0; i < neighbors.size(); ++i)
+    {
+    pixelSum += image->GetPixel(neighbors[i]);
+    }
+  return pixelSum / static_cast<float>(neighbors.size());
+}
+
+template<typename TImage>
+typename TImage::PixelType AverageNonMaskedNeighborValue(const TImage* const image, const Mask* const mask,
+                                                         const itk::Index<2>& pixel)
+{
+  std::vector<itk::Index<2> > validNeighbors = mask->GetValidNeighbors(pixel);
+  return Helpers::Average(validNeighbors);
+}
+
+/** Get a list of the valid neighbors of a pixel.*/
+template<typename TImage>
+std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, const TImage* const image,
+                                                  const typename TImage::PixelType& value)
+{
+  std::vector<itk::Index<2> > neighbors = Get8NeighborsInRegion(GetRegionInRadiusAroundPixel(pixel, 1), pixel);
+  std::vector<itk::Index<2> > neighborsWithValue;
+  for(unsigned int i = 0; i < neighbors.size(); ++i)
+    {
+    if(image->GetPixel(neighbors[i]) == value)
+      {
+      neighborsWithValue.push_back(neighbors[i]);
+      }
+    }
+  return neighborsWithValue;
 }
 
 }// end namespace

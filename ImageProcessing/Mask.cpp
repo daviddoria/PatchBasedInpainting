@@ -302,8 +302,8 @@ void Mask::FindBoundary(UnsignedCharScalarImageType* boundaryImage) const
 
   // Since the hole is white, we want the foreground value of the contour filter to be black. This means that the boundary will
   // be detected in the black pixel region, which is on the outside edge of the hole like we want. However,
-  // The BinaryContourImageFilter will change all non-boundary pixels to the background color, so the resulting output will be inverted -
-  // the boundary pixels will be black and the non-boundary pixels will be white.
+  // The BinaryContourImageFilter will change all non-boundary pixels to the background color,
+  // so the resulting output will be inverted - the boundary pixels will be black and the non-boundary pixels will be white.
 
   // Find the boundary
   typedef itk::BinaryContourImageFilter <Mask, Mask> binaryContourImageFilterType;
@@ -314,8 +314,10 @@ void Mask::FindBoundary(UnsignedCharScalarImageType* boundaryImage) const
   binaryContourFilter->SetBackgroundValue(holeOnly->GetHoleValue());
   binaryContourFilter->Update();
 
-  //HelpersOutput::WriteImageConditional<Mask>(binaryContourFilter->GetOutput(), "Debug/FindBoundary.Boundary.mha", this->DebugImages);
-  //HelpersOutput::WriteImageConditional<Mask>(binaryContourFilter->GetOutput(), "Debug/FindBoundary.Boundary.png", this->DebugImages);
+//   OutputHelpers::WriteImageConditional<Mask>(binaryContourFilter->GetOutput(),
+//                                              "Debug/FindBoundary.Boundary.mha", this->DebugImages);
+//   OutputHelpers::WriteImageConditional<Mask>(binaryContourFilter->GetOutput(),
+//                                              "Debug/FindBoundary.Boundary.png", this->DebugImages);
 
   // Since we want to interpret non-zero pixels as boundary pixels, we must invert the image.
   typedef itk::InvertIntensityImageFilter <Mask> InvertIntensityImageFilterType;
@@ -328,6 +330,19 @@ void Mask::FindBoundary(UnsignedCharScalarImageType* boundaryImage) const
   //this->BoundaryImage->Graft(binaryContourFilter->GetOutput());
   ITKHelpers::DeepCopy<UnsignedCharScalarImageType>(invertIntensityFilter->GetOutput(), boundaryImage);
 
-  //HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/FindBoundary.BoundaryImage.mha", this->DebugImages);
+//   OutputHelpers::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage,
+//                                                                     "Debug/FindBoundary.BoundaryImage.mha", this->DebugImages);
 
+}
+
+/** Get a list of the valid neighbors of a pixel.*/
+std::vector<itk::Index<2> > Mask::GetValidNeighbors(const itk::Index<2>& pixel) const
+{
+  return ITKHelpers::Get8NeighborsWithValue(pixel, this, this->ValidValue);
+}
+
+/** Get a list of the hole neighbors of a pixel.*/
+std::vector<itk::Index<2> > Mask::GetHoleNeighbors(const itk::Index<2>& pixel) const
+{
+  return ITKHelpers::Get8NeighborsWithValue(pixel, this, this->HoleValue);
 }

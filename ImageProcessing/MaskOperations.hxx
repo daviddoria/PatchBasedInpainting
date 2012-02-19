@@ -10,15 +10,16 @@ namespace MaskOperations
 {
   
 template <class TImage>
-void CopySelfPatchIntoHoleOfTargetRegion(TImage* image, const Mask* mask,
-                                  const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput)
+void CopySelfPatchIntoHoleOfTargetRegion(TImage* const image, const Mask* const mask,
+                                  const itk::ImageRegion<2>& sourceRegionInput,
+                                  const itk::ImageRegion<2>& destinationRegionInput)
 {
-  CopySourcePatchIntoHoleOfTargetRegion<TImage>(image, image, mask, sourceRegionInput, destinationRegionInput);
+  CopySourcePatchIntoHoleOfTargetRegion(image, image, mask, sourceRegionInput, destinationRegionInput);
 }
 
 
 template <class TImage>
-void CopySourcePatchIntoHoleOfTargetRegion(const TImage* sourceImage, TImage* targetImage, const Mask* mask,
+void CopySourcePatchIntoHoleOfTargetRegion(const TImage* const sourceImage, TImage* const targetImage, const Mask* const mask,
                              const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput)
 {
   itk::ImageRegion<2> fullImageRegion = sourceImage->GetLargestPossibleRegion();
@@ -64,7 +65,7 @@ struct Contribution
 };
 
 template <typename TImage>
-void MaskedBlur(const TImage* inputImage, const Mask* mask, const float blurVariance, TImage* output)
+void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const float blurVariance, TImage* const output)
 {
   // Create a Gaussian kernel
   typedef itk::GaussianOperator<float, 1> GaussianOperatorType;
@@ -115,7 +116,8 @@ void MaskedBlur(const TImage* inputImage, const Mask* mask, const float blurVari
       std::vector<Contribution> contributions;
       for(unsigned int i = 0; i < gaussianOperator.Size(); i++)
         {
-        // Since we use 1D kernels, we must manually construct a 2D offset with 0 in all dimensions except the dimension of the current pass
+        // Since we use 1D kernels, we must manually construct a 2D offset with 0 in all
+        // dimensions except the dimension of the current pass
         itk::Offset<2> offset = ITKHelpers::OffsetFrom1DOffset(gaussianOperator.GetOffset(i), dimensionPass);
 
         itk::Index<2> pixel = centerPixel + offset;
@@ -157,7 +159,8 @@ void MaskedBlur(const TImage* inputImage, const Mask* mask, const float blurVari
 
 
 template<typename TImage>
-void CreatePatchImage(TImage* image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion, const Mask* mask, TImage* result)
+void CreatePatchImage(const TImage* const image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion,
+                      const Mask* const mask, TImage* const result)
 {
   // The input 'result' is expected to already be sized and initialized.
 
@@ -216,7 +219,8 @@ itk::Index<2> FindHighestValueInMaskedRegion(const TImage* const image, float& m
 }
 
 template<typename TImage, typename TRegionIndicatorImage>
-itk::Index<2> FindHighestValueInNonZeroRegion(const TImage* const image, float& maxValue, const TRegionIndicatorImage* const indicatorImage)
+itk::Index<2> FindHighestValueInNonZeroRegion(const TImage* const image, float& maxValue,
+                                              const TRegionIndicatorImage* const indicatorImage)
 {
   // Create a mask from the indicator image
   Mask::Pointer mask = Mask::New();

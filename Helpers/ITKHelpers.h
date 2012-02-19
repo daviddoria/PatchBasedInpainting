@@ -35,6 +35,7 @@ class Mask;
 namespace ITKHelpers
 {
 
+/** Some useful types. */
 typedef itk::Image<float, 2> FloatScalarImageType;
 typedef itk::Image<unsigned char, 2> UnsignedCharScalarImageType;
 typedef itk::CovariantVector<float, 2> FloatVector2Type;
@@ -45,62 +46,62 @@ typedef itk::VectorImage<float, 2> FloatVectorImageType;
 ////////////////// Non-template function declarations (defined in Helpers.cpp) ///////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Get the number of components per pixel in an image file.
+/** Get the number of components per pixel in an image file. */
 unsigned int GetNumberOfComponentsPerPixelInFile(const std::string& filename);
 
-// Get a short string of an itk::Index
+/** Get a short string of an itk::Index */
 std::string GetIndexString(const itk::Index<2>& index);
 
-// Get a short string of an itk::Size
+/** Get a short string of an itk::Size */
 std::string GetSizeString(const itk::Size<2>& size);
-
-// Return the highest value of the specified image out of the pixels under a specified BoundaryImage.
-itk::Index<2> FindHighestValueInMaskedRegion(const FloatScalarImageType* const image, float& maxValue, const UnsignedCharScalarImageType* const maskImage);
 
 itk::ImageRegion<2> CropToRegion(const itk::ImageRegion<2>& inputRegion, const itk::ImageRegion<2>& targetRegion);
 
 void OutputImageType(const itk::ImageBase<2>* const input);
 
-// Average each component of a list of vectors then construct and return a new vector composed of these averaged components.
+/** Average each component of a list of vectors then construct and return a new vector composed of these averaged components. */
 FloatVector2Type AverageVectors(const std::vector<FloatVector2Type>& vectors);
 
-// This function creates an Offset<2> by setting the 'dimension' index of the Offset<2>
-// to the value of the Offset<1>, and filling the other position with a 0.
+/** This function creates an Offset<2> by setting the 'dimension' index of the Offset<2>
+ * to the value of the Offset<1>, and filling the other position with a 0. */
 itk::Offset<2> OffsetFrom1DOffset(const itk::Offset<1>& offset1D, const unsigned int dimension);
 
-// Convert an RGB image to the CIELAB colorspace. 'rgbImage' cannot be const because the adaptor doesn't allow it.
+/** Convert an RGB image to the CIELAB colorspace. 'rgbImage' cannot be const because the adaptor doesn't allow it. */
 void RGBImageToCIELabImage(RGBImageType* const rgbImage, FloatVectorImageType* const cielabImage);
 
-// Convert the first 3 channels of an ITK image to the CIELAB colorspace.
+/** Convert the first 3 channels of an ITK image to the CIELAB colorspace. */
 void ITKImageToCIELabImage(const FloatVectorImageType* const rgbImage, FloatVectorImageType* const cielabImage);
 
-// Compute the angle between two vectors.
+/** Compute the angle between two vectors. */
 float AngleBetween(const FloatVector2Type& v1, const FloatVector2Type& v2);
 
-// Convert the first 3 channels of a float vector image to an unsigned char/color/rgb image.
+/** Convert the first 3 channels of a float vector image to an unsigned char/color/rgb image. */
 void VectorImageToRGBImage(const FloatVectorImageType* const image, RGBImageType* const rgbImage);
 
-// Get the center pixel of a region. The region is assumed to have odd dimensions.
+/** Get the center pixel of a region. The region is assumed to have odd dimensions. */
 itk::Index<2> GetRegionCenter(const itk::ImageRegion<2>& region);
 
-// Get the size of a region by it's radius. E.g. radius 5 -> 11x11 patch.
+/** Get the size of a region by it's radius. E.g. radius 5 -> 11x11 patch. */
 itk::Size<2> SizeFromRadius(const unsigned int radius);
 
-// "Follow" a vector from one pixel to find the next pixel it would "hit".
+/** "Follow" a vector from one pixel to find the next pixel it would "hit". */
 itk::Index<2> GetNextPixelAlongVector(const itk::Index<2>& pixel, const FloatVector2Type& vector);
 
-// Get the direction in integer pixel coordinates of the 'vector'
+/** Get the direction in integer pixel coordinates of the 'vector' */
 itk::Offset<2> GetOffsetAlongVector(const FloatVector2Type& vector);
 
-// Make an ImageRegion centered on 'pixel' with radius 'radius'.
+/** Make an ImageRegion centered on 'pixel' with radius 'radius'. */
 itk::ImageRegion<2> GetRegionInRadiusAroundPixel(const itk::Index<2>& pixel, const unsigned int radius);
 
-// Get the offsets of the 8 neighborhood of a pixel.
+/** Get the offsets of the 8 neighborhood of a pixel. */
 std::vector<itk::Offset<2> > Get8NeighborOffsets();
+
+/** Get the indices of the neighbors of a pixel that are inside of a region. */
+std::vector<itk::Index<2> > Get8NeighborsInRegion(const itk::ImageRegion<2>& region, const itk::Index<2>& pixel);
 
 //void DeepCopyUnknownType(const itk::ImageBase<2>* input, itk::ImageBase<2>* output);
 
-// The return value MUST be a smart pointer
+/** The return value MUST be a smart pointer. */
 itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* input);
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -108,20 +109,26 @@ itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* inpu
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
-// Determine if any of the 8 neighbors pixels has the specified value.
+/** Determine if any of the 8 neighbors pixels has the specified value. */
 template<typename TImage>
 bool HasNeighborWithValue(const itk::Index<2>& pixel, const TImage* const image, const typename TImage::PixelType& value);
 
+/** Blur all channels of an image. */
 template<typename TVectorImage>
 void AnisotropicBlurAllChannels(const TVectorImage* const image, TVectorImage* const output, const float sigma);
 
+/** Set the values of the pixels on the boundary of the 'region' to 'value'. */
 template<typename TImage>
 void OutlineRegion(TImage* image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value);
 
+/** Deep copy an image. */
 template<typename TImage>
 void DeepCopy(const TImage* const input, TImage* const output);
 
-// Note: specialization declarations must appear in the header or the compiler does not know about their definition in the .cpp file!
+/** Deep copy a vector image.
+ * Note: specialization declarations must appear in the header or the compiler does
+ * not know about their definition in the .cpp file!
+ */
 template<>
 void DeepCopy<FloatVectorImageType>(const FloatVectorImageType* const input, FloatVectorImageType* const output);
 
@@ -130,7 +137,7 @@ void DeepCopyInRegion(const TImage* const input, const itk::ImageRegion<2>& regi
 
 template <class TImage>
 void CopyRegion(const TImage* const sourceImage, TImage* const targetImage, const itk::Index<2>& sourcePosition,
-               const itk::Index<2>& targetPosition, const unsigned int radius);
+                const itk::Index<2>& targetPosition, const unsigned int radius);
 
 template <class TImage>
 void CopyRegion(const TImage* const sourceImage, TImage* const targetImage, const itk::ImageRegion<2>& sourceRegion,
@@ -185,43 +192,66 @@ std::vector<itk::Index<2> > GetNonZeroPixels(const TImage* const image, const it
 template<typename TImage>
 void InitializeImage(TImage* const image, const itk::ImageRegion<2>& region);
 
-// This function will be used/deduced when called with itk::VectorImage<float,2> image; InitializeImage(image, region)
+/** This function will be used/deduced when called with itk::VectorImage<float,2> image; InitializeImage(image, region) */
 template<typename TImage>
 void InitializeImage(const itk::VectorImage<TImage>* const input, const itk::ImageRegion<2>& region);
 
 template<typename TImage>
 void DilateImage(const TImage* const image, TImage* const dilatedImage, const unsigned int radius);
 
+/** Change the value of all pixels with value = 'oldValue' to 'newValue. */
 template<typename TImage>
-void ChangeValue(const TImage* const image, const typename TImage::PixelType& oldValue, const typename TImage::PixelType& newValue);
+void ChangeValue(const TImage* const image, const typename TImage::PixelType& oldValue,
+                 const typename TImage::PixelType& newValue);
 
+/** Extract a channel of an image. */
 template<typename TPixel>
-void ExtractChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel, typename itk::Image<TPixel, 2>* const output);
+void ExtractChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel,
+                    typename itk::Image<TPixel, 2>* const output);
 
+/** Scale a channel of an image between 0 and 'channelMax'. */
 template<typename TPixel>
 void ScaleChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel,
                   const TPixel channelMax, typename itk::VectorImage<TPixel, 2>* const output);
 
+/** Replace a channel of an image. */
 template<typename TPixel>
-void ReplaceChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel, typename itk::Image<TPixel, 2>* const replacement,
+void ReplaceChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel,
+                    typename itk::Image<TPixel, 2>* const replacement,
                     typename itk::VectorImage<TPixel, 2>* const output);
 
+/** Compute the largest of all pixel-wise differences between all pairs of pixels in an image. */
 template<typename TImage>
 typename TImage::TPixel ComputeMaxPixelDifference(const TImage* const image);
 
+/** Read an image from a file. */
 template<typename TImage>
 void ReadImage(const std::string&, TImage* const image);
 
+/** TODO: apply any filter to an image. */
 template<typename TInputImage, typename TOutputImage, typename TFilter>
 void FilterImage(const TInputImage* const input, TOutputImage* const output);
 
-// Normalize every pixel/vector in a vector image.
+/** Normalize every pixel/vector in a vector image. */
 template<typename TImage>
 void NormalizeVectorImage(TImage* const image);
 
+/** Create an itk::Index<2> from any object with a operator[]. */
 template<typename T>
 itk::Index<2> CreateIndex(const T& v);
 
+/** Get the average value of the neighbors of a pixel. */
+template<typename TImage>
+typename TImage::PixelType AverageNeighborValue(const TImage* const image, const itk::Index<2>& pixel);
+
+/** Get the average value of the non-masked neighbors of a pixel. */
+template<typename TImage>
+typename TImage::PixelType AverageNonMaskedNeighborValue(const TImage* const image, const Mask* const mask,
+                                                         const itk::Index<2>& pixel);
+
+template<typename TImage>
+std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, const TImage* const image,
+                                                   const typename TImage::PixelType& value);
 
 }// end namespace
 

@@ -358,6 +358,22 @@ void DeepCopyUnknownType(const itk::ImageBase<2>* const input, itk::ImageBase<2>
     }
 }*/
 
+std::vector<itk::Index<2> > Get8NeighborsInRegion(const itk::ImageRegion<2>& region, const itk::Index<2>& pixel)
+{
+  std::vector<itk::Index<2> > neighborsInRegion;
+
+  std::vector<itk::Offset<2> > neighborOffsets = Get8NeighborOffsets();
+  for(unsigned int i = 0; i < neighborOffsets.size(); ++i)
+    {
+    itk::Index<2> index = pixel + neighborOffsets[i];
+    if(region.IsInside(index))
+      {
+      neighborsInRegion.push_back(index);
+      }
+    }
+  return neighborsInRegion;
+}
+
 std::vector<itk::Offset<2> > Get8NeighborOffsets()
 {
   std::vector<itk::Offset<2> > offsets;

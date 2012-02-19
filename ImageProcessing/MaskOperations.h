@@ -33,24 +33,28 @@ itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVe
 
 
 // Apply the MaskedBlur function to every channel of a VectorImage separately.
-void VectorMaskedBlur(const FloatVectorImageType* inputImage, const Mask* mask, const float blurVariance, FloatVectorImageType* output);
+void VectorMaskedBlur(const FloatVectorImageType* const inputImage, const Mask* const mask, const float blurVariance,
+                      FloatVectorImageType* const output);
 
 
 template <class TImage>
-void CopySelfPatchIntoHoleOfTargetRegion(TImage* image, const Mask* mask,
-                                   const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput);
+void CopySelfPatchIntoHoleOfTargetRegion(TImage* const image, const Mask* const mask,
+                                         const itk::ImageRegion<2>& sourceRegionInput,
+                                         const itk::ImageRegion<2>& destinationRegionInput);
 
 template <class TImage>
-void CopySourcePatchIntoHoleOfTargetRegion(const TImage* sourceImage, TImage* targetImage, const Mask* mask,
-                                           const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput);
+void CopySourcePatchIntoHoleOfTargetRegion(const TImage* const sourceImage, TImage* const targetImage, const Mask* const mask,
+                                           const itk::ImageRegion<2>& sourceRegionInput,
+                                           const itk::ImageRegion<2>& destinationRegionInput);
 
 
 template <typename TImage>
-void MaskedBlur(const TImage* inputImage, const Mask* mask, const float blurVariance, TImage* output);
+void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const float blurVariance, TImage* const output);
 
 
 template<typename TImage>
-void CreatePatchImage(TImage* image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion, const Mask* mask, TImage* result);
+void CreatePatchImage(const TImage* const image, const itk::ImageRegion<2>& sourceRegion,
+                      const itk::ImageRegion<2>& targetRegion, const Mask* const mask, TImage* const result);
 
 
 // Return the highest value of the specified image out of the pixels under a specified BoundaryImage.
