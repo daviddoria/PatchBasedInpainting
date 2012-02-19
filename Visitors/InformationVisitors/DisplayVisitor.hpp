@@ -59,17 +59,17 @@ public:
 
   }
 
-  void initialize_vertex(VertexDescriptorType v, TGraph& g) const
+  void InitializeVertex(VertexDescriptorType v, TGraph& g) const
   { 
 
   };
 
-  void discover_vertex(VertexDescriptorType v, TGraph& g) const 
+  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const
   { 
 
   };
 
-  void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
+  void VertexMatchMade(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
   {
     // Target node
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(target);
@@ -82,17 +82,17 @@ public:
     emit signal_RefreshSource(sourceRegion, targetRegion);
   };
 
-  void paint_vertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
     // Do nothing
   };
 
-  bool accept_match(VertexDescriptorType v, TGraph& g) const
+  bool AcceptMatch(VertexDescriptorType v, TGraph& g) const
   {
     return true;
   };
 
-  void finish_vertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
+  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
   {
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(v);
     itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->HalfWidth);
@@ -104,7 +104,7 @@ public:
     emit signal_RefreshImage();
   };
 
-  void inpainting_complete() const
+  void InpaintingComplete() const
   {
   }
 

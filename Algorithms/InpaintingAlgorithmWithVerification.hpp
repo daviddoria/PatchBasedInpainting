@@ -21,7 +21,8 @@
   */
 template <typename TVertexListGraph, typename TInpaintingVisitor,
           typename TBoundaryStatusMap, typename TPriorityQueue,
-          typename TKNNFinder, typename TBestNeighborFinder, typename TPatchInpainter>
+          typename TKNNFinder, typename TBestNeighborFinder, typename TManualNeighborFinder,
+          typename TPatchInpainter>
 inline
 void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor vis,
                      TBoundaryStatusMap& boundaryStatusMap, TPriorityQueue& boundaryNodeQueue,
@@ -60,7 +61,7 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
 
     std::vector<VertexDescriptorType> outputContainer;
     this->MultipleNeighborFinder(first, last, queryNode, outputContainer);
-    
+
     VertexDescriptorType sourceNode = find_inpainting_source(vi, vi_end, targetNode);
     vis.vertex_match_made(targetNode, sourceNode, g);
 

@@ -56,22 +56,22 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   {
   }
 
-  void initialize_vertex(VertexDescriptorType v, TGraph& g) const
+  void InitializeVertex(VertexDescriptorType v, TGraph& g) const
   {
     DescriptorVisitor.initialize_vertex(v, g);
   };
 
-  void discover_vertex(VertexDescriptorType v, TGraph& g) const
+  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const
   {
     DescriptorVisitor.discover_vertex(v, g);
   };
 
-  void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
+  void VertexMatchMade(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
   {
     assert(get(FillStatusMap, source));
   };
 
-  void paint_vertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
     itk::Index<2> target_index = ITKHelpers::CreateIndex(target);
 
@@ -83,12 +83,12 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     Image->SetPixel(target_index, Image->GetPixel(source_index));
   };
 
-  bool accept_match(VertexDescriptorType v, TGraph& g) const
+  bool AcceptMatch(VertexDescriptorType v, TGraph& g) const
   {
     return true;
   };
 
-  void finish_vertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
+  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
   {
     // Mark this pixel as filled, the area around it as filled, and the mask in this region as filled.
     // Determine the new boundary, and setup the nodes in the boundary queue.
@@ -122,7 +122,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       {
       VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(gridIterator.GetIndex());
 
-      initialize_vertex(v, g);
+      InitializeVertex(v, g);
       ++gridIterator;
       }
 
@@ -156,7 +156,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   }; // finish_vertex
 
-  void inpainting_complete() const
+  void InpaintingComplete() const
   {
     HelpersOutput::WriteImage(Image, "output.mha");
   }
