@@ -27,7 +27,7 @@ struct InpaintingVisitorParent
   virtual void InpaintingComplete() const = 0;
 
   // Non-const functions
-  virtual void VertexMatchMade(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) = 0;
+  virtual void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) = 0;
 
   virtual void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g) = 0;
 

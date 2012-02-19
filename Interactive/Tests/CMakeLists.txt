@@ -79,13 +79,13 @@
 # target_link_libraries(TestTopPatchesDialog ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
 # add_test(TestTopPatchesDialog TestTopPatchesDialog)
 
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${CMAKE_CURRENT_BINARY_DIR}../)
-QT4_WRAP_UI(UISrcs ../TopPatchesDialog.ui)
-QT4_WRAP_CPP(MOCSrcs ../TopPatchesDialog.h ../Delegates/PixmapDelegate.h)
-add_executable(TestTopPatchesDialog TestTopPatchesDialog.cpp ../Delegates/PixmapDelegate.cpp ../HelpersQt.cpp
-               ../../ImageProcessing/Mask.cpp
-               ${UISrcs} ${MOCSrcs})
-target_link_libraries(TestTopPatchesDialog ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
-add_test(TestTopPatchesDialog TestTopPatchesDialog)
+# 
+# include_directories(${CMAKE_CURRENT_BINARY_DIR})
+# include_directories(${CMAKE_CURRENT_BINARY_DIR}../)
+# QT4_WRAP_UI(UISrcs ../TopPatchesDialog.ui)
+# QT4_WRAP_CPP(MOCSrcs ../TopPatchesDialog.h ../Delegates/PixmapDelegate.h)
+# add_executable(TestTopPatchesDialog TestTopPatchesDialog.cpp ../Delegates/PixmapDelegate.cpp ../HelpersQt.cpp
+#                ../../ImageProcessing/Mask.cpp
+#                ${UISrcs} ${MOCSrcs})
+# target_link_libraries(TestTopPatchesDialog ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
+# add_test(TestTopPatchesDialog TestTopPatchesDialog)

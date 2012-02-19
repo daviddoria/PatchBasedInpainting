@@ -49,7 +49,7 @@ struct InpaintingVisitorConcept
 
     // function called when a source vertex has been found that matches well to the
     // current target-vertex (the same vertex that was just discovered).
-    vis.VertexMatchMade(target, source, g);
+    vis.PotentialMatchMade(target, source, g);
 
     //function called to paint the value of a target vertex with the value of the source vertex.
     vis.PaintVertex(target, source, g);

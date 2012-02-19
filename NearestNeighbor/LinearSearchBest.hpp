@@ -30,7 +30,8 @@ struct LinearSearchBest
   DistanceFunctionType DistanceFunction;
   CompareFunctionType CompareFunction;
 
-  ForwardIteratorType operator()(ForwardIteratorType first, ForwardIteratorType last, typename ForwardIteratorType::value_type query)
+  ForwardIteratorType operator()(ForwardIteratorType first, ForwardIteratorType last,
+                                 typename ForwardIteratorType::value_type query)
   {
     if(first == last)
     {

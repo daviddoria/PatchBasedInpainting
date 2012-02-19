@@ -10,7 +10,6 @@
 // STL
 #include <stdexcept>
 
-// TODO: Finish this if it turns out to be necessary.
 /** This function is different from InpaintingAlgorithm() in that it handles the case where
   * a best patch should not be used.
   * When this function is called, the priority-queue must already be filled with
@@ -26,8 +25,8 @@ template <typename TVertexListGraph, typename TInpaintingVisitor,
 inline
 void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor vis,
                      TBoundaryStatusMap& boundaryStatusMap, TPriorityQueue& boundaryNodeQueue,
-                     TKNNFinder topPatchesFinder, TBestNeighborFinder& manualSelectionVisitor,
-                     TPatchInpainter inpaint_patch)
+                     TKNNFinder knnFinder, TBestNeighborFinder& bestNeighborFinder,
+                     TManualNeighborFinder& manualNeighborFinder, TPatchInpainter inpaint_patch)
 {
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<TInpaintingVisitor, TVertexListGraph>));
 
@@ -53,22 +52,22 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
     } while( get(boundaryStatusMap, targetNode) == false );
 
     // Notify the visitor that we have a hole target center.
-    vis.discover_vertex(targetNode, g);
+    vis.DiscoverVertex(targetNode, g);
 
     // Find the source node that matches best to the target node
     typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
     tie(vi,vi_end) = vertices(g);
 
     std::vector<VertexDescriptorType> outputContainer;
-    this->MultipleNeighborFinder(first, last, queryNode, outputContainer);
+    knnFinder(vi, vi_end, targetNode, outputContainer);
 
-    VertexDescriptorType sourceNode = find_inpainting_source(vi, vi_end, targetNode);
-    vis.vertex_match_made(targetNode, sourceNode, g);
+    VertexDescriptorType sourceNode = bestNeighborFinder(outputContainer.begin(), outputContainer.end(), targetNode);
+    vis.PotentialMatchMade(targetNode, sourceNode, g);
 
-    if(!vis.accept_match(targetNode, g))
+    if(!vis.AcceptMatch(targetNode, g))
       {
       std::cout << "Match not accepted!" << std::endl;
-      sourceNode = manualSelectionVisitor.select(targetNode, vi, vi_end);
+      sourceNode = manualNeighborFinder(outputContainer.begin(), outputContainer.end(), targetNode);
       }
 
     // Do the in-painting of the target patch from the source patch.
@@ -76,10 +75,10 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
     // "vis.paint_vertex(target, source, g)" on the individual vertices in the patch.
     inpaint_patch(targetNode, sourceNode, g, vis);
 
-    vis.finish_vertex(targetNode, sourceNode, g);
+    vis.FinishVertex(targetNode, sourceNode, g);
   } // end main iteration loop
 
-  vis.inpainting_complete();
+  vis.InpaintingComplete();
 
 };
 

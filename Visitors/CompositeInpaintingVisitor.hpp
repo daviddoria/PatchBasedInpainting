@@ -30,11 +30,11 @@ struct CompositeInpaintingVisitor
       }
   };
 
-  void VertexMatchMade(VertexDescriptorType a, VertexDescriptorType b, TGraph& g) const
+  void PotentialMatchMade(VertexDescriptorType a, VertexDescriptorType b, TGraph& g) const
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
-      Visitors[visitorId]->VertexMatchMade(a, b, g);
+      Visitors[visitorId]->PotentialMatchMade(a, b, g);
       }
   };
 

@@ -69,7 +69,7 @@ public:
 
   };
 
-  void VertexMatchMade(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
+  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
   {
     // Target node
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(target);
