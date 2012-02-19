@@ -52,10 +52,18 @@ public:
     std::cout << "invokeMethod SetSourceNodes." << std::endl;
     QMetaObject::invokeMethod(Dialog, "SetSourceNodes", Qt::BlockingQueuedConnection, Q_ARG(std::vector<Node>, sourceNodes));
 
+    // In Qt 4.7, we cannot get the return value of a function unless DirectConnection is used (which doesn't make sense in this
+    // case since we need exec() to be called in the receiver's thread). Instead, we currently set the selected item to -1 so we
+    // can tell if a valid selection has been made or not.
     QMetaObject::invokeMethod(Dialog, "exec", Qt::BlockingQueuedConnection);
 
-    unsigned int selection = Dialog->GetSelectedItem();
-    std::cout << "Selection: " << selection << std::endl;
+    int selection = Dialog->GetSelectedItem();
+    if(selection == -1)
+    {
+      throw std::runtime_error("An invalid selection was made!");
+    }
+
+    //std::cout << "Selection: " << selection << std::endl;
 
     return *(possibleNodesBegin + selection);
   }

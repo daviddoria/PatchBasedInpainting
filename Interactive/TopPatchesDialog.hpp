@@ -24,7 +24,7 @@
 
 template <typename TImage>
 TopPatchesDialog<TImage>::TopPatchesDialog(TImage* const image, Mask* const mask, const unsigned int patchHalfWidth) :
-Image(image), MaskImage(mask), SelectedItem(0), PatchHalfWidth(patchHalfWidth)
+Image(image), MaskImage(mask), SelectedItem(-1), PatchHalfWidth(patchHalfWidth)
 {
   this->setupUi(this);
 
@@ -81,7 +81,7 @@ unsigned int TopPatchesDialog<TImage>::GetSelectedItem()
 template <typename TImage>
 void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
 {
-  std::cout << "showEvent" << std::endl;
+  SelectedItem = -1;
   // We do this here because we will usually call SetQueryNode before the widget is constructed (i.e. before exec() is called).
   gfxQueryPatch->fitInView(MaskedQueryPatchItem);
 }

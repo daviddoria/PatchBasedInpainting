@@ -53,7 +53,12 @@ private:
 
   Node QueryNode;
 
-  unsigned int SelectedItem;
+  /** Store the row() of the selected index. This is signed because we set it to -1 to check if a valid selection was made
+   * since Qt 4.7 cannot return a value from a function called with invokeMethod with BlockingQueuedConnection.
+   */
+  int SelectedItem;
+
+  /** The half-width of the patch. */
   unsigned int PatchHalfWidth;
 
   QGraphicsScene* QueryPatchScene;

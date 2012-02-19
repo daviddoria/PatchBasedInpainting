@@ -82,6 +82,11 @@
 #include "SelfPatchCompare.h"
 #include "Types.h"
 
+/** TODO: New strategy: Only store a vector of the patchPairs that have been computed so far - then actually "replay"
+ * the inpainting by copying those patches. This way the entire image and mask don't have to be stored to get the
+ * "look at a specific iteration" functionality.
+ */
+
 void PatchBasedInpaintingGUI::DefaultConstructor()
 {
   // This function is called by both constructors. This avoid code duplication.
