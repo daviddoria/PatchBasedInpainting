@@ -104,6 +104,8 @@ std::vector<itk::Index<2> > Get8NeighborsInRegion(const itk::ImageRegion<2>& reg
 /** The return value MUST be a smart pointer. */
 itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* input);
 
+itk::VariableLengthVector<float> Average(const std::vector<itk::VariableLengthVector<float> >& v);
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// Template function declarations (defined in ITKHelpers.hxx) ///////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -239,16 +241,6 @@ itk::Index<2> CreateIndex(const T& v);
 /** Get the average value of the neighbors of a pixel. */
 template<typename TImage>
 typename TImage::PixelType AverageNeighborValue(const TImage* const image, const itk::Index<2>& pixel);
-
-/** Get the average value of the non-masked neighbors of a pixel. */
-template<typename TImage>
-typename TImage::PixelType AverageNonMaskedNeighborValue(const TImage* const image, const Mask* const mask,
-                                                         const itk::Index<2>& pixel);
-
-/** Get the average value of the masked neighbors of a pixel. */
-template<typename TImage>
-typename TImage::PixelType AverageMaskedNeighborValue(const TImage* const image, const Mask* const mask,
-                                                      const itk::Index<2>& pixel);
 
 template<typename TImage>
 std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, const TImage* const image,

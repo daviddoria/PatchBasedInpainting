@@ -1,6 +1,7 @@
 #include "BoundaryEnergy.h" // Appease syntax parser
 
 #include "Helpers/ITKHelpers.h"
+#include "ImageProcessing/MaskOperations.h"
 #include "ImageProcessing/PixelFilterFunctors.hpp"
 
 template<typename TImage>
@@ -15,18 +16,27 @@ float BoundaryEnergy<TImage>::operator()(const itk::ImageRegion<2>& region)
   Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
   this->MaskImage->FindBoundaryInRegion(region, boundaryImage);
 
-  GreaterThanFunctor<Mask::BoundaryImageType::PixelType> greaterThanFunctor(.5); // We are unsure about the values of the boundary pixels, but they are definitely greater than .5 (we'd hope non-boundary=0 and boundary = 1 or 255)
+  // We are unsure about the values of the boundary pixels, but they are definitely greater than .5
+  // (we'd hope non-boundary=0 and boundary = 1 or 255)
+  GreaterThanOrEqualFunctor<Mask::BoundaryImageType::PixelType> greaterThanOrEqualFunctor(1);
   std::vector<itk::Index<2> > pixelsSatisfyingFunctor = PixelsSatisfyingFunctor(boundaryImage.GetPointer(),
-                                                      boundaryImage->GetLargestPossibleRegion(), greaterThanFunctor);
+                                                        region, greaterThanOrEqualFunctor);
 
+  if(pixelsSatisfyingFunctor.size() == 0)
+  {
+    std::stringstream ss;
+    ss << "Cannot compute boundary energy - there are no boundary pixels in the specified region: " << region;
+    throw std::runtime_error(ss.str());
+  }
+  
   float totalDifference = 0.0f;
   for(unsigned int i = 0; i < pixelsSatisfyingFunctor.size(); ++i)
   {
     typename TImage::PixelType averageMaskedNeighborValue =
-      ITKHelpers::AverageMaskedNeighborValue(Image, MaskImage, pixelsSatisfyingFunctor[i]);
+      MaskOperations::AverageMaskedNeighborValue(Image, MaskImage, pixelsSatisfyingFunctor[i]);
 
     typename TImage::PixelType averageValidNeighborValue =
-      ITKHelpers::AverageNonMaskedNeighborValue(Image, MaskImage, pixelsSatisfyingFunctor[i]);
+      MaskOperations::AverageNonMaskedNeighborValue(Image, MaskImage, pixelsSatisfyingFunctor[i]);
 
     totalDifference += Difference(averageMaskedNeighborValue, averageValidNeighborValue);
   }

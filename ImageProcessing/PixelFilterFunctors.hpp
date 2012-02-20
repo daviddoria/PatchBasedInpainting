@@ -50,7 +50,7 @@ class GreaterThanFunctor
 {
 public:
 
-  GreaterThanFunctor(const float threshold) : Threshold(threshold)
+  GreaterThanFunctor(const TPixel threshold) : Threshold(threshold)
   {
   }
 
@@ -58,6 +58,30 @@ public:
   bool operator()(const TPixel& pixel)
   {
     if(pixel > Threshold)
+      {
+      return true;
+      }
+    return false;
+  }
+
+private:
+  TPixel Threshold;
+
+};
+
+template<typename TPixel>
+class GreaterThanOrEqualFunctor
+{
+public:
+
+  GreaterThanOrEqualFunctor(const TPixel threshold) : Threshold(threshold)
+  {
+  }
+
+  /** Determine if a pixel is greater than the threshold */
+  bool operator()(const TPixel& pixel)
+  {
+    if(pixel >= Threshold)
       {
       return true;
       }

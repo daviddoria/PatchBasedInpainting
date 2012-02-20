@@ -20,6 +20,7 @@
 
 // Custom
 #include "Mask.h"
+#include "Helpers/ITKHelpers.h"
 
 // ITK
 #include "itkVectorImage.h"
@@ -65,7 +66,7 @@ void TestBoundaryEnergyScalarImage()
       }
     else
       {
-      imageIterator.Set(0);
+      imageIterator.Set(75);
       mask->SetPixel(imageIterator.GetIndex(), mask->GetValidValue());
       }
     ++imageIterator;
@@ -73,13 +74,17 @@ void TestBoundaryEnergyScalarImage()
 
   BoundaryEnergy<ImageType> boundaryEnergy(image, mask);
 
-  itk::Index<2> regionCorner = {{5,5}};
-  itk::Size<2> regionSize = {{1, 1}};
-  itk::ImageRegion<2> region(regionCorner, regionSize);
+//   itk::Index<2> regionCorner = {{5,5}};
+//   itk::Size<2> regionSize = {{1, 1}};
+//   itk::ImageRegion<2> region(regionCorner, regionSize);
+
+  itk::Index<2> queryPixel = {{5,5}};
+  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, 1);
+  
   float energy = boundaryEnergy(region);
   std::cout << "Energy: " << energy << std::endl;
 
-  float expectedEnergy = 50;
+  float expectedEnergy = 25;
   if(energy != expectedEnergy)
   {
     std::stringstream ss;
@@ -114,7 +119,7 @@ void TestBoundaryEnergyVectorImage()
 
   ImageType::PixelType pixelB;
   pixelB.SetSize(imagePixelDimension);
-  pixelB.Fill(100);
+  pixelB.Fill(75);
 
   while(!imageIterator.IsAtEnd())
     {
@@ -133,9 +138,9 @@ void TestBoundaryEnergyVectorImage()
 
   BoundaryEnergy<ImageType> boundaryEnergy(image, mask);
 
-  itk::Index<2> regionCorner = {{5,5}};
-  itk::Size<2> regionSize = {{1, 1}};
-  itk::ImageRegion<2> region(regionCorner, regionSize);
+  itk::Index<2> queryPixel = {{5,5}};
+  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, 1);
+
   float energy = boundaryEnergy(region);
   std::cout << "Energy: " << energy << std::endl;
 

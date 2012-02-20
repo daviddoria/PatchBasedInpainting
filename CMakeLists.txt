@@ -207,7 +207,7 @@ if(BuildTests)
   #add_subdirectory(Helpers/Tests)
   #add_subdirectory(Utilities/Tests)
 
-  add_subdirectory(Interactive/Tests)
+  #add_subdirectory(Interactive/Tests)
 
 ENDIF(BuildTests)
 

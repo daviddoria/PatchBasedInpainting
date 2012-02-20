@@ -685,32 +685,6 @@ typename TImage::PixelType AverageNeighborValue(const TImage* const image, const
   return pixelSum / static_cast<float>(neighbors.size());
 }
 
-template<typename TImage>
-typename TImage::PixelType AverageNonMaskedNeighborValue(const TImage* const image, const Mask* const mask,
-                                                         const itk::Index<2>& pixel)
-{
-  std::vector<itk::Index<2> > validNeighbors = mask->GetValidNeighbors(pixel);
-  std::vector<typename TImage::PixelType> validValues;
-  for(unsigned int i = 0; i < validNeighbors.size(); ++i)
-    {
-    validValues.push_back(image->GetPixel(validNeighbors[i]));
-    }
-  return Helpers::Average(validValues);
-}
-
-template<typename TImage>
-typename TImage::PixelType AverageMaskedNeighborValue(const TImage* const image, const Mask* const mask,
-                                                      const itk::Index<2>& pixel)
-{
-  std::vector<itk::Index<2> > holeNeighbors = mask->GetHoleNeighbors(pixel);
-  std::vector<typename TImage::PixelType> holeValues;
-  for(unsigned int i = 0; i < holeNeighbors.size(); ++i)
-    {
-    holeValues.push_back(image->GetPixel(holeNeighbors[i]));
-    }
-  return Helpers::Average(holeValues);
-}
-
 /** Get a list of the valid neighbors of a pixel.*/
 template<typename TImage>
 std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, const TImage* const image,

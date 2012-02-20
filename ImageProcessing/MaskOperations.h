@@ -64,6 +64,16 @@ itk::Index<2> FindHighestValueInMaskedRegion(const TImage* const image, float& m
 template<typename TImage, typename TRegionIndicatorImage>
 itk::Index<2> FindHighestValueInNonZero(const TImage* const image, float& maxValue, const TRegionIndicatorImage* const maskImage);
 
+/** Get the average value of the non-masked neighbors of a pixel. */
+template<typename TImage>
+typename TImage::PixelType AverageNonMaskedNeighborValue(const TImage* const image, const Mask* const mask,
+                                                         const itk::Index<2>& pixel);
+
+/** Get the average value of the masked neighbors of a pixel. */
+template<typename TImage>
+typename TImage::PixelType AverageMaskedNeighborValue(const TImage* const image, const Mask* const mask,
+                                                      const itk::Index<2>& pixel);
+
 } // end namespace
 
 #include "MaskOperations.hxx"

@@ -17,7 +17,6 @@ void CopySelfPatchIntoHoleOfTargetRegion(TImage* const image, const Mask* const 
   CopySourcePatchIntoHoleOfTargetRegion(image, image, mask, sourceRegionInput, destinationRegionInput);
 }
 
-
 template <class TImage>
 void CopySourcePatchIntoHoleOfTargetRegion(const TImage* const sourceImage, TImage* const targetImage, const Mask* const mask,
                              const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput)
@@ -226,6 +225,48 @@ itk::Index<2> FindHighestValueInNonZeroRegion(const TImage* const image, float& 
   Mask::Pointer mask = Mask::New();
   mask->CreateFromImage(image, itk::NumericTraits<typename TRegionIndicatorImage::PixelType>::Zero);
   return FindHighestValueInMaskedRegion(image, maxValue, mask);
+}
+
+
+template<typename TImage>
+typename TImage::PixelType AverageNonMaskedNeighborValue(const TImage* const image, const Mask* const mask,
+                                                         const itk::Index<2>& pixel)
+{
+  std::vector<itk::Index<2> > validNeighbors = mask->GetValidNeighbors(pixel);
+  std::vector<typename TImage::PixelType> validValues;
+  for(unsigned int i = 0; i < validNeighbors.size(); ++i)
+    {
+    validValues.push_back(image->GetPixel(validNeighbors[i]));
+    }
+    
+  if(validNeighbors.size() == 0)
+    {
+    throw std::runtime_error("Cannot compute the average value of the non-masked neighbors because there are 0 of them!");
+    }
+
+  using Helpers::Average;
+  using ITKHelpers::Average;
+  return Average(validValues);
+}
+
+template<typename TImage>
+typename TImage::PixelType AverageMaskedNeighborValue(const TImage* const image, const Mask* const mask,
+                                                      const itk::Index<2>& pixel)
+{
+  std::vector<itk::Index<2> > holeNeighbors = mask->GetHoleNeighbors(pixel);
+  std::vector<typename TImage::PixelType> holeValues;
+  for(unsigned int i = 0; i < holeNeighbors.size(); ++i)
+    {
+    holeValues.push_back(image->GetPixel(holeNeighbors[i]));
+    }
+
+  if(holeNeighbors.size() == 0)
+  {
+    throw std::runtime_error("Cannot compute the average value of the non-masked neighbors because there are 0 of them!");
+  }
+  using Helpers::Average;
+  using ITKHelpers::Average;
+  return Average(holeValues);
 }
 
 } // end namespace

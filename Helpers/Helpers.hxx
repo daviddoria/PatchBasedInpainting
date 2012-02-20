@@ -103,7 +103,9 @@ typename T::value_type Average(const T& v)
 
   for(unsigned int i = 0; i < v.size(); ++i)
     {
+    //std::cout << "Average: Adding value " << v[i] << std::endl;
     vectorSum += v[i];
+    //std::cout << "Average: Current vectorSum " << vectorSum << std::endl;
     }
   return vectorSum / static_cast<float>(v.size());
 }
