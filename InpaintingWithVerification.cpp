@@ -30,6 +30,7 @@
 
 // Inpainting visitors
 #include "Visitors/InpaintingVisitor.hpp"
+#include "Visitors/InformationVisitors/LoggerVisitor.hpp"
 #include "Visitors/CompositeInpaintingVisitor.hpp"
 #include "Visitors/InformationVisitors/DebugVisitor.hpp"
 
@@ -196,15 +197,17 @@ int main(int argc, char *argv[])
   typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
   DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
 
-  
   typedef DebugVisitor<VertexListGraphType, ImageType> DebugVisitorType;
   DebugVisitorType debugVisitor(image, mask, patchHalfWidth);
+
+  LoggerVisitor<VertexListGraphType> loggerVisitor("log.txt");
 
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeVisitorType;
   CompositeVisitorType compositeVisitor;
   compositeVisitor.AddVisitor(&inpaintingVisitor);
   compositeVisitor.AddVisitor(&displayVisitor);
   compositeVisitor.AddVisitor(&debugVisitor);
+  compositeVisitor.AddVisitor(&loggerVisitor);
 
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
