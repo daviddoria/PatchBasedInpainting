@@ -20,9 +20,7 @@
 #define ClusterColors_H
 
 // Custom
-#include "DebugOutputs.h"
 class Mask;
-#include "Types.h"
 
 // STL
 #include <vector>
@@ -34,7 +32,7 @@ class Mask;
 
 //class itk::Statistics::KdTreeGenerator; // This forward declaration does not work.
 
-class ClusterColors : public DebugOutputs
+class ClusterColors
 {
 public:
 

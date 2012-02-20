@@ -17,12 +17,9 @@
  *=========================================================================*/
 
 // Custom
-#include "CandidatePairs.h"
-#include "Helpers.h"
-#include "Mask.h"
-#include "Patch.h"
-#include "SelfPatchCompare.h"
-#include "Types.h"
+
+#include "Helpers/Helpers.h"
+#include "ImageProcessing/Mask.h"
 
 // ITK
 #include "itkBinaryThresholdImageFilter.h"
@@ -163,54 +160,54 @@ int main(int argc, char *argv[])
   unsigned int patchRadius = 10;
   // Create source patches
   itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(image, image->GetLargestPossibleRegion());
-  std::vector<Patch> sourcePatches;
-  while(!imageIterator.IsAtEnd())
-    {
-    itk::Index<2> currentPixel = imageIterator.GetIndex();
-    itk::ImageRegion<2> region = Helpers::GetRegionInRadiusAroundPixel(currentPixel, patchRadius);
-    if(image->GetLargestPossibleRegion().IsInside(region))
-      {
-      sourcePatches.push_back(Patch(region));
-      }
-    ++imageIterator;
-    }
-  std::cout << "Source patches: " << sourcePatches.size() << std::endl;
+  // std::vector<Patch> sourcePatches;
+//   while(!imageIterator.IsAtEnd())
+//     {
+//     itk::Index<2> currentPixel = imageIterator.GetIndex();
+//     itk::ImageRegion<2> region = Helpers::GetRegionInRadiusAroundPixel(currentPixel, patchRadius);
+//     if(image->GetLargestPossibleRegion().IsInside(region))
+//       {
+//       sourcePatches.push_back(Patch(region));
+//       }
+//     ++imageIterator;
+//     }
+//   std::cout << "Source patches: " << sourcePatches.size() << std::endl;
   itk::Size<2> targetSize;
   targetSize.Fill(patchRadius * 2 + 1);
 
   itk::Index<2> targetIndex;
   targetIndex.Fill(3);
 
-  itk::ImageRegion<2> targetRegion(targetIndex, targetSize);
-  Patch targetPatch(targetRegion);
+//   itk::ImageRegion<2> targetRegion(targetIndex, targetSize);
+//   Patch targetPatch(targetRegion);
+// 
+//   CandidatePairs pairs(targetPatch);
+//   pairs.AddPairFromPatch(targetPatch);
 
-  CandidatePairs pairs(targetPatch);
-  pairs.AddPairFromPatch(targetPatch);
-
-  itk::ImageRegion<2> adjacentRegion = targetRegion;
-  itk::Index<2> adjacentIndex;
-  adjacentIndex[0] = targetIndex[0] + 1;
-  adjacentIndex[1] = targetIndex[1] + 1;
-  adjacentRegion.SetIndex(adjacentIndex);
-  Patch adjacentPatch(adjacentRegion);
-  pairs.AddPairFromPatch(adjacentPatch);
+//   itk::ImageRegion<2> adjacentRegion = targetRegion;
+//   itk::Index<2> adjacentIndex;
+//   adjacentIndex[0] = targetIndex[0] + 1;
+//   adjacentIndex[1] = targetIndex[1] + 1;
+//   adjacentRegion.SetIndex(adjacentIndex);
+//   Patch adjacentPatch(adjacentRegion);
+//   pairs.AddPairFromPatch(adjacentPatch);
   //pairs.AddPairFromPatch(sourcePatches[0]);
 
-  SelfPatchCompare patchCompare;
-  patchCompare.SetPairs(&pairs);
-  patchCompare.SetImage(image);
-  patchCompare.SetMask(mask);
-  patchCompare.SetNumberOfComponentsPerPixel(3);
-  patchCompare.SetMembershipImage(membershipImage);
-
-  patchCompare.FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,&patchCompare,_1));
-  patchCompare.ComputeAllSourceDifferences();
-
-  std::cout << "pairs: " << pairs.size() << std::endl;
-  for(unsigned int i = 0; i < pairs.size(); ++i)
-    {
-    std::cout << "MembershipDifference: " << pairs[i].DifferenceMap[PatchPair::MembershipDifference] << std::endl;
-    }
+//   SelfPatchCompare patchCompare;
+//   patchCompare.SetPairs(&pairs);
+//   patchCompare.SetImage(image);
+//   patchCompare.SetMask(mask);
+//   patchCompare.SetNumberOfComponentsPerPixel(3);
+//   patchCompare.SetMembershipImage(membershipImage);
+// 
+//   patchCompare.FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchMembershipDifference,&patchCompare,_1));
+//   patchCompare.ComputeAllSourceDifferences();
+// 
+//   std::cout << "pairs: " << pairs.size() << std::endl;
+//   for(unsigned int i = 0; i < pairs.size(); ++i)
+//     {
+//     std::cout << "MembershipDifference: " << pairs[i].DifferenceMap[PatchPair::MembershipDifference] << std::endl;
+//     }
 
   //unsigned int bestMatchSourcePatchId = patchCompare.FindBestPatch();
   //std::cout << "bestMatchSourcePatchId: " << bestMatchSourcePatchId << std::endl;

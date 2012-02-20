@@ -17,11 +17,9 @@
  *=========================================================================*/
 
 // Custom
-#include "Helpers.h"
-#include "HelpersOutput.h"
-#include "Mask.h"
-#include "PatchBasedInpainting.h"
-#include "Types.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/OutputHelpers.h"
+#include "ImageProcessing/Mask.h"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -60,9 +58,9 @@ int main(int argc, char *argv[])
 
   // Prepare image
   RGBImageType::Pointer rgbImage = RGBImageType::New();
-  Helpers::VectorImageToRGBImage(imageReader->GetOutput(), rgbImage);
+  // Helpers::VectorImageToRGBImage(imageReader->GetOutput(), rgbImage);
 
-  HelpersOutput::WriteImage<RGBImageType>(rgbImage, "Test/TestIsophotes.rgb.mha");
+  OutputHelpers::WriteImage<RGBImageType>(rgbImage, "Test/TestIsophotes.rgb.mha");
 
   typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
   LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
@@ -71,13 +69,15 @@ int main(int argc, char *argv[])
 
   FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
   // Blur with a Gaussian kernel
-  unsigned int kernelRadius = 5;
-  Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), maskReader->GetOutput(), kernelRadius, blurredLuminance);
+  // unsigned int kernelRadius = 5;
+  // TODO: update this call to the new API
+//   Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), maskReader->GetOutput(),
+//                                             kernelRadius, blurredLuminance);
 
-  HelpersOutput::WriteImage<FloatScalarImageType>(blurredLuminance, "Test/TestIsophotes.blurred.mha");
+  OutputHelpers::WriteImage<FloatScalarImageType>(blurredLuminance, "Test/TestIsophotes.blurred.mha");
 
 
-  PatchBasedInpainting inpainting(NULL, maskReader->GetOutput());
+  // PatchBasedInpainting inpainting(NULL, maskReader->GetOutput());
   //inpainting.SetMask(maskReader->GetOutput());
   //inpainting.SetImage(imageReader->GetOutput());
 
@@ -98,10 +98,11 @@ int main(int argc, char *argv[])
     maskFilter->Update();
 
     vtkSmartPointer<vtkPolyData> boundaryNormals = vtkSmartPointer<vtkPolyData>::New();
-    Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), boundaryNormals);
+    // TODO: Update this call to the new API
+    // Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), boundaryNormals);
     std::stringstream ssPolyData;
     ssPolyData << "Test/BoundaryNormals_" << blurVariance << ".vtp";
-    HelpersOutput::WritePolyData(boundaryNormals, ssPolyData.str());
+    OutputHelpers::WritePolyData(boundaryNormals, ssPolyData.str());
     }
 
   return EXIT_SUCCESS;

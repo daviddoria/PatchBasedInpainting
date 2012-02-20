@@ -715,4 +715,20 @@ typename TImage::PixelType AverageOfPixelsAtIndices(const TImage* const image, c
   return Average(pixels);
 }
 
+template<typename TImage>
+typename TImage::PixelType AverageInRegion(const TImage* const image, const itk::ImageRegion<2>& region)
+{
+  typename itk::ImageRegionIterator<TImage> imageIterator(image, region);
+  std::vector<typename TImage::PixelType> pixels;
+  while(!imageIterator.IsAtEnd())
+    {
+    pixels.push_back(imageIterator.Get());
+    ++imageIterator;
+    }
+
+  using Helpers::Average;
+  using ITKHelpers::Average;
+  return Average(pixels);
+}
+
 }// end namespace ITKHelpers

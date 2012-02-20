@@ -114,36 +114,37 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       }
   };
 
-  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode)
+  void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)
   {
-    // Mark this pixel as filled, the area around it as filled, and the mask in this region as filled.
+    // Mark this pixel and the area around it as filled, and mark the mask in this region as filled.
     // Determine the new boundary, and setup the nodes in the boundary queue.
 
     // Construct the region around the vertex
-    itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(v);
+    itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(targetNode);
 
     itk::ImageRegion<2> regionToFinish = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
 
     regionToFinish.Crop(Image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
 
-    // Mark all the pixels in this region as filled. This must be done before creating
-    // the mask image to use to check for boundary pixels.
-    // It does not matter which image we iterate over, we just want the indices.
-    itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(Image, regionToFinish);
+    // Mark all the pixels in this region as filled.
+    {
+    itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(MaskImage, regionToFinish);
 
-    while(!gridIterator.IsAtEnd())
+    while(!maskIterator.IsAtEnd())
       {
-      VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(gridIterator.GetIndex());
+      VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(maskIterator.GetIndex());
 
       put(FillStatusMap, v, true);
-      MaskImage->SetPixel(gridIterator.GetIndex(), MaskImage->GetValidValue());
-      ++gridIterator;
+      MaskImage->MarkAsValid(maskIterator.GetIndex());
+      ++maskIterator;
       }
+    }
 
     // Initialize the newly filled vertices because they may now be valid source nodes.
     // You may not want to do this in some cases (i.e. if the descriptors needed cannot be 
     // computed on newly filled regions)
-    gridIterator.GoToBegin();
+    {
+    itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(Image, regionToFinish);
     while(!gridIterator.IsAtEnd())
       {
       VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(gridIterator.GetIndex());
@@ -151,10 +152,12 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       InitializeVertex(v);
       ++gridIterator;
       }
+    }
 
     // Update the priority function.
-    this->PriorityFunction->Update(sourceNode, v);
+    this->PriorityFunction->Update(sourceNode, targetNode);
 
+    {
     // Add pixels that are on the new boundary to the queue, and mark other pixels as not in the queue.
     itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(MaskImage, regionToFinish);
 
@@ -179,6 +182,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
       ++imageIterator;
       }
+    }
 
   }; // finish_vertex
 

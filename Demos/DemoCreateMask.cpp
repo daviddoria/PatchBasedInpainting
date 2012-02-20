@@ -17,12 +17,12 @@
  *=========================================================================*/
 
 // Custom
-#include "Helpers.h"
-#include "HelpersOutput.h"
-#include "Mask.h"
-#include "Types.h"
-#include "ClusterColorsUniform.h"
-#include "ClusterColorsAdaptive.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/OutputHelpers.h"
+#include "ImageProcessing/Mask.h"
+
+#include "Clustering/ClusterColorsUniform.h"
+#include "Clustering/ClusterColorsAdaptive.h"
 
 // ITK
 #include "itkImageFileReader.h"

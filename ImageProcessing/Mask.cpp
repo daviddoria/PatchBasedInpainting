@@ -378,3 +378,13 @@ std::vector<itk::Offset<2> > Mask::GetHoleNeighborOffsets(const itk::Index<2>& p
   }
   return offsets;
 }
+
+void Mask::MarkAsHole(const itk::Index<2>& pixel)
+{
+  this->SetPixel(pixel, this->HoleValue);
+}
+
+void Mask::MarkAsValid(const itk::Index<2>& pixel)
+{
+  this->SetPixel(pixel, this->ValidValue);
+}

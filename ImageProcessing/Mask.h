@@ -172,6 +172,12 @@ public:
   /** Read the mask from a file.*/
   void Read(const std::string& filename);
 
+  /** Mark the pixel as a hole.*/
+  void MarkAsHole(const itk::Index<2>& pixel);
+
+  /** Mark the pixel as a valid pixel.*/
+  void MarkAsValid(const itk::Index<2>& pixel);
+
 private:
 
   Mask(const Self &);    //purposely not implemented

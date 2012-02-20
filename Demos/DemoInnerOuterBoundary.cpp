@@ -17,9 +17,8 @@
  *=========================================================================*/
 
 // Custom
-#include "Helpers.h"
-#include "HelpersOutput.h"
-#include "Types.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/OutputHelpers.h"
 
 // ITK
 #include "itkBinaryDilateImageFilter.h"
@@ -33,6 +32,7 @@
 #include "itkMaskImageFilter.h"
 #include "itkInvertIntensityImageFilter.h"
 #include "itkImageDuplicator.h"
+#include "itkImageFileReader.h"
 #include "itkImageRegionConstIterator.h"
 #include "itkImageRegionIterator.h"
 
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
   thresholdFilter->SetOutsideValue(0);
   thresholdFilter->Update();
 
-  HelpersOutput::WriteImage<UnsignedCharScalarImageType>(thresholdFilter->GetOutput(), "Binary.png");
+  OutputHelpers::WriteImage(thresholdFilter->GetOutput(), "Binary.png");
 
   // Find the outer boundary
   typedef itk::BinaryContourImageFilter <UnsignedCharScalarImageType, UnsignedCharScalarImageType >
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
   invertIntensityFilter->SetInput(outerBoundaryFilter->GetOutput());
   invertIntensityFilter->Update();
 
-  HelpersOutput::WriteImage<UnsignedCharScalarImageType>(invertIntensityFilter->GetOutput(), "OuterBoundary.png");
+  OutputHelpers::WriteImage(invertIntensityFilter->GetOutput(), "OuterBoundary.png");
 
   // Find the inner boundary
   binaryContourImageFilterType::Pointer innerBoundaryFilter = binaryContourImageFilterType::New ();
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
   innerBoundaryFilter->SetBackgroundValue(0);
   innerBoundaryFilter->Update();
 
-  HelpersOutput::WriteImage<UnsignedCharScalarImageType>(innerBoundaryFilter->GetOutput(), "InnerBoundary.png");
+  OutputHelpers::WriteImage(innerBoundaryFilter->GetOutput(), "InnerBoundary.png");
 
   typedef itk::Compose3DCovariantVectorImageFilter<UnsignedCharScalarImageType,
                               UnsignedCharVectorImageType> ComposeCovariantVectorImageFilterType;
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
   composeFilter->SetInput3(thresholdFilter->GetOutput());
   composeFilter->Update();
 
-  HelpersOutput::WriteImage<UnsignedCharVectorImageType>(composeFilter->GetOutput(), "Composed.png");
+  OutputHelpers::WriteImage(composeFilter->GetOutput(), "Composed.png");
 
   /*
   typedef itk::ImageDuplicator< ImageType > DuplicatorType;
@@ -115,9 +115,12 @@ int main(int argc, char *argv[])
   duplicator->Update();
   ImageType::Pointer clonedImage = duplicator->GetOutput();
   */
-  itk::ImageRegionConstIterator<UnsignedCharScalarImageType> outerBoundaryIterator(invertIntensityFilter->GetOutput(),invertIntensityFilter->GetOutput()->GetLargestPossibleRegion());
-  itk::ImageRegionConstIterator<UnsignedCharScalarImageType> innerBoundaryIterator(innerBoundaryFilter->GetOutput(),innerBoundaryFilter->GetOutput()->GetLargestPossibleRegion());
-  itk::ImageRegionIterator<UnsignedCharVectorImageType> outputIterator(composeFilter->GetOutput(),composeFilter->GetOutput()->GetLargestPossibleRegion());
+  itk::ImageRegionConstIterator<UnsignedCharScalarImageType> outerBoundaryIterator(invertIntensityFilter->GetOutput(),
+                                                                                   invertIntensityFilter->GetOutput()->GetLargestPossibleRegion());
+  itk::ImageRegionConstIterator<UnsignedCharScalarImageType> innerBoundaryIterator(innerBoundaryFilter->GetOutput(),
+                                                                                   innerBoundaryFilter->GetOutput()->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<UnsignedCharVectorImageType> outputIterator(composeFilter->GetOutput(),
+                                                                       composeFilter->GetOutput()->GetLargestPossibleRegion());
 
   UnsignedCharVectorImageType::PixelType red;
   red[0] = 255;
@@ -145,7 +148,7 @@ int main(int argc, char *argv[])
     ++outputIterator;
     }
 
-  HelpersOutput::WriteImage<UnsignedCharVectorImageType>(composeFilter->GetOutput(), "BothBoundaries.png");
+  OutputHelpers::WriteImage(composeFilter->GetOutput(), "BothBoundaries.png");
 
   return EXIT_SUCCESS;
 }

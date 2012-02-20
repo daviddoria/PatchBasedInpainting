@@ -251,6 +251,8 @@ std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, c
 template<typename TImage>
 typename TImage::PixelType AverageOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices);
 
+template<typename TImage>
+typename TImage::PixelType AverageInRegion(const TImage* const image, const itk::ImageRegion<2>& region);
 
 }// end namespace
 

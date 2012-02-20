@@ -17,9 +17,7 @@
  *=========================================================================*/
 
 // Custom
-#include "Mask.h"
-#include "Types.h"
-#include "PatchBasedInpainting.h"
+#include "ImageProcessing/Mask.h"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -54,10 +52,6 @@ int main(int argc, char *argv[])
   maskReader->Update();
 
   std::cout << "Read mask " << maskReader->GetOutput()->GetLargestPossibleRegion() << std::endl;
-
-  PatchBasedInpainting inpainting;
-  inpainting.SetPatchSearchFunctionToNormal();
-
 
   return EXIT_SUCCESS;
 }

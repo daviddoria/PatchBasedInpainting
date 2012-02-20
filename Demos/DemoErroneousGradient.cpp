@@ -17,9 +17,9 @@
  *=========================================================================*/
 
 // Custom
-#include "Types.h"
-#include "Helpers.h"
-#include "HelpersOutput.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/ITKHelpers.h"
+#include "Helpers/OutputHelpers.h"
 
 // ITK
 #include "itkBinaryDilateImageFilter.h"
@@ -27,6 +27,7 @@
 #include "itkFlatStructuringElement.h"
 #include "itkGradientImageFilter.h"
 #include "itkGradientMagnitudeImageFilter.h"
+#include "itkImageFileReader.h"
 #include "itkInvertIntensityImageFilter.h"
 #include "itkMaskImageFilter.h"
 #include "itkRGBToLuminanceImageFilter.h"
@@ -68,9 +69,9 @@ void CreateErroneousGradient(const std::string& imageFilename)
   LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
   luminanceFilter->SetInput(imageReader->GetOutput());
   luminanceFilter->Update();
-  Helpers::DeepCopy<UnsignedCharScalarImageType>(luminanceFilter->GetOutput(), grayscaleImage);
+  ITKHelpers::DeepCopy(luminanceFilter->GetOutput(), grayscaleImage.GetPointer());
 
-  HelpersOutput::WriteImage<UnsignedCharScalarImageType>(grayscaleImage, "greyscale.png");
+  OutputHelpers::WriteImage(grayscaleImage.GetPointer(), "greyscale.png");
 
   // Blur the image to compute better gradient estimates
   typedef itk::DiscreteGaussianImageFilter<UnsignedCharScalarImageType, FloatScalarImageType >  GaussianFilterType;
@@ -98,7 +99,7 @@ void CreateErroneousGradient(const std::string& imageFilename)
   gradientMagnitudeFilter->SetInput(gaussianFilter->GetOutput());
   gradientMagnitudeFilter->Update();
 
-  HelpersOutput::WriteImage<UnsignedCharScalarImageType>(gradientMagnitudeFilter->GetOutput(), "gradient.png");
+  OutputHelpers::WriteImage<UnsignedCharScalarImageType>(gradientMagnitudeFilter->GetOutput(), "gradient.png");
 
 }
 
@@ -112,7 +113,10 @@ void MaskNewGradientWithOriginalMask(const std::string& imageFilename, const std
 
   UnsignedCharScalarImageType::Pointer image = UnsignedCharScalarImageType::New();
   //Helpers::ColorToGrayscale<RGBImageType>(imageReader->GetOutput(), image);
-  Helpers::FilterImage<RGBImageType, UnsignedCharScalarImageType, itk::RGBToLuminanceImageFilter<RGBImageType, UnsignedCharScalarImageType> >(imageReader->GetOutput(), image);
+
+  // TODO: Update this call to the new API:
+//   Helpers::FilterImage<RGBImageType, UnsignedCharScalarImageType, itk::RGBToLuminanceImageFilter<RGBImageType,
+//                        UnsignedCharScalarImageType> >(imageReader->GetOutput(), image);
 
   // Read mask image
   typedef itk::ImageFileReader<Mask> MaskReaderType;
@@ -146,7 +150,7 @@ void MaskNewGradientWithOriginalMask(const std::string& imageFilename, const std
   gradientMagnitudeFilter->SetInput(gaussianFilter->GetOutput());
   gradientMagnitudeFilter->Update();
 
-  HelpersOutput::WriteImage<UnsignedCharScalarImageType>(gradientMagnitudeFilter->GetOutput(), "gradient.png");
+  OutputHelpers::WriteImage<UnsignedCharScalarImageType>(gradientMagnitudeFilter->GetOutput(), "gradient.png");
 
 
   // Expand the mask - this is necessary to prevent the isophotes from being undefined in the target region
@@ -167,7 +171,7 @@ void MaskNewGradientWithOriginalMask(const std::string& imageFilename, const std
   UnsignedCharScalarImageType::Pointer expandedMask = UnsignedCharScalarImageType::New();
   expandedMask->Graft(expandMaskFilter->GetOutput());
 
-  HelpersOutput::WriteScaledScalarImage<UnsignedCharScalarImageType>(expandedMask, "ExpandedMasked.png");
+  OutputHelpers::WriteScaledScalarImage<UnsignedCharScalarImageType>(expandedMask, "ExpandedMasked.png");
 
   // Invert the mask
   typedef itk::InvertIntensityImageFilter <UnsignedCharScalarImageType> InvertIntensityImageFilterType;
@@ -185,5 +189,5 @@ void MaskNewGradientWithOriginalMask(const std::string& imageFilename, const std
   maskFilter->SetMaskImage(invertMaskFilter->GetOutput());
   maskFilter->Update();
 
-  HelpersOutput::WriteScaledScalarImage<UnsignedCharScalarImageType>(maskFilter->GetOutput(), "MaskedGradientMagnitude.png");
+  OutputHelpers::WriteScaledScalarImage<UnsignedCharScalarImageType>(maskFilter->GetOutput(), "MaskedGradientMagnitude.png");
 }

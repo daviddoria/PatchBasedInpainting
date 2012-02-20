@@ -17,13 +17,8 @@
  *=========================================================================*/
 
 // Custom
-#include "PatchBasedInpainting.h"
-#include "HelpersOutput.h"
-#include "Mask.h"
-#include "PatchPair.h"
-#include "PixelDifference.h"
-#include "SelfPatchCompare.h"
-#include "Types.h"
+#include "Helpers/OutputHelpers.h"
+#include "ImageProcessing/Mask.h"
 
 // ITK
 #include "itkImageFileReader.h"

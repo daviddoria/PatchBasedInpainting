@@ -17,9 +17,8 @@
  *=========================================================================*/
 
 // Custom
-#include "HelpersOutput.h"
-#include "Mask.h"
-#include "Types.h"
+#include "Helpers/OutputHelpers.h"
+#include "ImageProcessing/Mask.h"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -43,14 +42,14 @@ int main(int argc, char *argv[])
   gradientFilter->SetInput(reader->GetOutput());
   gradientFilter->Update();
 
-  HelpersOutput::WriteImage<GradientFilterType::OutputImageType>(gradientFilter->GetOutput(), "gradient.mha");
+  OutputHelpers::WriteImage(gradientFilter->GetOutput(), "gradient.mha");
 
   typedef itk::LaplacianImageFilter<FloatScalarImageType, FloatScalarImageType>  LaplacianFilterType;
   LaplacianFilterType::Pointer laplacianFilter = LaplacianFilterType::New();
   laplacianFilter->SetInput(reader->GetOutput());
   laplacianFilter->Update();
 
-  HelpersOutput::WriteImage<LaplacianFilterType::OutputImageType>(laplacianFilter->GetOutput(), "laplacian.mha");
+  OutputHelpers::WriteImage(laplacianFilter->GetOutput(), "laplacian.mha");
 
   return EXIT_SUCCESS;
 }

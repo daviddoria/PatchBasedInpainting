@@ -17,7 +17,7 @@
  *=========================================================================*/
 
 // Custom
-#include "Helpers.h"
+#include "Helpers/Helpers.h"
 
 // ITK
 #include "itkImage.h"
@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
 {
   FloatScalarImageType::Pointer floatImage = FloatScalarImageType::New();
 
-  itk::ImageBase<2>::Pointer floatCopy = Helpers::CreateImageWithSameType(floatImage);
-  Helpers::OutputImageType(floatCopy);
+//   itk::ImageBase<2>::Pointer floatCopy = Helpers::CreateImageWithSameType(floatImage);
+//   Helpers::OutputImageType(floatCopy);
 
   return EXIT_SUCCESS;
 }

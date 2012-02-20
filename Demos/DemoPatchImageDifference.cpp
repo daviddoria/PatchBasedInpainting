@@ -17,9 +17,9 @@
  *=========================================================================*/
 
 // Custom
-#include "Helpers.h"
-#include "HelpersOutput.h"
-#include "SelfPatchCompare.h"
+#include "Helpers/Helpers.h"
+#include "Helpers/ITKHelpers.h"
+#include "Helpers/OutputHelpers.h"
 
 // ITK
 #include "itkImage.h"
@@ -60,14 +60,14 @@ int main(int argc, char*argv[])
   typedef itk::RegionOfInterestImageFilter< ColorImageType,
                                             ColorImageType > ExtractImageFilterType;
   ExtractImageFilterType::Pointer extractImageFilter = ExtractImageFilterType::New();
-  extractImageFilter->SetRegionOfInterest(Helpers::GetRegionInRadiusAroundPixel(queryPixel, 3u));
+  extractImageFilter->SetRegionOfInterest(ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, 3u));
   extractImageFilter->SetInput(imageReader->GetOutput());
   extractImageFilter->Update();
 
   FloatScalarImageType::Pointer differenceImage = FloatScalarImageType::New();
   //PatchImageDifference(imageReader->GetOutput(), maskReader->GetOutput(), extractImageFilter->GetOutput(), differenceImage);
 
-  HelpersOutput::WriteImage<FloatScalarImageType>(differenceImage, outputFilename);
+  OutputHelpers::WriteImage(differenceImage.GetPointer(), outputFilename);
 
   return EXIT_SUCCESS;
 }

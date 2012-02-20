@@ -50,7 +50,8 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
       }
       targetNode = boundaryNodeQueue.top();
       boundaryNodeQueue.pop();
-    } while( get(boundaryStatusMap, targetNode) == false );
+    } while( get(boundaryStatusMap, targetNode) == false);
+    //} while( get(boundaryStatusMap, targetNode) == false && get(fillStatusMap, targetNode));
 
     // Notify the visitor that we have a hole target center.
     vis.DiscoverVertex(targetNode);

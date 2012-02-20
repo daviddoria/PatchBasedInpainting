@@ -17,9 +17,8 @@
  *=========================================================================*/
 
 // Custom
-#include "HelpersOutput.h"
-#include "Mask.h"
-#include "Types.h"
+#include "Helpers/OutputHelpers.h"
+#include "ImageProcessing/Mask.h"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -42,7 +41,9 @@ int main(int argc, char *argv[])
   direction[1] = 1;
   direction.Normalize();
 
-  itk::Index<2> pixelAcross = mask->FindPixelAcrossHole(queryPixel, direction);
+  // TODO: Update this to the new API
+  //itk::Index<2> pixelAcross = mask->FindPixelAcrossHole(queryPixel, direction);
+  itk::Index<2> pixelAcross; // TODO: placeholder
 
   std::cout << "Pixel across: " << pixelAcross << std::endl;
 

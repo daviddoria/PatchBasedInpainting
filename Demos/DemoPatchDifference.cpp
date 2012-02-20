@@ -17,9 +17,10 @@
  *=========================================================================*/
 
 // Custom
-#include "Mask.h"
-#include "SelfPatchCompare.h"
-#include "Types.h"
+#include "ImageProcessing/Mask.h"
+
+// ITK
+#include "itkImageFileReader.h"
 
 bool TestSamePatch(const RGBImageType::Pointer image, Mask::Pointer mask);
 bool TestDifferentPatch(const RGBImageType::Pointer image, Mask::Pointer mask);
@@ -48,9 +49,9 @@ int main(int argc, char *argv[])
   maskReader->SetFileName(maskFilename);
   maskReader->Update();
 
-  bool result1 = TestSamePatch(imageReader->GetOutput(), maskReader->GetOutput());
-  bool result2 = TestDifferentPatch(imageReader->GetOutput(), maskReader->GetOutput());
-  bool result3 = TestOutsideImage(imageReader->GetOutput(), maskReader->GetOutput());
+//   bool result1 = TestSamePatch(imageReader->GetOutput(), maskReader->GetOutput());
+//   bool result2 = TestDifferentPatch(imageReader->GetOutput(), maskReader->GetOutput());
+//   bool result3 = TestOutsideImage(imageReader->GetOutput(), maskReader->GetOutput());
 
   return EXIT_SUCCESS;
 }
@@ -65,7 +66,7 @@ bool TestSamePatch(const RGBImageType::Pointer image, const Mask::Pointer mask)
   fixedPixel[0] = 10;
   fixedPixel[1] = 10;
 
-  unsigned int patchRadius = 5;
+  // unsigned int patchRadius = 5;
 
 //   float difference = PatchDifference(image.GetPointer(), mask.GetPointer(), queryPixel, fixedPixel, patchRadius);
 //   std::cerr << "Difference: " << difference << std::endl;
@@ -88,7 +89,7 @@ bool TestDifferentPatch(const RGBImageType::Pointer image, const Mask::Pointer m
   fixedPixel[0] = 10;
   fixedPixel[1] = 10;
 
-  unsigned int patchRadius = 5;
+  // unsigned int patchRadius = 5;
 
 //   float difference = PatchDifference(image.GetPointer(), mask.GetPointer(), queryPixel, fixedPixel, patchRadius);
 //   std::cerr << "Difference: " << difference << std::endl;
@@ -112,7 +113,7 @@ bool TestOutsideImage(const RGBImageType::Pointer image, const Mask::Pointer mas
   fixedPixel[0] = 0;
   fixedPixel[1] = 0;
 
-  unsigned int patchRadius = 5;
+  // unsigned int patchRadius = 5;
 
 //   float difference = PatchDifference(image.GetPointer(), mask.GetPointer(), queryPixel, fixedPixel, patchRadius);
 //   std::cerr << "Difference: " << difference << std::endl;

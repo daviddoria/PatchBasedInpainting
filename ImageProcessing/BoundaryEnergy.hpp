@@ -29,7 +29,7 @@ float BoundaryEnergy<TImage>::operator()(const itk::ImageRegion<2>& region)
     ss << "Cannot compute boundary energy - there are no boundary pixels in the specified region: " << region;
     throw std::runtime_error(ss.str());
   }
-  
+
   float totalDifference = 0.0f;
   for(unsigned int i = 0; i < pixelsSatisfyingFunctor.size(); ++i)
   {
