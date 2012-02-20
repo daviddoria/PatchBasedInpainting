@@ -87,15 +87,18 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     Image->SetPixel(target_index, Image->GetPixel(source_index));
   };
 
-  bool AcceptMatch(VertexDescriptorType v, TGraph& g) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
     // return true;
     BoundaryEnergy<TImage> boundaryEnergy(Image, MaskImage);
 
-    itk::Index<2> queryPixel = ITKHelpers::CreateIndex(v);
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, HalfWidth);
+    itk::Index<2> targetPixel = ITKHelpers::CreateIndex(target);
+    itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, HalfWidth);
 
-    float energy = boundaryEnergy(region);
+    itk::Index<2> sourcePixel = ITKHelpers::CreateIndex(source);
+    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, HalfWidth);
+
+    float energy = boundaryEnergy(sourceRegion, targetRegion);
     std::cout << "Energy: " << energy << std::endl;
 
     float energyThreshold = 100;

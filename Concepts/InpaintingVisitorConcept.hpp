@@ -55,7 +55,7 @@ struct InpaintingVisitorConcept
     vis.PaintVertex(target, source, g);
 
     //function called to check if the match that was determined should be accepted.
-    bool was_successfully_painted = vis.AcceptMatch(target, g);
+    bool was_successfully_painted = vis.AcceptMatch(target, source, g);
     boost::ignore_unused_variable_warning(was_successfully_painted);
 
     //function called when a vertex has been inpainted and removed from the set of target pixels.

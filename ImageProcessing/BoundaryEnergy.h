@@ -32,19 +32,27 @@ class BoundaryEnergy
 {
 public:
   BoundaryEnergy(const TImage* const image, const Mask* const mask);
+
+  /** This functor assumes the source and target regions (the two sides of the boundary)
+   * are adjacent (inside the same region in the image). */
   float operator()(const itk::ImageRegion<2>& region);
+
+  /** This functor does not assume that the source and target regions (the two sides of the boundary)
+   * are adjacent (inside the same region in the image). */
+  float operator()(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
 
 private:
   const TImage* Image;
   const Mask* MaskImage;
 
+  /** Compute the difference between two pixels of unknown type. This will use operator-(). */
   template <typename T>
   float Difference(const T&, const T&);
 
+  /** An overload to compute the difference between two vector pixels. */
   typedef itk::VariableLengthVector<float> VectorPixelType;
   float Difference(const VectorPixelType&, const VectorPixelType&);
-  
-void Output(std::vector<unsigned int> &V);
+
 };
 
 #include "BoundaryEnergy.hpp"

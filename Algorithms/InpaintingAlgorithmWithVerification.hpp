@@ -65,7 +65,7 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
     VertexDescriptorType sourceNode = bestNeighborFinder(outputContainer.begin(), outputContainer.end(), targetNode);
     vis.PotentialMatchMade(targetNode, sourceNode, g);
 
-    if(!vis.AcceptMatch(targetNode, g))
+    if(!vis.AcceptMatch(targetNode, sourceNode, g))
       {
       numberOfManualVerifications++;
       std::cout << "So far there have been " << numberOfManualVerifications << " manual verifications." << std::endl;

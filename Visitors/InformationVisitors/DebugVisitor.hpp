@@ -32,9 +32,9 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
   {
 
   }
-  
+
   void InitializeVertex(VertexDescriptorType v, TGraph& g) const
-  { 
+  {
 
   };
 
@@ -60,15 +60,15 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
   void PaintVertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
-    
+
   };
 
-  bool AcceptMatch(VertexDescriptorType v, TGraph& g) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
     return true;
   };
 
-  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
+  void FinishVertex(VertexDescriptorType target, VertexDescriptorType sourceNode, TGraph& g)
   {
     // Debug only
     itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(sourceNode);

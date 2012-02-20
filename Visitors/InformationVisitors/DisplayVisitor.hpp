@@ -87,7 +87,7 @@ public:
     // Do nothing
   };
 
-  bool AcceptMatch(VertexDescriptorType v, TGraph& g) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
     return true;
   };
