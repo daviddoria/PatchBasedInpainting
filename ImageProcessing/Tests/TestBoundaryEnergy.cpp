@@ -21,6 +21,7 @@
 // Custom
 #include "Mask.h"
 #include "Helpers/ITKHelpers.h"
+#include "Testing/Testing.h"
 
 // ITK
 #include "itkVectorImage.h"
@@ -88,7 +89,7 @@ void TestBoundaryEnergyScalarImage()
   if(energy != expectedEnergy)
   {
     std::stringstream ss;
-    ss << "Energy was " << energy << " but should have been " << expectedEnergy;
+    ss << "TestBoundaryEnergyScalarImage: Energy was " << energy << " but should have been " << expectedEnergy;
     throw std::runtime_error(ss.str());
   }
 }
@@ -144,11 +145,11 @@ void TestBoundaryEnergyVectorImage()
   float energy = boundaryEnergy(region);
   std::cout << "Energy: " << energy << std::endl;
 
-  float expectedEnergy = 50;
-  if(energy != expectedEnergy)
+  float expectedEnergy = (pixelA - pixelB).GetNorm();
+  if(!Testing::ValuesEqual(energy, expectedEnergy))
   {
     std::stringstream ss;
-    ss << "Energy was " << energy << " but should have been " << expectedEnergy;
+    ss << "TestBoundaryEnergyVectorImage: Energy was " << energy << " but should have been " << expectedEnergy;
     throw std::runtime_error(ss.str());
   }
 }
