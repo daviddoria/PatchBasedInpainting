@@ -18,23 +18,132 @@
 
 #include "BoundaryEnergy.h"
 
+// Custom
 #include "Mask.h"
+
+// ITK
+#include "itkVectorImage.h"
 
 // STL
 #include <iostream>
 #include <stdexcept>
 
-static void TestBoundaryEnergy();
+static void TestBoundaryEnergyScalarImage();
+static void TestBoundaryEnergyVectorImage();
 
 int main()
 {
-  TestBoundaryEnergy();
+  TestBoundaryEnergyScalarImage();
+  TestBoundaryEnergyVectorImage();
 
   return EXIT_SUCCESS;
 }
 
-// Look from a pixel across the hole in a specified direction and return the pixel that exists on the other side of the hole.
-void TestBoundaryEnergy()
+void TestBoundaryEnergyScalarImage()
 {
-  throw std::runtime_error("TestBoundaryEnergy not yet written!");
+  itk::Index<2> imageCorner = {{0,0}};
+  itk::Size<2> imageSize = {{10,10}};
+  itk::ImageRegion<2> imageRegion(imageCorner, imageSize);
+
+  typedef itk::Image<float, 2> ImageType;
+  ImageType::Pointer image = ImageType::New();
+  image->SetRegions(imageRegion);
+  image->Allocate();
+
+  Mask::Pointer mask = Mask::New();
+  mask->SetRegions(imageRegion);
+  mask->Allocate();
+
+  itk::ImageRegionIteratorWithIndex<ImageType> imageIterator(image, image->GetLargestPossibleRegion());
+
+  while(!imageIterator.IsAtEnd())
+    {
+    if(imageIterator.GetIndex()[0] < 5)
+      {
+      imageIterator.Set(100);
+      mask->SetPixel(imageIterator.GetIndex(), mask->GetHoleValue());
+      }
+    else
+      {
+      imageIterator.Set(0);
+      mask->SetPixel(imageIterator.GetIndex(), mask->GetValidValue());
+      }
+    ++imageIterator;
+    }
+
+  BoundaryEnergy<ImageType> boundaryEnergy(image, mask);
+
+  itk::Index<2> regionCorner = {{5,5}};
+  itk::Size<2> regionSize = {{1, 1}};
+  itk::ImageRegion<2> region(regionCorner, regionSize);
+  float energy = boundaryEnergy(region);
+  std::cout << "Energy: " << energy << std::endl;
+
+  float expectedEnergy = 50;
+  if(energy != expectedEnergy)
+  {
+    std::stringstream ss;
+    ss << "Energy was " << energy << " but should have been " << expectedEnergy;
+    throw std::runtime_error(ss.str());
+  }
+}
+
+
+void TestBoundaryEnergyVectorImage()
+{
+  itk::Index<2> imageCorner = {{0,0}};
+  itk::Size<2> imageSize = {{10,10}};
+  itk::ImageRegion<2> imageRegion(imageCorner, imageSize);
+
+  const unsigned int imagePixelDimension = 3;
+  typedef itk::VectorImage<float, 2> ImageType;
+  ImageType::Pointer image = ImageType::New();
+  image->SetNumberOfComponentsPerPixel(imagePixelDimension);
+  image->SetRegions(imageRegion);
+  image->Allocate();
+
+  Mask::Pointer mask = Mask::New();
+  mask->SetRegions(imageRegion);
+  mask->Allocate();
+
+  itk::ImageRegionIteratorWithIndex<ImageType> imageIterator(image, image->GetLargestPossibleRegion());
+
+  ImageType::PixelType pixelA;
+  pixelA.SetSize(imagePixelDimension);
+  pixelA.Fill(100);
+
+  ImageType::PixelType pixelB;
+  pixelB.SetSize(imagePixelDimension);
+  pixelB.Fill(100);
+
+  while(!imageIterator.IsAtEnd())
+    {
+    if(imageIterator.GetIndex()[0] < 5)
+      {
+      imageIterator.Set(pixelA);
+      mask->SetPixel(imageIterator.GetIndex(), mask->GetHoleValue());
+      }
+    else
+      {
+      imageIterator.Set(pixelB);
+      mask->SetPixel(imageIterator.GetIndex(), mask->GetValidValue());
+      }
+    ++imageIterator;
+    }
+
+  BoundaryEnergy<ImageType> boundaryEnergy(image, mask);
+
+  itk::Index<2> regionCorner = {{5,5}};
+  itk::Size<2> regionSize = {{1, 1}};
+  itk::ImageRegion<2> region(regionCorner, regionSize);
+  float energy = boundaryEnergy(region);
+  std::cout << "Energy: " << energy << std::endl;
+
+  float expectedEnergy = 50;
+  if(energy != expectedEnergy)
+  {
+    std::stringstream ss;
+    ss << "Energy was " << energy << " but should have been " << expectedEnergy;
+    throw std::runtime_error(ss.str());
+  }
 }

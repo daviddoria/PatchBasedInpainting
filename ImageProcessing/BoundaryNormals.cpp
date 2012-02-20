@@ -33,8 +33,9 @@ FloatVector2ImageType* BoundaryNormals::ComputeBoundaryNormals(const float blurV
 {
   // Blur the mask, compute the gradient, then keep the normals only at the original mask boundary
 
-  //HelpersOutput::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage, "Debug/ComputeBoundaryNormals.BoundaryImage.mha", this->DebugImages);
-  //HelpersOutput::WriteImageConditional<Mask>(this->MaskImage, "Debug/ComputeBoundaryNormals.CurrentMask.mha", this->DebugImages);
+//   OutputHelpers::WriteImageConditional(this->BoundaryImage,
+//                                        "Debug/ComputeBoundaryNormals.BoundaryImage.mha", this->DebugImages);
+  //HelpersOutput::WriteImageConditional(this->MaskImage, "Debug/ComputeBoundaryNormals.CurrentMask.mha", this->DebugImages);
 
   // Blur the mask
   typedef itk::DiscreteGaussianImageFilter< Mask, FloatScalarImageType >  BlurFilterType;
@@ -43,7 +44,8 @@ FloatVector2ImageType* BoundaryNormals::ComputeBoundaryNormals(const float blurV
   gaussianFilter->SetVariance(blurVariance);
   gaussianFilter->Update();
 
-  //HelpersOutput::WriteImageConditional<FloatScalarImageType>(gaussianFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMask.mha", this->DebugImages);
+//   OutputHelpers::WriteImageConditional(gaussianFilter->GetOutput(),
+//                                        "Debug/ComputeBoundaryNormals.BlurredMask.mha", this->DebugImages);
 
   // Compute the gradient of the blurred mask
   typedef itk::GradientImageFilter< FloatScalarImageType, float, float>  GradientFilterType;
@@ -51,7 +53,8 @@ FloatVector2ImageType* BoundaryNormals::ComputeBoundaryNormals(const float blurV
   gradientFilter->SetInput(gaussianFilter->GetOutput());
   gradientFilter->Update();
 
-  //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(gradientFilter->GetOutput(), "Debug/ComputeBoundaryNormals.BlurredMaskGradient.mha", this->DebugImages);
+//   OutputHelpers::WriteImageConditional(gradientFilter->GetOutput(),
+//                                        "Debug/ComputeBoundaryNormals.BlurredMaskGradient.mha", this->DebugImages);
 
   // Only keep the normals at the boundary
   typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
@@ -60,16 +63,19 @@ FloatVector2ImageType* BoundaryNormals::ComputeBoundaryNormals(const float blurV
   maskFilter->SetMaskImage(this->BoundaryImage);
   maskFilter->Update();
 
-  //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(maskFilter->GetOutput(),
-    //                                                          "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha", this->DebugImages);
+//   HelpersOutput::WriteImageConditional(maskFilter->GetOutput(),
+//                                        "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha", this->DebugImages);
 
   // Allocate the image to return
   FloatVector2ImageType::Pointer boundaryNormalsImage = FloatVector2ImageType::New();
-  ITKHelpers::DeepCopy<FloatVector2ImageType>(maskFilter->GetOutput(), boundaryNormalsImage);
+  ITKHelpers::DeepCopy(maskFilter->GetOutput(), boundaryNormalsImage.GetPointer());
 
-  // Normalize the vectors because we just care about their direction (the Data term computation calls for the normalized boundary normal)
-  itk::ImageRegionIterator<FloatVector2ImageType> boundaryNormalsIterator(boundaryNormalsImage, boundaryNormalsImage->GetLargestPossibleRegion());
-  itk::ImageRegionConstIterator<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage, this->BoundaryImage->GetLargestPossibleRegion());
+  // Normalize the vectors because we just care about their direction
+  // (the Data term computation calls for the normalized boundary normal)
+  itk::ImageRegionIterator<FloatVector2ImageType> boundaryNormalsIterator(boundaryNormalsImage,
+                                                                          boundaryNormalsImage->GetLargestPossibleRegion());
+  itk::ImageRegionConstIterator<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage,
+                                                                              this->BoundaryImage->GetLargestPossibleRegion());
 
   while(!boundaryNormalsIterator.IsAtEnd())
     {

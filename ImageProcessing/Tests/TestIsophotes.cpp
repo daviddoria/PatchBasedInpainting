@@ -17,7 +17,6 @@
  *=========================================================================*/
 
 #include "Derivatives.h"
-#include "Types.h"
 #include "Mask.h"
 #include "Testing/Testing.h"
 

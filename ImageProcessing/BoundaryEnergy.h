@@ -21,18 +21,32 @@
 
 #include "Mask.h"
 
+#include "itkVariableLengthVector.h"
+
+/** This class computes the boundary image for the 'mask' in the specified
+ * 'region' by computing the sum of the average source/target pixel difference
+ * at each boundary pixel.
+ */
+template<typename TImage>
 class BoundaryEnergy
 {
 public:
-  typedef itk::Image<unsigned char, 2> UnsignedCharScalarImageType;
-
-  BoundaryNormals(const UnsignedCharScalarImageType* const boundaryImage, const Mask* const mask);
-
-  FloatVector2ImageType* ComputeBoundaryNormals(const float blurVariance);
+  BoundaryEnergy(const TImage* const image, const Mask* const mask);
+  float operator()(const itk::ImageRegion<2>& region);
 
 private:
-  const UnsignedCharScalarImageType* BoundaryImage;
+  const TImage* Image;
   const Mask* MaskImage;
+
+  template <typename T>
+  float Difference(const T&, const T&);
+
+  typedef itk::VariableLengthVector<float> VectorPixelType;
+  float Difference(const VectorPixelType&, const VectorPixelType&);
+  
+void Output(std::vector<unsigned int> &V);
 };
+
+#include "BoundaryEnergy.hpp"
 
 #endif

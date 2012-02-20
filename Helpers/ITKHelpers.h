@@ -220,10 +220,6 @@ void ReplaceChannel(const itk::VectorImage<TPixel, 2>* const image, const unsign
                     typename itk::Image<TPixel, 2>* const replacement,
                     typename itk::VectorImage<TPixel, 2>* const output);
 
-/** Compute the largest of all pixel-wise differences between all pairs of pixels in an image. */
-template<typename TImage>
-typename TImage::TPixel ComputeMaxPixelDifference(const TImage* const image);
-
 /** Read an image from a file. */
 template<typename TImage>
 void ReadImage(const std::string&, TImage* const image);
@@ -248,6 +244,11 @@ typename TImage::PixelType AverageNeighborValue(const TImage* const image, const
 template<typename TImage>
 typename TImage::PixelType AverageNonMaskedNeighborValue(const TImage* const image, const Mask* const mask,
                                                          const itk::Index<2>& pixel);
+
+/** Get the average value of the masked neighbors of a pixel. */
+template<typename TImage>
+typename TImage::PixelType AverageMaskedNeighborValue(const TImage* const image, const Mask* const mask,
+                                                      const itk::Index<2>& pixel);
 
 template<typename TImage>
 std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, const TImage* const image,

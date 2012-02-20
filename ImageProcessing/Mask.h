@@ -116,7 +116,8 @@ public:
 
   /** Find the boundary of the Mask.*/
   typedef UnsignedCharScalarImageType BoundaryImageType;
-  void FindBoundary(BoundaryImageType* boundary) const;
+  void FindBoundary(BoundaryImageType* const boundary) const;
+  void FindBoundaryInRegion(const itk::ImageRegion<2>& region, BoundaryImageType* const boundary) const;
 
   /** Recolor the hole pixels in 'image' a specified 'color'.*/
   template<typename TImage, typename TColor>

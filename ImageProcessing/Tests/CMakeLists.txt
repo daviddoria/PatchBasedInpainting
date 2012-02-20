@@ -3,7 +3,7 @@ include_directories(../Testing ../Helpers)
 
 #####################
 
-add_executable(TestMask TestMask.cpp ../Mask.cpp)
+add_executable(TestMask TestMask.cpp ../Mask.cpp ${ROOT_SOURCE_DIR}/Helpers/ITKHelpers.cpp ${ROOT_SOURCE_DIR}/Helpers/Helpers.cpp)
 target_link_libraries(TestMask ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 add_test(TestMask TestMask)
 
@@ -26,3 +26,7 @@ add_test(TestBoundaryEnergy TestBoundaryEnergy)
 add_executable(TestBoundaryNormals TestBoundaryNormals.cpp ../BoundaryNormals.cpp ../Mask.cpp)
 target_link_libraries(TestBoundaryNormals ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
 add_test(TestBoundaryNormals TestBoundaryNormals)
+
+add_executable(TestPixelFilterFunctors TestPixelFilterFunctors.cpp)
+target_link_libraries(TestPixelFilterFunctors ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+add_test(TestPixelFilterFunctors TestPixelFilterFunctors)

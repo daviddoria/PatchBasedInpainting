@@ -274,9 +274,14 @@ void Mask::ExpandHole()
   this->DeepCopyFrom(expandMaskFilter->GetOutput());
 }
 
-void Mask::FindBoundary(UnsignedCharScalarImageType* boundaryImage) const
+void Mask::FindBoundaryInRegion(const itk::ImageRegion<2>& region, BoundaryImageType* const boundaryImage) const
 {
-  // Compute the "outer" boundary of the region to fill. That is, we want the boundary pixels to be in the source region.
+  // TODO: Make this only compute the boundary in the specified 'region'. Maybe the binary image needs to be computed
+  // in a slightly dilated version of the region?
+  // TODO: Specify the output value of the boundary (i.e. is it 1? 255? etc)
+
+  // Compute the "outer" boundary of the region to fill. That is,
+  // we want the boundary pixels to be in the source region.
 
   //HelpersOutput::WriteImageConditional<Mask>(this->CurrentMask, "Debug/FindBoundary.CurrentMask.mha", this->DebugImages);
   //HelpersOutput::WriteImageConditional<Mask>(this->CurrentMask, "Debug/FindBoundary.CurrentMask.png", this->DebugImages);
@@ -333,6 +338,11 @@ void Mask::FindBoundary(UnsignedCharScalarImageType* boundaryImage) const
 //   OutputHelpers::WriteImageConditional<UnsignedCharScalarImageType>(this->BoundaryImage,
 //                                                                     "Debug/FindBoundary.BoundaryImage.mha", this->DebugImages);
 
+}
+
+void Mask::FindBoundary(UnsignedCharScalarImageType* const boundaryImage) const
+{
+  FindBoundaryInRegion(this->GetLargestPossibleRegion(), boundaryImage);
 }
 
 /** Get a list of the valid neighbors of a pixel.*/

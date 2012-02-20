@@ -624,43 +624,6 @@ void ReplaceChannel(const itk::VectorImage<TPixel, 2>* const image, const unsign
 }
 
 template<typename TImage>
-typename TImage::TPixel ComputeMaxPixelDifference(const TImage* const image)
-{
-
-//   // We assume all values of all channels are positive, so the max difference can be computed as max(p_i - 0) because (0,0,0,...) is the minimum pixel.
-//
-//   itk::ImageRegionConstIterator<FloatVectorImageType> imageIterator(this->OriginalImage, this->OriginalImage->GetLargestPossibleRegion());
-//
-//   FloatVectorImageType::PixelType zeroPixel;
-//   zeroPixel.SetSize(this->OriginalImage->GetNumberOfComponentsPerPixel());
-//   zeroPixel.Fill(0);
-//
-//   FloatVectorImageType::PixelType maxPixel = zeroPixel;
-//   while(!imageIterator.IsAtEnd())
-//     {
-//     FloatVectorImageType::PixelType pixel = this->OriginalImage->GetPixel(imageIterator.GetIndex());
-//     //std::cout << "pixel: " << pixel << " Norm: " << pixel.GetNorm() << std::endl;
-//     if(pixel.GetNorm() > maxPixel.GetNorm())
-//       {
-//       maxPixel = pixel;
-//       }
-//     ++imageIterator;
-//     }
-//
-//   /*
-//   this->MaxPixelDifference = 0.0f;
-//   for(unsigned int i = 0; i < this->OriginalImage->GetNumberOfComponentsPerPixel(); ++i)
-//     {
-//     this->MaxPixelDifference += maxPixel[i];
-//     }
-//   */
-//   this->MaxPixelDifferenceSquared = FullPixelDifference::Difference(maxPixel, zeroPixel, zeroPixel.GetNumberOfElements());
-//
-//   std::cout << "MaxPixelDifference computed to be: " << this->MaxPixelDifferenceSquared << std::endl;
-//
-}
-
-template<typename TImage>
 void ReadImage(const std::string& fileName, TImage* const image)
 {
   typedef itk::ImageFileReader<Mask> ReaderType;
@@ -727,7 +690,25 @@ typename TImage::PixelType AverageNonMaskedNeighborValue(const TImage* const ima
                                                          const itk::Index<2>& pixel)
 {
   std::vector<itk::Index<2> > validNeighbors = mask->GetValidNeighbors(pixel);
-  return Helpers::Average(validNeighbors);
+  std::vector<typename TImage::PixelType> validValues;
+  for(unsigned int i = 0; i < validNeighbors.size(); ++i)
+    {
+    validValues.push_back(image->GetPixel(validNeighbors[i]));
+    }
+  return Helpers::Average(validValues);
+}
+
+template<typename TImage>
+typename TImage::PixelType AverageMaskedNeighborValue(const TImage* const image, const Mask* const mask,
+                                                      const itk::Index<2>& pixel)
+{
+  std::vector<itk::Index<2> > holeNeighbors = mask->GetHoleNeighbors(pixel);
+  std::vector<typename TImage::PixelType> holeValues;
+  for(unsigned int i = 0; i < holeNeighbors.size(); ++i)
+    {
+    holeValues.push_back(image->GetPixel(holeNeighbors[i]));
+    }
+  return Helpers::Average(holeValues);
 }
 
 /** Get a list of the valid neighbors of a pixel.*/

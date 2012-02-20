@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 PROJECT(PatchBasedInpainting)
 
+SET(ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
 # Where to copy executables when 'make install' is run
 SET(INSTALL_DIR ${CMAKE_INSTALL_PREFIX} )
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) #fix the dynamic linking error (RPATH) that would occur without this
@@ -200,7 +202,7 @@ if(BuildTests)
   add_subdirectory(Testing)
   #add_subdirectory(Tests)
   #add_subdirectory(Priority/Tests)
-  #add_subdirectory(ImageProcessing/Tests)
+  add_subdirectory(ImageProcessing/Tests)
   #add_subdirectory(NearestNeighbor/Tests)
   #add_subdirectory(Helpers/Tests)
   #add_subdirectory(Utilities/Tests)
