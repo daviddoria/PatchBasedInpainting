@@ -6,8 +6,11 @@
 // Concepts
 #include "Concepts/DescriptorVisitorConcept.hpp"
 
-// Custom
+// Priority
 #include "Priority/Priority.h"
+
+// Accept criteria
+#include "ImageProcessing/BoundaryEnergy.h"
 
 // Boost
 #include <boost/graph/graph_traits.hpp>
@@ -50,8 +53,9 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
                     TDescriptorVisitor& in_descriptorVisitor, TPriorityMap& in_priorityMap,
                     TPriority* const in_priorityFunction,
                     const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
-  Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue), PriorityFunction(in_priorityFunction), FillStatusMap(in_fillStatusMap), DescriptorVisitor(in_descriptorVisitor),
-  PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap),// MatchVerificationVisitor(matchVerificationVisitor),
+  Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue), PriorityFunction(in_priorityFunction),
+  FillStatusMap(in_fillStatusMap), DescriptorVisitor(in_descriptorVisitor),
+  PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap),
   HalfWidth(in_half_width)
   {
   }
@@ -85,7 +89,26 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   bool AcceptMatch(VertexDescriptorType v, TGraph& g) const
   {
-    return true;
+    // return true;
+    BoundaryEnergy<TImage> boundaryEnergy(Image, MaskImage);
+
+    itk::Index<2> queryPixel = ITKHelpers::CreateIndex(v);
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, HalfWidth);
+
+    float energy = boundaryEnergy(region);
+    std::cout << "Energy: " << energy << std::endl;
+
+    float energyThreshold = 100;
+    if(energy < energyThreshold)
+      {
+      std::cout << "Match accepted." << std::endl;
+      return true;
+      }
+    else
+      {
+      std::cout << "Match rejected." << std::endl;
+      return false;
+      }
   };
 
   void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)

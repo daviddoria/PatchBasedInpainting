@@ -214,7 +214,8 @@ QImage GetQImageMasked(const TImage* image, const itk::ImageRegion<2>& imageRegi
   regionOfInterestMaskFilter->SetInput(mask);
   regionOfInterestMaskFilter->Update();
 
-  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(),
+                                                 regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
 
   unsigned int numberOfHolePixels = 0;
   while(!imageIterator.IsAtEnd())

@@ -6,7 +6,7 @@
 // Custom
 #include "Visitors/InpaintingVisitorParent.h"
 #include "ImageProcessing/Mask.h"
-#include "Helpers/HelpersOutput.h"
+#include "Helpers/OutputHelpers.h"
 #include "Helpers/ITKHelpers.h"
 
 // ITK
@@ -14,7 +14,7 @@
 #include "itkImageRegion.h"
 
 /**
-
+  * This visitor writes out information and images at each iteration.
  */
 template <typename TGraph, typename TImage>
 struct DebugVisitor : public InpaintingVisitorParent<TGraph>
@@ -33,58 +33,63 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
   }
   
-  void initialize_vertex(VertexDescriptorType v, TGraph& g) const
+  void InitializeVertex(VertexDescriptorType v, TGraph& g) const
   { 
 
   };
 
-  void discover_vertex(VertexDescriptorType v, TGraph& g) const 
+  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const
   { 
     // Construct the region around the vertex
-    itk::Index<2> indexToFinish;
-    indexToFinish[0] = v[0];
-    indexToFinish[1] = v[1];
+    itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(v);
 
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
 
-    HelpersOutput::WriteVectorImageRegionAsRGB(Image, region, Helpers::GetSequentialFileName("targetPatch", this->NumberOfFinishedVertices, "png"));
-    HelpersOutput::WriteRegion(MaskImage, region, Helpers::GetSequentialFileName("maskPatch", this->NumberOfFinishedVertices, "png"));
+    HelpersOutput::WriteVectorImageRegionAsRGB(Image, region,
+                                               Helpers::GetSequentialFileName("targetPatch",
+                                                                              this->NumberOfFinishedVertices, "png"));
+    HelpersOutput::WriteRegion(MaskImage, region,
+                               Helpers::GetSequentialFileName("maskPatch", this->NumberOfFinishedVertices, "png"));
   };
 
-  void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
   {
     std::cout << "Match made: target: " << target[0] << " " << target[1]
               << " with source: " << source[0] << " " << source[1] << std::endl;
   };
 
-  void paint_vertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
     
   };
 
-  bool accept_painted_vertex(VertexDescriptorType v, TGraph& g) const
+  bool AcceptMatch(VertexDescriptorType v, TGraph& g) const
   {
     return true;
   };
 
-  void finish_vertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
+  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
   {
     // Debug only
-    itk::Index<2> sourceIndex;
-    sourceIndex[0] = sourceNode[0];
-    sourceIndex[1] = sourceNode[1];
+    itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(sourceNode);
 
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, HalfWidth);
 
-    HelpersOutput::WriteVectorImageRegionAsRGB(Image, sourceRegion, Helpers::GetSequentialFileName("sourcePatch", this->NumberOfFinishedVertices, "png"));
+    HelpersOutput::WriteVectorImageRegionAsRGB(Image, sourceRegion,
+                                               Helpers::GetSequentialFileName("sourcePatch",
+                                                                              this->NumberOfFinishedVertices, "png"));
 
     HelpersOutput::WriteImage(MaskImage, Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
     HelpersOutput::WriteVectorImageAsRGB(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
+
     this->NumberOfFinishedVertices++;
 
     std::cout << "Finished node " << this->NumberOfFinishedVertices << std::endl;
   };
 
+  void InpaintingComplete() const
+  {
+  }
 };
 
 #endif

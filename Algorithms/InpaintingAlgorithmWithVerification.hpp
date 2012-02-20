@@ -32,6 +32,7 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
 
   typedef typename boost::graph_traits<TVertexListGraph>::vertex_descriptor VertexDescriptorType;
 
+  unsigned int numberOfManualVerifications = 0;
   while(true)
   {
     // Find the next target to in-paint. Some of the nodes in the priority queue
@@ -66,7 +67,9 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
 
     if(!vis.AcceptMatch(targetNode, g))
       {
-      std::cout << "Match not accepted!" << std::endl;
+      numberOfManualVerifications++;
+      std::cout << "So far there have been " << numberOfManualVerifications << " manual verifications." << std::endl;
+      std::cout << "Automatic match not accepted!" << std::endl;
       sourceNode = manualNeighborFinder(outputContainer.begin(), outputContainer.end(), targetNode);
       }
 
@@ -78,6 +81,7 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
     vis.FinishVertex(targetNode, sourceNode, g);
   } // end main iteration loop
 
+  std::cout << "There were " << numberOfManualVerifications << " manual verifications required." << std::endl;
   vis.InpaintingComplete();
 
 };
