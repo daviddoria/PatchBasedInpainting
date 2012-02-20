@@ -106,6 +106,8 @@ itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* inpu
 
 itk::VariableLengthVector<float> Average(const std::vector<itk::VariableLengthVector<float> >& v);
 
+std::vector<itk::Index<2> > OffsetsToIndices(const std::vector<itk::Offset<2> >& offsets, const itk::Index<2>& index);
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// Template function declarations (defined in ITKHelpers.hxx) ///////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -245,6 +247,10 @@ typename TImage::PixelType AverageNeighborValue(const TImage* const image, const
 template<typename TImage>
 std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, const TImage* const image,
                                                    const typename TImage::PixelType& value);
+
+template<typename TImage>
+typename TImage::PixelType AverageOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices);
+
 
 }// end namespace
 

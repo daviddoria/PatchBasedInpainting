@@ -144,6 +144,12 @@ public:
 
   /** Get a list of the hole neighbors of a pixel.*/
   std::vector<itk::Index<2> > GetHoleNeighbors(const itk::Index<2>& pixel) const;
+
+  /** Get a list of the offsets of the valid neighbors of a pixel.*/
+  std::vector<itk::Offset<2> > GetValidNeighborOffsets(const itk::Index<2>& pixel) const;
+
+  /** Get a list of the offsets of the hole neighbors of a pixel.*/
+  std::vector<itk::Offset<2> > GetHoleNeighborOffsets(const itk::Index<2>& pixel) const;
   
   /** Get a list of the valid pixels in a region.*/
   std::vector<itk::Index<2> > GetValidPixelsInRegion(const itk::ImageRegion<2>& region) const;

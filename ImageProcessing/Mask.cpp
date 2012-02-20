@@ -356,3 +356,25 @@ std::vector<itk::Index<2> > Mask::GetHoleNeighbors(const itk::Index<2>& pixel) c
 {
   return ITKHelpers::Get8NeighborsWithValue(pixel, this, this->HoleValue);
 }
+
+std::vector<itk::Offset<2> > Mask::GetValidNeighborOffsets(const itk::Index<2>& pixel) const
+{
+  std::vector<itk::Index<2> > indices = ITKHelpers::Get8NeighborsWithValue(pixel, this, this->ValidValue);
+  std::vector<itk::Offset<2> > offsets;
+  for(unsigned int i = 0; i < indices.size(); ++i)
+  {
+    offsets.push_back(indices[i] - pixel);
+  }
+  return offsets;
+}
+
+std::vector<itk::Offset<2> > Mask::GetHoleNeighborOffsets(const itk::Index<2>& pixel) const
+{
+  std::vector<itk::Index<2> > indices = ITKHelpers::Get8NeighborsWithValue(pixel, this, this->HoleValue);
+  std::vector<itk::Offset<2> > offsets;
+  for(unsigned int i = 0; i < indices.size(); ++i)
+  {
+    offsets.push_back(indices[i] - pixel);
+  }
+  return offsets;
+}

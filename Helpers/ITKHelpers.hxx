@@ -702,4 +702,16 @@ std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, c
   return neighborsWithValue;
 }
 
+template<typename TImage>
+typename TImage::PixelType AverageOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices)
+{
+  std::vector<typename TImage::PixelType> pixels;
+  for(unsigned int i = 0; i < indices.size(); ++i)
+  {
+    pixels.push_back(image->GetPixel(indices[i]));
+  }
+  using Helpers::Average;
+  return Average(pixels);
+}
+
 }// end namespace
