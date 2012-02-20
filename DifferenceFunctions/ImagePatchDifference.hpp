@@ -45,6 +45,7 @@ struct ImagePatchDifference
 
     float totalDifference = 0.0f;
 
+    // If both nodes are source nodes, compare them fully.
     if(a.GetStatus() == ImagePatchType::SOURCE_NODE && b.GetStatus() == ImagePatchType::SOURCE_NODE)
     {
       itk::Offset<2> offsetAToB = b.GetCorner() - a.GetCorner();
@@ -70,6 +71,7 @@ struct ImagePatchDifference
         ++patchAIterator;
         }
     }
+    // If one of the nodes is a target node, only compare in it's list of valid offset pixels.
     else if(a.GetStatus() == ImagePatchType::TARGET_NODE || b.GetStatus() == ImagePatchType::TARGET_NODE)
     {
       const std::vector<itk::Offset<2> >* validOffsets;

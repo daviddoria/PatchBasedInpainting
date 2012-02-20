@@ -157,18 +157,22 @@ int main(int argc, char *argv[])
   typedef std::less<float> PriorityCompareType;
   PriorityCompareType lessThanFunctor;
 
-  typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType> BoundaryNodeQueueType;
+  typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType>
+      BoundaryNodeQueueType;
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
   // Create the descriptor visitor
-  typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> ImagePatchDescriptorVisitorType;
+  typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
+      ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patch_half_width);
 
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
-                            ImagePatchDescriptorVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
+                            ImagePatchDescriptorVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType>
+                            InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
-                                          imagePatchDescriptorVisitor, priorityMap, &priorityFunction, patch_half_width, boundaryStatusMap);
+                                          imagePatchDescriptorVisitor, priorityMap, &priorityFunction, patch_half_width,
+                                          boundaryStatusMap);
   
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
@@ -186,7 +190,7 @@ int main(int argc, char *argv[])
   // Perform the inpainting
   inpainting_loop(graph, inpaintingVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
 
-  HelpersOutput::WriteImage<ImageType>(image, outputFilename);
+  OutputHelpers::WriteImage<ImageType>(image, outputFilename);
 
   return EXIT_SUCCESS;
 }

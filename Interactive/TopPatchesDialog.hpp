@@ -51,6 +51,19 @@ void TopPatchesDialog<TImage>::SetSourceNodes(const std::vector<Node>& nodes)
 }
 
 template <typename TImage>
+template <typename TNode>
+void TopPatchesDialog<TImage>::SetSourceNodes(const std::vector<TNode>& sourceNodes)
+{
+  std::vector<Node> nodes;
+  for(unsigned int i = 0; i < sourceNodes.size(); ++i)
+    {
+    Node node = Helpers::ConvertFrom<Node, TNode>(sourceNodes[i]);
+    nodes.push_back(node);
+    }
+  SetSourceNodes(nodes);
+}
+
+template <typename TImage>
 void TopPatchesDialog<TImage>::SetQueryNode(const Node& queryNode)
 {
   this->QueryNode = queryNode;

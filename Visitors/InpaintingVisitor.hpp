@@ -61,12 +61,12 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   void InitializeVertex(VertexDescriptorType v) const
   {
-    DescriptorVisitor.initialize_vertex(v);
+    DescriptorVisitor.InitializeVertex(v);
   };
 
   void DiscoverVertex(VertexDescriptorType v) const
   {
-    DescriptorVisitor.discover_vertex(v);
+    DescriptorVisitor.DiscoverVertex(v);
   };
 
   void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)

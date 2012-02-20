@@ -71,8 +71,9 @@ int main(int argc, char *argv[])
     ++shiftedImageIterator;
     }
 
-  ImageType::PixelType averagePixel = ITKHelpers::AverageInRegion(noisyImage, noisyImage->GetLargestPossibleRegion());
-  ITKHelpers::SetRegionToConstant(averageImage, averageImage->GetLargestPossibleRegion(), averagePixel);
+  ImageType::PixelType averagePixel = ITKHelpers::AverageInRegion(noisyImage.GetPointer(),
+                                                                  noisyImage->GetLargestPossibleRegion());
+  ITKHelpers::SetRegionToConstant(averageImage.GetPointer(), averageImage->GetLargestPossibleRegion(), averagePixel);
   
   return EXIT_SUCCESS;
 }

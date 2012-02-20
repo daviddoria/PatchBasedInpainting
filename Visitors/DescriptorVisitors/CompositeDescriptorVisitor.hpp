@@ -14,7 +14,7 @@ struct CompositeDescriptorVisitor
 {
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
   
-  void initialize_vertex(VertexDescriptorType v) const
+  void InitializeVertex(VertexDescriptorType v) const
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
@@ -22,7 +22,7 @@ struct CompositeDescriptorVisitor
       }
   };
 
-  void discover_vertex(VertexDescriptorType v) const
+  void DiscoverVertex(VertexDescriptorType v) const
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {

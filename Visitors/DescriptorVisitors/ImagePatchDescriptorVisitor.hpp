@@ -39,13 +39,11 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
   {
   }
 
-  void initialize_vertex(VertexDescriptorType v) const
+  void InitializeVertex(VertexDescriptorType v) const
   {
     //std::cout << "Initializing " << v[0] << " " << v[1] << std::endl;
     // Create the patch object and associate with the node
-    itk::Index<2> index;
-    index[0] = v[0];
-    index[1] = v[1];
+    itk::Index<2> index = ITKHelpers::CreateIndex(v);
 
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, HalfWidth);
 
@@ -60,7 +58,7 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
 //       }
   };
 
-  void discover_vertex(VertexDescriptorType v) const
+  void DiscoverVertex(VertexDescriptorType v) const
   {
     itk::Index<2> index = {{v[0], v[1]}};
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, HalfWidth);

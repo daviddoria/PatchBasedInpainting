@@ -37,7 +37,9 @@ Q_OBJECT
 
 public slots:
 
+  /** Ideally this would be templated on the node type, but since it is a slot it cannot be templated. */
   virtual void SetSourceNodes(const std::vector<Node>& sourceNodes) = 0;
+  
   virtual void SetQueryNode(const Node& queryNode) = 0;
   virtual void slot_Selected(const QModelIndex & index) = 0;
 };
@@ -78,6 +80,9 @@ public:
   /** Set the source nodes from which the user can choose. */
   void SetSourceNodes(const std::vector<Node>& nodes);
 
+  template <typename TNode>
+  void SetSourceNodes(const std::vector<TNode>& sourceNodes);
+  
   /** Set the query node that the user will choose the best match to. */
   void SetQueryNode(const Node& node);
 

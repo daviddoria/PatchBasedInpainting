@@ -60,6 +60,11 @@ public:
     return coord[component];
   }
 
+  int& operator[](const unsigned int& component)
+  {
+    return coord[component];
+  }
+
   template <typename T>
   void CreateFromObject(const T& object)
   {

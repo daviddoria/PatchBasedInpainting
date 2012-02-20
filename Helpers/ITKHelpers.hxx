@@ -718,7 +718,7 @@ typename TImage::PixelType AverageOfPixelsAtIndices(const TImage* const image, c
 template<typename TImage>
 typename TImage::PixelType AverageInRegion(const TImage* const image, const itk::ImageRegion<2>& region)
 {
-  typename itk::ImageRegionIterator<TImage> imageIterator(image, region);
+  typename itk::ImageRegionConstIterator<TImage> imageIterator(image, region);
   std::vector<typename TImage::PixelType> pixels;
   while(!imageIterator.IsAtEnd())
     {

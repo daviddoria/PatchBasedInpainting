@@ -37,6 +37,77 @@
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 
+typedef itk::VectorImage<float, 2> ImageType;
+
+struct DemoDriver
+{
+
+  typedef boost::grid_graph<2> VertexListGraphType;
+  typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
+  typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
+  typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
+  typedef boost::vector_property_map<ImagePatchPixelDescriptorType, IndexMapType> ImagePatchDescriptorMapType;
+  typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> VisitorType;
+  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
+                                  ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
+  VertexListGraphType* graph;
+
+  unsigned int PatchRadius;
+
+  ImageType* Image;
+  Mask* MaskImage;
+
+  VisitorType* Visitor;
+
+  KNNSearchType* KNNSearch;
+
+  ImagePatchDescriptorMapType* ImagePatchDescriptorMap;
+  
+  DemoDriver(ImageType* const image, Mask* const mask) : graph(NULL), PatchRadius(15), Image(image), MaskImage(mask)
+  {
+    boost::array<std::size_t, 2> graphSideLengths = { { image->GetLargestPossibleRegion().GetSize()[0],
+                                                        image->GetLargestPossibleRegion().GetSize()[1] } };
+    //VertexListGraphType graph(graphSideLengths);
+    graph = new VertexListGraphType(graphSideLengths);
+    
+    // Get the index map
+    IndexMapType indexMap(get(boost::vertex_index, *graph));
+
+    // Create the descriptor map. This is where the data for each pixel is stored.
+    ImagePatchDescriptorMap = new ImagePatchDescriptorMapType(num_vertices(*graph), indexMap);
+
+    Visitor = new VisitorType(Image, MaskImage, *ImagePatchDescriptorMap, PatchRadius);
+
+    InitializeFromMaskImage<VisitorType, VertexDescriptorType>(MaskImage, Visitor);
+
+    // Create the nearest neighbor finders
+    KNNSearch = new KNNSearchType(*ImagePatchDescriptorMap, 1000);
+  }
+
+  void DisplayTopPatches(VertexDescriptorType targetNode)
+  {
+    Visitor->DiscoverVertex(targetNode);
+
+    std::vector<VertexDescriptorType> bestSourceNodes;
+    typename boost::graph_traits<VertexListGraphType>::vertex_iterator vi,vi_end;
+    tie(vi,vi_end) = vertices(*graph);
+    (*KNNSearch)(vi, vi_end, targetNode, bestSourceNodes);
+
+    std::cout << "There are " << bestSourceNodes.size() << " bestSourceNodes." << std::endl;
+
+    TopPatchesDialog<ImageType>* topPatchesDialog = new TopPatchesDialog<ImageType>(Image, MaskImage, PatchRadius);
+    topPatchesDialog->SetQueryNode(targetNode);
+    topPatchesDialog->SetSourceNodes(bestSourceNodes);
+    //topPatchesDialog->exec();
+    topPatchesDialog->show();
+
+    // Return the node to an invalid state
+    ImagePatchPixelDescriptorType& descriptor = get(*ImagePatchDescriptorMap, targetNode);
+    descriptor.SetStatus(PixelDescriptor::INVALID);
+  }
+
+};
+
 int main(int argc, char *argv[])
 {
   if(argc != 3)
@@ -48,7 +119,6 @@ int main(int argc, char *argv[])
   std::string imageFileName = argv[1];
   std::string maskFileName = argv[2];
 
-  typedef itk::VectorImage<float, 2> ImageType;
   typedef itk::ImageFileReader<ImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
   imageReader->SetFileName(imageFileName);
@@ -62,60 +132,23 @@ int main(int argc, char *argv[])
   maskReader->SetFileName(maskFileName);
   maskReader->Update();
 
-  itk::Index<2> centerGood = {{503,156}};
-  itk::Index<2> centerBad = {{503,146}};
-
-  const unsigned int patchRadius = 15;
-  itk::ImageRegion<2> regionGood = ITKHelpers::GetRegionInRadiusAroundPixel(centerGood, patchRadius);
-  itk::ImageRegion<2> regionBad = ITKHelpers::GetRegionInRadiusAroundPixel(centerBad, patchRadius);
-
-
-  typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
-
-  // Create the graph
-  typedef boost::grid_graph<2> VertexListGraphType;
-  boost::array<std::size_t, 2> graphSideLengths = { { imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0],
-                                                      imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[1] } };
-  VertexListGraphType graph(graphSideLengths);
-  typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
-
-  // Get the index map
-  typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
-  IndexMapType indexMap(get(boost::vertex_index, graph));
-
-  // Create the descriptor map. This is where the data for each pixel is stored.
-  typedef boost::vector_property_map<ImagePatchPixelDescriptorType, IndexMapType> ImagePatchDescriptorMapType;
-  ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
-
-  typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> VisitorType;
-  VisitorType visitor(imageReader->GetOutput(), maskReader->GetOutput(), imagePatchDescriptorMap, patchRadius);
-
-  InitializeFromMaskImage<VisitorType, VertexDescriptorType>(maskReader->GetOutput(), &visitor);
-
-  // Create the nearest neighbor finders
-  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
-                                  ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
-  KNNSearchType knnSearch(imagePatchDescriptorMap, 100);
-
-  VertexDescriptorType goodTargetNode = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(centerGood);
-  //VertexDescriptorType badTargetNode = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(centerBad);
-
-  VertexDescriptorType targetNode = goodTargetNode;
-
-  std::vector<VertexDescriptorType> bestSourceNodes;
-  typename boost::graph_traits<VertexListGraphType>::vertex_iterator vi,vi_end;
-  tie(vi,vi_end) = vertices(graph);
-  knnSearch(vi, vi_end, goodTargetNode, bestSourceNodes);
-
-  std::cout << "There are " << bestSourceNodes.size() << " bestSourceNodes." << std::endl;
-
   // Setup the GUI system
   QApplication app( argc, argv );
 
-  TopPatchesDialog<ImageType> topPatchesDialog(imageReader->GetOutput(), maskReader->GetOutput(), patchRadius);
-  topPatchesDialog.SetQueryNode(targetNode);
-  topPatchesDialog.SetSourceNodes(bestSourceNodes);
-  topPatchesDialog.exec();
+  DemoDriver demoDriver(imageReader->GetOutput(), maskReader->GetOutput());
+
+  itk::Index<2> centerGood = {{503,156}};
+  DemoDriver::VertexDescriptorType goodTargetNode = Helpers::ConvertFrom<DemoDriver::VertexDescriptorType,
+                                                                         itk::Index<2> >(centerGood);
+  demoDriver.DisplayTopPatches(goodTargetNode);
+
+  // itk::Index<2> centerBad = {{503,146}}; // The top 1000 matches to this patch are completely wrong
+  itk::Index<2> centerBad = {{503,147}};
+  DemoDriver::VertexDescriptorType badTargetNode = Helpers::ConvertFrom<DemoDriver::VertexDescriptorType,
+                                                                        itk::Index<2> >(centerBad);
+  demoDriver.DisplayTopPatches(badTargetNode);
+
+  app.exec();
 
   return EXIT_SUCCESS;
 }

@@ -14,9 +14,9 @@ struct DescriptorVisitorParent
 {
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  virtual void initialize_vertex(VertexDescriptorType v) const = 0;
+  virtual void InitializeVertex(VertexDescriptorType v) const = 0;
   
-  virtual void discover_vertex(VertexDescriptorType v) const = 0;
+  virtual void DiscoverVertex(VertexDescriptorType v) const = 0;
 
 }; // DescriptorVisitorParent
 
