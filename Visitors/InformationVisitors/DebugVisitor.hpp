@@ -66,7 +66,7 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, HalfWidth);
 
-    HelpersOutput::WriteVectorImageRegionAsRGB(Image, sourceRegion,
+    OutputHelpers::WriteVectorImageRegionAsRGB(Image, sourceRegion,
                                                Helpers::GetSequentialFileName("sourcePatch",
                                                                               this->NumberOfFinishedVertices, "png"));
     }
@@ -77,17 +77,17 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
 
-    HelpersOutput::WriteVectorImageRegionAsRGB(Image, region,
+    OutputHelpers::WriteVectorImageRegionAsRGB(Image, region,
                                                Helpers::GetSequentialFileName("targetPatch",
                                                                               this->NumberOfFinishedVertices, "png"));
-    HelpersOutput::WriteRegion(MaskImage, region,
+    OutputHelpers::WriteRegion(MaskImage, region,
                                Helpers::GetSequentialFileName("maskPatch", this->NumberOfFinishedVertices, "png"));
     }
 
-    HelpersOutput::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask", this->NumberOfFinishedVertices, "png"));
-    HelpersOutput::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask", this->NumberOfFinishedVertices, "mha"));
-    HelpersOutput::WriteVectorImageAsRGB(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
-    HelpersOutput::WriteImage(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "mha"));
+    OutputHelpers::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask", this->NumberOfFinishedVertices, "png"));
+    OutputHelpers::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask", this->NumberOfFinishedVertices, "mha"));
+    OutputHelpers::WriteVectorImageAsRGB(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
+    OutputHelpers::WriteImage(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "mha"));
 
     this->NumberOfFinishedVertices++;
 

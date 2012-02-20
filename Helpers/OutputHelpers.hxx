@@ -26,7 +26,7 @@
 #include "itkRegionOfInterestImageFilter.h"
 #include "itkImageFileWriter.h"
 
-namespace HelpersOutput
+namespace OutputHelpers
 {
 
 template <typename TImage>
@@ -34,7 +34,7 @@ void WriteSequentialImage(const TImage* const image, const std::string& filePref
 {
   std::string fileName = Helpers::GetSequentialFileName(filePrefix, iteration, "mha");
 
-  HelpersOutput::WriteImage<TImage>(image, fileName);
+  OutputHelpers::WriteImage<TImage>(image, fileName);
 }
 
 template <typename TImage>

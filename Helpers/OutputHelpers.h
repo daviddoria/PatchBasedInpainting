@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef HELPERS_OUTPUT_H
-#define HELPERS_OUTPUT_H
+#ifndef OutputHelpers_H
+#define OutputHelpers_H
 
 // VTK
 class vtkImageData;
@@ -31,7 +31,7 @@ class vtkPolyData;
 // Custom
 class Mask;
 
-namespace HelpersOutput
+namespace OutputHelpers
 {
 typedef itk::CovariantVector<float, 2> FloatVector2Type;
 typedef itk::Image<FloatVector2Type , 2> FloatVector2ImageType;

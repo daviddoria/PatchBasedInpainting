@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef ITKHELPERS_H
-#define ITKHELPERS_H
+#ifndef ITKHelpers_H
+#define ITKHelpers_H
 
 // Custom
 class Mask;

@@ -184,7 +184,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   void InpaintingComplete() const
   {
-    HelpersOutput::WriteImage(Image, "output.mha");
+    OutputHelpers::WriteImage(Image, "output.mha");
   }
 
 }; // InpaintingVisitor

@@ -23,7 +23,7 @@
 #include <vtkXMLImageDataWriter.h>
 #include <vtkXMLPolyDataWriter.h>
 
-namespace HelpersOutput
+namespace OutputHelpers
 {
 void WritePolyData(vtkPolyData* const polyData, const std::string& fileName)
 {
