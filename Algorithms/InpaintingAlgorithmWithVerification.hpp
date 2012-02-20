@@ -38,8 +38,8 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
     // Find the next target to in-paint. Some of the nodes in the priority queue
     // can be already filled (they get "covered up" when a patch is filled around
     // a target node). So we do not just process the node at the front of the queue,
-    // we also check that it has not been filled (by looking at its boundaryStatusMap
-    // value).
+    // we also check that it has not been filled by looking at its value in the boundaryStatusMap
+
     VertexDescriptorType targetNode;
     do
     {
@@ -53,7 +53,7 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
     } while( get(boundaryStatusMap, targetNode) == false );
 
     // Notify the visitor that we have a hole target center.
-    vis.DiscoverVertex(targetNode, g);
+    vis.DiscoverVertex(targetNode);
 
     // Find the source node that matches best to the target node
     typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
@@ -63,9 +63,9 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
     knnFinder(vi, vi_end, targetNode, outputContainer);
 
     VertexDescriptorType sourceNode = bestNeighborFinder(outputContainer.begin(), outputContainer.end(), targetNode);
-    vis.PotentialMatchMade(targetNode, sourceNode, g);
+    vis.PotentialMatchMade(targetNode, sourceNode);
 
-    if(!vis.AcceptMatch(targetNode, sourceNode, g))
+    if(!vis.AcceptMatch(targetNode, sourceNode))
       {
       numberOfManualVerifications++;
       std::cout << "So far there have been " << numberOfManualVerifications << " manual verifications." << std::endl;
@@ -75,10 +75,10 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
 
     // Do the in-painting of the target patch from the source patch.
     // the inpaint_patch functor should take care of calling
-    // "vis.paint_vertex(target, source, g)" on the individual vertices in the patch.
-    inpaint_patch(targetNode, sourceNode, g, vis);
+    // "vis.paint_vertex(target, source)" on the individual vertices in the patch.
+    inpaint_patch(targetNode, sourceNode, vis);
 
-    vis.FinishVertex(targetNode, sourceNode, g);
+    vis.FinishVertex(targetNode, sourceNode);
   } // end main iteration loop
 
   std::cout << "There were " << numberOfManualVerifications << " manual verifications required." << std::endl;

@@ -14,54 +14,54 @@ struct CompositeInpaintingVisitor
 {
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  void InitializeVertex(VertexDescriptorType v, TGraph& g) const
+  void InitializeVertex(VertexDescriptorType v) const
   {
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
-      Visitors[visitorId]->InitializeVertex(v, g);
+      Visitors[visitorId]->InitializeVertex(v);
       }
   };
 
-  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const
+  void DiscoverVertex(VertexDescriptorType v) const
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
-      Visitors[visitorId]->DiscoverVertex(v, g);
+      Visitors[visitorId]->DiscoverVertex(v);
       }
   };
 
-  void PotentialMatchMade(VertexDescriptorType a, VertexDescriptorType b, TGraph& g) const
+  void PotentialMatchMade(VertexDescriptorType a, VertexDescriptorType b) const
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
-      Visitors[visitorId]->PotentialMatchMade(a, b, g);
+      Visitors[visitorId]->PotentialMatchMade(a, b);
       }
   };
 
-  void PaintVertex(VertexDescriptorType a, VertexDescriptorType b, TGraph& g) const
+  void PaintVertex(VertexDescriptorType a, VertexDescriptorType b) const
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
-      Visitors[visitorId]->PaintVertex(a, b, g);
+      Visitors[visitorId]->PaintVertex(a, b);
       }
   };
 
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
     bool acceptAll = true;
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
-      bool accept = Visitors[visitorId]->AcceptMatch(target, source, g);
+      bool accept = Visitors[visitorId]->AcceptMatch(target, source);
       acceptAll = acceptAll && accept;
       }
     return acceptAll;
   };
 
-  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g) const
+  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode) const
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
-      Visitors[visitorId]->FinishVertex(v, sourceNode, g);
+      Visitors[visitorId]->FinishVertex(v, sourceNode);
       }
   };
 

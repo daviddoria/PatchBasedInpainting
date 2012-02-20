@@ -16,20 +16,20 @@ struct InpaintingVisitorParent
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
   // Const functions
-  virtual void InitializeVertex(VertexDescriptorType v, TGraph& g) const = 0;
+  virtual void InitializeVertex(VertexDescriptorType v) const = 0;
 
-  virtual void DiscoverVertex(VertexDescriptorType v, TGraph& g) const = 0;
+  virtual void DiscoverVertex(VertexDescriptorType v) const = 0;
 
-  virtual void PaintVertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const = 0;
+  virtual void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const = 0;
 
-  virtual bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const = 0;
+  virtual bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const = 0;
 
   virtual void InpaintingComplete() const = 0;
 
   // Non-const functions
-  virtual void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) = 0;
+  virtual void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source) = 0;
 
-  virtual void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g) = 0;
+  virtual void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode) = 0;
 
 }; // InpaintingVisitorParent
 

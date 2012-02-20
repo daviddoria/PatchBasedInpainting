@@ -27,8 +27,8 @@ struct DescriptorVisitorConcept
 
   BOOST_CONCEPT_USAGE(DescriptorVisitorConcept) 
   {
-    vis.initialize_vertex(u, g);// Function called on all vertices during the initialization phase.
-    vis.discover_vertex(u, g);  // Function called when a live vertex is taken out of the priority-queue.
+    vis.initialize_vertex(u);// Function called on all vertices during the initialization phase.
+    vis.discover_vertex(u);  // Function called when a live vertex is taken out of the priority-queue.
   };
 
 };

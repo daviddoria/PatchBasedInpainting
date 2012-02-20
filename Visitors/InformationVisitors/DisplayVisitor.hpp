@@ -59,17 +59,17 @@ public:
 
   }
 
-  void InitializeVertex(VertexDescriptorType v, TGraph& g) const
+  void InitializeVertex(VertexDescriptorType v) const
   { 
 
   };
 
-  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const
+  void DiscoverVertex(VertexDescriptorType v) const
   { 
 
   };
 
-  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
+  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
     // Target node
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(target);
@@ -82,17 +82,17 @@ public:
     emit signal_RefreshSource(sourceRegion, targetRegion);
   };
 
-  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
   {
     // Do nothing
   };
 
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
     return true;
   };
 
-  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
+  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode)
   {
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(v);
     itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->HalfWidth);

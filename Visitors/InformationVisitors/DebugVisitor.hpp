@@ -33,33 +33,33 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
   }
 
-  void InitializeVertex(VertexDescriptorType v, TGraph& g) const
+  void InitializeVertex(VertexDescriptorType v) const
   {
 
   };
 
-  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const
+  void DiscoverVertex(VertexDescriptorType v) const
   {
 
   };
 
-  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
+  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
     std::cout << "Match made: target: " << target[0] << " " << target[1]
               << " with source: " << source[0] << " " << source[1] << std::endl;
   };
 
-  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
   {
 
   };
 
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
     return true;
   };
 
-  void FinishVertex(VertexDescriptorType target, VertexDescriptorType sourceNode, TGraph& g)
+  void FinishVertex(VertexDescriptorType target, VertexDescriptorType sourceNode)
   {
     {
     itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(sourceNode);

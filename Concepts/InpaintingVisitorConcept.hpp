@@ -42,24 +42,24 @@ struct InpaintingVisitorConcept
 
   BOOST_CONCEPT_USAGE(InpaintingVisitorConcept) 
   {
-    vis.InitializeVertex(u, g);  //function called on all vertices during the initialization phase.
-    vis.DiscoverVertex(u, g);  //function called when a live vertex is taken out of the priority-queue.
+    vis.InitializeVertex(u);  //function called on all vertices during the initialization phase.
+    vis.DiscoverVertex(u);  //function called when a live vertex is taken out of the priority-queue.
     const Vertex& target = u;
     const Vertex& source = u;
 
     // function called when a source vertex has been found that matches well to the
     // current target-vertex (the same vertex that was just discovered).
-    vis.PotentialMatchMade(target, source, g);
+    vis.PotentialMatchMade(target, source);
 
     //function called to paint the value of a target vertex with the value of the source vertex.
-    vis.PaintVertex(target, source, g);
+    vis.PaintVertex(target, source);
 
     //function called to check if the match that was determined should be accepted.
-    bool was_successfully_painted = vis.AcceptMatch(target, source, g);
+    bool was_successfully_painted = vis.AcceptMatch(target, source);
     boost::ignore_unused_variable_warning(was_successfully_painted);
 
     //function called when a vertex has been inpainted and removed from the set of target pixels.
-    vis.FinishVertex(u, u, g);
+    vis.FinishVertex(u, u);
   };
 
 };

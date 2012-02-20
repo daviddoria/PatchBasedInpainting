@@ -16,11 +16,11 @@ struct MaskedGridPatchInpainter
 {
   std::size_t patch_half_width;
   FillStatusMap& fillStatusMap;
-  
+
   MaskedGridPatchInpainter(std::size_t aPatchHalfWidth, FillStatusMap& aFillStatusMap) : patch_half_width(aPatchHalfWidth), fillStatusMap(aFillStatusMap) { };
 
-  template <typename Vertex, typename GridGraph, typename InpaintingVisitor>
-  void operator()(Vertex target, Vertex source, GridGraph& g, InpaintingVisitor vis)
+  template <typename Vertex, typename InpaintingVisitor>
+  void operator()(Vertex target, Vertex source, InpaintingVisitor vis)
   {
     std::cout << "Painting " << target[0] << " " << target[1] << " with " << source[0] << " " << source[1] << std::endl;
 
@@ -50,7 +50,7 @@ struct MaskedGridPatchInpainter
         if( get(fillStatusMap, target_node) == false )
         {
           //std::cout << "Copying pixel " << source_node << " to pixel " << target_node << std::endl;
-          vis.PaintVertex(target_node, source_node, g); //paint the vertex.
+          vis.PaintVertex(target_node, source_node); //paint the vertex.
         }
 
       }

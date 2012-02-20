@@ -34,32 +34,32 @@ struct LoggerVisitor : public InpaintingVisitorParent<TGraph>
   OutputStream.close();
   }
 
-  void InitializeVertex(VertexDescriptorType v, TGraph& g) const
+  void InitializeVertex(VertexDescriptorType v) const
   {
 
   };
 
-  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const
+  void DiscoverVertex(VertexDescriptorType v) const
   {
 
   };
 
-  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
+  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
 
   };
 
-  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
   {
 
   };
 
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
     return true;
   };
 
-  void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode, TGraph& g)
+  void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)
   {
     //OutputStream << sourceNode << " : " << targetNode << std::endl;
      OutputStream << sourceNode[0] << " " << sourceNode[1] << " : "

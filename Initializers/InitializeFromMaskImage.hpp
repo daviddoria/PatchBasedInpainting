@@ -45,7 +45,7 @@ inline void InitializeFromMaskImage(Mask* const maskImage, TVisitor* const visit
     node[0] = imageIterator.GetIndex()[0];
     node[1] = imageIterator.GetIndex()[1];
 
-    visitor->InitializeVertex(node, g);
+    visitor->InitializeVertex(node);
 
     ++imageIterator;
     }

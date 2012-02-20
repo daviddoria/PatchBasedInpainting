@@ -60,22 +60,22 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   {
   }
 
-  void InitializeVertex(VertexDescriptorType v, TGraph& g) const
+  void InitializeVertex(VertexDescriptorType v) const
   {
-    DescriptorVisitor.initialize_vertex(v, g);
+    DescriptorVisitor.initialize_vertex(v);
   };
 
-  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const
+  void DiscoverVertex(VertexDescriptorType v) const
   {
-    DescriptorVisitor.discover_vertex(v, g);
+    DescriptorVisitor.discover_vertex(v);
   };
 
-  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
+  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
     assert(get(FillStatusMap, source));
   };
 
-  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
   {
     itk::Index<2> target_index = ITKHelpers::CreateIndex(target);
 
@@ -87,7 +87,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     Image->SetPixel(target_index, Image->GetPixel(source_index));
   };
 
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
     // return true;
     BoundaryEnergy<TImage> boundaryEnergy(Image, MaskImage);
@@ -114,7 +114,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       }
   };
 
-  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode, TGraph& g)
+  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode)
   {
     // Mark this pixel as filled, the area around it as filled, and the mask in this region as filled.
     // Determine the new boundary, and setup the nodes in the boundary queue.
@@ -148,7 +148,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       {
       VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(gridIterator.GetIndex());
 
-      InitializeVertex(v, g);
+      InitializeVertex(v);
       ++gridIterator;
       }
 
