@@ -7,6 +7,7 @@
 // Custom
 #include "ImageProcessing/Mask.h"
 #include "Priority/Priority.h"
+#include "Helpers/ITKHelpers.h"
 
 // Debug
 #include "Helpers/OutputHelpers.h"
@@ -30,22 +31,22 @@ inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& bounda
                                                                                 boundaryImage->GetLargestPossibleRegion());
   while(!imageIterator.IsAtEnd())
     {
-    typename TBoundaryNodeQueue::value_type node;
-    node[0] = imageIterator.GetIndex()[0];
-    node[1] = imageIterator.GetIndex()[1];
+    typename TBoundaryNodeQueue::value_type node = Helpers::ConvertFrom<typename TBoundaryNodeQueue::value_type,
+           itk::Index<2> >(imageIterator.GetIndex());
 
     if(imageIterator.Get() != 0) // boundary pixel found
       {
-      boundaryNodeQueue.push(node);
+      itk::Index<2> index = ITKHelpers::CreateIndex(node);
 
-      put(boundaryStatusMap, node, true);
-
-      itk::Index<2> index;
-      index[0] = node[0];
-      index[1] = node[1];
       float priority = priorityFunction->ComputePriority(index);
       // std::cout << "initial priority: " << priority << std::endl;
       put(priorityMap, node, priority);
+
+      // Note: the priorityMap value must be set before pushing the node into the queue
+      // (as the indirect queue is using the value from the map to determine the node's position)
+      boundaryNodeQueue.push(node);
+
+      put(boundaryStatusMap, node, true);
       }
     else
       {

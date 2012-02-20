@@ -4,6 +4,12 @@
 #include "Priority/PriorityRandom.h" // Appease syntax parser
 
 #include <cstdlib> // drand48()
+#include <ctime> // time()
+
+PriorityRandom::PriorityRandom()
+{
+  srand48((unsigned)time(0));
+}
 
 template <typename TNode>
 float PriorityRandom::ComputePriority(const TNode& queryNode) const

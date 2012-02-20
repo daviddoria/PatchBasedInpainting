@@ -8,6 +8,7 @@
 #include "ImageProcessing/Mask.h"
 #include "Helpers/OutputHelpers.h"
 #include "Helpers/ITKHelpers.h"
+#include "Helpers/BoostHelpers.h"
 
 // ITK
 #include "itkImage.h"
@@ -16,7 +17,7 @@
 /**
   * This visitor writes out information and images at each iteration.
  */
-template <typename TGraph, typename TImage>
+template <typename TGraph, typename TImage, typename TBoundaryStatusMap>
 struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 {
   TImage* Image;
@@ -25,10 +26,12 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
   const unsigned int HalfWidth;
   unsigned int NumberOfFinishedVertices;
 
+  TBoundaryStatusMap& BoundaryStatusMap;
+  
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  DebugVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth) :
-  Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0)
+  DebugVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, TBoundaryStatusMap& in_boundaryStatusMap) :
+  Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0), BoundaryStatusMap(in_boundaryStatusMap)
   {
 
   }
@@ -92,6 +95,13 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
     this->NumberOfFinishedVertices++;
 
     std::cout << "Finished node " << this->NumberOfFinishedVertices << std::endl;
+
+    typedef itk::Image<unsigned char, 2> IndicatorImageType;
+    IndicatorImageType::Pointer boundaryIndicatorImage = IndicatorImageType::New();
+    boundaryIndicatorImage->SetRegions(Image->GetLargestPossibleRegion());
+    boundaryIndicatorImage->Allocate();
+    BoostHelpers::WritePropertyMapAsImage(BoundaryStatusMap, boundaryIndicatorImage.GetPointer(),
+                                          Helpers::GetSequentialFileName("boundary", this->NumberOfFinishedVertices, "png"));
   };
 
   void InpaintingComplete() const

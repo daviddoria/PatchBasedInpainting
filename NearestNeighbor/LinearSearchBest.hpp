@@ -49,6 +49,8 @@ struct LinearSearchBest
         result = first;
       };
     };
+
+    std::cout << "Best patch has difference " << d_best << std::endl;
     return result;
   }
 };

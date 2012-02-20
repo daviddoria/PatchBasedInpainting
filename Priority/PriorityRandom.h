@@ -27,7 +27,8 @@
 class PriorityRandom
 {
 public:
-
+  PriorityRandom();
+  
   /** Return a random value.*/
   template <typename TNode>
   float ComputePriority(const TNode& queryPixel) const;

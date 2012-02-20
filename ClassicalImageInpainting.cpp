@@ -179,7 +179,8 @@ int main(int argc, char *argv[])
 
   // Create the nearest neighbor finder
 
-  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
+  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
+                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
 
   // Perform the inpainting

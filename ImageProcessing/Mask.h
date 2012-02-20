@@ -152,11 +152,17 @@ public:
   std::vector<itk::Offset<2> > GetHoleNeighborOffsets(const itk::Index<2>& pixel) const;
   
   /** Get a list of the valid pixels in a region.*/
-  std::vector<itk::Index<2> > GetValidPixelsInRegion(const itk::ImageRegion<2>& region) const;
+  std::vector<itk::Index<2> > GetValidPixelsInRegion(itk::ImageRegion<2> region) const;
   
   /** Get a list of the hole pixels in a region.*/
-  std::vector<itk::Index<2> > GetHolePixelsInRegion(const itk::ImageRegion<2>& region) const;
+  std::vector<itk::Index<2> > GetHolePixelsInRegion(itk::ImageRegion<2> region) const;
 
+  /** Get a list of the offsets of the valid pixels in a region.*/
+  std::vector<itk::Offset<2> > GetValidOffsetsInRegion(itk::ImageRegion<2> region) const;
+
+  /** Get a list of the offsets of the hole pixels in a region.*/
+  std::vector<itk::Offset<2> > GetHoleOffsetsInRegion(itk::ImageRegion<2> region) const;
+  
   /** Count hole pixels in a region.*/
   unsigned int CountHolePixels(const itk::ImageRegion<2>& region) const;
   

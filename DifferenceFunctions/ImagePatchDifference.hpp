@@ -52,9 +52,20 @@ struct ImagePatchDifference
       itk::ImageRegionConstIteratorWithIndex<typename ImagePatchType::ImageType> patchAIterator(image, a.GetRegion());
       while(!patchAIterator.IsAtEnd())
         {
+        // Only works for scalar pixels:
         //float difference = fabs(imageIterator.Get() - this->Image->GetPixel(imageIterator.GetIndex() + offsetToOther));
-        float difference = (patchAIterator.Get() - image->GetPixel(patchAIterator.GetIndex() + offsetAToB)).GetNorm();
-        totalDifference += difference;
+
+        // Vector norm difference
+        // float pixelDifference = (patchAIterator.Get() - image->GetPixel(patchAIterator.GetIndex() + offsetAToB)).GetNorm();
+
+        float pixelDifference = 0.0f;
+        for(unsigned int component = 0; component < patchAIterator.Get().GetSize(); ++component)
+          {
+          float componentDifference = patchAIterator.Get()[component] -
+                                      image->GetPixel(patchAIterator.GetIndex() + offsetAToB)[component];
+          pixelDifference += componentDifference;
+          }
+        totalDifference += pixelDifference;
 
         ++patchAIterator;
         }

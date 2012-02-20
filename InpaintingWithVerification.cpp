@@ -38,6 +38,7 @@
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/DefaultSearchBest.hpp"
+#include "NearestNeighbor/LinearSearchBestProperty.hpp"
 #include "NearestNeighbor/VisualSelectionBest.hpp"
 
 // Nearest neighbors visitor
@@ -48,7 +49,8 @@
 #include "Initializers/InitializePriority.hpp"
 
 // Inpainters
-#include "Inpainters/MaskedGridPatchInpainter.hpp"
+//#include "Inpainters/MaskedGridPatchInpainter.hpp"
+#include "Inpainters/MaskImagePatchInpainter.hpp"
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
@@ -148,10 +150,6 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<float, IndexMapType> PriorityMapType;
   PriorityMapType priorityMap(num_vertices(graph), indexMap);
 
-  // Create the node fill status map. Each pixel is either filled (true) or not filled (false).
-  typedef boost::vector_property_map<bool, IndexMapType> FillStatusMapType;
-  FillStatusMapType fillStatusMap(num_vertices(graph), indexMap);
-
   // Create the boundary status map. A node is on the current boundary if this property is true.
   // This property helps the boundaryNodeQueue because we can mark here if a node has become no longer
   // part of the boundary, so when the queue is popped we can check this property to see if it should
@@ -164,8 +162,10 @@ int main(int argc, char *argv[])
   ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
 
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
-  typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
-  InpainterType patchInpainter(patchHalfWidth, fillStatusMap);
+//   typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
+//   InpainterType patchInpainter(patchHalfWidth, fillStatusMap);
+  typedef MaskImagePatchInpainter InpainterType;
+  MaskImagePatchInpainter patchInpainter(patchHalfWidth, mask);
 
   // Create the priority function
   typedef PriorityRandom PriorityType;
@@ -189,18 +189,18 @@ int main(int argc, char *argv[])
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
   // Create the inpainting visitor
-  typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
+  typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
                             ImagePatchDescriptorVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType>
                             InpaintingVisitorType;
-  InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
+  InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
                                           imagePatchDescriptorVisitor, priorityMap, &priorityFunction, patchHalfWidth,
                                           boundaryStatusMap);
 
   typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
   DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
 
-  typedef DebugVisitor<VertexListGraphType, ImageType> DebugVisitorType;
-  DebugVisitorType debugVisitor(image, mask, patchHalfWidth);
+  typedef DebugVisitor<VertexListGraphType, ImageType, BoundaryStatusMapType> DebugVisitorType;
+  DebugVisitorType debugVisitor(image, mask, patchHalfWidth, boundaryStatusMap);
 
   LoggerVisitor<VertexListGraphType> loggerVisitor("log.txt");
 
@@ -214,17 +214,22 @@ int main(int argc, char *argv[])
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage(mask, &compositeVisitor, graph, fillStatusMap);
+  InitializeFromMaskImage<CompositeVisitorType, VertexDescriptorType>(mask, &compositeVisitor);
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finders
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
-  KNNSearchType knnSearch(imagePatchDescriptorMap, 1000);
+  KNNSearchType knnSearch(imagePatchDescriptorMap, 10);
 
-  typedef DefaultSearchBest BestSearchType;
-  BestSearchType defaultSearchBest;
+  // For debugging we use LinearSearchBestProperty instead of DefaultSearchBest because it can output the difference value.
+  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
+                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
+  BestSearchType bestSearch(imagePatchDescriptorMap);
+
+//   typedef DefaultSearchBest BestSearchType;
+//   BestSearchType bestSearch;
 
   TopPatchesDialog<ImageType> topPatchesDialog(image, mask, patchHalfWidth);
   typedef VisualSelectionBest<ImageType> ManualSearchType;
@@ -256,10 +261,10 @@ int main(int argc, char *argv[])
 
   // Replay the inpainting from a log.
 
-  typedef ReplayVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
-                FillStatusMapType, BoundaryStatusMapType> ReplayVisitorType;
-  ReplayVisitorType replayVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
-                                  patchHalfWidth, boundaryStatusMap);
+//   typedef ReplayVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
+//                 FillStatusMapType, BoundaryStatusMapType> ReplayVisitorType;
+//   ReplayVisitorType replayVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
+//                                   patchHalfWidth, boundaryStatusMap);
 
 //   InpaintingAlgorithm<VertexListGraphType, ReplayVisitorType, BoundaryStatusMapType,
 //                                 BoundaryNodeQueueType, KNNSearchType, BestSearchType, ManualSearchType, InpainterType>
@@ -271,7 +276,7 @@ int main(int argc, char *argv[])
                                 VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType,
                                 BoundaryNodeQueueType, KNNSearchType, BestSearchType, ManualSearchType, InpainterType>,
                                 graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, knnSearch,
-                                defaultSearchBest, boost::ref(manualSearchBest), patchInpainter));
+                                bestSearch, boost::ref(manualSearchBest), patchInpainter));
 
   return app.exec();
 }

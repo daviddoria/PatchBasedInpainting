@@ -28,7 +28,7 @@
  * this size to traverse the inpainted region to update the boundary.
  */
 template <typename TGraph, typename TImage, typename TBoundaryNodeQueue,
-          typename TFillStatusMap, typename TDescriptorVisitor, typename TPriority,
+          typename TDescriptorVisitor, typename TPriority,
           typename TPriorityMap, typename TBoundaryStatusMap>
 struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 {
@@ -40,7 +40,6 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   Mask* MaskImage;
   TBoundaryNodeQueue& BoundaryNodeQueue;
   TPriority* PriorityFunction;
-  TFillStatusMap& FillStatusMap;
   TDescriptorVisitor& DescriptorVisitor;
 
   TPriorityMap& PriorityMap;
@@ -49,12 +48,12 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   const unsigned int HalfWidth;
 
   InpaintingVisitor(TImage* const in_image, Mask* const in_mask,
-                    TBoundaryNodeQueue& in_boundaryNodeQueue, TFillStatusMap& in_fillStatusMap,
+                    TBoundaryNodeQueue& in_boundaryNodeQueue,
                     TDescriptorVisitor& in_descriptorVisitor, TPriorityMap& in_priorityMap,
                     TPriority* const in_priorityFunction,
                     const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
   Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue), PriorityFunction(in_priorityFunction),
-  FillStatusMap(in_fillStatusMap), DescriptorVisitor(in_descriptorVisitor),
+  DescriptorVisitor(in_descriptorVisitor),
   PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap),
   HalfWidth(in_half_width)
   {
@@ -72,7 +71,30 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
-    assert(get(FillStatusMap, source));
+    // Debug only checks
+    //assert(get(FillStatusMap, source));
+    assert(ITKHelpers::HasNeighborWithValue(ITKHelpers::CreateIndex(target), MaskImage, MaskImage->GetHoleValue()));
+
+    // For faster debugging (so we can "printf debug" in release mode), we make these cheks at runtime as well
+//     if(!get(FillStatusMap, source))
+//     {
+//       std::stringstream ss;
+//       ss << "Potential source pixel " << source[0] << " " << source[1] << " does not have 'true' value in FillStatusMap!";
+//       throw std::runtime_error(ss.str());
+//     }
+    if(!MaskImage->IsValid(ITKHelpers::CreateIndex(source)))
+    {
+      std::stringstream ss;
+      ss << "Potential source pixel " << source[0] << " " << source[1] << " is not valid in the mask!";
+      throw std::runtime_error(ss.str());
+    }
+
+    if(!ITKHelpers::HasNeighborWithValue(ITKHelpers::CreateIndex(target), MaskImage, MaskImage->GetHoleValue()))
+    {
+      std::stringstream ss;
+      ss << "Potential target pixel " << target[0] << " " << target[1] << " does not have a hole neighbor!";
+      throw std::runtime_error(ss.str());
+    }
   };
 
   void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
@@ -98,7 +120,30 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     itk::Index<2> sourcePixel = ITKHelpers::CreateIndex(source);
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, HalfWidth);
 
-    float energy = boundaryEnergy(sourceRegion, targetRegion);
+    // Compute boundary energy
+//     float energy = boundaryEnergy(sourceRegion, targetRegion);
+//     std::cout << "Energy: " << energy << std::endl;
+// 
+//     float energyThreshold = 100;
+//     if(energy < energyThreshold)
+//       {
+//       std::cout << "Match accepted." << std::endl;
+//       return true;
+//       }
+//     else
+//       {
+//       std::cout << "Match rejected." << std::endl;
+//       return false;
+//       }
+
+    std::vector<itk::Index<2> > holePixels = MaskImage->GetHolePixelsInRegion(targetRegion);
+    typename TImage::PixelType averageTargetPixel = ITKHelpers::AverageOfPixelsAtIndices(Image, holePixels);
+    
+    std::vector<itk::Offset<2> > validOffsets = MaskImage->GetValidOffsetsInRegion(targetRegion);
+    std::vector<itk::Index<2> > sourcePatchValidPixels = ITKHelpers::OffsetsToIndices(validOffsets, sourceRegion.GetIndex());
+
+    typename TImage::PixelType averageSourcePixel = ITKHelpers::AverageOfPixelsAtIndices(Image, sourcePatchValidPixels);
+    float energy = (averageSourcePixel - averageTargetPixel).GetNorm();
     std::cout << "Energy: " << energy << std::endl;
 
     float energyThreshold = 100;
@@ -126,15 +171,14 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
     regionToFinish.Crop(Image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
 
-    // Mark all the pixels in this region as filled.
+    // Mark all the pixels in this region as filled (in the mask and in the FillStatusMap).
     {
     itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(MaskImage, regionToFinish);
 
     while(!maskIterator.IsAtEnd())
       {
-      VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(maskIterator.GetIndex());
-
-      put(FillStatusMap, v, true);
+      //VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(maskIterator.GetIndex());
+      //put(FillStatusMap, v, true);
       MaskImage->MarkAsValid(maskIterator.GetIndex());
       ++maskIterator;
       }
@@ -165,15 +209,18 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       {
       VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(imageIterator.GetIndex());
 
-      // Mark all nodes in the patch around this node as filled (in the FillStatusMap).
+      // Mark all nodes in the patch around this node as filled.
       // This makes them ignored if they are still in the boundaryNodeQueue.
       if(ITKHelpers::HasNeighborWithValue(imageIterator.GetIndex(), MaskImage, MaskImage->GetHoleValue()))
         {
-        put(BoundaryStatusMap, v, true);
-        this->BoundaryNodeQueue.push(v);
+        // Note: must set the value in the priority map before pushing the node into the queue (as the priority is what
+        // determines the node's position in the queue).
         float priority = this->PriorityFunction->ComputePriority(imageIterator.GetIndex());
         //std::cout << "updated priority: " << priority << std::endl;
         put(PriorityMap, v, priority);
+
+        put(BoundaryStatusMap, v, true);
+        this->BoundaryNodeQueue.push(v);
         }
       else
         {

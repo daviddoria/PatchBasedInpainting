@@ -9,6 +9,12 @@
 // Boost
 #include <boost/graph/detail/d_ary_heap.hpp>
 
+// ITK
+#include "itkImageRegionConstIterator.h"
+
+// Custom
+#include "Helpers/ITKHelpers.h"
+
 namespace BoostHelpers
 {
   // Destruct and reconstruct the queue
@@ -54,6 +60,29 @@ namespace BoostHelpers
     }
   }
 
+  template <typename TPropertyMap, typename TImage>
+  void WritePropertyMapAsImage(TPropertyMap propertyMap, TImage* const image, const std::string& fileName)
+  {
+    typename itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
+
+    while(!imageIterator.IsAtEnd())
+      {
+      typename TPropertyMap::key_type v =
+          Helpers::ConvertFrom<typename TPropertyMap::key_type, itk::Index<2> >(imageIterator.GetIndex());
+      int value = 0;
+      if(get(propertyMap, v))
+        {
+          value = 255;
+        }
+      imageIterator.Set(value);
+      ++imageIterator;
+      }
+    typedef typename itk::ImageFileWriter<TImage> WriterType;
+    typename WriterType::Pointer writer = WriterType::New();
+    writer->SetInput(image);
+    writer->SetFileName(fileName);
+    writer->Write();
+  }
 }
 
 #endif

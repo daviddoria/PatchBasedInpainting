@@ -3,6 +3,7 @@
 
 // STL
 #include <iostream>
+#include <string>
 
 // Boost
 #include <boost/array.hpp>
@@ -15,6 +16,8 @@ namespace BoostHelpers
   template <typename TQueue>
   void OutputQueue(TQueue queue);
 
+  template <typename TPropertyMap, typename TImage>
+  void WritePropertyMapAsImage(TPropertyMap propertyMap, TImage* const image, const std::string& fileName);
 }
 
 #include "BoostHelpers.hpp"
