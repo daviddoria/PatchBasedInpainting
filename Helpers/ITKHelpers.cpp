@@ -397,6 +397,7 @@ std::vector<itk::Offset<2> > Get8NeighborOffsets()
 
 itk::VariableLengthVector<float> Average(const std::vector<itk::VariableLengthVector<float> >& v)
 {
+  // std::cout << "ITKHelpers::Average" << std::endl;
   if(v.size() == 0)
   {
     throw std::runtime_error("Cannot average vector with size 0!");
@@ -415,7 +416,7 @@ itk::VariableLengthVector<float> Average(const std::vector<itk::VariableLengthVe
   itk::VariableLengthVector<float> averageVector;
   averageVector.SetSize(v[0].GetSize());
   averageVector = vectorSum / static_cast<float>(v.size());
-  
+
   return averageVector;
 }
 

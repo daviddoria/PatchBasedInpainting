@@ -711,7 +711,8 @@ typename TImage::PixelType AverageOfPixelsAtIndices(const TImage* const image, c
     pixels.push_back(image->GetPixel(indices[i]));
   }
   using Helpers::Average;
+  using ITKHelpers::Average;
   return Average(pixels);
 }
 
-}// end namespace
+}// end namespace ITKHelpers

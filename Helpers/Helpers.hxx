@@ -99,6 +99,7 @@ TTo ConvertFrom(const TFrom& object)
 template<typename T>
 typename T::value_type Average(const T& v)
 {
+  std::cout << "Helpers::Average" << std::endl;
   typename T::value_type vectorSum = 0.0f;
 
   for(unsigned int i = 0; i < v.size(); ++i)
