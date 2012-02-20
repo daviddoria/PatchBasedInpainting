@@ -30,6 +30,7 @@
 
 // Inpainting visitors
 #include "Visitors/InpaintingVisitor.hpp"
+#include "Visitors/ReplayVisitor.hpp"
 #include "Visitors/InformationVisitors/LoggerVisitor.hpp"
 #include "Visitors/CompositeInpaintingVisitor.hpp"
 #include "Visitors/InformationVisitors/DebugVisitor.hpp"
@@ -53,6 +54,7 @@
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
 
 // Inpainting algorithm
+#include "Algorithms/InpaintingAlgorithm.hpp"
 #include "Algorithms/InpaintingAlgorithmWithVerification.hpp"
 
 // Priority
@@ -246,11 +248,25 @@ int main(int argc, char *argv[])
                    &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
                    Qt::BlockingQueuedConnection);
 
+  // Passively display the top patches at every iteration
 //   TopPatchesWidget<ImageType> topPatchesWidget(image, patchHalfWidth);
 //   topPatchesWidget.show();
 //   QObject::connect(&nearestNeighborsDisplayVisitor, SIGNAL(signal_Refresh(const std::vector<Node>&)),
 //                    &topPatchesWidget, SLOT(SetNodes(const std::vector<Node>&)));
 
+  // Replay the inpainting from a log.
+
+  typedef ReplayVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
+                FillStatusMapType, BoundaryStatusMapType> ReplayVisitorType;
+  ReplayVisitorType replayVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
+                                  patchHalfWidth, boundaryStatusMap);
+
+//   InpaintingAlgorithm<VertexListGraphType, ReplayVisitorType, BoundaryStatusMapType,
+//                                 BoundaryNodeQueueType, KNNSearchType, BestSearchType, ManualSearchType, InpainterType>
+//                                 (graph, replayVisitor, boundaryStatusMap, boundaryNodeQueue, knnSearch,
+//                                 defaultSearchBest, patchInpainter);
+
+  // Run the remaining inpainting
   QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
                                 VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType,
                                 BoundaryNodeQueueType, KNNSearchType, BestSearchType, ManualSearchType, InpainterType>,

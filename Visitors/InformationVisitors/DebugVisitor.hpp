@@ -39,17 +39,8 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
   };
 
   void DiscoverVertex(VertexDescriptorType v, TGraph& g) const
-  { 
-    // Construct the region around the vertex
-    itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(v);
+  {
 
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
-
-    HelpersOutput::WriteVectorImageRegionAsRGB(Image, region,
-                                               Helpers::GetSequentialFileName("targetPatch",
-                                                                              this->NumberOfFinishedVertices, "png"));
-    HelpersOutput::WriteRegion(MaskImage, region,
-                               Helpers::GetSequentialFileName("maskPatch", this->NumberOfFinishedVertices, "png"));
   };
 
   void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source, TGraph& g)
@@ -70,7 +61,7 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
   void FinishVertex(VertexDescriptorType target, VertexDescriptorType sourceNode, TGraph& g)
   {
-    // Debug only
+    {
     itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(sourceNode);
 
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, HalfWidth);
@@ -78,9 +69,25 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
     HelpersOutput::WriteVectorImageRegionAsRGB(Image, sourceRegion,
                                                Helpers::GetSequentialFileName("sourcePatch",
                                                                               this->NumberOfFinishedVertices, "png"));
+    }
 
-    HelpersOutput::WriteImage(MaskImage, Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
+    {
+    // Construct the region around the vertex
+    itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(target);
+
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
+
+    HelpersOutput::WriteVectorImageRegionAsRGB(Image, region,
+                                               Helpers::GetSequentialFileName("targetPatch",
+                                                                              this->NumberOfFinishedVertices, "png"));
+    HelpersOutput::WriteRegion(MaskImage, region,
+                               Helpers::GetSequentialFileName("maskPatch", this->NumberOfFinishedVertices, "png"));
+    }
+
+    HelpersOutput::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask", this->NumberOfFinishedVertices, "png"));
+    HelpersOutput::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask", this->NumberOfFinishedVertices, "mha"));
     HelpersOutput::WriteVectorImageAsRGB(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
+    HelpersOutput::WriteImage(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "mha"));
 
     this->NumberOfFinishedVertices++;
 

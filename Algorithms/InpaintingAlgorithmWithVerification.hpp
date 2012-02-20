@@ -1,5 +1,5 @@
-#ifndef InpaintingAlgorithm_hpp
-#define InpaintingAlgorithm_hpp
+#ifndef InpaintingAlgorithmWithVerification_hpp
+#define InpaintingAlgorithmWithVerification_hpp
 
 // Concepts
 #include "Concepts/InpaintingVisitorConcept.hpp"
