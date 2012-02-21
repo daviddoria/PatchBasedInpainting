@@ -6,14 +6,10 @@
 
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
-/** Compute the difference to another ImagePatch.*/
-// template <typename TImage>
-// float Compare(const ImagePatchPixelDescriptor<TImage>* const a, const ImagePatchPixelDescriptor<TImage>* const b);
-
-/** Compute the difference to another ImagePatch only at specified offets.*/
-// float Compare(const ImagePatchPixelDescriptor* const item, const std::vector<itk::Offset<2> >& offsets) const;
-
-
+/** Compute the average difference between corresponding pixels in valid regions of the two patches.
+ *  This is an average and not a sum because we want to be able to compare "match quality" values between
+ *  different pairs of patches, in which the source region will not be the same size.
+ */
 template <typename ImagePatchType>
 struct ImagePatchDifference
 {
@@ -70,6 +66,7 @@ struct ImagePatchDifference
 
         ++patchAIterator;
         }
+      totalDifference = totalDifference / static_cast<float>(a.GetRegion().GetNumberOfPixels());
     }
     // If one of the nodes is a target node, only compare in it's list of valid offset pixels.
     else if(a.GetStatus() == ImagePatchType::TARGET_NODE || b.GetStatus() == ImagePatchType::TARGET_NODE)
@@ -89,10 +86,13 @@ struct ImagePatchDifference
                             image->GetPixel(b.GetCorner() + (*validOffsets)[i])).GetNorm();
         totalDifference += difference;
         }
+      totalDifference = totalDifference / static_cast<float>(validOffsets->size());
     }
     else
     {
-      throw std::runtime_error("Patch statuses are not correct!");
+      std::stringstream ss;
+      ss << "Patch statuses are not correct! Status(a) is " << a.GetStatus() << " and Status(b) is " << b.GetStatus();
+      throw std::runtime_error(ss.str());
     }
 
     //std::cout << "Difference: " << totalDifference << std::endl;

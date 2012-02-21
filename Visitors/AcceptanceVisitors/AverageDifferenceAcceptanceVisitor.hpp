@@ -8,9 +8,7 @@
 
 // Custom
 #include "ImageProcessing/Mask.h"
-#include "Helpers/OutputHelpers.h"
 #include "Helpers/ITKHelpers.h"
-#include "Helpers/BoostHelpers.h"
 
 // ITK
 #include "itkImage.h"
@@ -51,22 +49,21 @@ struct AverageDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGrap
 
     // Compute the average of the pixels in the source region corresponding to hole pixels in the target region.
     std::vector<itk::Offset<2> > holeOffsets = MaskImage->GetHoleOffsetsInRegion(targetRegion);
-    std::vector<itk::Index<2> > sourcePatchValidPixels = ITKHelpers::OffsetsToIndices(holeOffsets, sourceRegion.GetIndex());
-    typename TImage::PixelType averageSourceRegionTargetPixel = ITKHelpers::AverageOfPixelsAtIndices(Image, sourcePatchValidPixels);
+    std::vector<itk::Index<2> > sourcePatchHolePixels = ITKHelpers::OffsetsToIndices(holeOffsets, sourceRegion.GetIndex());
+    typename TImage::PixelType averageSourceRegionTargetPixel = ITKHelpers::AverageOfPixelsAtIndices(Image, sourcePatchHolePixels);
 
     // Compute the difference
     float energy = (averageTargetRegionSourcePixel - averageSourceRegionTargetPixel).GetNorm();
-    std::cout << "Energy: " << energy << std::endl;
+    std::cout << "AverageDifferenceAcceptanceVisitor Energy: " << energy << std::endl;
 
-    
     if(energy < DifferenceThreshold)
       {
-      std::cout << "Match accepted." << std::endl;
+      std::cout << "AverageDifferenceAcceptanceVisitor: Match accepted (less than " << DifferenceThreshold << ")" << std::endl;
       return true;
       }
     else
       {
-      std::cout << "Match rejected." << std::endl;
+      std::cout << "AverageDifferenceAcceptanceVisitor: Match rejected (greater than " << DifferenceThreshold << ")" << std::endl;
       return false;
       }
   };

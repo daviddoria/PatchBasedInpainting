@@ -25,10 +25,12 @@
 // Acceptance visitors
 #include "Visitors/AcceptanceVisitors/AverageDifferenceAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/CompositeAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/VarianceDifferenceAccpetanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/VarianceDifferenceAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/IntraSourcePatchAcceptanceVisitor.hpp"
 
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/CompositeDescriptorVisitor.hpp"
 
 // Information visitors
 #include "Visitors/InformationVisitors/DisplayVisitor.hpp"
@@ -166,6 +168,8 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<ImagePatchPixelDescriptorType, IndexMapType> ImagePatchDescriptorMapType;
   ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
 
+  ImagePatchDescriptorMapType smallImagePatchDescriptorMap(num_vertices(graph), indexMap);
+
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
 //   typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
 //   InpainterType patchInpainter(patchHalfWidth, fillStatusMap);
@@ -193,20 +197,36 @@ int main(int argc, char *argv[])
           ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
+  ImagePatchDescriptorVisitorType smallImagePatchDescriptorVisitor(image, mask, smallImagePatchDescriptorMap, 5);
+
+  typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
+  CompositeDescriptorVisitorType compositeDescriptorVisitor;
+  compositeDescriptorVisitor.AddVisitor(&imagePatchDescriptorVisitor);
+  compositeDescriptorVisitor.AddVisitor(&smallImagePatchDescriptorVisitor);
+  
   AverageDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> averageDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 100);
   VarianceDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> varianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 100);
-  
+  IntraSourcePatchAcceptanceVisitor<VertexListGraphType, ImageType> intraSourcePatchAcceptanceVisitor(image, mask, patchHalfWidth, 100);
+
   typedef CompositeAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
   AcceptanceVisitorType compositeAcceptanceVisitor;
   compositeAcceptanceVisitor.AddVisitor(&averageDifferenceAcceptanceVisitor);
   compositeAcceptanceVisitor.AddVisitor(&varianceDifferenceAcceptanceVisitor);
+  compositeAcceptanceVisitor.AddVisitor(&intraSourcePatchAcceptanceVisitor);
 
   // Create the inpainting visitor
+//   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
+//                             ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType>
+//                             InpaintingVisitorType;
+//   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
+//                                           imagePatchDescriptorVisitor, compositeAcceptanceVisitor, priorityMap, &priorityFunction, patchHalfWidth,
+//                                           boundaryStatusMap);
+
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
-                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType>
+                            CompositeDescriptorVisitorType, AcceptanceVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType>
                             InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
-                                          imagePatchDescriptorVisitor, compositeAcceptanceVisitor, priorityMap, &priorityFunction, patchHalfWidth,
+                                          compositeDescriptorVisitor, compositeAcceptanceVisitor, priorityMap, &priorityFunction, patchHalfWidth,
                                           boundaryStatusMap);
 
   typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
@@ -234,7 +254,7 @@ int main(int argc, char *argv[])
   // Create the nearest neighbor finders
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
-  KNNSearchType knnSearch(imagePatchDescriptorMap, 10);
+  KNNSearchType knnSearch(imagePatchDescriptorMap, 1000);
 
   // For debugging we use LinearSearchBestProperty instead of DefaultSearchBest because it can output the difference value.
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,

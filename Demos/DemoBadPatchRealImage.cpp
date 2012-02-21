@@ -92,8 +92,22 @@ struct DemoDriver
     typename boost::graph_traits<VertexListGraphType>::vertex_iterator vi,vi_end;
     tie(vi,vi_end) = vertices(*graph);
     (*KNNSearch)(vi, vi_end, targetNode, bestSourceNodes);
-
     std::cout << "There are " << bestSourceNodes.size() << " bestSourceNodes." << std::endl;
+    
+    ImagePatchDifference<ImagePatchPixelDescriptorType> patchDifferenceFunctor;
+    float patchDifference = patchDifferenceFunctor(get(*ImagePatchDescriptorMap, targetNode), get(*ImagePatchDescriptorMap, bestSourceNodes[0]));
+    std::cout << "Best patch error: " << patchDifference << std::endl;
+
+    // Compute the average of the valid pixels in the target region
+    std::vector<itk::Index<2> > validPixelsTargetRegion = MaskImage->GetValidPixelsInRegion(get(*ImagePatchDescriptorMap, targetNode).GetRegion());
+    typename ImageType::PixelType targetRegionSourcePixelVariance = ITKHelpers::VarianceOfPixelsAtIndices(Image, validPixelsTargetRegion);
+    std::cout << "targetRegionSourcePixelVariance: " << targetRegionSourcePixelVariance << std::endl;
+    
+    // Compute the average of the pixels in the source region corresponding to hole pixels in the target region.
+    std::vector<itk::Offset<2> > holeOffsets = MaskImage->GetHoleOffsetsInRegion(get(*ImagePatchDescriptorMap, targetNode).GetRegion());
+    std::vector<itk::Index<2> > sourcePatchValidPixels = ITKHelpers::OffsetsToIndices(holeOffsets, get(*ImagePatchDescriptorMap, bestSourceNodes[0]).GetRegion().GetIndex());
+    typename ImageType::PixelType sourceRegionTargetPixelVariance = ITKHelpers::VarianceOfPixelsAtIndices(Image, sourcePatchValidPixels);
+    std::cout << "sourceRegionTargetPixelVariance: " << sourceRegionTargetPixelVariance << std::endl;
 
     TopPatchesDialog<ImageType>* topPatchesDialog = new TopPatchesDialog<ImageType>(Image, MaskImage, PatchRadius);
     topPatchesDialog->SetQueryNode(targetNode);
@@ -137,14 +151,16 @@ int main(int argc, char *argv[])
 
   DemoDriver demoDriver(imageReader->GetOutput(), maskReader->GetOutput());
 
+  std::cout << "Good patch:" << std::endl;
   itk::Index<2> centerGood = {{503,156}};
   DemoDriver::VertexDescriptorType goodTargetNode = Helpers::ConvertFrom<DemoDriver::VertexDescriptorType,
                                                                          itk::Index<2> >(centerGood);
   demoDriver.DisplayTopPatches(goodTargetNode);
 
-  // itk::Index<2> centerBad = {{503,146}}; // The top 1000 matches to this patch are completely wrong
+  std::cout << "Bad patch:" << std::endl;
+   itk::Index<2> centerBad = {{503,146}}; // The top 1000 matches to this patch are completely wrong
   // itk::Index<2> centerBad = {{503,147}}; // This also has 0/1000 good matches
-  itk::Index<2> centerBad = {{503,155}}; // This works fine
+  //itk::Index<2> centerBad = {{503,155}}; // This works fine
   DemoDriver::VertexDescriptorType badTargetNode = Helpers::ConvertFrom<DemoDriver::VertexDescriptorType,
                                                                         itk::Index<2> >(centerBad);
   demoDriver.DisplayTopPatches(badTargetNode);

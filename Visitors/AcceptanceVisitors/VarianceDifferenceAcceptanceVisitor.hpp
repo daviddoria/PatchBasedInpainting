@@ -33,7 +33,7 @@ struct VarianceDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGra
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
   VarianceDifferenceAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, const float differenceThreshold = 100) :
-  Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0)
+  Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0), DifferenceThreshold(differenceThreshold)
   {
 
   }
@@ -46,27 +46,27 @@ struct VarianceDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGra
     itk::Index<2> sourcePixel = ITKHelpers::CreateIndex(source);
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, HalfWidth);
 
-    // Compute the average of the valid pixels in the target region
+    // Compute the variance of the valid pixels in the target region
     std::vector<itk::Index<2> > validPixelsTargetRegion = MaskImage->GetValidPixelsInRegion(targetRegion);
     typename TImage::PixelType targetRegionSourcePixelVariance = ITKHelpers::VarianceOfPixelsAtIndices(Image, validPixelsTargetRegion);
 
-    // Compute the average of the pixels in the source region corresponding to hole pixels in the target region.
+    // Compute the variance of the pixels in the source region corresponding to hole pixels in the target region.
     std::vector<itk::Offset<2> > holeOffsets = MaskImage->GetHoleOffsetsInRegion(targetRegion);
-    std::vector<itk::Index<2> > sourcePatchValidPixels = ITKHelpers::OffsetsToIndices(holeOffsets, sourceRegion.GetIndex());
-    typename TImage::PixelType sourceRegionTargetPixelVariance = ITKHelpers::VarianceOfPixelsAtIndices(Image, sourcePatchValidPixels);
+    std::vector<itk::Index<2> > sourcePatchHolePixels = ITKHelpers::OffsetsToIndices(holeOffsets, sourceRegion.GetIndex());
+    typename TImage::PixelType sourceRegionTargetPixelVariance = ITKHelpers::VarianceOfPixelsAtIndices(Image, sourcePatchHolePixels);
 
     // Compute the difference
     float energy = (targetRegionSourcePixelVariance - sourceRegionTargetPixelVariance).GetNorm();
-    std::cout << "Energy: " << energy << std::endl;
+    std::cout << "VarianceDifferenceAcceptanceVisitor Energy: " << energy << std::endl;
 
     if(energy < DifferenceThreshold)
       {
-      std::cout << "Match accepted." << std::endl;
+      std::cout << "VarianceDifferenceAcceptanceVisitor: Match accepted (less than " << DifferenceThreshold << ")" << std::endl;
       return true;
       }
     else
       {
-      std::cout << "Match rejected." << std::endl;
+      std::cout << "VarianceDifferenceAcceptanceVisitor: Match rejected (greater than " << DifferenceThreshold << ")" << std::endl;
       return false;
       }
   };

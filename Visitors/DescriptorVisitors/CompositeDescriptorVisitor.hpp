@@ -18,7 +18,7 @@ struct CompositeDescriptorVisitor
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
-      Visitors[visitorId]->initialize_vertex(v, g);
+      Visitors[visitorId]->InitializeVertex(v);
       }
   };
 
@@ -26,7 +26,7 @@ struct CompositeDescriptorVisitor
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
-      Visitors[visitorId]->discover_vertex(v, g);
+      Visitors[visitorId]->DiscoverVertex(v);
       }
   };
 
