@@ -16,7 +16,11 @@
  *
  *=========================================================================*/
 
-#include "Helpers.h"
+#include "OutputHelpers.h" // Appease syntax parser
+
+// Custom
+#include "Helpers/Helpers.h"
+#include "ImageProcessing/Mask.h"
 
 // VTK
 #include <vtkPolyData.h>

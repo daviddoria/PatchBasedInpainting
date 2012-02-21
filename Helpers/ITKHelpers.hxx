@@ -44,6 +44,7 @@
 // Custom
 #include "ImageProcessing/Mask.h"
 #include "Helpers/Helpers.h"
+#include "Utilities/Statistics.h"
 
 namespace ITKHelpers
 {
@@ -710,7 +711,7 @@ typename TImage::PixelType AverageOfPixelsAtIndices(const TImage* const image, c
   {
     pixels.push_back(image->GetPixel(indices[i]));
   }
-  using Helpers::Average;
+  using Statistics::Average;
   using ITKHelpers::Average;
   return Average(pixels);
 }
@@ -761,7 +762,7 @@ typename TImage::PixelType AverageInRegion(const TImage* const image, const itk:
     ++imageIterator;
     }
 
-  using Helpers::Average;
+  using Statistics::Average;
   using ITKHelpers::Average;
   return Average(pixels);
 }

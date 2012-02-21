@@ -1,6 +1,10 @@
+// STL
+#include <stdexcept>
+
 // Custom
 #include "Helpers/ITKHelpers.h"
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
+#include "Utilities/Statistics.h"
 
 // ITK
 #include "itkGaussianOperator.h"
@@ -244,7 +248,7 @@ typename TImage::PixelType AverageNonMaskedNeighborValue(const TImage* const ima
     throw std::runtime_error("Cannot compute the average value of the non-masked neighbors because there are 0 of them!");
     }
 
-  using Helpers::Average;
+  using Statistics::Average;
   using ITKHelpers::Average;
   return Average(validValues);
 }
@@ -264,7 +268,7 @@ typename TImage::PixelType AverageMaskedNeighborValue(const TImage* const image,
   {
     throw std::runtime_error("Cannot compute the average value of the non-masked neighbors because there are 0 of them!");
   }
-  using Helpers::Average;
+  using Statistics::Average;
   using ITKHelpers::Average;
   return Average(holeValues);
 }

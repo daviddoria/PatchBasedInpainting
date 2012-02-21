@@ -36,6 +36,7 @@ namespace OutputHelpers
 typedef itk::CovariantVector<float, 2> FloatVector2Type;
 typedef itk::Image<FloatVector2Type , 2> FloatVector2ImageType;
 typedef itk::VectorImage<float, 2> FloatVectorImageType;
+typedef itk::Image<unsigned char, 2> UnsignedCharScalarImageType;
 
 /** Write a vtkPolyData to a .vtp file. */
 void WritePolyData(vtkPolyData* const polyData, const std::string& fileName);

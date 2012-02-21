@@ -206,7 +206,7 @@ if(BuildTests)
   #add_subdirectory(ImageProcessing/Tests)
   #add_subdirectory(NearestNeighbor/Tests)
   add_subdirectory(Helpers/Tests)
-  #add_subdirectory(Utilities/Tests)
+  add_subdirectory(Utilities/Tests)
 
   #add_subdirectory(Interactive/Tests)
 

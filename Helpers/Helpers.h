@@ -77,11 +77,6 @@ typename T::value_type& index(T& v, size_t i);
 template<typename TTo, typename TFrom>
 TTo ConvertFrom(const TFrom& object);
 
-/** Average the values in a vector. */
-template<typename T>
-typename T::value_type Average(const T& v);
-
-
 }// end namespace
 
 #include "Helpers.hxx"

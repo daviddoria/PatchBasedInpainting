@@ -255,51 +255,5 @@ int main(int argc, char*argv[])
     }
   }
 
-  {
-  std::vector<unsigned char> v;
-
-  for(unsigned int i = 0; i < 100; ++i)
-    {
-    v.push_back(rand() % 255);
-    }
-
-  unsigned char av = Helpers::Average(v);
-  std::cout << "av: " << static_cast<int>(av) << std::endl;
-  
-  unsigned char runningAverage = Helpers::RunningAverage(v);
-  std::cout << "runningAverage: " << static_cast<int>(runningAverage) << std::endl;
-
-  if(!Testing::ValuesEqual(av, runningAverage))
-    {
-    std::stringstream ss;
-    ss << "Unsigned char running average test: average is " << static_cast<int>(av)
-       << " and running average is " << static_cast<int>(runningAverage)
-       << " but they should be equal!";
-    throw std::runtime_error(ss.str());
-    }
-  }
-
-  {
-  std::vector<float> v;
-
-  for(unsigned int i = 0; i < 100; ++i)
-    {
-    v.push_back(drand48());
-    }
-
-  float av = Helpers::Average(v);
-  std::cout << "av: " << av << std::endl;
-
-  float runningAverage = Helpers::RunningAverage(v);
-  std::cout << "runningAverage: " << runningAverage << std::endl;
-
-  if(!Testing::ValuesEqual(av, runningAverage))
-    {
-    std::stringstream ss;
-    ss << "Float running average test: average is " << av << " and running average is " << runningAverage
-       << " but they should be equal!";
-    throw std::runtime_error(ss.str());
-    }
-  }
   return EXIT_SUCCESS;
 }
