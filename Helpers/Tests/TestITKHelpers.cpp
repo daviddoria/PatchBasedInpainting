@@ -49,6 +49,9 @@ static void TestHasNeighborWithValue();
 static void TestDeepCopy_Scalar();
 static void TestDeepCopy_Vector();
 
+static void TestSumOfComponents_Scalar();
+static void TestSumOfComponents_Vector();
+
 int main()
 {
   TestGetIndexString();
@@ -73,6 +76,9 @@ int main()
   TestHasNeighborWithValue();
   TestDeepCopy_Scalar();
   TestDeepCopy_Vector();
+
+  TestSumOfComponents_Scalar();
+  TestSumOfComponents_Vector();
 
   ////////////////// Not yet tested //////////////////////
 #if 0
@@ -555,3 +561,35 @@ void TestAverageNonMaskedNeighborValue()
 {
   throw std::runtime_error("TestAverageNonMaskedNeighborValue not yet written!");
 }
+
+void TestSumOfComponents_Scalar()
+{
+  float v = 2;
+
+  float sum = ITKHelpers::SumOfComponents(v);
+  float correctSum = 2;
+  if(!Testing::ValuesEqual(sum, correctSum))
+    {
+    std::stringstream ss;
+    ss << "TestSumOfComponents_Scalar: Sum is " << sum << " but should be " << correctSum;
+    throw std::runtime_error(ss.str());
+    }
+}
+
+void TestSumOfComponents_Vector()
+{
+  itk::VariableLengthVector<float> v;
+  v.SetSize(2);
+  v[0] = 1;
+  v[1] = 2;
+
+  float sum = ITKHelpers::SumOfComponents(v);
+  float correctSum = 3;
+  if(!Testing::ValuesEqual(sum, correctSum))
+    {
+    std::stringstream ss;
+    ss << "TestSumOfComponents_Vector: Sum is " << sum << " but should be " << correctSum;
+    throw std::runtime_error(ss.str());
+    }
+}
+

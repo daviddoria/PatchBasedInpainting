@@ -36,6 +36,18 @@ typename T::value_type& index(T& v, size_t i)
   return v[i];
 }
 
+template<typename T>
+typename std::enable_if<std::is_fundamental<T>::value, unsigned int>::type length(const T& t)
+{
+  return 1;
+}
+
+template<typename T>
+unsigned int length(const std::vector<T>& v)
+{
+  return v.size();
+}
+
 template <class T>
 unsigned int argmin(const T& vec)
 {
@@ -87,6 +99,18 @@ TTo ConvertFrom(const TFrom& object)
   t[0] = object[0];
   t[1] = object[1];
   return t;
+}
+
+template<typename TForwardIterator>
+float Sum(const TForwardIterator first, const TForwardIterator last)
+{
+  float sum = 0.0f;
+  for(TForwardIterator iter = first; iter != last; ++iter)
+  {
+    sum += *iter;
+  }
+
+  return sum;
 }
 
 }// end namespace

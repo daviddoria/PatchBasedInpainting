@@ -21,6 +21,7 @@
 
 // STL
 #include <string>
+#include <vector>
 
 namespace Helpers
 {
@@ -73,9 +74,21 @@ typename std::enable_if<std::is_fundamental<T>::value, T&>::type index(T& t, siz
 template<typename T>
 typename T::value_type& index(T& v, size_t i);
 
+/** This function allows the "length" of a scalar to be reported as 1. */
+template<typename T>
+typename std::enable_if<std::is_fundamental<T>::value, unsigned int>::type length(const T& t);
+
+/** This function allows the length of a vector to be reported via the same interface that we have defined for the scalar length function. */
+template<typename T>
+unsigned int length(const std::vector<T>& v);
+
 /** Convert any type with operator[] to any other type with operator[] */
 template<typename TTo, typename TFrom>
 TTo ConvertFrom(const TFrom& object);
+
+/** Sum the scalar elements in a container. */
+template<typename TForwardIterator>
+float Sum(const TForwardIterator first, const TForwardIterator last);
 
 }// end namespace
 

@@ -111,52 +111,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
-    // return true;
-    BoundaryEnergy<TImage> boundaryEnergy(Image, MaskImage);
 
-    itk::Index<2> targetPixel = ITKHelpers::CreateIndex(target);
-    itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, HalfWidth);
-
-    itk::Index<2> sourcePixel = ITKHelpers::CreateIndex(source);
-    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, HalfWidth);
-
-    // Compute boundary energy
-//     float energy = boundaryEnergy(sourceRegion, targetRegion);
-//     std::cout << "Energy: " << energy << std::endl;
-// 
-//     float energyThreshold = 100;
-//     if(energy < energyThreshold)
-//       {
-//       std::cout << "Match accepted." << std::endl;
-//       return true;
-//       }
-//     else
-//       {
-//       std::cout << "Match rejected." << std::endl;
-//       return false;
-//       }
-
-    std::vector<itk::Index<2> > holePixels = MaskImage->GetHolePixelsInRegion(targetRegion);
-    typename TImage::PixelType averageTargetPixel = ITKHelpers::AverageOfPixelsAtIndices(Image, holePixels);
-    
-    std::vector<itk::Offset<2> > validOffsets = MaskImage->GetValidOffsetsInRegion(targetRegion);
-    std::vector<itk::Index<2> > sourcePatchValidPixels = ITKHelpers::OffsetsToIndices(validOffsets, sourceRegion.GetIndex());
-
-    typename TImage::PixelType averageSourcePixel = ITKHelpers::AverageOfPixelsAtIndices(Image, sourcePatchValidPixels);
-    float energy = (averageSourcePixel - averageTargetPixel).GetNorm();
-    std::cout << "Energy: " << energy << std::endl;
-
-    float energyThreshold = 100;
-    if(energy < energyThreshold)
-      {
-      std::cout << "Match accepted." << std::endl;
-      return true;
-      }
-    else
-      {
-      std::cout << "Match rejected." << std::endl;
-      return false;
-      }
   };
 
   void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)

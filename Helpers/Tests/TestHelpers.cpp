@@ -231,6 +231,7 @@ int main(int argc, char*argv[])
     }
   }
 
+  // Node conversion
   {
   struct NodeA
   {
@@ -251,6 +252,21 @@ int main(int argc, char*argv[])
     std::stringstream ss;
     ss << "NodeA is " << nodeA[0] << " " << nodeA[1] << " and nodeB is " << nodeB[0] << " " << nodeB[1]
        << " but they should be the same!";
+    throw std::runtime_error(ss.str());
+    }
+  }
+
+  // Vector sum
+  {
+  std::vector<float> v;
+  v.push_back(1);
+  v.push_back(2);
+  float sum = Helpers::Sum(v.begin(), v.end());
+  float correctSum = 3;
+  if(!Testing::ValuesEqual(sum, correctSum))
+    {
+    std::stringstream ss;
+    ss << "Sum is " << sum << " but should be " << correctSum;
     throw std::runtime_error(ss.str());
     }
   }

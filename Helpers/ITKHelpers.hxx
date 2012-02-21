@@ -728,13 +728,31 @@ typename TImage::PixelType VarianceOfPixelsAtIndices(const TImage* const image, 
   return Statistics::Variance(pixels);
 }
 
+// This assumes you know the object is a VariableLengthVector
+// template <typename T>
+// T SumOfComponents(const itk::VariableLengthVector<T>& v)
+// {
+//   T sumOfComponents = 0;
+//   for(unsigned int i = 0; i < v.GetSize(); ++i)
+//     {
+//     sumOfComponents += v[i];
+//     }
+// 
+//   return sumOfComponents;
+// }
+
+// This lets you sum either a scalar or a VariableLengthVector
 template <typename T>
-T SumOfComponents(const itk::VariableLengthVector<T>& v)
+float SumOfComponents(const T& v)
 {
-  T sumOfComponents = 0;
-  for(unsigned int i = 0; i < v.GetSize(); ++i)
+  float sumOfComponents = 0.0f;
+  using Helpers::length;
+  using ITKHelpers::length;
+  using Helpers::index;
+  using ITKHelpers::index;
+  for(unsigned int i = 0; i < length(v); ++i)
     {
-    sumOfComponents += v[i];
+    sumOfComponents += index(v, i);
     }
 
   return sumOfComponents;
@@ -786,6 +804,18 @@ float AverageDifferenceInRegion(const TImage* const image1, const itk::ImageRegi
     }
   float averageDifference = totalDifference / static_cast<float>(region1.GetNumberOfPixels());
   return averageDifference;
+}
+
+template<typename T>
+unsigned int length(const itk::VariableLengthVector<T>& v)
+{
+  return v.GetSize();
+}
+
+template<typename T>
+typename T::ValueType& index(itk::VariableLengthVector<T>& v, size_t i)
+{
+  return v[i];
 }
 
 }// end namespace ITKHelpers

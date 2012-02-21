@@ -272,8 +272,21 @@ float AverageDifferenceInRegion(const TImage* const image1, const itk::ImageRegi
                                 const TImage* const image2, const itk::ImageRegion<2>& region2,
                                 TDifferenceFunctor differenceFunctor);
 
+// template <typename T>
+// T SumOfComponents(const itk::VariableLengthVector<T>& v);
+
+/** Sum the componets of an object.*/
 template <typename T>
-T SumOfComponents(const itk::VariableLengthVector<T>& v);
+float SumOfComponents(const T& v);
+
+/** Return the length of the vector through the same interface that we have defined for std::vector and scalars in Helpers.*/
+template<typename T>
+unsigned int length(const itk::VariableLengthVector<T>& v);
+
+/** Return the specified component of the vector using the same interface that we have defined for std::vector and scalars in Helpers.*/
+template<typename T>
+typename T::ValueType& index(itk::VariableLengthVector<T>& v, size_t i);
+
 
 }// end namespace
 
