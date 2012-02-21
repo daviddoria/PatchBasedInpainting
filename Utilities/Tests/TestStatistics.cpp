@@ -113,6 +113,48 @@ int main(int argc, char*argv[])
     throw std::runtime_error(ss.str());
     }
   }
+
+  // Variance float
+  {
+  std::vector<float> v;
+
+  for(unsigned int i = 1; i <= 7; ++i)
+    {
+    v.push_back(i);
+    }
+
+  float correctVariance = 4.6666;
+  float variance = Statistics::Variance(v);
+  //std::cout << "runningAverage: " << runningAverage << std::endl;
+
+  if(!Testing::ValuesEqual(correctVariance, variance, 1e-3))
+    {
+    std::stringstream ss;
+    ss << "Float variance test: variance is " << variance << " but should be " << correctVariance << "!";
+    throw std::runtime_error(ss.str());
+    }
+  }
+
+  // Variance unsigned char
+  {
+  std::vector<unsigned char> v;
+
+  for(unsigned int i = 1; i <= 7; ++i)
+    {
+    v.push_back(i);
+    }
+
+  float correctVariance = 4.6666;
+  float variance = Statistics::Variance(v);
+  //std::cout << "runningAverage: " << runningAverage << std::endl;
+
+  if(!Testing::ValuesEqual(correctVariance, variance, 1e-3))
+    {
+    std::stringstream ss;
+    ss << "Float variance test: variance is " << variance << " but should be " << correctVariance << "!";
+    throw std::runtime_error(ss.str());
+    }
+  }
   
   return EXIT_SUCCESS;
 }

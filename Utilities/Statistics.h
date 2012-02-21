@@ -33,6 +33,10 @@ typename TypeTraits<typename TVector::value_type>::InternalType Average(const TV
 template<typename TVector>
 typename TypeTraits<typename TVector::value_type>::InternalType RunningAverage(const TVector& v);
 
+/** Compute the variance of the values in a vector. */
+template<typename TVector>
+typename TypeTraits<typename TVector::value_type>::InternalType Variance(const TVector& v);
+
 }
 
 #include "Statistics.hpp"

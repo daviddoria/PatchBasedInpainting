@@ -719,24 +719,13 @@ typename TImage::PixelType AverageOfPixelsAtIndices(const TImage* const image, c
 template<typename TImage>
 typename TImage::PixelType VarianceOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices)
 {
-  typename TImage::PixelType averagePixel = AverageOfPixelsAtIndices(image, indices);
-
-  typename TImage::PixelType variance = AverageOfPixelsAtIndices(image, indices);
-
-  // Variance = 1/NumPixels * sum_i (x_i - u)
-
-  for(unsigned int component = 0; component < image->GetNumberOfComponentsPerPixel(); ++component)
-  {
-    float channelVarianceSummation = 0.0f;
-    for(unsigned int pixelId = 0; pixelId < indices.size(); ++pixelId)
+  std::vector<typename TImage::PixelType> pixels;
+  for(unsigned int i = 0; i < indices.size(); ++i)
     {
-      channelVarianceSummation += Helpers::index(image->GetPixel(indices[pixelId]), component) -
-                                  Helpers::index(averagePixel, component);
+    pixels.push_back(image->GetPixel(indices[i]));
     }
-    float channelVariance = channelVarianceSummation / static_cast<float>(indices.size());
-    Helpers::index(variance, component) = channelVariance;
-  }
-  return variance;
+
+  return Statistics::Variance(pixels);
 }
 
 template <typename T>

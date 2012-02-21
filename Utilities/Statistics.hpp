@@ -1,6 +1,9 @@
 #ifndef Statistics_HPP
 #define Statistics_HPP
 
+// Custom
+#include "Helpers/Helpers.h"
+
 // STL
 #include <iostream>
 
@@ -56,6 +59,31 @@ typename TypeTraits<typename TVector::value_type>::InternalType Average(const TV
   return vectorAverage;
 }
 
+template<typename TVector>
+typename TypeTraits<typename TVector::value_type>::InternalType Variance(const TVector& v)
+{
+  typedef typename TypeTraits<typename TVector::value_type>::InternalType InternalType;
+  
+  InternalType average = Average(v);
+  // std::cout << "Variance: average = " << average << std::endl;
+  InternalType variance = itk::NumericTraits<typename TVector::value_type>::Zero;
+
+  // Variance = 1/NumPixels * sum_i (x_i - u)^2
+
+  // std::cout << "Variance: elements have " << itk::NumericTraits<typename TVector::value_type>::GetLength() << " components." << std::endl;
+  for(unsigned int component = 0; component < itk::NumericTraits<typename TVector::value_type>::GetLength(); ++component)
+  {
+    float channelVarianceSummation = 0.0f;
+    for(unsigned int i = 0; i < v.size(); ++i)
+    {
+      channelVarianceSummation += pow(Helpers::index(v[i], component) -
+                                      Helpers::index(average, component), 2);
+    }
+    float channelVariance = channelVarianceSummation / static_cast<float>(v.size() - 1); // This (N-1) term in the denominator is for the "unbiased" sample variance. This is what is used by Matlab, Wolfram alpha, etc.
+    Helpers::index(variance, component) = channelVariance;
+  }
+  return variance;
+}
 
 }
 
