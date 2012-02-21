@@ -291,6 +291,9 @@ T& index(itk::VariableLengthVector<T>& v, size_t i);
 template<typename T>
 T index(const itk::VariableLengthVector<T>& v, size_t i);
 
+template<typename T>
+void SetObjectToZero(T& object);
+
 }// end namespace
 
 #include "ITKHelpers.hxx"

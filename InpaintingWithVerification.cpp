@@ -22,6 +22,11 @@
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
+// Acceptance visitors
+#include "Visitors/AcceptanceVisitors/AverageDifferenceAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/CompositeAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/VarianceDifferenceAccpetanceVisitor.hpp"
+
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
 
@@ -188,12 +193,20 @@ int main(int argc, char *argv[])
           ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
+  AverageDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> averageDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 100);
+  VarianceDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> varianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 100);
+  
+  typedef CompositeAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
+  AcceptanceVisitorType compositeAcceptanceVisitor;
+  compositeAcceptanceVisitor.AddVisitor(&averageDifferenceAcceptanceVisitor);
+  compositeAcceptanceVisitor.AddVisitor(&varianceDifferenceAcceptanceVisitor);
+
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
-                            ImagePatchDescriptorVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType>
+                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType>
                             InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
-                                          imagePatchDescriptorVisitor, priorityMap, &priorityFunction, patchHalfWidth,
+                                          imagePatchDescriptorVisitor, compositeAcceptanceVisitor, priorityMap, &priorityFunction, patchHalfWidth,
                                           boundaryStatusMap);
 
   typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;

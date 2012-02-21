@@ -28,7 +28,7 @@
  * this size to traverse the inpainted region to update the boundary.
  */
 template <typename TGraph, typename TImage, typename TBoundaryNodeQueue,
-          typename TDescriptorVisitor, typename TPriority,
+          typename TDescriptorVisitor, typename TAcceptanceVisitor, typename TPriority,
           typename TPriorityMap, typename TBoundaryStatusMap>
 struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 {
@@ -41,6 +41,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   TBoundaryNodeQueue& BoundaryNodeQueue;
   TPriority* PriorityFunction;
   TDescriptorVisitor& DescriptorVisitor;
+  TAcceptanceVisitor& AcceptanceVisitor;
 
   TPriorityMap& PriorityMap;
   TBoundaryStatusMap& BoundaryStatusMap;
@@ -49,11 +50,11 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   InpaintingVisitor(TImage* const in_image, Mask* const in_mask,
                     TBoundaryNodeQueue& in_boundaryNodeQueue,
-                    TDescriptorVisitor& in_descriptorVisitor, TPriorityMap& in_priorityMap,
+                    TDescriptorVisitor& in_descriptorVisitor, TAcceptanceVisitor& in_acceptanceVisitor, TPriorityMap& in_priorityMap,
                     TPriority* const in_priorityFunction,
                     const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
   Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue), PriorityFunction(in_priorityFunction),
-  DescriptorVisitor(in_descriptorVisitor),
+  DescriptorVisitor(in_descriptorVisitor), AcceptanceVisitor(in_acceptanceVisitor),
   PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap),
   HalfWidth(in_half_width)
   {
@@ -111,7 +112,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
-
+    return AcceptanceVisitor.AcceptMatch(target, source);
   };
 
   void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)

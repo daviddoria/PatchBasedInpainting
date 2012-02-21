@@ -31,7 +31,7 @@ struct AverageDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGrap
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  DebugVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, const float differenceThreshold = 100) :
+  AverageDifferenceAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, const float differenceThreshold = 100) :
   Image(image), MaskImage(mask), HalfWidth(halfWidth), DifferenceThreshold(differenceThreshold)
   {
 

@@ -824,5 +824,17 @@ T index(const itk::VariableLengthVector<T>& v, size_t i)
   return v[i];
 }
 
+template<typename T>
+void SetObjectToZero(T& object)
+{
+  using Helpers::index;
+  using ITKHelpers::index;
+  using Helpers::length;
+  using ITKHelpers::length;
+  for(unsigned int i = 0; i < length(object); ++i)
+    {
+    index(object, i) = 0;
+    }
+}
 
 }// end namespace ITKHelpers

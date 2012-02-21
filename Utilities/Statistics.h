@@ -9,15 +9,15 @@ namespace Statistics
 
 /** Average the values in a vector. */
 template<typename TVector>
-typename TypeTraits<typename TVector::value_type>::InternalType Average(const TVector& v);
+typename TypeTraits<TVector>::LargerComponentType Average(const TVector& v);
 
 /** Average the values in a vector without summing them all first. */
 template<typename TVector>
-typename TypeTraits<typename TVector::value_type>::InternalType RunningAverage(const TVector& v);
+typename TypeTraits<TVector>::LargerComponentType RunningAverage(const TVector& v);
 
 /** Compute the variance of the values in a vector. */
 template<typename TVector>
-typename TypeTraits<typename TVector::value_type>::InternalType Variance(const TVector& v);
+typename TypeTraits<TVector>::LargerComponentType Variance(const TVector& v);
 
 }
 
