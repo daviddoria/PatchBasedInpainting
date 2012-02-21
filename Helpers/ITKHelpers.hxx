@@ -745,7 +745,7 @@ typename TImage::PixelType VarianceOfPixelsAtIndices(const TImage* const image, 
 template <typename T>
 float SumOfComponents(const T& v)
 {
-  float sumOfComponents = 0.0f;
+  typename TypeTraits<T>::ComponentType sumOfComponents = 0.0f;
   using Helpers::length;
   using ITKHelpers::length;
   using Helpers::index;
@@ -813,9 +813,16 @@ unsigned int length(const itk::VariableLengthVector<T>& v)
 }
 
 template<typename T>
-typename T::ValueType& index(itk::VariableLengthVector<T>& v, size_t i)
+T& index(itk::VariableLengthVector<T>& v, size_t i)
 {
   return v[i];
 }
+
+template<typename T>
+T index(const itk::VariableLengthVector<T>& v, size_t i)
+{
+  return v[i];
+}
+
 
 }// end namespace ITKHelpers

@@ -24,6 +24,7 @@
 namespace Helpers
 {
 
+// Index functions
 template<typename T>
 typename std::enable_if<std::is_fundamental<T>::value, T&>::type index(T& t, size_t)
 {
@@ -31,11 +32,24 @@ typename std::enable_if<std::is_fundamental<T>::value, T&>::type index(T& t, siz
 }
 
 template<typename T>
-typename T::value_type& index(T& v, size_t i)
+typename std::enable_if<std::is_fundamental<T>::value, T>::type index(const T& t, size_t)
+{
+  return t;
+}
+
+template<typename T>
+typename std::enable_if<!std::is_fundamental<T>::value, typename T::value_type&>::type index(T& v, size_t i)
 {
   return v[i];
 }
 
+template<typename T>
+typename std::enable_if<!std::is_fundamental<T>::value, typename T::value_type>::type index(const T& v, size_t i)
+{
+  return v[i];
+}
+
+// Length functions
 template<typename T>
 typename std::enable_if<std::is_fundamental<T>::value, unsigned int>::type length(const T& t)
 {

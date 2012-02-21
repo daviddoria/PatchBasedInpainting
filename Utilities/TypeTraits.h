@@ -26,7 +26,8 @@ template <typename T>
 struct TypeTraits<itk::VariableLengthVector<T> >
 {
   typedef itk::VariableLengthVector<float> InternalType;
-  typedef typename T::ValueType ComponentType;
+  //typedef typename T::ValueType ComponentType;
+  typedef T ComponentType; // T seems to be itk::VariableLengthVector<T> not just T ?
 };
 
 template <>

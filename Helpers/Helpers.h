@@ -23,6 +23,9 @@
 #include <string>
 #include <vector>
 
+// Custom
+#include "Utilities/TypeTraits.h"
+
 namespace Helpers
 {
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,7 +75,14 @@ template<typename T>
 typename std::enable_if<std::is_fundamental<T>::value, T&>::type index(T& t, size_t);
 
 template<typename T>
-typename T::value_type& index(T& v, size_t i);
+typename std::enable_if<std::is_fundamental<T>::value, T>::type index(const T& t, size_t);
+
+template<typename T>
+typename std::enable_if<!std::is_fundamental<T>::value, typename T::value_type&>::type index(T& v, size_t i);
+
+template<typename T>
+typename std::enable_if<!std::is_fundamental<T>::value, typename T::value_type>::type index(const T& v, size_t i);
+
 
 /** This function allows the "length" of a scalar to be reported as 1. */
 template<typename T>

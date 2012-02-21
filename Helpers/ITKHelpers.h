@@ -21,6 +21,7 @@
 
 // Custom
 class Mask;
+#include "Utilities/TypeTraits.h"
 
 // STL
 #include <string>
@@ -285,8 +286,10 @@ unsigned int length(const itk::VariableLengthVector<T>& v);
 
 /** Return the specified component of the vector using the same interface that we have defined for std::vector and scalars in Helpers.*/
 template<typename T>
-typename T::ValueType& index(itk::VariableLengthVector<T>& v, size_t i);
+T& index(itk::VariableLengthVector<T>& v, size_t i);
 
+template<typename T>
+T index(const itk::VariableLengthVector<T>& v, size_t i);
 
 }// end namespace
 
