@@ -248,11 +248,32 @@ template<typename TImage>
 std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, const TImage* const image,
                                                    const typename TImage::PixelType& value);
 
+/** Compute the average of the values appearing at the specified indices. */
 template<typename TImage>
 typename TImage::PixelType AverageOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices);
 
+/** Compute the variance of the values appearing at the specified indices. The variance of the ith component is the
+ * ith component of the output pixel*/
+template<typename TImage>
+typename TImage::PixelType VarianceOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices);
+
+/** Compute the average of all pixels in a region.*/
 template<typename TImage>
 typename TImage::PixelType AverageInRegion(const TImage* const image, const itk::ImageRegion<2>& region);
+
+/** Compute the average difference of corresponding pixels from two regions of an image.*/
+template<typename TImage, typename TDifferenceFunctor>
+float AverageDifferenceInRegion(const TImage* const image, const itk::ImageRegion<2>& region1,
+                                const itk::ImageRegion<2>& region2, TDifferenceFunctor differenceFunctor);
+
+/** Compute the average difference of corresponding pixels from regions in two images.*/
+template<typename TImage, typename TDifferenceFunctor>
+float AverageDifferenceInRegion(const TImage* const image1, const itk::ImageRegion<2>& region1,
+                                const TImage* const image2, const itk::ImageRegion<2>& region2,
+                                TDifferenceFunctor differenceFunctor);
+
+template <typename T>
+T SumOfComponents(const itk::VariableLengthVector<T>& v);
 
 }// end namespace
 

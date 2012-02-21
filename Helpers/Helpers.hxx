@@ -97,18 +97,46 @@ TTo ConvertFrom(const TFrom& object)
 }
 
 template<typename T>
-typename T::value_type Average(const T& v)
+typename T::value_type RunningAverage(const T& v)
 {
-  std::cout << "Helpers::Average" << std::endl;
-  typename T::value_type vectorSum = 0.0f;
+  // TODO: test this function
+  // If T is not a scalar (i.e. convertible to float (i.e. an itk::VariableLengthVector) )
+  // We cannot simply sum all of the values and divide by the number of values, because the type may overflow.
+  // E.g. if we sum more than 2 or 3 unsigned chars, we will overflow unsigned char.
+  // To remedy this, the average is computed during each step so overflow is always prevented.
+  // From: http://en.wikipedia.org/wiki/Moving_average#Cumulative_moving_average
+  std::cout << "Helpers::RunningAverage" << std::endl;
+  typename T::value_type vectorRunningAverage = 0;
 
   for(unsigned int i = 0; i < v.size(); ++i)
     {
-    //std::cout << "Average: Adding value " << v[i] << std::endl;
-    vectorSum += v[i];
-    //std::cout << "Average: Current vectorSum " << vectorSum << std::endl;
+    // std::cout << "Average: Adding value " << v[i] << std::endl;
+    vectorRunningAverage = (v[i] + i*vectorRunningAverage)/(i+1);
+    // std::cout << "Average: Current vectorSum " << vectorSum << std::endl;
     }
-  return vectorSum / static_cast<float>(v.size());
+  std::cout << "RunningAverage: " << vectorRunningAverage << std::endl;
+
+  return vectorRunningAverage;
+}
+
+template<typename T>
+typename T::value_type Average(const T& v)
+{
+  // T::value_type must be convertible to float
+  std::cout << "Helpers::Average" << std::endl;
+  float vectorSum = 0;
+
+  for(unsigned int i = 0; i < v.size(); ++i)
+    {
+    // std::cout << "Average: Adding value " << v[i] << std::endl;
+    vectorSum += v[i];
+    // std::cout << "Average: Current vectorSum " << vectorSum << std::endl;
+    }
+  // std::cout << "Average: sum " << vectorSum << std::endl;
+  typename T::value_type vectorAverage = vectorSum / static_cast<float>(v.size());
+  // std::cout << "Average: average " << vectorAverage << std::endl;
+
+  return vectorAverage;
 }
 
 }// end namespace

@@ -143,7 +143,8 @@ int main(int argc, char *argv[])
   demoDriver.DisplayTopPatches(goodTargetNode);
 
   // itk::Index<2> centerBad = {{503,146}}; // The top 1000 matches to this patch are completely wrong
-  itk::Index<2> centerBad = {{503,147}};
+  // itk::Index<2> centerBad = {{503,147}}; // This also has 0/1000 good matches
+  itk::Index<2> centerBad = {{503,155}}; // This works fine
   DemoDriver::VertexDescriptorType badTargetNode = Helpers::ConvertFrom<DemoDriver::VertexDescriptorType,
                                                                         itk::Index<2> >(centerBad);
   demoDriver.DisplayTopPatches(badTargetNode);

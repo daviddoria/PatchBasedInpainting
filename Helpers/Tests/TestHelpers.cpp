@@ -16,8 +16,12 @@
  *
  *=========================================================================*/
 
+// Custom
 #include "Helpers.h"
 #include "Testing.h"
+
+// STL
+#include <stdexcept>
 
 int main(int argc, char*argv[])
 {
@@ -215,10 +219,87 @@ int main(int argc, char*argv[])
   }
 
   {
-  struct NodeA {int values[2]; void operator[](const unsigned int component){return values[component];}};
-  struct NodeB {int values[2]; void operator[](const unsigned int component){return values[component];}};
+  float value = 5.1;
+
+  Helpers::index(value, 0) = 5.2;
+
+  if(!Testing::ValuesEqual(value, 5.2))
+    {
+    std::stringstream ss;
+    ss << "Vector index() set by reference not working - value is " << value << " but should have been " << 5.2;
+    throw std::runtime_error(ss.str());
+    }
+  }
+
+  {
+  struct NodeA
+  {
+    int values[2];
+    int& operator[](const unsigned int component){return values[component];}
+    int operator[](const unsigned int component) const {return values[component];}
+  };
+  struct NodeB
+  {
+    int values[2];
+    int& operator[](const unsigned int component){return values[component];}
+    int operator[](const unsigned int component) const {return values[component];}
+  };
   NodeA nodeA;
-  NodeB nodeB = Helpers::ConvertFrom(nodeA);
+  NodeB nodeB = Helpers::ConvertFrom<NodeB, NodeA>(nodeA);
+  if(nodeA[0] != nodeB[0] || nodeA[1] != nodeB[1])
+    {
+    std::stringstream ss;
+    ss << "NodeA is " << nodeA[0] << " " << nodeA[1] << " and nodeB is " << nodeB[0] << " " << nodeB[1]
+       << " but they should be the same!";
+    throw std::runtime_error(ss.str());
+    }
+  }
+
+  {
+  std::vector<unsigned char> v;
+
+  for(unsigned int i = 0; i < 100; ++i)
+    {
+    v.push_back(rand() % 255);
+    }
+
+  unsigned char av = Helpers::Average(v);
+  std::cout << "av: " << static_cast<int>(av) << std::endl;
+  
+  unsigned char runningAverage = Helpers::RunningAverage(v);
+  std::cout << "runningAverage: " << static_cast<int>(runningAverage) << std::endl;
+
+  if(!Testing::ValuesEqual(av, runningAverage))
+    {
+    std::stringstream ss;
+    ss << "Unsigned char running average test: average is " << static_cast<int>(av)
+       << " and running average is " << static_cast<int>(runningAverage)
+       << " but they should be equal!";
+    throw std::runtime_error(ss.str());
+    }
+  }
+
+  {
+  std::vector<float> v;
+
+  for(unsigned int i = 0; i < 100; ++i)
+    {
+    v.push_back(drand48());
+    }
+
+  float av = Helpers::Average(v);
+  std::cout << "av: " << av << std::endl;
+
+  float runningAverage = Helpers::RunningAverage(v);
+  std::cout << "runningAverage: " << runningAverage << std::endl;
+
+  if(!Testing::ValuesEqual(av, runningAverage))
+    {
+    std::stringstream ss;
+    ss << "Float running average test: average is " << av << " and running average is " << runningAverage
+       << " but they should be equal!";
+    throw std::runtime_error(ss.str());
+    }
   }
   return EXIT_SUCCESS;
 }

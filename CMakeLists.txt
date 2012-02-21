@@ -69,8 +69,9 @@ Priority/PriorityRandom.cpp
 add_subdirectory(Interactive)
 SET(InpaintingWithVerification CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
 if(InpaintingWithVerification)
-  QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui)
-  QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
+  QT4_WRAP_UI(InpaintingWithVerificationUISrcs Interactive/BasicViewerWidget.ui
+              Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui)
+  QT4_WRAP_CPP(InpaintingWithVerificationMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
                        Visitors/NearestNeighborsDisplayVisitor.hpp
                        #NearestNeighbor/VisualSelectionBest.hpp
                        Interactive/TopPatchesWidget.h
@@ -81,7 +82,7 @@ if(InpaintingWithVerification)
                 Interactive/Layer.cpp
                 Interactive/Delegates/PixmapDelegate.cpp
                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
-                ${UISrcs} ${MOCSrcs})
+                ${InpaintingWithVerificationUISrcs} ${InpaintingWithVerificationMOCSrcs})
 
   TARGET_LINK_LIBRARIES(InpaintingWithVerification PatchBasedInpainting
                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
@@ -91,8 +92,8 @@ endif()
 # add_subdirectory(Interactive)
 # SET(InpaintingWithManualSelection CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for manual selection.")
 # if(InpaintingWithManualSelection)
-#   QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui)
-#   QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
+#   QT4_WRAP_UI(InpaintingWithManualSelectionUISrcs Interactive/BasicViewerWidget.ui Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui)
+#   QT4_WRAP_CPP(InpaintingWithManualSelectionMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
 #                        Visitors/NearestNeighborsDisplayVisitor.hpp
 #                        #NearestNeighbor/VisualSelectionBest.hpp
 #                        Interactive/TopPatchesWidget.h
@@ -103,7 +104,7 @@ endif()
 #                 Interactive/Layer.cpp
 #                 Interactive/Delegates/PixmapDelegate.cpp
 #                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
-#                 ${UISrcs} ${MOCSrcs})
+#                 ${InpaintingWithManualSelectionUISrcs} ${InpaintingWithManualSelectionMOCSrcs})
 # 
 #   TARGET_LINK_LIBRARIES(InpaintingWithManualSelection PatchBasedInpainting
 #                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
@@ -113,8 +114,8 @@ endif()
 # 
 # SET(InpaintingWithTopPatchDisplay CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for passive inspection.")
 # if(InpaintingWithTopPatchDisplay)
-#   QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui Interactive/TopPatchesWidget.ui)
-#   QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
+#   QT4_WRAP_UI(InpaintingWithTopPatchDisplayUISrcs Interactive/BasicViewerWidget.ui Interactive/TopPatchesWidget.ui)
+#   QT4_WRAP_CPP(InpaintingWithTopPatchDisplayMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
 #                        Visitors/NearestNeighborsDisplayVisitor.hpp
 #                        Interactive/TopPatchesWidget.h Interactive/Delegates/PixmapDelegate.h)
 # 
@@ -122,7 +123,7 @@ endif()
 #                 Interactive/Layer.cpp
 #                 Interactive/Delegates/PixmapDelegate.cpp
 #                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
-#                 ${UISrcs} ${MOCSrcs})
+#                 ${InpaintingWithTopPatchDisplayUISrcs} ${InpaintingWithTopPatchDisplayMOCSrcs})
 # 
 #   TARGET_LINK_LIBRARIES(InpaintingWithTopPatchDisplay PatchBasedInpainting
 #                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
@@ -132,13 +133,13 @@ endif()
 # 
 # SET(ClassicalImageInpaintingWithVisualOutput CACHE BOOL "Build a traditional patch comparison image inpainting that displays the image at every iteration.")
 # if(ClassicalImageInpaintingWithVisualOutput)
-#   QT4_WRAP_UI(UISrcs Interactive/BasicViewerWidget.ui)
-#   QT4_WRAP_CPP(MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp)
+#   QT4_WRAP_UI(ClassicalImageInpaintingWithVisualOutputUISrcs Interactive/BasicViewerWidget.ui)
+#   QT4_WRAP_CPP(ClassicalImageInpaintingWithVisualOutputMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp)
 # 
 #   ADD_EXECUTABLE(ClassicalImageInpaintingWithVisualOutput ClassicalImageInpaintingWithVisualOutput.cpp
 #     Interactive/Layer.cpp
 #     Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
-#     ${UISrcs} ${MOCSrcs})
+#     ${ClassicalImageInpaintingWithVisualOutputUISrcs} ${ClassicalImageInpaintingWithVisualOutputMOCSrcs})
 # 
 #   TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithVisualOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
 #   INSTALL( TARGETS ClassicalImageInpaintingWithVisualOutput RUNTIME DESTINATION ${INSTALL_DIR} )
@@ -202,9 +203,9 @@ if(BuildTests)
   add_subdirectory(Testing)
   #add_subdirectory(Tests)
   #add_subdirectory(Priority/Tests)
-  add_subdirectory(ImageProcessing/Tests)
+  #add_subdirectory(ImageProcessing/Tests)
   #add_subdirectory(NearestNeighbor/Tests)
-  #add_subdirectory(Helpers/Tests)
+  add_subdirectory(Helpers/Tests)
   #add_subdirectory(Utilities/Tests)
 
   #add_subdirectory(Interactive/Tests)

@@ -3,7 +3,7 @@ include_directories(../../) # The PatchBasedInpainting directory
 include_directories(../../Testing)
 
 add_executable(TestHelpers TestHelpers.cpp ../Helpers.cpp)
-target_link_libraries(TestHelpers libTesting)
+target_link_libraries(TestHelpers libTesting libHelpers)
 add_test(TestHelpers TestHelpers)
 
 add_executable(TestITKHelpers TestITKHelpers.cpp ../ITKHelpers.cpp ../Helpers.cpp)
@@ -11,14 +11,14 @@ target_link_libraries(TestITKHelpers ${ITK_LIBRARIES} libTesting)
 add_test(TestITKHelpers TestITKHelpers)
 
 add_executable(TestVTKHelpers TestVTKHelpers.cpp ../VTKHelpers.cpp)
-target_link_libraries(TestVTKHelpers ${VTK_LIBRARIES} libTesting)
+target_link_libraries(TestVTKHelpers ${VTK_LIBRARIES} libTesting libHelpers)
 add_test(TestVTKHelpers TestVTKHelpers)
 
 add_executable(TestITKVTKHelpers TestITKVTKHelpers.cpp ../ITKVTKHelpers.cpp ../ITKHelpers.cpp ../VTKHelpers.cpp ../Helpers.cpp)
-target_link_libraries(TestITKVTKHelpers ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
+target_link_libraries(TestITKVTKHelpers ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
 add_test(TestITKVTKHelpers TestITKVTKHelpers)
 
 add_executable(TestBoostHelpers TestBoostHelpers.cpp ../BoostHelpers.cpp)
-target_link_libraries(TestBoostHelpers )
+target_link_libraries(TestBoostHelpers ${ITK_LIBRARIES} libHelpers)
 add_test(TestBoostHelpers TestBoostHelpers)
 

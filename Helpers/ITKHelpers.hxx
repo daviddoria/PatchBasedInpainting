@@ -716,6 +716,41 @@ typename TImage::PixelType AverageOfPixelsAtIndices(const TImage* const image, c
 }
 
 template<typename TImage>
+typename TImage::PixelType VarianceOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices)
+{
+  typename TImage::PixelType averagePixel = AverageOfPixelsAtIndices(image, indices);
+
+  typename TImage::PixelType variance = AverageOfPixelsAtIndices(image, indices);
+
+  // Variance = 1/NumPixels * sum_i (x_i - u)
+
+  for(unsigned int component = 0; component < image->GetNumberOfComponentsPerPixel(); ++component)
+  {
+    float channelVarianceSummation = 0.0f;
+    for(unsigned int pixelId = 0; pixelId < indices.size(); ++pixelId)
+    {
+      channelVarianceSummation += Helpers::index(image->GetPixel(indices[pixelId]), component) -
+                                  Helpers::index(averagePixel, component);
+    }
+    float channelVariance = channelVarianceSummation / static_cast<float>(indices.size());
+    Helpers::index(variance, component) = channelVariance;
+  }
+  return variance;
+}
+
+template <typename T>
+T SumOfComponents(const itk::VariableLengthVector<T>& v)
+{
+  T sumOfComponents = 0;
+  for(unsigned int i = 0; i < v.GetSize(); ++i)
+    {
+    sumOfComponents += v[i];
+    }
+
+  return sumOfComponents;
+}
+
+template<typename TImage>
 typename TImage::PixelType AverageInRegion(const TImage* const image, const itk::ImageRegion<2>& region)
 {
   typename itk::ImageRegionConstIterator<TImage> imageIterator(image, region);
@@ -729,6 +764,38 @@ typename TImage::PixelType AverageInRegion(const TImage* const image, const itk:
   using Helpers::Average;
   using ITKHelpers::Average;
   return Average(pixels);
+}
+
+template<typename TImage, typename TDifferenceFunctor>
+float AverageDifferenceInRegion(const TImage* const image, const itk::ImageRegion<2>& region1,
+                                const itk::ImageRegion<2>& region2, TDifferenceFunctor differenceFunctor)
+{
+  return AverageDifferenceInRegion(image, region1, image, region2, differenceFunctor);
+}
+
+template<typename TImage, typename TDifferenceFunctor>
+float AverageDifferenceInRegion(const TImage* const image1, const itk::ImageRegion<2>& region1,
+                                const TImage* const image2, const itk::ImageRegion<2>& region2,
+                                TDifferenceFunctor differenceFunctor)
+{
+  if(region1.GetSize() != region2.GetSize())
+    {
+    throw std::runtime_error("Regions must be the same size to compare!");
+    }
+
+  itk::ImageRegionConstIterator<TImage> region1Iterator(image1, region1);
+  itk::ImageRegionConstIterator<TImage> region2Iterator(image2, region2);
+
+  float totalDifference = 0.0f;
+  while(!region1Iterator.IsAtEnd())
+    {
+    totalDifference += differenceFunctor(region1Iterator.Get(), region2Iterator.Get());
+
+    ++region1Iterator;
+    ++region2Iterator;
+    }
+  float averageDifference = totalDifference / static_cast<float>(region1.GetNumberOfPixels());
+  return averageDifference;
 }
 
 }// end namespace ITKHelpers
