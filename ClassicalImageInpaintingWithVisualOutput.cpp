@@ -37,6 +37,8 @@
 
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchBestProperty.hpp"
+//#include "NearestNeighbor/DefaultSearchBest.hpp"
+#include "NearestNeighbor/FirstValidDescriptor.hpp"
 
 // Initializers
 #include "Initializers/InitializeFromMaskImage.hpp"
@@ -200,8 +202,14 @@ int main(int argc, char *argv[])
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
-  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
-  BestSearchType linearSearchBest(imagePatchDescriptorMap);
+//   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
+//   BestSearchType searchBest(imagePatchDescriptorMap);
+
+//   typedef DefaultSearchBest BestSearchType;
+//   BestSearchType searchBest;
+
+  typedef FirstValidDescriptor<ImagePatchDescriptorMapType> BestSearchType;
+  BestSearchType searchBest(imagePatchDescriptorMap);
 
   // Setup the GUI
   QApplication app( argc, argv );
@@ -229,7 +237,7 @@ int main(int argc, char *argv[])
                    Qt::BlockingQueuedConnection);
 
   QtConcurrent::run(boost::bind(InpaintingAlgorithm<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>,
-                              graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter));
+                              graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, searchBest, patchInpainter));
 
   return app.exec();
 }
