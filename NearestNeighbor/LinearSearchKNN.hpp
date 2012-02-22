@@ -5,6 +5,9 @@
 #include <limits> // for infinity()
 #include <algorithm> // for lower_bound()
 
+// Custom
+#include "Utilities/Utilities.hpp"
+
 /**
   * This function template is similar to std::min_element but can be used when the comparison
   * involves computing a derived quantity (a.k.a. distance). This algorithm will search for the
@@ -35,8 +38,11 @@ struct LinearSearchKNN
 
   TDistanceFunction DistanceFunction;
   TCompareFunction CompareFunction;
-  
-  LinearSearchKNN(TDistanceFunction distanceFunction = TDistanceFunction(), const unsigned int k = 1000) : DistanceFunction(distanceFunction), K(k)
+
+  unsigned int StrideLength;
+
+  LinearSearchKNN(TDistanceFunction distanceFunction = TDistanceFunction(), const unsigned int k = 1000,
+                  const unsigned int strideLength = 1) : DistanceFunction(distanceFunction), K(k), StrideLength(strideLength)
   {
   }
 
@@ -44,7 +50,7 @@ struct LinearSearchKNN
   {
     this->K = k;
   }
-  
+
   unsigned int GetK() const
   {
     return this->K;
@@ -59,14 +65,16 @@ struct LinearSearchKNN
     }
 
     std::vector<TDistanceValue> output_dist;
-    for(; first != last; ++first)
+    //for(; first != last; ++first)
+    while(try_advance(first, last, StrideLength))
     {
       TDistanceValue d = DistanceFunction(*first);
       if(!CompareFunction(d, std::numeric_limits<TDistanceValue>::infinity()))
       {
         continue;
       }
-      typename std::vector<TDistanceValue>::iterator it_lo = std::lower_bound(output_dist.begin(),output_dist.end(), d, CompareFunction);
+      typename std::vector<TDistanceValue>::iterator it_lo = std::lower_bound(output_dist.begin(),
+                                                                              output_dist.end(), d, CompareFunction);
       if((it_lo != output_dist.end()) || (output_dist.size() < this->K))
       {
         output_dist.insert(it_lo, d);

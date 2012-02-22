@@ -5,6 +5,9 @@
 #include <limits> // for infinity()
 #include <algorithm> // for lower_bound()
 
+// Custom
+#include "Utilities/Utilities.hpp"
+
 /**
   * This function template is similar to std::min_element but can be used when the comparison
   * involves computing a derived quantity (a.k.a. distance). This algorithm will search for the
@@ -35,9 +38,14 @@ class LinearSearchKNNProperty
   DistanceFunctionType DistanceFunction;
   CompareFunctionType CompareFunction;
 
+  unsigned int StrideLength;
 public:
-  LinearSearchKNNProperty(PropertyMapType propertyMap, const unsigned int k = 1000, DistanceFunctionType distanceFunction = DistanceFunctionType(), CompareFunctionType compareFunction = CompareFunctionType()) : 
-  PropertyMap(propertyMap), K(k), DistanceFunction(distanceFunction), CompareFunction(compareFunction)
+  LinearSearchKNNProperty(PropertyMapType propertyMap, const unsigned int k = 1000,
+                          const unsigned int strideLength = 1,
+                          DistanceFunctionType distanceFunction = DistanceFunctionType(),
+                          CompareFunctionType compareFunction = CompareFunctionType()) :
+  PropertyMap(propertyMap), K(k), DistanceFunction(distanceFunction),
+  CompareFunction(compareFunction), StrideLength(strideLength)
   {
   }
 
@@ -62,7 +70,8 @@ public:
     }
 
     std::vector<DistanceValueType> output_dist;
-    for(; first != last; ++first)
+    //for(; first != last; ++first)
+    while(try_advance(first, last, StrideLength))
     {
       DistanceValueType d = DistanceFunction(get(PropertyMap, *first), get(PropertyMap, queryNode));
       if(!CompareFunction(d, std::numeric_limits<DistanceValueType>::infinity()))

@@ -252,9 +252,13 @@ int main(int argc, char *argv[])
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finders
+//   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
+//                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
+//   KNNSearchType knnSearch(imagePatchDescriptorMap, 1000);
+
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
-  KNNSearchType knnSearch(imagePatchDescriptorMap, 1000);
+  KNNSearchType knnSearch(smallImagePatchDescriptorMap, 1000);
 
   // For debugging we use LinearSearchBestProperty instead of DefaultSearchBest because it can output the difference value.
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,

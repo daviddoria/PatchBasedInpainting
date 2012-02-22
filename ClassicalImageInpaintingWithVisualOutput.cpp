@@ -22,6 +22,9 @@
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
+// Acceptance visitors
+#include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
+
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
 
@@ -40,7 +43,7 @@
 #include "Initializers/InitializePriority.hpp"
 
 // Inpainters
-#include "Inpainters/MaskedGridPatchInpainter.hpp"
+#include "Inpainters/MaskImagePatchInpainter.hpp"
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
@@ -150,8 +153,8 @@ int main(int argc, char *argv[])
   ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
 
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
-  typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
-  InpainterType patchInpainter(patchHalfWidth, fillStatusMap);
+  typedef MaskImagePatchInpainter InpainterType;
+  InpainterType patchInpainter(patchHalfWidth, mask);
 
   // Create the priority function
   typedef PriorityRandom PriorityType;
@@ -172,11 +175,14 @@ int main(int argc, char *argv[])
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
+  typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
+  AcceptanceVisitorType acceptanceVisitor;
+  
   // Create the inpainting visitor
-  typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
-                            ImagePatchDescriptorVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
-  InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
-                                          imagePatchDescriptorVisitor, priorityMap, &priorityFunction, patchHalfWidth, boundaryStatusMap);
+  typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
+                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
+  InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
+                                          imagePatchDescriptorVisitor, acceptanceVisitor, priorityMap, &priorityFunction, patchHalfWidth, boundaryStatusMap);
 
   typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
   DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
@@ -189,7 +195,7 @@ int main(int argc, char *argv[])
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage(mask, &compositeVisitor, graph, fillStatusMap);
+  InitializeFromMaskImage<ImagePatchDescriptorVisitorType, VertexDescriptorType>(mask.GetPointer(), &imagePatchDescriptorVisitor);
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
@@ -200,7 +206,7 @@ int main(int argc, char *argv[])
   // Setup the GUI
   QApplication app( argc, argv );
 
-  BasicViewerWidget<ImageType> basicViewerWidget(image);
+  BasicViewerWidget<ImageType> basicViewerWidget(image, mask);
 
   basicViewerWidget.show();
 
@@ -208,7 +214,7 @@ int main(int argc, char *argv[])
   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&)), &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&)));
   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)), &basicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)));
 
-  QtConcurrent::run(boost::bind(inpainting_loop<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>,
+  QtConcurrent::run(boost::bind(InpaintingAlgorithm<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>,
                               graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter));
 
   return app.exec();

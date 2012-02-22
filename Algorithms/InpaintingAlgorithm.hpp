@@ -49,20 +49,20 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
     } while( get(boundaryStatusMap, targetNode) == false );
 
     // Notify the visitor that we have a hole target center.
-    vis.DiscoverVertex(targetNode, g);
+    vis.DiscoverVertex(targetNode);
 
     // Find the source node that matches best to the target node
     typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
     tie(vi,vi_end) = vertices(g);
     VertexDescriptorType sourceNode = find_inpainting_source(vi, vi_end, targetNode);
-    vis.VertexMatchMade(targetNode, sourceNode, g);
+    vis.PotentialMatchMade(targetNode, sourceNode);
 
     // Do the in-painting of the target patch from the source patch.
     // the inpaint_patch functor should take care of calling
     // "vis.paint_vertex(target, source, g)" on the individual vertices in the patch.
-    inpaint_patch(targetNode, sourceNode, g, vis);
+    inpaint_patch(targetNode, sourceNode, vis);
 
-    vis.FinishVertex(targetNode, sourceNode, g);
+    vis.FinishVertex(targetNode, sourceNode);
   } // end main iteration loop
 
   vis.InpaintingComplete();

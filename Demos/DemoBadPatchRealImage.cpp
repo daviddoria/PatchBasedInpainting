@@ -81,7 +81,7 @@ struct DemoDriver
     InitializeFromMaskImage<VisitorType, VertexDescriptorType>(MaskImage, Visitor);
 
     // Create the nearest neighbor finders
-    KNNSearch = new KNNSearchType(*ImagePatchDescriptorMap, 1000);
+    KNNSearch = new KNNSearchType(*ImagePatchDescriptorMap, 1000, 2);
   }
 
   void DisplayTopPatches(VertexDescriptorType targetNode)
