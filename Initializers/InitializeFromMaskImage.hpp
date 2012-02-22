@@ -6,10 +6,6 @@
 
 // Custom
 #include "ImageProcessing/Mask.h"
-#include "Priority/Priority.h"
-
-// Debug
-#include "Helpers/OutputHelpers.h"
 
 template <typename TVisitor, typename TNode>
 inline void InitializeFromMaskImage(Mask* const maskImage, TVisitor* const visitor)

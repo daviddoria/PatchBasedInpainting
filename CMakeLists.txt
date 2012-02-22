@@ -232,3 +232,4 @@ add_subdirectory(DifferenceFunctions)
 add_subdirectory(Concepts)
 
 add_subdirectory(Interactive/Delegates)
+add_subdirectory(LearnParameters)
