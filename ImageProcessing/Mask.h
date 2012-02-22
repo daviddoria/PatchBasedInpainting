@@ -81,6 +81,9 @@ public:
   /** Determine if a pixel is a hole pixel.*/
   bool IsHole(const itk::Index<2>& index) const;
 
+  /** Determine if an entire region consists of hole pixels.*/
+  bool IsHole(const itk::ImageRegion<2>& region) const;
+  
   /** Determine if an entire region is valid.*/
   bool IsValid(const itk::ImageRegion<2>& region) const;
 

@@ -35,7 +35,7 @@ struct AverageDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGrap
 
   }
 
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& computedEnergy) const
   {
     itk::Index<2> targetPixel = ITKHelpers::CreateIndex(target);
     itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, HalfWidth);
@@ -53,10 +53,10 @@ struct AverageDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGrap
     typename TImage::PixelType averageSourceRegionTargetPixel = ITKHelpers::AverageOfPixelsAtIndices(Image, sourcePatchHolePixels);
 
     // Compute the difference
-    float energy = (averageTargetRegionSourcePixel - averageSourceRegionTargetPixel).GetNorm();
-    std::cout << "AverageDifferenceAcceptanceVisitor Energy: " << energy << std::endl;
+    computedEnergy = (averageTargetRegionSourcePixel - averageSourceRegionTargetPixel).GetNorm();
+    std::cout << "AverageDifferenceAcceptanceVisitor Energy: " << computedEnergy << std::endl;
 
-    if(energy < DifferenceThreshold)
+    if(computedEnergy < DifferenceThreshold)
       {
       std::cout << "AverageDifferenceAcceptanceVisitor: Match accepted (less than " << DifferenceThreshold << ")" << std::endl;
       return true;

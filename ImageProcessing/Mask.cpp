@@ -174,6 +174,24 @@ bool Mask::IsHole(const itk::Index<2>& index) const
   return false;
 }
 
+bool Mask::IsHole(const itk::ImageRegion<2>& region) const
+{
+  // If any of the pixels in the region are not hole pixels, the region is not entirely hole pixels.
+
+  itk::ImageRegionConstIterator<Mask> maskIterator(this, region);
+
+  while(!maskIterator.IsAtEnd())
+    {
+    if(!this->IsHole(maskIterator.GetIndex()))
+      {
+      return false;
+      }
+
+    ++maskIterator;
+    }
+  return true;
+}
+
 bool Mask::IsValid(const itk::ImageRegion<2>& region) const
 {
   // If any of the pixels in the region are invalid, the region is invalid.

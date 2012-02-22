@@ -22,7 +22,38 @@
 
 namespace MaskOperations
 {
-  
+
+itk::ImageRegion<2> RandomRegionInsideHole(const Mask* const mask, const unsigned int halfWidth)
+{
+  std::vector<itk::Index<2> > holePixels = mask->GetHolePixelsInRegion(mask->GetLargestPossibleRegion());
+
+  itk::ImageRegion<2> randomRegion;
+
+  do
+  {
+    itk::Index<2> randomPixel = holePixels[rand() % holePixels.size()];
+    randomRegion = ITKHelpers::GetRegionInRadiusAroundPixel(randomPixel, halfWidth);
+  } while (!mask->IsHole(randomRegion));
+
+  return randomRegion;
+}
+
+itk::ImageRegion<2> RandomValidRegion(const Mask* const mask, const unsigned int halfWidth)
+{
+  // The center pixel must be valid, so we choose one from the valid pixels.
+  std::vector<itk::Index<2> > validPixels = mask->GetValidPixelsInRegion(mask->GetLargestPossibleRegion());
+
+  itk::ImageRegion<2> randomRegion;
+
+  do
+  {
+    itk::Index<2> randomPixel = validPixels[rand() % validPixels.size()];
+    randomRegion = ITKHelpers::GetRegionInRadiusAroundPixel(randomPixel, halfWidth);
+  } while (!mask->IsValid(randomRegion));
+
+  return randomRegion;
+}
+
 itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVector2Type& inputDirection, const Mask* const mask)
 {
   if(!mask->IsValid(queryPixel))

@@ -28,14 +28,19 @@ class Mask;
 
 namespace MaskOperations
 {
-// Look from a pixel across the hole in a specified direction and return the pixel that exists on the other side of the hole.
+/** Look from a pixel across the hole in a specified direction and return the pixel that exists on the other side of the hole. */
 itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const FloatVector2Type& direction, const Mask* const mask);
 
 
-// Apply the MaskedBlur function to every channel of a VectorImage separately.
+/** Apply the MaskedBlur function to every channel of a VectorImage separately.*/
 void VectorMaskedBlur(const FloatVectorImageType* const inputImage, const Mask* const mask, const float blurVariance,
                       FloatVectorImageType* const output);
 
+/** Return a random region that is entirely inside the hole. */
+itk::ImageRegion<2> RandomRegionInsideHole(const Mask* const mask, const unsigned int halfWidth);
+
+/** Return a random region that is entirely valid. */
+itk::ImageRegion<2> RandomValidRegion(const Mask* const mask, const unsigned int halfWidth);
 
 template <class TImage>
 void CopySelfPatchIntoHoleOfTargetRegion(TImage* const image, const Mask* const mask,

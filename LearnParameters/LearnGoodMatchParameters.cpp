@@ -16,11 +16,16 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "Helpers/OutputHelpers.h"
+// Image processing
+#include "ImageProcessing/MaskOperations.h"
 
 // Acceptance visitors
 #include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/VarianceDifferenceAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/AverageDifferenceAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/CompositeAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/FullPatchAverageDifference.hpp"
+#include "Visitors/AcceptanceVisitors/FullPatchVarianceDifference.hpp"
 
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
@@ -28,29 +33,14 @@
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
 
-// Inpainting visitors
-#include "Visitors/InpaintingVisitor.hpp"
-
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchBestProperty.hpp"
-#include "NearestNeighbor/LinearSearchKNNProperty.hpp"
-#include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
 // Initializers
 #include "Initializers/InitializeFromMaskImage.hpp"
-#include "Initializers/InitializePriority.hpp"
-
-// Inpainters
-#include "Inpainters/MaskImagePatchInpainter.hpp"
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
-
-// Inpainting
-#include "Algorithms/InpaintingAlgorithm.hpp"
-
-// Priority
-#include "Priority/PriorityRandom.h"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -58,15 +48,14 @@
 // Boost
 #include <boost/graph/grid_graph.hpp>
 #include <boost/property_map/property_map.hpp>
-#include <boost/graph/detail/d_ary_heap.hpp>
 
-// Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 filled.mha
+// Run with: Data/trashcan.mha Data/trashcan_uniformRegion.mha 15
 int main(int argc, char *argv[])
 {
   // Verify arguments
-  if(argc != 5)
+  if(argc != 4)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width output.mha" << std::endl;
+    std::cerr << "Required arguments: image.mha imageMask.mha patchHalfWidth" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
@@ -81,16 +70,13 @@ int main(int argc, char *argv[])
 
   std::stringstream ssPatchRadius;
   ssPatchRadius << argv[3];
-  unsigned int patch_half_width = 0;
-  ssPatchRadius >> patch_half_width;
-
-  std::string outputFilename = argv[4];
+  unsigned int patchHalfWidth = 0;
+  ssPatchRadius >> patchHalfWidth;
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
-  std::cout << "Patch half width: " << patch_half_width << std::endl;
-  std::cout << "Output: " << outputFilename << std::endl;
+  std::cout << "Patch half width: " << patchHalfWidth << std::endl;
 
   typedef FloatVectorImageType ImageType;
 
@@ -105,8 +91,7 @@ int main(int argc, char *argv[])
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
 
-  std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
-  std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
+  std::cout << "Number of uniform region pixels: " << mask->CountHolePixels() << std::endl;
 
   typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
 
@@ -121,78 +106,91 @@ int main(int argc, char *argv[])
   typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
   IndexMapType indexMap(get(boost::vertex_index, graph));
 
-  // Create the priority map
-  typedef boost::vector_property_map<float, IndexMapType> PriorityMapType;
-  PriorityMapType priorityMap(num_vertices(graph), indexMap);
-
-  // Create the node fill status map. Each pixel is either filled (true) or not filled (false).
-  typedef boost::vector_property_map<bool, IndexMapType> FillStatusMapType;
-  FillStatusMapType fillStatusMap(num_vertices(graph), indexMap);
-
-  // Create the boundary status map. A node is on the current boundary if this property is true.
-  // This property helps the boundaryNodeQueue because we can mark here if a node has become no longer
-  // part of the boundary, so when the queue is popped we can check this property to see if it should
-  // actually be processed.
-  typedef boost::vector_property_map<bool, IndexMapType> BoundaryStatusMapType;
-  BoundaryStatusMapType boundaryStatusMap(num_vertices(graph), indexMap);
-
   // Create the descriptor map. This is where the data for each pixel is stored.
   typedef boost::vector_property_map<ImagePatchPixelDescriptorType, IndexMapType> ImagePatchDescriptorMapType;
   ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
 
-  // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
-  typedef MaskImagePatchInpainter InpainterType;
-  InpainterType patchInpainter(patch_half_width, mask);
-
-  // Create the priority function
-  typedef PriorityRandom PriorityType;
-  PriorityType priorityFunction;
-
-  // Create the boundary node queue. The priority of each node is used to order the queue.
-  typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;
-  IndexInHeapMap index_in_heap(indexMap);
-
-  // Create the priority compare functor
-  typedef std::less<float> PriorityCompareType;
-  PriorityCompareType lessThanFunctor;
-
-  typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType>
-      BoundaryNodeQueueType;
-  BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
-
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
       ImagePatchDescriptorVisitorType;
-  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patch_half_width);
+  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
   // Create the acceptance visitor
-  typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
-  AcceptanceVisitorType acceptanceVisitor;
-  
-  // Create the inpainting visitor
-  typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
-                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType>
-                            InpaintingVisitorType;
-  InpaintingVisitorType inpaintingVisitor(image.GetPointer(), mask.GetPointer(), boundaryNodeQueue,
-                                          imagePatchDescriptorVisitor, acceptanceVisitor, priorityMap, &priorityFunction, patch_half_width,
-                                          boundaryStatusMap);
+//   typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
+//   AcceptanceVisitorType defaultAcceptanceVisitor;
 
-  InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
+  FullPatchAverageDifference<VertexListGraphType, ImageType> fullPatchAverageDifference(image, patchHalfWidth);
+  FullPatchVarianceDifference<VertexListGraphType, ImageType> fullPatchVarianceDifference(image, patchHalfWidth);
+  
+  //AverageDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> averageDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 100);
+  //VarianceDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> varianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 100);
+
+  // Can't use a composite visitor because the energies will be added together so we can't study them.
+//   CompositeAcceptanceVisitor<VertexListGraphType> compositeAcceptanceVisitor;
+//   compositeAcceptanceVisitor.AddVisitor(averageDifferenceAcceptanceVisitor);
+//   compositeAcceptanceVisitor.AddVisitor(varianceDifferenceAcceptanceVisitor);
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage<InpaintingVisitorType, VertexDescriptorType>(mask.GetPointer(), &inpaintingVisitor);
-  std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
-            << " nodes in the boundaryNodeQueue" << std::endl;
+  InitializeFromMaskImage<ImagePatchDescriptorVisitorType, VertexDescriptorType>(mask.GetPointer(), &imagePatchDescriptorVisitor);
 
+  ImagePatchDifference<ImagePatchPixelDescriptorType> pixelDifferenceFunctor;
+  
   // Create the nearest neighbor finder
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
                                    ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
   BestSearchType searchBest(imagePatchDescriptorMap);
 
-  // Perform the inpainting
-  InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, searchBest, patchInpainter);
+  std::cout << "Starting random matching..." << std::endl;
+  
+  unsigned int numberOfIterations = 1000;
+  float totalAverageDifferences = 0.0f;
+  float totalVarianceDifferences = 0.0f;
+  float totalCorrespondingDifferences = 0.0f;
 
-  OutputHelpers::WriteImage(image.GetPointer(), outputFilename);
+  std::ofstream averageDifferencesStream("AverageDifferences.txt");
+  std::ofstream varianceDifferencesStream("VarianceDifferences.txt");
+  std::ofstream correspondingDifferencesStream("CorrespondingDifferences.txt");
+
+  for(unsigned int iteration = 0; iteration < numberOfIterations; ++iteration)
+  {
+    itk::ImageRegion<2> targetRegion = MaskOperations::RandomValidRegion(mask, patchHalfWidth);
+    itk::Index<2> targetPixel = ITKHelpers::GetRegionCenter(targetRegion);
+    std::cout << "Target pixel: " << targetPixel << std::endl;
+    VertexDescriptorType targetNode = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(targetPixel);
+
+    imagePatchDescriptorVisitor.DiscoverVertex(targetNode);
+
+    typename boost::graph_traits<VertexListGraphType>::vertex_iterator vi,vi_end;
+    tie(vi,vi_end) = vertices(graph);
+    VertexDescriptorType sourceNode = searchBest(vi, vi_end, targetNode);
+
+    float varianceDifference = 0.0f;
+    fullPatchVarianceDifference.AcceptMatch(targetNode, sourceNode, varianceDifference);
+    totalVarianceDifferences += varianceDifference;
+    varianceDifferencesStream << varianceDifference << std::endl;
+    
+    float averageDifference = 0.0f;
+    fullPatchAverageDifference.AcceptMatch(targetNode, sourceNode, averageDifference);
+    totalAverageDifferences += averageDifference;
+    averageDifferencesStream << averageDifference << std::endl;
+    
+    float correspondingPixelDifference = pixelDifferenceFunctor(get(imagePatchDescriptorMap, targetNode), get(imagePatchDescriptorMap, sourceNode));
+    totalCorrespondingDifferences += correspondingPixelDifference;
+    std::cout << "correspondingPixelDifference: " << correspondingPixelDifference << std::endl;
+    correspondingDifferencesStream << correspondingPixelDifference << std::endl;
+
+    // Reset the node to be a source node
+    get(imagePatchDescriptorMap, targetNode).SetStatus(PixelDescriptor::SOURCE_NODE);
+  }
+
+  float averageAverageDifference = totalAverageDifferences / static_cast<float>(numberOfIterations);
+  std::cout << "averageAverageDifference: " << averageAverageDifference << std::endl;
+
+  float averageVarianceDifference = totalVarianceDifferences / static_cast<float>(numberOfIterations);
+  std::cout << "averageVarianceDifference: " << averageVarianceDifference << std::endl;
+
+  float averageCorrespondingDifference = totalCorrespondingDifferences / static_cast<float>(numberOfIterations);
+  std::cout << "averageCorrespondingDifference: " << averageCorrespondingDifference << std::endl;
 
   return EXIT_SUCCESS;
 }

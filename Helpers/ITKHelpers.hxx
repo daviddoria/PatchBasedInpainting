@@ -651,7 +651,7 @@ itk::Index<2> CreateIndex(const T& v)
 }
 
 template<typename TImage>
-typename TImage::PixelType AverageNeighborValue(const TImage* const image, const itk::Index<2>& pixel)
+typename TypeTraits<typename TImage::PixelType>::LargerComponentType AverageNeighborValue(const TImage* const image, const itk::Index<2>& pixel)
 {
   itk::ImageRegion<2> neighborhoodRegion = GetRegionInRadiusAroundPixel(pixel, 1);
   neighborhoodRegion.Crop(image->GetLargestPossibleRegion());
@@ -685,7 +685,7 @@ std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, c
 }
 
 template<typename TImage>
-typename TImage::PixelType AverageOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices)
+typename TypeTraits<typename TImage::PixelType>::LargerType AverageOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices)
 {
   std::vector<typename TImage::PixelType> pixels;
   for(unsigned int i = 0; i < indices.size(); ++i)
@@ -698,7 +698,7 @@ typename TImage::PixelType AverageOfPixelsAtIndices(const TImage* const image, c
 }
 
 template<typename TImage>
-typename TImage::PixelType VarianceOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices)
+typename TypeTraits<typename TImage::PixelType>::LargerType VarianceOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices)
 {
   std::vector<typename TImage::PixelType> pixels;
   for(unsigned int i = 0; i < indices.size(); ++i)
@@ -740,7 +740,7 @@ float SumOfComponents(const T& v)
 }
 
 template<typename TImage>
-typename TImage::PixelType AverageInRegion(const TImage* const image, const itk::ImageRegion<2>& region)
+typename TypeTraits<typename TImage::PixelType>::LargerType AverageInRegion(const TImage* const image, const itk::ImageRegion<2>& region)
 {
   typename itk::ImageRegionConstIterator<TImage> imageIterator(image, region);
   std::vector<typename TImage::PixelType> pixels;
@@ -753,6 +753,20 @@ typename TImage::PixelType AverageInRegion(const TImage* const image, const itk:
   using Statistics::Average;
   using ITKHelpers::Average;
   return Average(pixels);
+}
+
+template<typename TImage>
+typename TypeTraits<typename TImage::PixelType>::LargerType VarianceInRegion(const TImage* const image, const itk::ImageRegion<2>& region)
+{
+  typename itk::ImageRegionConstIterator<TImage> imageIterator(image, region);
+  std::vector<typename TImage::PixelType> pixels;
+  while(!imageIterator.IsAtEnd())
+    {
+    pixels.push_back(imageIterator.Get());
+    ++imageIterator;
+    }
+
+  return Statistics::Variance(pixels);
 }
 
 template<typename TImage, typename TDifferenceFunctor>

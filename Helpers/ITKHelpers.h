@@ -245,7 +245,7 @@ itk::Index<2> CreateIndex(const T& v);
 
 /** Get the average value of the neighbors of a pixel. */
 template<typename TImage>
-typename TImage::PixelType AverageNeighborValue(const TImage* const image, const itk::Index<2>& pixel);
+typename TypeTraits<typename TImage::PixelType>::LargerType AverageNeighborValue(const TImage* const image, const itk::Index<2>& pixel);
 
 template<typename TImage>
 std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, const TImage* const image,
@@ -253,16 +253,20 @@ std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, c
 
 /** Compute the average of the values appearing at the specified indices. */
 template<typename TImage>
-typename TImage::PixelType AverageOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices);
+typename TypeTraits<typename TImage::PixelType>::LargerType AverageOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices);
 
 /** Compute the variance of the values appearing at the specified indices. The variance of the ith component is the
  * ith component of the output pixel*/
 template<typename TImage>
-typename TImage::PixelType VarianceOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices);
+typename TypeTraits<typename TImage::PixelType>::LargerType VarianceOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices);
 
 /** Compute the average of all pixels in a region.*/
 template<typename TImage>
-typename TImage::PixelType AverageInRegion(const TImage* const image, const itk::ImageRegion<2>& region);
+typename TypeTraits<typename TImage::PixelType>::LargerType AverageInRegion(const TImage* const image, const itk::ImageRegion<2>& region);
+
+/** Compute the average of all pixels in a region.*/
+template<typename TImage>
+typename TypeTraits<typename TImage::PixelType>::LargerType VarianceInRegion(const TImage* const image, const itk::ImageRegion<2>& region);
 
 /** Compute the average difference of corresponding pixels from two regions of an image.*/
 template<typename TImage, typename TDifferenceFunctor>

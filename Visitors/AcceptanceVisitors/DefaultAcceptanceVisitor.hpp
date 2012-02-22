@@ -14,7 +14,7 @@ struct DefaultAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
 {
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& computedEnergy) const
   {
     return true;
   };
