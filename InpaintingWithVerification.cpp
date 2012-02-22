@@ -232,8 +232,8 @@ int main(int argc, char *argv[])
   typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
   DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
 
-  typedef DebugVisitor<VertexListGraphType, ImageType, BoundaryStatusMapType> DebugVisitorType;
-  DebugVisitorType debugVisitor(image, mask, patchHalfWidth, boundaryStatusMap);
+  typedef DebugVisitor<VertexListGraphType, ImageType, BoundaryStatusMapType, BoundaryNodeQueueType> DebugVisitorType;
+  DebugVisitorType debugVisitor(image, mask, patchHalfWidth, boundaryStatusMap, boundaryNodeQueue);
 
   LoggerVisitor<VertexListGraphType> loggerVisitor("log.txt");
 
@@ -312,7 +312,7 @@ int main(int argc, char *argv[])
   QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
                                 VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType,
                                 BoundaryNodeQueueType, KNNSearchType, BestSearchType, ManualSearchType, InpainterType>,
-                                graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, knnSearch,
+                                graph, compositeVisitor, &boundaryStatusMap, &boundaryNodeQueue, knnSearch,
                                 bestSearch, boost::ref(manualSearchBest), patchInpainter));
 
   return app.exec();

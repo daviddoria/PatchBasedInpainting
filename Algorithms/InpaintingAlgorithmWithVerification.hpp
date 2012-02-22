@@ -24,7 +24,7 @@ template <typename TVertexListGraph, typename TInpaintingVisitor,
           typename TPatchInpainter>
 inline
 void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor vis,
-                     TBoundaryStatusMap& boundaryStatusMap, TPriorityQueue& boundaryNodeQueue,
+                     TBoundaryStatusMap* boundaryStatusMap, TPriorityQueue* boundaryNodeQueue,
                      TKNNFinder knnFinder, TBestNeighborFinder& bestNeighborFinder,
                      TManualNeighborFinder& manualNeighborFinder, TPatchInpainter inpaint_patch)
 {
@@ -43,14 +43,14 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
     VertexDescriptorType targetNode;
     do
     {
-      if( boundaryNodeQueue.empty() )
+      if( (*boundaryNodeQueue).empty() )
       {
         std::cout << "Queue is empty, exiting." << std::endl;
         return;  //terminate if the queue is empty.
       }
-      targetNode = boundaryNodeQueue.top();
-      boundaryNodeQueue.pop();
-    } while( get(boundaryStatusMap, targetNode) == false);
+      targetNode = (*boundaryNodeQueue).top();
+      (*boundaryNodeQueue).pop();
+    } while( get(*boundaryStatusMap, targetNode) == false);
     //} while( get(boundaryStatusMap, targetNode) == false && get(fillStatusMap, targetNode));
 
     // Notify the visitor that we have a hole target center.
