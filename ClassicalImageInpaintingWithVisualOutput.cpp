@@ -210,9 +210,23 @@ int main(int argc, char *argv[])
 
   basicViewerWidget.show();
 
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()));
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&)), &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&)));
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)), &basicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)));
+//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()));
+//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
+//                    &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)));
+//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)),
+//                    &basicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)));
+
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()),
+                   Qt::BlockingQueuedConnection);
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
+                   &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
+                   Qt::BlockingQueuedConnection);
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)),
+                   &basicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)),
+                   Qt::BlockingQueuedConnection);
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
+                   &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
+                   Qt::BlockingQueuedConnection);
 
   QtConcurrent::run(boost::bind(InpaintingAlgorithm<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>,
                               graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter));
