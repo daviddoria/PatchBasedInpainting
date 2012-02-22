@@ -430,4 +430,35 @@ std::vector<itk::Index<2> > OffsetsToIndices(const std::vector<itk::Offset<2> >&
   return indices;
 }
 
+std::vector<itk::Index<2> > GetBoundaryPixels(const itk::ImageRegion<2>& region)
+{
+  std::vector<itk::Index<2> > boundaryPixels;
+
+  for(unsigned int i = region.GetIndex()[0]; i < region.GetIndex()[0] + region.GetSize()[0]; ++i)
+    {
+    itk::Index<2> index;
+    index[0] = i;
+    index[1] = region.GetIndex()[1];
+    boundaryPixels.push_back(index);
+
+    index[0] = i;
+    index[1] = region.GetIndex()[1] + region.GetSize()[1] - 1;
+    boundaryPixels.push_back(index);
+    }
+
+  for(unsigned int j = region.GetIndex()[1]; j < region.GetIndex()[1] + region.GetSize()[1]; ++j)
+    {
+    itk::Index<2> index;
+    index[0] = region.GetIndex()[0];
+    index[1] = j;
+    boundaryPixels.push_back(index);
+
+    index[0] = region.GetIndex()[0] + region.GetSize()[0] - 1;
+    index[1] = j;
+    boundaryPixels.push_back(index);
+    }
+
+  return boundaryPixels;
+}
+
 } // end namespace

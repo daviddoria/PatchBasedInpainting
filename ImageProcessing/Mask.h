@@ -142,6 +142,9 @@ public:
   /** Get a list of the valid neighbors of a pixel.*/
   std::vector<itk::Index<2> > GetValidNeighbors(const itk::Index<2>& pixel) const;
 
+  /** Determine if a pixel has at least 1 hole neighbor.*/
+  bool HasHoleNeighbor(const itk::Index<2>& pixel) const;
+  
   /** Get a list of the hole neighbors of a pixel.*/
   std::vector<itk::Index<2> > GetHoleNeighbors(const itk::Index<2>& pixel) const;
 

@@ -389,6 +389,15 @@ std::vector<itk::Index<2> > Mask::GetValidNeighbors(const itk::Index<2>& pixel) 
   return ITKHelpers::Get8NeighborsWithValue(pixel, this, this->ValidValue);
 }
 
+bool Mask::HasHoleNeighbor(const itk::Index<2>& pixel) const
+{
+  if(GetHoleNeighbors(pixel).size() > 0)
+    {
+    return true;
+    }
+  return false;
+}
+
 /** Get a list of the hole neighbors of a pixel.*/
 std::vector<itk::Index<2> > Mask::GetHoleNeighbors(const itk::Index<2>& pixel) const
 {

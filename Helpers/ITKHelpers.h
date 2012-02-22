@@ -109,6 +109,8 @@ itk::VariableLengthVector<float> Average(const std::vector<itk::VariableLengthVe
 
 std::vector<itk::Index<2> > OffsetsToIndices(const std::vector<itk::Offset<2> >& offsets, const itk::Index<2>& index);
 
+std::vector<itk::Index<2> > GetBoundaryPixels(const itk::ImageRegion<2>& region);
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// Template function declarations (defined in ITKHelpers.hxx) ///////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////

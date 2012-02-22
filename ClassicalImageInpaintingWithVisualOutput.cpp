@@ -30,6 +30,7 @@
 
 // Information visitors
 #include "Visitors/InformationVisitors/DisplayVisitor.hpp"
+#include "Visitors/InformationVisitors/DebugVisitor.hpp"
 
 // Inpainting visitors
 #include "Visitors/InpaintingVisitor.hpp"
@@ -139,10 +140,6 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<float, IndexMapType> PriorityMapType;
   PriorityMapType priorityMap(num_vertices(graph), indexMap);
 
-  // Create the node fill status map. Each pixel is either filled (true) or not filled (false).
-  typedef boost::vector_property_map<bool, IndexMapType> FillStatusMapType;
-  FillStatusMapType fillStatusMap(num_vertices(graph), indexMap);
-
   // Create the boundary status map. A node is on the current boundary if this property is true. 
   // This property helps the boundaryNodeQueue because we can mark here if a node has become no longer
   // part of the boundary, so when the queue is popped we can check this property to see if it should
@@ -189,10 +186,14 @@ int main(int argc, char *argv[])
   typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
   DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
 
+  typedef DebugVisitor<VertexListGraphType, ImageType, BoundaryStatusMapType, BoundaryNodeQueueType> DebugVisitorType;
+  DebugVisitorType debugVisitor(image, mask, patchHalfWidth, boundaryStatusMap, boundaryNodeQueue);
+  
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeVisitorType;
   CompositeVisitorType compositeVisitor;
   compositeVisitor.AddVisitor(&inpaintingVisitor);
   compositeVisitor.AddVisitor(&displayVisitor);
+  compositeVisitor.AddVisitor(&debugVisitor);
 
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
@@ -218,12 +219,6 @@ int main(int argc, char *argv[])
 
   basicViewerWidget.show();
 
-//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()));
-//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
-//                    &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)));
-//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)),
-//                    &basicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)));
-
   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()),
                    Qt::BlockingQueuedConnection);
   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
@@ -237,7 +232,9 @@ int main(int argc, char *argv[])
                    Qt::BlockingQueuedConnection);
 
   QtConcurrent::run(boost::bind(InpaintingAlgorithm<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>,
-                              graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, searchBest, patchInpainter));
+                              graph, compositeVisitor, &boundaryStatusMap, &boundaryNodeQueue, searchBest, patchInpainter));
 
+//   InpaintingAlgorithm<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>(
+//                               graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, searchBest, patchInpainter);
   return app.exec();
 }

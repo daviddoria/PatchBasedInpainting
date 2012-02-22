@@ -17,7 +17,16 @@ namespace BoostHelpers
   void OutputQueue(TQueue queue);
 
   template <typename TPropertyMap, typename TImage>
-  void WritePropertyMapAsImage(TPropertyMap propertyMap, TImage* const image, const std::string& fileName);
+  void WritePropertyMapAsImage(const TPropertyMap propertyMap, TImage* const image, const std::string& fileName);
+
+  template <typename TNodeQueue, typename TPropertyMap, typename TImage>
+  void WriteValidQueueNodesAsImage(TNodeQueue nodeQueue, const TPropertyMap propertyMap, TImage* const image, const std::string& fileName);
+
+  template <typename TNodeQueue, typename TPropertyMap>
+  unsigned int CountValidQueueNodes(TNodeQueue nodeQueue, const TPropertyMap propertyMap);
+
+  template <typename TNodeQueue, typename TImage>
+  void WriteAllQueueNodesAsImage(TNodeQueue nodeQueue, TImage* const image, const std::string& fileName);
 }
 
 #include "BoostHelpers.hpp"

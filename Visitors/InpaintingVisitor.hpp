@@ -19,6 +19,7 @@
 // Helpers
 #include "Helpers/ITKHelpers.h"
 #include "Helpers/OutputHelpers.h"
+#include "Helpers/BoostHelpers.h"
 
 /**
  * This is a visitor that complies with the InpaintingVisitorConcept. It forwards
@@ -48,15 +49,15 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   const unsigned int HalfWidth;
 
-  InpaintingVisitor(TImage* const in_image, Mask* const in_mask,
-                    TBoundaryNodeQueue& in_boundaryNodeQueue,
-                    TDescriptorVisitor& in_descriptorVisitor, TAcceptanceVisitor& in_acceptanceVisitor, TPriorityMap& in_priorityMap,
-                    TPriority* const in_priorityFunction,
-                    const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
-  Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue), PriorityFunction(in_priorityFunction),
-  DescriptorVisitor(in_descriptorVisitor), AcceptanceVisitor(in_acceptanceVisitor),
-  PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap),
-  HalfWidth(in_half_width)
+  InpaintingVisitor(TImage* const image, Mask* const mask,
+                    TBoundaryNodeQueue& boundaryNodeQueue,
+                    TDescriptorVisitor& descriptorVisitor, TAcceptanceVisitor& acceptanceVisitor, TPriorityMap& priorityMap,
+                    TPriority* const priorityFunction,
+                    const unsigned int halfWidth, TBoundaryStatusMap& boundaryStatusMap) :
+  Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
+  DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
+  PriorityMap(priorityMap), BoundaryStatusMap(boundaryStatusMap),
+  HalfWidth(halfWidth)
   {
   }
 
@@ -120,29 +121,31 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     // Mark this pixel and the area around it as filled, and mark the mask in this region as filled.
     // Determine the new boundary, and setup the nodes in the boundary queue.
 
+    std::cout << "FinishVertex beginning: there are " << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap) << " valid nodes in the queue." << std::endl;
+    
     // Construct the region around the vertex
     itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(targetNode);
 
     itk::ImageRegion<2> regionToFinish = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
+    std::cout << "Region to finish: " << regionToFinish << std::endl;
 
     regionToFinish.Crop(Image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
+    std::cout << "Finishing region: " << regionToFinish << std::endl;
 
     // Mark all the pixels in this region as filled (in the mask and in the FillStatusMap).
     {
-    itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(MaskImage, regionToFinish);
+    itk::ImageRegionIteratorWithIndex<Mask> maskIterator(MaskImage, regionToFinish);
 
     while(!maskIterator.IsAtEnd())
       {
-      //VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(maskIterator.GetIndex());
-      //put(FillStatusMap, v, true);
       MaskImage->MarkAsValid(maskIterator.GetIndex());
       ++maskIterator;
       }
     }
 
-    // Initialize the newly filled vertices because they may now be valid source nodes.
-    // You may not want to do this in some cases (i.e. if the descriptors needed cannot be 
-    // computed on newly filled regions)
+    // Initialize all vertices in the newly filled region because they may now be valid source nodes.
+    // (You may not want to do this in some cases (i.e. if the descriptors needed cannot be 
+    // computed on newly filled regions))
     {
     itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(Image, regionToFinish);
     while(!gridIterator.IsAtEnd())
@@ -165,9 +168,8 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       {
       VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(imageIterator.GetIndex());
 
-      // Mark all nodes in the patch around this node as filled.
       // This makes them ignored if they are still in the boundaryNodeQueue.
-      if(ITKHelpers::HasNeighborWithValue(imageIterator.GetIndex(), MaskImage, MaskImage->GetHoleValue()))
+      if(MaskImage->HasHoleNeighbor(imageIterator.GetIndex()))
         {
         // Note: must set the value in the priority map before pushing the node into the queue (as the priority is what
         // determines the node's position in the queue).
@@ -187,6 +189,24 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       }
     }
 
+    std::cout << "FinishVertex after traversing finishing region there are " << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap) << " valid nodes in the queue." << std::endl;
+    
+    // Sometimes pixels that are not in the finishing region that were boundary pixels are no longer boundary pixels after the filling. Check for these.
+    {
+    // Expand the region
+    itk::ImageRegion<2> expandedRegion = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth + 1);
+    std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetBoundaryPixels(expandedRegion);
+    for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
+      {
+      if(!ITKHelpers::HasNeighborWithValue(boundaryPixels[i], MaskImage, MaskImage->GetHoleValue()))
+        {
+        VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(boundaryPixels[i]);
+        put(BoundaryStatusMap, v, false);
+        }
+      }
+    }
+
+    std::cout << "FinishVertex after removing stale nodes outside finishing region there are " << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap) << " valid nodes in the queue." << std::endl;
   }; // finish_vertex
 
   void InpaintingComplete() const

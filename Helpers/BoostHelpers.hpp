@@ -60,8 +60,86 @@ namespace BoostHelpers
     }
   }
 
+  template <typename TNodeQueue, typename TImage>
+  void WriteAllQueueNodesAsImage(TNodeQueue nodeQueue, TImage* const image, const std::string& fileName)
+  {
+    typename TNodeQueue::key_map propertyMap = nodeQueue.keys();
+
+    itk::Index<2> zeroIndex = {{0,0}};
+    typename TImage::PixelType zeroPixel = image->GetPixel(zeroIndex);
+    ITKHelpers::SetObjectToZero(zeroPixel);
+    ITKHelpers::SetImageToConstant(image, zeroPixel);
+
+    // Read out the queue, saving the objects in the order they were in the queue
+    while(!nodeQueue.empty())
+    {
+      typename TNodeQueue::value_type queuedObject = nodeQueue.top();
+      //std::cout << "queuedObject: " << queuedObject << " ";
+
+      itk::Index<2> index = Helpers::ConvertFrom<itk::Index<2>, typename TNodeQueue::value_type>(queuedObject);
+      image->SetPixel(index, 255);
+      //std::cout << " value: " << value << std::endl;
+      nodeQueue.pop();
+    }
+
+    typedef typename itk::ImageFileWriter<TImage> WriterType;
+    typename WriterType::Pointer writer = WriterType::New();
+    writer->SetInput(image);
+    writer->SetFileName(fileName);
+    writer->Write();
+  }
+  
+  template <typename TNodeQueue, typename TPropertyMap, typename TImage>
+  void WriteValidQueueNodesAsImage(TNodeQueue nodeQueue, const TPropertyMap propertyMap, TImage* const image, const std::string& fileName)
+  {
+    itk::Index<2> zeroIndex = {{0,0}};
+    typename TImage::PixelType zeroPixel = image->GetPixel(zeroIndex);
+    ITKHelpers::SetObjectToZero(zeroPixel);
+    ITKHelpers::SetImageToConstant(image, zeroPixel);
+
+    // Read out the queue, saving the objects in the order they were in the queue
+    while(!nodeQueue.empty())
+    {
+      typename TNodeQueue::value_type queuedNode = nodeQueue.top();
+      //std::cout << "queuedObject: " << queuedObject << " ";
+      bool value = get(propertyMap, queuedNode);
+      if(value)
+      {
+        itk::Index<2> index = Helpers::ConvertFrom<itk::Index<2>, typename TNodeQueue::value_type>(queuedNode);
+        image->SetPixel(index, 255);
+      }
+      //std::cout << " value: " << value << std::endl;
+      nodeQueue.pop();
+    }
+
+    typedef typename itk::ImageFileWriter<TImage> WriterType;
+    typename WriterType::Pointer writer = WriterType::New();
+    writer->SetInput(image);
+    writer->SetFileName(fileName);
+    writer->Write();
+  }
+
+  template <typename TNodeQueue, typename TPropertyMap>
+  unsigned int CountValidQueueNodes(TNodeQueue nodeQueue, const TPropertyMap propertyMap)
+  {
+    unsigned int counter = 0;
+    while(!nodeQueue.empty())
+    {
+      typename TNodeQueue::value_type queuedNode = nodeQueue.top();
+      //std::cout << "queuedObject: " << queuedObject << " ";
+      bool value = get(propertyMap, queuedNode);
+      if(value)
+      {
+        counter++;
+      }
+      //std::cout << " value: " << value << std::endl;
+      nodeQueue.pop();
+    }
+    return counter;
+  }
+
   template <typename TPropertyMap, typename TImage>
-  void WritePropertyMapAsImage(TPropertyMap propertyMap, TImage* const image, const std::string& fileName)
+  void WritePropertyMapAsImage(const TPropertyMap propertyMap, TImage* const image, const std::string& fileName)
   {
     typename itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
 

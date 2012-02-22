@@ -439,30 +439,11 @@ void BlankAndOutlineRegion(TImage* image, const itk::ImageRegion<2>& region, con
 template<typename TImage>
 void OutlineRegion(TImage* image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& value)
 {
-  itk::ImageRegionIterator<TImage> iterator(image, region);
+  std::vector<itk::Index<2> > boundaryPixels = GetBoundaryPixels(region);
 
-  for(unsigned int i = region.GetIndex()[0]; i < region.GetIndex()[0] + region.GetSize()[0]; ++i)
+  for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
     {
-    itk::Index<2> index;
-    index[0] = i;
-    index[1] = region.GetIndex()[1];
-    image->SetPixel(index, value);
-
-    index[0] = i;
-    index[1] = region.GetIndex()[1] + region.GetSize()[1] - 1;
-    image->SetPixel(index, value);
-    }
-
-  for(unsigned int j = region.GetIndex()[1]; j < region.GetIndex()[1] + region.GetSize()[1]; ++j)
-    {
-    itk::Index<2> index;
-    index[0] = region.GetIndex()[0];
-    index[1] = j;
-    image->SetPixel(index, value);
-
-    index[0] = region.GetIndex()[0] + region.GetSize()[0] - 1;
-    index[1] = j;
-    image->SetPixel(index, value);
+    image->SetPixel(boundaryPixels[i], value);
     }
 }
 
