@@ -21,13 +21,15 @@
 #include <iostream>
 #include <stdexcept>
 
-static void DemoExtractRegion();
-static void DemoXORRegions();
+ static void DemoExtractRegion();
+// static void DemoXORRegions();
+// static void DemoDilateImage();
 
 int main()
 {
-  DemoExtractRegion();
-  DemoXORRegions();
+   DemoExtractRegion();
+//   DemoXORRegions();
+//  DemoDilateImage();
   return EXIT_SUCCESS;
 }
 
@@ -71,6 +73,8 @@ void DemoExtractRegion()
   ImageType::Pointer extractedImage = ImageType::New();
   ITKHelpers::ExtractRegion(image.GetPointer(), region, extractedImage.GetPointer());
 
+  std::cout << "Extracted region: " << extractedImage->GetLargestPossibleRegion() << std::endl;
+  
   ITKHelpers::PrintImage(extractedImage.GetPointer());
 }
 
@@ -107,21 +111,67 @@ void DemoXORRegions()
   itk::Size<2> regionSize = {{3,3}};
   
   itk::Index<2> region1Corner = {{imageSize[0]/2 - regionSize[0]/2,
-                                 imageSize[1]/2 - regionSize[1]/2}};
+                                  imageSize[1]/2 - regionSize[1]/2}};
 
   itk::ImageRegion<2> region1(region1Corner, regionSize);
   std::cout << "region1: " << region1 << std::endl;
 
   ITKHelpers::PrintRegion(image.GetPointer(), region1);
   
-  itk::Index<2> region2Corner = {{imageSize[0]/2 - regionSize[0]/2,
-                                 imageSize[1]/2 - regionSize[1]/2 + 1}};
+  itk::Index<2> region2Corner = {{imageSize[0]/2 - regionSize[0]/2 + 1,
+                                  imageSize[1]/2 - regionSize[1]/2}};
 
   itk::ImageRegion<2> region2(region2Corner, regionSize);
   std::cout << "region2: " << region2 << std::endl;
   ITKHelpers::PrintRegion(image.GetPointer(), region2);
 
-//   ITKHelpers::XORRegions(image, const itk::ImageRegion<2>& region1, const TImage* const image2, const itk::ImageRegion<2>& region2, itk::Image<bool, 2>* const output);
-// 
-//   ITKHelpers::PrintImage(extractedImage.GetPointer());
+  typedef itk::Image<bool, 2> BoolImage;
+  BoolImage::Pointer resultImage = BoolImage::New();
+  
+  ITKHelpers::XORRegions(image.GetPointer(), region1, image.GetPointer(), region2, resultImage.GetPointer());
+
+  ITKHelpers::PrintImage(resultImage.GetPointer());
+}
+
+void DemoDilateImage()
+{
+  std::cout << "DemoDilateImage()" << std::endl;
+
+  itk::Index<2> imageCorner = {{0,0}};
+  unsigned int imageSideLength = 11;
+  itk::Size<2> imageSize = {{imageSideLength,imageSideLength}};
+  itk::ImageRegion<2> imageRegion(imageCorner, imageSize);
+
+  typedef itk::Image<unsigned char, 2> ImageType;
+  ImageType::Pointer image = ImageType::New();
+  image->SetRegions(imageRegion);
+  image->Allocate();
+  image->FillBuffer(0);
+
+  itk::ImageRegionIterator<ImageType> imageIterator(image, image->GetLargestPossibleRegion());
+
+  while(!imageIterator.IsAtEnd())
+    {
+    if(static_cast<unsigned int>(imageIterator.GetIndex()[0]) > imageSideLength/2 - 2 &&
+       static_cast<unsigned int>(imageIterator.GetIndex()[0]) < imageSideLength/2 + 2 &&
+       static_cast<unsigned int>(imageIterator.GetIndex()[1]) > imageSideLength/2 - 2 &&
+       static_cast<unsigned int>(imageIterator.GetIndex()[1]) < imageSideLength/2 + 2)
+      {
+      imageIterator.Set(255);
+      }
+    else
+      {
+      imageIterator.Set(0);
+      }
+    ++imageIterator;
+    }
+
+  ITKHelpers::PrintImage(image.GetPointer());
+
+  ImageType::Pointer resultImage = ImageType::New();
+
+  ITKHelpers::DilateImage(image.GetPointer(), resultImage.GetPointer(), 1);
+
+  ITKHelpers::PrintImage(resultImage.GetPointer());
+
 }

@@ -910,7 +910,7 @@ void XORRegions(const TImage* const image1, const itk::ImageRegion<2>& region1, 
   while(!image1Iterator.IsAtEnd())
     {
     bool result = image1Iterator.Get() ^ image2Iterator.Get(); // ^ is XOR (exclusive OR)
-    itk::Index<2> index = Helpers::ConvertFrom<itk::Index<2>, itk::Offset<2> >(image1Iterator.GetIndex() - image1->GetLargestPossibleRegion().GetIndex());
+    itk::Index<2> index = Helpers::ConvertFrom<itk::Index<2>, itk::Offset<2> >(image1Iterator.GetIndex() - region1.GetIndex());
     output->SetPixel(index, result);
     ++image1Iterator;
     ++image2Iterator;
