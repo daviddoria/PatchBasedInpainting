@@ -685,6 +685,25 @@ std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, c
 }
 
 template<typename TImage>
+std::vector<itk::Index<2> > GetPixelsWithValue(const TImage* const image, const itk::ImageRegion<2>& region,
+                                               const typename TImage::PixelType& value)
+{
+  std::vector<itk::Index<2> > pixelsWithValue;
+
+  itk::ImageRegionConstIterator<TImage> regionIterator(image, region);
+  while(!regionIterator.IsAtEnd())
+    {
+    if(regionIterator.Get() == value)
+      {
+      pixelsWithValue.push_back(regionIterator.GetIndex());
+      }
+    ++regionIterator;
+    }
+
+  return pixelsWithValue;
+}
+
+template<typename TImage>
 typename TypeTraits<typename TImage::PixelType>::LargerType AverageOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices)
 {
   std::vector<typename TImage::PixelType> pixels;
@@ -831,5 +850,111 @@ void SetObjectToZero(T& object)
     index(object, i) = 0;
     }
 }
+
+template<typename TImage>
+void SubtractRegions(const TImage* const image1, const itk::ImageRegion<2>& region1, const TImage* const image2, const itk::ImageRegion<2>& region2, TImage* const output)
+{
+  assert(region1.GetSize() == region2.GetSize());
+  
+  itk::ImageRegion<2> outputRegion(ZeroIndex(), region1.GetSize());
+  output->SetRegions(outputRegion);
+  output->Allocate();
+
+  itk::ImageRegionConstIterator<TImage> image1Iterator(image1, region1);
+  itk::ImageRegionConstIterator<TImage> image2Iterator(image2, region2);
+
+  while(!image1Iterator.IsAtEnd())
+    {
+    float difference = image1Iterator.Get() - image2Iterator.Get();
+    itk::Index<2> index = Helpers::ConvertFrom<itk::Index<2>, itk::Offset<2> >(image1Iterator.GetIndex() - image1->GetLargestPossibleRegion().GetIndex());
+    output.SetPixel(index, difference);
+    ++image1Iterator;
+    ++image2Iterator;
+    }
+}
+
+template<typename TImage>
+void ANDRegions(const TImage* const image1, const itk::ImageRegion<2>& region1, const TImage* const image2, const itk::ImageRegion<2>& region2, itk::Image<bool, 2>* const output)
+{
+  assert(region1.GetSize() == region2.GetSize());
+
+  itk::ImageRegion<2> outputRegion(ZeroIndex(), region1.GetSize());
+  output->SetRegions(outputRegion);
+  output->Allocate();
+
+  itk::ImageRegionConstIterator<TImage> image1Iterator(image1, region1);
+  itk::ImageRegionConstIterator<TImage> image2Iterator(image2, region2);
+
+  while(!image1Iterator.IsAtEnd())
+    {
+    bool result = image1Iterator.Get() && image2Iterator.Get();
+    itk::Index<2> index = Helpers::ConvertFrom<itk::Index<2>, itk::Offset<2> >(image1Iterator.GetIndex() - image1->GetLargestPossibleRegion().GetIndex());
+    output->SetPixel(index, result);
+    ++image1Iterator;
+    ++image2Iterator;
+    }
+}
+
+template<typename TImage>
+void XORRegions(const TImage* const image1, const itk::ImageRegion<2>& region1, const TImage* const image2, const itk::ImageRegion<2>& region2, itk::Image<bool, 2>* const output)
+{
+  assert(region1.GetSize() == region2.GetSize());
+
+  itk::ImageRegion<2> outputRegion(ZeroIndex(), region1.GetSize());
+  output->SetRegions(outputRegion);
+  output->Allocate();
+
+  itk::ImageRegionConstIterator<TImage> image1Iterator(image1, region1);
+  itk::ImageRegionConstIterator<TImage> image2Iterator(image2, region2);
+
+  while(!image1Iterator.IsAtEnd())
+    {
+    bool result = image1Iterator.Get() ^ image2Iterator.Get(); // ^ is XOR (exclusive OR)
+    itk::Index<2> index = Helpers::ConvertFrom<itk::Index<2>, itk::Offset<2> >(image1Iterator.GetIndex() - image1->GetLargestPossibleRegion().GetIndex());
+    output->SetPixel(index, result);
+    ++image1Iterator;
+    ++image2Iterator;
+    }
+}
+
+template<typename TImage>
+void ExtractRegion(const TImage* const image, const itk::ImageRegion<2>& region,
+                   TImage* const output)
+{
+  typedef itk::RegionOfInterestImageFilter<TImage, TImage> ExtractFilterType;
+
+  typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+  extractFilter->SetRegionOfInterest(region);
+  extractFilter->SetInput(image);
+  extractFilter->Update();
+
+  DeepCopy(extractFilter->GetOutput(), output);
+}
+
+template<typename TImage>
+void PrintImage(const TImage* const image)
+{
+  PrintRegion(image, image->GetLargestPossibleRegion());
+}
+
+template<typename TImage>
+void PrintRegion(const TImage* const image, const itk::ImageRegion<2>& region)
+{
+  itk::ImageRegionConstIterator<TImage> imageIterator(image, region);
+
+  unsigned int counter = 0;
+  while(!imageIterator.IsAtEnd())
+    {
+    std::cout << static_cast<typename TypeTraits<typename TImage::PixelType>::LargerType >(imageIterator.Get()) << " ";
+    counter++;
+    if(counter == region.GetSize()[0])
+      {
+      counter = 0;
+      std::cout << std::endl;
+      }
+    ++imageIterator;
+    }
+}
+
 
 }// end namespace ITKHelpers

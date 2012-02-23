@@ -31,6 +31,7 @@
 #include "Helpers/Helpers.h"
 #include "Helpers/OutputHelpers.h"
 #include "Helpers/ITKVTKHelpers.h"
+#include "Helpers/VTKHelpers.h"
 #include "Interactive/HelpersQt.h"
 #include "InteractorStyleImageWithDrag.h"
 #include "ImageProcessing/Mask.h"
@@ -41,10 +42,6 @@ BasicViewerWidget<TImage>::BasicViewerWidget(TImage* const image, Mask* const ma
   qRegisterMetaType<itk::ImageRegion<2> >("itkImageRegion");
 
   this->setupUi(this);
-
-  TargetRegionIndicatorImage = TImage::New();
-  TargetRegionIndicatorImage->SetRegions(image->GetLargestPossibleRegion());
-  TargetRegionIndicatorImage->Allocate();
 
   this->ImageDimension[0] = 0;
   this->ImageDimension[1] = 0;
@@ -58,7 +55,6 @@ BasicViewerWidget<TImage>::BasicViewerWidget(TImage* const image, Mask* const ma
   this->qvtkWidget->GetRenderWindow()->AddRenderer(this->Renderer);
 
   this->Renderer->AddViewProp(ImageLayer.ImageSlice);
-  this->Renderer->AddViewProp(TargetRegionIndicatorLayer.ImageSlice);
 
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
@@ -133,9 +129,8 @@ void BasicViewerWidget<TImage>::slot_UpdateTarget(const itk::ImageRegion<2>& reg
 {
   std::cout << "Update target." << std::endl;
 
-  ITKHelpers::OutlineRegion(TargetRegionIndicatorImage.GetPointer(), region, 255);
-
-  ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->TargetRegionIndicatorLayer.ImageData);
+  unsigned char red[3] = {255, 0, 0};
+  ITKVTKHelpers::OutlineRegion(this->ImageLayer.ImageData, region, red);
 
   this->qvtkWidget->GetRenderWindow()->Render();
   

@@ -52,6 +52,8 @@ static void TestDeepCopy_Vector();
 static void TestSumOfComponents_Scalar();
 static void TestSumOfComponents_Vector();
 
+static void TestSubtract();
+
 int main()
 {
   TestGetIndexString();
@@ -79,6 +81,8 @@ int main()
 
   TestSumOfComponents_Scalar();
   TestSumOfComponents_Vector();
+
+  TestSubtract();
 
   ////////////////// Not yet tested //////////////////////
 #if 0
@@ -593,3 +597,12 @@ void TestSumOfComponents_Vector()
     }
 }
 
+void TestSubtract()
+{
+  itk::Index<2> targetPixel = ITKHelpers::CreateIndex(target);
+  itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, HalfWidth);
+
+  itk::Index<2> sourcePixel = ITKHelpers::CreateIndex(source);
+  itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, HalfWidth);
+
+}

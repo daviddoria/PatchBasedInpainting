@@ -46,6 +46,13 @@
 namespace ITKHelpers
 {
 
+itk::Index<2> ZeroIndex()
+{
+  itk::Index<2> index;
+  index.Fill(0);
+  return index;
+}
+
 unsigned int GetNumberOfComponentsPerPixelInFile(const std::string& filename)
 {
   typedef itk::VectorImage<float, 2> TestImageType;
@@ -430,6 +437,16 @@ std::vector<itk::Index<2> > OffsetsToIndices(const std::vector<itk::Offset<2> >&
   return indices;
 }
 
+std::vector<itk::Offset<2> > IndicesToOffsets(const std::vector<itk::Index<2> >& indices, const itk::Index<2>& index)
+{
+  std::vector<itk::Offset<2> > offsets;
+  for(unsigned int i = 0; i < indices.size(); ++i)
+  {
+    offsets.push_back(indices[i] - index);
+  }
+  return offsets;
+}
+
 std::vector<itk::Index<2> > GetBoundaryPixels(const itk::ImageRegion<2>& region)
 {
   std::vector<itk::Index<2> > boundaryPixels;
@@ -459,6 +476,12 @@ std::vector<itk::Index<2> > GetBoundaryPixels(const itk::ImageRegion<2>& region)
     }
 
   return boundaryPixels;
+}
+
+itk::ImageRegion<2> CornerRegion(const itk::Size<2>& size)
+{
+  itk::ImageRegion<2> region(ZeroIndex(), size);
+  return region;
 }
 
 } // end namespace

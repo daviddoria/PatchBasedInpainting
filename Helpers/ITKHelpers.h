@@ -56,6 +56,10 @@ std::string GetIndexString(const itk::Index<2>& index);
 /** Get a short string of an itk::Size */
 std::string GetSizeString(const itk::Size<2>& size);
 
+itk::Index<2> ZeroIndex();
+
+itk::ImageRegion<2> CornerRegion(const itk::Size<2>& size);
+
 itk::ImageRegion<2> CropToRegion(const itk::ImageRegion<2>& inputRegion, const itk::ImageRegion<2>& targetRegion);
 
 void OutputImageType(const itk::ImageBase<2>* const input);
@@ -108,6 +112,8 @@ itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* inpu
 itk::VariableLengthVector<float> Average(const std::vector<itk::VariableLengthVector<float> >& v);
 
 std::vector<itk::Index<2> > OffsetsToIndices(const std::vector<itk::Offset<2> >& offsets, const itk::Index<2>& index);
+
+std::vector<itk::Offset<2> > IndicesToOffsets(const std::vector<itk::Index<2> >& indices, const itk::Index<2>& index);
 
 std::vector<itk::Index<2> > GetBoundaryPixels(const itk::ImageRegion<2>& region);
 
@@ -206,6 +212,15 @@ void InitializeImage(const itk::VectorImage<TImage>* const input, const itk::Ima
 template<typename TImage>
 void DilateImage(const TImage* const image, TImage* const dilatedImage, const unsigned int radius);
 
+template<typename TImage>
+void SubtractRegions(const TImage* const image1, const itk::ImageRegion<2>& region1, const TImage* const image2, const itk::ImageRegion<2>& region2, TImage* const output);
+
+template<typename TImage>
+void ANDRegions(const TImage* const image1, const itk::ImageRegion<2>& region1, const TImage* const image2, const itk::ImageRegion<2>& region2, itk::Image<bool, 2>* const output);
+
+template<typename TImage>
+void XORRegions(const TImage* const image1, const itk::ImageRegion<2>& region1, const TImage* const image2, const itk::ImageRegion<2>& region2, itk::Image<bool, 2>* const output);
+
 /** Change the value of all pixels with value = 'oldValue' to 'newValue. */
 template<typename TImage>
 void ChangeValue(const TImage* const image, const typename TImage::PixelType& oldValue,
@@ -215,6 +230,11 @@ void ChangeValue(const TImage* const image, const typename TImage::PixelType& ol
 template<typename TPixel>
 void ExtractChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel,
                     typename itk::Image<TPixel, 2>* const output);
+
+/** Extract a region of an image. */
+template<typename TImage>
+void ExtractRegion(const TImage* const image, const itk::ImageRegion<2>& region,
+                   TImage* const output);
 
 /** Scale a channel of an image between 0 and 'channelMax'. */
 template<typename TPixel>
@@ -250,6 +270,10 @@ typename TypeTraits<typename TImage::PixelType>::LargerType AverageNeighborValue
 template<typename TImage>
 std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, const TImage* const image,
                                                    const typename TImage::PixelType& value);
+
+template<typename TImage>
+std::vector<itk::Index<2> > GetPixelsWithValue(const TImage* const image, const itk::ImageRegion<2>& region,
+                                               const typename TImage::PixelType& value);
 
 /** Compute the average of the values appearing at the specified indices. */
 template<typename TImage>
@@ -297,8 +321,17 @@ T& index(itk::VariableLengthVector<T>& v, size_t i);
 template<typename T>
 T index(const itk::VariableLengthVector<T>& v, size_t i);
 
+/** Attempt to set any object to all zeros. Usually scalars or vectors */
 template<typename T>
 void SetObjectToZero(T& object);
+
+/** Print the image on the screen */
+template<typename TImage>
+void PrintImage(const TImage* const image);
+
+/** Print a region of an image on the screen */
+template<typename TImage>
+void PrintRegion(const TImage* const image, const itk::ImageRegion<2>& region);
 
 }// end namespace
 

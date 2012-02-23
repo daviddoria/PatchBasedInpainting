@@ -21,7 +21,7 @@
 
 // Acceptance visitors
 #include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/VarianceDifferenceAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/DilatedVarianceDifferenceAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/AverageDifferenceAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/CompositeAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/FullPatchAverageDifference.hpp"

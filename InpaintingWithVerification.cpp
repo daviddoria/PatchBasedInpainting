@@ -23,11 +23,11 @@
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
 // Acceptance visitors
-#include "Visitors/AcceptanceVisitors/AverageDifferenceAcceptanceVisitor.hpp"
+//#include "Visitors/AcceptanceVisitors/AverageDifferenceAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/CompositeAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/VarianceDifferenceAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/IntraSourcePatchAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/NeverAccept.hpp"
+#include "Visitors/AcceptanceVisitors/DilatedVarianceDifferenceAcceptanceVisitor.hpp"
+//#include "Visitors/AcceptanceVisitors/IntraSourcePatchAcceptanceVisitor.hpp"
+//#include "Visitors/AcceptanceVisitors/NeverAccept.hpp"
 
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
@@ -224,8 +224,8 @@ int main(int argc, char *argv[])
 //   AverageDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> averageDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 100);
 //   compositeAcceptanceVisitor.AddVisitor(&averageDifferenceAcceptanceVisitor);
 
-  VarianceDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> varianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 150);
-  compositeAcceptanceVisitor.AddVisitor(&varianceDifferenceAcceptanceVisitor);
+  DilatedVarianceDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> dilatedVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 150);
+  compositeAcceptanceVisitor.AddVisitor(&dilatedVarianceDifferenceAcceptanceVisitor);
 
 //   IntraSourcePatchAcceptanceVisitor<VertexListGraphType, ImageType> intraSourcePatchAcceptanceVisitor(image, mask, patchHalfWidth, 100);
 //   compositeAcceptanceVisitor.AddVisitor(&intraSourcePatchAcceptanceVisitor);
