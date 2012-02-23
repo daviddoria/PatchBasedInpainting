@@ -197,6 +197,9 @@ template<typename TImage>
 unsigned int CountNonZeroPixels(const TImage* const image);
 
 template<typename TImage>
+unsigned int CountPixelsWithValue(const TImage* const image, const typename TImage::PixelType& value);
+
+template<typename TImage>
 std::vector<itk::Index<2> > GetNonZeroPixels(const TImage* const image);
 
 template<typename TImage>
@@ -274,6 +277,10 @@ std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, c
 template<typename TImage>
 std::vector<itk::Index<2> > GetPixelsWithValue(const TImage* const image, const itk::ImageRegion<2>& region,
                                                const typename TImage::PixelType& value);
+
+/** Fetch the values in the image at the specified indices. */
+template<typename TImage>
+std::vector<typename TImage::PixelType> GetPixelValues(const TImage* const image, const std::vector<itk::Index<2> >& indices);
 
 /** Compute the average of the values appearing at the specified indices. */
 template<typename TImage>

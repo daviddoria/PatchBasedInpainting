@@ -29,7 +29,7 @@ Q_OBJECT
 
 signals:
   // This signal is emitted to start the progress bar
-  void signal_RefreshImage();
+  void signal_RefreshImage() const;
 
   // We need the target region as well while updating the source region because we may want to mask the source patch with the target patch's mask.
   void signal_RefreshSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
@@ -44,8 +44,8 @@ class DisplayVisitor : public InpaintingVisitorParent<TGraph>, public SignalPare
 {
 
 private:
-  TImage* Image;
-  Mask* MaskImage;
+  const TImage* Image;
+  const Mask* MaskImage;
 
   const unsigned int HalfWidth;
   unsigned int NumberOfFinishedVertices;
@@ -53,7 +53,7 @@ private:
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
 public:
-  DisplayVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth) :
+  DisplayVisitor(const TImage* const image, const Mask* const mask, const unsigned int halfWidth) :
   Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0)
   {
 
@@ -65,12 +65,14 @@ public:
   };
 
   void DiscoverVertex(VertexDescriptorType v) const
-  { 
-
+  {
+    std::cout << "DisplayVisitor::DiscoverVertex" << std::endl;
+    emit signal_RefreshImage();
   };
 
   void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
+    std::cout << "DisplayVisitor::PotentialMatchMade" << std::endl;
     // Target node
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(target);
     itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->HalfWidth);

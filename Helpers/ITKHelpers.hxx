@@ -704,6 +704,12 @@ std::vector<itk::Index<2> > GetPixelsWithValue(const TImage* const image, const 
 }
 
 template<typename TImage>
+unsigned int CountPixelsWithValue(const TImage* const image, const typename TImage::PixelType& value)
+{
+  return GetPixelsWithValue(image, image->GetLargestPossibleRegion(), value).size();
+}
+
+template<typename TImage>
 typename TypeTraits<typename TImage::PixelType>::LargerType AverageOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices)
 {
   std::vector<typename TImage::PixelType> pixels;
@@ -956,5 +962,16 @@ void PrintRegion(const TImage* const image, const itk::ImageRegion<2>& region)
     }
 }
 
+template<typename TImage>
+std::vector<typename TImage::PixelType> GetPixelValues(const TImage* const image, const std::vector<itk::Index<2> >& indices)
+{
+  std::vector<typename TImage::PixelType> values;
+  for(std::vector<itk::Index<2> >::const_iterator iter = indices.begin(); iter != indices.end(); ++iter)
+  {
+    values.push_back(image->GetPixel(*iter));
+  }
+
+  return values;
+}
 
 }// end namespace ITKHelpers

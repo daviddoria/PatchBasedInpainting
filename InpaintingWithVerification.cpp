@@ -23,8 +23,9 @@
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
 // Acceptance visitors
-//#include "Visitors/AcceptanceVisitors/AverageDifferenceAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/AverageDifferenceAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/CompositeAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/ANDAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/DilatedVarianceDifferenceAcceptanceVisitor.hpp"
 //#include "Visitors/AcceptanceVisitors/IntraSourcePatchAcceptanceVisitor.hpp"
 //#include "Visitors/AcceptanceVisitors/NeverAccept.hpp"
@@ -215,16 +216,19 @@ int main(int argc, char *argv[])
   averageCorrespondingDifference: 32.1023
   */
 
-  typedef CompositeAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
-  AcceptanceVisitorType compositeAcceptanceVisitor;
+//   typedef CompositeAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
+//   CompositeAcceptanceVisitorType compositeAcceptanceVisitor;
+
+  typedef ANDAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
+  CompositeAcceptanceVisitorType compositeAcceptanceVisitor;
 
 //   NeverAccept<VertexListGraphType> neverAccept;
 //   compositeAcceptanceVisitor.AddVisitor(&neverAccept);
   
-//   AverageDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> averageDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 100);
-//   compositeAcceptanceVisitor.AddVisitor(&averageDifferenceAcceptanceVisitor);
+  AverageDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> averageDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 100);
+  compositeAcceptanceVisitor.AddVisitor(&averageDifferenceAcceptanceVisitor);
 
-  DilatedVarianceDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> dilatedVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 150);
+  DilatedVarianceDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> dilatedVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 500);
   compositeAcceptanceVisitor.AddVisitor(&dilatedVarianceDifferenceAcceptanceVisitor);
 
 //   IntraSourcePatchAcceptanceVisitor<VertexListGraphType, ImageType> intraSourcePatchAcceptanceVisitor(image, mask, patchHalfWidth, 100);
@@ -239,7 +243,7 @@ int main(int argc, char *argv[])
 //                                           boundaryStatusMap);
 
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
-                            CompositeDescriptorVisitorType, AcceptanceVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType>
+                            CompositeDescriptorVisitorType, CompositeAcceptanceVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType>
                             InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
                                           compositeDescriptorVisitor, compositeAcceptanceVisitor, priorityMap, &priorityFunction, patchHalfWidth,
