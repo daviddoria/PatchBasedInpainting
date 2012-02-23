@@ -45,7 +45,8 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
     {
       if( (*boundaryNodeQueue).empty() )
       {
-        std::cout << "Queue is empty, exiting." << std::endl;
+        std::cout << "Inpainting complete. There were " << numberOfManualVerifications << " manual verifications required." << std::endl;
+        vis.InpaintingComplete();
         return;  //terminate if the queue is empty.
       }
       targetNode = (*boundaryNodeQueue).top();
@@ -81,9 +82,6 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
 
     vis.FinishVertex(targetNode, sourceNode);
   } // end main iteration loop
-
-  std::cout << "There were " << numberOfManualVerifications << " manual verifications required." << std::endl;
-  vis.InpaintingComplete();
 
 };
 
