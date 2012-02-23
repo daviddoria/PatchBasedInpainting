@@ -7,14 +7,8 @@
 #include "Visitors/AcceptanceVisitors/AcceptanceVisitorParent.h"
 
 // Custom
-#include "ImageProcessing/Mask.h"
-#include "Helpers/OutputHelpers.h"
 #include "Helpers/ITKHelpers.h"
-#include "Helpers/BoostHelpers.h"
-
-// ITK
-#include "itkImage.h"
-#include "itkImageRegion.h"
+#include "Utilities/Statistics.h"
 
 /**
 
@@ -22,9 +16,12 @@
 struct AverageFunctor
 {
   template <typename TPixel>
-  float operator()(const std::vector<TPixel>& pixels) const
+  typename TypeTraits<TPixel>::LargerType operator()(const std::vector<TPixel>& pixels) const
   {
-    return ITKHelpers::SumOfComponents(ITKHelpers::Average(pixels));
+    typename TypeTraits<TPixel>::LargerType allChannelsAverage = Statistics::Average(pixels);
+    // std::cout << "AverageFunctor() : allChannelsAverage " << allChannelsAverage << std::endl;
+
+    return allChannelsAverage;
   }
 };
 

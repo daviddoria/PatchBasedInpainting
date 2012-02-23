@@ -109,7 +109,7 @@ std::vector<itk::Index<2> > Get8NeighborsInRegion(const itk::ImageRegion<2>& reg
 /** The return value MUST be a smart pointer. */
 itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* input);
 
-itk::VariableLengthVector<float> Average(const std::vector<itk::VariableLengthVector<float> >& v);
+// itk::VariableLengthVector<float> Average(const std::vector<itk::VariableLengthVector<float> >& v);
 
 std::vector<itk::Index<2> > OffsetsToIndices(const std::vector<itk::Offset<2> >& offsets, const itk::Index<2>& index);
 
@@ -310,12 +310,12 @@ float AverageDifferenceInRegion(const TImage* const image1, const itk::ImageRegi
                                 const TImage* const image2, const itk::ImageRegion<2>& region2,
                                 TDifferenceFunctor differenceFunctor);
 
-// template <typename T>
-// T SumOfComponents(const itk::VariableLengthVector<T>& v);
-
 /** Sum the componets of an object.*/
 template <typename T>
-float SumOfComponents(const T& v);
+typename TypeTraits<T>::LargerComponentType SumOfComponents(const T& v);
+
+template <typename T>
+typename TypeTraits<T>::LargerComponentType SumOfComponentMagnitudes(const T& v);
 
 /** Return the length of the vector through the same interface that we have defined for std::vector and scalars in Helpers.*/
 template<typename T>

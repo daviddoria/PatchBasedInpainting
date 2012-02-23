@@ -20,9 +20,15 @@
 struct VarianceFunctor
 {
   template <typename TPixel>
-  float operator()(const std::vector<TPixel>& pixels) const
+  typename TypeTraits<TPixel>::LargerType operator()(const std::vector<TPixel>& pixels) const
   {
-    return ITKHelpers::SumOfComponents(Statistics::Variance(pixels));
+    assert(pixels.size() > 0);
+//     if(pixels.size() <= 0)
+//     {
+//       throw std::runtime_error("Must have more than 0 items to use VarianceFunctor!");
+//     }
+    typename TypeTraits<TPixel>::LargerType allChannelsVariance = Statistics::Variance(pixels);
+    return allChannelsVariance;
   }
 };
 

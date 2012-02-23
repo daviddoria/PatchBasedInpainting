@@ -23,6 +23,7 @@
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "Initializers/InitializeFromMaskImage.hpp"
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
 #include "Interactive/TopPatchesDialog.h"
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
 
@@ -49,7 +50,7 @@ struct DemoDriver
   typedef boost::vector_property_map<ImagePatchPixelDescriptorType, IndexMapType> ImagePatchDescriptorMapType;
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> VisitorType;
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
-                                  ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
+                                  ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > > KNNSearchType;
   VertexListGraphType* graph;
 
   unsigned int PatchRadius;
@@ -94,7 +95,7 @@ struct DemoDriver
     (*KNNSearch)(vi, vi_end, targetNode, bestSourceNodes);
     std::cout << "There are " << bestSourceNodes.size() << " bestSourceNodes." << std::endl;
     
-    ImagePatchDifference<ImagePatchPixelDescriptorType> patchDifferenceFunctor;
+    ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > patchDifferenceFunctor;
     float patchDifference = patchDifferenceFunctor(get(*ImagePatchDescriptorMap, targetNode), get(*ImagePatchDescriptorMap, bestSourceNodes[0]));
     std::cout << "Best patch error: " << patchDifference << std::endl;
 

@@ -249,7 +249,7 @@ typename TImage::PixelType AverageNonMaskedNeighborValue(const TImage* const ima
     }
 
   using Statistics::Average;
-  using ITKHelpers::Average;
+  //using ITKHelpers::Average;
   return Average(validValues);
 }
 
@@ -269,7 +269,7 @@ typename TImage::PixelType AverageMaskedNeighborValue(const TImage* const image,
     throw std::runtime_error("Cannot compute the average value of the non-masked neighbors because there are 0 of them!");
   }
   using Statistics::Average;
-  using ITKHelpers::Average;
+  //using ITKHelpers::Average;
   return Average(holeValues);
 }
 

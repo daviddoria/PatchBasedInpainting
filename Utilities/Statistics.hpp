@@ -84,8 +84,14 @@ typename TypeTraits<TVector>::LargerComponentType Average(const TVector& v)
 template<typename TVector>
 typename TypeTraits<TVector>::LargerComponentType Variance(const TVector& v)
 {
-  typedef typename TypeTraits<TVector>::LargerComponentType VarianceType;
+  assert(v.size() > 0);
+  if(v.size() <= 0)
+  {
+    throw std::runtime_error("Must have more than 0 items to compute a variance!");
+  }
   
+  typedef typename TypeTraits<TVector>::LargerComponentType VarianceType;
+
   VarianceType average = Average(v);
   // std::cout << "Variance: average = " << average << std::endl;
   //VarianceType variance = itk::NumericTraits<VarianceType>::Zero; // I don't understand why this doesn't work

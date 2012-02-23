@@ -402,30 +402,30 @@ std::vector<itk::Offset<2> > Get8NeighborOffsets()
   return offsets;
 }
 
-itk::VariableLengthVector<float> Average(const std::vector<itk::VariableLengthVector<float> >& v)
-{
-  // std::cout << "ITKHelpers::Average" << std::endl;
-  if(v.size() == 0)
-  {
-    throw std::runtime_error("Cannot average vector with size 0!");
-  }
-  itk::VariableLengthVector<float> vectorSum;
-  vectorSum.SetSize(v[0].GetSize());
-  vectorSum.Fill(0);
-
-  for(unsigned int i = 0; i < v.size(); ++i)
-    {
-    //std::cout << "Average: Adding value " << v[i] << std::endl;
-    vectorSum += v[i];
-    //std::cout << "Average: Current vectorSum " << vectorSum << std::endl;
-    }
-
-  itk::VariableLengthVector<float> averageVector;
-  averageVector.SetSize(v[0].GetSize());
-  averageVector = vectorSum / static_cast<float>(v.size());
-
-  return averageVector;
-}
+// itk::VariableLengthVector<float> Average(const std::vector<itk::VariableLengthVector<float> >& v)
+// {
+//   // std::cout << "ITKHelpers::Average" << std::endl;
+//   if(v.size() == 0)
+//   {
+//     throw std::runtime_error("Cannot average vector with size 0!");
+//   }
+//   itk::VariableLengthVector<float> vectorSum;
+//   vectorSum.SetSize(v[0].GetSize());
+//   vectorSum.Fill(0);
+// 
+//   for(unsigned int i = 0; i < v.size(); ++i)
+//     {
+//     //std::cout << "Average: Adding value " << v[i] << std::endl;
+//     vectorSum += v[i];
+//     //std::cout << "Average: Current vectorSum " << vectorSum << std::endl;
+//     }
+// 
+//   itk::VariableLengthVector<float> averageVector;
+//   averageVector.SetSize(v[0].GetSize());
+//   averageVector = vectorSum / static_cast<float>(v.size());
+// 
+//   return averageVector;
+// }
 
 std::vector<itk::Index<2> > OffsetsToIndices(const std::vector<itk::Offset<2> >& offsets, const itk::Index<2>& index)
 {

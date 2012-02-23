@@ -718,7 +718,7 @@ typename TypeTraits<typename TImage::PixelType>::LargerType AverageOfPixelsAtInd
     pixels.push_back(image->GetPixel(indices[i]));
   }
   using Statistics::Average;
-  using ITKHelpers::Average;
+  //using ITKHelpers::Average;
   return Average(pixels);
 }
 
@@ -734,24 +734,12 @@ typename TypeTraits<typename TImage::PixelType>::LargerType VarianceOfPixelsAtIn
   return Statistics::Variance(pixels);
 }
 
-// This assumes you know the object is a VariableLengthVector
-// template <typename T>
-// T SumOfComponents(const itk::VariableLengthVector<T>& v)
-// {
-//   T sumOfComponents = 0;
-//   for(unsigned int i = 0; i < v.GetSize(); ++i)
-//     {
-//     sumOfComponents += v[i];
-//     }
-// 
-//   return sumOfComponents;
-// }
-
 // This lets you sum either a scalar or a VariableLengthVector
 template <typename T>
-float SumOfComponents(const T& v)
+typename TypeTraits<T>::LargerComponentType SumOfComponents(const T& v)
 {
-  typename TypeTraits<T>::ComponentType sumOfComponents = 0.0f;
+  typename TypeTraits<T>::LargerComponentType sumOfComponents;
+  SetObjectToZero(sumOfComponents);
   using Helpers::length;
   using ITKHelpers::length;
   using Helpers::index;
@@ -759,6 +747,23 @@ float SumOfComponents(const T& v)
   for(unsigned int i = 0; i < length(v); ++i)
     {
     sumOfComponents += index(v, i);
+    }
+
+  return sumOfComponents;
+}
+
+template <typename T>
+typename TypeTraits<T>::LargerComponentType SumOfComponentMagnitudes(const T& v)
+{
+  typename TypeTraits<T>::LargerComponentType sumOfComponents;
+  SetObjectToZero(sumOfComponents);
+  using Helpers::length;
+  using ITKHelpers::length;
+  using Helpers::index;
+  using ITKHelpers::index;
+  for(unsigned int i = 0; i < length(v); ++i)
+    {
+    sumOfComponents += fabs(index(v, i));
     }
 
   return sumOfComponents;
@@ -776,7 +781,7 @@ typename TypeTraits<typename TImage::PixelType>::LargerType AverageInRegion(cons
     }
 
   using Statistics::Average;
-  using ITKHelpers::Average;
+  //using ITKHelpers::Average;
   return Average(pixels);
 }
 

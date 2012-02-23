@@ -21,7 +21,7 @@ struct SumAbsolutePixelDifference
     using ITKHelpers::length;
     using Helpers::index;
     using ITKHelpers::index;
-    assert(Helpers::length(a) == Helpers::length(b));
+    assert(length(a) == length(b));
     
     float pixelDifference = 0.0f;
     for(unsigned int component = 0; component < ITKHelpers::length(a); ++component)
