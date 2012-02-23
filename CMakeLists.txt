@@ -233,3 +233,4 @@ add_subdirectory(Concepts)
 
 add_subdirectory(Interactive/Delegates)
 add_subdirectory(LearnParameters)
+add_subdirectory(SpeedTests)

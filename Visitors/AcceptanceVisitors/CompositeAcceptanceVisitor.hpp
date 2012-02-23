@@ -10,16 +10,17 @@
  * all calls to all of its internal visitors.
  */
 template <typename TGraph>
-struct CompositeAcceptanceVisitor
+struct CompositeAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
 {
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& energy) const
   {
     bool acceptAll = true;
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
-      bool accept = Visitors[visitorId]->AcceptMatch(target, source);
+      float energy;
+      bool accept = Visitors[visitorId]->AcceptMatch(target, source, energy);
       acceptAll = acceptAll && accept;
       }
     return acceptAll;

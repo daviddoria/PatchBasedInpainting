@@ -27,6 +27,7 @@
 #include "Visitors/AcceptanceVisitors/CompositeAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/VarianceDifferenceAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/IntraSourcePatchAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/NeverAccept.hpp"
 
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
@@ -61,6 +62,7 @@
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
 
 // Inpainting algorithm
 #include "Algorithms/InpaintingAlgorithm.hpp"
@@ -197,22 +199,36 @@ int main(int argc, char *argv[])
           ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
-  ImagePatchDescriptorVisitorType smallImagePatchDescriptorVisitor(image, mask, smallImagePatchDescriptorMap, 5);
+  // Note: currently we can't do this "first search by small patches" because some small patches are valid while their corresponding big patches are not (near the image border)
+  // so the second step of the search (linear best) will be searching for big patches on the same nodes that small patches were valid, making them out of bounds)
+  // ImagePatchDescriptorVisitorType smallImagePatchDescriptorVisitor(image, mask, smallImagePatchDescriptorMap, 5);
 
   typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
   CompositeDescriptorVisitorType compositeDescriptorVisitor;
   compositeDescriptorVisitor.AddVisitor(&imagePatchDescriptorVisitor);
-  compositeDescriptorVisitor.AddVisitor(&smallImagePatchDescriptorVisitor);
-  
-  AverageDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> averageDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 100);
-  VarianceDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> varianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 100);
-  IntraSourcePatchAcceptanceVisitor<VertexListGraphType, ImageType> intraSourcePatchAcceptanceVisitor(image, mask, patchHalfWidth, 100);
+  // compositeDescriptorVisitor.AddVisitor(&smallImagePatchDescriptorVisitor);
+
+  /*
+   * Grass statistics:
+  averageAverageDifference: 1.14196
+  averageVarianceDifference: 50.2063
+  averageCorrespondingDifference: 32.1023
+  */
 
   typedef CompositeAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
   AcceptanceVisitorType compositeAcceptanceVisitor;
-  compositeAcceptanceVisitor.AddVisitor(&averageDifferenceAcceptanceVisitor);
+
+//   NeverAccept<VertexListGraphType> neverAccept;
+//   compositeAcceptanceVisitor.AddVisitor(&neverAccept);
+  
+//   AverageDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> averageDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 100);
+//   compositeAcceptanceVisitor.AddVisitor(&averageDifferenceAcceptanceVisitor);
+
+  VarianceDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> varianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 150);
   compositeAcceptanceVisitor.AddVisitor(&varianceDifferenceAcceptanceVisitor);
-  compositeAcceptanceVisitor.AddVisitor(&intraSourcePatchAcceptanceVisitor);
+
+//   IntraSourcePatchAcceptanceVisitor<VertexListGraphType, ImageType> intraSourcePatchAcceptanceVisitor(image, mask, patchHalfWidth, 100);
+//   compositeAcceptanceVisitor.AddVisitor(&intraSourcePatchAcceptanceVisitor);
 
   // Create the inpainting visitor
 //   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
@@ -237,32 +253,33 @@ int main(int argc, char *argv[])
 
   LoggerVisitor<VertexListGraphType> loggerVisitor("log.txt");
 
-  typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeVisitorType;
-  CompositeVisitorType compositeVisitor;
-  compositeVisitor.AddVisitor(&inpaintingVisitor);
-  compositeVisitor.AddVisitor(&displayVisitor);
-  compositeVisitor.AddVisitor(&debugVisitor);
-  compositeVisitor.AddVisitor(&loggerVisitor);
+  typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
+  CompositeInpaintingVisitorType compositeInpaintingVisitor;
+  compositeInpaintingVisitor.AddVisitor(&inpaintingVisitor);
+  compositeInpaintingVisitor.AddVisitor(&displayVisitor);
+  compositeInpaintingVisitor.AddVisitor(&debugVisitor);
+  compositeInpaintingVisitor.AddVisitor(&loggerVisitor);
 
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage<CompositeVisitorType, VertexDescriptorType>(mask, &compositeVisitor);
+  InitializeFromMaskImage<CompositeInpaintingVisitorType, VertexDescriptorType>(mask, &compositeInpaintingVisitor);
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > ImagePatchDifferenceType;
   // Create the nearest neighbor finders
+  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
+                                  ImagePatchDifferenceType > KNNSearchType;
+  KNNSearchType knnSearch(imagePatchDescriptorMap, 1000);
+
 //   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
 //                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
-//   KNNSearchType knnSearch(imagePatchDescriptorMap, 1000);
-
-  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
-                                  ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
-  KNNSearchType knnSearch(smallImagePatchDescriptorMap, 1000);
+//   KNNSearchType knnSearch(smallImagePatchDescriptorMap, 1000);
 
   // For debugging we use LinearSearchBestProperty instead of DefaultSearchBest because it can output the difference value.
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
-                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
+                                   ImagePatchDifferenceType > BestSearchType;
   BestSearchType bestSearch(imagePatchDescriptorMap);
 
 //   typedef DefaultSearchBest BestSearchType;
@@ -310,9 +327,9 @@ int main(int argc, char *argv[])
 
   // Run the remaining inpainting
   QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
-                                VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType,
+                                VertexListGraphType, CompositeInpaintingVisitorType, BoundaryStatusMapType,
                                 BoundaryNodeQueueType, KNNSearchType, BestSearchType, ManualSearchType, InpainterType>,
-                                graph, compositeVisitor, &boundaryStatusMap, &boundaryNodeQueue, knnSearch,
+                                graph, compositeInpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, knnSearch,
                                 bestSearch, boost::ref(manualSearchBest), patchInpainter));
 
   return app.exec();

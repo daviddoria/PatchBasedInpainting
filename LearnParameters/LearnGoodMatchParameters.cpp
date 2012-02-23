@@ -41,6 +41,7 @@
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -49,13 +50,15 @@
 #include <boost/graph/grid_graph.hpp>
 #include <boost/property_map/property_map.hpp>
 
-// Run with: Data/trashcan.mha Data/trashcan_uniformRegion.mha 15
+// Run with: trashcan.mha trashcan_uniformRegion.mha 15 100
 int main(int argc, char *argv[])
 {
+  // The "uniformRegionMask" should be "valid" only in a region that should match really well to itself.
+
   // Verify arguments
-  if(argc != 4)
+  if(argc != 5)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patchHalfWidth" << std::endl;
+    std::cerr << "Required arguments: image.mha uniformRegionMask.mha patchHalfWidth numberOfIterations" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
@@ -73,10 +76,16 @@ int main(int argc, char *argv[])
   unsigned int patchHalfWidth = 0;
   ssPatchRadius >> patchHalfWidth;
 
+  std::stringstream ssIterations;
+  ssIterations << argv[4];
+  unsigned int numberOfIterations = 1000;
+  ssIterations >> numberOfIterations;
+  
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
   std::cout << "Patch half width: " << patchHalfWidth << std::endl;
+  std::cout << "numberOfIterations: " << numberOfIterations << std::endl;
 
   typedef FloatVectorImageType ImageType;
 
@@ -133,16 +142,16 @@ int main(int argc, char *argv[])
   // Initialize the boundary node queue from the user provided mask image.
   InitializeFromMaskImage<ImagePatchDescriptorVisitorType, VertexDescriptorType>(mask.GetPointer(), &imagePatchDescriptorVisitor);
 
-  ImagePatchDifference<ImagePatchPixelDescriptorType> pixelDifferenceFunctor;
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > ImagePatchDifferenceType;
+  ImagePatchDifferenceType pixelDifferenceFunctor;
   
   // Create the nearest neighbor finder
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
-                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
+                                   ImagePatchDifferenceType > BestSearchType;
   BestSearchType searchBest(imagePatchDescriptorMap);
 
   std::cout << "Starting random matching..." << std::endl;
   
-  unsigned int numberOfIterations = 1000;
   float totalAverageDifferences = 0.0f;
   float totalVarianceDifferences = 0.0f;
   float totalCorrespondingDifferences = 0.0f;

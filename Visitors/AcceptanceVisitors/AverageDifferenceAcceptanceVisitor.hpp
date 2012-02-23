@@ -35,6 +35,12 @@ struct AverageDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGrap
 
   }
 
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
+  {
+    float computedEnergy;
+    return AcceptMatch(target, source, computedEnergy);
+  }
+  
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& computedEnergy) const
   {
     itk::Index<2> targetPixel = ITKHelpers::CreateIndex(target);

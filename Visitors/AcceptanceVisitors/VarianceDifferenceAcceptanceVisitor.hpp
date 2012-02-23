@@ -37,7 +37,7 @@ struct VarianceDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGra
   {
 
   }
-
+  
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& computedEnergy) const
   {
     itk::Index<2> targetPixel = ITKHelpers::CreateIndex(target);

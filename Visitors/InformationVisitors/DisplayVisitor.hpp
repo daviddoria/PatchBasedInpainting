@@ -78,6 +78,7 @@ public:
 
     // Source node
     itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(source);
+    // std::cout << "DisplayVisitor::PotentialMatchMade source " << sourceIndex << std::endl;
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, this->HalfWidth);
     emit signal_RefreshSource(sourceRegion, targetRegion);
   };

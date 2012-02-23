@@ -113,7 +113,8 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
-    return AcceptanceVisitor.AcceptMatch(target, source);
+    float energy = 0.0f;
+    return AcceptanceVisitor.AcceptMatch(target, source, energy);
   };
 
   void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)
