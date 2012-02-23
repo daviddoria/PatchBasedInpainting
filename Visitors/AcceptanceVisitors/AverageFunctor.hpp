@@ -22,7 +22,7 @@
 struct AverageFunctor
 {
   template <typename TPixel>
-  float operator()(const std::vector<TPixel>& pixels)
+  float operator()(const std::vector<TPixel>& pixels) const
   {
     return ITKHelpers::SumOfComponents(ITKHelpers::Average(pixels));
   }

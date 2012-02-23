@@ -20,7 +20,7 @@
 struct VarianceFunctor
 {
   template <typename TPixel>
-  float operator()(const std::vector<TPixel>& pixels)
+  float operator()(const std::vector<TPixel>& pixels) const
   {
     return ITKHelpers::SumOfComponents(Statistics::Variance(pixels));
   }

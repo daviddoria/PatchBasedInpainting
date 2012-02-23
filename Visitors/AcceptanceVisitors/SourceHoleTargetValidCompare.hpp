@@ -19,7 +19,7 @@
 /**
 
  */
-template <typename TGraph, typename TImage, TFunctor>
+template <typename TGraph, typename TImage, typename TFunctor>
 struct SourceHoleTargetValidCompare : public AcceptanceVisitorParent<TGraph>
 {
   TImage* Image;
@@ -35,6 +35,7 @@ struct SourceHoleTargetValidCompare : public AcceptanceVisitorParent<TGraph>
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
   SourceHoleTargetValidCompare(TImage* const image, Mask* const mask, const unsigned int halfWidth, TFunctor functor, const float differenceThreshold = 100) :
+  AcceptanceVisitorParent<TGraph>("SourceHoleTargetValidCompare"),
   Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0), Functor(functor), DifferenceThreshold(differenceThreshold)
   {
   }
@@ -64,16 +65,16 @@ struct SourceHoleTargetValidCompare : public AcceptanceVisitorParent<TGraph>
 
     // Compute the difference
     computedEnergy = (targetValue - sourceValue).GetNorm();
-    std::cout << "DilatedVarianceDifferenceAcceptanceVisitor Energy: " << computedEnergy << std::endl;
+    std::cout << this->VisitorName << ": Energy: " << computedEnergy << std::endl;
 
     if(computedEnergy < DifferenceThreshold)
       {
-      std::cout << "DilatedVarianceDifferenceAcceptanceVisitor: Match accepted (less than " << DifferenceThreshold << ")" << std::endl;
+      std::cout << this->VisitorName << ": Match accepted (less than " << DifferenceThreshold << ")" << std::endl;
       return true;
       }
     else
       {
-      std::cout << "DilatedVarianceDifferenceAcceptanceVisitor: Match rejected (greater than " << DifferenceThreshold << ")" << std::endl;
+      std::cout << this->VisitorName << ": Match rejected (greater than " << DifferenceThreshold << ")" << std::endl;
       return false;
       }
   };

@@ -26,7 +26,11 @@
 #include "Visitors/AcceptanceVisitors/AverageDifferenceAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/CompositeAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/ANDAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/DilatedVarianceDifferenceAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/DilatedRegionAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/SourceHoleTargetValidCompare.hpp"
+#include "Visitors/AcceptanceVisitors/SourceValidTargetValidCompare.hpp"
+#include "Visitors/AcceptanceVisitors/VarianceFunctor.hpp"
+#include "Visitors/AcceptanceVisitors/AverageFunctor.hpp"
 //#include "Visitors/AcceptanceVisitors/IntraSourcePatchAcceptanceVisitor.hpp"
 //#include "Visitors/AcceptanceVisitors/NeverAccept.hpp"
 
@@ -222,15 +226,23 @@ int main(int argc, char *argv[])
   typedef ANDAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
   CompositeAcceptanceVisitorType compositeAcceptanceVisitor;
 
-//   NeverAccept<VertexListGraphType> neverAccept;
-//   compositeAcceptanceVisitor.AddVisitor(&neverAccept);
+  // Source region to source region comparisons
+  SourceValidTargetValidCompare<VertexListGraphType, ImageType, AverageFunctor> validRegionAverageAcceptance(image, mask, patchHalfWidth, AverageFunctor(), 100);
+  compositeAcceptanceVisitor.AddVisitor(&validRegionAverageAcceptance);
+
+  SourceValidTargetValidCompare<VertexListGraphType, ImageType, VarianceFunctor> validRegionVarianceAcceptance(image, mask, patchHalfWidth, VarianceFunctor(), 100);
+  compositeAcceptanceVisitor.AddVisitor(&validRegionVarianceAcceptance);
+
+  // Source region to hole region comparisons
+  SourceHoleTargetValidCompare<VertexListGraphType, ImageType, AverageFunctor> holeRegionAverageAcceptance(image, mask, patchHalfWidth, AverageFunctor(), 100);
+  compositeAcceptanceVisitor.AddVisitor(&holeRegionAverageAcceptance);
+
+  SourceHoleTargetValidCompare<VertexListGraphType, ImageType, VarianceFunctor> holeRegionVarianceAcceptance(image, mask, patchHalfWidth, VarianceFunctor(), 100);
+  compositeAcceptanceVisitor.AddVisitor(&holeRegionVarianceAcceptance);
+
+  // Thin source region comparison
+  DilatedRegionAcceptanceVisitor<VertexListGraphType, ImageType, VarianceFunctor> dilatedVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, VarianceFunctor(), 500);
   
-  AverageDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> averageDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 100);
-  compositeAcceptanceVisitor.AddVisitor(&averageDifferenceAcceptanceVisitor);
-
-  DilatedVarianceDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> dilatedVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 500);
-  compositeAcceptanceVisitor.AddVisitor(&dilatedVarianceDifferenceAcceptanceVisitor);
-
 //   IntraSourcePatchAcceptanceVisitor<VertexListGraphType, ImageType> intraSourcePatchAcceptanceVisitor(image, mask, patchHalfWidth, 100);
 //   compositeAcceptanceVisitor.AddVisitor(&intraSourcePatchAcceptanceVisitor);
 

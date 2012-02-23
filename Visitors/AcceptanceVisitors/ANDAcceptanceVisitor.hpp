@@ -14,6 +14,8 @@ struct ANDAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
 {
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
+  ANDAcceptanceVisitor() : AcceptanceVisitorParent<TGraph>("ANDAcceptanceVisitor"){};
+  
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& energy) const
   {
     bool acceptAll = true;
