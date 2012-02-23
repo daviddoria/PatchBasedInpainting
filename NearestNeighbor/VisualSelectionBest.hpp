@@ -39,17 +39,18 @@ public:
   {
     Node queryNode(queryVertex);
     //Dialog->SetQueryNode(queryNode); // Warnings that QPixmap is not safe to use in a non-GUI thread.
-    std::cout << "invokeMethod SetQueryNode." << std::endl;
+    // std::cout << "invokeMethod SetQueryNode." << std::endl;
     QMetaObject::invokeMethod(Dialog, "SetQueryNode", Qt::BlockingQueuedConnection, Q_ARG(Node, queryNode));
 
     std::vector<Node> sourceNodes;
     for(TForwardIterator iter = possibleNodesBegin; iter != possibleNodesEnd; ++iter)
       {
       Node node(*iter);
+      // std::cout << "VisualSelectionBest::operator() node: " << node[0] << " " << node[1] << std::endl;
       sourceNodes.push_back(node);
       }
     //Dialog->SetSourceNodes(sourceNodes);
-    std::cout << "invokeMethod SetSourceNodes." << std::endl;
+    // std::cout << "invokeMethod SetSourceNodes." << std::endl;
     QMetaObject::invokeMethod(Dialog, "SetSourceNodes", Qt::BlockingQueuedConnection, Q_ARG(std::vector<Node>, sourceNodes));
 
     // In Qt 4.7, we cannot get the return value of a function unless DirectConnection is used (which doesn't make sense in this

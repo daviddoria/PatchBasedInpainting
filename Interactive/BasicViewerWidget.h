@@ -61,7 +61,9 @@ private:
 
   /** The mask that will be used to mask the patches that are displayed. */
   Mask* MaskImage;
-  
+
+  typename TImage::Pointer TargetRegionIndicatorImage;
+
   /** This variable is used to track whether or not the image size changed between this refresh and the last refresh.
    * Typically it is simply used to determine if ResetCamera should be called before rendering. We typically do not
    * want to call ResetCamera if only the image content has been changed, but we do want to call it if the image
@@ -70,6 +72,7 @@ private:
 
   /** A wrapper that creates and holds the image, the mapper, and the actor. */
   Layer ImageLayer;
+  Layer TargetRegionIndicatorLayer;
 
 public:
   // Constructor

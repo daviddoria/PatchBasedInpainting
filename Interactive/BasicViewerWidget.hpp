@@ -42,6 +42,10 @@ BasicViewerWidget<TImage>::BasicViewerWidget(TImage* const image, Mask* const ma
 
   this->setupUi(this);
 
+  TargetRegionIndicatorImage = TImage::New();
+  TargetRegionIndicatorImage->SetRegions(image->GetLargestPossibleRegion());
+  TargetRegionIndicatorImage->Allocate();
+
   this->ImageDimension[0] = 0;
   this->ImageDimension[1] = 0;
   this->ImageDimension[2] = 0;
@@ -54,6 +58,7 @@ BasicViewerWidget<TImage>::BasicViewerWidget(TImage* const image, Mask* const ma
   this->qvtkWidget->GetRenderWindow()->AddRenderer(this->Renderer);
 
   this->Renderer->AddViewProp(ImageLayer.ImageSlice);
+  this->Renderer->AddViewProp(TargetRegionIndicatorLayer.ImageSlice);
 
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
@@ -128,6 +133,12 @@ void BasicViewerWidget<TImage>::slot_UpdateTarget(const itk::ImageRegion<2>& reg
 {
   std::cout << "Update target." << std::endl;
 
+  ITKHelpers::OutlineRegion(TargetRegionIndicatorImage.GetPointer(), region, 255);
+
+  ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->TargetRegionIndicatorLayer.ImageData);
+
+  this->qvtkWidget->GetRenderWindow()->Render();
+  
   // Target patch
   QImage targetImage = HelpersQt::GetQImageColor(Image, region);
   QGraphicsPixmapItem* item = this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));

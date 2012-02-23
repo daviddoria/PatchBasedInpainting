@@ -51,7 +51,7 @@ void ListModelPatches<TImage>::SetRegions(const std::vector<itk::ImageRegion<2> 
 template <typename TImage>
 void ListModelPatches<TImage>::SetNodes(const std::vector<Node>& nodes)
 {
-  std::cout << "SetNodes called with " << nodes.size() << " nodes." << std::endl;
+  std::cout << "ListModelPatches::SetNodes called with " << nodes.size() << " nodes." << std::endl;
   this->Regions.clear();
   for(std::vector<Node>::const_iterator iter = nodes.begin(); iter != nodes.end(); ++iter)
     {
@@ -59,7 +59,7 @@ void ListModelPatches<TImage>::SetNodes(const std::vector<Node>& nodes)
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, this->PatchHalfWidth);
     this->Regions.push_back(region);
     }
-
+  std::cout << "SetNodes Refresh()" << std::endl;
   Refresh();
 }
 
@@ -69,6 +69,7 @@ QVariant ListModelPatches<TImage>::data(const QModelIndex& index, int role) cons
   QVariant returnValue;
   if(role == Qt::DisplayRole && index.row() >= 0)
     {
+    // std::cout << "ListModelPatches::data requesting region " << this->Regions[index.row()] << std::endl;
     QImage patchImage = HelpersQt::GetQImageColor<FloatVectorImageType>(this->Image, this->Regions[index.row()]);
 
     // patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
