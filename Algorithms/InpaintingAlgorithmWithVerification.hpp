@@ -61,8 +61,8 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
     typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
     tie(vi,vi_end) = vertices(g);
 
-    std::vector<VertexDescriptorType> outputContainer;
-    knnFinder(vi, vi_end, targetNode, outputContainer);
+    std::vector<VertexDescriptorType> outputContainer(knnFinder.GetK());
+    knnFinder(vi, vi_end, targetNode, outputContainer.begin());
 
     VertexDescriptorType sourceNode = bestNeighborFinder(outputContainer.begin(), outputContainer.end(), targetNode);
     vis.PotentialMatchMade(targetNode, sourceNode);
