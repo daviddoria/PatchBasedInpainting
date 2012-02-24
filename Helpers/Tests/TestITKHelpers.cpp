@@ -599,10 +599,11 @@ void TestSumOfComponents_Vector()
 
 void TestSubtract()
 {
-  itk::Index<2> targetPixel = ITKHelpers::CreateIndex(target);
-  itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, HalfWidth);
-
-  itk::Index<2> sourcePixel = ITKHelpers::CreateIndex(source);
-  itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, HalfWidth);
+  throw std::runtime_error("TestSubtract() not yet written!");
+//   itk::Index<2> targetPixel = ITKHelpers::CreateIndex(target);
+//   itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, HalfWidth);
+// 
+//   itk::Index<2> sourcePixel = ITKHelpers::CreateIndex(source);
+//   itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, HalfWidth);
 
 }

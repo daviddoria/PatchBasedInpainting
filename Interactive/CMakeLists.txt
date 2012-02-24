@@ -7,6 +7,9 @@ endif(NOT QT4_FOUND)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
+add_library(libGUI Layer.cpp InteractorStyleImageWithDrag.cpp HelpersQt.cpp ImageCamera.cpp)
+target_link_libraries(libGUI libHelpers ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
+
 # if(BuildInteractive)
 #   message("Interactive/Building interactive.")
 #   add_subdirectory(Widgets)
@@ -36,7 +39,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 #   VectorLayer.cpp
 #   ${UISrcs} ${MOCSrcs})
 # 
-#   TARGET_LINK_LIBRARIES(PatchBasedInpaintingInteractive PatchBasedInpainting libWidgets libModelView libHelpers ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
+#   target_link_libraries(PatchBasedInpaintingInteractive PatchBasedInpainting libWidgets libModelView libHelpers ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
 #   INSTALL( TARGETS PatchBasedInpaintingInteractive RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif(BuildInteractive)
 
@@ -60,7 +63,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 # 
 #   ${UISrcs} ${MOCSrcs})
 # 
-#   TARGET_LINK_LIBRARIES(PatchBasedInpaintingViewer libHelpers ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
+#   target_link_libraries(PatchBasedInpaintingViewer libHelpers ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
 #   INSTALL( TARGETS PatchBasedInpaintingViewer RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif(BuildViewer)
 

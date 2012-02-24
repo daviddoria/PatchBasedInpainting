@@ -63,29 +63,39 @@
 # add_test(TestMovablePatch TestMovablePatch)
 
 # include_directories(${CMAKE_CURRENT_BINARY_DIR})
-# QT4_WRAP_UI(UISrcs ../TopPatchesWidget.ui)
-# QT4_WRAP_CPP(MOCSrcs ../TopPatchesWidget.h ../Delegates/PixmapDelegate.h)
-# add_executable(TestTopPatchesWidget TestTopPatchesWidget.cpp ../Delegates/PixmapDelegate.cpp ../HelpersQt.cpp ${UISrcs} ${MOCSrcs})
+# QT4_WRAP_UI(TopPatchesWidgetUISrcs ../TopPatchesWidget.ui)
+# QT4_WRAP_CPP(TopPatchesWidgetMOCSrcs ../TopPatchesWidget.h ../Delegates/PixmapDelegate.h)
+# add_executable(TestTopPatchesWidget TestTopPatchesWidget.cpp ../Delegates/PixmapDelegate.cpp ../HelpersQt.cpp ${TopPatchesWidgetUISrcs} ${TopPatchesWidgetMOCSrcs})
 # target_link_libraries(TestTopPatchesWidget ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
 # add_test(TestTopPatchesWidget TestTopPatchesWidget)
 
 
 # Ideally we would like to not duplicate TopPatchesDialog and TopPatchesWidget, but rather derive one from the other.
 # include_directories(${CMAKE_CURRENT_BINARY_DIR})
-# QT4_WRAP_UI(UISrcs ../TopPatchesWidget.ui)
-# QT4_WRAP_CPP(MOCSrcs ../TopPatchesWidget.h ../TopPatchesDialog.h ../Delegates/PixmapDelegate.h)
+# QT4_WRAP_UI(TopPatchesWidgetUISrcs ../TopPatchesWidget.ui)
+# QT4_WRAP_CPP(TopPatchesWidgetMOCSrcs ../TopPatchesWidget.h ../TopPatchesDialog.h ../Delegates/PixmapDelegate.h)
 # add_executable(TestTopPatchesDialog TestTopPatchesDialog.cpp ../Delegates/PixmapDelegate.cpp ../HelpersQt.cpp
-#                ${UISrcs} ${MOCSrcs})
+#                ${TopPatchesWidgetUISrcs} ${TopPatchesWidgetMOCSrcs})
 # target_link_libraries(TestTopPatchesDialog ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
 # add_test(TestTopPatchesDialog TestTopPatchesDialog)
 
 # 
 # include_directories(${CMAKE_CURRENT_BINARY_DIR})
 # include_directories(${CMAKE_CURRENT_BINARY_DIR}../)
-# QT4_WRAP_UI(UISrcs ../TopPatchesDialog.ui)
-# QT4_WRAP_CPP(MOCSrcs ../TopPatchesDialog.h ../Delegates/PixmapDelegate.h)
+# QT4_WRAP_UI(TopPatchesDialogUISrcs ../TopPatchesDialog.ui)
+# QT4_WRAP_CPP(TopPatchesDialogMOCSrcs ../TopPatchesDialog.h ../Delegates/PixmapDelegate.h)
 # add_executable(TestTopPatchesDialog TestTopPatchesDialog.cpp ../Delegates/PixmapDelegate.cpp ../HelpersQt.cpp
 #                ../../ImageProcessing/Mask.cpp
-#                ${UISrcs} ${MOCSrcs})
+#                ${TopPatchesDialogUISrcs} ${TopPatchesDialogMOCSrcs})
 # target_link_libraries(TestTopPatchesDialog ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
 # add_test(TestTopPatchesDialog TestTopPatchesDialog)
+
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR}../)
+QT4_WRAP_UI(TestPriorityViewerWidgetUISrcs ../PriorityViewerWidget.ui)
+QT4_WRAP_CPP(TestPriorityViewerWidgetMOCSrcs ../PriorityViewerWidget.h)
+add_executable(TestPriorityViewerWidget TestPriorityViewerWidget.cpp # ../PriorityViewerWidget.cpp
+               ${TestPriorityViewerWidgetUISrcs} ${TestPriorityViewerWidgetMOCSrcs})
+target_link_libraries(TestPriorityViewerWidget ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libGUI)
+add_test(TestPriorityViewerWidget TestPriorityViewerWidget)

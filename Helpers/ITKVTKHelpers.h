@@ -64,7 +64,6 @@ void ITKImageChannelToVTKImage(const FloatVectorImageType* const image, const un
 // Create a VTK image filled with values representing vectors. (There is no concept of a "vector image" in VTK).
 void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType* image, vtkImageData* outputImage);
 
-
 // It is too intensive to glyph every vector in a vector image. In many cases, the vector field may have
 // very large regions of zero vectors. This function creates the vectors for only the non-zero pixels in
 // the vector image.
@@ -77,18 +76,16 @@ void BlankAndOutlineRegion(vtkImageData* const image, const itk::ImageRegion<2>&
 // Set pixels on the boundary of 'region' in 'image' to 'value'.
 void OutlineRegion(vtkImageData* const image, const itk::ImageRegion<2>& region, const unsigned char value[3]);
 
-// Set all pixels in 'region' in 'image' to black.
+/** Set all pixels in 'region' in 'image' to black. */
 void BlankRegion(vtkImageData* const image, const itk::ImageRegion<2>& region);
 
-
+/** Convert a scalar ITK image into a VTK image after scaling the magnitude to a grayscale range (0 - 255). */
 template <typename TImage>
 void ITKScalarImageToScaledVTKImage(const TImage* const image, vtkImageData* const outputImage);
 
-
-// Create a VTK image of a patch of an image.
+/** Create a VTK image of a patch of an image. */
 template <typename TImage>
 void CreatePatchVTKImage(const TImage* image, const itk::ImageRegion<2>& region, vtkImageData* outputImage);
-
 
 } // end namespace
 

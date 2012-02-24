@@ -16,34 +16,19 @@
  *
  *=========================================================================*/
 
-#ifndef Priority_H
-#define Priority_H
+#include "Interactive/PriorityViewerWidget.h"
+#include "Priority/PriorityRandom.h"
 
-// ITK
-#include "itkIndex.h"
-
-/**
-\class Priority
-\brief This is an abstract class to serve as a parent so that subclasses can be stored as parent pointers in a container.
-       E.g. std::vector<Priority*> priorityFunctions
-*/
-template <typename TNode>
-class Priority
+int main(int argc, char*argv[])
 {
-public:
+  QApplication app( argc, argv );
 
-  // Would prefer this, but the language doesn't allow it:
-//   template <typename TNode>
-//   virtual float ComputePriority(const TNode& queryPixel) = 0;
-// 
-//   template <typename TNode>
-//   virtual void Update(const TNode& filledPixel) = 0;
-//   
-  virtual float ComputePriority(const TNode& queryPixel) = 0;
+  PriorityRandom priorityRandom;
 
-  virtual void Update(const TNode& filledPixel) = 0;
-};
+  itk::Size<2> size = {{10,10}};
+  PriorityViewerWidget<PriorityRandom> priorityViewerWidget(&priorityRandom, size);
+  priorityViewerWidget.slot_UpdateImage();
+  priorityViewerWidget.show();
 
-#include "Priority.hxx"
-
-#endif
+  return app.exec();
+}
