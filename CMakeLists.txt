@@ -70,13 +70,14 @@ add_subdirectory(Interactive)
 SET(InpaintingWithVerification CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
 if(InpaintingWithVerification)
   QT4_WRAP_UI(InpaintingWithVerificationUISrcs Interactive/BasicViewerWidget.ui
-              Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui)
+              Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui Interactive/PriorityViewerWidget.ui)
   QT4_WRAP_CPP(InpaintingWithVerificationMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
                        Visitors/NearestNeighborsDisplayVisitor.hpp
                        #NearestNeighbor/VisualSelectionBest.hpp
                        Interactive/TopPatchesWidget.h
                        Interactive/TopPatchesDialog.h
-                       Interactive/Delegates/PixmapDelegate.h)
+                       Interactive/Delegates/PixmapDelegate.h
+                       Interactive/PriorityViewerWidget.h)
 
   ADD_EXECUTABLE(InpaintingWithVerification InpaintingWithVerification.cpp
                 Interactive/Layer.cpp

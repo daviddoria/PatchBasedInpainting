@@ -50,7 +50,7 @@ public slots:
 
 };
 
-template <typename TPriority>
+template <typename TPriority, typename TBoundaryStatusMapType>
 class PriorityViewerWidget : public PriorityViewerWidgetParent
 // class PriorityViewerWidget : public QMainWindow, public Ui::PriorityViewerWidget
 {
@@ -75,9 +75,10 @@ private:
   /** A wrapper that creates and holds the image, the mapper, and the actor. */
   Layer ImageLayer;
 
+  TBoundaryStatusMapType BoundaryStatusMap;
 public:
   // Constructor
-  PriorityViewerWidget(TPriority* const priorityFunction, const itk::Size<2>& imageSize);
+  PriorityViewerWidget(TPriority* const priorityFunction, const itk::Size<2>& imageSize, TBoundaryStatusMapType boundaryStatusMap);
 
   void slot_UpdateImage();
 

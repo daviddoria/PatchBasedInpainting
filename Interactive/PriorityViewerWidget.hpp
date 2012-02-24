@@ -31,9 +31,9 @@
 #include "Interactive/HelpersQt.h"
 #include "InteractorStyleImageWithDrag.h"
 
-template <typename TPriority>
-PriorityViewerWidget<TPriority>::PriorityViewerWidget(TPriority* const priorityFunction, const itk::Size<2>& imageSize) :
-PriorityFunction(priorityFunction), ImageSize(imageSize), PreviouslyDisplayed(false)
+template <typename TPriority, typename TBoundaryStatusMapType>
+PriorityViewerWidget<TPriority, TBoundaryStatusMapType>::PriorityViewerWidget(TPriority* const priorityFunction, const itk::Size<2>& imageSize, TBoundaryStatusMapType boundaryStatusMap) :
+PriorityFunction(priorityFunction), ImageSize(imageSize), PreviouslyDisplayed(false), BoundaryStatusMap(boundaryStatusMap)
 {
   this->setupUi(this);
 
@@ -62,17 +62,22 @@ PriorityFunction(priorityFunction), ImageSize(imageSize), PreviouslyDisplayed(fa
   this->Camera = new ImageCamera(this->Renderer);
 }
 
-template <typename TPriority>
-void PriorityViewerWidget<TPriority>::slot_UpdateImage()
+template <typename TPriority, typename TBoundaryStatusMapType>
+void PriorityViewerWidget<TPriority, TBoundaryStatusMapType>::slot_UpdateImage()
 {
   std::cout << "PriorityViewerWidget::slot_UpdateImage." << std::endl;
 
-  // Compute the priority at every pixel
+  ITKHelpers::SetImageToConstant(PriorityImage.GetPointer(), 0);
+  // Compute the priority at every boundary pixel
   itk::ImageRegionIterator<PriorityImageType> imageIterator(PriorityImage, PriorityImage->GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
     {
-    imageIterator.Set(PriorityFunction->ComputePriority(imageIterator.GetIndex()));
+    typename TBoundaryStatusMapType::key_type node = Helpers::ConvertFrom<typename TBoundaryStatusMapType::key_type, itk::Index<2> >(imageIterator.GetIndex());
+    if(get(BoundaryStatusMap, node))
+      {
+      imageIterator.Set(PriorityFunction->ComputePriority(imageIterator.GetIndex()));
+      }
 
     ++imageIterator;
     }

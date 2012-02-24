@@ -97,6 +97,7 @@
 #include "Interactive/BasicViewerWidget.h"
 #include "Interactive/TopPatchesWidget.h"
 #include "Interactive/TopPatchesDialog.h"
+#include "Interactive/PriorityViewerWidget.h"
 
 // Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 filled.mha
 int main(int argc, char *argv[])
@@ -196,7 +197,8 @@ int main(int argc, char *argv[])
   IndexInHeapMap index_in_heap(indexMap);
 
   // Create the priority compare functor
-  typedef std::less<float> PriorityCompareType;
+  //typedef std::less<float> PriorityCompareType;
+  typedef std::greater<float> PriorityCompareType;
   PriorityCompareType lessThanFunctor;
 
   typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType>
@@ -337,6 +339,11 @@ int main(int argc, char *argv[])
                    &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
                    Qt::BlockingQueuedConnection);
 
+  PriorityViewerWidget<PriorityType, BoundaryStatusMapType> priorityViewerWidget(&priorityFunction, image->GetLargestPossibleRegion().GetSize(), boundaryStatusMap);
+  priorityViewerWidget.show();
+
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &priorityViewerWidget, SLOT(slot_UpdateImage()),
+                   Qt::BlockingQueuedConnection);
   // Passively display the top patches at every iteration
 //   TopPatchesWidget<ImageType> topPatchesWidget(image, patchHalfWidth);
 //   topPatchesWidget.show();
