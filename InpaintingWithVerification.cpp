@@ -309,7 +309,7 @@ int main(int argc, char *argv[])
   // Create the nearest neighbor finders
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
                                   ImagePatchDifferenceType > KNNSearchType;
-  KNNSearchType knnSearch(imagePatchDescriptorMap, 100000);
+  KNNSearchType knnSearch(imagePatchDescriptorMap, 100);
 
 //   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
 //                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;

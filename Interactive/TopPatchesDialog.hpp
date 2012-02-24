@@ -97,6 +97,9 @@ void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
   SelectedItem = -1;
   // We do this here because we will usually call SetQueryNode before the widget is constructed (i.e. before exec() is called).
   gfxQueryPatch->fitInView(MaskedQueryPatchItem);
+
+  QModelIndex index = this->PatchesModel->index(0,0);
+  this->listView->scrollTo(index);
 }
 
 #endif
