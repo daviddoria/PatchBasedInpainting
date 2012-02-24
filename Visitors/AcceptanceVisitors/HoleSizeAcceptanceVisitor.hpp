@@ -39,7 +39,9 @@ struct HoleSizeAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
 
     unsigned int numberOfHolePixels = MaskImage->CountHolePixels();
 
-    if(static_cast<float>(numberOfHolePixels)/static_cast<float>(targetRegion.GetNumberOfPixels()) < HolePixelRatio)
+    float ratio = static_cast<float>(numberOfHolePixels)/static_cast<float>(targetRegion.GetNumberOfPixels());
+    std::cout << "Hole pixel ratio: " << ratio << std::endl;
+    if(ratio < HolePixelRatio)
     {
       return true;
     }

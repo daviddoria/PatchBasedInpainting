@@ -16,23 +16,46 @@ struct CompositeAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
 
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& energy) const
   {
-    bool acceptAll = true;
-    for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
+    bool acceptOverride = false;
+
+    // If any of these visitors passes, automatically accept the pair.
+    for(unsigned int visitorId = 0; visitorId < OverrideVisitors.size(); ++visitorId)
       {
       float energy;
-      bool accept = Visitors[visitorId]->AcceptMatch(target, source, energy);
+      acceptOverride |= OverrideVisitors[visitorId]->AcceptMatch(target, source, energy);
+      }
+
+    if(acceptOverride)
+    {
+      std::cout << "Accepted override!" << std::endl;
+      return acceptOverride;
+    }
+
+    // If we get to here, all of the following visitors must pass.
+    // (we compute them all instead of returning immediate if one fails so we can inspect the outputs)
+    bool acceptAll = true;
+    for(unsigned int visitorId = 0; visitorId < RequiredPassVisitors.size(); ++visitorId)
+      {
+      float energy;
+      bool accept = RequiredPassVisitors[visitorId]->AcceptMatch(target, source, energy);
       acceptAll = acceptAll && accept;
       }
     return acceptAll;
   };
 
-  void AddVisitor(AcceptanceVisitorParent<TGraph>* vis)
+  void AddOverrideVisitor(AcceptanceVisitorParent<TGraph>* vis)
   {
-    this->Visitors.push_back(vis);
+    this->OverrideVisitors.push_back(vis);
+  }
+
+  void AddRequiredPassVisitor(AcceptanceVisitorParent<TGraph>* vis)
+  {
+    this->RequiredPassVisitors.push_back(vis);
   }
 
 private:
-  std::vector<AcceptanceVisitorParent<TGraph>*> Visitors;
+  std::vector<AcceptanceVisitorParent<TGraph>*> RequiredPassVisitors;
+  std::vector<AcceptanceVisitorParent<TGraph>*> OverrideVisitors;
 };
 
 #endif

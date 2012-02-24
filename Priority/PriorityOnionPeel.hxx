@@ -30,25 +30,19 @@
 // VTK
 #include <vtkSmartPointer.h>
 
-template <typename TNode>
-PriorityOnionPeel<TNode>::PriorityOnionPeel(const Mask* const maskImage, unsigned int patchRadius) : MaskImage(maskImage), PatchRadius(patchRadius)
-{
-  this->ConfidenceMapImage = FloatScalarImageType::New();
-  InitializeConfidenceMap();
-}
 
 template <typename TNode>
-void PriorityOnionPeel<TNode>::Update(const TNode& filledPixel)
+void PriorityOnionPeel::Update(const TNode& sourceNode, const TNode& targetNode)
 {
   //EnterFunction("PriorityOnionPeel::Update()");
   // Get the center pixel (the pixel around which the region was filled)
-  float value = ComputeConfidenceTerm(filledPixel);
-  UpdateConfidences(filledPixel, value);
+  float value = ComputeConfidenceTerm(targetNode);
+  UpdateConfidences(targetNode, value);
 
 }
 
 template <typename TNode>
-float PriorityOnionPeel<TNode>::ComputePriority(const TNode& queryPixel) const
+float PriorityOnionPeel::ComputePriority(const TNode& queryPixel) const
 {
   float priority = ComputeConfidenceTerm(queryPixel);
 
@@ -56,8 +50,9 @@ float PriorityOnionPeel<TNode>::ComputePriority(const TNode& queryPixel) const
 }
 
 template <typename TNode>
-void PriorityOnionPeel<TNode>::UpdateConfidences(const TNode& targetPixel, const float value)
+void PriorityOnionPeel::UpdateConfidences(const TNode& targetNode, const float value)
 {
+  itk::Index<2> targetPixel = ITKHelpers::CreateIndex(targetNode);
   itk::Size<2> regionSize;
   regionSize.Fill(this->PatchRadius);
 
@@ -88,36 +83,9 @@ void PriorityOnionPeel<TNode>::UpdateConfidences(const TNode& targetPixel, const
 }
 
 template <typename TNode>
-void PriorityOnionPeel<TNode>::InitializeConfidenceMap()
+float PriorityOnionPeel::ComputeConfidenceTerm(const TNode& queryNode) const
 {
-  //EnterFunction("PriorityOnionPeel::InitializeConfidenceMap()");
-  // Clone the mask - we need to invert the mask to actually perform the masking, but we don't want to disturb the original mask
-  Mask::Pointer maskClone = Mask::New();
-  //Helpers::DeepCopy<Mask>(this->CurrentMask, maskClone);
-  maskClone->DeepCopyFrom(this->MaskImage);
-
-  // Invert the mask
-  typedef itk::InvertIntensityImageFilter <Mask> InvertIntensityImageFilterType;
-  InvertIntensityImageFilterType::Pointer invertIntensityFilter = InvertIntensityImageFilterType::New();
-  invertIntensityFilter->SetInput(maskClone);
-  invertIntensityFilter->Update();
-
-  // Convert the inverted mask to floats and scale them to between 0 and 1
-  // to serve as the initial confidence image
-  typedef itk::RescaleIntensityImageFilter< Mask, FloatScalarImageType > RescaleFilterType;
-  RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
-  rescaleFilter->SetInput(invertIntensityFilter->GetOutput());
-  rescaleFilter->SetOutputMinimum(0);
-  rescaleFilter->SetOutputMaximum(1);
-  rescaleFilter->Update();
-
-  ITKHelpers::DeepCopy<FloatScalarImageType>(rescaleFilter->GetOutput(), this->ConfidenceMapImage);
-  //LeaveFunction("PriorityOnionPeel::InitializeConfidenceMap()");
-}
-
-template <typename TNode>
-float PriorityOnionPeel<TNode>::ComputeConfidenceTerm(const TNode& queryPixel) const
-{
+  itk::Index<2> queryPixel = ITKHelpers::CreateIndex(queryNode);
   //EnterFunction("PriorityOnionPeel::ComputeConfidenceTerm()");
   //DebugMessage<itk::Index<2>>("Computing confidence for ", queryPixel);
 

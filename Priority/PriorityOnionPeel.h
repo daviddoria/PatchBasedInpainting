@@ -27,7 +27,6 @@
 \class PriorityOnionPeel
 \brief This class ranks the priority of a patch based on its closeness to the hole boundary.
 */
-template <typename TNode>
 class PriorityOnionPeel
 {
 public:
@@ -38,18 +37,22 @@ public:
   // Required to model PriorityConcept //
   ///////////////////////////////////////////
 
+  template <typename TNode>
   float ComputePriority(const TNode& queryPixel) const;
 
-  void Update(const TNode& filledPixel);
+  template <typename TNode>
+  void Update(const TNode& sourceNode, const TNode& targetNode);
 
 protected:
 
   typedef itk::Image<float, 2> ConfidenceImageType;
   
   /** Compute the Confidence values for pixels that were just inpainted.*/
+  template <typename TNode>
   void UpdateConfidences(const TNode& targetPixel, const float value);
 
   /** Compute the Confidence at a pixel.*/
+  template <typename TNode>
   float ComputeConfidenceTerm(const TNode& queryPixel) const;
 
   /** Keep track of the Confidence of each pixel*/
