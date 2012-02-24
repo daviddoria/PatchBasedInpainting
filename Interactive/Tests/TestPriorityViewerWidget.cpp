@@ -23,12 +23,12 @@ int main(int argc, char*argv[])
 {
   QApplication app( argc, argv );
 
-  PriorityRandom priorityRandom;
-
-  itk::Size<2> size = {{10,10}};
-  PriorityViewerWidget<PriorityRandom> priorityViewerWidget(&priorityRandom, size);
-  priorityViewerWidget.slot_UpdateImage();
-  priorityViewerWidget.show();
+//   PriorityRandom priorityRandom;
+// 
+//   itk::Size<2> size = {{10,10}};
+//   PriorityViewerWidget<PriorityRandom> priorityViewerWidget(&priorityRandom, size);
+//   priorityViewerWidget.slot_UpdateImage();
+//   priorityViewerWidget.show();
 
   return app.exec();
 }

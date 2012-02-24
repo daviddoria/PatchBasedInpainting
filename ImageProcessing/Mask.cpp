@@ -22,11 +22,13 @@
 #include "Helpers/Helpers.h"
 #include "Helpers/ITKHelpers.h"
 
+// VTK
 #include <vtkImageData.h>
 
 // ITK
 #include "itkBinaryContourImageFilter.h"
 #include "itkBinaryDilateImageFilter.h"
+#include "itkBinaryErodeImageFilter.h"
 #include "itkFlatStructuringElement.h"
 #include "itkInvertIntensityImageFilter.h"
 #include "itkImageRegionIterator.h"
@@ -293,7 +295,7 @@ void Mask::OutputMembers() const
   std::cout << "ValidValue: " << static_cast<unsigned int>(this->ValidValue) << std::endl;
 }
 
-void Mask::DeepCopyFrom(const Mask* inputMask)
+void Mask::DeepCopyFrom(const Mask* const inputMask)
 {
   this->SetRegions(inputMask->GetLargestPossibleRegion());
   this->Allocate();
@@ -311,23 +313,97 @@ void Mask::DeepCopyFrom(const Mask* inputMask)
   this->SetValidValue(inputMask->GetValidValue());
 }
 
-void Mask::ExpandHole()
+void Mask::CopyHolesFrom(const Mask* const inputMask)
 {
-  // Expand the mask - this is necessary to prevent the isophotes from being undefined in the target region
+  itk::ImageRegionConstIterator<Mask> inputIterator(inputMask, inputMask->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<Mask> thisIterator(this, this->GetLargestPossibleRegion());
+
+  while(!inputIterator.IsAtEnd())
+    {
+    if(inputMask->IsHole(inputIterator.GetIndex()))
+      {
+      thisIterator.Set(this->HoleValue);
+      }
+    ++inputIterator;
+    ++thisIterator;
+    }
+}
+
+void Mask::ExpandHole(const unsigned int kernelRadius)
+{
+  UnsignedCharImageType::Pointer binaryHoleImage = UnsignedCharImageType::New();
+  this->CreateBinaryHoleImage(binaryHoleImage);
+
+//   std::cout << "binaryHoleImage: " << std::endl;
+//   ITKHelpers::PrintImage(binaryHoleImage.GetPointer());
+
   typedef itk::FlatStructuringElement<2> StructuringElementType;
   StructuringElementType::RadiusType radius;
-  radius.Fill(2); // Just a little bit of expansion
-  //radius.Fill(this->PatchRadius[0]); // This was working, but huge expansion
-  //radius.Fill(2.0* this->PatchRadius[0]);
+  radius.Fill(kernelRadius); // This is correct that the RadiusType expects the region radius, not the side length.
 
   StructuringElementType structuringElement = StructuringElementType::Box(radius);
-  typedef itk::BinaryDilateImageFilter<Mask, Mask, StructuringElementType> BinaryDilateImageFilterType;
-  BinaryDilateImageFilterType::Pointer expandMaskFilter = BinaryDilateImageFilterType::New();
-  expandMaskFilter->SetInput(this);
-  expandMaskFilter->SetKernel(structuringElement);
-  expandMaskFilter->Update();
+  typedef itk::BinaryDilateImageFilter<UnsignedCharImageType, UnsignedCharImageType, StructuringElementType> BinaryDilateImageFilterType;
+  BinaryDilateImageFilterType::Pointer dilateFilter = BinaryDilateImageFilterType::New();
+  dilateFilter->SetInput(binaryHoleImage);
+  dilateFilter->SetKernel(structuringElement);
+  dilateFilter->Update();
 
-  this->DeepCopyFrom(expandMaskFilter->GetOutput());
+//   std::cout << "dilateFilter output: " << std::endl;
+//   ITKHelpers::PrintImage(dilateFilter->GetOutput());
+  
+  // There will now be more hole pixels than there were previously. Copy them into the mask.
+  this->CopyHolesFromValue(dilateFilter->GetOutput(), 255);
+}
+
+void Mask::ShrinkHole(const unsigned int kernelRadius)
+{
+  UnsignedCharImageType::Pointer binaryHoleImage = UnsignedCharImageType::New();
+  this->CreateBinaryHoleImage(binaryHoleImage);
+
+//   std::cout << "binaryHoleImage: " << std::endl;
+//   ITKHelpers::PrintImage(binaryHoleImage.GetPointer());
+  
+  typedef itk::FlatStructuringElement<2> StructuringElementType;
+  StructuringElementType::RadiusType radius;
+  radius.Fill(kernelRadius); // This is correct that the RadiusType expects the region radius, not the side length.
+
+  StructuringElementType structuringElement = StructuringElementType::Box(radius);
+  typedef itk::BinaryErodeImageFilter<UnsignedCharImageType, UnsignedCharImageType, StructuringElementType> BinaryErodeImageFilterType;
+  BinaryErodeImageFilterType::Pointer erodeFilter = BinaryErodeImageFilterType::New();
+  erodeFilter->SetInput(binaryHoleImage);
+  erodeFilter->SetKernel(structuringElement);
+  erodeFilter->Update();
+
+//   std::cout << "erodeFilter output: " << std::endl;
+//   ITKHelpers::PrintImage(erodeFilter->GetOutput());
+  
+  // There will now be more valid pixels than there were previously. Copy them into the mask.
+  this->CopyValidPixelsFromValue(erodeFilter->GetOutput(), 0);
+}
+
+void Mask::CreateBinaryHoleImage(UnsignedCharImageType* const binaryHoleImage)
+{
+  binaryHoleImage->SetRegions(this->GetLargestPossibleRegion());
+  binaryHoleImage->Allocate();
+
+  itk::ImageRegionIterator<UnsignedCharImageType> binaryImageIterator(binaryHoleImage, binaryHoleImage->GetLargestPossibleRegion());
+  // This should result in a white hole on a black background
+  while(!binaryImageIterator.IsAtEnd())
+    {
+    if(this->IsHole(binaryImageIterator.GetIndex()))
+      {
+      //std::cout << "Hole pixel." << std::endl;
+      binaryImageIterator.Set(255);
+      }
+    else
+      {
+      binaryImageIterator.Set(0);
+      }
+    ++binaryImageIterator;
+    }
+
+//   std::cout << "CreateBinaryHoleImage()::binaryHoleImage: " << std::endl;
+//   ITKHelpers::PrintImage(binaryHoleImage);
 }
 
 void Mask::FindBoundaryInRegion(const itk::ImageRegion<2>& region, BoundaryImageType* const boundaryImage) const

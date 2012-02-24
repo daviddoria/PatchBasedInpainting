@@ -1,5 +1,5 @@
-#ifndef DilatedRegionAcceptanceVisitor_HPP
-#define DilatedRegionAcceptanceVisitor_HPP
+#ifndef DilatedSourceValidTargetValidAcceptanceVisitor_HPP
+#define DilatedSourceValidTargetValidAcceptanceVisitor_HPP
 
 #include <boost/graph/graph_traits.hpp>
 
@@ -20,7 +20,7 @@
 
  */
 template <typename TGraph, typename TImage, typename TFunctor>
-struct DilatedRegionAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
+struct DilatedSourceValidTargetValidAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
 {
   TImage* Image;
   Mask* MaskImage;
@@ -34,8 +34,8 @@ struct DilatedRegionAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  DilatedRegionAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, TFunctor functor = TFunctor(), const float differenceThreshold = 100,
-    const std::string& visitorName = "DilatedRegionAcceptanceVisitor") :
+  DilatedSourceValidTargetValidAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, TFunctor functor = TFunctor(), const float differenceThreshold = 100,
+    const std::string& visitorName = "DilatedSourceValidTargetValidAcceptanceVisitor") :
   AcceptanceVisitorParent<TGraph>(visitorName),
   Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0), Functor(functor), DifferenceThreshold(differenceThreshold)
   {

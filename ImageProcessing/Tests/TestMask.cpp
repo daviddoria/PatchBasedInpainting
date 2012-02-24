@@ -16,47 +16,90 @@
  *
  *=========================================================================*/
 
-#include "Mask.h"
+#include "ImageProcessing/Mask.h"
+#include "Helpers/ITKHelpers.h"
+
+// static void TestCreateMask();
+// static void TestInvalidPixels();
+// static void TestHolePixels();
+// static void TestValidPixels();
+// static void TestRegionValidity();
+
+static void TestExpandHole();
+static void TestShrinkHole();
 
 int main(int argc, char*argv[])
 {
-  itk::Index<2> corner;
-  corner.Fill(0);
+//   TestCreateMask();
+//   TestInvalidPixels();
+//   TestHolePixels();
+//   TestValidPixels();
+//   TestRegionValidity();
 
-  itk::Size<2> size;
-  size.Fill(100);
+  TestExpandHole();
+  TestShrinkHole();
 
-  itk::ImageRegion<2> region(corner, size);
+  return EXIT_SUCCESS;
+}
 
-  Mask::Pointer mask = Mask::New();
-  mask->SetRegions(region);
-  mask->Allocate();
+void CreateMask()
+{
+//   itk::Index<2> corner;
+//   corner.Fill(0);
+// 
+//   itk::Size<2> size;
+//   size.Fill(100);
+// 
+//   itk::ImageRegion<2> region(corner, size);
+// 
+//   Mask::Pointer mask = Mask::New();
+//   mask->SetRegions(region);
+//   mask->Allocate();
+}
 
-  unsigned int indeterminateValue = (static_cast<unsigned int>(mask->GetHoleValue()) + static_cast<unsigned int>(mask->GetValidValue()))/2;
+void TestInvalidPixels()
+{
+//   itk::Index<2> corner;
+//   corner.Fill(0);
+// 
+//   itk::Size<2> size;
+//   size.Fill(100);
+// 
+//   itk::ImageRegion<2> region(corner, size);
+// 
+//   Mask::Pointer mask = Mask::New();
+//   mask->SetRegions(region);
+//   mask->Allocate();
+// 
+//   unsigned int indeterminateValue = (static_cast<unsigned int>(mask->GetHoleValue()) + static_cast<unsigned int>(mask->GetValidValue()))/2;
+// 
+//   // Make the left half of the mask the hole, the center indeterminate, and the right half valid.
+//   for(unsigned int column = 0; column < size[0]; ++column)
+//     {
+//     for(unsigned int row = 0; row < size[1]; ++row)
+//       {
+//       itk::Index<2> currentIndex;
+//       currentIndex[0] = column;
+//       currentIndex[1] = row;
+//       if(column < size[0] / 3)
+//         {
+//         mask->SetPixel(currentIndex, mask->GetHoleValue());
+//         }
+//       else if(column < 2*size[0]/3)
+//         {
+//         mask->SetPixel(currentIndex, indeterminateValue);
+//         }
+//       else
+//         {
+//         mask->SetPixel(currentIndex, mask->GetValidValue());
+//         }
+//       }
+//     }
+}
 
-  // Make the left half of the mask the hole, the center indeterminate, and the right half valid.
-  for(unsigned int column = 0; column < size[0]; ++column)
-    {
-    for(unsigned int row = 0; row < size[1]; ++row)
-      {
-      itk::Index<2> currentIndex;
-      currentIndex[0] = column;
-      currentIndex[1] = row;
-      if(column < size[0] / 3)
-        {
-        mask->SetPixel(currentIndex, mask->GetHoleValue());
-        }
-      else if(column < 2*size[0]/3)
-        {
-        mask->SetPixel(currentIndex, indeterminateValue);
-        }
-      else
-        {
-        mask->SetPixel(currentIndex, mask->GetValidValue());
-        }
-      }
-    }
-
+void TestHolePixels()
+{
+/*
   // Test hole pixel
   itk::Index<2> leftHalfPixel;
   leftHalfPixel.Fill(0);
@@ -70,103 +113,196 @@ int main(int argc, char*argv[])
     {
     std::cerr << "Pixel should not be valid!" << std::endl;
     return EXIT_FAILURE;
-    }
+    }*/
 
-  // Test valid pixel
-  itk::Index<2> rightHalfPixel;
-  rightHalfPixel[0] = size[0] - 1;
-  rightHalfPixel[1] = size[1] - 1;
+}
 
-  if(mask->IsHole(rightHalfPixel))
+void TestValidPixels()
+{
+
+//   // Test valid pixel
+//   itk::Index<2> rightHalfPixel;
+//   rightHalfPixel[0] = size[0] - 1;
+//   rightHalfPixel[1] = size[1] - 1;
+// 
+//   if(mask->IsHole(rightHalfPixel))
+//     {
+//     std::cerr << "Pixel should not be hole!" << std::endl;
+//     return EXIT_FAILURE;
+//     }
+// 
+//   if(!mask->IsValid(rightHalfPixel))
+//     {
+//     std::cerr << "Pixel should be valid!" << std::endl;
+//     return EXIT_FAILURE;
+//     }
+// 
+//  
+}
+
+void TestRegionValidity()
+{
+ // Test region validity
+//   itk::Size<2> smallRegionSize;
+//   smallRegionSize.Fill(3);
+//   itk::Index<2> smallLeftRegionCorner;
+//   smallLeftRegionCorner.Fill(0);
+//   itk::ImageRegion<2> smallLeftRegion(smallLeftRegionCorner, smallRegionSize);
+// 
+//   if(mask->IsValid(smallLeftRegion))
+//     {
+//     std::cerr << "Region should not be valid!" << std::endl;
+//     return EXIT_FAILURE;
+//     }
+// 
+//   itk::Index<2> smallRightRegionCorner;
+//   smallRightRegionCorner[0] = size[0] - smallRegionSize[0] - 1;
+//   smallRightRegionCorner[1] = size[1] - smallRegionSize[0] - 1;
+//   itk::ImageRegion<2> smallRightRegion(smallRightRegionCorner, smallRegionSize);
+// 
+//   if(!mask->IsValid(smallRightRegion))
+//     {
+//     std::cerr << "Region should be valid!" << std::endl;
+//     return EXIT_FAILURE;
+//     }
+
+}
+
+// TODO: Write tests for the rest of these functions.
+/*
+// Invert the mask by switching the hole and valid pixel values.
+void Invert();
+
+// Snap the pixel values to either 'hole' or 'valid'.
+void Cleanup();
+
+// Slightly dilate the hole.
+void ExpandHole();
+
+// Specify which value should be considered a hole.
+void SetHoleValue(const unsigned char value);
+
+// Specify which value should be considered valid.
+void SetValidValue(const unsigned char value);
+
+// Get the value that is considered a hole.
+unsigned char GetHoleValue() const;
+
+// Get the value that is considered valid.
+unsigned char GetValidValue() const;
+
+// Print information about the Mask.
+void OutputMembers() const;
+
+// Copy a mask.
+void DeepCopyFrom(const Mask* inputMask);
+
+// Find the boundary of the Mask.
+void FindBoundary(UnsignedCharScalarImageType* boundary) const;
+
+// Recolor the hole pixels in 'image' a specified 'color'.
+template<typename TImage, typename TColor>
+void ApplyColorToImage(const typename TImage::Pointer image, const TColor& color);
+
+// Change the hole pixels in 'image' to a specified 'holeValue'.
+template<typename TImage>
+void ApplyToImage(TImage* image, const typename TImage::PixelType& holeValue);
+
+// Recolor the hole pixels in 'image' a specified 'color'.
+template<typename TImage, typename TColor>
+void ApplyToVectorImage(TImage* image, const TColor& color);
+
+template<typename TColor>
+void MakeVTKImage(vtkImageData* image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent) const;
+
+// Create a mask from a mask image.
+template<typename TImage>
+void CreateFromImage(const TImage* image, const typename TImage::PixelType& holeColor);
+
+std::vector<itk::Index<2> > GetValidPixelsInRegion(const itk::ImageRegion<2>& region);
+std::vector<itk::Index<2> > GetHolePixelsInRegion(const itk::ImageRegion<2>& region);
+*/
+
+void TestExpandHole()
+{
+  std::cout << "TestExpandHole():" << std::endl;
+  itk::Index<2> corner;
+  corner.Fill(0);
+
+  itk::Size<2> size;
+  size.Fill(11);
+
+  itk::ImageRegion<2> region(corner, size);
+
+  Mask::Pointer mask = Mask::New();
+  mask->SetRegions(region);
+  mask->Allocate();
+
+  itk::ImageRegionIterator<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
+
+  while(!maskIterator.IsAtEnd())
     {
-    std::cerr << "Pixel should not be hole!" << std::endl;
-    return EXIT_FAILURE;
+    if(static_cast<unsigned int>(maskIterator.GetIndex()[0]) >= size[0]/2 - 1 && static_cast<unsigned int>(maskIterator.GetIndex()[0]) <= size[0]/2 + 1 &&
+      static_cast<unsigned int>(maskIterator.GetIndex()[1]) >= size[0]/2 - 1 && static_cast<unsigned int>(maskIterator.GetIndex()[1]) <= size[0]/2 + 1)
+      {
+      maskIterator.Set(mask->GetHoleValue());
+      }
+    else
+      {
+      maskIterator.Set(mask->GetValidValue());
+      }
+    ++maskIterator;
     }
 
-  if(!mask->IsValid(rightHalfPixel))
+  std::cout << "Original mask:" << std::endl;
+  ITKHelpers::PrintImage(mask.GetPointer());
+
+  mask->ExpandHole(1);
+
+  std::cout << "Expanded hole mask:" << std::endl;
+  ITKHelpers::PrintImage(mask.GetPointer());
+
+  std::cout << std::endl << std::endl;
+}
+
+void TestShrinkHole()
+{
+  std::cout << "TestShrinkHole():" << std::endl;
+  itk::Index<2> corner;
+  corner.Fill(0);
+
+  itk::Size<2> size;
+  size.Fill(11);
+
+  itk::ImageRegion<2> region(corner, size);
+
+  Mask::Pointer mask = Mask::New();
+  mask->SetRegions(region);
+  mask->Allocate();
+
+  itk::ImageRegionIterator<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
+
+  while(!maskIterator.IsAtEnd())
     {
-    std::cerr << "Pixel should be valid!" << std::endl;
-    return EXIT_FAILURE;
+    if(static_cast<unsigned int>(maskIterator.GetIndex()[0]) >= size[0]/2 - 1 && static_cast<unsigned int>(maskIterator.GetIndex()[0]) <= size[0]/2 + 1 &&
+      static_cast<unsigned int>(maskIterator.GetIndex()[1]) >= size[0]/2 - 1 && static_cast<unsigned int>(maskIterator.GetIndex()[1]) <= size[0]/2 + 1)
+      {
+      maskIterator.Set(mask->GetHoleValue());
+      }
+    else
+      {
+      maskIterator.Set(mask->GetValidValue());
+      }
+    ++maskIterator;
     }
 
-  // Test region validity
-  itk::Size<2> smallRegionSize;
-  smallRegionSize.Fill(3);
-  itk::Index<2> smallLeftRegionCorner;
-  smallLeftRegionCorner.Fill(0);
-  itk::ImageRegion<2> smallLeftRegion(smallLeftRegionCorner, smallRegionSize);
+  std::cout << "Original mask:" << std::endl;
+  ITKHelpers::PrintImage(mask.GetPointer());
 
-  if(mask->IsValid(smallLeftRegion))
-    {
-    std::cerr << "Region should not be valid!" << std::endl;
-    return EXIT_FAILURE;
-    }
+  mask->ShrinkHole(1);
 
-  itk::Index<2> smallRightRegionCorner;
-  smallRightRegionCorner[0] = size[0] - smallRegionSize[0] - 1;
-  smallRightRegionCorner[1] = size[1] - smallRegionSize[0] - 1;
-  itk::ImageRegion<2> smallRightRegion(smallRightRegionCorner, smallRegionSize);
+  std::cout << "Shrunk hole mask:" << std::endl;
+  ITKHelpers::PrintImage(mask.GetPointer());
 
-  if(!mask->IsValid(smallRightRegion))
-    {
-    std::cerr << "Region should be valid!" << std::endl;
-    return EXIT_FAILURE;
-    }
-
-  // TODO: Write tests for the rest of these functions.
-  /*
-  // Invert the mask by switching the hole and valid pixel values.
-  void Invert();
-
-  // Snap the pixel values to either 'hole' or 'valid'.
-  void Cleanup();
-
-  // Slightly dilate the hole.
-  void ExpandHole();
-
-  // Specify which value should be considered a hole.
-  void SetHoleValue(const unsigned char value);
-
-  // Specify which value should be considered valid.
-  void SetValidValue(const unsigned char value);
-
-  // Get the value that is considered a hole.
-  unsigned char GetHoleValue() const;
-
-  // Get the value that is considered valid.
-  unsigned char GetValidValue() const;
-
-  // Print information about the Mask.
-  void OutputMembers() const;
-
-  // Copy a mask.
-  void DeepCopyFrom(const Mask* inputMask);
-
-  // Find the boundary of the Mask.
-  void FindBoundary(UnsignedCharScalarImageType* boundary) const;
-
-  // Recolor the hole pixels in 'image' a specified 'color'.
-  template<typename TImage, typename TColor>
-  void ApplyColorToImage(const typename TImage::Pointer image, const TColor& color);
-
-  // Change the hole pixels in 'image' to a specified 'holeValue'.
-  template<typename TImage>
-  void ApplyToImage(TImage* image, const typename TImage::PixelType& holeValue);
-
-  // Recolor the hole pixels in 'image' a specified 'color'.
-  template<typename TImage, typename TColor>
-  void ApplyToVectorImage(TImage* image, const TColor& color);
-
-  template<typename TColor>
-  void MakeVTKImage(vtkImageData* image, const TColor& validColor, const TColor& holeColor, const bool holeTransparent, const bool validTransparent) const;
-
-  // Create a mask from a mask image.
-  template<typename TImage>
-  void CreateFromImage(const TImage* image, const typename TImage::PixelType& holeColor);
-
-  std::vector<itk::Index<2> > GetValidPixelsInRegion(const itk::ImageRegion<2>& region);
-  std::vector<itk::Index<2> > GetHolePixelsInRegion(const itk::ImageRegion<2>& region);
-  */
-
-  return EXIT_SUCCESS;
+  std::cout << std::endl << std::endl;
 }

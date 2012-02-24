@@ -16,7 +16,13 @@
  *
  *=========================================================================*/
 
+#include "Mask.h" // Appease syntax parser
+
+// VTK
 #include <vtkImageData.h>
+
+// ITK
+#include "itkImageRegionIterator.h"
 
 template<typename TImage, typename TColor>
 void Mask::ApplyToVectorImage(TImage* const image, const TColor& color) const
@@ -205,4 +211,42 @@ void Mask::CreateFromImage(const TImage* image, const typename TImage::PixelType
     ++imageIterator;
     }
   std::cout << "There were " << counter << " mask pixels." << std::endl;
+}
+
+template <typename TImage>
+void Mask::CopyHolesFromValue(const TImage* const inputImage, const unsigned int value)
+{
+  assert(inputMask->GetLargestPossibleRegion() == this->GetLargestPossibleRegion());
+
+  itk::ImageRegionConstIterator<TImage> inputIterator(inputImage, inputImage->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<Mask> thisIterator(this, this->GetLargestPossibleRegion());
+
+  while(!inputIterator.IsAtEnd())
+    {
+    if(inputIterator.Get() == value)
+      {
+      thisIterator.Set(this->HoleValue);
+      }
+    ++inputIterator;
+    ++thisIterator;
+    }
+}
+
+template <typename TImage>
+void Mask::CopyValidPixelsFromValue(const TImage* const inputImage, const unsigned int value)
+{
+  assert(inputMask->GetLargestPossibleRegion() == this->GetLargestPossibleRegion());
+
+  itk::ImageRegionConstIterator<TImage> inputIterator(inputImage, inputImage->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<Mask> thisIterator(this, this->GetLargestPossibleRegion());
+
+  while(!inputIterator.IsAtEnd())
+    {
+    if(inputIterator.Get() == value)
+      {
+      thisIterator.Set(this->ValidValue);
+      }
+    ++inputIterator;
+    ++thisIterator;
+    }
 }

@@ -90,14 +90,21 @@ public:
   /** Determine if a pixel is valid.*/
   bool IsValid(const itk::Index<2>& index) const;
 
+  /** Create a binary image where the hole pixels are white and other pixels are black.*/
+  typedef itk::Image<unsigned char, 2> UnsignedCharImageType;
+  void CreateBinaryHoleImage(UnsignedCharImageType* const binaryHoleImage);
+
   /** Invert the mask by switching the hole and valid pixel values.*/
   void Invert();
 
   /** Snap the pixel values to either 'hole' or 'valid'.*/
   void Cleanup();
 
-  /** Slightly dilate the hole.*/
-  void ExpandHole();
+  /** Increase the size of the hole.*/
+  void ExpandHole(const unsigned int kernelRadius);
+
+  /** Decrease the size of the hole.*/
+  void ShrinkHole(const unsigned int kernelRadius);
 
   /** Specify which value should be considered a hole.*/
   void SetHoleValue(const unsigned char value);
@@ -115,8 +122,19 @@ public:
   void OutputMembers() const;
 
   /** Copy a mask.*/
-  void DeepCopyFrom(const Mask* inputMask);
+  void DeepCopyFrom(const Mask* const inputMask);
 
+  /** Copy the holes from a mask.*/
+  void CopyHolesFrom(const Mask* const inputMask);
+
+  /** Create holes from specified pixels in an image.*/
+  template <typename TImage>
+  void CopyHolesFromValue(const TImage* const inputImage, const unsigned int value);
+
+  /** Create valid pixels from specified pixels in an image.*/
+  template <typename TImage>
+  void CopyValidPixelsFromValue(const TImage* const inputImage, const unsigned int value);
+  
   /** Find the boundary of the Mask.*/
   typedef UnsignedCharScalarImageType BoundaryImageType;
   void FindBoundary(BoundaryImageType* const boundary) const;
