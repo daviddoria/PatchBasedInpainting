@@ -33,6 +33,7 @@
 #include "Visitors/AcceptanceVisitors/HoleSizeAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/VarianceFunctor.hpp"
 #include "Visitors/AcceptanceVisitors/AverageFunctor.hpp"
+#include "Visitors/AcceptanceVisitors/ScoreThresholdAcceptanceVisitor.hpp"
 //#include "Visitors/AcceptanceVisitors/IntraSourcePatchAcceptanceVisitor.hpp"
 //#include "Visitors/AcceptanceVisitors/NeverAccept.hpp"
 
@@ -211,6 +212,7 @@ int main(int argc, char *argv[])
           ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > ImagePatchDifferenceType;
   // Note: currently we can't do this "first search by small patches" because some small patches are valid while their corresponding big patches are not (near the image border)
   // so the second step of the search (linear best) will be searching for big patches on the same nodes that small patches were valid, making them out of bounds)
   // ImagePatchDescriptorVisitorType smallImagePatchDescriptorVisitor(image, mask, smallImagePatchDescriptorMap, 5);
@@ -245,7 +247,11 @@ int main(int argc, char *argv[])
 
   HoleSizeAcceptanceVisitor<VertexListGraphType> holeSizeAcceptanceVisitor(mask, patchHalfWidth, .2);
   compositeAcceptanceVisitor.AddOverrideVisitor(&holeSizeAcceptanceVisitor);
-  
+
+  ScoreThresholdAcceptanceVisitor<VertexListGraphType, ImagePatchDescriptorMapType,
+                                  ImagePatchDifferenceType> scoreThresholdAcceptanceVisitor(mask, patchHalfWidth,
+                                                            imagePatchDescriptorMap, 10);
+  compositeAcceptanceVisitor.AddOverrideVisitor(&scoreThresholdAcceptanceVisitor);
   // Source region to hole region comparisons
 //   SourceHoleTargetValidCompare<VertexListGraphType, ImageType, AverageFunctor> holeRegionAverageAcceptance(image, mask, patchHalfWidth,
 //                                                                                                            AverageFunctor(), 100, "holeRegionAverageAcceptance");
@@ -305,7 +311,6 @@ int main(int argc, char *argv[])
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
-  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > ImagePatchDifferenceType;
   // Create the nearest neighbor finders
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
                                   ImagePatchDifferenceType > KNNSearchType;
