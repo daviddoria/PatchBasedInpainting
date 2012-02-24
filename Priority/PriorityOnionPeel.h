@@ -33,13 +33,15 @@ public:
 
   PriorityOnionPeel(const Mask* const maskImage, const unsigned int patchRadius);
 
-  ///////////////////////////////////////////
+  ///////////////////////////////////////
   // Required to model PriorityConcept //
-  ///////////////////////////////////////////
+  ///////////////////////////////////////
 
+  /** Compute the priority at a given pixel.*/
   template <typename TNode>
   float ComputePriority(const TNode& queryPixel) const;
 
+  /** Update the priority function in the region around the target node.*/
   template <typename TNode>
   void Update(const TNode& sourceNode, const TNode& targetNode);
 

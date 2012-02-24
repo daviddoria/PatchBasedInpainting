@@ -22,6 +22,7 @@
 #include "Helpers/Helpers.h"
 #include "Helpers/ITKHelpers.h"
 #include "Helpers/ITKVTKHelpers.h"
+#include "Helpers/OutputHelpers.h"
 
 // ITK
 #include "itkInvertIntensityImageFilter.h"
@@ -34,8 +35,6 @@
 template <typename TNode>
 void PriorityOnionPeel::Update(const TNode& sourceNode, const TNode& targetNode)
 {
-  //EnterFunction("PriorityOnionPeel::Update()");
-  // Get the center pixel (the pixel around which the region was filled)
   float value = ComputeConfidenceTerm(targetNode);
   UpdateConfidences(targetNode, value);
 
@@ -53,50 +52,40 @@ template <typename TNode>
 void PriorityOnionPeel::UpdateConfidences(const TNode& targetNode, const float value)
 {
   itk::Index<2> targetPixel = ITKHelpers::CreateIndex(targetNode);
-  itk::Size<2> regionSize;
-  regionSize.Fill(this->PatchRadius);
 
-  itk::ImageRegion<2> inputRegion(targetPixel, regionSize);
-  
-  //std::cout << "Updating confidences with value " << value << std::endl;
+  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, this->PatchRadius);
 
   // Force the region to update to be entirely inside the image
-  itk::ImageRegion<2> region = ITKHelpers::CropToRegion(region, this->MaskImage->GetLargestPossibleRegion());
+  region.Crop(this->MaskImage->GetLargestPossibleRegion());
 
-  // Use an iterator to find masked pixels. Compute their new value, and save it in a vector of pixels and their new values.
-  // Do not update the pixels until after all new values have been computed, because we want to use the old values in all of
-  // the computations.
+  // Set the hole pixels in the region to 'value'.
   itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, region);
 
   while(!maskIterator.IsAtEnd())
     {
     if(this->MaskImage->IsHole(maskIterator.GetIndex()))
       {
-      itk::Index<2> currentPixel = maskIterator.GetIndex();
-      this->ConfidenceMapImage->SetPixel(currentPixel, value);
+      this->ConfidenceMapImage->SetPixel(maskIterator.GetIndex(), value);
+      // std::cout << "Set " << maskIterator.GetIndex() << " to " << value << std::endl;
       }
 
     ++maskIterator;
     } // end while looop with iterator
-  //LeaveFunction("PriorityOnionPeel::UpdateConfidences()");
 
+//   std::cout << "PriorityOnionPeel::UpdateConfidences() writing Confidence Map..." << std::endl;
+//   OutputHelpers::WriteImage(ConfidenceMapImage.GetPointer(), "ConfidenceMapUpdated.mha");
+//   OutputHelpers::WriteScaledScalarImage(ConfidenceMapImage.GetPointer(), "ConfidenceMapUpdated.png");
 }
 
 template <typename TNode>
 float PriorityOnionPeel::ComputeConfidenceTerm(const TNode& queryNode) const
 {
   itk::Index<2> queryPixel = ITKHelpers::CreateIndex(queryNode);
-  //EnterFunction("PriorityOnionPeel::ComputeConfidenceTerm()");
-  //DebugMessage<itk::Index<2>>("Computing confidence for ", queryPixel);
 
-  // Allow for regions on/near the image border
-
-  //itk::ImageRegion<2> region = this->CurrentMask->GetLargestPossibleRegion();
-  //region.Crop(Helpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius[0]));
-  itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius);
+  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius);
 
   // Ensure that the patch to use to compute the confidence is entirely inside the image
-  itk::ImageRegion<2> region = ITKHelpers::CropToRegion(targetRegion, this->MaskImage->GetLargestPossibleRegion());
+  region.Crop(this->MaskImage->GetLargestPossibleRegion());
 
   itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, region);
 
@@ -117,8 +106,6 @@ float PriorityOnionPeel::ComputeConfidenceTerm(const TNode& queryNode) const
   float areaOfPatch = static_cast<float>(numberOfPixels);
 
   float confidence = sum/areaOfPatch;
-  //DebugMessage<float>("Confidence: ", confidence);
-  //LeaveFunction("PriorityOnionPeel::ComputeConfidenceTerm()");
-  return confidence;
 
+  return confidence;
 }

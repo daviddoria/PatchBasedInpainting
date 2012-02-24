@@ -6,9 +6,6 @@
 // Concepts
 #include "Concepts/DescriptorVisitorConcept.hpp"
 
-// Priority
-#include "Priority/Priority.h"
-
 // Accept criteria
 #include "ImageProcessing/BoundaryEnergy.h"
 
@@ -122,16 +119,15 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     // Mark this pixel and the area around it as filled, and mark the mask in this region as filled.
     // Determine the new boundary, and setup the nodes in the boundary queue.
 
-    std::cout << "FinishVertex beginning: there are " << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap) << " valid nodes in the queue." << std::endl;
-    
     // Construct the region around the vertex
     itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(targetNode);
 
     itk::ImageRegion<2> regionToFinish = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
-    std::cout << "Region to finish: " << regionToFinish << std::endl;
 
     regionToFinish.Crop(Image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
-    std::cout << "Finishing region: " << regionToFinish << std::endl;
+
+    // Update the priority function. This must be done BEFORE the mask is filled, as the old mask is required in some of the Priority functors to determine where to update some things.
+    this->PriorityFunction->Update(sourceNode, targetNode);
 
     // Mark all the pixels in this region as filled (in the mask and in the FillStatusMap).
     {
@@ -157,9 +153,6 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       ++gridIterator;
       }
     }
-
-    // Update the priority function.
-    this->PriorityFunction->Update(sourceNode, targetNode);
 
     {
     // Add pixels that are on the new boundary to the queue, and mark other pixels as not in the queue.
