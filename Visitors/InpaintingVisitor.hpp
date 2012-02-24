@@ -183,7 +183,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       }
     }
 
-    std::cout << "FinishVertex after traversing finishing region there are " << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap) << " valid nodes in the queue." << std::endl;
+    // std::cout << "FinishVertex after traversing finishing region there are " << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap) << " valid nodes in the queue." << std::endl;
     
     // Sometimes pixels that are not in the finishing region that were boundary pixels are no longer boundary pixels after the filling. Check for these.
     {
@@ -200,7 +200,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       }
     }
 
-    std::cout << "FinishVertex after removing stale nodes outside finishing region there are " << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap) << " valid nodes in the queue." << std::endl;
+    // std::cout << "FinishVertex after removing stale nodes outside finishing region there are " << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap) << " valid nodes in the queue." << std::endl;
   }; // finish_vertex
 
   void InpaintingComplete() const

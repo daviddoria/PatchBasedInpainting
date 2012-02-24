@@ -113,6 +113,8 @@ itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* inpu
 
 std::vector<itk::Index<2> > OffsetsToIndices(const std::vector<itk::Offset<2> >& offsets, const itk::Index<2>& index);
 
+std::vector<itk::Index<2> > OffsetsToIndices(const std::vector<itk::Offset<2> >& offsets);
+
 std::vector<itk::Offset<2> > IndicesToOffsets(const std::vector<itk::Index<2> >& indices, const itk::Index<2>& index);
 
 std::vector<itk::Index<2> > GetBoundaryPixels(const itk::ImageRegion<2>& region);

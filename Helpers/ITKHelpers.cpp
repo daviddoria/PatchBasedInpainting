@@ -437,6 +437,16 @@ std::vector<itk::Index<2> > OffsetsToIndices(const std::vector<itk::Offset<2> >&
   return indices;
 }
 
+std::vector<itk::Index<2> > OffsetsToIndices(const std::vector<itk::Offset<2> >& offsets)
+{
+  std::vector<itk::Index<2> > indices;
+  for(unsigned int i = 0; i < offsets.size(); ++i)
+  {
+    indices.push_back(CreateIndex(offsets[i]));
+  }
+  return indices;
+}
+
 std::vector<itk::Offset<2> > IndicesToOffsets(const std::vector<itk::Index<2> >& indices, const itk::Index<2>& index)
 {
   std::vector<itk::Offset<2> > offsets;

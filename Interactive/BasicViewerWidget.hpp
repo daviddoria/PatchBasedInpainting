@@ -94,7 +94,7 @@ void BasicViewerWidget<TImage>::SetupScenes()
 template <typename TImage>
 void BasicViewerWidget<TImage>::slot_UpdateImage()
 {
-  std::cout << "Update image." << std::endl;
+  // std::cout << "Update image." << std::endl;
   ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
 
   int dims[3];
@@ -113,7 +113,7 @@ void BasicViewerWidget<TImage>::slot_UpdateImage()
 template <typename TImage>
 void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
 {
-  std::cout << "Update source." << std::endl;
+  // std::cout << "Update source." << std::endl;
 
   QImage sourceImage = HelpersQt::GetQImageColor(Image, sourceRegion);
   QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
@@ -127,7 +127,7 @@ void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sou
 template <typename TImage>
 void BasicViewerWidget<TImage>::slot_UpdateTarget(const itk::ImageRegion<2>& region)
 {
-  std::cout << "Update target." << std::endl;
+  // std::cout << "Update target." << std::endl;
 
   unsigned char red[3] = {255, 0, 0};
   ITKVTKHelpers::OutlineRegion(this->ImageLayer.ImageData, region, red);

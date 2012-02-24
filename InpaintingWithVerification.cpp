@@ -34,6 +34,7 @@
 #include "Visitors/AcceptanceVisitors/VarianceFunctor.hpp"
 #include "Visitors/AcceptanceVisitors/AverageFunctor.hpp"
 #include "Visitors/AcceptanceVisitors/ScoreThresholdAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/CorrelationAcceptanceVisitor.hpp"
 //#include "Visitors/AcceptanceVisitors/IntraSourcePatchAcceptanceVisitor.hpp"
 //#include "Visitors/AcceptanceVisitors/NeverAccept.hpp"
 
@@ -270,6 +271,9 @@ int main(int argc, char *argv[])
   DilatedSourceHoleTargetValidAcceptanceVisitor<VertexListGraphType, ImageType, VarianceFunctor> dilatedHoleValidVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth,
                                                                                                   VarianceFunctor(), 1000, "dilatedHoleValidVarianceDifferenceAcceptanceVisitor");
   compositeAcceptanceVisitor.AddRequiredPassVisitor(&dilatedHoleValidVarianceDifferenceAcceptanceVisitor);
+
+  CorrelationAcceptanceVisitor<VertexListGraphType, ImageType> correlationAcceptanceVisitor(image, mask, patchHalfWidth, 100);
+  compositeAcceptanceVisitor.AddRequiredPassVisitor(&correlationAcceptanceVisitor);
 
 //   IntraSourcePatchAcceptanceVisitor<VertexListGraphType, ImageType> intraSourcePatchAcceptanceVisitor(image, mask, patchHalfWidth, 100);
 //   compositeAcceptanceVisitor.AddVisitor(&intraSourcePatchAcceptanceVisitor);

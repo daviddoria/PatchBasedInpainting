@@ -105,7 +105,7 @@ struct DilatedSourceHoleTargetValidAcceptanceVisitor : public AcceptanceVisitorP
 
     if(computedEnergy < DifferenceThreshold)
       {
-      std::cout << this->VisitorName << ": Match accepted (" << computedEnergy << " is than " << DifferenceThreshold << ")" << std::endl << std::endl;
+      std::cout << this->VisitorName << ": Match accepted (" << computedEnergy << " is less than " << DifferenceThreshold << ")" << std::endl << std::endl;
       return true;
       }
     else
