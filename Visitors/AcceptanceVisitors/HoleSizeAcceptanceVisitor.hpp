@@ -37,7 +37,7 @@ struct HoleSizeAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
     itk::Index<2> targetPixel = ITKHelpers::CreateIndex(target);
     itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, HalfWidth);
 
-    unsigned int numberOfHolePixels = MaskImage->CountHolePixels();
+    unsigned int numberOfHolePixels = MaskImage->CountHolePixels(targetRegion);
 
     float ratio = static_cast<float>(numberOfHolePixels)/static_cast<float>(targetRegion.GetNumberOfPixels());
     std::cout << "Hole pixel ratio: " << ratio << std::endl;
