@@ -216,7 +216,7 @@ void Mask::CreateFromImage(const TImage* image, const typename TImage::PixelType
 template <typename TImage>
 void Mask::CopyHolesFromValue(const TImage* const inputImage, const unsigned int value)
 {
-  assert(inputMask->GetLargestPossibleRegion() == this->GetLargestPossibleRegion());
+  assert(inputImage->GetLargestPossibleRegion() == this->GetLargestPossibleRegion());
 
   itk::ImageRegionConstIterator<TImage> inputIterator(inputImage, inputImage->GetLargestPossibleRegion());
   itk::ImageRegionIterator<Mask> thisIterator(this, this->GetLargestPossibleRegion());
@@ -235,7 +235,7 @@ void Mask::CopyHolesFromValue(const TImage* const inputImage, const unsigned int
 template <typename TImage>
 void Mask::CopyValidPixelsFromValue(const TImage* const inputImage, const unsigned int value)
 {
-  assert(inputMask->GetLargestPossibleRegion() == this->GetLargestPossibleRegion());
+  assert(inputImage->GetLargestPossibleRegion() == this->GetLargestPossibleRegion());
 
   itk::ImageRegionConstIterator<TImage> inputIterator(inputImage, inputImage->GetLargestPossibleRegion());
   itk::ImageRegionIterator<Mask> thisIterator(this, this->GetLargestPossibleRegion());

@@ -238,7 +238,7 @@ QImage GetQImageMasked(const TImage* image, const itk::ImageRegion<2>& imageRegi
     ++imageIterator;
     }
 
-  std::cout << "There were " << numberOfHolePixels << " hole pixels." << std::endl;
+  // std::cout << "There were " << numberOfHolePixels << " hole pixels." << std::endl;
 
   //return qimage; // The actual image region
   return qimage.mirrored(false, true); // The flipped image region

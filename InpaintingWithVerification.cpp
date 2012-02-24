@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
 
   // Compare the hole variance to the source region variance
   DilatedSourceHoleTargetValidAcceptanceVisitor<VertexListGraphType, ImageType, VarianceFunctor> dilatedHoleValidVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth,
-                                                                                                  VarianceFunctor(), 1000, "dilatedVarianceDifferenceAcceptanceVisitor");
+                                                                                                  VarianceFunctor(), 1000, "dilatedHoleValidVarianceDifferenceAcceptanceVisitor");
   compositeAcceptanceVisitor.AddRequiredPassVisitor(&dilatedHoleValidVarianceDifferenceAcceptanceVisitor);
 
 //   IntraSourcePatchAcceptanceVisitor<VertexListGraphType, ImageType> intraSourcePatchAcceptanceVisitor(image, mask, patchHalfWidth, 100);
@@ -309,7 +309,7 @@ int main(int argc, char *argv[])
   // Create the nearest neighbor finders
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
                                   ImagePatchDifferenceType > KNNSearchType;
-  KNNSearchType knnSearch(imagePatchDescriptorMap, 100);
+  KNNSearchType knnSearch(imagePatchDescriptorMap, 100000);
 
 //   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
 //                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;

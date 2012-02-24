@@ -65,7 +65,7 @@ PriorityFunction(priorityFunction), ImageSize(imageSize), PreviouslyDisplayed(fa
 template <typename TPriority, typename TBoundaryStatusMapType>
 void PriorityViewerWidget<TPriority, TBoundaryStatusMapType>::slot_UpdateImage()
 {
-  std::cout << "PriorityViewerWidget::slot_UpdateImage." << std::endl;
+  // std::cout << "PriorityViewerWidget::slot_UpdateImage." << std::endl;
 
   ITKHelpers::SetImageToConstant(PriorityImage.GetPointer(), 0);
   // Compute the priority at every boundary pixel
