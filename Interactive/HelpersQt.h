@@ -68,7 +68,8 @@ QImage GetQImageChannel(const TImage* const image, const itk::ImageRegion<2>& re
 
 /** Convert an image to a QImage, but changed the corresponding masked pixels to the specified 'color'.*/
 template <typename TImage>
-QImage GetQImageMasked(const TImage* const image, const Mask* const mask, const itk::ImageRegion<2>& region, const QColor& color = QColor(0, 255, 0));
+QImage GetQImageMasked(const TImage* const image, const Mask* const mask,
+                       const itk::ImageRegion<2>& region, const QColor& color = QColor(0, 255, 0));
 
 /** Convert an image to a QImage, but changed the pixels from 'image' in 'imageRegion' to 'color' if the corresponding mask pixels in "maskRegion" are masked.*/
 template <typename TImage>

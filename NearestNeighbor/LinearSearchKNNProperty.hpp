@@ -5,6 +5,10 @@
 #include <limits> // for infinity()
 #include <algorithm> // for lower_bound()
 
+// Boost
+#include <boost/utility.hpp> // for enable_if()
+#include <boost/type_traits.hpp> // for is_same()
+
 // Custom
 #include "Utilities/Utilities.hpp"
 

@@ -92,22 +92,29 @@ struct DemoDriver
     std::vector<VertexDescriptorType> bestSourceNodes;
     typename boost::graph_traits<VertexListGraphType>::vertex_iterator vi,vi_end;
     tie(vi,vi_end) = vertices(*graph);
-    (*KNNSearch)(vi, vi_end, targetNode, bestSourceNodes);
+    (*KNNSearch)(vi, vi_end, targetNode, bestSourceNodes.begin());
     std::cout << "There are " << bestSourceNodes.size() << " bestSourceNodes." << std::endl;
     
     ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > patchDifferenceFunctor;
-    float patchDifference = patchDifferenceFunctor(get(*ImagePatchDescriptorMap, targetNode), get(*ImagePatchDescriptorMap, bestSourceNodes[0]));
+    float patchDifference = patchDifferenceFunctor(get(*ImagePatchDescriptorMap, targetNode),
+                                                   get(*ImagePatchDescriptorMap, bestSourceNodes[0]));
     std::cout << "Best patch error: " << patchDifference << std::endl;
 
     // Compute the average of the valid pixels in the target region
-    std::vector<itk::Index<2> > validPixelsTargetRegion = MaskImage->GetValidPixelsInRegion(get(*ImagePatchDescriptorMap, targetNode).GetRegion());
-    typename ImageType::PixelType targetRegionSourcePixelVariance = ITKHelpers::VarianceOfPixelsAtIndices(Image, validPixelsTargetRegion);
+    std::vector<itk::Index<2> > validPixelsTargetRegion = MaskImage->GetValidPixelsInRegion(get(*ImagePatchDescriptorMap,
+                                                                                                targetNode).GetRegion());
+    typename ImageType::PixelType targetRegionSourcePixelVariance =
+                ITKHelpers::VarianceOfPixelsAtIndices(Image, validPixelsTargetRegion);
     std::cout << "targetRegionSourcePixelVariance: " << targetRegionSourcePixelVariance << std::endl;
     
     // Compute the average of the pixels in the source region corresponding to hole pixels in the target region.
-    std::vector<itk::Offset<2> > holeOffsets = MaskImage->GetHoleOffsetsInRegion(get(*ImagePatchDescriptorMap, targetNode).GetRegion());
-    std::vector<itk::Index<2> > sourcePatchValidPixels = ITKHelpers::OffsetsToIndices(holeOffsets, get(*ImagePatchDescriptorMap, bestSourceNodes[0]).GetRegion().GetIndex());
-    typename ImageType::PixelType sourceRegionTargetPixelVariance = ITKHelpers::VarianceOfPixelsAtIndices(Image, sourcePatchValidPixels);
+    std::vector<itk::Offset<2> > holeOffsets = MaskImage->GetHoleOffsetsInRegion(
+            get(*ImagePatchDescriptorMap, targetNode).GetRegion());
+
+    std::vector<itk::Index<2> > sourcePatchValidPixels =
+           ITKHelpers::OffsetsToIndices(holeOffsets, get(*ImagePatchDescriptorMap, bestSourceNodes[0]).GetRegion().GetIndex());
+    typename ImageType::PixelType sourceRegionTargetPixelVariance =
+            ITKHelpers::VarianceOfPixelsAtIndices(Image, sourcePatchValidPixels);
     std::cout << "sourceRegionTargetPixelVariance: " << sourceRegionTargetPixelVariance << std::endl;
 
     TopPatchesDialog<ImageType>* topPatchesDialog = new TopPatchesDialog<ImageType>(Image, MaskImage, PatchRadius);

@@ -170,7 +170,8 @@ QImage GetQImageScalar(const TImage* image, const itk::ImageRegion<2>& region)
   regionOfInterestImageFilter->SetInput(image);
   regionOfInterestImageFilter->Update();
 
-  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(),
+                                                 regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
     {
@@ -196,7 +197,8 @@ QImage GetQImageMasked(const TImage* image, const Mask* const mask, const itk::I
 }
 
 template <typename TImage>
-QImage GetQImageMasked(const TImage* image, const itk::ImageRegion<2>& imageRegion, const Mask* const mask, const itk::ImageRegion<2>& maskRegion, const QColor& holeColor)
+QImage GetQImageMasked(const TImage* image, const itk::ImageRegion<2>& imageRegion, const Mask* const mask,
+                       const itk::ImageRegion<2>& maskRegion, const QColor& holeColor)
 {
   assert(imageRegion.GetSize() == maskRegion.GetSize());
 
