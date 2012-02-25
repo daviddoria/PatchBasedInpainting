@@ -17,13 +17,13 @@
  *=========================================================================*/
 
 // Custom
-#include "Helpers/HelpersOutput.h"
+#include "Helpers/OutputHelpers.h"
 
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
 // Descriptor visitors
-#include "Visitors/ImagePatchDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
 
 // Inpainting visitors
 #include "Visitors/InpaintingVisitor.hpp"
@@ -38,7 +38,7 @@
 #include "Initializers/InitializePriority.hpp"
 
 // Inpainters
-#include "Inpainters/MaskedGridPatchInpainter.hpp"
+#include "Inpainters/MaskImagePatchInpainter.hpp"
 #include "Inpainters/HoleListPatchInpainter.hpp"
 
 // Difference functions
@@ -188,9 +188,7 @@ int main(int argc, char *argv[])
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
 
   // Perform the inpainting
-  inpainting_loop(graph, inpaintingVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
-
-  OutputHelpers::WriteImage<ImageType>(image, outputFilename);
+  InpaintingAlgorithm(graph, inpaintingVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
 
   return EXIT_SUCCESS;
 }

@@ -1,5 +1,5 @@
-#ifndef InpaintingAlgorithm_hpp
-#define InpaintingAlgorithm_hpp
+#ifndef InpaintingPrecomputedAlgorithm_hpp
+#define InpaintingPrecomputedAlgorithm_hpp
 
 // Boost
 #include <boost/graph/properties.hpp>
@@ -10,19 +10,21 @@
 // Custom
 #include "Helpers/BoostHelpers.h"
 
-template <typename TNodeQueue, typename TNearestNeighborFinder, typename TPatchInpainter>
+template <typename TNodePairQueue, typename TVisitor, typename TPatchInpainter>
 inline
-void InpaintingAlgorithm(TNodeQueue& nodeQueue,
-                        TNearestNeighborFinder find_inpainting_source,
+void InpaintingPrecomputedAlgorithm(TNodePairQueue& nodeQueue, TVisitor vis,
                         TPatchInpainter inpaint_patch)
 {
-  while(!nodeQueue->empty())
+  typedef typename TNodePairQueue::value_type NodePairType;
+  while(!nodeQueue.empty())
   {
-    VertexDescriptorType targetNode = nodeQueue->top();
-    VertexDescriptorType sourceNode = find_inpainting_source(nodeQueue.begin(), nodeQueue.end(), targetNode);
+    NodePairType nodePair = nodeQueue.front();
+    typename NodePairType::first_type targetNode = nodePair.first;
+    typename NodePairType::second_type sourceNode = nodePair.second;
 
     inpaint_patch(targetNode, sourceNode, vis);
 
+    nodeQueue.pop();
   } // end main iteration loop
 
   vis.InpaintingComplete();

@@ -1,5 +1,5 @@
-#ifndef InpaintingVisitor_HPP
-#define InpaintingVisitor_HPP
+#ifndef InpaintPatchVisitor_HPP
+#define InpaintPatchVisitor_HPP
 
 // Helpers
 #include "Helpers/ITKHelpers.h"
@@ -9,22 +9,19 @@
 template <typename TImage>
 struct InpaintPatchVisitor
 {
-  BOOST_CONCEPT_ASSERT((DescriptorVisitorConcept<TDescriptorVisitor, TGraph>));
-
-  typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
-
   TImage* Image;
   Mask* MaskImage;
 
   const unsigned int HalfWidth;
 
-  InpaintingVisitor(TImage* const image, Mask* const mask,
+  InpaintPatchVisitor(TImage* const image, Mask* const mask,
                     const unsigned int halfWidth) :
   Image(image), MaskImage(mask), HalfWidth(halfWidth)
   {
   }
 
-  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
+  template <typename TNode>
+  void PaintVertex(TNode target, TNode source) const
   {
     itk::Index<2> target_index = ITKHelpers::CreateIndex(target);
 
