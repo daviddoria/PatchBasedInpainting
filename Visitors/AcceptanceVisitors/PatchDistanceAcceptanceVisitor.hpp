@@ -34,8 +34,10 @@ struct PatchDistanceAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
 
     if(computedEnergy < DistanceThreshold)
     {
+      std::cout << "PatchDistanceAcceptanceVisitor passed with distance: " << computedEnergy << std::endl;
       return true;
     }
+    std::cout << "PatchDistanceAcceptanceVisitor failed with distance: " << computedEnergy << std::endl;
     return false;
   }
 

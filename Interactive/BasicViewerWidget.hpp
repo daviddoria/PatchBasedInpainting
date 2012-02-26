@@ -113,6 +113,7 @@ void BasicViewerWidget<TImage>::slot_UpdateImage()
 template <typename TImage>
 void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
 {
+  // This function needs the targetRegion because this is the region of the Mask that is used to mask the source patch.
   // std::cout << "Update source." << std::endl;
 
   QImage sourceImage = HelpersQt::GetQImageColor(Image, sourceRegion);
@@ -122,6 +123,11 @@ void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sou
   QImage maskedSourceImage = HelpersQt::GetQImageMasked(Image, sourceRegion, MaskImage, targetRegion);
   QGraphicsPixmapItem* maskedItem = this->MaskedSourcePatchScene->addPixmap(QPixmap::fromImage(maskedSourceImage));
   gfxMaskedSource->fitInView(maskedItem);
+
+  unsigned char blue[3] = {0, 0, 255};
+  ITKVTKHelpers::OutlineRegion(this->ImageLayer.ImageData, sourceRegion, blue);
+
+  this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 template <typename TImage>

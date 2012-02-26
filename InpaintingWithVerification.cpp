@@ -250,29 +250,35 @@ int main(int argc, char *argv[])
   HoleSizeAcceptanceVisitor<VertexListGraphType> holeSizeAcceptanceVisitor(mask, patchHalfWidth, .2);
   compositeAcceptanceVisitor.AddOverrideVisitor(&holeSizeAcceptanceVisitor);
 
-  ScoreThresholdAcceptanceVisitor<VertexListGraphType, ImagePatchDescriptorMapType,
-                                  ImagePatchDifferenceType> scoreThresholdAcceptanceVisitor(mask, patchHalfWidth,
-                                                            imagePatchDescriptorMap, 10);
-  compositeAcceptanceVisitor.AddOverrideVisitor(&scoreThresholdAcceptanceVisitor);
+//   ScoreThresholdAcceptanceVisitor<VertexListGraphType, ImagePatchDescriptorMapType,
+//                                   ImagePatchDifferenceType> scoreThresholdAcceptanceVisitor(mask, patchHalfWidth,
+//                                                             imagePatchDescriptorMap, 10);
+//   compositeAcceptanceVisitor.AddOverrideVisitor(&scoreThresholdAcceptanceVisitor);
+
   // Source region to hole region comparisons
-//   SourceHoleTargetValidCompare<VertexListGraphType, ImageType, AverageFunctor> holeRegionAverageAcceptance(image, mask, patchHalfWidth,
-//                                                                                                            AverageFunctor(), 100, "holeRegionAverageAcceptance");
+//   SourceHoleTargetValidCompare<VertexListGraphType, ImageType, AverageFunctor>
+//                    holeRegionAverageAcceptance(image, mask, patchHalfWidth,
+//                                              AverageFunctor(), 100, "holeRegionAverageAcceptance");
 //   compositeAcceptanceVisitor.AddRequiredPassVisitor(&holeRegionAverageAcceptance);
 
-//   SourceHoleTargetValidCompare<VertexListGraphType, ImageType, VarianceFunctor> holeRegionVarianceAcceptance(image, mask, patchHalfWidth,
-//                                                                                                              VarianceFunctor(), 1000, "holeRegionVarianceAcceptance");
+//   SourceHoleTargetValidCompare<VertexListGraphType, ImageType, VarianceFunctor>
+//             holeRegionVarianceAcceptance(image, mask, patchHalfWidth,
+//                                          VarianceFunctor(), 1000, "holeRegionVarianceAcceptance");
 //   compositeAcceptanceVisitor.AddRequiredPassVisitor(&holeRegionVarianceAcceptance);
 
   // Compare the source region variance in the target patch to the source region variance in the source patch
-//   DilatedSourceValidTargetValidAcceptanceVisitor<VertexListGraphType, ImageType, VarianceFunctor> dilatedValidValidVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth,
-//                                                                                                   VarianceFunctor(), 1000, "dilatedVarianceDifferenceAcceptanceVisitor");
+//   DilatedSourceValidTargetValidAcceptanceVisitor<VertexListGraphType, ImageType, VarianceFunctor>
+//              dilatedValidValidVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth,
+//                                                                 VarianceFunctor(), 1000,
+//                                                                   "dilatedVarianceDifferenceAcceptanceVisitor");
 //   compositeAcceptanceVisitor.AddRequiredPassVisitor(&dilatedValidValidVarianceDifferenceAcceptanceVisitor);
 
   // Compare the hole variance to the source region variance
-  DilatedSourceHoleTargetValidAcceptanceVisitor<VertexListGraphType, ImageType, VarianceFunctor> dilatedHoleValidVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth,
-                                                      VarianceFunctor(), 1000,
-                                                      "dilatedHoleValidVarianceDifferenceAcceptanceVisitor");
-  compositeAcceptanceVisitor.AddRequiredPassVisitor(&dilatedHoleValidVarianceDifferenceAcceptanceVisitor);
+//   DilatedSourceHoleTargetValidAcceptanceVisitor<VertexListGraphType, ImageType, VarianceFunctor>
+//            dilatedHoleValidVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth,
+//                                                       VarianceFunctor(), 1000,
+//                                                       "dilatedHoleValidVarianceDifferenceAcceptanceVisitor");
+//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&dilatedHoleValidVarianceDifferenceAcceptanceVisitor);
 
   PatchDistanceAcceptanceVisitor<VertexListGraphType> patchDistanceAcceptanceVisitor(100);
   compositeAcceptanceVisitor.AddRequiredPassVisitor(&patchDistanceAcceptanceVisitor);
@@ -280,22 +286,27 @@ int main(int argc, char *argv[])
 //   CorrelationAcceptanceVisitor<VertexListGraphType, ImageType> correlationAcceptanceVisitor(image, mask, patchHalfWidth, 100);
 //   compositeAcceptanceVisitor.AddRequiredPassVisitor(&correlationAcceptanceVisitor);
 
-//   IntraSourcePatchAcceptanceVisitor<VertexListGraphType, ImageType> intraSourcePatchAcceptanceVisitor(image, mask, patchHalfWidth, 100);
+//   IntraSourcePatchAcceptanceVisitor<VertexListGraphType, ImageType>
+//           intraSourcePatchAcceptanceVisitor(image, mask, patchHalfWidth, 100);
 //   compositeAcceptanceVisitor.AddVisitor(&intraSourcePatchAcceptanceVisitor);
 
   // Create the inpainting visitor
 //   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
-//                             ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType>
+//                             ImagePatchDescriptorVisitorType, AcceptanceVisitorType,
+//                             PriorityType, PriorityMapType, BoundaryStatusMapType>
 //                             InpaintingVisitorType;
 //   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
-//                                           imagePatchDescriptorVisitor, compositeAcceptanceVisitor, priorityMap, &priorityFunction, patchHalfWidth,
+//                                           imagePatchDescriptorVisitor, compositeAcceptanceVisitor,
+//                                           priorityMap, &priorityFunction, patchHalfWidth,
 //                                           boundaryStatusMap);
 
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
-                            CompositeDescriptorVisitorType, CompositeAcceptanceVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType>
+                            CompositeDescriptorVisitorType, CompositeAcceptanceVisitorType, PriorityType,
+                            PriorityMapType, BoundaryStatusMapType>
                             InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
-                                          compositeDescriptorVisitor, compositeAcceptanceVisitor, priorityMap, &priorityFunction, patchHalfWidth,
+                                          compositeDescriptorVisitor, compositeAcceptanceVisitor, priorityMap,
+                                          &priorityFunction, patchHalfWidth,
                                           boundaryStatusMap);
 
   typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
@@ -359,7 +370,8 @@ int main(int argc, char *argv[])
                    &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
                    Qt::BlockingQueuedConnection);
 
-  PriorityViewerWidget<PriorityType, BoundaryStatusMapType> priorityViewerWidget(&priorityFunction, image->GetLargestPossibleRegion().GetSize(), boundaryStatusMap);
+  PriorityViewerWidget<PriorityType, BoundaryStatusMapType>
+            priorityViewerWidget(&priorityFunction, image->GetLargestPossibleRegion().GetSize(), boundaryStatusMap);
   priorityViewerWidget.show();
 
   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &priorityViewerWidget, SLOT(slot_UpdateImage()),
@@ -370,7 +382,7 @@ int main(int argc, char *argv[])
 //   QObject::connect(&nearestNeighborsDisplayVisitor, SIGNAL(signal_Refresh(const std::vector<Node>&)),
 //                    &topPatchesWidget, SLOT(SetNodes(const std::vector<Node>&)));
 
-  // Replay the inpainting from a log.
+  // Partially replay the inpainting from a log.
 
 //   typedef ReplayVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
 //                 FillStatusMapType, BoundaryStatusMapType> ReplayVisitorType;
