@@ -286,20 +286,36 @@ std::vector<typename TImage::PixelType> GetPixelValues(const TImage* const image
 
 /** Compute the average of the values appearing at the specified indices. */
 template<typename TImage>
-typename TypeTraits<typename TImage::PixelType>::LargerType AverageOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices);
+typename TypeTraits<typename TImage::PixelType>::LargerType AverageOfPixelsAtIndices(
+  const TImage* const image, const std::vector<itk::Index<2> >& indices);
 
 /** Compute the variance of the values appearing at the specified indices. The variance of the ith component is the
  * ith component of the output pixel*/
 template<typename TImage>
-typename TypeTraits<typename TImage::PixelType>::LargerType VarianceOfPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices);
+typename TypeTraits<typename TImage::PixelType>::LargerType VarianceOfPixelsAtIndices(
+  const TImage* const image, const std::vector<itk::Index<2> >& indices);
 
 /** Compute the average of all pixels in a region.*/
 template<typename TImage>
-typename TypeTraits<typename TImage::PixelType>::LargerType AverageInRegion(const TImage* const image, const itk::ImageRegion<2>& region);
+typename TypeTraits<typename TImage::PixelType>::LargerType AverageInRegion(const TImage* const image,
+                                                                            const itk::ImageRegion<2>& region);
 
 /** Compute the average of all pixels in a region.*/
 template<typename TImage>
-typename TypeTraits<typename TImage::PixelType>::LargerType VarianceInRegion(const TImage* const image, const itk::ImageRegion<2>& region);
+typename TypeTraits<typename TImage::PixelType>::LargerType VarianceInRegion(const TImage* const image,
+                                                                             const itk::ImageRegion<2>& region);
+
+/** Compute the average of all unmasked pixels in a region.*/
+template<typename TImage>
+typename TypeTraits<typename TImage::PixelType>::LargerType AverageInRegionMasked(const TImage* const image,
+                                                                                  const Mask* const mask,
+                                                                            const itk::ImageRegion<2>& region);
+
+/** Compute the average of all unmasked pixels in a region.*/
+template<typename TImage>
+typename TypeTraits<typename TImage::PixelType>::LargerType VarianceInRegionMasked(const TImage* const image,
+                                                                                   const Mask* const mask,
+                                                                             const itk::ImageRegion<2>& region);
 
 /** Compute the average difference of corresponding pixels from two regions of an image.*/
 template<typename TImage, typename TDifferenceFunctor>

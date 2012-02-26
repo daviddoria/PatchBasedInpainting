@@ -770,7 +770,8 @@ typename TypeTraits<T>::LargerComponentType SumOfComponentMagnitudes(const T& v)
 }
 
 template<typename TImage>
-typename TypeTraits<typename TImage::PixelType>::LargerType AverageInRegion(const TImage* const image, const itk::ImageRegion<2>& region)
+typename TypeTraits<typename TImage::PixelType>::LargerType AverageInRegion(const TImage* const image,
+                                                                            const itk::ImageRegion<2>& region)
 {
   typename itk::ImageRegionConstIterator<TImage> imageIterator(image, region);
   std::vector<typename TImage::PixelType> pixels;
@@ -786,7 +787,8 @@ typename TypeTraits<typename TImage::PixelType>::LargerType AverageInRegion(cons
 }
 
 template<typename TImage>
-typename TypeTraits<typename TImage::PixelType>::LargerType VarianceInRegion(const TImage* const image, const itk::ImageRegion<2>& region)
+typename TypeTraits<typename TImage::PixelType>::LargerType VarianceInRegion(const TImage* const image,
+                                                                             const itk::ImageRegion<2>& region)
 {
   typename itk::ImageRegionConstIterator<TImage> imageIterator(image, region);
   std::vector<typename TImage::PixelType> pixels;
@@ -794,6 +796,48 @@ typename TypeTraits<typename TImage::PixelType>::LargerType VarianceInRegion(con
     {
     pixels.push_back(imageIterator.Get());
     ++imageIterator;
+    }
+
+  return Statistics::Variance(pixels);
+}
+
+/** Compute the average of all unmasked pixels in a region.*/
+template<typename TImage>
+typename TypeTraits<typename TImage::PixelType>::LargerType AverageInRegionMasked(const TImage* const image,
+                                                                                  const Mask* const mask,
+                                                                            const itk::ImageRegion<2>& region)
+{
+  typename itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(mask, region);
+  std::vector<typename TImage::PixelType> pixels;
+  while(!maskIterator.IsAtEnd())
+    {
+    if(mask->IsValid(maskIterator.GetIndex()))
+      {
+      pixels.push_back(image->GetPixel(maskIterator.GetIndex()));
+      }
+    ++maskIterator;
+    }
+
+  using Statistics::Average;
+  //using ITKHelpers::Average;
+  return Average(pixels);
+}
+
+/** Compute the average of all unmasked pixels in a region.*/
+template<typename TImage>
+typename TypeTraits<typename TImage::PixelType>::LargerType VarianceInRegionMasked(const TImage* const image,
+                                                                                   const Mask* const mask,
+                                                                             const itk::ImageRegion<2>& region)
+{
+  typename itk::ImageRegionConstIterator<Mask> maskIterator(mask, region);
+  std::vector<typename TImage::PixelType> pixels;
+  while(!maskIterator.IsAtEnd())
+    {
+    if(mask->IsValid(maskIterator.GetIndex()))
+      {
+      pixels.push_back(image->GetPixel(maskIterator.GetIndex()));
+      }
+    ++maskIterator;
     }
 
   return Statistics::Variance(pixels);
