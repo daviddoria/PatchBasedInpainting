@@ -51,9 +51,10 @@ struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGr
     itk::Index<2> sourcePixel = ITKHelpers::CreateIndex(source);
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, HalfWidth);
 
-    // Compute the average of the valid pixels in the target region
+    // Get the pixels to use in the target region
     std::vector<typename TImage::PixelType> validPixelsTargetRegion = MaskOperations::GetValidPixelsInRegion(Image, MaskImage, targetRegion);
 
+    // Get the pixels to use in the source region
     std::vector<itk::Offset<2> > validOffsets = MaskImage->GetValidOffsetsInRegion(targetRegion);
     std::vector<itk::Index<2> > sourcePatchValidPixelIndices = ITKHelpers::OffsetsToIndices(validOffsets, sourceRegion.GetIndex());
     std::vector<typename TImage::PixelType> validPixelsSourceRegion = ITKHelpers::GetPixelValues(Image, sourcePatchValidPixelIndices);

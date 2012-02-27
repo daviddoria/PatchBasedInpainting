@@ -38,7 +38,8 @@
 #include "Visitors/AcceptanceVisitors/PatchDistanceAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/HistogramDifferenceAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/HoleHistogramDifferenceAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/QuadrantHistogramCompareAcceptanceVisitor.hpp"
+// #include "Visitors/AcceptanceVisitors/QuadrantHistogramCompareAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/AllQuadrantHistogramCompareAcceptanceVisitor.hpp"
 
 //#include "Visitors/AcceptanceVisitors/IntraSourcePatchAcceptanceVisitor.hpp"
 //#include "Visitors/AcceptanceVisitors/NeverAccept.hpp"
@@ -261,8 +262,12 @@ int main(int argc, char *argv[])
 //   HoleHistogramDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> holeHistogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
 //   compositeAcceptanceVisitor.AddRequiredPassVisitor(&holeHistogramDifferenceAcceptanceVisitor);
 
-  QuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType> quadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
-  compositeAcceptanceVisitor.AddRequiredPassVisitor(&quadrantHistogramCompareAcceptanceVisitor);
+//   QuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType> quadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
+//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&quadrantHistogramCompareAcceptanceVisitor);
+
+  AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType> allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 9.0f);
+  compositeAcceptanceVisitor.AddRequiredPassVisitor(&allQuadrantHistogramCompareAcceptanceVisitor);
+  
 
 //   ScoreThresholdAcceptanceVisitor<VertexListGraphType, ImagePatchDescriptorMapType,
 //                                   ImagePatchDifferenceType> scoreThresholdAcceptanceVisitor(mask, patchHalfWidth,
