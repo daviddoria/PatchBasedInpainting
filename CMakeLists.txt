@@ -92,7 +92,7 @@ endif()
 
 
 SET(PrecomputedInpainting CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
-if(PrecomputedInpainting)
+# if(PrecomputedInpainting)
   QT4_WRAP_UI(PrecomputedInpaintingUISrcs Interactive/BasicViewerWidget.ui
               Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui Interactive/PriorityViewerWidget.ui)
   QT4_WRAP_CPP(PrecomputedInpaintingMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
@@ -112,7 +112,7 @@ if(PrecomputedInpainting)
   TARGET_LINK_LIBRARIES(PrecomputedInpainting PatchBasedInpainting
                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
   INSTALL( TARGETS PrecomputedInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
+# endif()
 
 # add_subdirectory(Interactive)
 # SET(InpaintingWithManualSelection CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for manual selection.")

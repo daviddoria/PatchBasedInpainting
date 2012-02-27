@@ -141,4 +141,10 @@ float VectorSumOfAbsoluteDifferences(const TVector& a, const TVector& b)
   return sum;
 }
 
+template<typename TNode>
+void OutputNode(const TNode& a)
+{
+  std::cout << "(" << a[0] << ", " << a[1] << ")" << std::endl;
+}
+
 }// end namespace

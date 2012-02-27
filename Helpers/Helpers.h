@@ -104,6 +104,10 @@ float Sum(const TForwardIterator first, const TForwardIterator last);
 template<typename TVector>
 float VectorSumOfAbsoluteDifferences(const TVector& a, const TVector& b);
 
+/** Output a node. */
+template<typename TNode>
+void OutputNode(const TNode& a);
+
 }// end namespace
 
 #include "Helpers.hxx"

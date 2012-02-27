@@ -59,7 +59,7 @@ struct HoleHistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent
     std::vector<itk::Index<2> > sourcePatchPixelIndices = ITKHelpers::OffsetsToIndices(targetRegionHoleOffsets, sourceRegion.GetIndex());
     std::vector<typename TImage::PixelType> sourceRegionPixels = ITKHelpers::GetPixelValues(Image, sourcePatchPixelIndices);
 
-    assert(sourceRegionPixels.size() == validPixelsTargetRegion.size());
+    assert(sourceRegionPixels.size() == targetRegionPixels.size());
 
     float totalHistogramDifference = 0.0f;
 

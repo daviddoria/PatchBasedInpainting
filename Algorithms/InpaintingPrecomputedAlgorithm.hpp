@@ -22,7 +22,13 @@ void InpaintingPrecomputedAlgorithm(TNodePairQueue& nodeQueue, TVisitor vis,
     typename NodePairType::first_type targetNode = nodePair.first;
     typename NodePairType::second_type sourceNode = nodePair.second;
 
-    inpaint_patch(targetNode, sourceNode, vis);
+    std::cout << "Filling target node: ";
+    Helpers::OutputNode(targetNode);
+
+    std::cout << "with source node: ";
+    Helpers::OutputNode(sourceNode);
+    
+    inpaint_patch(targetNode, sourceNode);
 
     nodeQueue.pop();
   } // end main iteration loop

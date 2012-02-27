@@ -23,7 +23,8 @@
 #include "Visitors/InpaintPatchVisitor.hpp"
 
 // Inpainters
-#include "Inpainters/MaskImagePatchInpainter.hpp"
+//#include "Inpainters/MaskImagePatchInpainter.hpp"
+#include "Inpainters/ImageAndMaskPatchInpainter.hpp"
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
@@ -104,17 +105,28 @@ int main(int argc, char *argv[])
     ss << line;
     itk::Index<2> targetNode;
     itk::Index<2> sourceNode;
+
+    ss >> sourceNode[0] >> sourceNode[1];
+    std::cout << "Source node: ";
+    Helpers::OutputNode(sourceNode);
+
+    ss.ignore(std::numeric_limits<std::streamsize>::max(),':'); // Ignore the colon
     
     ss >> targetNode[0] >> targetNode[1];
-    ss.ignore(std::numeric_limits<std::streamsize>::max(),':'); // Ignore the colon
-    ss >> sourceNode[0] >> sourceNode[1];
+    std::cout << "Target node: ";
+    Helpers::OutputNode(targetNode);
+    
     NodePairType nodePair;
+    nodePair.first = targetNode;
+    nodePair.second = sourceNode;
     nodePairQueue.push(nodePair);
     }
 
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
-  typedef MaskImagePatchInpainter InpainterType;
-  InpainterType patchInpainter(patchHalfWidth, mask);
+//   typedef MaskImagePatchInpainter InpainterType;
+//   InpainterType patchInpainter(patchHalfWidth, mask);
+
+  ImageAndMaskPatchInpainter<ImageType> patchInpainter(image, mask, patchHalfWidth);
 
   // Create the inpainting visitor
   InpaintPatchVisitor<ImageType> inpaintPatchVisitor(image, mask, patchHalfWidth);
