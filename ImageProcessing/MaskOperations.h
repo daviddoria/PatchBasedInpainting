@@ -56,6 +56,8 @@ void CopySourcePatchIntoHoleOfTargetRegion(const TImage* const sourceImage, TIma
 template <typename TImage>
 void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const float blurVariance, TImage* const output);
 
+template <typename TImage>
+void MaskedLaplacian(const TImage* const inputImage, const Mask* const mask, itk::Image<float, 2>* const output);
 
 template<typename TImage>
 void CreatePatchImage(const TImage* const image, const itk::ImageRegion<2>& sourceRegion,

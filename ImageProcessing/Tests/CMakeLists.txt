@@ -30,3 +30,7 @@ add_test(TestMask TestMask)
 # add_executable(TestPixelFilterFunctors TestPixelFilterFunctors.cpp)
 # target_link_libraries(TestPixelFilterFunctors ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 # add_test(TestPixelFilterFunctors TestPixelFilterFunctors)
+
+add_executable(TestMaskedLaplacian TestMaskedLaplacian.cpp ../MaskOperations.cpp)
+target_link_libraries(TestMaskedLaplacian ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+add_test(TestMaskedLaplacian TestMaskedLaplacian)

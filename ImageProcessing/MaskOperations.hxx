@@ -3,11 +3,13 @@
 
 // Custom
 #include "Helpers/ITKHelpers.h"
+#include "Helpers/OutputHelpers.h"
 #include "ImageProcessing/Mask.h"
 #include "Utilities/Statistics.h"
 
 // ITK
 #include "itkGaussianOperator.h"
+#include "itkLaplacianOperator.h"
 #include "itkImageRegionIterator.h"
 
 namespace MaskOperations
@@ -58,6 +60,90 @@ void CopySourcePatchIntoHoleOfTargetRegion(const TImage* const sourceImage, TIma
     }
 }
 
+template <typename TImage>
+void MaskedLaplacian(const TImage* const inputImage, const Mask* const mask, itk::Image<float, 2>* const laplacianImage)
+{
+  // Create a Gaussian kernel
+  typedef itk::LaplacianOperator<float, 2> LaplacianOperatorType;
+
+  itk::Size<2> radius;
+  radius.Fill(1);
+
+  LaplacianOperatorType laplacianOperator;
+//   laplacianOperator.SetDirection(0);
+//   laplacianOperator.SetVariance(blurVariance);
+  laplacianOperator.CreateToRadius(radius);
+
+  // Create the output image
+//   typename TImage::Pointer laplacianImage = TImage::New();
+//   ITKHelpers::DeepCopy(inputImage, laplacianImage.GetPointer());
+  ITKHelpers::InitializeImage(laplacianImage, inputImage->GetLargestPossibleRegion());
+
+  itk::ImageRegionConstIteratorWithIndex<TImage> imageIterator(inputImage, inputImage->GetLargestPossibleRegion());
+
+  while(!imageIterator.IsAtEnd())
+    {
+    itk::Index<2> centerPixelIndex = imageIterator.GetIndex();
+
+    // We should not compute derivatives for pixels in the hole.
+    if(mask->IsHole(centerPixelIndex))
+      {
+      std::cout << "Skipping hole pixel..." << std::endl;
+      laplacianImage->SetPixel(centerPixelIndex, 0.0f);
+      ++imageIterator;
+      continue;
+      }
+
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(centerPixelIndex, 1);
+    unsigned int numberOfValidPixelsInRegion = mask->CountValidPixels(region);
+    unsigned int numberOfNonCenterValidPixels = numberOfValidPixelsInRegion - 1;
+    
+    // Loop over all of the pixels in the kernel and use the ones that are not masked
+    std::vector<float> values;
+    std::vector<float> weights;
+    for(unsigned int i = 0; i < laplacianOperator.Size(); ++i)
+      {
+      itk::Offset<2> offset = laplacianOperator.GetOffset(i);
+      itk::Index<2> pixel = centerPixelIndex + offset;
+
+      if(offset[0] == 0 && offset[1] == 0)
+      {
+	continue;
+      }
+//       if(offset[0] == 0 && offset[1] == 0)
+//       {
+// 	weights.push_back(numberOfNonCenterValidPixels);
+// 	values.push_back(inputImage->GetPixel(pixel));
+//       }
+
+      if(inputImage->GetLargestPossibleRegion().IsInside(pixel) && mask->IsValid(pixel))
+	{
+	//weights.push_back(laplacianOperator.GetElement(i));
+	weights.push_back(-1.0f);
+	values.push_back(inputImage->GetPixel(pixel));
+	}
+      }
+
+    typename TImage::PixelType centerPixel = imageIterator.Get();
+
+    // Determine the new pixel value
+    float newPixelValue = centerPixel * static_cast<float>(numberOfNonCenterValidPixels);
+    for(unsigned int i = 0; i < weights.size(); i++)
+      {
+//       std::cout << "Weights: ";
+//       OutputHelpers::OutputVector(weights);
+// 
+//       std::cout << "Values: ";
+//       OutputHelpers::OutputVector(values);
+
+      newPixelValue += weights[i] * values[i];
+      }
+
+    laplacianImage->SetPixel(centerPixelIndex, newPixelValue);
+    ++imageIterator;
+    }
+
+}
 
 // This struct is used inside MaskedBlur()
 struct Contribution

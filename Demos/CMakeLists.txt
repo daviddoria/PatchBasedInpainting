@@ -59,13 +59,21 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 # add_executable(DemoSelfPatchCompare DemoSelfPatchCompare.cpp)
 # target_link_libraries(DemoSelfPatchCompare PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
 
-add_executable(DemoBadPatchComparison DemoBadPatchComparison.cpp)
-target_link_libraries(DemoBadPatchComparison PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+###################################
+# add_executable(DemoBadPatchComparison DemoBadPatchComparison.cpp)
+# target_link_libraries(DemoBadPatchComparison PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+# 
+# QT4_WRAP_UI(DemoBadPatchRealImageUISrcs ${ROOT_SOURCE_DIR}/Interactive/TopPatchesDialog.ui)
+# QT4_WRAP_CPP(DemoBadPatchRealImageMOCSrcs ${ROOT_SOURCE_DIR}/Interactive/TopPatchesDialog.h
+#  ${ROOT_SOURCE_DIR}/Interactive/Delegates/PixmapDelegate.h)
+# add_executable(DemoBadPatchRealImage DemoBadPatchRealImage.cpp
+# ${ROOT_SOURCE_DIR}/Interactive/Delegates/PixmapDelegate.cpp
+# ${DemoBadPatchRealImageUISrcs} ${DemoBadPatchRealImageMOCSrcs})
+# target_link_libraries(DemoBadPatchRealImage PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+###################################
 
-QT4_WRAP_UI(DemoBadPatchRealImageUISrcs ${ROOT_SOURCE_DIR}/Interactive/TopPatchesDialog.ui)
-QT4_WRAP_CPP(DemoBadPatchRealImageMOCSrcs ${ROOT_SOURCE_DIR}/Interactive/TopPatchesDialog.h
- ${ROOT_SOURCE_DIR}/Interactive/Delegates/PixmapDelegate.h)
-add_executable(DemoBadPatchRealImage DemoBadPatchRealImage.cpp
-${ROOT_SOURCE_DIR}/Interactive/Delegates/PixmapDelegate.cpp
-${DemoBadPatchRealImageUISrcs} ${DemoBadPatchRealImageMOCSrcs})
-target_link_libraries(DemoBadPatchRealImage PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+add_executable(DemoMaskedLaplacian DemoMaskedLaplacian.cpp)
+target_link_libraries(DemoMaskedLaplacian PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+
+# add_executable(DemoMaskedLaplacianSynthetic DemoMaskedLaplacianSynthetic.cpp)
+# target_link_libraries(DemoMaskedLaplacianSynthetic PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
