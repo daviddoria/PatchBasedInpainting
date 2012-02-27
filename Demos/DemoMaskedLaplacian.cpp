@@ -46,14 +46,12 @@ int main(int argc, char*argv[])
   imageReader->SetFileName(imageFilename.c_str());
   imageReader->Update();
 
-  typedef itk::ImageFileReader<Mask> MaskReaderType;
-  MaskReaderType::Pointer maskReader = MaskReaderType::New();
-  maskReader->SetFileName(maskFilename.c_str());
-  maskReader->Update();
-  
+  Mask::Pointer mask = Mask::New();
+  mask->Read(maskFilename.c_str());
+
   typedef itk::Image<float, 2> LaplacianImageType;
   LaplacianImageType::Pointer output = LaplacianImageType::New();
-  MaskOperations::MaskedLaplacian(imageReader->GetOutput(), maskReader->GetOutput(), output.GetPointer());
+  MaskOperations::MaskedLaplacian(imageReader->GetOutput(), mask.GetPointer(), output.GetPointer());
 
   OutputHelpers::WriteImage(output.GetPointer(), outputFilename);
 

@@ -88,15 +88,15 @@ void MaskedLaplacian(const TImage* const inputImage, const Mask* const mask, itk
     // We should not compute derivatives for pixels in the hole.
     if(mask->IsHole(centerPixelIndex))
       {
-      std::cout << "Skipping hole pixel..." << std::endl;
+      //std::cout << "Skipping hole pixel..." << std::endl;
       laplacianImage->SetPixel(centerPixelIndex, 0.0f);
       ++imageIterator;
       continue;
       }
 
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(centerPixelIndex, 1);
-    unsigned int numberOfValidPixelsInRegion = mask->CountValidPixels(region);
-    unsigned int numberOfNonCenterValidPixels = numberOfValidPixelsInRegion - 1;
+    // itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(centerPixelIndex, 1);
+    // unsigned int numberOfValidPixelsInRegion = mask->CountValidPixels(region);
+    // unsigned int numberOfNonCenterValidPixels = numberOfValidPixelsInRegion - 1;
     
     // Loop over all of the pixels in the kernel and use the ones that are not masked
     std::vector<float> values;
@@ -104,7 +104,7 @@ void MaskedLaplacian(const TImage* const inputImage, const Mask* const mask, itk
     for(unsigned int i = 0; i < laplacianOperator.Size(); ++i)
       {
       itk::Offset<2> offset = laplacianOperator.GetOffset(i);
-      itk::Index<2> pixel = centerPixelIndex + offset;
+      itk::Index<2> pixelIndex = centerPixelIndex + offset;
 
       if(offset[0] == 0 && offset[1] == 0)
       {
@@ -116,18 +116,26 @@ void MaskedLaplacian(const TImage* const inputImage, const Mask* const mask, itk
 // 	values.push_back(inputImage->GetPixel(pixel));
 //       }
 
-      if(inputImage->GetLargestPossibleRegion().IsInside(pixel) && mask->IsValid(pixel))
+// This is for a center 8 and 8 -1's kernel
+//       if(inputImage->GetLargestPossibleRegion().IsInside(pixel) && mask->IsValid(pixel))
+// 	{
+// 	//weights.push_back(laplacianOperator.GetElement(i));
+// 	weights.push_back(-1.0f);
+// 	values.push_back(inputImage->GetPixel(pixel));
+// 	}
+
+      // This is for a center 4 and 4 -1's kernel
+      if(inputImage->GetLargestPossibleRegion().IsInside(pixelIndex) && mask->IsValid(pixelIndex) && laplacianOperator.GetElement(i) != 0)
 	{
-	//weights.push_back(laplacianOperator.GetElement(i));
-	weights.push_back(-1.0f);
-	values.push_back(inputImage->GetPixel(pixel));
+	weights.push_back(1.0f);
+	values.push_back(inputImage->GetPixel(pixelIndex));
 	}
       }
 
     typename TImage::PixelType centerPixel = imageIterator.Get();
 
     // Determine the new pixel value
-    float newPixelValue = centerPixel * static_cast<float>(numberOfNonCenterValidPixels);
+    float newPixelValue =  -1.0f * centerPixel * static_cast<float>(values.size());
     for(unsigned int i = 0; i < weights.size(); i++)
       {
 //       std::cout << "Weights: ";

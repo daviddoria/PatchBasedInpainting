@@ -134,5 +134,7 @@ int main(int argc, char *argv[])
   // Perform the inpainting
   InpaintingPrecomputedAlgorithm(nodePairQueue, inpaintPatchVisitor, patchInpainter);
 
+  OutputHelpers::WriteImage(image.GetPointer(), outputFilename);
+
   return EXIT_SUCCESS;
 }

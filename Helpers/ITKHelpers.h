@@ -80,6 +80,9 @@ void ITKImageToCIELabImage(const FloatVectorImageType* const rgbImage, FloatVect
 /** Compute the angle between two vectors. */
 float AngleBetween(const FloatVector2Type& v1, const FloatVector2Type& v2);
 
+/** Get the 'quadrant'th quadrant (quarter) region of the 'region'. */
+itk::ImageRegion<2> GetQuadrant(const itk::ImageRegion<2>& region, const unsigned int quadrant);
+
 /** Convert the first 3 channels of a float vector image to an unsigned char/color/rgb image. */
 void VectorImageToRGBImage(const FloatVectorImageType* const image, RGBImageType* const rgbImage);
 

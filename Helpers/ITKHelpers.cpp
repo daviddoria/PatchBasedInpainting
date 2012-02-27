@@ -46,6 +46,43 @@
 namespace ITKHelpers
 {
 
+itk::ImageRegion<2> GetQuadrant(const itk::ImageRegion<2>& region, const unsigned int requestedQuadrant)
+{
+  // Note: the four quadrants might not cover the entire 'region'.
+
+  unsigned int quadrantSideLength = region.GetSize()[0]/2;
+  itk::Size<2> size = {{quadrantSideLength, quadrantSideLength}};
+  itk::Index<2> corner;
+  if(requestedQuadrant == 0)
+  {
+    corner = region.GetIndex();
+  }
+  else if(requestedQuadrant == 1)
+  {
+    itk::Offset<2> offset = {{quadrantSideLength, 0}};
+    corner = region.GetIndex() + offset;
+  }
+  else if(requestedQuadrant == 2)
+  {
+    itk::Offset<2> offset = {{0, quadrantSideLength}};
+    corner = region.GetIndex() + offset;
+  }
+  else if(requestedQuadrant == 3)
+  {
+    itk::Offset<2> offset = {{quadrantSideLength, quadrantSideLength}};
+    corner = region.GetIndex() + offset;
+  }
+  else
+  {
+    std::stringstream ss;
+    ss << "There are only 4 quadrants (0-3). Requested " << requestedQuadrant;
+    throw std::runtime_error(ss.str());
+  }
+
+  itk::ImageRegion<2> quadrant(corner, size);
+  return quadrant;
+}
+
 itk::Index<2> ZeroIndex()
 {
   itk::Index<2> index;

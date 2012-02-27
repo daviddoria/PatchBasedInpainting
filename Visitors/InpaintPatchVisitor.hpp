@@ -35,7 +35,7 @@ struct InpaintPatchVisitor
 
   void InpaintingComplete() const
   {
-    OutputHelpers::WriteImage(Image, "output.mha");
+    //OutputHelpers::WriteImage(Image, "InpaintPatchVisitor::output.mha");
   }
 
 }; // InpaintingVisitor

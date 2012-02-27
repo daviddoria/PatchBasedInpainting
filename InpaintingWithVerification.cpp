@@ -38,6 +38,8 @@
 #include "Visitors/AcceptanceVisitors/PatchDistanceAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/HistogramDifferenceAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/HoleHistogramDifferenceAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/QuadrantHistogramCompareAcceptanceVisitor.hpp"
+
 //#include "Visitors/AcceptanceVisitors/IntraSourcePatchAcceptanceVisitor.hpp"
 //#include "Visitors/AcceptanceVisitors/NeverAccept.hpp"
 
@@ -253,12 +255,15 @@ int main(int argc, char *argv[])
   HoleSizeAcceptanceVisitor<VertexListGraphType> holeSizeAcceptanceVisitor(mask, patchHalfWidth, .15);
   compositeAcceptanceVisitor.AddOverrideVisitor(&holeSizeAcceptanceVisitor);
 
-  HistogramDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> histogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
-  compositeAcceptanceVisitor.AddRequiredPassVisitor(&histogramDifferenceAcceptanceVisitor);
+//   HistogramDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> histogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
+//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&histogramDifferenceAcceptanceVisitor);
+// 
+//   HoleHistogramDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> holeHistogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
+//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&holeHistogramDifferenceAcceptanceVisitor);
 
-  HoleHistogramDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> holeHistogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
-  compositeAcceptanceVisitor.AddRequiredPassVisitor(&holeHistogramDifferenceAcceptanceVisitor);
-  
+  QuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType> quadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
+  compositeAcceptanceVisitor.AddRequiredPassVisitor(&quadrantHistogramCompareAcceptanceVisitor);
+
 //   ScoreThresholdAcceptanceVisitor<VertexListGraphType, ImagePatchDescriptorMapType,
 //                                   ImagePatchDifferenceType> scoreThresholdAcceptanceVisitor(mask, patchHalfWidth,
 //                                                             imagePatchDescriptorMap, 10);
