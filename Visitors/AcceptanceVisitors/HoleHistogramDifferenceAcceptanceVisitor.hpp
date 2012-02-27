@@ -1,5 +1,5 @@
-#ifndef HistogramDifferenceAcceptanceVisitor_HPP
-#define HistogramDifferenceAcceptanceVisitor_HPP
+#ifndef HoleHistogramDifferenceAcceptanceVisitor_HPP
+#define HoleHistogramDifferenceAcceptanceVisitor_HPP
 
 #include <boost/graph/graph_traits.hpp>
 
@@ -20,7 +20,7 @@
 
  */
 template <typename TGraph, typename TImage>
-struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
+struct HoleHistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
 {
   TImage* Image;
   Mask* MaskImage;
@@ -31,7 +31,7 @@ struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGr
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  HistogramDifferenceAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, const float differenceThreshold = 100.0f) :
+  HoleHistogramDifferenceAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, const float differenceThreshold = 100.0f) :
   Image(image), MaskImage(mask), HalfWidth(halfWidth), DifferenceThreshold(differenceThreshold)
   {
 
@@ -52,27 +52,30 @@ struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGr
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, HalfWidth);
 
     // Compute the average of the valid pixels in the target region
-    std::vector<typename TImage::PixelType> validPixelsTargetRegion = MaskOperations::GetValidPixelsInRegion(Image, MaskImage, targetRegion);
+    std::vector<typename TImage::PixelType> targetRegionPixels = MaskOperations::GetValidPixelsInRegion(Image, MaskImage, targetRegion);
 
-    std::vector<itk::Offset<2> > validOffsets = MaskImage->GetValidOffsetsInRegion(targetRegion);
-    std::vector<itk::Index<2> > sourcePatchValidPixelIndices = ITKHelpers::OffsetsToIndices(validOffsets, sourceRegion.GetIndex());
-    std::vector<typename TImage::PixelType> validPixelsSourceRegion = ITKHelpers::GetPixelValues(Image, sourcePatchValidPixelIndices);
+    // The next line is the only thing that changed versus HistogramDifferenceAcceptanceVisitor
+    std::vector<itk::Offset<2> > targetRegionHoleOffsets = MaskImage->GetHoleOffsetsInRegion(targetRegion);
+    std::vector<itk::Index<2> > sourcePatchPixelIndices = ITKHelpers::OffsetsToIndices(targetRegionHoleOffsets, sourceRegion.GetIndex());
+    std::vector<typename TImage::PixelType> sourceRegionPixels = ITKHelpers::GetPixelValues(Image, sourcePatchPixelIndices);
 
-    assert(validPixelsSourceRegion.size() == validPixelsTargetRegion.size());
-
-    unsigned int numberOfPixels = validPixelsTargetRegion.size();
+    assert(sourceRegionPixels.size() == validPixelsTargetRegion.size());
 
     float totalHistogramDifference = 0.0f;
-    
+
     for(unsigned int component = 0; component < Image->GetNumberOfComponentsPerPixel(); ++component)
     {
-      std::vector<float> targetValues(numberOfPixels);
-      std::vector<float> sourceValues(numberOfPixels);
-      
-      for(unsigned int pixelId = 0; pixelId < numberOfPixels; ++pixelId)
+      std::vector<float> targetValues(targetRegionPixels.size());
+      std::vector<float> sourceValues(sourceRegionPixels.size());
+
+      for(unsigned int pixelId = 0; pixelId < targetRegionPixels.size(); ++pixelId)
       {
-	targetValues[pixelId] = validPixelsTargetRegion[pixelId][component];
-	sourceValues[pixelId] = validPixelsSourceRegion[pixelId][component];
+        targetValues[pixelId] = targetRegionPixels[pixelId][component];
+      }
+
+      for(unsigned int pixelId = 0; pixelId < sourceRegionPixels.size(); ++pixelId)
+      {
+        sourceValues[pixelId] = sourceRegionPixels[pixelId][component];
       }
 
       std::vector<float> targetHistogram = Histogram::ScalarHistogram(targetValues, 20);
@@ -85,19 +88,19 @@ struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGr
       float channelHistogramDifference = Helpers::VectorSumOfAbsoluteDifferences(targetHistogram, sourceHistogram);
       totalHistogramDifference += channelHistogramDifference;
     }
-    
+
     // Compute the difference
     computedEnergy = totalHistogramDifference;
-    std::cout << "HistogramDifferenceAcceptanceVisitor Energy: " << computedEnergy << std::endl;
+    std::cout << "HoleHistogramDifferenceAcceptanceVisitor Energy: " << computedEnergy << std::endl;
 
     if(computedEnergy < DifferenceThreshold)
       {
-      std::cout << "HistogramDifferenceAcceptanceVisitor: Match accepted (less than " << DifferenceThreshold << ")" << std::endl;
+      std::cout << "HoleHistogramDifferenceAcceptanceVisitor: Match accepted (less than " << DifferenceThreshold << ")" << std::endl;
       return true;
       }
     else
       {
-      std::cout << "HistogramDifferenceAcceptanceVisitor: Match rejected (greater than " << DifferenceThreshold << ")" << std::endl;
+      std::cout << "HoleHistogramDifferenceAcceptanceVisitor: Match rejected (greater than " << DifferenceThreshold << ")" << std::endl;
       return false;
       }
   };

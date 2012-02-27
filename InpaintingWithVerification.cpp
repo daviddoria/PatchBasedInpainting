@@ -36,6 +36,8 @@
 #include "Visitors/AcceptanceVisitors/ScoreThresholdAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/CorrelationAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/PatchDistanceAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/HistogramDifferenceAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/HoleHistogramDifferenceAcceptanceVisitor.hpp"
 //#include "Visitors/AcceptanceVisitors/IntraSourcePatchAcceptanceVisitor.hpp"
 //#include "Visitors/AcceptanceVisitors/NeverAccept.hpp"
 
@@ -247,9 +249,16 @@ int main(int argc, char *argv[])
 //                                                                                                                VarianceFunctor(), 1000, "validRegionVarianceAcceptance");
 //   compositeAcceptanceVisitor.AddVisitor(&validRegionVarianceAcceptance);
 
-  HoleSizeAcceptanceVisitor<VertexListGraphType> holeSizeAcceptanceVisitor(mask, patchHalfWidth, .2);
+  // If the hole is less than 15% of the patch, always accept the initial best match
+  HoleSizeAcceptanceVisitor<VertexListGraphType> holeSizeAcceptanceVisitor(mask, patchHalfWidth, .15);
   compositeAcceptanceVisitor.AddOverrideVisitor(&holeSizeAcceptanceVisitor);
 
+  HistogramDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> histogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
+  compositeAcceptanceVisitor.AddRequiredPassVisitor(&histogramDifferenceAcceptanceVisitor);
+
+  HoleHistogramDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> holeHistogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
+  compositeAcceptanceVisitor.AddRequiredPassVisitor(&holeHistogramDifferenceAcceptanceVisitor);
+  
 //   ScoreThresholdAcceptanceVisitor<VertexListGraphType, ImagePatchDescriptorMapType,
 //                                   ImagePatchDifferenceType> scoreThresholdAcceptanceVisitor(mask, patchHalfWidth,
 //                                                             imagePatchDescriptorMap, 10);
@@ -280,8 +289,8 @@ int main(int argc, char *argv[])
 //                                                       "dilatedHoleValidVarianceDifferenceAcceptanceVisitor");
 //   compositeAcceptanceVisitor.AddRequiredPassVisitor(&dilatedHoleValidVarianceDifferenceAcceptanceVisitor);
 
-  PatchDistanceAcceptanceVisitor<VertexListGraphType> patchDistanceAcceptanceVisitor(100);
-  compositeAcceptanceVisitor.AddRequiredPassVisitor(&patchDistanceAcceptanceVisitor);
+//   PatchDistanceAcceptanceVisitor<VertexListGraphType> patchDistanceAcceptanceVisitor(100);
+//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&patchDistanceAcceptanceVisitor);
   
 //   CorrelationAcceptanceVisitor<VertexListGraphType, ImageType> correlationAcceptanceVisitor(image, mask, patchHalfWidth, 100);
 //   compositeAcceptanceVisitor.AddRequiredPassVisitor(&correlationAcceptanceVisitor);
@@ -370,12 +379,14 @@ int main(int argc, char *argv[])
                    &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
                    Qt::BlockingQueuedConnection);
 
-  PriorityViewerWidget<PriorityType, BoundaryStatusMapType>
-            priorityViewerWidget(&priorityFunction, image->GetLargestPossibleRegion().GetSize(), boundaryStatusMap);
-  priorityViewerWidget.show();
-
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &priorityViewerWidget, SLOT(slot_UpdateImage()),
-                   Qt::BlockingQueuedConnection);
+  // Display the priority of the boundary in a different window
+//   PriorityViewerWidget<PriorityType, BoundaryStatusMapType>
+//             priorityViewerWidget(&priorityFunction, image->GetLargestPossibleRegion().GetSize(), boundaryStatusMap);
+//   priorityViewerWidget.show();
+// 
+//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &priorityViewerWidget, SLOT(slot_UpdateImage()),
+//                    Qt::BlockingQueuedConnection);
+  
   // Passively display the top patches at every iteration
 //   TopPatchesWidget<ImageType> topPatchesWidget(image, patchHalfWidth);
 //   topPatchesWidget.show();
