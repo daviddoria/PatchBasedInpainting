@@ -91,6 +91,9 @@ void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::I
 template<typename TImage>
 void WriteRegion(const TImage* const image, const itk::ImageRegion<2>& region, const std::string& filename);
 
+template <typename T>
+void OutputVector(const std::vector<T>& v);
+
 
 } // end namespace
 

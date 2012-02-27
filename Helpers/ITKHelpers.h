@@ -358,6 +358,10 @@ void PrintImage(const TImage* const image);
 template<typename TImage>
 void PrintRegion(const TImage* const image, const itk::ImageRegion<2>& region);
 
+/** See GetPixelValues */
+// template<typename TImage>
+// std::vector<typename TImage::PixelType> GetPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices);
+
 }// end namespace
 
 #include "ITKHelpers.hxx"

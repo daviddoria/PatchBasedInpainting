@@ -100,6 +100,10 @@ TTo ConvertFrom(const TFrom& object);
 template<typename TForwardIterator>
 float Sum(const TForwardIterator first, const TForwardIterator last);
 
+/** Sum the corresponding differences of elements in two containers. */
+template<typename TVector>
+float VectorSumOfAbsoluteDifferences(const TVector& a, const TVector& b);
+
 }// end namespace
 
 #include "Helpers.hxx"

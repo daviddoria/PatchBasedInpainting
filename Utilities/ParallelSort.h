@@ -10,8 +10,6 @@ enum SORTORDER{ASCENDING, DESCENDING};
 template <typename T>
 void OutputIndexedValueVector(const std::vector<T>& v);
 
-template <typename T>
-void OutputVector(const std::vector<T>& v);
 
 template <typename T>
 struct IndexedValue

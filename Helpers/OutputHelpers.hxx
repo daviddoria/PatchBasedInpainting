@@ -15,6 +15,8 @@
  *  limitations under the License.
  *
  *=========================================================================*/
+#ifndef OutputHelpers_HPP
+#define OutputHelpers_HPP
 
 #include "OutputHelpers.h" // Appease syntax parser
 
@@ -217,4 +219,16 @@ void WriteRegion(const TImage* const image, const itk::ImageRegion<2>& region, c
 // 
 // }
 
+template <typename T>
+void OutputVector(const std::vector<T>& v)
+{
+  for(unsigned int i = 0; i < v.size(); i++)
+    {
+    std::cout << v[i] << " ";
+    }
+  std::cout << std::endl;
+}
+
 } // end namespace
+
+#endif

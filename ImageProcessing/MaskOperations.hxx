@@ -273,4 +273,24 @@ typename TImage::PixelType AverageMaskedNeighborValue(const TImage* const image,
   return Average(holeValues);
 }
 
+template<typename TImage>
+std::vector<typename TImage::PixelType> GetValidPixelsInRegion(const TImage* const image, const Mask* const mask,
+                                                               const itk::ImageRegion<2>& region)
+{
+  std::vector<typename TImage::PixelType> validPixels;
+  
+  itk::ImageRegionConstIteratorWithIndex<TImage> imageIterator(image, region);
+
+  while(!imageIterator.IsAtEnd())
+    {
+    if(mask->IsValid(imageIterator.GetIndex()))
+      {
+      validPixels.push_back(imageIterator.Get());
+      }
+    ++imageIterator;
+    }
+
+  return validPixels;
+}
+
 } // end namespace

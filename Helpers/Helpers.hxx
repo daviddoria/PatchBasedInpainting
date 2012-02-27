@@ -127,4 +127,18 @@ float Sum(const TForwardIterator first, const TForwardIterator last)
   return sum;
 }
 
+template<typename TVector>
+float VectorSumOfAbsoluteDifferences(const TVector& a, const TVector& b)
+{
+  assert(a.size() == b.size());
+  
+  float sum = 0.0f;
+  for(unsigned int i = 0; i < a.size(); ++i)
+  {
+    sum += fabs(a[i] - b[i]);
+  }
+
+  return sum;
+}
+
 }// end namespace

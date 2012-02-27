@@ -9,3 +9,7 @@ add_executable(TestParallelSort TestParallelSort.cpp)
 target_link_libraries(TestParallelSort ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libTesting)
 add_test(TestParallelSort TestParallelSort)
 
+add_executable(TestHistogram TestHistogram.cpp)
+target_link_libraries(TestHistogram ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libTesting)
+add_test(TestParallelSort TestParallelSort)
+

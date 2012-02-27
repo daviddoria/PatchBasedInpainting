@@ -79,6 +79,11 @@ template<typename TImage>
 typename TImage::PixelType AverageMaskedNeighborValue(const TImage* const image, const Mask* const mask,
                                                       const itk::Index<2>& pixel);
 
+/** Get the average value of the masked neighbors of a pixel. */
+template<typename TImage>
+std::vector<typename TImage::PixelType> GetValidPixelsInRegion(const TImage* const image, const Mask* const mask,
+                                                               const itk::ImageRegion<2>& region);
+
 } // end namespace
 
 #include "MaskOperations.hxx"
