@@ -16,9 +16,7 @@
  *
  *=========================================================================*/
 
-/* This widget configures the options of a PatchBasedInpainting object
- * and visualizes the output at each iteration. The PatchBasedInpainting
- * is not created until the Initialize button is clicked.
+/*
 */
 
 #ifndef MovablePatch_H
@@ -26,11 +24,13 @@
 
 // Custom
 #include "Layer.h"
+class InteractorStyleImageWithDrag;
 
 // ITK
 #include "itkImageRegion.h"
 
 // Qt
+#include <QColor>
 #include <QGraphicsScene>
 class QGraphicsView;
 
@@ -40,13 +40,23 @@ class vtkRenderer;
 class MovablePatch
 {
 public:
-  MovablePatch(const unsigned int radius, vtkRenderer* const renderer, QGraphicsView* const view, const QColor color = QColor());
+  /** This constructor is provided so that we can store a MovablePatch as a member,
+   * but not initialize it until after the renderers/interactors are setup and configured.*/
+  MovablePatch();
+
+  /** This constructor is provided if everything is known when we create the object.*/
+  //MovablePatch(const unsigned int radius, vtkRenderer* const renderer,
+  MovablePatch(const unsigned int radius, InteractorStyleImageWithDrag* const interactorStyle,
+               QGraphicsView* const view = NULL, const QColor color = QColor());
 
   void SetVisibility(const bool);
   bool GetVisibility();
 
-  // The ITK region describing the position of the patch.
+  /** The ITK region describing the position of the patch. */
   itk::ImageRegion<2> GetRegion();
+
+  /** Set a GraphicsView in which to display the patch. */
+  void SetGraphicsView(QGraphicsView* const view);
 
   void Display();
 
@@ -56,8 +66,9 @@ private:
   void PatchMoved();
 
   unsigned int Radius;
-  vtkRenderer* Renderer;
-  QGraphicsView* const View;
+  //vtkRenderer* Renderer;
+  InteractorStyleImageWithDrag* InteractorStyle;
+  QGraphicsView* View;
   QColor Color;
 
   QSharedPointer<QGraphicsScene> PatchScene;

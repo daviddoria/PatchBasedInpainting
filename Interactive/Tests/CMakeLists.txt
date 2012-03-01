@@ -91,11 +91,22 @@
 # add_test(TestTopPatchesDialog TestTopPatchesDialog)
 
 
+# include_directories(${CMAKE_CURRENT_BINARY_DIR})
+# include_directories(${CMAKE_CURRENT_BINARY_DIR}../)
+# QT4_WRAP_UI(TestPriorityViewerWidgetUISrcs ../PriorityViewerWidget.ui)
+# QT4_WRAP_CPP(TestPriorityViewerWidgetMOCSrcs ../PriorityViewerWidget.h)
+# add_executable(TestPriorityViewerWidget TestPriorityViewerWidget.cpp # ../PriorityViewerWidget.cpp
+#                ${TestPriorityViewerWidgetUISrcs} ${TestPriorityViewerWidgetMOCSrcs})
+# target_link_libraries(TestPriorityViewerWidget ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libGUI)
+# add_test(TestPriorityViewerWidget TestPriorityViewerWidget)
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR}../)
-QT4_WRAP_UI(TestPriorityViewerWidgetUISrcs ../PriorityViewerWidget.ui)
-QT4_WRAP_CPP(TestPriorityViewerWidgetMOCSrcs ../PriorityViewerWidget.h)
-add_executable(TestPriorityViewerWidget TestPriorityViewerWidget.cpp # ../PriorityViewerWidget.cpp
-               ${TestPriorityViewerWidgetUISrcs} ${TestPriorityViewerWidgetMOCSrcs})
-target_link_libraries(TestPriorityViewerWidget ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libGUI)
-add_test(TestPriorityViewerWidget TestPriorityViewerWidget)
+QT4_WRAP_UI(TestManualPatchSelectionDialogUISrcs ../ManualPatchSelectionDialog.ui)
+QT4_WRAP_CPP(TestManualPatchSelectionDialogMOCSrcs ../ManualPatchSelectionDialog.h)
+add_executable(TestManualPatchSelectionDialog TestManualPatchSelectionDialog.cpp
+               ../HelpersQt.cpp ../MovablePatch.cpp
+../../ImageProcessing/Mask.cpp
+               ${TestManualPatchSelectionDialogUISrcs} ${TestManualPatchSelectionDialogMOCSrcs})
+target_link_libraries(TestManualPatchSelectionDialog ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libGUI)
+add_test(TestManualPatchSelectionDialog TestManualPatchSelectionDialog)

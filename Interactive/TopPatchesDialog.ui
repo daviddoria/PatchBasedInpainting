@@ -38,6 +38,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QPushButton" name="btnSelectManually">
+     <property name="text">
+      <string>Select manually</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="label_2">
      <property name="font">
       <font>

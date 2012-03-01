@@ -21,6 +21,7 @@
 #include "InteractorStyleImageWithDrag.h"
 #include "ImageProcessing/Mask.h"
 #include "Interactive/Delegates/PixmapDelegate.h"
+#include "Interactive/ManualPatchSelectionDialog.h"
 
 template <typename TImage>
 TopPatchesDialog<TImage>::TopPatchesDialog(TImage* const image, Mask* const mask, const unsigned int patchHalfWidth) :
@@ -100,6 +101,13 @@ void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
 
   QModelIndex index = this->PatchesModel->index(0,0);
   this->listView->scrollTo(index);
+}
+
+template <typename TImage>
+void TopPatchesDialog<TImage>::on_btnSelectManually_clicked()
+{
+  ManualPatchSelectionDialog<TImage> manualPatchSelectionDialog(Image, MaskImage, PatchHalfWidth);
+  manualPatchSelectionDialog.exec();
 }
 
 #endif

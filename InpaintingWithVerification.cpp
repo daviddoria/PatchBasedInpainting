@@ -165,9 +165,9 @@ int main(int argc, char *argv[])
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
 
-  //typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
+  typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
   //typedef ImagePatchVectorized<ImageType> ImagePatchPixelDescriptorType;
-  typedef ImagePatchVectorizedIndices<ImageType> ImagePatchPixelDescriptorType;
+  //typedef ImagePatchVectorizedIndices<ImageType> ImagePatchPixelDescriptorType;
 
   // Create the graph
   typedef boost::grid_graph<2> VertexListGraphType;
@@ -223,20 +223,20 @@ int main(int argc, char *argv[])
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
   // Create the descriptor visitor
-//   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
-//           ImagePatchDescriptorVisitorType;
+  typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
+          ImagePatchDescriptorVisitorType;
 //   typedef ImagePatchVectorizedVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
 //           ImagePatchDescriptorVisitorType;
-  typedef ImagePatchVectorizedIndicesVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
-          ImagePatchDescriptorVisitorType;
+//   typedef ImagePatchVectorizedIndicesVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
+//           ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
-//   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> >
-//             ImagePatchDifferenceType;
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> >
+            ImagePatchDifferenceType;
 //   typedef ImagePatchVectorizedDifference<ImagePatchPixelDescriptorType,
 //                                          SumAbsolutePixelDifference<ImageType::PixelType> > ImagePatchDifferenceType;
-  typedef ImagePatchVectorizedIndicesDifference<ImagePatchPixelDescriptorType,
-                                         SumAbsolutePixelDifference<ImageType::PixelType> > ImagePatchDifferenceType;
+//   typedef ImagePatchVectorizedIndicesDifference<ImagePatchPixelDescriptorType,
+//                                          SumAbsolutePixelDifference<ImageType::PixelType> > ImagePatchDifferenceType;
 
   // Note: currently we can't do this "first search by small patches" because some small patches are valid while
   // their corresponding big patches are not (near the image border)

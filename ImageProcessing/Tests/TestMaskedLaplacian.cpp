@@ -31,15 +31,14 @@ int main(int argc, char*argv[])
   UnsignedCharScalarImageType::Pointer image = UnsignedCharScalarImageType::New();
   CreateImage(image);
 
-  unsigned int direction = 0; // X-direction
   FloatScalarImageType::Pointer output = FloatScalarImageType::New();
-  MaskOperations::MaskedLaplacian<UnsignedCharScalarImageType>(image, mask, direction, output);
+  MaskOperations::MaskedLaplacian<UnsignedCharScalarImageType>(image, mask, output);
 
   FloatScalarImageType::Pointer correctDerivative = FloatScalarImageType::New();
 
   if(!Testing::ImagesEqual<FloatScalarImageType>(output, correctDerivative))
     {
-    throw std::runtime_error("MaskedDerivative output incorrect!");
+    throw std::runtime_error("MaskedLaplacian output incorrect!");
     }
 
   return EXIT_SUCCESS;

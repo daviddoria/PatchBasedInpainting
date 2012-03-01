@@ -18,7 +18,15 @@
 #include "HelpersQt.h"
 #include "InteractorStyleImageWithDrag.h"
 
-MovablePatch::MovablePatch(const unsigned int radius, vtkRenderer* const renderer,  QGraphicsView* const view, const QColor color) : Radius(radius), Renderer(renderer), View(view), Color(color), PatchScene(new QGraphicsScene)
+MovablePatch::MovablePatch() : Radius(0), Renderer(NULL), View(NULL), PatchScene(NULL)
+{
+  
+}
+
+//MovablePatch::MovablePatch(const unsigned int radius, vtkRenderer* const renderer,
+MovablePatch::MovablePatch(const unsigned int radius, InteractorStyleImageWithDrag* const interactorStyle,
+                           QGraphicsView* const view, const QColor color) :
+                           Radius(radius), InteractorStyle(interactorStyle), View(view), Color(color), PatchScene(new QGraphicsScene)
 {
   this->PatchLayer.ImageSlice->SetPickable(true);
   //this->PatchLayer.ImageSlice->SetVisibility(this->chkDisplayUserPatch->isChecked());
@@ -30,7 +38,14 @@ MovablePatch::MovablePatch(const unsigned int radius, vtkRenderer* const rendere
 
   this->Renderer->AddViewProp(this->PatchLayer.ImageSlice);
 
-  InteractorStyleImageWithDrag::SafeDownCast(this->Renderer->GetRenderWindow()->GetInteractor())->TrackballStyle->AddObserver(CustomTrackballStyle::PatchesMovedEvent, this, &MovablePatch::PatchMoved);
+//   InteractorStyleImageWithDrag* interactorStyle = InteractorStyleImageWithDrag::
+//                 SafeDownCast(this->Renderer->GetRenderWindow()->GetInteractor());
+
+  if(!interactorStyle)
+  {
+    throw std::runtime_error("MovablePatch: Interactor is not valid!");
+  }
+  interactorStyle->TrackballStyle->AddObserver(CustomTrackballStyle::PatchesMovedEvent, this, &MovablePatch::PatchMoved);
 
   //this->PatchScene->setBackgroundBrush(brush);
   this->View->setScene(this->PatchScene.data());
@@ -94,4 +109,9 @@ void MovablePatch::PatchMoved()
   ss << candidatePairs[0].DifferenceMap[PatchPair::AverageAbsoluteDifference];
   lblUserPatchError->setText(ss.str().c_str());*/
 
+}
+
+void MovablePatch::SetGraphicsView(QGraphicsView* const view)
+{
+  this->View = view;
 }

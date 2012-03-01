@@ -42,6 +42,8 @@ public slots:
   
   virtual void SetQueryNode(const Node& queryNode) = 0;
   virtual void slot_Selected(const QModelIndex & index) = 0;
+
+  virtual void on_btnSelectManually_clicked() = 0;
 };
 
 /** This class displays a set of patches in an ordered list. */
@@ -89,6 +91,8 @@ public:
   /** Catch the signal that the ListView emits when it is clicked. */
   void slot_Selected(const QModelIndex & index);
 
+  void on_btnSelectManually_clicked();
+  
   /** Get the id of the node that user selected. */
   unsigned int GetSelectedItem();
 
