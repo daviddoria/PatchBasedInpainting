@@ -21,6 +21,7 @@
 
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
+#include "PixelDescriptors/ImagePatchVectorized.h"
 
 // Acceptance visitors
 #include "Visitors/AcceptanceVisitors/AverageDifferenceAcceptanceVisitor.hpp"
@@ -46,6 +47,7 @@
 
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
+#include "Visitors/DescriptorVisitors/ImagePatchVectorizedVisitor.hpp"
 #include "Visitors/DescriptorVisitors/CompositeDescriptorVisitor.hpp"
 
 // Information visitors
@@ -77,6 +79,7 @@
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/ImagePatchVectorizedDifference.hpp"
 #include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
 
 // Inpainting algorithm
@@ -159,7 +162,8 @@ int main(int argc, char *argv[])
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
 
-  typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
+  //typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
+  typedef ImagePatchVectorized<ImageType> ImagePatchPixelDescriptorType;
 
   // Create the graph
   typedef boost::grid_graph<2> VertexListGraphType;
@@ -187,7 +191,7 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<ImagePatchPixelDescriptorType, IndexMapType> ImagePatchDescriptorMapType;
   ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
 
-  ImagePatchDescriptorMapType smallImagePatchDescriptorMap(num_vertices(graph), indexMap);
+  //ImagePatchDescriptorMapType smallImagePatchDescriptorMap(num_vertices(graph), indexMap);
 
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
 //   typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
@@ -215,13 +219,22 @@ int main(int argc, char *argv[])
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
   // Create the descriptor visitor
-  typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
+//   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
+//           ImagePatchDescriptorVisitorType;
+  typedef ImagePatchVectorizedVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
           ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
-  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > ImagePatchDifferenceType;
-  // Note: currently we can't do this "first search by small patches" because some small patches are valid while their corresponding big patches are not (near the image border)
-  // so the second step of the search (linear best) will be searching for big patches on the same nodes that small patches were valid, making them out of bounds)
+//   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> >
+//             ImagePatchDifferenceType;
+  typedef ImagePatchVectorizedDifference<ImagePatchPixelDescriptorType,
+                                         SumAbsolutePixelDifference<ImageType::PixelType> >
+            ImagePatchDifferenceType;
+
+  // Note: currently we can't do this "first search by small patches" because some small patches are valid while
+  // their corresponding big patches are not (near the image border)
+  // so the second step of the search (linear best) will be searching for big patches on the same nodes that small
+  // patches were valid, making them out of bounds)
   // ImagePatchDescriptorVisitorType smallImagePatchDescriptorVisitor(image, mask, smallImagePatchDescriptorMap, 5);
 
   typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
@@ -243,32 +256,39 @@ int main(int argc, char *argv[])
 //   CompositeAcceptanceVisitorType compositeAcceptanceVisitor;
 
   // Source region to source region comparisons
-//   SourceValidTargetValidCompare<VertexListGraphType, ImageType, AverageFunctor> validRegionAverageAcceptance(image, mask, patchHalfWidth,
-//                                                                                                              AverageFunctor(), 100, "validRegionAverageAcceptance");
+//   SourceValidTargetValidCompare<VertexListGraphType, ImageType, AverageFunctor>
+//         validRegionAverageAcceptance(image, mask, patchHalfWidth,
+//         AverageFunctor(), 100, "validRegionAverageAcceptance");
 //   compositeAcceptanceVisitor.AddRequiredPassVisitor(&validRegionAverageAcceptance);
 
-  // We don't want to do this - the variation over the patch makes this no good. Prefer the DilatedRegionAcceptanceVisitor with a VarianceFunctor instead.
-//   SourceValidTargetValidCompare<VertexListGraphType, ImageType, VarianceFunctor> validRegionVarianceAcceptance(image, mask, patchHalfWidth,
-//                                                                                                                VarianceFunctor(), 1000, "validRegionVarianceAcceptance");
+  // We don't want to do this - the variation over the patch makes this no good. 
+  // Prefer the DilatedRegionAcceptanceVisitor with a VarianceFunctor instead.
+//   SourceValidTargetValidCompare<VertexListGraphType, ImageType, VarianceFunctor>
+//           validRegionVarianceAcceptance(image, mask, patchHalfWidth,
+//           VarianceFunctor(), 1000, "validRegionVarianceAcceptance");
 //   compositeAcceptanceVisitor.AddVisitor(&validRegionVarianceAcceptance);
 
   // If the hole is less than 15% of the patch, always accept the initial best match
   HoleSizeAcceptanceVisitor<VertexListGraphType> holeSizeAcceptanceVisitor(mask, patchHalfWidth, .15);
   compositeAcceptanceVisitor.AddOverrideVisitor(&holeSizeAcceptanceVisitor);
 
-//   HistogramDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> histogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
+//   HistogramDifferenceAcceptanceVisitor<VertexListGraphType, ImageType>
+//            histogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
 //   compositeAcceptanceVisitor.AddRequiredPassVisitor(&histogramDifferenceAcceptanceVisitor);
 // 
-//   HoleHistogramDifferenceAcceptanceVisitor<VertexListGraphType, ImageType> holeHistogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
+//   HoleHistogramDifferenceAcceptanceVisitor<VertexListGraphType, ImageType>
+//          holeHistogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
 //   compositeAcceptanceVisitor.AddRequiredPassVisitor(&holeHistogramDifferenceAcceptanceVisitor);
 
-//   QuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType> quadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
+//   QuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType>
+//           quadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
 //   compositeAcceptanceVisitor.AddRequiredPassVisitor(&quadrantHistogramCompareAcceptanceVisitor);
 
-  // AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType> allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 8.0f); // 8 (2 for each quadrant) is reasonable
-  AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType> allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 1.0f); // Crazy low
+  // AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType>
+  //          allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 8.0f); // 8 (2 for each quadrant) is reasonable
+  AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType>
+               allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 1.0f); // Crazy low
   compositeAcceptanceVisitor.AddRequiredPassVisitor(&allQuadrantHistogramCompareAcceptanceVisitor);
-  
 
 //   ScoreThresholdAcceptanceVisitor<VertexListGraphType, ImagePatchDescriptorMapType,
 //                                   ImagePatchDifferenceType> scoreThresholdAcceptanceVisitor(mask, patchHalfWidth,

@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef ImagePatchPixelDescriptor_H
-#define ImagePatchPixelDescriptor_H
+#ifndef ImagePatchVectorized_H
+#define ImagePatchVectorized_H
 
 #include "PixelDescriptor.h"
 
@@ -27,21 +27,22 @@
 class Mask;
 
 /**
-\class ImagePatchPixelDescriptor
-\brief This class indicates a rectangular region in an image.
+\class ImagePatchVectorized
+\brief This class indicates a rectangular region in an image by vectorizing it in raster scan order.
 */
 template <typename TImage>
-class ImagePatchPixelDescriptor : public PixelDescriptor
+class ImagePatchVectorized : public PixelDescriptor
 {
 public:
 
   typedef TImage ImageType;
+  typedef typename TImage::PixelType PixelType;
 
   /** Default constructor to allow ImagePatch objects to be stored in a container.*/
-  ImagePatchPixelDescriptor();
+  ImagePatchVectorized();
 
   /** Construct a patch from a region. Ideally 'image' would be const, but we also need a default constructor.*/
-  ImagePatchPixelDescriptor(TImage* const image, Mask* const maskImage, const itk::ImageRegion<2>& region);
+  ImagePatchVectorized(TImage* const image, Mask* const maskImage, const itk::ImageRegion<2>& region);
 
   /** Set the image which this region refers to.*/
   void SetImage(const TImage* const image);
@@ -55,8 +56,7 @@ public:
   /** Get the corner of the patch.*/
   itk::Index<2> GetCorner() const;
 
-  /** Output information about the patch. Even though this is inside a class template definition,
-   * we still need to declare it as a function template. */
+  /** Output information about the patch. Even though this is inside a class template definition, we still need to declare it as a function template. */
   template <typename T>
   friend std::ostream& operator<<(std::ostream& output,  const ImagePatchPixelDescriptor<T>& patch);
 
@@ -70,15 +70,20 @@ public:
   bool IsInsideImage() const;
 
   /** Set the valid offsets of the patch. */
-  void SetValidOffsets(const std::vector<itk::Offset<2> >& validOffsets);
+  void SetValidOffsets(const std::vector<unsigned int>& validOffsets);
 
   /** Get the valid offsets of the patch. */
-  std::vector<itk::Offset<2> > GetValidOffsets() const {return this->ValidOffsets;}
+  std::vector<unsigned int> GetValidOffsets() const {return this->ValidOffsets;}
+
+  const std::vector<PixelType>& GetPixelVector() const {return this->PixelVector;}
 
   /** Get the valid offsets of the patch. */
-  const std::vector<itk::Offset<2> > * GetValidOffsetsAddress() const {return &this->ValidOffsets;}
+  const std::vector<unsigned int> * GetValidOffsetsAddress() const {return &this->ValidOffsets;}
 
+  void CreatePixelVector();
+  
 private:
+
   /** The region in the image defining the location of the patch. */
   itk::ImageRegion<2> Region;
 
@@ -96,10 +101,12 @@ private:
 
   /** A list of offsets from the patch corner that contain valid pixels.
       This is only used during the comparison to another patch if this patch has status TARGET_PATCH.*/
-  std::vector<itk::Offset<2> > ValidOffsets;
+  std::vector<unsigned int> ValidOffsets;
+
+  std::vector<PixelType> PixelVector;
 
 };
 
-#include "ImagePatchPixelDescriptor.hxx"
+#include "ImagePatchVectorized.hpp"
 
 #endif
