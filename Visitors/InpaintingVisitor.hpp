@@ -46,15 +46,17 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   const unsigned int HalfWidth;
 
+  std::string ResultFileName;
+  
   InpaintingVisitor(TImage* const image, Mask* const mask,
                     TBoundaryNodeQueue& boundaryNodeQueue,
                     TDescriptorVisitor& descriptorVisitor, TAcceptanceVisitor& acceptanceVisitor, TPriorityMap& priorityMap,
                     TPriority* const priorityFunction,
-                    const unsigned int halfWidth, TBoundaryStatusMap& boundaryStatusMap) :
+                    const unsigned int halfWidth, TBoundaryStatusMap& boundaryStatusMap, const std::string& resultFileName) :
   Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
   DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
   PriorityMap(priorityMap), BoundaryStatusMap(boundaryStatusMap),
-  HalfWidth(halfWidth)
+  HalfWidth(halfWidth), ResultFileName(resultFileName)
   {
   }
 
@@ -205,7 +207,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   void InpaintingComplete() const
   {
-    OutputHelpers::WriteImage(Image, "output.mha");
+    OutputHelpers::WriteImage(Image, ResultFileName);
   }
 
 }; // InpaintingVisitor

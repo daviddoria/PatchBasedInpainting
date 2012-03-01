@@ -265,7 +265,8 @@ int main(int argc, char *argv[])
 //   QuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType> quadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
 //   compositeAcceptanceVisitor.AddRequiredPassVisitor(&quadrantHistogramCompareAcceptanceVisitor);
 
-  AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType> allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 9.0f);
+  // AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType> allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 8.0f); // 8 (2 for each quadrant) is reasonable
+  AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType> allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 1.0f); // Crazy low
   compositeAcceptanceVisitor.AddRequiredPassVisitor(&allQuadrantHistogramCompareAcceptanceVisitor);
   
 
@@ -326,7 +327,7 @@ int main(int argc, char *argv[])
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
                                           compositeDescriptorVisitor, compositeAcceptanceVisitor, priorityMap,
                                           &priorityFunction, patchHalfWidth,
-                                          boundaryStatusMap);
+                                          boundaryStatusMap, outputFilename);
 
   typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
   DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
@@ -390,12 +391,12 @@ int main(int argc, char *argv[])
                    Qt::BlockingQueuedConnection);
 
   // Display the priority of the boundary in a different window
-//   PriorityViewerWidget<PriorityType, BoundaryStatusMapType>
-//             priorityViewerWidget(&priorityFunction, image->GetLargestPossibleRegion().GetSize(), boundaryStatusMap);
-//   priorityViewerWidget.show();
-// 
-//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &priorityViewerWidget, SLOT(slot_UpdateImage()),
-//                    Qt::BlockingQueuedConnection);
+  PriorityViewerWidget<PriorityType, BoundaryStatusMapType>
+            priorityViewerWidget(&priorityFunction, image->GetLargestPossibleRegion().GetSize(), boundaryStatusMap);
+  priorityViewerWidget.show();
+
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &priorityViewerWidget, SLOT(slot_UpdateImage()),
+                   Qt::BlockingQueuedConnection);
   
   // Passively display the top patches at every iteration
 //   TopPatchesWidget<ImageType> topPatchesWidget(image, patchHalfWidth);
