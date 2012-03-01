@@ -36,6 +36,7 @@ class QGraphicsView;
 
 // VTK
 class vtkRenderer;
+#include <vtkImageSlice.h>
 
 class MovablePatch
 {
@@ -62,11 +63,11 @@ public:
 
 private:
   Layer PatchLayer;
+  //Layer* PatchLayer;
 
   void PatchMoved();
 
   unsigned int Radius;
-  //vtkRenderer* Renderer;
   InteractorStyleImageWithDrag* InteractorStyle;
   QGraphicsView* View;
   QColor Color;

@@ -18,7 +18,7 @@
 #include "HelpersQt.h"
 #include "InteractorStyleImageWithDrag.h"
 
-MovablePatch::MovablePatch() : Radius(0), Renderer(NULL), View(NULL), PatchScene(NULL)
+MovablePatch::MovablePatch() : Radius(0), InteractorStyle(NULL), View(NULL), PatchScene(NULL)
 {
   
 }
@@ -26,29 +26,46 @@ MovablePatch::MovablePatch() : Radius(0), Renderer(NULL), View(NULL), PatchScene
 //MovablePatch::MovablePatch(const unsigned int radius, vtkRenderer* const renderer,
 MovablePatch::MovablePatch(const unsigned int radius, InteractorStyleImageWithDrag* const interactorStyle,
                            QGraphicsView* const view, const QColor color) :
-                           Radius(radius), InteractorStyle(interactorStyle), View(view), Color(color), PatchScene(new QGraphicsScene)
+                           Radius(radius), InteractorStyle(interactorStyle), View(view), Color(color),
+                           PatchScene(new QGraphicsScene)
 {
   this->PatchLayer.ImageSlice->SetPickable(true);
-  //this->PatchLayer.ImageSlice->SetVisibility(this->chkDisplayUserPatch->isChecked());
+  this->PatchLayer.ImageSlice->SetDragable(true);
 
+  double position[3];
+  this->PatchLayer.ImageSlice->GetPosition(position);
+
+  position[0] = round(position[0]);
+  position[1] = round(position[1]);
+
+  this->PatchLayer.ImageSlice->SetPosition(position);
+
+  // Create the patch (transparent center and solid outline)
   ITKVTKHelpers::CreateTransparentVTKImage(ITKHelpers::SizeFromRadius(radius), this->PatchLayer.ImageData);
   unsigned char userPatchColor[3];
   HelpersQt::QColorToUCharColor(color, userPatchColor);
   VTKHelpers::BlankAndOutlineImage(this->PatchLayer.ImageData, userPatchColor);
 
-  this->Renderer->AddViewProp(this->PatchLayer.ImageSlice);
+  this->PatchLayer.ImageSlice->SetPosition(position);
 
-//   InteractorStyleImageWithDrag* interactorStyle = InteractorStyleImageWithDrag::
-//                 SafeDownCast(this->Renderer->GetRenderWindow()->GetInteractor());
-
-  if(!interactorStyle)
+  if(!InteractorStyle)
   {
     throw std::runtime_error("MovablePatch: Interactor is not valid!");
   }
-  interactorStyle->TrackballStyle->AddObserver(CustomTrackballStyle::PatchesMovedEvent, this, &MovablePatch::PatchMoved);
+
+  if(!this->InteractorStyle->GetCurrentRenderer())
+  {
+    throw std::runtime_error("MovablePatch: Renderer is not valid!");
+  }
+  this->InteractorStyle->GetCurrentRenderer()->AddViewProp(this->PatchLayer.ImageSlice);
+
+  this->PatchLayer.ImageSlice->SetPosition(position);
+  
+  InteractorStyle->TrackballStyle->AddObserver(CustomTrackballStyle::PatchesMovedEvent, this, &MovablePatch::PatchMoved);
 
   //this->PatchScene->setBackgroundBrush(brush);
-  this->View->setScene(this->PatchScene.data());
+  //this->View->setScene(this->PatchScene.data());
+
 }
 
 void MovablePatch::SetVisibility(const bool visibility)
@@ -88,27 +105,16 @@ void MovablePatch::PatchMoved()
   // Snap user patch to integer pixels
   double position[3];
   this->PatchLayer.ImageSlice->GetPosition(position);
+  //std::cout << "position: " << position[0] << " " << position[1] << " " << position[2] << std::endl;
+
   position[0] = round(position[0]);
   position[1] = round(position[1]);
+
+  //std::cout << "rounded position: " << position[0] << " " << position[1] << " " << position[2] << std::endl;
+  
   this->PatchLayer.ImageSlice->SetPosition(position);
-  this->Renderer->GetRenderWindow()->Render();
-
-/*
-  std::shared_ptr<SelfPatchCompare> patchCompare(new SelfPatchCompare);
-  patchCompare->SetImage(dynamic_cast<FloatVectorImageType*>(this->IterationRecords[iterationToCompare].GetImageByName("Image").Image.GetPointer()));
-  patchCompare->SetMask(dynamic_cast<Mask*>(this->IterationRecords[iterationToCompare].GetImageByName("Mask").Image.GetPointer()));
-  patchCompare->SetNumberOfComponentsPerPixel(this->UserImage->GetNumberOfComponentsPerPixel());
-  patchCompare->FunctionsToCompute.push_back(boost::bind(&SelfPatchCompare::SetPatchAverageAbsoluteSourceDifference,patchCompare.get(),_1));
-  CandidatePairs candidatePairs(this->IterationRecords[this->IterationToDisplay].PotentialPairSets[this->ForwardLookToDisplayId].TargetPatch);
-  Patch userPatch(this->UserPatchRegion);
-  candidatePairs.AddPairFromPatch(userPatch);
-  patchCompare->SetPairs(&candidatePairs);
-  patchCompare->ComputeAllSourceDifferences();
-
-  std::stringstream ss;
-  ss << candidatePairs[0].DifferenceMap[PatchPair::AverageAbsoluteDifference];
-  lblUserPatchError->setText(ss.str().c_str());*/
-
+  
+  this->InteractorStyle->GetCurrentRenderer()->GetRenderWindow()->Render();
 }
 
 void MovablePatch::SetGraphicsView(QGraphicsView* const view)

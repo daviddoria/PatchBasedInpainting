@@ -42,9 +42,9 @@ class InteractorStyleImageWithDrag : public vtkInteractorStyleTrackballActor
 
     void Init();
 
-    void SetCurrentRenderer(vtkRenderer* renderer);
+    void SetCurrentRenderer(vtkRenderer* const renderer);
 
-    void SetImageOrientation(const double*, const double*);
+    void SetImageOrientation(const double* const, const double* const );
 
     vtkSmartPointer<CustomImageStyle> ImageStyle;
     vtkSmartPointer<CustomTrackballStyle> TrackballStyle;
@@ -69,7 +69,7 @@ class CustomImageStyle : public vtkInteractorStyleImage
 
     void OnLeftButtonDown();
 
-    void SetOtherStyle(CustomTrackballStyle* style);
+    void SetOtherStyle(CustomTrackballStyle* const style);
 
 
 private:
@@ -100,7 +100,7 @@ class CustomTrackballStyle : public vtkInteractorStyleTrackballActor
 
     void OnRightButtonDown();
 
-    void SetOtherStyle(CustomImageStyle* style);
+    void SetOtherStyle(CustomImageStyle* const style);
 
 private:
   CustomImageStyle* OtherStyle;

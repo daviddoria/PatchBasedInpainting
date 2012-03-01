@@ -22,13 +22,14 @@ void InteractorStyleImageWithDrag::Init()
   this->Interactor->SetInteractorStyle(this->ImageStyle);
 }
 
-void InteractorStyleImageWithDrag::SetCurrentRenderer(vtkRenderer* renderer)
+void InteractorStyleImageWithDrag::SetCurrentRenderer(vtkRenderer* const renderer)
 {
   this->ImageStyle->SetCurrentRenderer(renderer);
   this->TrackballStyle->SetCurrentRenderer(renderer);
+  vtkInteractorStyleTrackballActor::SetCurrentRenderer(renderer);
 }
 
-void InteractorStyleImageWithDrag::SetImageOrientation(const double* leftToRight, const double* bottomToTop)
+void InteractorStyleImageWithDrag::SetImageOrientation(const double* const leftToRight, const double* const bottomToTop)
 {
   this->ImageStyle->SetImageOrientation(leftToRight, bottomToTop);
 }
@@ -40,9 +41,10 @@ vtkStandardNewMacro(CustomTrackballStyle);
 
 void CustomTrackballStyle::OnLeftButtonDown()
 {
-  //std::cout << "TrackballStyle::OnLeftButtonDown()" << std::endl;
+  //std::cout << "CustomTrackballStyle::OnLeftButtonDown()" << std::endl;
   // Behave like the middle button instead
   vtkInteractorStyleTrackballActor::OnMiddleButtonDown();
+  
 }
 
 void CustomTrackballStyle::OnLeftButtonUp()
@@ -78,13 +80,13 @@ vtkStandardNewMacro(CustomImageStyle);
 
 void CustomImageStyle::OnLeftButtonDown()
 {
-  //std::cout << "OnLeftButtonDown()" << std::endl;
+  //std::cout << "CustomImageStyle::OnLeftButtonDown()" << std::endl;
   // Behave like the middle button instead
   this->Interactor->SetInteractorStyle(this->OtherStyle);
   this->OtherStyle->OnLeftButtonDown();
 }
 
-void CustomImageStyle::SetOtherStyle(CustomTrackballStyle* style)
+void CustomImageStyle::SetOtherStyle(CustomTrackballStyle* const style)
 {
   this->OtherStyle = style;
 }
