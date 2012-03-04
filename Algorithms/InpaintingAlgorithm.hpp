@@ -33,7 +33,9 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
   typedef typename boost::graph_traits<TVertexListGraph>::vertex_descriptor VertexDescriptorType;
 
 //   std::cout << "At the beginning of the algorithm there are " << (*boundaryNodeQueue).size() << " nodes in the queue." << std::endl;
-//   std::cout << "At the beginning of the algorithm there are " << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap) << " valid nodes in the queue." << std::endl;
+//   std::cout << "At the beginning of the algorithm there are "
+//             << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
+//             << " valid nodes in the queue." << std::endl;
 
   while(true) 
   {
@@ -58,13 +60,17 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
     } while( get(*boundaryStatusMap, targetNode) == false );
 
 //     std::cout << "Before DiscoverVertex there are " << (*boundaryNodeQueue).size() << " nodes in the queue." << std::endl;
-//     std::cout << "Before DiscoverVertex there are " << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap) << " valid nodes in the queue." << std::endl;
+//     std::cout << "Before DiscoverVertex there are "
+//               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
+//               << " valid nodes in the queue." << std::endl;
     // Notify the visitor that we have a hole target center.
     vis.DiscoverVertex(targetNode);
 
     // Find the source node that matches best to the target node
 //     std::cout << "Before PotentialMatchMade there are " << (*boundaryNodeQueue).size() << " nodes in the queue." << std::endl;
-//     std::cout << "Before PotentialMatchMade there are " << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap) << " valid nodes in the queue." << std::endl;
+//     std::cout << "Before PotentialMatchMade there are "
+//               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
+//               << " valid nodes in the queue." << std::endl;
     typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
     tie(vi,vi_end) = vertices(g);
     VertexDescriptorType sourceNode = find_inpainting_source(vi, vi_end, targetNode);
@@ -74,15 +80,19 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
     // the inpaint_patch functor should take care of calling
     // "vis.paint_vertex(target, source, g)" on the individual vertices in the patch.
 //     std::cout << "Before inpaint_patch there are " << (*boundaryNodeQueue).size() << " nodes in the queue." << std::endl;
-//     std::cout << "Before inpaint_patch there are " << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap) << " valid nodes in the queue." << std::endl;
+//     std::cout << "Before inpaint_patch there are " << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
+//               << " valid nodes in the queue." << std::endl;
     inpaint_patch(targetNode, sourceNode, vis);
 
 //     std::cout << "Before FinishVertex there are " << (*boundaryNodeQueue).size() << " nodes in the queue." << std::endl;
-//     std::cout << "Before FinishVertex there are " << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap) << " valid nodes in the queue." << std::endl;
+//     std::cout << "Before FinishVertex there are " << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
+//               << " valid nodes in the queue." << std::endl;
     vis.FinishVertex(targetNode, sourceNode);
 
 //     std::cout << "At the end of the iteration there are " << (*boundaryNodeQueue).size() << " nodes in the queue." << std::endl;
-//     std::cout << "At the end of the iteration there are " << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap) << " valid nodes in the queue." << std::endl;
+//     std::cout << "At the end of the iteration there are "
+//               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
+//               << " valid nodes in the queue." << std::endl;
   } // end main iteration loop
 
 };
