@@ -25,15 +25,17 @@
 
 template <typename TImage>
 TopPatchesDialog<TImage>::TopPatchesDialog(TImage* const image, Mask* const mask, const unsigned int patchHalfWidth) :
-Image(image), MaskImage(mask), SelectedItem(-1), PatchHalfWidth(patchHalfWidth)
+Image(image), MaskImage(mask), ValidSelection(false), PatchHalfWidth(patchHalfWidth)
 {
   this->setupUi(this);
 
   MaskedQueryPatchItem = new QGraphicsPixmapItem;
-
   this->QueryPatchScene = new QGraphicsScene();
-  //this->QueryPatchScene->setBackgroundBrush(brush);
   this->gfxQueryPatch->setScene(QueryPatchScene);
+
+  ProposedPatchItem = new QGraphicsPixmapItem;
+  this->ProposedPatchScene = new QGraphicsScene();
+  this->gfxProposedPatch->setScene(ProposedPatchScene);
 
   PatchesModel = new ListModelPatches<TImage>(image, patchHalfWidth);
   this->listView->setModel(PatchesModel);
@@ -42,12 +44,16 @@ Image(image), MaskImage(mask), SelectedItem(-1), PatchHalfWidth(patchHalfWidth)
 
   this->listView->setItemDelegate(pixmapDelegate);
 
-  connect(this->listView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(slot_Selected(const QModelIndex&)));
+  connect(this->listView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(slot_SingleClicked(const QModelIndex&)));
+  
+  connect(this->listView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(slot_DoubleClicked(const QModelIndex&)));
 }
 
 template <typename TImage>
 void TopPatchesDialog<TImage>::SetSourceNodes(const std::vector<Node>& nodes)
 {
+  Nodes = nodes;
+  
   this->PatchesModel->SetNodes(nodes);
 }
 
@@ -61,6 +67,7 @@ void TopPatchesDialog<TImage>::SetSourceNodes(const std::vector<TNode>& sourceNo
     Node node = Helpers::ConvertFrom<Node, TNode>(sourceNodes[i]);
     nodes.push_back(node);
     }
+    
   SetSourceNodes(nodes);
 }
 
@@ -79,29 +86,49 @@ void TopPatchesDialog<TImage>::SetQueryNode(const Node& queryNode)
 }
 
 template <typename TImage>
-void TopPatchesDialog<TImage>::slot_Selected(const QModelIndex& selected)
+void TopPatchesDialog<TImage>::slot_DoubleClicked(const QModelIndex& selected)
 {
-  SelectedItem = selected.row();
-  std::cout << "Selected " << selected.row() << std::endl;
+  SelectedNode = Nodes[selected.row()];
+  ValidSelection = true;
+  //std::cout << "Selected " << selected.row() << std::endl;
   accept();
 }
 
 template <typename TImage>
-unsigned int TopPatchesDialog<TImage>::GetSelectedItem()
+void TopPatchesDialog<TImage>::slot_SingleClicked(const QModelIndex& selected)
 {
-  return SelectedItem;
+  itk::Index<2> queryIndex = ITKHelpers::CreateIndex(QueryNode);
+  itk::ImageRegion<2> queryRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, PatchHalfWidth);
+
+  itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(Nodes[selected.row()]);
+  itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, PatchHalfWidth);
+  
+  QImage proposedPatch = HelpersQt::GetQImageCombinedPatch(Image, sourceRegion, queryRegion, MaskImage);
+  ProposedPatchItem = this->ProposedPatchScene->addPixmap(QPixmap::fromImage(proposedPatch));
+  gfxProposedPatch->fitInView(ProposedPatchItem);
+}
+
+template <typename TImage>
+Node TopPatchesDialog<TImage>::GetSelectedNode()
+{
+  return SelectedNode;
 }
 
 template <typename TImage>
 void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
 {
-  SelectedItem = -1;
+  ValidSelection = false;
   // We do this here because we will usually call SetQueryNode before the widget is constructed (i.e. before exec() is called).
   gfxQueryPatch->fitInView(MaskedQueryPatchItem);
 
   // Make sure the list is scrolled to the top
   QModelIndex index = this->PatchesModel->index(0,0);
   this->listView->scrollTo(index);
+
+  // Setup the proposed patch (if the best patch were to be selected)
+  slot_SingleClicked(index);
+  gfxProposedPatch->fitInView(ProposedPatchItem);
+
 }
 
 template <typename TImage>
@@ -109,6 +136,12 @@ void TopPatchesDialog<TImage>::on_btnSelectManually_clicked()
 {
   ManualPatchSelectionDialog<TImage> manualPatchSelectionDialog(Image, MaskImage, PatchHalfWidth);
   manualPatchSelectionDialog.exec();
+}
+
+template <typename TImage>
+bool TopPatchesDialog<TImage>::IsSelectionValid() const
+{
+  return ValidSelection;
 }
 
 #endif

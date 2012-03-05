@@ -58,15 +58,14 @@ public:
     // can tell if a valid selection has been made or not.
     QMetaObject::invokeMethod(Dialog, "exec", Qt::BlockingQueuedConnection);
 
-    int selection = Dialog->GetSelectedItem();
-    if(selection == -1)
+    if(!Dialog->IsSelectionValid())
     {
       throw std::runtime_error("An invalid selection was made!");
     }
 
-    //std::cout << "Selection: " << selection << std::endl;
+    Node selectedNode = Dialog->GetSelectedNode();
+    return Helpers::ConvertFrom<TVertexDescriptor, Node>(selectedNode);
 
-    return *(possibleNodesBegin + selection);
   }
 
 }; // VisualSelectionBest

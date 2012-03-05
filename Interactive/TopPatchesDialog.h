@@ -41,7 +41,10 @@ public slots:
   virtual void SetSourceNodes(const std::vector<Node>& sourceNodes) = 0;
   
   virtual void SetQueryNode(const Node& queryNode) = 0;
-  virtual void slot_Selected(const QModelIndex & index) = 0;
+
+  /** The click events. */
+  virtual void slot_SingleClicked(const QModelIndex & index) = 0;
+  virtual void slot_DoubleClicked(const QModelIndex & index) = 0;
 
   virtual void on_btnSelectManually_clicked() = 0;
 };
@@ -60,13 +63,21 @@ private:
   /** Store the row() of the selected index. This is signed because we set it to -1 to check if a valid selection was made
    * since Qt 4.7 cannot return a value from a function called with invokeMethod with BlockingQueuedConnection.
    */
-  int SelectedItem;
+  Node SelectedNode;
+
+  /** Store the row() of the selected index. This is signed because we set it to -1 to check if a valid selection was made
+   * since Qt 4.7 cannot return a value from a function called with invokeMethod with BlockingQueuedConnection.
+   */
+  bool ValidSelection;
 
   /** The half-width of the patch. */
   unsigned int PatchHalfWidth;
 
   QGraphicsScene* QueryPatchScene;
   QGraphicsPixmapItem* MaskedQueryPatchItem;
+  
+  QGraphicsScene* ProposedPatchScene;
+  QGraphicsPixmapItem* ProposedPatchItem;
   
   // The color to use as the background of the QGraphicsScenes
   QColor SceneBackground;
@@ -89,14 +100,20 @@ public:
   void SetQueryNode(const Node& node);
 
   /** Catch the signal that the ListView emits when it is clicked. */
-  void slot_Selected(const QModelIndex & index);
+  void slot_SingleClicked(const QModelIndex & index);
+
+  /** Catch the signal that the ListView emits when it is double clicked. */
+  void slot_DoubleClicked(const QModelIndex & index);
 
   void on_btnSelectManually_clicked();
   
-  /** Get the id of the node that user selected. */
-  unsigned int GetSelectedItem();
+  /** Get the node that user selected. */
+  Node GetSelectedNode();
 
+  std::vector<Node> Nodes;
   //void on_btnRefresh_clicked();
+
+  bool IsSelectionValid() const;
 };
 
 #include "TopPatchesDialog.hpp"

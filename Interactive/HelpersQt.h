@@ -75,6 +75,11 @@ QImage GetQImageMasked(const TImage* const image, const Mask* const mask,
 template <typename TImage>
 QImage GetQImageMasked(const TImage* const image, const itk::ImageRegion<2>& imageRegion, const Mask* const mask, const itk::ImageRegion<2>& maskRegion, const QColor& color = QColor(0, 255, 0));
 
+/** Construct a QImage from a source and target patch.*/
+template <typename TImage>
+QImage GetQImageCombinedPatch(const TImage* const image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion, const Mask* const mask);
+
+
 } // end namespace
 
 #include "HelpersQt.hxx"
