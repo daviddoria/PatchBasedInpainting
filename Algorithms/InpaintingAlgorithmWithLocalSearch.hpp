@@ -59,15 +59,28 @@ void InpaintingAlgorithmWithLocalSearch(TVertexListGraph& g, TInpaintingVisitor 
 
     std::vector<VertexDescriptorType> outputContainer(knnFinder.GetK());
     knnFinder(searchRegionNodes.begin(), searchRegionNodes.end(), targetNode, outputContainer.begin());
+    outputContainer.resize(searchRegionNodes.size());
 
     VertexDescriptorType sourceNode = bestNeighborFinder(outputContainer.begin(), outputContainer.end(), targetNode);
-    
+
     vis.PotentialMatchMade(targetNode, sourceNode);
 
     if(!vis.AcceptMatch(targetNode, sourceNode))
       {
       std::cout << "Automatic match not accepted!" << std::endl;
-      sourceNode = manualNeighborFinder(outputContainer.begin(), outputContainer.end(), targetNode);
+
+      // If the match was not accepted automatically, search the full image.
+      typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
+      tie(vi,vi_end) = vertices(g);
+      std::vector<VertexDescriptorType> fullSearchOutputContainer(knnFinder.GetK());
+      knnFinder(vi, vi_end, targetNode, fullSearchOutputContainer.begin());
+      sourceNode = bestNeighborFinder(fullSearchOutputContainer.begin(), fullSearchOutputContainer.end(), targetNode);
+
+      // If the match is still not acceptable, allow the user to choose a patch manually
+      if(!vis.AcceptMatch(targetNode, sourceNode))
+        {
+        sourceNode = manualNeighborFinder(fullSearchOutputContainer.begin(), fullSearchOutputContainer.end(), targetNode);
+        }
       }
       
     inpaint_patch(targetNode, sourceNode, vis);

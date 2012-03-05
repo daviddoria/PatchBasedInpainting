@@ -219,7 +219,7 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
 template <typename TImage>
 void ManualPatchSelectionDialog<TImage>::on_btnAccept_clicked()
 {
-
+  accept();
 }
 
 #endif

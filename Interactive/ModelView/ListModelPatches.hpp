@@ -28,11 +28,11 @@ int ListModelPatches<TImage>::rowCount(const QModelIndex& parent) const
   return this->Regions.size();
 }
 
-// template <typename TImage>
-// void ListModelPatches<TImage>::SetNumberOfTopPatchesToDisplay(const unsigned int number)
-// {
-//   this->NumberOfTopPatchesToDisplay = number;
-// }
+template <typename TImage>
+void ListModelPatches<TImage>::SetNumberOfTopPatchesToDisplay(const unsigned int number)
+{
+  this->NumberOfTopPatchesToDisplay = number;
+}
 
 template <typename TImage>
 void ListModelPatches<TImage>::SetRegions(const std::vector<itk::ImageRegion<2> >& regions)
@@ -62,11 +62,19 @@ QVariant ListModelPatches<TImage>::data(const QModelIndex& index, int role) cons
   QVariant returnValue;
   if(role == Qt::DisplayRole && index.row() >= 0 && index.row() < static_cast<int>(this->Regions.size()))
     {
-    std::cout << "ListModelPatches::data requesting index " << index.row() << std::endl;
+    //std::cout << "ListModelPatches::data requesting index " << index.row() << std::endl;
     //std::cout << "ListModelPatches::data requesting region " << this->Regions[index.row()] << std::endl;
     QImage patchImage;
     try
     {
+      if(!this->Image->GetLargestPossibleRegion().IsInside(this->Regions[index.row()]))
+      {
+        // If one patch is found to be invalid, the rest are definitely invalid also.
+        //SetNumberOfTopPatchesToDisplay(index.row());
+        NumberOfTopPatchesToDisplay = index.row();
+        
+        return QVariant();
+      }
       patchImage = HelpersQt::GetQImageColor<FloatVectorImageType>(this->Image, this->Regions[index.row()]);
     }
     catch (...)
