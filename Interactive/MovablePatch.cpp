@@ -113,8 +113,11 @@ void MovablePatch::PatchMoved()
   //std::cout << "rounded position: " << position[0] << " " << position[1] << " " << position[2] << std::endl;
   
   this->PatchLayer.ImageSlice->SetPosition(position);
-  
-  this->InteractorStyle->GetCurrentRenderer()->GetRenderWindow()->Render();
+
+  // This will refresh the scene so that the old patch positions are erased (doesn't work...)
+  // this->InteractorStyle->GetCurrentRenderer()->GetRenderWindow()->Render();
+
+  emit signal_PatchMoved();
 }
 
 void MovablePatch::SetGraphicsView(QGraphicsView* const view)

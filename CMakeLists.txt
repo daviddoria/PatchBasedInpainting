@@ -67,33 +67,33 @@ Priority/PriorityRandom.cpp
 # endif()
 
 add_subdirectory(Interactive)
-SET(InpaintingWithLocalSearch CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
-if(InpaintingWithLocalSearch)
-  QT4_WRAP_UI(InpaintingWithLocalSearchUISrcs Interactive/BasicViewerWidget.ui
-              Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
-              Interactive/PriorityViewerWidget.ui
-              Interactive/ManualPatchSelectionDialog.ui)
-  QT4_WRAP_CPP(InpaintingWithLocalSearchMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
-                       Visitors/NearestNeighborsDisplayVisitor.hpp
-                       #NearestNeighbor/VisualSelectionBest.hpp
-                       Interactive/TopPatchesWidget.h
-                       Interactive/TopPatchesDialog.h
-                       Interactive/Delegates/PixmapDelegate.h
-                       Interactive/PriorityViewerWidget.h
-                       Interactive/ManualPatchSelectionDialog.h)
-
-  ADD_EXECUTABLE(InpaintingWithLocalSearch InpaintingWithLocalSearch.cpp
-                Interactive/Layer.cpp
-                Interactive/Delegates/PixmapDelegate.cpp
-                Interactive/MovablePatch.cpp
-                Interactive/HelpersQt.cpp
-                Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
-                ${InpaintingWithLocalSearchUISrcs} ${InpaintingWithLocalSearchMOCSrcs})
-
-  TARGET_LINK_LIBRARIES(InpaintingWithLocalSearch PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
-  INSTALL( TARGETS InpaintingWithLocalSearch RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
+# SET(InpaintingWithLocalSearch CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+# if(InpaintingWithLocalSearch)
+#   QT4_WRAP_UI(InpaintingWithLocalSearchUISrcs Interactive/BasicViewerWidget.ui
+#               Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
+#               Interactive/PriorityViewerWidget.ui
+#               Interactive/ManualPatchSelectionDialog.ui)
+#   QT4_WRAP_CPP(InpaintingWithLocalSearchMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
+#                        Visitors/NearestNeighborsDisplayVisitor.hpp
+#                        #NearestNeighbor/VisualSelectionBest.hpp
+#                        Interactive/TopPatchesWidget.h
+#                        Interactive/TopPatchesDialog.h
+#                        Interactive/Delegates/PixmapDelegate.h
+#                        Interactive/PriorityViewerWidget.h
+#                        Interactive/ManualPatchSelectionDialog.h)
+# 
+#   ADD_EXECUTABLE(InpaintingWithLocalSearch InpaintingWithLocalSearch.cpp
+#                 Interactive/Layer.cpp
+#                 Interactive/Delegates/PixmapDelegate.cpp
+#                 Interactive/MovablePatch.cpp
+#                 Interactive/HelpersQt.cpp
+#                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+#                 ${InpaintingWithLocalSearchUISrcs} ${InpaintingWithLocalSearchMOCSrcs})
+# 
+#   TARGET_LINK_LIBRARIES(InpaintingWithLocalSearch PatchBasedInpainting
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+#   INSTALL( TARGETS InpaintingWithLocalSearch RUNTIME DESTINATION ${INSTALL_DIR} )
+# endif()
 
 SET(InpaintingCIELab CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
 if(InpaintingCIELab)
@@ -108,7 +108,8 @@ if(InpaintingCIELab)
                        Interactive/TopPatchesDialog.h
                        Interactive/Delegates/PixmapDelegate.h
                        Interactive/PriorityViewerWidget.h
-                       Interactive/ManualPatchSelectionDialog.h)
+                       Interactive/ManualPatchSelectionDialog.h
+                       Interactive/MovablePatch.h)
 
   ADD_EXECUTABLE(InpaintingCIELab InpaintingCIELab.cpp
                 Interactive/Layer.cpp
@@ -124,33 +125,33 @@ if(InpaintingCIELab)
 endif()
 
 # add_subdirectory(Interactive)
-SET(InpaintingWithVerification CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
-if(InpaintingWithVerification)
-  QT4_WRAP_UI(InpaintingWithVerificationUISrcs Interactive/BasicViewerWidget.ui
-              Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
-              Interactive/PriorityViewerWidget.ui
-              Interactive/ManualPatchSelectionDialog.ui)
-  QT4_WRAP_CPP(InpaintingWithVerificationMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
-                       Visitors/NearestNeighborsDisplayVisitor.hpp
-                       #NearestNeighbor/VisualSelectionBest.hpp
-                       Interactive/TopPatchesWidget.h
-                       Interactive/TopPatchesDialog.h
-                       Interactive/Delegates/PixmapDelegate.h
-                       Interactive/PriorityViewerWidget.h
-                       Interactive/ManualPatchSelectionDialog.h)
-
-  ADD_EXECUTABLE(InpaintingWithVerification InpaintingWithVerification.cpp
-                Interactive/Layer.cpp
-                Interactive/Delegates/PixmapDelegate.cpp
-                Interactive/MovablePatch.cpp
-                Interactive/HelpersQt.cpp
-                Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
-                ${InpaintingWithVerificationUISrcs} ${InpaintingWithVerificationMOCSrcs})
-
-  TARGET_LINK_LIBRARIES(InpaintingWithVerification PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
-  INSTALL( TARGETS InpaintingWithVerification RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
+# SET(InpaintingWithVerification CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+# if(InpaintingWithVerification)
+#   QT4_WRAP_UI(InpaintingWithVerificationUISrcs Interactive/BasicViewerWidget.ui
+#               Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
+#               Interactive/PriorityViewerWidget.ui
+#               Interactive/ManualPatchSelectionDialog.ui)
+#   QT4_WRAP_CPP(InpaintingWithVerificationMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
+#                        Visitors/NearestNeighborsDisplayVisitor.hpp
+#                        #NearestNeighbor/VisualSelectionBest.hpp
+#                        Interactive/TopPatchesWidget.h
+#                        Interactive/TopPatchesDialog.h
+#                        Interactive/Delegates/PixmapDelegate.h
+#                        Interactive/PriorityViewerWidget.h
+#                        Interactive/ManualPatchSelectionDialog.h)
+# 
+#   ADD_EXECUTABLE(InpaintingWithVerification InpaintingWithVerification.cpp
+#                 Interactive/Layer.cpp
+#                 Interactive/Delegates/PixmapDelegate.cpp
+#                 Interactive/MovablePatch.cpp
+#                 Interactive/HelpersQt.cpp
+#                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+#                 ${InpaintingWithVerificationUISrcs} ${InpaintingWithVerificationMOCSrcs})
+# 
+#   TARGET_LINK_LIBRARIES(InpaintingWithVerification PatchBasedInpainting
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+#   INSTALL( TARGETS InpaintingWithVerification RUNTIME DESTINATION ${INSTALL_DIR} )
+# endif()
 
 #add_subdirectory(Interactive)
 # SET(InpaintingVectorized CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")

@@ -60,7 +60,7 @@ public:
 
     if(!Dialog->IsSelectionValid())
     {
-      throw std::runtime_error("An invalid selection was made!");
+      throw std::runtime_error("An invalid selection was made (IsSelectionValid returned false)!");
     }
 
     Node selectedNode = Dialog->GetSelectedNode();

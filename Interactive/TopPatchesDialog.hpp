@@ -134,8 +134,23 @@ void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
 template <typename TImage>
 void TopPatchesDialog<TImage>::on_btnSelectManually_clicked()
 {
-  ManualPatchSelectionDialog<TImage> manualPatchSelectionDialog(Image, MaskImage, PatchHalfWidth);
+  itk::Index<2> queryIndex = ITKHelpers::CreateIndex(QueryNode);
+  itk::ImageRegion<2> queryRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, PatchHalfWidth);
+  ManualPatchSelectionDialog<TImage> manualPatchSelectionDialog(Image, MaskImage, queryRegion);
   manualPatchSelectionDialog.exec();
+
+  if(manualPatchSelectionDialog.result() == QDialog::Rejected)
+  {
+    std::cout << "Did not choose patch manually." << std::endl;
+  }
+  else if(manualPatchSelectionDialog.result() == QDialog::Accepted)
+  {
+    std::cout << "Chose patch manually." << std::endl;
+    SelectedNode = manualPatchSelectionDialog.GetSelectedNode();
+    ValidSelection = true;
+    std::cout << "SelectedNode : " << SelectedNode[0] << " " << SelectedNode[1] << std::endl;
+    accept();
+  }
 }
 
 template <typename TImage>

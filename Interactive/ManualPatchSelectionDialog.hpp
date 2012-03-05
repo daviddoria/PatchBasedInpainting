@@ -39,8 +39,8 @@
 
 template <typename TImage>
 ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const image, Mask* const mask,
-                                                               const unsigned int patchHalfWidth)
-: Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
+                                                               const itk::ImageRegion<2>& targetRegion)
+: Image(image), MaskImage(mask), TargetRegion(targetRegion)
 {
   qRegisterMetaType<itk::ImageRegion<2> >("itkImageRegion");
 
@@ -67,13 +67,45 @@ ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const ima
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
   this->InteractorStyle->Init();
 
-  this->PatchSelector = new MovablePatch(this->PatchHalfWidth, this->InteractorStyle, this->gfxSource);
+  this->PatchSelector = new MovablePatch(this->TargetRegion.GetSize()[0]/2, this->InteractorStyle, this->gfxSource);
 
   slot_UpdateImage();
-  
+
   this->Renderer->ResetCamera();
   this->qvtkWidget->GetRenderWindow()->Render();
   // this->Camera = new ImageCamera(this->Renderer);
+
+  connect(this->PatchSelector, SIGNAL(signal_PatchMoved()), this, SLOT(slot_PatchMoved()));
+}
+
+template <typename TImage>
+void ManualPatchSelectionDialog<TImage>::slot_PatchMoved()
+{
+  slot_UpdateSource(PatchSelector->GetRegion(), TargetRegion);
+  slot_UpdateResult(PatchSelector->GetRegion(), TargetRegion);
+
+  // This will refresh the scene so that the old patch positions are erased
+  //this->InteractorStyle->GetCurrentRenderer()->GetRenderWindow()->Render(); // (this doesn't work...)
+  this->qvtkWidget->GetRenderWindow()->Render();
+}
+
+template <typename TImage>
+void ManualPatchSelectionDialog<TImage>::slot_UpdateImage()
+{
+  std::cout << "Update image." << std::endl;
+  ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
+
+  int dims[3];
+  this->ImageLayer.ImageData->GetDimensions(dims);
+  if(dims[0] != ImageDimension[0] || dims[1] != ImageDimension[1] || dims[2] != ImageDimension[2])
+    {
+    this->Renderer->ResetCamera();
+    ImageDimension[0] = dims[0];
+    ImageDimension[1] = dims[1];
+    ImageDimension[2] = dims[2];
+    }
+
+  this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 template <typename TImage>
@@ -102,25 +134,6 @@ void ManualPatchSelectionDialog<TImage>::SetupScenes()
   this->MaskedTargetPatchScene = new QGraphicsScene();
   this->MaskedTargetPatchScene->setBackgroundBrush(brush);
   this->gfxMaskedTarget->setScene(MaskedTargetPatchScene);
-}
-
-template <typename TImage>
-void ManualPatchSelectionDialog<TImage>::slot_UpdateImage()
-{
-  std::cout << "Update image." << std::endl;
-  ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
-
-  int dims[3];
-  this->ImageLayer.ImageData->GetDimensions(dims);
-  if(dims[0] != ImageDimension[0] || dims[1] != ImageDimension[1] || dims[2] != ImageDimension[2])
-    {
-    this->Renderer->ResetCamera();
-    ImageDimension[0] = dims[0];
-    ImageDimension[1] = dims[1];
-    ImageDimension[2] = dims[2];
-    }
-
-  this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 template <typename TImage>
@@ -219,7 +232,21 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
 template <typename TImage>
 void ManualPatchSelectionDialog<TImage>::on_btnAccept_clicked()
 {
+  itk::Index<2> patchCenter = ITKHelpers::GetRegionCenter(PatchSelector->GetRegion());
+  SelectedNode = Helpers::ConvertFrom<Node, itk::Index<2> >(patchCenter);
   accept();
+}
+
+template <typename TImage>
+void ManualPatchSelectionDialog<TImage>::showEvent(QShowEvent* event)
+{
+  slot_UpdateTarget(TargetRegion);
+}
+
+template <typename TImage>
+Node ManualPatchSelectionDialog<TImage>::GetSelectedNode()
+{
+  return SelectedNode;
 }
 
 #endif

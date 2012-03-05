@@ -52,6 +52,8 @@ public slots:
   virtual void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion) = 0;
   virtual void on_btnAccept_clicked() = 0;
 
+  virtual void slot_PatchMoved() = 0;
+
 };
 
 template <typename TImage>
@@ -60,7 +62,7 @@ class ManualPatchSelectionDialog : public ManualPatchSelectionDialogParent
 
 public:
   /** Constructor */
-  ManualPatchSelectionDialog(TImage* const image, Mask* const mask, const unsigned int patchHalfWidth);
+  ManualPatchSelectionDialog(TImage* const image, Mask* const mask, const itk::ImageRegion<2>& targetRegion);
 
   void slot_UpdateImage();
 
@@ -73,8 +75,16 @@ public:
   void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
 
   void on_btnAccept_clicked();
+
+  void slot_PatchMoved();
+
+  Node GetSelectedNode();
+  
 private:
 
+  /** Do some things after the widget is displayed. */
+  void showEvent(QShowEvent* event);
+  
   /** The image that will be displayed, and the from which the patches will be extracted before being displayed. */
   TImage* Image;
 
@@ -119,8 +129,10 @@ private:
    */
   MovablePatch* PatchSelector;
 
-  /** The half-width of the patch that will be moved around by the user. */
-  unsigned int PatchHalfWidth;
+  /** The patch region that we are trying to pick a match for. */
+  itk::ImageRegion<2> TargetRegion;
+
+  Node SelectedNode;
 };
 
 #include "ManualPatchSelectionDialog.hpp"

@@ -38,8 +38,13 @@ class QGraphicsView;
 class vtkRenderer;
 #include <vtkImageSlice.h>
 
-class MovablePatch
+class MovablePatch : public QObject
 {
+Q_OBJECT
+
+signals:
+  void signal_PatchMoved();
+
 public:
   /** This constructor is provided so that we can store a MovablePatch as a member,
    * but not initialize it until after the renderers/interactors are setup and configured.*/
