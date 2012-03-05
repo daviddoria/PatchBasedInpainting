@@ -180,6 +180,7 @@ itk::Size<2> SizeFromRadius(const unsigned int radius)
 
 void ITKImageToCIELabImage(const FloatVectorImageType* const image, FloatVectorImageType* const cielabImage)
 {
+  // Convert the first 3 channels to CIELab (this assumes the first 3 channels are RGB)
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   VectorImageToRGBImage(image, rgbImage);
   RGBImageToCIELabImage(rgbImage, cielabImage);

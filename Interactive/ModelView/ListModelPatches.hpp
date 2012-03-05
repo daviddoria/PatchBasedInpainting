@@ -14,25 +14,17 @@ ListModelPatches<TImage>::ListModelPatches(TImage* const image, const unsigned i
 {
 }
 
-// template <typename TImage>
-// void ListModelPatches<TImage>::SetPatchDisplaySize(const unsigned int value)
-// {
-//   this->PatchDisplaySize = value;
-// }
-
 template <typename TImage>
 Qt::ItemFlags ListModelPatches<TImage>::flags(const QModelIndex& index) const
 {
-  //Qt::ItemFlags itemFlags = (!Qt::ItemIsEditable) | Qt::ItemIsSelectable | Qt::ItemIsEnabled | (!Qt::ItemIsUserCheckable) | (!Qt::ItemIsTristate);
-  //Qt::ItemFlags itemFlags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
-  //return itemFlags;
-  
-  return Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+  //return Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+  return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
 template <typename TImage>
 int ListModelPatches<TImage>::rowCount(const QModelIndex& parent) const
 {
+  //std::cout << "rowCount: number of regions " << this->Regions.size() << std::endl;;
   return this->Regions.size();
 }
 
@@ -46,6 +38,7 @@ template <typename TImage>
 void ListModelPatches<TImage>::SetRegions(const std::vector<itk::ImageRegion<2> >& regions)
 {
   this->Regions = regions;
+  Refresh();
 }
 
 template <typename TImage>
@@ -67,11 +60,19 @@ template <typename TImage>
 QVariant ListModelPatches<TImage>::data(const QModelIndex& index, int role) const
 {
   QVariant returnValue;
-  if(role == Qt::DisplayRole && index.row() >= 0)
+  if(role == Qt::DisplayRole && index.row() >= 0 && index.row() < static_cast<int>(this->Regions.size()))
     {
-    // std::cout << "ListModelPatches::data requesting region " << this->Regions[index.row()] << std::endl;
-    QImage patchImage = HelpersQt::GetQImageColor<FloatVectorImageType>(this->Image, this->Regions[index.row()]);
-
+    std::cout << "ListModelPatches::data requesting index " << index.row() << std::endl;
+    //std::cout << "ListModelPatches::data requesting region " << this->Regions[index.row()] << std::endl;
+    QImage patchImage;
+    try
+    {
+      patchImage = HelpersQt::GetQImageColor<FloatVectorImageType>(this->Image, this->Regions[index.row()]);
+    }
+    catch (...)
+    {
+      std::cout << "ListModelPatches::data something is wrong with region " << this->Regions[index.row()] << std::endl;
+    }
     // patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
 
     returnValue = QPixmap::fromImage(patchImage);
@@ -115,4 +116,5 @@ template <typename TImage>
 void ListModelPatches<TImage>::SetRowHeight(const unsigned int rowHeight)
 {
   this->RowHeight = rowHeight;
+  Refresh();
 }

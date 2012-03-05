@@ -82,7 +82,7 @@ template <typename TImage>
 void TopPatchesDialog<TImage>::slot_Selected(const QModelIndex& selected)
 {
   SelectedItem = selected.row();
-  // std::cout << "Selected " << selected.row() << std::endl;
+  std::cout << "Selected " << selected.row() << std::endl;
   accept();
 }
 
@@ -99,6 +99,7 @@ void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
   // We do this here because we will usually call SetQueryNode before the widget is constructed (i.e. before exec() is called).
   gfxQueryPatch->fitInView(MaskedQueryPatchItem);
 
+  // Make sure the list is scrolled to the top
   QModelIndex index = this->PatchesModel->index(0,0);
   this->listView->scrollTo(index);
 }

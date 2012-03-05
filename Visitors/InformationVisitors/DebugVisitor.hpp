@@ -70,9 +70,9 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, HalfWidth);
 
-    OutputHelpers::WriteVectorImageRegionAsRGB(Image, sourceRegion,
-                                               Helpers::GetSequentialFileName("sourcePatch",
-                                                                              this->NumberOfFinishedVertices, "png"));
+//     OutputHelpers::WriteVectorImageRegionAsRGB(Image, sourceRegion,
+//                                                Helpers::GetSequentialFileName("sourcePatch",
+//                                                                               this->NumberOfFinishedVertices, "png"));
     }
 
     {
@@ -81,16 +81,16 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
 
-    OutputHelpers::WriteVectorImageRegionAsRGB(Image, region,
-                                               Helpers::GetSequentialFileName("targetPatch",
-                                                                              this->NumberOfFinishedVertices, "png"));
-    OutputHelpers::WriteRegion(MaskImage, region,
-                               Helpers::GetSequentialFileName("maskPatch", this->NumberOfFinishedVertices, "png"));
+//     OutputHelpers::WriteVectorImageRegionAsRGB(Image, region,
+//                                                Helpers::GetSequentialFileName("targetPatch",
+//                                                                               this->NumberOfFinishedVertices, "png"));
+//     OutputHelpers::WriteRegion(MaskImage, region,
+//                                Helpers::GetSequentialFileName("maskPatch", this->NumberOfFinishedVertices, "png"));
     }
 
-    OutputHelpers::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask", this->NumberOfFinishedVertices, "png"));
+    //OutputHelpers::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask", this->NumberOfFinishedVertices, "png"));
     OutputHelpers::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask", this->NumberOfFinishedVertices, "mha"));
-    OutputHelpers::WriteVectorImageAsRGB(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
+    //OutputHelpers::WriteVectorImageAsRGB(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
     OutputHelpers::WriteImage(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "mha"));
 
     typedef itk::Image<unsigned char, 2> IndicatorImageType;
@@ -98,20 +98,20 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
     IndicatorImageType::Pointer boundaryStatusMapImage = IndicatorImageType::New();
     boundaryStatusMapImage->SetRegions(Image->GetLargestPossibleRegion());
     boundaryStatusMapImage->Allocate();
-    BoostHelpers::WritePropertyMapAsImage(BoundaryStatusMap, boundaryStatusMapImage.GetPointer(),
-                                          Helpers::GetSequentialFileName("boundaryStatusMap", this->NumberOfFinishedVertices, "png"));
+//     BoostHelpers::WritePropertyMapAsImage(BoundaryStatusMap, boundaryStatusMapImage.GetPointer(),
+//                                           Helpers::GetSequentialFileName("boundaryStatusMap", this->NumberOfFinishedVertices, "png"));
 
     IndicatorImageType::Pointer validBoundaryNodeImage = IndicatorImageType::New();
     validBoundaryNodeImage->SetRegions(Image->GetLargestPossibleRegion());
     validBoundaryNodeImage->Allocate();
-    BoostHelpers::WriteValidQueueNodesAsImage(BoundaryNodeQueue, BoundaryStatusMap, validBoundaryNodeImage.GetPointer(),
-                                          Helpers::GetSequentialFileName("boundaryQueueValidNodes", this->NumberOfFinishedVertices, "png"));
+//     BoostHelpers::WriteValidQueueNodesAsImage(BoundaryNodeQueue, BoundaryStatusMap, validBoundaryNodeImage.GetPointer(),
+//                                           Helpers::GetSequentialFileName("boundaryQueueValidNodes", this->NumberOfFinishedVertices, "png"));
 
     IndicatorImageType::Pointer allBoundaryNodeImage = IndicatorImageType::New();
     allBoundaryNodeImage->SetRegions(Image->GetLargestPossibleRegion());
     allBoundaryNodeImage->Allocate();
-    BoostHelpers::WriteAllQueueNodesAsImage(BoundaryNodeQueue, allBoundaryNodeImage.GetPointer(),
-                                          Helpers::GetSequentialFileName("boundaryQueueAllNodes", this->NumberOfFinishedVertices, "png"));
+//     BoostHelpers::WriteAllQueueNodesAsImage(BoundaryNodeQueue, allBoundaryNodeImage.GetPointer(),
+//                                           Helpers::GetSequentialFileName("boundaryQueueAllNodes", this->NumberOfFinishedVertices, "png"));
 
     this->NumberOfFinishedVertices++;
 
