@@ -12,6 +12,8 @@ struct WeightedFeatureVectorDifference
   
   float operator()(const FeatureVectorPixelDescriptor& a, const FeatureVectorPixelDescriptor& b) const
   {
+    assert(Weights.size() == a.GetFeatureVector().size());
+
     // If we are comparing a patch to itself, return inf. Otherwise, the best match would always be the same patch!
     if(a.GetVertex() == b.GetVertex())
       {

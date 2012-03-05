@@ -13,6 +13,8 @@ struct WeightedImagePatchDifference
 
   float operator()(const ImagePatchType& a, const ImagePatchType& b) const
   {
+    assert(Weights.size() == a.GetImage()->GetNumberOfComponentsPerPixel());
+    
     // This comparison must allow source patches to be compared to source patches (to create the tree) as well as source patches
     // to be symmetrically compared to target patches.
 
@@ -50,7 +52,7 @@ struct WeightedImagePatchDifference
         float difference = 0.0f;
         for(unsigned int component = 0; component < a.GetImage()->GetNumberOfComponentsPerPixel(); ++component)
           {
-          difference += fabs(patchAIterator.Get()[component] - image->GetPixel(patchAIterator.GetIndex() + offsetAToB)[component]);
+          difference += Weights[component] * fabs(patchAIterator.Get()[component] - image->GetPixel(patchAIterator.GetIndex() + offsetAToB)[component]);
           }
         totalDifference += difference;
 
@@ -73,7 +75,7 @@ struct WeightedImagePatchDifference
         float difference = 0.0f;
         for(unsigned int component = 0; component < a.GetImage()->GetNumberOfComponentsPerPixel(); ++component)
           {
-          difference += fabs(image->GetPixel(a.GetCorner() + (*validOffsets)[i]) - image->GetPixel(b.GetCorner() + (*validOffsets)[i]));
+          difference += Weights[component] * fabs(image->GetPixel(a.GetCorner() + (*validOffsets)[i]) - image->GetPixel(b.GetCorner() + (*validOffsets)[i]));
           }
         totalDifference += difference;
         }

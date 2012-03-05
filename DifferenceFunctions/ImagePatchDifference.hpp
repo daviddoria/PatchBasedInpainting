@@ -10,15 +10,17 @@
  *  This is an average and not a sum because we want to be able to compare "match quality" values between
  *  different pairs of patches, in which the source region will not be the same size.
  */
-template <typename ImagePatchType, typename DifferenceFunctorType>
+template <typename ImagePatchType, typename PixelDifferenceFunctorType>
 struct ImagePatchDifference
 {
+  PixelDifferenceFunctorType PixelDifferenceFunctor;
+  
+  ImagePatchDifference(PixelDifferenceFunctorType pixelDifferenceFunctor = PixelDifferenceFunctorType()) : PixelDifferenceFunctor(pixelDifferenceFunctor) {}
+  
   float operator()(const ImagePatchType& a, const ImagePatchType& b) const
   {
     // This comparison must allow source patches to be compared to source patches (to create the tree) as well as source patches
     // to be symmetrically compared to target patches.
-
-    DifferenceFunctorType differenceFunctor;
 
     if(!a.IsInsideImage() || !b.IsInsideImage())
       {
@@ -51,7 +53,7 @@ struct ImagePatchDifference
       itk::ImageRegionConstIteratorWithIndex<typename ImagePatchType::ImageType> patchAIterator(image, a.GetRegion());
       while(!patchAIterator.IsAtEnd())
         {
-        float pixelDifference = differenceFunctor(patchAIterator.Get(), image->GetPixel(patchAIterator.GetIndex() + offsetAToB));
+        float pixelDifference = PixelDifferenceFunctor(patchAIterator.Get(), image->GetPixel(patchAIterator.GetIndex() + offsetAToB));
 
         totalDifference += pixelDifference;
 
@@ -75,7 +77,7 @@ struct ImagePatchDifference
 
       for(OffsetVectorType::const_iterator iter = validOffsets->begin(); iter < validOffsets->end(); ++iter)
         {
-        float difference = differenceFunctor(image->GetPixel(a.GetCorner() + *iter), image->GetPixel(b.GetCorner() + *iter));
+        float difference = PixelDifferenceFunctor(image->GetPixel(a.GetCorner() + *iter), image->GetPixel(b.GetCorner() + *iter));
         totalDifference += difference;
         }
       totalDifference = totalDifference / static_cast<float>(validOffsets->size());

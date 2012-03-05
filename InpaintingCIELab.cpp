@@ -83,6 +83,8 @@
 #include "DifferenceFunctions/ImagePatchVectorizedDifference.hpp"
 #include "DifferenceFunctions/ImagePatchVectorizedIndicesDifference.hpp"
 #include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
+#include "DifferenceFunctions/WeightedSumAbsolutePixelDifference.hpp"
+#include "DifferenceFunctions/WeightedFeatureVectorDifference.hpp"
 
 // Inpainting algorithm
 #include "Algorithms/InpaintingAlgorithmWithLocalSearch.hpp"
@@ -225,8 +227,22 @@ int main(int argc, char *argv[])
   //ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(cielabImage, mask, imagePatchDescriptorMap, patchHalfWidth);
 
-  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> >
-            ImagePatchDifferenceType;
+//   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> >
+//             ImagePatchDifferenceType;
+
+  typedef WeightedSumAbsolutePixelDifference<ImageType::PixelType> PixelDifferenceFunctorType;
+  PixelDifferenceFunctorType pixelDifferenceFunctor;
+  std::vector<float> weights;
+  weights.push_back(1.0f);
+  weights.push_back(1.0f);
+  weights.push_back(1.0f);
+  weights.push_back(50.0f);
+  weights.push_back(50.0f);
+  pixelDifferenceFunctor.Weights = weights;
+
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, PixelDifferenceFunctorType >
+          ImagePatchDifferenceType;
+  ImagePatchDifferenceType imagePatchDifferenceFunction(pixelDifferenceFunctor);
 
   typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
   CompositeDescriptorVisitorType compositeDescriptorVisitor;
@@ -275,12 +291,12 @@ int main(int argc, char *argv[])
   // Create the nearest neighbor finders
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
                                   ImagePatchDifferenceType > KNNSearchType;
-  KNNSearchType knnSearch(imagePatchDescriptorMap, 50000);
+  KNNSearchType knnSearch(imagePatchDescriptorMap, 50000, 1, imagePatchDifferenceFunction);
 
   // For debugging we use LinearSearchBestProperty instead of DefaultSearchBest because it can output the difference value.
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
                                    ImagePatchDifferenceType > BestSearchType;
-  BestSearchType bestSearch(imagePatchDescriptorMap);
+  BestSearchType bestSearch(imagePatchDescriptorMap, imagePatchDifferenceFunction);
 
   TopPatchesDialog<ImageType> topPatchesDialog(image, mask, patchHalfWidth);
   typedef VisualSelectionBest<ImageType> ManualSearchType;
