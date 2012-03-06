@@ -103,7 +103,7 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR}../)
 QT4_WRAP_UI(TestManualPatchSelectionDialogUISrcs ../ManualPatchSelectionDialog.ui)
-QT4_WRAP_CPP(TestManualPatchSelectionDialogMOCSrcs ../ManualPatchSelectionDialog.h)
+QT4_WRAP_CPP(TestManualPatchSelectionDialogMOCSrcs ../ManualPatchSelectionDialog.h ../MovablePatch.h)
 add_executable(TestManualPatchSelectionDialog TestManualPatchSelectionDialog.cpp
                ../HelpersQt.cpp ../MovablePatch.cpp
 ../../ImageProcessing/Mask.cpp

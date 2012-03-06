@@ -34,6 +34,7 @@
 #include "itkGaussianOperator.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
+#include "itkJoinImageFilter.h"
 #include "itkMinimumMaximumImageCalculator.h"
 #include "itkPasteImageFilter.h"
 #include "itkRegionOfInterestImageFilter.h"
@@ -556,7 +557,46 @@ void ExtractChannel(const itk::VectorImage<TPixel, 2>* const image, const unsign
   indexSelectionFilter->SetInput(image);
   indexSelectionFilter->Update();
 
-  DeepCopy<ScalarImageType>(indexSelectionFilter->GetOutput(), output);
+  DeepCopy(indexSelectionFilter->GetOutput(), output);
+}
+
+template<typename TImage>
+void ExtractChannels(const TImage* const image, const std::vector<unsigned int> channels,
+                    TImage* const output)
+{
+  if(channels.size() == 0)
+  {
+    throw std::runtime_error("Cannot extract 0 channels!");
+  }
+
+  for(unsigned int i = 0; i < channels.size(); ++i)
+  {
+    if(channels[i] > image->GetNumberOfComponentsPerPixel() - 1)
+    {
+      std::stringstream ss;
+      ss << "Cannot extract channel " << channels[i] << " from an image with " << image->GetNumberOfComponentsPerPixel() << " channels!";
+      throw std::runtime_error(ss.str());
+    }
+  }
+
+  typedef itk::Image<float, 2> ScalarImageType;
+  typedef itk::VectorIndexSelectionCastImageFilter<TImage, ScalarImageType> IndexSelectionType;
+
+  output->SetNumberOfComponentsPerPixel(channels.size());
+  output->SetRegions(image->GetLargestPossibleRegion());
+  output->Allocate();
+  
+  for(unsigned int channelIndex = 0; channelIndex < channels.size(); ++channelIndex)
+  {
+    std::cout << "Extracting channel " << channels[channelIndex] << " and setting channel " << channelIndex << std::endl;
+    typename IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+    indexSelectionFilter->SetIndex(channels[channelIndex]);
+    indexSelectionFilter->SetInput(image);
+    indexSelectionFilter->Update();
+
+    SetChannel(output, channelIndex, indexSelectionFilter->GetOutput());
+  }
+
 }
 
 template<typename TPixel>
@@ -1021,6 +1061,38 @@ std::vector<typename TImage::PixelType> GetPixelValues(const TImage* const image
   }
 
   return values;
+}
+
+// This does not work for itk::VectorImage
+// template<typename TImage>
+// void StackImages(const TImage* const image1, const TImage* const image2, const TImage* const output)
+// {
+//   
+//   typedef itk::JoinImageFilter<TImage, TImage> JoinImageFilterType;
+//   typename JoinImageFilterType::Pointer joinFilter = JoinImageFilterType::New();
+//   joinFilter->SetInput1(image1);
+//   joinFilter->SetInput2(image2);
+//   joinFilter->Update();
+// 
+//   DeepCopy(joinFilter->GetOutput(), output);
+//}
+
+template<typename TVectorImage, typename TScalarImage>
+void SetChannel(TVectorImage* const vectorImage, const unsigned int channel, const TScalarImage* const image)
+{
+  assert(vectorImage->GetLargestPossibleRegion() == image->GetLargestPossibleRegion());
+  
+  itk::ImageRegionConstIterator<TScalarImage> inputIterator(image, image->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<TVectorImage> outputIterator(vectorImage, vectorImage->GetLargestPossibleRegion());
+
+  while(!inputIterator.IsAtEnd())
+    {
+    typename TVectorImage::PixelType pixel = outputIterator.Get();
+    pixel[channel] = inputIterator.Get();
+    outputIterator.Set(pixel);
+    ++inputIterator;
+    ++outputIterator;
+    }
 }
 
 }// end namespace ITKHelpers

@@ -122,6 +122,8 @@ std::vector<itk::Offset<2> > IndicesToOffsets(const std::vector<itk::Index<2> >&
 
 std::vector<itk::Index<2> > GetBoundaryPixels(const itk::ImageRegion<2>& region);
 
+void StackImages(const itk::VectorImage<float, 2>* const image1, const itk::VectorImage<float, 2>* const image2,
+                 itk::VectorImage<float, 2>* const output);
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// Template function declarations (defined in ITKHelpers.hxx) ///////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -221,13 +223,16 @@ template<typename TImage>
 void DilateImage(const TImage* const image, TImage* const dilatedImage, const unsigned int radius);
 
 template<typename TImage>
-void SubtractRegions(const TImage* const image1, const itk::ImageRegion<2>& region1, const TImage* const image2, const itk::ImageRegion<2>& region2, TImage* const output);
+void SubtractRegions(const TImage* const image1, const itk::ImageRegion<2>& region1,
+                     const TImage* const image2, const itk::ImageRegion<2>& region2, TImage* const output);
 
 template<typename TImage>
-void ANDRegions(const TImage* const image1, const itk::ImageRegion<2>& region1, const TImage* const image2, const itk::ImageRegion<2>& region2, itk::Image<bool, 2>* const output);
+void ANDRegions(const TImage* const image1, const itk::ImageRegion<2>& region1,
+                const TImage* const image2, const itk::ImageRegion<2>& region2, itk::Image<bool, 2>* const output);
 
 template<typename TImage>
-void XORRegions(const TImage* const image1, const itk::ImageRegion<2>& region1, const TImage* const image2, const itk::ImageRegion<2>& region2, itk::Image<bool, 2>* const output);
+void XORRegions(const TImage* const image1, const itk::ImageRegion<2>& region1,
+                const TImage* const image2, const itk::ImageRegion<2>& region2, itk::Image<bool, 2>* const output);
 
 /** Change the value of all pixels with value = 'oldValue' to 'newValue. */
 template<typename TImage>
@@ -238,6 +243,11 @@ void ChangeValue(const TImage* const image, const typename TImage::PixelType& ol
 template<typename TPixel>
 void ExtractChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel,
                     typename itk::Image<TPixel, 2>* const output);
+
+/** Extract a channels of an image. */
+template<typename TImage>
+void ExtractChannels(const TImage* const image, const std::vector<unsigned int> channels,
+                    TImage* const output);
 
 /** Extract a region of an image. */
 template<typename TImage>
@@ -273,7 +283,8 @@ itk::Index<2> CreateIndex(const T& v);
 
 /** Get the average value of the neighbors of a pixel. */
 template<typename TImage>
-typename TypeTraits<typename TImage::PixelType>::LargerType AverageNeighborValue(const TImage* const image, const itk::Index<2>& pixel);
+typename TypeTraits<typename TImage::PixelType>::LargerType AverageNeighborValue(const TImage* const image,
+                                                                                 const itk::Index<2>& pixel);
 
 template<typename TImage>
 std::vector<itk::Index<2> > Get8NeighborsWithValue(const itk::Index<2>& pixel, const TImage* const image,
@@ -361,9 +372,15 @@ void PrintImage(const TImage* const image);
 template<typename TImage>
 void PrintRegion(const TImage* const image, const itk::ImageRegion<2>& region);
 
+template<typename TVectorImage, typename TScalarImage>
+void SetChannel(TVectorImage* const vectorImage, const unsigned int channel, const TScalarImage* const image);
+
 /** See GetPixelValues */
 // template<typename TImage>
 // std::vector<typename TImage::PixelType> GetPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices);
+
+// template<typename TImage>
+// void StackImages(const TImage* const image1, const TImage* const image2, const TImage* const output);
 
 }// end namespace
 

@@ -156,9 +156,6 @@ int main(int argc, char *argv[])
   imageReader->SetFileName(imageFilename);
   imageReader->Update();
 
-  ImageType::Pointer image = ImageType::New();
-  ITKHelpers::DeepCopy(imageReader->GetOutput(), image.GetPointer());
-
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
 
@@ -167,8 +164,21 @@ int main(int argc, char *argv[])
 
   // Convert the image from RGB to CIELab
   FloatVectorImageType::Pointer cielabImage = FloatVectorImageType::New();
-  ITKHelpers::ITKImageToCIELabImage(image, cielabImage);
+  ITKHelpers::ITKImageToCIELabImage(imageReader->GetOutput(), cielabImage);
+
+  FloatVectorImageType::Pointer extraChannelsImage = FloatVectorImageType::New();
+  std::vector<unsigned int> channels;
+  channels.push_back(3);
+  channels.push_back(4);
+  ITKHelpers::ExtractChannels(imageReader->GetOutput(), channels, extraChannelsImage.GetPointer());
+
+  std::cout << "extraChannelsImage has " << extraChannelsImage->GetNumberOfComponentsPerPixel() << " components." << std::endl;
   
+  ImageType::Pointer image = ImageType::New();
+  ITKHelpers::StackImages(cielabImage.GetPointer(), extraChannelsImage.GetPointer(), image.GetPointer());
+
+  std::cout << "image has " << image->GetNumberOfComponentsPerPixel() << " components." << std::endl;
+    
   typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
 
   // Create the graph
@@ -224,8 +234,8 @@ int main(int argc, char *argv[])
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
           ImagePatchDescriptorVisitorType;
-  //ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
-  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(cielabImage, mask, imagePatchDescriptorMap, patchHalfWidth);
+  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
+  //ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(cielabImage, mask, imagePatchDescriptorMap, patchHalfWidth);
 
 //   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> >
 //             ImagePatchDifferenceType;

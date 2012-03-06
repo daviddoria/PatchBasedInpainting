@@ -57,7 +57,7 @@ int main(int argc, char*argv[])
 //   ManualPatchSelectionDialog<ImageType> manualPatchSelectionDialog(image, mask, patchHalfWidth);
 //   manualPatchSelectionDialog.exec();
   ManualPatchSelectionDialog<ImageType>* manualPatchSelectionDialog =
-        new ManualPatchSelectionDialog<ImageType>(image, mask, patchHalfWidth);
+        new ManualPatchSelectionDialog<ImageType>(image, mask, region1);
   manualPatchSelectionDialog->exec();
 
 //   int result = manualPatchSelectionDialog.result();

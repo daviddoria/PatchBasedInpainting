@@ -532,4 +532,57 @@ itk::ImageRegion<2> CornerRegion(const itk::Size<2>& size)
   return region;
 }
 
+void StackImages(const itk::VectorImage<float, 2>* const image1, const itk::VectorImage<float, 2>* const image2,
+                 itk::VectorImage<float, 2>* const output)
+{
+  typedef itk::VectorImage<float, 2> VectorImageType;
+  
+  if(image1->GetLargestPossibleRegion() != image2->GetLargestPossibleRegion())
+    {
+    std::stringstream ss;
+    ss << "StackImages: Images must be the same size!" << std::endl
+       << "Image1 is " << image1->GetLargestPossibleRegion() << std::endl
+       << "Image2 is " << image2->GetLargestPossibleRegion() << std::endl;
+    throw std::runtime_error(ss.str());
+    }
+
+  std::cout << "StackImages: Image1 has " << image1->GetNumberOfComponentsPerPixel() << " components." << std::endl;
+  std::cout << "StackImages: Image2 has " << image2->GetNumberOfComponentsPerPixel() << " components." << std::endl;
+
+  // Create output image
+  itk::ImageRegion<2> region = image1->GetLargestPossibleRegion();
+
+  unsigned int newPixelLength = image1->GetNumberOfComponentsPerPixel() +
+                                image2->GetNumberOfComponentsPerPixel();
+
+  std::cout << "Output image has " << newPixelLength << " components." << std::endl;
+
+  output->SetNumberOfComponentsPerPixel(newPixelLength);
+  output->SetRegions(region);
+  output->Allocate();
+
+  while(!image1Iterator.IsAtEnd())
+    {
+    VectorImageType::PixelType pixel;
+    pixel.SetSize(newPixelLength);
+    //std::cout << "Pixel has " << pixel.GetSize() << " components." << std::endl;
+
+    for(unsigned int i = 0; i < image1->GetNumberOfComponentsPerPixel(); i++)
+      {
+      pixel[i] = image1Iterator.Get()[i];
+      }
+
+    for(unsigned int i = 0; i < image2->GetNumberOfComponentsPerPixel(); i++)
+      {
+      pixel[image1->GetNumberOfComponentsPerPixel() + i] = image2Iterator.Get()[i];
+      }
+
+    outputIterator.Set(pixel);
+
+    ++image1Iterator;
+    ++image2Iterator;
+    ++outputIterator;
+    }
+}
+
 } // end namespace
