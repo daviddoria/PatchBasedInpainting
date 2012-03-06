@@ -44,7 +44,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   TPriorityMap& PriorityMap;
   TBoundaryStatusMap& BoundaryStatusMap;
 
-  const unsigned int HalfWidth;
+  const unsigned int PatchHalfWidth;
 
   std::string ResultFileName;
   
@@ -52,13 +52,13 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
                     TBoundaryNodeQueue& boundaryNodeQueue,
                     TDescriptorVisitor& descriptorVisitor, TAcceptanceVisitor& acceptanceVisitor, TPriorityMap& priorityMap,
                     TPriority* const priorityFunction,
-                    const unsigned int halfWidth, TBoundaryStatusMap& boundaryStatusMap, const std::string& resultFileName,
+                    const unsigned int patchHalfWidth, TBoundaryStatusMap& boundaryStatusMap, const std::string& resultFileName,
                     const std::string& visitorName = "InpaintingVisitor") :
   InpaintingVisitorParent<TGraph>(visitorName),
   Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
   DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
   PriorityMap(priorityMap), BoundaryStatusMap(boundaryStatusMap),
-  HalfWidth(halfWidth), ResultFileName(resultFileName)
+  PatchHalfWidth(patchHalfWidth), ResultFileName(resultFileName)
   {
   }
 
@@ -100,6 +100,39 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     }
   };
 
+  void PaintPatch(VertexDescriptorType target, VertexDescriptorType source) const
+  {
+    VertexDescriptorType target_patch_corner;
+    target_patch_corner[0] = target[0] - PatchHalfWidth;
+    target_patch_corner[1] = target[1] - PatchHalfWidth;
+
+    VertexDescriptorType source_patch_corner;
+    source_patch_corner[0] = source[0] - PatchHalfWidth;
+    source_patch_corner[1] = source[1] - PatchHalfWidth;
+
+    VertexDescriptorType target_node;
+    VertexDescriptorType source_node;
+    for(std::size_t i = 0; i < PatchHalfWidth * 2 + 1; ++i)
+    {
+      for(std::size_t j = 0; j < PatchHalfWidth * 2 + 1; ++j)
+      {
+        target_node[0] = target_patch_corner[0] + i;
+        target_node[1] = target_patch_corner[1] + j;
+
+        source_node[0] = source_patch_corner[0] + i;
+        source_node[1] = source_patch_corner[1] + j;
+
+        // Only paint the pixel if it is currently a hole
+        if( MaskImage->IsHole(ITKHelpers::CreateIndex(target_node)) )
+        {
+          //std::cout << "Copying pixel " << source_node << " to pixel " << target_node << std::endl;
+          PaintVertex(target_node, source_node); //paint the vertex.
+        }
+
+      }
+    }
+  };
+  
   void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
   {
     itk::Index<2> target_index = ITKHelpers::CreateIndex(target);
@@ -126,7 +159,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     // Construct the region around the vertex
     itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(targetNode);
 
-    itk::ImageRegion<2> regionToFinish = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
+    itk::ImageRegion<2> regionToFinish = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, PatchHalfWidth);
 
     regionToFinish.Crop(Image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
 
@@ -193,7 +226,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     // boundary pixels after the filling. Check for these.
     {
     // Expand the region
-    itk::ImageRegion<2> expandedRegion = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth + 1);
+    itk::ImageRegion<2> expandedRegion = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, PatchHalfWidth + 1);
     std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetBoundaryPixels(expandedRegion);
     for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
       {

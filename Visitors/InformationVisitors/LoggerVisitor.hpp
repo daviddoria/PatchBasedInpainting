@@ -36,6 +36,8 @@ struct LoggerVisitor : public InpaintingVisitorParent<TGraph>
   OutputStream.close();
   }
 
+  void PaintPatch(VertexDescriptorType target, VertexDescriptorType source) const {}
+  
   void InitializeVertex(VertexDescriptorType v) const
   {
 

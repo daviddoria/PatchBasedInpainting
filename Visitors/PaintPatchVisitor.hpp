@@ -1,38 +1,53 @@
-#ifndef InpaintPatchVisitor_HPP
-#define InpaintPatchVisitor_HPP
+#ifndef PaintPatchVisitor_HPP
+#define PaintPatchVisitor_HPP
+
+#include "InpaintingVisitorParent.h"
 
 // Helpers
 #include "Helpers/ITKHelpers.h"
 #include "Helpers/OutputHelpers.h"
 #include "Helpers/BoostHelpers.h"
 
-template <typename TImage>
-struct InpaintPatchVisitor
+template <typename TGraph, typename TImage>
+struct PaintPatchVisitor : public InpaintingVisitorParent<TGraph>
 {
+  typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
+  
   TImage* Image;
   Mask* MaskImage;
 
   const unsigned int PatchHalfWidth;
 
-  InpaintPatchVisitor(TImage* const image, Mask* const mask,
-                    const unsigned int patchHalfWidth) :
-  Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
+  PaintPatchVisitor(TImage* const image, Mask* const mask,
+                    const unsigned int halfWidth) : InpaintingVisitorParent<TGraph>("PaintPatchVisitor"),
+  Image(image), MaskImage(mask), PatchHalfWidth(halfWidth)
   {
   }
 
-  template <typename TNode>
-  void PaintPatch(TNode target, TNode source) const
+  void InitializeVertex(VertexDescriptorType v) const {};
+
+  void DiscoverVertex(VertexDescriptorType v) const {};
+
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const {return true;}
+
+  void InpaintingComplete() const {};
+
+  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source) {};
+
+  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode) {};
+  
+  void PaintPatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
-    TNode target_patch_corner;
+    VertexDescriptorType target_patch_corner;
     target_patch_corner[0] = target[0] - PatchHalfWidth;
     target_patch_corner[1] = target[1] - PatchHalfWidth;
 
-    TNode source_patch_corner;
+    VertexDescriptorType source_patch_corner;
     source_patch_corner[0] = source[0] - PatchHalfWidth;
     source_patch_corner[1] = source[1] - PatchHalfWidth;
 
-    TNode target_node;
-    TNode source_node;
+    VertexDescriptorType target_node;
+    VertexDescriptorType source_node;
     for(std::size_t i = 0; i < PatchHalfWidth * 2 + 1; ++i)
     {
       for(std::size_t j = 0; j < PatchHalfWidth * 2 + 1; ++j)
@@ -53,9 +68,8 @@ struct InpaintPatchVisitor
       }
     }
   };
-  
-  template <typename TNode>
-  void PaintVertex(TNode target, TNode source) const
+
+  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
   {
     itk::Index<2> target_index = ITKHelpers::CreateIndex(target);
 
@@ -67,11 +81,7 @@ struct InpaintPatchVisitor
     Image->SetPixel(target_index, Image->GetPixel(source_index));
   };
 
-  void InpaintingComplete() const
-  {
-    //OutputHelpers::WriteImage(Image, "InpaintPatchVisitor::output.mha");
-  }
 
-}; // InpaintingVisitor
+}; // PaintPatchVisitor
 
 #endif

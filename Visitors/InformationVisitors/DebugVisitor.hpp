@@ -40,6 +40,8 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
   }
 
+  void PaintPatch(VertexDescriptorType target, VertexDescriptorType source) const {}
+  
   void InitializeVertex(VertexDescriptorType v) const
   {
 
@@ -52,8 +54,8 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
   void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
-    std::cout << "Match made: target: " << target[0] << " " << target[1]
-              << " with source: " << source[0] << " " << source[1] << std::endl;
+//     std::cout << "Match made: target: " << target[0] << " " << target[1]
+//               << " with source: " << source[0] << " " << source[1] << std::endl;
   };
 
   void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
@@ -118,7 +120,7 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
     this->NumberOfFinishedVertices++;
 
-    std::cout << "Finished node " << this->NumberOfFinishedVertices << std::endl;
+    // std::cout << "Finished node " << this->NumberOfFinishedVertices << std::endl;
 
   };
 

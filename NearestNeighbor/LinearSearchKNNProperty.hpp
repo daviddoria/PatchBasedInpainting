@@ -63,135 +63,72 @@ public:
     return this->K;
   }
 
-//   template <typename ForwardIteratorType, typename OutputContainerType>
-//   void operator()(ForwardIteratorType first, ForwardIteratorType last,
-//                   typename ForwardIteratorType::value_type queryNode, OutputContainerType& output)
+  //   template <typename ForwardIteratorType, typename OutputContainerType>
+  //   void operator()(ForwardIteratorType first, ForwardIteratorType last,
+  //                   typename ForwardIteratorType::value_type queryNode, OutputContainerType& output)
 
-template <typename ForwardIterator, typename OutputIterator, typename CompareFunction = std::less<float>, typename DistanceValue = float>
-inline
-OutputIterator operator()(ForwardIterator first,
-				    ForwardIterator last,
-				    typename ForwardIterator::value_type queryNode,
-				    OutputIterator output_first,
-				    CompareFunction compare = CompareFunction(),
-				    DistanceValue radius = std::numeric_limits<DistanceValue>::infinity())
-{
+  template <typename ForwardIterator, typename OutputIterator, typename CompareFunction = std::less<float>, typename DistanceValue = float>
+  inline
+  OutputIterator operator()(ForwardIterator first,
+                            ForwardIterator last,
+                            typename ForwardIterator::value_type queryNode,
+                            OutputIterator output_first,
+                            CompareFunction compare = CompareFunction(),
+                            DistanceValue radius = std::numeric_limits<DistanceValue>::infinity())
+  {
 
-  if(first == last) return output_first;
-  std::priority_queue< std::pair<DistanceValue, ForwardIterator>,
-			std::vector< std::pair<DistanceValue, ForwardIterator> >,
-			compare_pair_first<DistanceValue, ForwardIterator, CompareFunction> >
-    output_queue = std::priority_queue< std::pair<DistanceValue, ForwardIterator>,
-			std::vector< std::pair<DistanceValue, ForwardIterator> >,
-			compare_pair_first<DistanceValue, ForwardIterator, CompareFunction> >(compare_pair_first<DistanceValue, ForwardIterator, CompareFunction>(compare));
-  for(; first != last; ++first) {
-    DistanceValue d = DistanceFunction(get(PropertyMap, *first), get(PropertyMap, queryNode));
-    if(!compare(d, radius))
-      continue;
-    output_queue.push(std::pair<DistanceValue, ForwardIterator>(d, first));
-    while(output_queue.size() > this->K)
-      output_queue.pop();
-    radius = output_queue.top().first;
+    if(first == last) return output_first;
+    std::priority_queue< std::pair<DistanceValue, ForwardIterator>,
+                          std::vector< std::pair<DistanceValue, ForwardIterator> >,
+                          compare_pair_first<DistanceValue, ForwardIterator, CompareFunction> >
+      output_queue = std::priority_queue< std::pair<DistanceValue, ForwardIterator>,
+                          std::vector< std::pair<DistanceValue, ForwardIterator> >,
+                          compare_pair_first<DistanceValue, ForwardIterator, CompareFunction> >(compare_pair_first<DistanceValue, ForwardIterator, CompareFunction>(compare));
+    for(; first != last; ++first) {
+      DistanceValue d = DistanceFunction(get(PropertyMap, *first), get(PropertyMap, queryNode));
+      if(!compare(d, radius))
+        continue;
+      output_queue.push(std::pair<DistanceValue, ForwardIterator>(d, first));
+      while(output_queue.size() > this->K)
+        output_queue.pop();
+      radius = output_queue.top().first;
+    };
+
+    return copy_neighbors_from_queue<ForwardIterator, DistanceValue>(output_queue, output_first);
   };
 
-  return copy_neighbors_from_queue<ForwardIterator, DistanceValue>(output_queue, output_first);
-};
-
-    template <typename T1, typename T2, typename Compare>
-    struct compare_pair_first : std::binary_function< std::pair<T1, T2>, std::pair<T1, T2>, bool> {
-      Compare comp;
-      compare_pair_first(const Compare& aComp = Compare()) : comp(aComp) { };
-      bool operator()(const std::pair<T1, T2>& x, const std::pair<T1, T2>& y) const {
-	return comp(x.first, y.first);
-      };
+  template <typename T1, typename T2, typename Compare>
+  struct compare_pair_first : std::binary_function< std::pair<T1, T2>, std::pair<T1, T2>, bool> {
+    Compare comp;
+    compare_pair_first(const Compare& aComp = Compare()) : comp(aComp) { };
+    bool operator()(const std::pair<T1, T2>& x, const std::pair<T1, T2>& y) const {
+      return comp(x.first, y.first);
     };
+  };
 
-    // This is the case where the output-iterators contain nodes.
-    template <typename InputIterator,
-              typename DistanceValue,
-	      typename PairPriorityQueue,
-	      typename OutputIterator>
-    inline
-    typename boost::enable_if<
-      boost::is_same<
-        typename std::iterator_traits< OutputIterator >::value_type,
-	typename std::iterator_traits< InputIterator >::value_type
-      >,
-    OutputIterator >::type copy_neighbors_from_queue(PairPriorityQueue& Q, OutputIterator result)
+  // This is the case where the output-iterators contain nodes.
+  template <typename InputIterator,
+            typename DistanceValue,
+            typename PairPriorityQueue,
+            typename OutputIterator>
+  inline
+  typename boost::enable_if<
+    boost::is_same<
+      typename std::iterator_traits< OutputIterator >::value_type,
+      typename std::iterator_traits< InputIterator >::value_type
+    >,
+  OutputIterator >::type copy_neighbors_from_queue(PairPriorityQueue& Q, OutputIterator result)
+  {
+    OutputIterator first = result;
+    while( !Q.empty() )
     {
-      OutputIterator first = result;
-      while( !Q.empty() )
-      {
-	*result = *(Q.top().second);
-	Q.pop();
-	++result;
-      };
-      std::reverse(first, result);
-      return result;
+      *result = *(Q.top().second);
+      Q.pop();
+      ++result;
     };
-/*
-    // This is the case where the output-iterators contain input-iterator.
-    template <typename InputIterator,
-              typename DistanceValue,
-	      typename PairPriorityQueue,
-	      typename OutputIterator>
-    inline
-    typename boost::enable_if<
-      boost::is_same<
-        typename std::iterator_traits< OutputIterator >::value_type,
-	InputIterator
-      >,
-    OutputIterator >::type copy_neighbors_from_queue(PairPriorityQueue& Q, OutputIterator result) {
-      OutputIterator first = result;
-      while( !Q.empty() ) {
-	*result = Q.top().second;
-	Q.pop(); ++result;
-      };
-      std::reverse(first, result);
-      return result;
-    };
-
-    // This is the case where the output-iterators contain distance-node pairs.
-    template <typename InputIterator,
-              typename DistanceValue,
-	      typename PairPriorityQueue,
-	      typename OutputIterator>
-    inline
-    typename boost::enable_if<
-      boost::is_same<
-	typename std::iterator_traits< OutputIterator >::value_type,
-	std::pair<DistanceValue, typename std::iterator_traits< InputIterator >::value_type >
-      >,
-    OutputIterator >::type copy_neighbors_from_queue(PairPriorityQueue& Q, OutputIterator result) {
-      OutputIterator first = result;
-      while( !Q.empty() ) {
-	*result = std::make_pair(Q.top().first, *(Q.top().second));
-	Q.pop(); ++result;
-      };
-      std::reverse(first, result);
-      return result;
-    };
-
-    // This is the case where the output-iterators contain distance-iterator pairs.
-    template <typename InputIterator,
-              typename DistanceValue,
-	      typename PairPriorityQueue,
-	      typename OutputIterator>
-    inline
-    typename boost::enable_if<
-      boost::is_same<
-	typename std::iterator_traits< OutputIterator >::value_type,
-	std::pair<DistanceValue, InputIterator>
-      >,
-    OutputIterator >::type copy_neighbors_from_queue(PairPriorityQueue& Q, OutputIterator result) {
-      OutputIterator first = result;
-      while( !Q.empty() ) {
-	*result = Q.top();
-	Q.pop(); ++result;
-      };
-      std::reverse(first, result);
-      return result;
-    };*/
+    std::reverse(first, result);
+    return result;
+  };
 
 };
 

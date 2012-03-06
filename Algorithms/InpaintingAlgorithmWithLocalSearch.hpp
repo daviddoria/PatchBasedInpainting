@@ -65,25 +65,45 @@ void InpaintingAlgorithmWithLocalSearch(TVertexListGraph& g, TInpaintingVisitor 
 
     vis.PotentialMatchMade(targetNode, sourceNode);
 
+    // Local search only
     if(!vis.AcceptMatch(targetNode, sourceNode))
       {
       std::cout << "Automatic match not accepted!" << std::endl;
 
-      // If the match was not accepted automatically, search the full image.
-      typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
-      tie(vi,vi_end) = vertices(g);
-      std::vector<VertexDescriptorType> fullSearchOutputContainer(knnFinder.GetK());
-      knnFinder(vi, vi_end, targetNode, fullSearchOutputContainer.begin());
-      sourceNode = bestNeighborFinder(fullSearchOutputContainer.begin(), fullSearchOutputContainer.end(), targetNode);
+    // Find the valid nodes
+//       typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
+//       tie(vi,vi_end) = vertices(g);
+//       std::vector<VertexDescriptorType> validNodes;
+//       for(; vi != vi_end; ++vi)
+//       {
+//         if(
+//       }
+      // sourceNode = manualNeighborFinder(vi, vi_end, targetNode); // Can't do this directly, because some of the nodes correspond to patches that are partially outside the image
 
-      // If the match is still not acceptable, allow the user to choose a patch manually
-      if(!vis.AcceptMatch(targetNode, sourceNode))
-        {
-        sourceNode = manualNeighborFinder(fullSearchOutputContainer.begin(), fullSearchOutputContainer.end(), targetNode);
-        }
+      sourceNode = manualNeighborFinder(outputContainer.begin(), outputContainer.end(), targetNode);
       }
+
+    // Local search followed by global search
+//     if(!vis.AcceptMatch(targetNode, sourceNode))
+//       {
+//       std::cout << "Automatic match not accepted!" << std::endl;
+// 
+//       // If the match was not accepted automatically, search the full image.
+//       typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
+//       tie(vi,vi_end) = vertices(g);
+//       std::vector<VertexDescriptorType> fullSearchOutputContainer(knnFinder.GetK());
+//       knnFinder(vi, vi_end, targetNode, fullSearchOutputContainer.begin());
+//       sourceNode = bestNeighborFinder(fullSearchOutputContainer.begin(), fullSearchOutputContainer.end(), targetNode);
+// 
+//       // If the match is still not acceptable, allow the user to choose a patch manually
+//       if(!vis.AcceptMatch(targetNode, sourceNode))
+//         {
+//         sourceNode = manualNeighborFinder(fullSearchOutputContainer.begin(), fullSearchOutputContainer.end(), targetNode);
+//         }
+//       }
       
-    inpaint_patch(targetNode, sourceNode, vis);
+    //inpaint_patch(targetNode, sourceNode, vis);
+    vis.PaintPatch(targetNode, sourceNode);
 
     vis.FinishVertex(targetNode, sourceNode);
 

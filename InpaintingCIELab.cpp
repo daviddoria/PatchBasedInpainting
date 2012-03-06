@@ -59,6 +59,8 @@
 #include "Visitors/ReplayVisitor.hpp"
 #include "Visitors/InformationVisitors/LoggerVisitor.hpp"
 #include "Visitors/CompositeInpaintingVisitor.hpp"
+//#include "Visitors/InpaintPatchVisitor.hpp"
+#include "Visitors/PaintPatchVisitor.hpp"
 #include "Visitors/InformationVisitors/DebugVisitor.hpp"
 
 // Nearest neighbors
@@ -274,9 +276,12 @@ int main(int argc, char *argv[])
   weights.push_back(1.0f);
   weights.push_back(1.0f);
   weights.push_back(1.0f);
-  weights.push_back(50.0f);
-  weights.push_back(50.0f);
+  float gradientWeight = 500.0f;
+  weights.push_back(gradientWeight);
+  weights.push_back(gradientWeight);
   pixelDifferenceFunctor.Weights = weights;
+  std::cout << "Weights: ";
+  OutputHelpers::OutputVector(pixelDifferenceFunctor.Weights);
 
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, PixelDifferenceFunctorType >
           ImagePatchDifferenceType;
@@ -294,10 +299,16 @@ int main(int argc, char *argv[])
   compositeAcceptanceVisitor.AddOverrideVisitor(&holeSizeAcceptanceVisitor);
 
   std::vector<float> minValues = ITKHelpers::MinValues(image);
-  std::vector<float> maxValues = ITKHelpers::MaxValues(image);
+  std::cout << "min values: ";
+  OutputHelpers::OutputVector(minValues);
   
+  std::vector<float> maxValues = ITKHelpers::MaxValues(image);
+  std::cout << "max values: ";
+  OutputHelpers::OutputVector(maxValues);
+
+  float allowableQuadrantError = 1.0f;
   AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType>
-               allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, minValues, maxValues, 2.9f * 4.0f);
+               allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, minValues, maxValues, allowableQuadrantError * 4.0f);
   compositeAcceptanceVisitor.AddRequiredPassVisitor(&allQuadrantHistogramCompareAcceptanceVisitor);
 
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
@@ -317,9 +328,12 @@ int main(int argc, char *argv[])
 
   LoggerVisitor<VertexListGraphType> loggerVisitor("log.txt");
 
+  PaintPatchVisitor<VertexListGraphType, ImageType> inpaintRGBVisitor(rgbImage.GetPointer(), mask.GetPointer(), patchHalfWidth);
+  
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
   CompositeInpaintingVisitorType compositeInpaintingVisitor;
   compositeInpaintingVisitor.AddVisitor(&inpaintingVisitor);
+  compositeInpaintingVisitor.AddVisitor(&inpaintRGBVisitor);
   compositeInpaintingVisitor.AddVisitor(&displayVisitor);
   compositeInpaintingVisitor.AddVisitor(&debugVisitor);
   compositeInpaintingVisitor.AddVisitor(&loggerVisitor);

@@ -14,12 +14,12 @@ std::vector<float> ScalarHistogram(const std::vector<TValue>& values, const unsi
                                    const TValue& rangeMin, const TValue& rangeMax)
 {
   // Count how many values fall in each bin. We store these counts as floats because sometimes we want to normalize the counts.
-  std::cout << "Create histogram with " << numberOfBins << " bins." << std::endl;
+  // std::cout << "Create histogram with " << numberOfBins << " bins." << std::endl;
   std::vector<float> bins(numberOfBins);
 
   const float binWidth = (rangeMax - rangeMin) / static_cast<float>(numberOfBins);
 
-  std::cout << "binWidth " << binWidth << std::endl;
+  // std::cout << "binWidth " << binWidth << std::endl;
   
   for(unsigned int i = 0; i < values.size(); ++i)
   {

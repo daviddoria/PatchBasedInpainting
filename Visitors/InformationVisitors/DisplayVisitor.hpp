@@ -61,6 +61,8 @@ public:
 
   }
 
+  void PaintPatch(VertexDescriptorType target, VertexDescriptorType source) const {}
+  
   void InitializeVertex(VertexDescriptorType v) const
   { 
 
@@ -68,13 +70,13 @@ public:
 
   void DiscoverVertex(VertexDescriptorType v) const
   {
-    std::cout << "DisplayVisitor::DiscoverVertex" << std::endl;
+    // std::cout << "DisplayVisitor::DiscoverVertex" << std::endl;
     emit signal_RefreshImage();
   };
 
   void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
-    std::cout << "DisplayVisitor::PotentialMatchMade" << std::endl;
+    // std::cout << "DisplayVisitor::PotentialMatchMade" << std::endl;
     // Target node
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(target);
     itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->HalfWidth);
