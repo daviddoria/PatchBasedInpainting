@@ -52,7 +52,9 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
                     TBoundaryNodeQueue& boundaryNodeQueue,
                     TDescriptorVisitor& descriptorVisitor, TAcceptanceVisitor& acceptanceVisitor, TPriorityMap& priorityMap,
                     TPriority* const priorityFunction,
-                    const unsigned int halfWidth, TBoundaryStatusMap& boundaryStatusMap, const std::string& resultFileName) :
+                    const unsigned int halfWidth, TBoundaryStatusMap& boundaryStatusMap, const std::string& resultFileName,
+                    const std::string& visitorName = "InpaintingVisitor") :
+  InpaintingVisitorParent<TGraph>(visitorName),
   Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
   DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
   PriorityMap(priorityMap), BoundaryStatusMap(boundaryStatusMap),
@@ -187,7 +189,8 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
     // std::cout << "FinishVertex after traversing finishing region there are " << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap) << " valid nodes in the queue." << std::endl;
     
-    // Sometimes pixels that are not in the finishing region that were boundary pixels are no longer boundary pixels after the filling. Check for these.
+    // Sometimes pixels that are not in the finishing region that were boundary pixels are no longer
+    // boundary pixels after the filling. Check for these.
     {
     // Expand the region
     itk::ImageRegion<2> expandedRegion = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth + 1);
@@ -201,8 +204,9 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
         }
       }
     }
-
-    // std::cout << "FinishVertex after removing stale nodes outside finishing region there are " << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap) << " valid nodes in the queue." << std::endl;
+// std::cout << "FinishVertex after removing stale nodes outside finishing region there are "
+//               << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap)
+//               << " valid nodes in the queue." << std::endl;
   }; // finish_vertex
 
   void InpaintingComplete() const

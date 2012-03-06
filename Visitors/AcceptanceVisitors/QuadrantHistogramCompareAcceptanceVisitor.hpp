@@ -29,13 +29,18 @@ struct QuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorParen
 
   const unsigned int Quadrant;
   
-  float DifferenceThreshold;
+  std::vector<float> Mins;
+  std::vector<float> Maxs;
 
+  float DifferenceThreshold;
+  
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
   QuadrantHistogramCompareAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth,
-                                            const unsigned int quadrant, const float differenceThreshold = 100.0f) :
-  Image(image), MaskImage(mask), HalfWidth(halfWidth), Quadrant(quadrant), DifferenceThreshold(differenceThreshold)
+                                            const unsigned int quadrant, const std::vector<float>& mins,
+                                            const std::vector<float>& maxs, const float differenceThreshold = 100.0f) :
+  Image(image), MaskImage(mask), HalfWidth(halfWidth), Quadrant(quadrant), Mins(mins), Maxs(maxs),
+  DifferenceThreshold(differenceThreshold)
   {
 
   }
@@ -57,10 +62,13 @@ struct QuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorParen
     itk::ImageRegion<2> targetRegionQuadrant = ITKHelpers::GetQuadrant(targetRegion, this->Quadrant);
     itk::ImageRegion<2> sourceRegionQuadrant = ITKHelpers::GetQuadrant(sourceRegion, this->Quadrant);
 
-    std::vector<typename TImage::PixelType> validPixelsTargetRegion = MaskOperations::GetValidPixelsInRegion(Image, MaskImage, targetRegionQuadrant);
+    std::vector<typename TImage::PixelType> validPixelsTargetRegion =
+              MaskOperations::GetValidPixelsInRegion(Image, MaskImage, targetRegionQuadrant);
 
-    // If less than 20 percent of the quadrant has valid pixels, the comparison is too specific and the energy will often be erroneously high
-    float quadrantCoverage = static_cast<float>(validPixelsTargetRegion.size()) / static_cast<float>(targetRegionQuadrant.GetNumberOfPixels());
+    // If less than 20 percent of the quadrant has valid pixels, the comparison is too specific
+    // and the energy will often be erroneously high
+    float quadrantCoverage = static_cast<float>(validPixelsTargetRegion.size()) /
+                             static_cast<float>(targetRegionQuadrant.GetNumberOfPixels());
     if(quadrantCoverage < .2)
     {
       std::cout << "Skipping quadrant " << Quadrant << " (coverage " << quadrantCoverage << ")" << std::endl;
@@ -68,16 +76,25 @@ struct QuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorParen
       return true;
     }
     std::vector<itk::Offset<2> > validOffsets = MaskImage->GetValidOffsetsInRegion(targetRegionQuadrant);
-    std::vector<itk::Index<2> > sourcePatchValidPixelIndices = ITKHelpers::OffsetsToIndices(validOffsets, sourceRegionQuadrant.GetIndex());
-    std::vector<typename TImage::PixelType> validPixelsSourceRegion = ITKHelpers::GetPixelValues(Image, sourcePatchValidPixelIndices);
+    std::vector<itk::Index<2> > sourcePatchValidPixelIndices =
+            ITKHelpers::OffsetsToIndices(validOffsets, sourceRegionQuadrant.GetIndex());
+    std::vector<typename TImage::PixelType> validPixelsSourceRegion =
+            ITKHelpers::GetPixelValues(Image, sourcePatchValidPixelIndices);
 
     assert(validPixelsSourceRegion.size() == validPixelsTargetRegion.size());
 
     unsigned int numberOfPixels = validPixelsTargetRegion.size();
 
+//    std::cout << "There are " << numberOfPixels << " pixels." << std::endl;
+    
     float totalHistogramDifference = 0.0f;
+//     std::cout << "There are " << Image->GetNumberOfComponentsPerPixel() << " components in the image." << std::endl;
+//     std::cout << "There are " << validPixelsTargetRegion[0].Size() << " components in the target pixels." << std::endl;
+//     std::cout << "There are " << validPixelsSourceRegion[0].Size() << " components in the source pixels." << std::endl;
+    
     for(unsigned int component = 0; component < Image->GetNumberOfComponentsPerPixel(); ++component)
     {
+      // std::cout << "QuadrantHistogramCompareAcceptanceVisitor component " << component << "..." << std::endl;
       std::vector<float> targetValues(numberOfPixels);
       std::vector<float> sourceValues(numberOfPixels);
 
@@ -87,10 +104,14 @@ struct QuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorParen
         sourceValues[pixelId] = validPixelsSourceRegion[pixelId][component];
       }
 
-      std::vector<float> targetHistogram = Histogram::ScalarHistogram(targetValues, 20);
-      std::vector<float> sourceHistogram = Histogram::ScalarHistogram(sourceValues, 20);
+      std::vector<float> targetHistogram = Histogram::ScalarHistogram(targetValues, 20, Mins[component], Maxs[component]);
+      std::vector<float> sourceHistogram = Histogram::ScalarHistogram(sourceValues, 20, Mins[component], Maxs[component]);
 
-      // We normalize the histograms because the magnitude of the histogram difference should not change based on the number of pixels that were in the valid region of the patches.
+//       std::cout << "targetHistogram size " << targetHistogram.size() << std::endl;
+//       std::cout << "sourceHistogram size " << sourceHistogram.size() << std::endl;
+
+      // We normalize the histograms because the magnitude of the histogram difference
+      // should not change based on the number of pixels that were in the valid region of the patches.
       Helpers::NormalizeVector(targetHistogram);
       Helpers::NormalizeVector(sourceHistogram);
 
@@ -104,12 +125,14 @@ struct QuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorParen
 
     if(computedEnergy < DifferenceThreshold)
       {
-      std::cout << "QuadrantHistogramCompareAcceptanceVisitor: Match accepted (less than " << DifferenceThreshold << ")" << std::endl;
+      std::cout << "QuadrantHistogramCompareAcceptanceVisitor: Match accepted (less than "
+                << DifferenceThreshold << ")" << std::endl;
       return true;
       }
     else
       {
-      std::cout << "QuadrantHistogramCompareAcceptanceVisitor: Match rejected (greater than " << DifferenceThreshold << ")" << std::endl;
+      std::cout << "QuadrantHistogramCompareAcceptanceVisitor: Match rejected (greater than "
+                << DifferenceThreshold << ")" << std::endl;
       return false;
       }
   };

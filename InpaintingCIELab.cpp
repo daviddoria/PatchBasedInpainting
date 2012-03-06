@@ -156,6 +156,22 @@ int main(int argc, char *argv[])
   imageReader->SetFileName(imageFilename);
   imageReader->Update();
 
+  itk::ImageRegion<2> fullRegion = imageReader->GetOutput()->GetLargestPossibleRegion();
+
+  std::vector<unsigned int> rgbChannels;
+  rgbChannels.push_back(0);
+  rgbChannels.push_back(1);
+  rgbChannels.push_back(2);
+
+  FloatVectorImageType::Pointer rgbImage = FloatVectorImageType::New();
+  rgbImage->SetRegions(fullRegion);
+  rgbImage->SetNumberOfComponentsPerPixel(rgbChannels.size());
+  rgbImage->Allocate();
+  
+  ITKHelpers::ExtractChannels(imageReader->GetOutput(), rgbChannels, rgbImage.GetPointer());
+
+  OutputHelpers::WriteImage(rgbImage.GetPointer(), "rgbImage.mha");
+  
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
 
@@ -166,25 +182,37 @@ int main(int argc, char *argv[])
   FloatVectorImageType::Pointer cielabImage = FloatVectorImageType::New();
   ITKHelpers::ITKImageToCIELabImage(imageReader->GetOutput(), cielabImage);
 
-  FloatVectorImageType::Pointer extraChannelsImage = FloatVectorImageType::New();
+  OutputHelpers::WriteImage(cielabImage.GetPointer(), "cielabImage.mha");
+  
+  // Extract the extra channels
   std::vector<unsigned int> channels;
   channels.push_back(3);
   channels.push_back(4);
+
+  FloatVectorImageType::Pointer extraChannelsImage = FloatVectorImageType::New();
+  extraChannelsImage->SetRegions(fullRegion);
+  extraChannelsImage->SetNumberOfComponentsPerPixel(channels.size());
+  extraChannelsImage->Allocate();
+  
   ITKHelpers::ExtractChannels(imageReader->GetOutput(), channels, extraChannelsImage.GetPointer());
 
+  OutputHelpers::WriteImage(extraChannelsImage.GetPointer(), "extraChannelsImage.mha");
+  
   std::cout << "extraChannelsImage has " << extraChannelsImage->GetNumberOfComponentsPerPixel() << " components." << std::endl;
   
   ImageType::Pointer image = ImageType::New();
   ITKHelpers::StackImages(cielabImage.GetPointer(), extraChannelsImage.GetPointer(), image.GetPointer());
 
+  OutputHelpers::WriteImage(image.GetPointer(), "fullImage.mha");
+  
   std::cout << "image has " << image->GetNumberOfComponentsPerPixel() << " components." << std::endl;
     
   typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
 
   // Create the graph
   typedef boost::grid_graph<2> VertexListGraphType;
-  boost::array<std::size_t, 2> graphSideLengths = { { imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0],
-                                                      imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[1] } };
+  boost::array<std::size_t, 2> graphSideLengths = { { fullRegion.GetSize()[0],
+                                                      fullRegion.GetSize()[1] } };
   VertexListGraphType graph(graphSideLengths);
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
 
@@ -265,8 +293,11 @@ int main(int argc, char *argv[])
   HoleSizeAcceptanceVisitor<VertexListGraphType> holeSizeAcceptanceVisitor(mask, patchHalfWidth, .15);
   compositeAcceptanceVisitor.AddOverrideVisitor(&holeSizeAcceptanceVisitor);
 
+  std::vector<float> minValues = ITKHelpers::MinValues(image);
+  std::vector<float> maxValues = ITKHelpers::MaxValues(image);
+  
   AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType>
-               allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 2.9f * 4.0f);
+               allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, minValues, maxValues, 2.9f * 4.0f);
   compositeAcceptanceVisitor.AddRequiredPassVisitor(&allQuadrantHistogramCompareAcceptanceVisitor);
 
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
@@ -279,7 +310,7 @@ int main(int argc, char *argv[])
                                           boundaryStatusMap, outputFilename);
 
   typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
-  DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
+  DisplayVisitorType displayVisitor(rgbImage.GetPointer(), mask, patchHalfWidth);
 
   typedef DebugVisitor<VertexListGraphType, ImageType, BoundaryStatusMapType, BoundaryNodeQueueType> DebugVisitorType;
   DebugVisitorType debugVisitor(image, mask, patchHalfWidth, boundaryStatusMap, boundaryNodeQueue);
@@ -308,11 +339,11 @@ int main(int argc, char *argv[])
                                    ImagePatchDifferenceType > BestSearchType;
   BestSearchType bestSearch(imagePatchDescriptorMap, imagePatchDifferenceFunction);
 
-  TopPatchesDialog<ImageType> topPatchesDialog(image, mask, patchHalfWidth);
+  TopPatchesDialog<ImageType> topPatchesDialog(rgbImage.GetPointer(), mask, patchHalfWidth);
   typedef VisualSelectionBest<ImageType> ManualSearchType;
-  ManualSearchType manualSearchBest(image, mask, patchHalfWidth, &topPatchesDialog);
+  ManualSearchType manualSearchBest(rgbImage.GetPointer(), mask, patchHalfWidth, &topPatchesDialog);
 
-  BasicViewerWidget<ImageType> basicViewerWidget(image, mask);
+  BasicViewerWidget<ImageType> basicViewerWidget(rgbImage.GetPointer(), mask);
   basicViewerWidget.show();
   // These connections are Qt::BlockingQueuedConnection because the algorithm quickly
   // goes on to fill the hole, and since we are sharing the image memory, we want to make sure these things are
@@ -346,7 +377,7 @@ int main(int argc, char *argv[])
 
   // By specifying the radius as the image size/8, we are searching up to 1/4 of the image each time
   typedef NeighborhoodSearch<VertexDescriptorType> NeighborhoodSearchType;
-  NeighborhoodSearchType neighborhoodSearch(image->GetLargestPossibleRegion(), image->GetLargestPossibleRegion().GetSize()[0]/8);
+  NeighborhoodSearchType neighborhoodSearch(fullRegion, fullRegion.GetSize()[0]/8);
 
   // Run the remaining inpainting
   QtConcurrent::run(boost::bind(InpaintingAlgorithmWithLocalSearch<

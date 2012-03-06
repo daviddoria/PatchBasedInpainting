@@ -5,7 +5,9 @@
 namespace Histogram
 {
   template <typename TValue>
-  std::vector<float> ScalarHistogram(const std::vector<TValue>& values, const unsigned int numberOfBins, const TValue& rangeMin = 0, const TValue& rangeMax = 255);
+  std::vector<float> ScalarHistogram(const std::vector<TValue>& values, const unsigned int numberOfBins,
+                                     const TValue& rangeMin, const TValue& rangeMax);
+                                     //const TValue& rangeMin = 0, const TValue& rangeMax = 255);
 };
 
 #include "Histogram.hpp"

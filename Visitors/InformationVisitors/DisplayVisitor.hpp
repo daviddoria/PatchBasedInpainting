@@ -51,9 +51,11 @@ private:
   unsigned int NumberOfFinishedVertices;
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
-
+  
 public:
-  DisplayVisitor(const TImage* const image, const Mask* const mask, const unsigned int halfWidth) :
+  DisplayVisitor(const TImage* const image, const Mask* const mask, const unsigned int halfWidth,
+                 const std::string& visitorName = "DisplayVisitor") :
+  InpaintingVisitorParent<TGraph>(visitorName),
   Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0)
   {
 

@@ -124,6 +124,11 @@ std::vector<itk::Index<2> > GetBoundaryPixels(const itk::ImageRegion<2>& region)
 
 void StackImages(const itk::VectorImage<float, 2>* const image1, const itk::VectorImage<float, 2>* const image2,
                  itk::VectorImage<float, 2>* const output);
+
+std::vector<float> MinValues(const itk::VectorImage<float, 2>* const image);
+
+std::vector<float> MaxValues(const itk::VectorImage<float, 2>* const image);
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// Template function declarations (defined in ITKHelpers.hxx) ///////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////

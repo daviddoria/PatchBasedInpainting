@@ -30,9 +30,12 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
   TBoundaryNodeQueue& BoundaryNodeQueue;
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
-
-  DebugVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, TBoundaryStatusMap& boundaryStatusMap, TBoundaryNodeQueue& boundaryNodeQueue) :
-  Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0), BoundaryStatusMap(boundaryStatusMap), BoundaryNodeQueue(boundaryNodeQueue)
+  
+  DebugVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, TBoundaryStatusMap& boundaryStatusMap,
+               TBoundaryNodeQueue& boundaryNodeQueue, const std::string& visitorName = "DebugVisitor") :
+  InpaintingVisitorParent<TGraph>(visitorName),
+  Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0),
+  BoundaryStatusMap(boundaryStatusMap), BoundaryNodeQueue(boundaryNodeQueue)
   {
 
   }

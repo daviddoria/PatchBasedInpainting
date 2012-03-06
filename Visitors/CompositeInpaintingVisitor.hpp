@@ -18,6 +18,7 @@ struct CompositeInpaintingVisitor
   {
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
+      // std::cout << Visitors[visitorId]->VisitorName << " InitializeVertex()" << std::endl;
       Visitors[visitorId]->InitializeVertex(v);
       }
   };
@@ -26,6 +27,7 @@ struct CompositeInpaintingVisitor
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
+      std::cout << Visitors[visitorId]->VisitorName << " DiscoverVertex()" << std::endl;
       Visitors[visitorId]->DiscoverVertex(v);
       }
   };
@@ -34,6 +36,7 @@ struct CompositeInpaintingVisitor
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
+      std::cout << Visitors[visitorId]->VisitorName << " PotentialMatchMade()" << std::endl;
       Visitors[visitorId]->PotentialMatchMade(a, b);
       }
   };
@@ -42,6 +45,7 @@ struct CompositeInpaintingVisitor
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
+      std::cout << Visitors[visitorId]->VisitorName << " PaintVertex()" << std::endl;
       Visitors[visitorId]->PaintVertex(a, b);
       }
   };
@@ -51,6 +55,7 @@ struct CompositeInpaintingVisitor
     bool acceptAll = true;
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
+      std::cout << Visitors[visitorId]->VisitorName << " AcceptMatch()" << std::endl;
       bool accept = Visitors[visitorId]->AcceptMatch(target, source);
       acceptAll = acceptAll && accept;
       }
@@ -61,6 +66,7 @@ struct CompositeInpaintingVisitor
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
+      std::cout << Visitors[visitorId]->VisitorName << " FinishVertex()" << std::endl;
       Visitors[visitorId]->FinishVertex(v, sourceNode);
       }
   };
@@ -69,12 +75,14 @@ struct CompositeInpaintingVisitor
   {
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
+      std::cout << Visitors[visitorId]->VisitorName << " InpaintingComplete()" << std::endl;
       Visitors[visitorId]->InpaintingComplete();
       }
   };
 
   void AddVisitor(InpaintingVisitorParent<TGraph>* vis)
   {
+    std::cout << "Adding " << vis->VisitorName << std::endl;
     this->Visitors.push_back(vis);
   }
 

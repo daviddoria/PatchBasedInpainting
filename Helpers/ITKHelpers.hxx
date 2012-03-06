@@ -564,6 +564,14 @@ template<typename TImage>
 void ExtractChannels(const TImage* const image, const std::vector<unsigned int> channels,
                     TImage* const output)
 {
+  if(output->GetNumberOfComponentsPerPixel() != channels.size())
+  {
+    std::stringstream ss;
+    ss << "ExtractChannels: 'output' must be presized. output has " << output->GetNumberOfComponentsPerPixel()
+       << " components and there are " << channels.size() << " channels";
+    throw std::runtime_error(ss.str());
+  }
+  
   if(channels.size() == 0)
   {
     throw std::runtime_error("Cannot extract 0 channels!");
@@ -582,10 +590,6 @@ void ExtractChannels(const TImage* const image, const std::vector<unsigned int> 
   typedef itk::Image<float, 2> ScalarImageType;
   typedef itk::VectorIndexSelectionCastImageFilter<TImage, ScalarImageType> IndexSelectionType;
 
-  output->SetNumberOfComponentsPerPixel(channels.size());
-  output->SetRegions(image->GetLargestPossibleRegion());
-  output->Allocate();
-  
   for(unsigned int channelIndex = 0; channelIndex < channels.size(); ++channelIndex)
   {
     std::cout << "Extracting channel " << channels[channelIndex] << " and setting channel " << channelIndex << std::endl;
@@ -1081,7 +1085,14 @@ template<typename TVectorImage, typename TScalarImage>
 void SetChannel(TVectorImage* const vectorImage, const unsigned int channel, const TScalarImage* const image)
 {
   assert(vectorImage->GetLargestPossibleRegion() == image->GetLargestPossibleRegion());
-  
+
+  if(channel > vectorImage->GetNumberOfComponentsPerPixel() - 1)
+  {
+    std::stringstream ss;
+    ss << "SetChannel: Trying to set channel " << channel << " but vectorImage only has "
+       << vectorImage->GetNumberOfComponentsPerPixel() << " channels.";
+    throw std::runtime_error(ss.str());
+  }
   itk::ImageRegionConstIterator<TScalarImage> inputIterator(image, image->GetLargestPossibleRegion());
   itk::ImageRegionIterator<TVectorImage> outputIterator(vectorImage, vectorImage->GetLargestPossibleRegion());
 

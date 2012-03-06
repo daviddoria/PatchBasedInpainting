@@ -13,6 +13,8 @@
 template <typename TGraph>
 struct InpaintingVisitorParent
 {
+  InpaintingVisitorParent(const std::string& visitorName = "InpaintingVisitorParent") : VisitorName(visitorName) {}
+  
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
   // Const functions
@@ -31,6 +33,7 @@ struct InpaintingVisitorParent
 
   virtual void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode) = 0;
 
+  std::string VisitorName;
 }; // InpaintingVisitorParent
 
 #endif

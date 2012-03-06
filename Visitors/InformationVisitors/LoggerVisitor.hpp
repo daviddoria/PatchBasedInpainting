@@ -24,7 +24,9 @@ struct LoggerVisitor : public InpaintingVisitorParent<TGraph>
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
   std::ofstream OutputStream;
-  LoggerVisitor(const std::string& filename) : OutputStream(filename.c_str())
+
+  LoggerVisitor(const std::string& filename, const std::string& visitorName = "LoggerVisitor") :
+  InpaintingVisitorParent<TGraph>(visitorName), OutputStream(filename.c_str())
   {
 
   }

@@ -15,7 +15,8 @@ struct ImagePatchDifference
 {
   PixelDifferenceFunctorType PixelDifferenceFunctor;
   
-  ImagePatchDifference(PixelDifferenceFunctorType pixelDifferenceFunctor = PixelDifferenceFunctorType()) : PixelDifferenceFunctor(pixelDifferenceFunctor) {}
+  ImagePatchDifference(PixelDifferenceFunctorType pixelDifferenceFunctor = PixelDifferenceFunctorType()) :
+  PixelDifferenceFunctor(pixelDifferenceFunctor) {}
   
   float operator()(const ImagePatchType& a, const ImagePatchType& b) const
   {

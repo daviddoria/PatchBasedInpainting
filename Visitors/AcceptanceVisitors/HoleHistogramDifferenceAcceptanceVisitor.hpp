@@ -29,10 +29,15 @@ struct HoleHistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent
 
   float DifferenceThreshold;
 
+  std::vector<float> Mins;
+  std::vector<float> Maxs;
+  
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  HoleHistogramDifferenceAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, const float differenceThreshold = 100.0f) :
-  Image(image), MaskImage(mask), HalfWidth(halfWidth), DifferenceThreshold(differenceThreshold)
+  HoleHistogramDifferenceAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth,
+                                           const std::vector<float>& mins, const std::vector<float>& maxs,
+                                           const float differenceThreshold = 100.0f) :
+  Image(image), MaskImage(mask), HalfWidth(halfWidth), Mins(mins), Maxs(maxs), DifferenceThreshold(differenceThreshold)
   {
 
   }
@@ -78,8 +83,8 @@ struct HoleHistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent
         sourceValues[pixelId] = sourceRegionPixels[pixelId][component];
       }
 
-      std::vector<float> targetHistogram = Histogram::ScalarHistogram(targetValues, 20);
-      std::vector<float> sourceHistogram = Histogram::ScalarHistogram(sourceValues, 20);
+      std::vector<float> targetHistogram = Histogram::ScalarHistogram(targetValues, 20, Mins[component], Maxs[component]);
+      std::vector<float> sourceHistogram = Histogram::ScalarHistogram(sourceValues, 20, Mins[component], Maxs[component]);
 
       // We normalize the histograms because the magnitude of the histogram difference should not change based on the number of pixels that were in the valid region of the patches.
       Helpers::NormalizeVector(targetHistogram);

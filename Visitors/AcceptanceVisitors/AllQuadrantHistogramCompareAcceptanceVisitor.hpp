@@ -16,15 +16,19 @@ struct AllQuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorPa
 {
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  // float DifferenceThreshold;
+  // float DifferenceThreshold; // The threshold pased to this visitor is divided by 4 and passed on to each quadrant visitor
 
   typedef QuadrantHistogramCompareAcceptanceVisitor<TGraph, TImage> QuadrantVisitorType;
-  AllQuadrantHistogramCompareAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, const float differenceThreshold = 100.0f) :
+  AllQuadrantHistogramCompareAcceptanceVisitor(TImage* const image, Mask* const mask,
+                                               const unsigned int halfWidth, const std::vector<float>& mins,
+                                               const std::vector<float>& maxs,
+                                               const float differenceThreshold = 100.0f) :
   AcceptanceVisitorParent<TGraph>("AllQuadrantHistogramCompareAcceptanceVisitor")
   {
     for(unsigned int quadrant = 0; quadrant < 4; ++quadrant)
     {
-      QuadrantVisitorType* quadrantHistogramCompareAcceptanceVisitor = new QuadrantVisitorType(image, mask, halfWidth, quadrant, differenceThreshold/4.0f);
+      QuadrantVisitorType* quadrantHistogramCompareAcceptanceVisitor =
+          new QuadrantVisitorType(image, mask, halfWidth, quadrant, mins, maxs, differenceThreshold/4.0f);
       QuadrantVisitors.push_back(quadrantHistogramCompareAcceptanceVisitor);
     }
   };
@@ -43,7 +47,8 @@ struct AllQuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorPa
       {
       float quadrantEnergy = 0.0f;
       bool accept = QuadrantVisitors[visitorId]->AcceptMatch(target, source, quadrantEnergy);
-      std::cout << "AllQuadrantHistogramCompareAcceptanceVisitor: Quadrant " << visitorId << " energy: " << quadrantEnergy << std::endl;
+      std::cout << "AllQuadrantHistogramCompareAcceptanceVisitor: Quadrant " << visitorId
+                << " energy: " << quadrantEnergy << std::endl;
       energy += quadrantEnergy;
       acceptAll = acceptAll && accept;
       }

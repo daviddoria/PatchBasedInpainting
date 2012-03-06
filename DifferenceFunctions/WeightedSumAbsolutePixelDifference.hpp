@@ -32,7 +32,7 @@ struct WeightedSumAbsolutePixelDifference
     }
     
     float pixelDifference = 0.0f;
-    for(unsigned int component = 0; component < ITKHelpers::length(a); ++component)
+    for(unsigned int component = 0; component < length(a); ++component)
       {
       float componentDifference = Weights[component] * fabs(index(a,component) - index(b,component));
       pixelDifference += componentDifference;

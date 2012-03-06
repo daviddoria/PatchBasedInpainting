@@ -536,6 +536,7 @@ void StackImages(const itk::VectorImage<float, 2>* const image1, const itk::Vect
                  itk::VectorImage<float, 2>* const output)
 {
   typedef itk::VectorImage<float, 2> VectorImageType;
+  typedef itk::Image<float, 2> ScalarImageType;
   
   if(image1->GetLargestPossibleRegion() != image2->GetLargestPossibleRegion())
     {
@@ -561,28 +562,69 @@ void StackImages(const itk::VectorImage<float, 2>* const image1, const itk::Vect
   output->SetRegions(region);
   output->Allocate();
 
-  while(!image1Iterator.IsAtEnd())
+  for(unsigned int i = 0; i < image1->GetNumberOfComponentsPerPixel(); i++)
     {
-    VectorImageType::PixelType pixel;
-    pixel.SetSize(newPixelLength);
-    //std::cout << "Pixel has " << pixel.GetSize() << " components." << std::endl;
-
-    for(unsigned int i = 0; i < image1->GetNumberOfComponentsPerPixel(); i++)
-      {
-      pixel[i] = image1Iterator.Get()[i];
-      }
-
-    for(unsigned int i = 0; i < image2->GetNumberOfComponentsPerPixel(); i++)
-      {
-      pixel[image1->GetNumberOfComponentsPerPixel() + i] = image2Iterator.Get()[i];
-      }
-
-    outputIterator.Set(pixel);
-
-    ++image1Iterator;
-    ++image2Iterator;
-    ++outputIterator;
+    ScalarImageType::Pointer channel = ScalarImageType::New();
+    channel->SetRegions(region);
+    channel->Allocate();
+  
+    ExtractChannel(image1, i, channel.GetPointer());
+    SetChannel(output, i, channel.GetPointer());
     }
+
+  for(unsigned int i = 0; i < image2->GetNumberOfComponentsPerPixel(); i++)
+    {
+    ScalarImageType::Pointer channel = ScalarImageType::New();
+    channel->SetRegions(region);
+    channel->Allocate();
+
+    ExtractChannel(image2, i, channel.GetPointer());
+    SetChannel(output, image1->GetNumberOfComponentsPerPixel() + i, channel.GetPointer());
+    }
+
+}
+
+std::vector<float> MinValues(const itk::VectorImage<float, 2>* const image)
+{
+  std::vector<float> mins(image->GetNumberOfComponentsPerPixel());
+  
+  for(unsigned int channel = 0; channel < image->GetNumberOfComponentsPerPixel(); ++channel)
+  {
+    typedef itk::VectorImage<float, 2> VectorImageType;
+    typedef itk::Image<float, 2> ScalarImageType;
+
+    typedef itk::VectorIndexSelectionCastImageFilter<VectorImageType, ScalarImageType > IndexSelectionType;
+    typename IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+    indexSelectionFilter->SetIndex(channel);
+    indexSelectionFilter->SetInput(image);
+    indexSelectionFilter->Update();
+
+    mins[channel] = MinValue(indexSelectionFilter->GetOutput());
+  }
+
+  return mins;
+}
+
+
+std::vector<float> MaxValues(const itk::VectorImage<float, 2>* const image)
+{
+  std::vector<float> maxs(image->GetNumberOfComponentsPerPixel());
+
+  for(unsigned int channel = 0; channel < image->GetNumberOfComponentsPerPixel(); ++channel)
+  {
+    typedef itk::VectorImage<float, 2> VectorImageType;
+    typedef itk::Image<float, 2> ScalarImageType;
+
+    typedef itk::VectorIndexSelectionCastImageFilter<VectorImageType, ScalarImageType > IndexSelectionType;
+    typename IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+    indexSelectionFilter->SetIndex(channel);
+    indexSelectionFilter->SetInput(image);
+    indexSelectionFilter->Update();
+
+    maxs[channel] = MaxValue(indexSelectionFilter->GetOutput());
+  }
+
+  return maxs;
 }
 
 } // end namespace

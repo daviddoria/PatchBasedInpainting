@@ -29,10 +29,15 @@ struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGr
 
   float DifferenceThreshold;
 
+  std::vector<float> Mins;
+  std::vector<float> Maxs;
+  
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  HistogramDifferenceAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, const float differenceThreshold = 100.0f) :
-  Image(image), MaskImage(mask), HalfWidth(halfWidth), DifferenceThreshold(differenceThreshold)
+  HistogramDifferenceAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth,
+                                       const std::vector<float>& mins, const std::vector<float>& maxs,
+                                       const float differenceThreshold = 100.0f) :
+  Image(image), MaskImage(mask), HalfWidth(halfWidth), Mins(mins), Maxs(maxs), DifferenceThreshold(differenceThreshold)
   {
 
   }
@@ -52,7 +57,8 @@ struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGr
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, HalfWidth);
 
     // Get the pixels to use in the target region
-    std::vector<typename TImage::PixelType> validPixelsTargetRegion = MaskOperations::GetValidPixelsInRegion(Image, MaskImage, targetRegion);
+    std::vector<typename TImage::PixelType> validPixelsTargetRegion =
+             MaskOperations::GetValidPixelsInRegion(Image, MaskImage, targetRegion);
 
     // Get the pixels to use in the source region
     std::vector<itk::Offset<2> > validOffsets = MaskImage->GetValidOffsetsInRegion(targetRegion);
@@ -72,12 +78,12 @@ struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGr
       
       for(unsigned int pixelId = 0; pixelId < numberOfPixels; ++pixelId)
       {
-	targetValues[pixelId] = validPixelsTargetRegion[pixelId][component];
-	sourceValues[pixelId] = validPixelsSourceRegion[pixelId][component];
+        targetValues[pixelId] = validPixelsTargetRegion[pixelId][component];
+        sourceValues[pixelId] = validPixelsSourceRegion[pixelId][component];
       }
 
-      std::vector<float> targetHistogram = Histogram::ScalarHistogram(targetValues, 20);
-      std::vector<float> sourceHistogram = Histogram::ScalarHistogram(sourceValues, 20);
+      std::vector<float> targetHistogram = Histogram::ScalarHistogram(targetValues, 20, Mins[component], Maxs[component]);
+      std::vector<float> sourceHistogram = Histogram::ScalarHistogram(sourceValues, 20, Mins[component], Maxs[component]);
 
       // We normalize the histograms because the magnitude of the histogram difference should not change based on the number of pixels that were in the valid region of the patches.
       Helpers::NormalizeVector(targetHistogram);

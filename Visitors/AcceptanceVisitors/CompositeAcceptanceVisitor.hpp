@@ -21,6 +21,7 @@ struct CompositeAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
     // If any of these visitors passes, automatically accept the pair.
     for(unsigned int visitorId = 0; visitorId < OverrideVisitors.size(); ++visitorId)
       {
+      std::cout << "Running override visitor " << OverrideVisitors[visitorId]->VisitorName << " AcceptMatch()" << std::endl;
       float energy;
       acceptOverride |= OverrideVisitors[visitorId]->AcceptMatch(target, source, energy);
       }
@@ -36,6 +37,8 @@ struct CompositeAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
     bool acceptAll = true;
     for(unsigned int visitorId = 0; visitorId < RequiredPassVisitors.size(); ++visitorId)
       {
+      std::cout << "Running required pass visitor " << RequiredPassVisitors[visitorId]->VisitorName
+                << " AcceptMatch()" << std::endl;
       float energy;
       bool accept = RequiredPassVisitors[visitorId]->AcceptMatch(target, source, energy);
       acceptAll = acceptAll && accept;
