@@ -19,7 +19,8 @@
 #ifndef ITKVTKHelpers_H
 #define ITKVTKHelpers_H
 
-#include "itkSize.h"
+// Custom
+#include "ImageProcessing/Mask.h"
 
 // VTK
 class vtkImageData;
@@ -30,6 +31,7 @@ class vtkStructuredGrid;
 #include "itkCovariantVector.h"
 #include "itkImage.h"
 #include "itkImageRegion.h"
+#include "itkSize.h"
 #include "itkVectorImage.h"
 
 namespace ITKVTKHelpers
@@ -53,13 +55,17 @@ void CreateScalarImageFromStructuredGridArray(vtkStructuredGrid* const structure
 // Set the center pixel of a 'region' in an 'image' to the specified 'color'. The region is assumed to have odd dimensions.
 void SetRegionCenterPixel(vtkImageData* const image, const itk::ImageRegion<2>& region, const unsigned char color[3]);
 
-// This function simply drives ITKImagetoVTKRGBImage or ITKImagetoVTKMagnitudeImage based on the number of components of the input.
+/** This function simply drives ITKImagetoVTKRGBImage or ITKImagetoVTKMagnitudeImage based on
+  *the number of components of the input. */
 void ITKVectorImageToVTKImageFromDimension(const FloatVectorImageType* const image, vtkImageData* const outputImage);
 
-// These functions create a VTK image from a multidimensional ITK image.
+/** These functions create a VTK image from a multidimensional ITK image. */
 void ITKImageToVTKRGBImage(const FloatVectorImageType* const image, vtkImageData* const outputImage);
 void ITKImageToVTKMagnitudeImage(const FloatVectorImageType* const image, vtkImageData* const outputImage);
-void ITKImageChannelToVTKImage(const FloatVectorImageType* const image, const unsigned int channel, vtkImageData* const outputImage);
+void ITKImageChannelToVTKImage(const FloatVectorImageType* const image, const unsigned int channel,
+                               vtkImageData* const outputImage);
+void ITKImageToVTKImageMasked(const FloatVectorImageType* const image, const Mask* const mask,
+                              vtkImageData* const outputImage, const unsigned char maskColor[3]);
 
 // Create a VTK image filled with values representing vectors. (There is no concept of a "vector image" in VTK).
 void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType* image, vtkImageData* outputImage);

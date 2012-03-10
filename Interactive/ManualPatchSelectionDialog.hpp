@@ -42,6 +42,7 @@ ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const ima
                                                                const itk::ImageRegion<2>& targetRegion)
 : Image(image), MaskImage(mask), TargetRegion(targetRegion)
 {
+  // Allow the type itkImageRegion to be used in signals/slots.
   qRegisterMetaType<itk::ImageRegion<2> >("itkImageRegion");
 
   this->setupUi(this);
@@ -93,8 +94,10 @@ template <typename TImage>
 void ManualPatchSelectionDialog<TImage>::slot_UpdateImage()
 {
   std::cout << "Update image." << std::endl;
-  ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
-
+  //ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
+  unsigned char green[3] = {0, 255, 0};
+  ITKVTKHelpers::ITKImageToVTKImageMasked(this->Image, this->MaskImage,
+                                          this->ImageLayer.ImageData, green);
   int dims[3];
   this->ImageLayer.ImageData->GetDimensions(dims);
   if(dims[0] != ImageDimension[0] || dims[1] != ImageDimension[1] || dims[2] != ImageDimension[2])
@@ -126,14 +129,6 @@ void ManualPatchSelectionDialog<TImage>::SetupScenes()
   this->ResultPatchScene = new QGraphicsScene();
   this->ResultPatchScene->setBackgroundBrush(brush);
   this->gfxResult->setScene(ResultPatchScene);
-
-  this->MaskedSourcePatchScene = new QGraphicsScene();
-  this->MaskedSourcePatchScene->setBackgroundBrush(brush);
-  this->gfxMaskedSource->setScene(MaskedSourcePatchScene);
-
-  this->MaskedTargetPatchScene = new QGraphicsScene();
-  this->MaskedTargetPatchScene->setBackgroundBrush(brush);
-  this->gfxMaskedTarget->setScene(MaskedTargetPatchScene);
 }
 
 template <typename TImage>
@@ -143,14 +138,27 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateSource(const itk::ImageRegio
   // This function needs the targetRegion because this is the region of the Mask that is used to mask the source patch.
   // std::cout << "Update source." << std::endl;
 
-  QImage sourceImage = HelpersQt::GetQImageColor(Image, sourceRegion);
-  QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
+  if(MaskImage->CountHolePixels(sourceRegion) > 0)
+  {
+    std::cerr << "The source patch must not have any hole pixels!" << std::endl;
+    btnAccept->setVisible(false);
+  }
+  else
+  {
+    btnAccept->setVisible(true);
+  }
+
+  QImage maskedSourceImage = HelpersQt::GetQImageMasked(Image, sourceRegion, MaskImage, sourceRegion);
+  QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(maskedSourceImage));
   gfxSource->fitInView(item);
 
-  QImage maskedSourceImage = HelpersQt::GetQImageMasked(Image, sourceRegion, MaskImage, targetRegion);
-  QGraphicsPixmapItem* maskedItem = this->MaskedSourcePatchScene->addPixmap(QPixmap::fromImage(maskedSourceImage));
-  gfxMaskedSource->fitInView(maskedItem);
+  // Refresh the image
+  //ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
+  unsigned char green[3] = {0, 255, 0};
+  ITKVTKHelpers::ITKImageToVTKImageMasked(this->Image, this->MaskImage,
+                                          this->ImageLayer.ImageData, green);
 
+  // Outline the source patch
   unsigned char blue[3] = {0, 0, 255};
   ITKVTKHelpers::OutlineRegion(this->ImageLayer.ImageData, sourceRegion, blue);
 
@@ -167,15 +175,10 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateTarget(const itk::ImageRegio
 
   this->qvtkWidget->GetRenderWindow()->Render();
 
-  // Target patch
-  QImage targetImage = HelpersQt::GetQImageColor(Image, region);
-  QGraphicsPixmapItem* item = this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
-  gfxTarget->fitInView(item);
-
   // Masked target patch
   QImage maskedTargetImage = HelpersQt::GetQImageMasked(Image, MaskImage, region);
-  QGraphicsPixmapItem* maskedItem = this->MaskedTargetPatchScene->addPixmap(QPixmap::fromImage(maskedTargetImage));
-  gfxMaskedTarget->fitInView(maskedItem);
+  QGraphicsPixmapItem* maskedItem = this->TargetPatchScene->addPixmap(QPixmap::fromImage(maskedTargetImage));
+  gfxTarget->fitInView(maskedItem);
 }
 
 template <typename TImage>
@@ -186,42 +189,51 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
 
   QImage qimage(sourceRegion.GetSize()[0], sourceRegion.GetSize()[1], QImage::Format_RGB888);
 
-  itk::ImageRegionIterator<TImage> sourceIterator(Image, sourceRegion);
-  itk::ImageRegionIterator<TImage> targetIterator(Image, targetRegion);
-  itk::ImageRegionIterator<Mask> maskIterator(MaskImage, targetRegion);
+  if(MaskImage->CountHolePixels(sourceRegion) > 0)
+  {
+    //std::cerr << "The source patch must not have any hole pixels!" << std::endl;
+    //btnAccept->setVisible(false);
+    qimage.fill(Qt::green);
+  }
+  else
+  {
+    itk::ImageRegionIterator<TImage> sourceIterator(Image, sourceRegion);
+    itk::ImageRegionIterator<TImage> targetIterator(Image, targetRegion);
+    itk::ImageRegionIterator<Mask> maskIterator(MaskImage, targetRegion);
 
-  typename TImage::Pointer resultPatch = TImage::New();
-  resultPatch->SetNumberOfComponentsPerPixel(Image->GetNumberOfComponentsPerPixel());
-  itk::ImageRegion<2> resultPatchRegion;
-  resultPatchRegion.SetSize(sourceRegion.GetSize());
-  resultPatch->SetRegions(resultPatchRegion);
-  resultPatch->Allocate();
+    typename TImage::Pointer resultPatch = TImage::New();
+    resultPatch->SetNumberOfComponentsPerPixel(Image->GetNumberOfComponentsPerPixel());
+    itk::ImageRegion<2> resultPatchRegion;
+    resultPatchRegion.SetSize(sourceRegion.GetSize());
+    resultPatch->SetRegions(resultPatchRegion);
+    resultPatch->Allocate();
 
-  while(!maskIterator.IsAtEnd())
-    {
-    FloatVectorImageType::PixelType pixel;
-
-    if(MaskImage->IsHole(maskIterator.GetIndex()))
+    while(!maskIterator.IsAtEnd())
       {
-      pixel = sourceIterator.Get();
-      }
-    else
-      {
-      pixel = targetIterator.Get();
-      }
+      FloatVectorImageType::PixelType pixel;
 
-    itk::Offset<2> offset = sourceIterator.GetIndex() - sourceRegion.GetIndex();
-    itk::Index<2> offsetIndex;
-    offsetIndex[0] = offset[0];
-    offsetIndex[1] = offset[1];
-    resultPatch->SetPixel(offsetIndex, pixel);
+      if(MaskImage->IsHole(maskIterator.GetIndex()))
+        {
+        pixel = sourceIterator.Get();
+        }
+      else
+        {
+        pixel = targetIterator.Get();
+        }
 
-    ++sourceIterator;
-    ++targetIterator;
-    ++maskIterator;
-    }
+      itk::Offset<2> offset = sourceIterator.GetIndex() - sourceRegion.GetIndex();
+      itk::Index<2> offsetIndex;
+      offsetIndex[0] = offset[0];
+      offsetIndex[1] = offset[1];
+      resultPatch->SetPixel(offsetIndex, pixel);
 
-  qimage = HelpersQt::GetQImageColor(resultPatch.GetPointer(), resultPatch->GetLargestPossibleRegion());
+      ++sourceIterator;
+      ++targetIterator;
+      ++maskIterator;
+      } // end iterator loop
+
+    qimage = HelpersQt::GetQImageColor(resultPatch.GetPointer(), resultPatch->GetLargestPossibleRegion());
+  } // end else
 
   this->ResultPatchScene->clear();
   QGraphicsPixmapItem* item = this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));

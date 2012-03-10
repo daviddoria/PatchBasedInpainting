@@ -20,6 +20,7 @@
 #define HELPERS_QT_H
 
 // Qt
+#include <QColor>
 #include <QImage>
 #include <QMetaType>
 class QGraphicsView;
@@ -47,6 +48,9 @@ QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx);
 
 /** Change the center pixel (in-place) to the specified 'color' */
 void HighlightCenterPixel(QImage& qimage, const QColor& color);
+
+/** Set all of the pixels in 'qimage' to 'color' */
+void SetImageToConstant(QImage& qimage, const QColor& color);
 
 ////////////////////////////////////
 ///////// Function templates (defined in HelpersQt.hxx) /////////

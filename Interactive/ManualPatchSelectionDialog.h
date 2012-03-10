@@ -71,7 +71,10 @@ public:
    */
   void slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
 
+  /** Update the target patch image. */
   void slot_UpdateTarget(const itk::ImageRegion<2>& region);
+
+  /** Update the result patch image. */
   void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
 
   void on_btnAccept_clicked();
@@ -102,16 +105,12 @@ private:
   QGraphicsScene* SourcePatchScene;
   QGraphicsScene* TargetPatchScene;
   QGraphicsScene* ResultPatchScene;
-  QGraphicsScene* MaskedSourcePatchScene;
-  QGraphicsScene* MaskedTargetPatchScene;
 
   /** The color to use as the background of the QGraphicsScenes */
   QColor SceneBackground;
 
   /** Connect all signals and slots. */
   void SetupConnections();
-
-  //ImageCamera* Camera;
 
   /** This variable is used to track whether or not the image size changed between this refresh and the last refresh.
    * Typically it is simply used to determine if ResetCamera should be called before rendering. We typically do not

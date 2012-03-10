@@ -66,6 +66,12 @@ QImage FitToGraphicsView(const QImage qimage, const QGraphicsView* gfx)
     }
 }
 
+void SetImageToConstant(QImage& qimage, const QColor& color)
+{
+  // qimage.fill(color); // Works in Qt 4.8
+  qimage.fill(color.rgb());
+}
+
 void HighlightCenterPixel(QImage& qimage, const QColor& color)
 {
   qimage.setPixel(qimage.size().width()/2, qimage.size().height()/2, color.rgb());
