@@ -584,6 +584,49 @@ void StackImages(const itk::VectorImage<float, 2>* const image1, const itk::Vect
 
 }
 
+std::vector<float> MinValues(const itk::VectorImage<float, 2>* const image, const itk::ImageRegion<2>& region)
+{
+  std::vector<float> mins(image->GetNumberOfComponentsPerPixel());
+
+  for(unsigned int channel = 0; channel < image->GetNumberOfComponentsPerPixel(); ++channel)
+  {
+    typedef itk::VectorImage<float, 2> VectorImageType;
+    typedef itk::Image<float, 2> ScalarImageType;
+
+    typedef itk::VectorIndexSelectionCastImageFilter<VectorImageType, ScalarImageType > IndexSelectionType;
+    typename IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+    indexSelectionFilter->SetIndex(channel);
+    indexSelectionFilter->SetInput(image);
+    indexSelectionFilter->Update();
+
+    mins[channel] = MinValue(indexSelectionFilter->GetOutput(), region);
+  }
+
+  return mins;
+}
+
+
+std::vector<float> MaxValues(const itk::VectorImage<float, 2>* const image, const itk::ImageRegion<2>& region)
+{
+  std::vector<float> maxs(image->GetNumberOfComponentsPerPixel());
+
+  for(unsigned int channel = 0; channel < image->GetNumberOfComponentsPerPixel(); ++channel)
+  {
+    typedef itk::VectorImage<float, 2> VectorImageType;
+    typedef itk::Image<float, 2> ScalarImageType;
+
+    typedef itk::VectorIndexSelectionCastImageFilter<VectorImageType, ScalarImageType > IndexSelectionType;
+    typename IndexSelectionType::Pointer indexSelectionFilter = IndexSelectionType::New();
+    indexSelectionFilter->SetIndex(channel);
+    indexSelectionFilter->SetInput(image);
+    indexSelectionFilter->Update();
+
+    maxs[channel] = MaxValue(indexSelectionFilter->GetOutput(), region);
+  }
+
+  return maxs;
+}
+
 std::vector<float> MinValues(const itk::VectorImage<float, 2>* const image)
 {
   std::vector<float> mins(image->GetNumberOfComponentsPerPixel());

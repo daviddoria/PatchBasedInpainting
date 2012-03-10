@@ -114,19 +114,29 @@ itk::ImageBase<2>::Pointer CreateImageWithSameType(const itk::ImageBase<2>* inpu
 
 // itk::VariableLengthVector<float> Average(const std::vector<itk::VariableLengthVector<float> >& v);
 
-std::vector<itk::Index<2> > OffsetsToIndices(const std::vector<itk::Offset<2> >& offsets, const itk::Index<2>& index);
+std::vector<itk::Index<2> > OffsetsToIndices(const std::vector<itk::Offset<2> >& offsets,
+                                             const itk::Index<2>& index);
 
 std::vector<itk::Index<2> > OffsetsToIndices(const std::vector<itk::Offset<2> >& offsets);
 
-std::vector<itk::Offset<2> > IndicesToOffsets(const std::vector<itk::Index<2> >& indices, const itk::Index<2>& index);
+std::vector<itk::Offset<2> > IndicesToOffsets(const std::vector<itk::Index<2> >& indices,
+                                              const itk::Index<2>& index);
 
 std::vector<itk::Index<2> > GetBoundaryPixels(const itk::ImageRegion<2>& region);
 
 void StackImages(const itk::VectorImage<float, 2>* const image1, const itk::VectorImage<float, 2>* const image2,
                  itk::VectorImage<float, 2>* const output);
 
+/** Compute the min value of each channel of 'image' in 'region'. */
+std::vector<float> MinValues(const itk::VectorImage<float, 2>* const image, const itk::ImageRegion<2>& region);
+
+/** Compute the max value of each channel of 'image' in 'region'. */
+std::vector<float> MaxValues(const itk::VectorImage<float, 2>* const image, const itk::ImageRegion<2>& region);
+
+/** Compute the min value of each channel of the image. */
 std::vector<float> MinValues(const itk::VectorImage<float, 2>* const image);
 
+/** Compute the max value of each channel of the image. */
 std::vector<float> MaxValues(const itk::VectorImage<float, 2>* const image);
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -136,7 +146,8 @@ std::vector<float> MaxValues(const itk::VectorImage<float, 2>* const image);
 
 /** Determine if any of the 8 neighbors pixels has the specified value. */
 template<typename TImage>
-bool HasNeighborWithValue(const itk::Index<2>& pixel, const TImage* const image, const typename TImage::PixelType& value);
+bool HasNeighborWithValue(const itk::Index<2>& pixel, const TImage* const image,
+                          const typename TImage::PixelType& value);
 
 /** Blur all channels of an image. */
 template<typename TVectorImage>
@@ -169,14 +180,29 @@ void CopyRegion(const TImage* const sourceImage, TImage* const targetImage, cons
                const itk::ImageRegion<2>& targetRegion);
 
 template <class TImage>
-void CopySelfRegion(TImage* const image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
+void CopySelfRegion(TImage* const image, const itk::ImageRegion<2>& sourceRegion,
+                    const itk::ImageRegion<2>& targetRegion);
 
 template<typename TImage>
-void ReplaceValue(TImage* image, const typename TImage::PixelType& queryValue, const typename TImage::PixelType& replacementValue);
+void ReplaceValue(TImage* image, const typename TImage::PixelType& queryValue,
+                  const typename TImage::PixelType& replacementValue);
 
 template <class TImage>
 void CopyRegionIntoImage(const TImage* const patch, TImage* const image, const itk::Index<2>& position);
 
+/** Find the min value of 'image' in 'region' of a scalar image. */
+template <class TImage>
+float MinValue(const TImage* const image, const itk::ImageRegion<2>& region);
+
+/** Find the max value of 'image' in 'region' of a scalar image. */
+template <class TImage>
+float MaxValue(const TImage* const image, const itk::ImageRegion<2>& region);
+
+/** Find the min value of 'image' of a scalar image. */
+template <class TImage>
+float MinValue(const TImage* const image);
+
+/** Find the max value of 'image' of a scalar image. */
 template <class TImage>
 float MaxValue(const TImage* const image);
 
@@ -184,10 +210,7 @@ template <class T>
 std::vector<T> MaxValuesVectorImage(const itk::VectorImage<T, 2>* const image);
 
 template <class TImage>
-float MaxValueLocation(const TImage* const image);
-
-template <class TImage>
-float MinValue(const TImage* const image);
+itk::Index<2> MaxValueLocation(const TImage* const image);
 
 template <class TImage>
 itk::Index<2> MinValueLocation(const TImage* const image);
@@ -196,11 +219,13 @@ template <typename TInputImage, typename TOutputImage>
 void ColorToGrayscale(const TInputImage* const colorImage, TOutputImage* const grayscaleImage);
 
 template<typename TImage>
-void BlankAndOutlineRegion(TImage* const image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& blankValue,
+void BlankAndOutlineRegion(TImage* const image, const itk::ImageRegion<2>& region,
+                           const typename TImage::PixelType& blankValue,
                            const typename TImage::PixelType& outlineValue);
 
 template<typename TImage>
-void SetRegionToConstant(TImage* const image, const itk::ImageRegion<2>& region, const typename TImage::PixelType& constant);
+void SetRegionToConstant(TImage* const image, const itk::ImageRegion<2>& region,
+                         const typename TImage::PixelType& constant);
 
 template<typename TImage>
 void SetImageToConstant(TImage* const image, const typename TImage::PixelType& constant);
@@ -220,7 +245,9 @@ std::vector<itk::Index<2> > GetNonZeroPixels(const TImage* const image, const it
 template<typename TImage>
 void InitializeImage(TImage* const image, const itk::ImageRegion<2>& region);
 
-/** This function will be used/deduced when called with itk::VectorImage<float,2> image; InitializeImage(image, region) */
+/** This function will be used/deduced when called with
+ * itk::VectorImage<float,2> image; InitializeImage(image, region)
+ */
 template<typename TImage>
 void InitializeImage(const itk::VectorImage<TImage>* const input, const itk::ImageRegion<2>& region);
 
@@ -301,7 +328,8 @@ std::vector<itk::Index<2> > GetPixelsWithValue(const TImage* const image, const 
 
 /** Fetch the values in the image at the specified indices. */
 template<typename TImage>
-std::vector<typename TImage::PixelType> GetPixelValues(const TImage* const image, const std::vector<itk::Index<2> >& indices);
+std::vector<typename TImage::PixelType> GetPixelValues(const TImage* const image,
+                                                       const std::vector<itk::Index<2> >& indices);
 
 /** Compute the average of the values appearing at the specified indices. */
 template<typename TImage>
@@ -354,11 +382,13 @@ typename TypeTraits<T>::LargerComponentType SumOfComponents(const T& v);
 template <typename T>
 typename TypeTraits<T>::LargerComponentType SumOfComponentMagnitudes(const T& v);
 
-/** Return the length of the vector through the same interface that we have defined for std::vector and scalars in Helpers.*/
+/** Return the length of the vector through the same interface that we have defined for
+ * std::vector and scalars in Helpers.*/
 template<typename T>
 unsigned int length(const itk::VariableLengthVector<T>& v);
 
-/** Return the specified component of the vector using the same interface that we have defined for std::vector and scalars in Helpers.*/
+/** Return the specified component of the vector using the same interface that we have
+ * defined for std::vector and scalars in Helpers.*/
 template<typename T>
 T& index(itk::VariableLengthVector<T>& v, size_t i);
 
@@ -382,7 +412,8 @@ void SetChannel(TVectorImage* const vectorImage, const unsigned int channel, con
 
 /** See GetPixelValues */
 // template<typename TImage>
-// std::vector<typename TImage::PixelType> GetPixelsAtIndices(const TImage* const image, const std::vector<itk::Index<2> >& indices);
+// std::vector<typename TImage::PixelType> GetPixelsAtIndices(const TImage* const image,
+//                                                            const std::vector<itk::Index<2> >& indices);
 
 // template<typename TImage>
 // void StackImages(const TImage* const image1, const TImage* const image2, const TImage* const output);

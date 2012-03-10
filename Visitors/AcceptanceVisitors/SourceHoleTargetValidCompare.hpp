@@ -34,10 +34,12 @@ struct SourceHoleTargetValidCompare : public AcceptanceVisitorParent<TGraph>
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  SourceHoleTargetValidCompare(TImage* const image, Mask* const mask, const unsigned int halfWidth, TFunctor functor, const float differenceThreshold = 100,
+  SourceHoleTargetValidCompare(TImage* const image, Mask* const mask, const unsigned int halfWidth,
+                               TFunctor functor, const float differenceThreshold = 100,
     const std::string& visitorName = "SourceHoleTargetValidCompare") :
   AcceptanceVisitorParent<TGraph>(visitorName),
-  Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0), Functor(functor), DifferenceThreshold(differenceThreshold)
+  Image(image), MaskImage(mask), HalfWidth(halfWidth),
+  NumberOfFinishedVertices(0), Functor(functor), DifferenceThreshold(differenceThreshold)
   {
   }
 
@@ -54,15 +56,20 @@ struct SourceHoleTargetValidCompare : public AcceptanceVisitorParent<TGraph>
     std::vector<itk::Offset<2> > validOffsets = MaskImage->GetValidOffsetsInRegion(targetRegion);
     std::vector<itk::Offset<2> > holeOffsets = MaskImage->GetHoleOffsetsInRegion(targetRegion);
 
-    std::vector<itk::Index<2> > validPixelsIndicesTargetRegion = ITKHelpers::OffsetsToIndices(validOffsets, targetRegion.GetIndex());
-    std::vector<typename TImage::PixelType> validPixelsTargetRegion = ITKHelpers::GetPixelValues(Image, validPixelsIndicesTargetRegion);
+    std::vector<itk::Index<2> > validPixelsIndicesTargetRegion =
+           ITKHelpers::OffsetsToIndices(validOffsets, targetRegion.GetIndex());
+    std::vector<typename TImage::PixelType> validPixelsTargetRegion =
+           ITKHelpers::GetPixelValues(Image, validPixelsIndicesTargetRegion);
 
     typename TypeTraits<typename TImage::PixelType>::LargerType targetValue = Functor(validPixelsTargetRegion);
 
-    std::vector<itk::Index<2> > holePixelsIndicesSourceRegion = ITKHelpers::OffsetsToIndices(holeOffsets, sourceRegion.GetIndex());
-    std::vector<typename TImage::PixelType> holePixelsSourceRegion = ITKHelpers::GetPixelValues(Image, holePixelsIndicesSourceRegion);
+    std::vector<itk::Index<2> > holePixelsIndicesSourceRegion =
+           ITKHelpers::OffsetsToIndices(holeOffsets, sourceRegion.GetIndex());
+    std::vector<typename TImage::PixelType> holePixelsSourceRegion =
+           ITKHelpers::GetPixelValues(Image, holePixelsIndicesSourceRegion);
 
-    typename TypeTraits<typename TImage::PixelType>::LargerType sourceValue = Functor(holePixelsSourceRegion);
+    typename TypeTraits<typename TImage::PixelType>::LargerType sourceValue =
+           Functor(holePixelsSourceRegion);
 
     // Compute the difference
     typename TypeTraits<typename TImage::PixelType>::LargerType difference = targetValue - sourceValue;
@@ -72,12 +79,14 @@ struct SourceHoleTargetValidCompare : public AcceptanceVisitorParent<TGraph>
 
     if(computedEnergy < DifferenceThreshold)
       {
-      std::cout << this->VisitorName << ": Match accepted (" << computedEnergy << " is less than " << DifferenceThreshold << ")" << std::endl << std::endl;
+      std::cout << this->VisitorName << ": Match accepted (" << computedEnergy << " is less than "
+                << DifferenceThreshold << ")" << std::endl << std::endl;
       return true;
       }
     else
       {
-      std::cout << this->VisitorName << ": Match rejected (" << computedEnergy << " is greater than " << DifferenceThreshold << ")" << std::endl << std::endl;
+      std::cout << this->VisitorName << ": Match rejected (" << computedEnergy << " is greater than "
+                << DifferenceThreshold << ")" << std::endl << std::endl;
       return false;
       }
   };

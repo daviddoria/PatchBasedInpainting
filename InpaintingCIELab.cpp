@@ -44,6 +44,7 @@
 #include "Visitors/AcceptanceVisitors/HoleHistogramDifferenceAcceptanceVisitor.hpp"
 // #include "Visitors/AcceptanceVisitors/QuadrantHistogramCompareAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/AllQuadrantHistogramCompareAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/CompressedHistogramAcceptanceVisitor.hpp"
 
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
@@ -205,7 +206,8 @@ int main(int argc, char *argv[])
 
   //ImagePatchDescriptorMapType smallImagePatchDescriptorMap(num_vertices(graph), indexMap);
 
-  // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
+  // Create the patch inpainter. The inpainter needs to know the status of each pixel to
+  // determine if they should be inpainted.
   typedef MaskImagePatchInpainter InpainterType;
   MaskImagePatchInpainter patchInpainter(patchHalfWidth, mask);
 
@@ -253,19 +255,23 @@ int main(int argc, char *argv[])
   HoleSizeAcceptanceVisitor<VertexListGraphType> holeSizeAcceptanceVisitor(mask, patchHalfWidth, .15);
   compositeAcceptanceVisitor.AddOverrideVisitor(&holeSizeAcceptanceVisitor);
 
-  std::vector<float> minValues = ITKHelpers::MinValues(image);
-  std::cout << "min values: ";
-  OutputHelpers::OutputVector(minValues);
-  
-  std::vector<float> maxValues = ITKHelpers::MaxValues(image);
-  std::cout << "max values: ";
-  OutputHelpers::OutputVector(maxValues);
+//   std::vector<float> minValues = ITKHelpers::MinValues(image);
+//   std::cout << "min values: ";
+//   OutputHelpers::OutputVector(minValues);
+//   
+//   std::vector<float> maxValues = ITKHelpers::MaxValues(image);
+//   std::cout << "max values: ";
+//   OutputHelpers::OutputVector(maxValues);
 
-  float allowableQuadrantError = 1.0f;
-  AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType>
-               allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth,
-                                                            minValues, maxValues, allowableQuadrantError * 4.0f);
-  compositeAcceptanceVisitor.AddRequiredPassVisitor(&allQuadrantHistogramCompareAcceptanceVisitor);
+//   float allowableQuadrantError = 1.0f;
+//   AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType>
+//                allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth,
+//                                                             minValues, maxValues, allowableQuadrantError * 4.0f);
+//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&allQuadrantHistogramCompareAcceptanceVisitor);
+
+  CompressedHistogramAcceptanceVisitor<VertexListGraphType, ImageType>
+    compressedHistogramAcceptanceVisitor(image, mask, patchHalfWidth, 100.0f);
+  compositeAcceptanceVisitor.AddRequiredPassVisitor(&compressedHistogramAcceptanceVisitor);
 
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
                             CompositeDescriptorVisitorType, CompositeAcceptanceVisitorType, PriorityType,

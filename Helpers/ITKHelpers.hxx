@@ -131,33 +131,46 @@ std::vector<T> MaxValuesVectorImage(const itk::VectorImage<T, 2>* const image)
   return maxValues;
 }
 
-
 template <class TImage>
-float MaxValue(const TImage* const image)
+float MinValue(const TImage* const image, const itk::ImageRegion<2>& region)
 {
+  typedef itk::RegionOfInterestImageFilter<TImage, TImage> ExtractFilterType;
+
+  typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+  extractFilter->SetRegionOfInterest(region);
+  extractFilter->SetInput(image);
+  extractFilter->Update();
+  
   typedef typename itk::MinimumMaximumImageCalculator<TImage>
           ImageCalculatorFilterType;
 
   typename ImageCalculatorFilterType::Pointer imageCalculatorFilter
-          = ImageCalculatorFilterType::New ();
-  imageCalculatorFilter->SetImage(image);
+          = ImageCalculatorFilterType::New();
+  imageCalculatorFilter->SetImage(extractFilter->GetOutput());
   imageCalculatorFilter->Compute();
 
-  return imageCalculatorFilter->GetMaximum();
+  return imageCalculatorFilter->GetMinimum();
 }
 
 template <class TImage>
-float MaxValueLocation(const TImage* const image)
+float MaxValue(const TImage* const image, const itk::ImageRegion<2>& region)
 {
+  typedef itk::RegionOfInterestImageFilter<TImage, TImage> ExtractFilterType;
+
+  typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+  extractFilter->SetRegionOfInterest(region);
+  extractFilter->SetInput(image);
+  extractFilter->Update();
+
   typedef typename itk::MinimumMaximumImageCalculator<TImage>
           ImageCalculatorFilterType;
 
   typename ImageCalculatorFilterType::Pointer imageCalculatorFilter
           = ImageCalculatorFilterType::New ();
-  imageCalculatorFilter->SetImage(image);
+  imageCalculatorFilter->SetImage(extractFilter->GetOutput());
   imageCalculatorFilter->Compute();
 
-  return imageCalculatorFilter->GetIndexOfMaximum();
+  return imageCalculatorFilter->GetMaximum();
 }
 
 template <class TImage>
@@ -175,6 +188,34 @@ float MinValue(const TImage* const image)
 }
 
 template <class TImage>
+float MaxValue(const TImage* const image)
+{
+  typedef typename itk::MinimumMaximumImageCalculator<TImage>
+          ImageCalculatorFilterType;
+
+  typename ImageCalculatorFilterType::Pointer imageCalculatorFilter
+          = ImageCalculatorFilterType::New ();
+  imageCalculatorFilter->SetImage(image);
+  imageCalculatorFilter->Compute();
+
+  return imageCalculatorFilter->GetMaximum();
+}
+
+template <class TImage>
+itk::Index<2> MaxValueLocation(const TImage* const image)
+{
+  typedef typename itk::MinimumMaximumImageCalculator<TImage>
+          ImageCalculatorFilterType;
+
+  typename ImageCalculatorFilterType::Pointer imageCalculatorFilter
+          = ImageCalculatorFilterType::New ();
+  imageCalculatorFilter->SetImage(image);
+  imageCalculatorFilter->Compute();
+
+  return imageCalculatorFilter->GetIndexOfMaximum();
+}
+
+template <class TImage>
 itk::Index<2> MinValueLocation(const TImage* const image)
 {
   typedef typename itk::MinimumMaximumImageCalculator<TImage>
@@ -189,7 +230,8 @@ itk::Index<2> MinValueLocation(const TImage* const image)
 }
 
 template <class TImage>
-void CopyPatchIntoImage(const TImage* const patch, TImage* const image, const Mask* const mask, const itk::Index<2>& position)
+void CopyPatchIntoImage(const TImage* const patch, TImage* const image, const Mask* const mask,
+                        const itk::Index<2>& position)
 {
   // This function copies 'patch' into 'image' centered at 'position' only where the 'mask' is non-zero
 
@@ -203,7 +245,8 @@ void CopyPatchIntoImage(const TImage* const patch, TImage* const image, const Ma
   position[0] -= patch->GetLargestPossibleRegion().GetSize()[0]/2;
   position[1] -= patch->GetLargestPossibleRegion().GetSize()[1]/2;
 
-  itk::ImageRegion<2> region = GetRegionInRadiusAroundPixel(position, patch->GetLargestPossibleRegion().GetSize()[0]/2);
+  itk::ImageRegion<2> region = GetRegionInRadiusAroundPixel(position,
+                                                            patch->GetLargestPossibleRegion().GetSize()[0]/2);
 
   itk::ImageRegionConstIterator<TImage> patchIterator(patch,patch->GetLargestPossibleRegion());
   itk::ImageRegionConstIterator<Mask> maskIterator(mask,region);

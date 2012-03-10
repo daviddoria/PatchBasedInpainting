@@ -1,5 +1,5 @@
-#ifndef HistogramDifferenceAcceptanceVisitor_HPP
-#define HistogramDifferenceAcceptanceVisitor_HPP
+#ifndef CompressedHistogramAcceptanceVisitor_HPP
+#define CompressedHistogramAcceptanceVisitor_HPP
 
 #include <boost/graph/graph_traits.hpp>
 
@@ -20,7 +20,7 @@
 
  */
 template <typename TGraph, typename TImage>
-struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
+struct CompressedHistogramAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
 {
   TImage* Image;
   Mask* MaskImage;
@@ -29,16 +29,12 @@ struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGr
 
   float DifferenceThreshold;
 
-  std::vector<float> Mins;
-  std::vector<float> Maxs;
-  
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  HistogramDifferenceAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth,
-                                       const std::vector<float>& mins, const std::vector<float>& maxs,
+  CompressedHistogramAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth,
                                        const float differenceThreshold = 100.0f) :
-  AcceptanceVisitorParent<TGraph>("HistogramDifferenceAcceptanceVisitor"),
-  Image(image), MaskImage(mask), HalfWidth(halfWidth), Mins(mins), Maxs(maxs),
+  AcceptanceVisitorParent<TGraph>("CompressedHistogramAcceptanceVisitor"),
+  Image(image), MaskImage(mask), HalfWidth(halfWidth),
   DifferenceThreshold(differenceThreshold)
   {
 
@@ -74,22 +70,31 @@ struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGr
     unsigned int numberOfPixels = validPixelsTargetRegion.size();
 
     float totalHistogramDifference = 0.0f;
-    
+
     for(unsigned int component = 0; component < Image->GetNumberOfComponentsPerPixel(); ++component)
     {
       std::vector<float> targetValues(numberOfPixels);
       std::vector<float> sourceValues(numberOfPixels);
-      
+
       for(unsigned int pixelId = 0; pixelId < numberOfPixels; ++pixelId)
       {
         targetValues[pixelId] = validPixelsTargetRegion[pixelId][component];
         sourceValues[pixelId] = validPixelsSourceRegion[pixelId][component];
       }
 
+      float minTargetValue = *(std::min_element(targetValues.begin(), targetValues.end()));
+      float minSourceValue = *(std::min_element(sourceValues.begin(), sourceValues.end()));
+      
+      float maxTargetValue = *(std::max_element(targetValues.begin(), targetValues.end()));
+      float maxSourceValue = *(std::max_element(sourceValues.begin(), sourceValues.end()));
+
+      float minValue = std::min(minTargetValue, minSourceValue);
+      float maxValue = std::max(maxTargetValue, maxSourceValue);
+      
       std::vector<float> targetHistogram = Histogram::ScalarHistogram(targetValues, 20,
-                                                                      Mins[component], Maxs[component]);
+                                                                      minValue, maxValue);
       std::vector<float> sourceHistogram = Histogram::ScalarHistogram(sourceValues, 20,
-                                                                      Mins[component], Maxs[component]);
+                                                                      minValue, maxValue);
 
       // We normalize the histograms because the magnitude of the histogram difference should not
       // change based on the number of pixels that were in the valid region of the patches.
@@ -99,7 +104,7 @@ struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGr
       float channelHistogramDifference = Helpers::VectorSumOfAbsoluteDifferences(targetHistogram, sourceHistogram);
       totalHistogramDifference += channelHistogramDifference;
     }
-    
+
     // Compute the difference
     computedEnergy = totalHistogramDifference;
     std::cout << "HistogramDifferenceAcceptanceVisitor Energy: " << computedEnergy << std::endl;
