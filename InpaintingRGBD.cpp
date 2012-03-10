@@ -82,7 +82,11 @@
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/ImagePatchVectorizedDifference.hpp"
+#include "DifferenceFunctions/ImagePatchVectorizedIndicesDifference.hpp"
 #include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
+#include "DifferenceFunctions/WeightedSumAbsolutePixelDifference.hpp"
+#include "DifferenceFunctions/WeightedFeatureVectorDifference.hpp"
 
 // Inpainting algorithm
 #include "Algorithms/InpaintingAlgorithmWithLocalSearch.hpp"
@@ -156,11 +160,20 @@ int main(int argc, char *argv[])
 
   itk::ImageRegion<2> fullRegion = imageReader->GetOutput()->GetLargestPossibleRegion();
 
+  std::vector<unsigned int> rgbChannels;
+  rgbChannels.push_back(0);
+  rgbChannels.push_back(1);
+  rgbChannels.push_back(2);
+
   FloatVectorImageType::Pointer rgbImage = FloatVectorImageType::New();
-  ITKHelpers::DeepCopy(imageReader->GetOutput(), rgbImage.GetPointer());
+  rgbImage->SetRegions(fullRegion);
+  rgbImage->SetNumberOfComponentsPerPixel(rgbChannels.size());
+  rgbImage->Allocate();
+
+  ITKHelpers::ExtractChannels(imageReader->GetOutput(), rgbChannels, rgbImage.GetPointer());
 
   OutputHelpers::WriteImage(rgbImage.GetPointer(), "rgbImage.mha");
-  
+
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
 
@@ -168,13 +181,35 @@ int main(int argc, char *argv[])
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
 
   // Convert the image from RGB to CIELab
+  FloatVectorImageType::Pointer cielabImage = FloatVectorImageType::New();
+  ITKHelpers::ITKImageToCIELabImage(imageReader->GetOutput(), cielabImage);
+
+  OutputHelpers::WriteImage(cielabImage.GetPointer(), "cielabImage.mha");
+
+  // Extract the extra channels
+  std::vector<unsigned int> channels;
+  channels.push_back(3);
+  channels.push_back(4);
+
+  FloatVectorImageType::Pointer extraChannelsImage = FloatVectorImageType::New();
+  extraChannelsImage->SetRegions(fullRegion);
+  extraChannelsImage->SetNumberOfComponentsPerPixel(channels.size());
+  extraChannelsImage->Allocate();
+
+  ITKHelpers::ExtractChannels(imageReader->GetOutput(), channels, extraChannelsImage.GetPointer());
+
+  OutputHelpers::WriteImage(extraChannelsImage.GetPointer(), "extraChannelsImage.mha");
+
+  std::cout << "extraChannelsImage has " << extraChannelsImage->GetNumberOfComponentsPerPixel()
+            << " components." << std::endl;
+
   ImageType::Pointer image = ImageType::New();
-  ITKHelpers::ITKImageToCIELabImage(imageReader->GetOutput(), image);
-  
-  OutputHelpers::WriteImage(image.GetPointer(), "CIELabImage.mha");
-  
+  ITKHelpers::StackImages(cielabImage.GetPointer(), extraChannelsImage.GetPointer(), image.GetPointer());
+
+  OutputHelpers::WriteImage(image.GetPointer(), "fullImage.mha");
+
   std::cout << "image has " << image->GetNumberOfComponentsPerPixel() << " components." << std::endl;
-    
+
   typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
 
   // Create the graph
@@ -205,7 +240,8 @@ int main(int argc, char *argv[])
 
   //ImagePatchDescriptorMapType smallImagePatchDescriptorMap(num_vertices(graph), indexMap);
 
-  // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
+  // Create the patch inpainter. The inpainter needs to know the status of each
+  // pixel to determine if they should be inpainted.
   typedef MaskImagePatchInpainter InpainterType;
   MaskImagePatchInpainter patchInpainter(patchHalfWidth, mask);
 
@@ -231,12 +267,24 @@ int main(int argc, char *argv[])
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
           ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
+  //ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(cielabImage,
+  //                                                            mask, imagePatchDescriptorMap, patchHalfWidth);
 
-  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> >
-            ImagePatchDifferenceType;
+//   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> >
+//             ImagePatchDifferenceType;
 
-  typedef SumAbsolutePixelDifference<ImageType::PixelType> PixelDifferenceFunctorType;
+  typedef WeightedSumAbsolutePixelDifference<ImageType::PixelType> PixelDifferenceFunctorType;
   PixelDifferenceFunctorType pixelDifferenceFunctor;
+  std::vector<float> weights;
+  weights.push_back(1.0f);
+  weights.push_back(1.0f);
+  weights.push_back(1.0f);
+  float gradientWeight = 500.0f;
+  weights.push_back(gradientWeight);
+  weights.push_back(gradientWeight);
+  pixelDifferenceFunctor.Weights = weights;
+  std::cout << "Weights: ";
+  OutputHelpers::OutputVector(pixelDifferenceFunctor.Weights);
 
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, PixelDifferenceFunctorType >
           ImagePatchDifferenceType;
@@ -256,7 +304,7 @@ int main(int argc, char *argv[])
   std::vector<float> minValues = ITKHelpers::MinValues(image);
   std::cout << "min values: ";
   OutputHelpers::OutputVector(minValues);
-  
+
   std::vector<float> maxValues = ITKHelpers::MaxValues(image);
   std::cout << "max values: ";
   OutputHelpers::OutputVector(maxValues);
@@ -286,7 +334,7 @@ int main(int argc, char *argv[])
 
   PaintPatchVisitor<VertexListGraphType, ImageType> inpaintRGBVisitor(rgbImage.GetPointer(),
                                                                       mask.GetPointer(), patchHalfWidth);
-  
+
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
   CompositeInpaintingVisitorType compositeInpaintingVisitor;
   compositeInpaintingVisitor.AddVisitor(&inpaintingVisitor);
@@ -337,7 +385,7 @@ int main(int argc, char *argv[])
 //   PriorityViewerWidget<PriorityType, BoundaryStatusMapType>
 //             priorityViewerWidget(&priorityFunction, image->GetLargestPossibleRegion().GetSize(), boundaryStatusMap);
 //   priorityViewerWidget.show();
-// 
+//
 //   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &priorityViewerWidget, SLOT(slot_UpdateImage()),
 //                    Qt::BlockingQueuedConnection);
 
@@ -356,8 +404,7 @@ int main(int argc, char *argv[])
                                 VertexListGraphType, CompositeInpaintingVisitorType, BoundaryStatusMapType,
                                 BoundaryNodeQueueType, NeighborhoodSearchType, KNNSearchType, BestSearchType,
                                 ManualSearchType, InpainterType>,
-                                graph, compositeInpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue,
-                                neighborhoodSearch,
+                                graph, compositeInpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, neighborhoodSearch,
                                 knnSearch, bestSearch, boost::ref(manualSearchBest), patchInpainter));
 
   return app.exec();
