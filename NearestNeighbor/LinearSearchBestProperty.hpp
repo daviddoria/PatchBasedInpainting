@@ -2,6 +2,7 @@
 #define LinearSearchBestProperty_HPP
 
 // STL
+#include <iostream>
 #include <limits>
 
 /**

@@ -142,7 +142,7 @@ public:
 
   /** Recolor the hole pixels in 'image' a specified 'color'.*/
   template<typename TImage, typename TColor>
-  void ApplyColorToImage(const TImage* const image, const TColor& color) const;
+  void ApplyColorToImage(TImage* const image, const TColor& color) const;
 
   /** Change the hole pixels in 'image' to a specified 'holeValue'.*/
   template<typename TImage>

@@ -36,7 +36,7 @@ void WritePolyData(vtkPolyData* const polyData, const std::string& fileName)
 
   vtkSmartPointer<vtkXMLPolyDataWriter> polyDataWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
   polyDataWriter->SetFileName(fileName.c_str());
-  polyDataWriter->SetInputConnection(polyData->GetProducerPort());
+  polyDataWriter->SetInputData(polyData);
   polyDataWriter->Write();
 }
 
@@ -51,7 +51,7 @@ void WriteImageData(vtkImageData* const imageData, const std::string& fileName)
 
   vtkSmartPointer<vtkXMLImageDataWriter> writer = vtkSmartPointer<vtkXMLImageDataWriter>::New();
   writer->SetFileName(fileName.c_str());
-  writer->SetInputConnection(imageData->GetProducerPort());
+  writer->SetInputData(imageData);
   writer->Write();
 }
 
@@ -63,7 +63,7 @@ void Write2DVectorImage(const FloatVector2ImageType* const image, const std::str
 
 void Write2DVectorRegion(const FloatVector2ImageType* const image, const itk::ImageRegion<2>& region, const std::string& filename)
 {
-  // This is a separate function than WriteRegion because Paraview requires vectors to b 3D to glyph them.
+  // This is a separate function than WriteRegion because Paraview requires vectors to be 3D to glyph them.
 
   typedef itk::RegionOfInterestImageFilter<FloatVector2ImageType, FloatVector2ImageType> RegionOfInterestImageFilterType;
 

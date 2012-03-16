@@ -26,8 +26,9 @@
 Layer::Layer()
 {
   this->ImageData = vtkSmartPointer<vtkImageData>::New();
-  this->ImageData->SetScalarTypeToUnsignedChar();
-  this->ImageData->SetNumberOfScalarComponents(4); // RGBA
+  //this->ImageData->SetScalarTypeToUnsignedChar();
+  //this->ImageData->SetNumberOfScalarComponents(4); // RGBA
+  this->ImageData->AllocateScalars(VTK_UNSIGNED_CHAR, 4); // RGBA
 
   this->ImageSlice = vtkSmartPointer<vtkImageSlice>::New();
   this->ImageSlice->GetProperty()->SetInterpolationTypeToNearest();
@@ -42,5 +43,5 @@ Layer::Layer()
 void Layer::Setup()
 {
   // This function should be called if ImageData has been replaced.
-  this->ImageSliceMapper->SetInputConnection(this->ImageData->GetProducerPort());
+  this->ImageSliceMapper->SetInputData(this->ImageData);
 }

@@ -1149,4 +1149,89 @@ void SetChannel(TVectorImage* const vectorImage, const unsigned int channel, con
     }
 }
 
+template<typename TPixel>
+void ConvertTo3Channel(const itk::VectorImage<TPixel, 2>* const image,
+                      typename itk::VectorImage<TPixel, 2>* const output)
+{
+  typedef itk::VectorImage<TPixel, 2> ImageType;
+  
+  if(image->GetNumberOfComponentsPerPixel() == 3)
+  {
+    DeepCopy(image,output);
+    return;
+  }
+
+  if(image->GetNumberOfComponentsPerPixel() > 3)
+  {
+    output->SetRegions(image->GetLargestPossibleRegion());
+    output->SetNumberOfComponentsPerPixel(3);
+    output->Allocate();
+    for(unsigned int channel = 0; channel < 3; ++channel)
+      {
+      typename itk::Image<TPixel, 2>::Pointer outputComponent = itk::Image<TPixel, 2>::New();
+      outputComponent->SetRegions(image->GetLargestPossibleRegion());
+      outputComponent->Allocate();
+      ExtractChannel(image, channel, outputComponent.GetPointer());
+
+      SetChannel(output, channel, outputComponent.GetPointer());
+      }
+  }
+
+  if(image->GetNumberOfComponentsPerPixel() == 1)
+  {
+    output->SetRegions(image->GetLargestPossibleRegion());
+    output->SetNumberOfComponentsPerPixel(3);
+    output->Allocate();
+
+    typedef itk::Image<TPixel, 2> ScalarImageType;
+    typename ScalarImageType::Pointer outputComponent = ScalarImageType::New();
+    outputComponent->SetRegions(image->GetLargestPossibleRegion());
+    outputComponent->Allocate();
+    ExtractChannel(image, 0, outputComponent.GetPointer());
+
+    itk::ImageRegionConstIterator<ScalarImageType> inputIterator(outputComponent, outputComponent->GetLargestPossibleRegion());
+    itk::ImageRegionIterator<ImageType> outputIterator(output, output->GetLargestPossibleRegion());
+
+    while(!inputIterator.IsAtEnd())
+      {
+      // Copy the first (only) channel of the input to the output
+      typename ImageType::PixelType pixel = outputIterator.Get();
+      pixel[0] = inputIterator.Get();
+      pixel[1] = inputIterator.Get();
+      pixel[2] = inputIterator.Get();
+      outputIterator.Set(pixel);
+      ++inputIterator;
+      ++outputIterator;
+      }
+  }
+}
+
+template<typename TImage>
+void ScaleTo255(TImage* const image)
+{
+  typedef itk::RescaleIntensityImageFilter<TImage, TImage> RescaleFilterType;
+  typename RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
+  rescaleFilter->SetInput(image);
+  rescaleFilter->SetOutputMinimum(0);
+  rescaleFilter->SetOutputMaximum(255);
+  rescaleFilter->Update();
+
+  DeepCopy(rescaleFilter->GetOutput(), image);
+}
+
+template<typename TImage>
+void ScaleAllChannelsTo255(TImage* const image)
+{
+  typedef itk::Image<typename TImage::InternalPixelType, 2> ScalarImageType;
+  for(unsigned int channel = 0; channel < image->GetNumberOfComponentsPerPixel(); ++channel)
+  {
+    typename ScalarImageType::Pointer outputComponent = ScalarImageType::New();
+    outputComponent->SetRegions(image->GetLargestPossibleRegion());
+    outputComponent->Allocate();
+    ExtractChannel(image, channel, outputComponent.GetPointer());
+    ScaleTo255(outputComponent.GetPointer());
+    SetChannel(image, channel, outputComponent.GetPointer());
+  }
+}
+
 }// end namespace ITKHelpers

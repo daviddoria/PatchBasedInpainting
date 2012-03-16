@@ -29,6 +29,11 @@ Image(image), MaskImage(mask), ValidSelection(false), PatchHalfWidth(patchHalfWi
 {
   this->setupUi(this);
 
+//   if(image->GetNumberOfComponentsPerPixel() == 3)
+//   {
+//     // assume the image is RGB, and use it directly
+//     ITKHelpers::DeepCopy(image, this->Image);
+//   }
   MaskedQueryPatchItem = new QGraphicsPixmapItem;
   this->QueryPatchScene = new QGraphicsScene();
   this->gfxQueryPatch->setScene(QueryPatchScene);

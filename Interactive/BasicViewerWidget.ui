@@ -241,6 +241,16 @@
       </item>
      </layout>
     </item>
+    <item row="1" column="0">
+     <widget class="QCheckBox" name="chkScaleImage">
+      <property name="text">
+       <string>Scale image</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">

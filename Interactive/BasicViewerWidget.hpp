@@ -42,10 +42,28 @@ BasicViewerWidget<TImage>::BasicViewerWidget(TImage* const image, Mask* const ma
   qRegisterMetaType<itk::ImageRegion<2> >("itkImageRegion");
 
   this->setupUi(this);
+  
+  int dims[3];
+  this->ImageLayer.ImageData->GetDimensions(dims);
 
-  this->ImageDimension[0] = 0;
-  this->ImageDimension[1] = 0;
-  this->ImageDimension[2] = 0;
+  // This automatically scales the image if it is not 3 channel
+  typename TImage::Pointer tempImage = TImage::New();
+  ITKHelpers::DeepCopy(image, tempImage.GetPointer());
+  //QColor green(Qt::green);
+  //mask->ApplyColorToImage(tempImage.GetPointer(), green);
+  typename TImage::PixelType zeroPixel(tempImage->GetNumberOfComponentsPerPixel());
+  zeroPixel.Fill(0);
+  mask->ApplyToImage(tempImage.GetPointer(), zeroPixel);
+  ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(tempImage, this->ImageLayer.ImageData);
+  
+//   if(chkScaleImage->isChecked())
+//   {
+//     VTKHelpers::ScaleImage(this->ImageLayer.ImageData);
+//   }
+
+  this->ImageDimension[0] = dims[0];
+  this->ImageDimension[1] = dims[1];
+  this->ImageDimension[2] = dims[2];
 
   SetupScenes();
 
@@ -95,8 +113,24 @@ template <typename TImage>
 void BasicViewerWidget<TImage>::slot_UpdateImage()
 {
   // std::cout << "Update image." << std::endl;
-  ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
+  //ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
 
+  // This automatically scales the image if it is not 3 channel
+  typename TImage::Pointer tempImage = TImage::New();
+  ITKHelpers::DeepCopy(this->Image, tempImage.GetPointer());
+//   QColor green(Qt::green);
+//   this->MaskImage->ApplyColorToImage(tempImage.GetPointer(), green);
+  typename TImage::PixelType zeroPixel(tempImage->GetNumberOfComponentsPerPixel());
+  zeroPixel.Fill(0);
+  this->MaskImage->ApplyToImage(tempImage.GetPointer(), zeroPixel);
+  ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(tempImage, this->ImageLayer.ImageData);
+
+//   if(chkScaleImage->isChecked())
+//   {
+//     std::cout << "scaling..." << std::endl;
+//     VTKHelpers::ScaleImage(this->ImageLayer.ImageData);
+//   }
+  
   int dims[3];
   this->ImageLayer.ImageData->GetDimensions(dims);
   if(dims[0] != ImageDimension[0] || dims[1] != ImageDimension[1] || dims[2] != ImageDimension[2])

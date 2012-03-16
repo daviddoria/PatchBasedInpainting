@@ -59,6 +59,7 @@
 #include "Visitors/InpaintingVisitor.hpp"
 #include "Visitors/ReplayVisitor.hpp"
 #include "Visitors/InformationVisitors/LoggerVisitor.hpp"
+#include "Visitors/InformationVisitors/FillOrderLoggerVisitor.hpp"
 #include "Visitors/CompositeInpaintingVisitor.hpp"
 //#include "Visitors/InpaintPatchVisitor.hpp"
 #include "Visitors/PaintPatchVisitor.hpp"
@@ -270,7 +271,7 @@ int main(int argc, char *argv[])
 //   compositeAcceptanceVisitor.AddRequiredPassVisitor(&allQuadrantHistogramCompareAcceptanceVisitor);
 
   CompressedHistogramAcceptanceVisitor<VertexListGraphType, ImageType>
-    compressedHistogramAcceptanceVisitor(image, mask, patchHalfWidth, 100.0f);
+    compressedHistogramAcceptanceVisitor(image, mask, patchHalfWidth, 0.5f);
   compositeAcceptanceVisitor.AddRequiredPassVisitor(&compressedHistogramAcceptanceVisitor);
 
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
@@ -290,6 +291,8 @@ int main(int argc, char *argv[])
 
   LoggerVisitor<VertexListGraphType> loggerVisitor("log.txt");
 
+  FillOrderLoggerVisitor<VertexListGraphType> fillOrderLoggerVisitor("fillOrder.mha", mask.GetPointer(), patchHalfWidth);
+  
   PaintPatchVisitor<VertexListGraphType, ImageType> inpaintRGBVisitor(rgbImage.GetPointer(),
                                                                       mask.GetPointer(), patchHalfWidth);
   
@@ -300,6 +303,7 @@ int main(int argc, char *argv[])
   compositeInpaintingVisitor.AddVisitor(&displayVisitor);
   compositeInpaintingVisitor.AddVisitor(&debugVisitor);
   compositeInpaintingVisitor.AddVisitor(&loggerVisitor);
+  compositeInpaintingVisitor.AddVisitor(&fillOrderLoggerVisitor);
 
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 

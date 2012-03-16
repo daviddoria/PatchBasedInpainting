@@ -64,6 +64,8 @@ void ITKImageToVTKRGBImage(const FloatVectorImageType* const image, vtkImageData
 void ITKImageToVTKMagnitudeImage(const FloatVectorImageType* const image, vtkImageData* const outputImage);
 void ITKImageChannelToVTKImage(const FloatVectorImageType* const image, const unsigned int channel,
                                vtkImageData* const outputImage);
+
+
 void ITKImageToVTKImageMasked(const FloatVectorImageType* const image, const Mask* const mask,
                               vtkImageData* const outputImage, const unsigned char maskColor[3]);
 

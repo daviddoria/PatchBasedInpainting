@@ -46,7 +46,7 @@ Q_OBJECT
 
 public slots:
 
-  virtual void slot_UpdateImage() = 0;
+  //virtual void slot_UpdateImage() = 0;
   virtual void slot_UpdateSource(const itk::ImageRegion<2>& region, const itk::ImageRegion<2>& targetregion) = 0;
   virtual void slot_UpdateTarget(const itk::ImageRegion<2>& region) = 0;
   virtual void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion) = 0;
@@ -64,7 +64,7 @@ public:
   /** Constructor */
   ManualPatchSelectionDialog(TImage* const image, Mask* const mask, const itk::ImageRegion<2>& targetRegion);
 
-  void slot_UpdateImage();
+  //void slot_UpdateImage();
 
   /** We need the target region as well while updating the source region because we may want to mask
    * the source patch with the target patch's mask.

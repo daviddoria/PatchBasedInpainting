@@ -44,7 +44,7 @@
 #include "Visitors/AcceptanceVisitors/AllQuadrantHistogramCompareAcceptanceVisitor.hpp"
 
 //#include "Visitors/AcceptanceVisitors/IntraSourcePatchAcceptanceVisitor.hpp"
-//#include "Visitors/AcceptanceVisitors/NeverAccept.hpp"
+#include "Visitors/AcceptanceVisitors/NeverAccept.hpp"
 
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
@@ -149,7 +149,8 @@ int main(int argc, char *argv[])
   std::cout << "Patch half width: " << patchHalfWidth << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
-  typedef FloatVectorImageType ImageType;
+  //typedef FloatVectorImageType ImageType;
+  typedef itk::VectorImage<float, 2> ImageType;
 
   typedef  itk::ImageFileReader<ImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
@@ -259,6 +260,10 @@ int main(int argc, char *argv[])
   typedef CompositeAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
   CompositeAcceptanceVisitorType compositeAcceptanceVisitor;
 
+  typedef NeverAccept<VertexListGraphType> NeverAcceptVisitorType;
+  NeverAcceptVisitorType neverAcceptVisitor;
+  compositeAcceptanceVisitor.AddRequiredPassVisitor(&neverAcceptVisitor);
+  
 //   typedef ANDAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
 //   CompositeAcceptanceVisitorType compositeAcceptanceVisitor;
 
@@ -293,9 +298,9 @@ int main(int argc, char *argv[])
 
   // AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType>
   //          allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 8.0f); // 8 (2 for each quadrant) is reasonable
-  AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType>
-               allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 1.0f); // Crazy low
-  compositeAcceptanceVisitor.AddRequiredPassVisitor(&allQuadrantHistogramCompareAcceptanceVisitor);
+//   AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType>
+//                allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 1.0f); // Crazy low
+//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&allQuadrantHistogramCompareAcceptanceVisitor);
 
 //   ScoreThresholdAcceptanceVisitor<VertexListGraphType, ImagePatchDescriptorMapType,
 //                                   ImagePatchDifferenceType> scoreThresholdAcceptanceVisitor(mask, patchHalfWidth,

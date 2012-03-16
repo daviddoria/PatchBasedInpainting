@@ -24,9 +24,11 @@
 
 // VTK
 #include <vtkCell.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkImageData.h>
 #include <vtkImageMagnitude.h>
+#include <vtkImageShiftScale.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
@@ -65,9 +67,10 @@ void SetImageCenterPixel(vtkImageData* const image, const unsigned char color[3]
 
 void ZeroImage(vtkImageData* const image, const unsigned int channels)
 {
-  image->SetScalarTypeToUnsignedChar();
-  image->SetNumberOfScalarComponents(channels);
-  image->AllocateScalars();
+  //image->SetScalarTypeToUnsignedChar();
+  //image->SetNumberOfScalarComponents(channels);
+  //image->AllocateScalars();
+  image->AllocateScalars(VTK_UNSIGNED_CHAR, channels);
 
   int dims[3];
   image->GetDimensions(dims);
@@ -118,14 +121,14 @@ void BlankAndOutlineImage(vtkImageData* const image, const unsigned char color[3
 void KeepNonZeroVectors(vtkImageData* const image, vtkPolyData* output)
 {
   vtkSmartPointer<vtkImageMagnitude> magnitudeFilter = vtkSmartPointer<vtkImageMagnitude>::New();
-  magnitudeFilter->SetInputConnection(image->GetProducerPort());
+  magnitudeFilter->SetInputData(image);
   magnitudeFilter->Update(); // This filter produces a vtkImageData with an array named "Magnitude"
 
   image->GetPointData()->AddArray(magnitudeFilter->GetOutput()->GetPointData()->GetScalars());
   image->GetPointData()->SetActiveScalars("Magnitude");
 
   vtkSmartPointer<vtkThresholdPoints> thresholdPoints = vtkSmartPointer<vtkThresholdPoints>::New();
-  thresholdPoints->SetInputConnection(image->GetProducerPort());
+  thresholdPoints->SetInputData(image);
   thresholdPoints->ThresholdByUpper(.05);
   thresholdPoints->Update();
 
@@ -144,8 +147,9 @@ void MakeImageTransparent(vtkImageData* const image)
 
   if(image->GetNumberOfScalarComponents() < 4)
     {
-    image->SetNumberOfScalarComponents(4);
-    image->AllocateScalars();
+    //image->SetNumberOfScalarComponents(4);
+    //image->AllocateScalars();
+    image->AllocateScalars(image->GetScalarType(), 4);
     }
 
   for(int i = 0; i < dims[0]; ++i)
@@ -175,8 +179,9 @@ void MakeValueTransparent(vtkImageData* const image, const unsigned char value[3
   unsigned int originalNumberOfComponents = image->GetNumberOfScalarComponents();
   if(originalNumberOfComponents < 4)
     {
-    image->SetNumberOfScalarComponents(4);
-    image->AllocateScalars();
+    //image->SetNumberOfScalarComponents(4);
+    //image->AllocateScalars();
+    image->AllocateScalars(image->GetScalarType(), 4);
     }
 
   for(int i = 0; i < dims[0]; ++i)
@@ -226,6 +231,36 @@ void OutputAllArrayNames(vtkPolyData* const polyData)
     {
     std::cout << polyData->GetPointData()->GetArrayName(arrayId) << std::endl;
     }
+}
+
+void ScaleImage(vtkImageData* const image)
+{
+  double valuesRange[2];
+  
+//   vtkDoubleArray* values = vtkDoubleArray::SafeDownCast(image->GetPointData()->GetArray("ImageScalars"));
+//   if(values)
+//   {
+//     values->GetValueRange(valuesRange);
+//   }
+//   else
+//   {
+//     throw std::runtime_error("Could not get ImageScalars array!");
+//   }
+
+  valuesRange[0] = image->GetScalarRange()[0];
+  valuesRange[1] = image->GetScalarRange()[1];
+  
+  std::cout << "valuesRange = " << valuesRange[0] << " " << valuesRange[1] << std::endl;
+ 
+  vtkSmartPointer<vtkImageShiftScale> shiftScaleFilter =
+    vtkSmartPointer<vtkImageShiftScale>::New();
+  shiftScaleFilter->SetOutputScalarTypeToUnsignedChar();
+  shiftScaleFilter->SetInputData(image);
+  shiftScaleFilter->SetShift(-1.0 * valuesRange[0]);
+  shiftScaleFilter->SetScale(255.0f * (valuesRange[1] - valuesRange[0]));
+  shiftScaleFilter->Update();
+
+  image->DeepCopy(shiftScaleFilter->GetOutput());
 }
 
 } // end namespace

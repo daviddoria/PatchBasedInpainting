@@ -49,10 +49,13 @@ ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const ima
 
   this->ImageLayer.ImageSlice->SetDragable(false);
   this->ImageLayer.ImageSlice->SetPickable(false);
-  
-  this->ImageDimension[0] = 0;
-  this->ImageDimension[1] = 0;
-  this->ImageDimension[2] = 0;
+
+  typename TImage::Pointer tempImage = TImage::New();
+  ITKHelpers::DeepCopy(image, tempImage.GetPointer());
+  typename TImage::PixelType zeroPixel(tempImage->GetNumberOfComponentsPerPixel());
+  zeroPixel.Fill(0);
+  mask->ApplyToImage(tempImage.GetPointer(), zeroPixel);
+  ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(tempImage, this->ImageLayer.ImageData);
 
   SetupScenes();
 
@@ -70,7 +73,7 @@ ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const ima
 
   this->PatchSelector = new MovablePatch(this->TargetRegion.GetSize()[0]/2, this->InteractorStyle, this->gfxSource);
 
-  slot_UpdateImage();
+  // slot_UpdateImage();
 
   this->Renderer->ResetCamera();
   this->qvtkWidget->GetRenderWindow()->Render();
@@ -90,26 +93,26 @@ void ManualPatchSelectionDialog<TImage>::slot_PatchMoved()
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-template <typename TImage>
-void ManualPatchSelectionDialog<TImage>::slot_UpdateImage()
-{
-  std::cout << "Update image." << std::endl;
-  //ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
-  unsigned char green[3] = {0, 255, 0};
-  ITKVTKHelpers::ITKImageToVTKImageMasked(this->Image, this->MaskImage,
-                                          this->ImageLayer.ImageData, green);
-  int dims[3];
-  this->ImageLayer.ImageData->GetDimensions(dims);
-  if(dims[0] != ImageDimension[0] || dims[1] != ImageDimension[1] || dims[2] != ImageDimension[2])
-    {
-    this->Renderer->ResetCamera();
-    ImageDimension[0] = dims[0];
-    ImageDimension[1] = dims[1];
-    ImageDimension[2] = dims[2];
-    }
-
-  this->qvtkWidget->GetRenderWindow()->Render();
-}
+// template <typename TImage>
+// void ManualPatchSelectionDialog<TImage>::slot_UpdateImage()
+// {
+//   std::cout << "Update image." << std::endl;
+//   //ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
+//   unsigned char green[3] = {0, 255, 0};
+//   ITKVTKHelpers::ITKImageToVTKImageMasked(this->Image, this->MaskImage,
+//                                           this->ImageLayer.ImageData, green);
+//   int dims[3];
+//   this->ImageLayer.ImageData->GetDimensions(dims);
+//   if(dims[0] != ImageDimension[0] || dims[1] != ImageDimension[1] || dims[2] != ImageDimension[2])
+//     {
+//     this->Renderer->ResetCamera();
+//     ImageDimension[0] = dims[0];
+//     ImageDimension[1] = dims[1];
+//     ImageDimension[2] = dims[2];
+//     }
+// 
+//   this->qvtkWidget->GetRenderWindow()->Render();
+// }
 
 template <typename TImage>
 void ManualPatchSelectionDialog<TImage>::SetupScenes()
@@ -138,6 +141,12 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateSource(const itk::ImageRegio
   // This function needs the targetRegion because this is the region of the Mask that is used to mask the source patch.
   // std::cout << "Update source." << std::endl;
 
+  if(!this->Image->GetLargestPossibleRegion().IsInside(sourceRegion))
+  {
+    std::cerr << "Source region is outside the image!" << std::endl;
+    return;
+  }
+  
   if(MaskImage->CountHolePixels(sourceRegion) > 0)
   {
     std::cerr << "The source patch must not have any hole pixels!" << std::endl;
@@ -148,14 +157,18 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateSource(const itk::ImageRegio
     btnAccept->setVisible(true);
   }
 
-  QImage maskedSourceImage = HelpersQt::GetQImageMasked(Image, sourceRegion, MaskImage, sourceRegion);
+  typename TImage::Pointer tempImage = TImage::New();
+  ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
+  
+  QImage maskedSourceImage = HelpersQt::GetQImageMasked(tempImage.GetPointer(), sourceRegion, MaskImage, sourceRegion);
   QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(maskedSourceImage));
   gfxSource->fitInView(item);
 
   // Refresh the image
   //ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
   unsigned char green[3] = {0, 255, 0};
-  ITKVTKHelpers::ITKImageToVTKImageMasked(this->Image, this->MaskImage,
+
+  ITKVTKHelpers::ITKImageToVTKImageMasked(tempImage, this->MaskImage,
                                           this->ImageLayer.ImageData, green);
 
   // Outline the source patch
@@ -176,7 +189,10 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateTarget(const itk::ImageRegio
   this->qvtkWidget->GetRenderWindow()->Render();
 
   // Masked target patch
-  QImage maskedTargetImage = HelpersQt::GetQImageMasked(Image, MaskImage, region);
+  typename TImage::Pointer tempImage = TImage::New();
+  ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
+  
+  QImage maskedTargetImage = HelpersQt::GetQImageMasked(tempImage.GetPointer(), MaskImage, region);
   QGraphicsPixmapItem* maskedItem = this->TargetPatchScene->addPixmap(QPixmap::fromImage(maskedTargetImage));
   gfxTarget->fitInView(maskedItem);
 }
@@ -187,6 +203,12 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
 {
   assert(sourceRegion.GetSize() == targetRegion.GetSize());
 
+  if(!this->Image->GetLargestPossibleRegion().IsInside(sourceRegion))
+  {
+    std::cerr << "Source region is outside the image!" << std::endl;
+    return;
+  }
+  
   QImage qimage(sourceRegion.GetSize()[0], sourceRegion.GetSize()[1], QImage::Format_RGB888);
 
   if(MaskImage->CountHolePixels(sourceRegion) > 0)
@@ -197,8 +219,15 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
   }
   else
   {
-    itk::ImageRegionIterator<TImage> sourceIterator(Image, sourceRegion);
-    itk::ImageRegionIterator<TImage> targetIterator(Image, targetRegion);
+    typename TImage::Pointer tempImage = TImage::New();
+    ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
+    if(this->Image->GetNumberOfComponentsPerPixel() != 3)
+      {
+      ITKHelpers::ScaleAllChannelsTo255(tempImage.GetPointer());
+      }
+
+    itk::ImageRegionIterator<TImage> sourceIterator(tempImage, sourceRegion);
+    itk::ImageRegionIterator<TImage> targetIterator(tempImage, targetRegion);
     itk::ImageRegionIterator<Mask> maskIterator(MaskImage, targetRegion);
 
     typename TImage::Pointer resultPatch = TImage::New();

@@ -291,6 +291,10 @@ template<typename TPixel>
 void ScaleChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel,
                   const TPixel channelMax, typename itk::VectorImage<TPixel, 2>* const output);
 
+template<typename TPixel>
+void ConvertTo3Channel(const itk::VectorImage<TPixel, 2>* const image, 
+                      typename itk::VectorImage<TPixel, 2>* const output);
+
 /** Replace a channel of an image. */
 template<typename TPixel>
 void ReplaceChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel,
@@ -409,6 +413,12 @@ void PrintRegion(const TImage* const image, const itk::ImageRegion<2>& region);
 
 template<typename TVectorImage, typename TScalarImage>
 void SetChannel(TVectorImage* const vectorImage, const unsigned int channel, const TScalarImage* const image);
+
+template<typename TImage>
+void ScaleAllChannelsTo255(TImage* const image);
+
+template<typename TImage>
+void ScaleTo255(TImage* const image);
 
 /** See GetPixelValues */
 // template<typename TImage>

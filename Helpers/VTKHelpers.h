@@ -56,6 +56,8 @@ void MakeImageTransparent(vtkImageData* const image);
 // Output the names of all arrays in the PointData of a PolyData
 void OutputAllArrayNames(vtkPolyData* const polyData);
 
+void ScaleImage(vtkImageData* const image);
+
 } // end namespace
 
 #endif

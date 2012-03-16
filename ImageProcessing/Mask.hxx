@@ -62,7 +62,7 @@ void Mask::ApplyToVectorImage(TImage* const image, const TColor& color) const
 }
 
 template<typename TImage, typename TColor>
-void Mask::ApplyColorToImage(const TImage* const image, const TColor& color) const
+void Mask::ApplyColorToImage(TImage* const image, const TColor& color) const
 {
   // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
   // to be used to specify the color.
@@ -134,10 +134,11 @@ void Mask::MakeVTKImage(vtkImageData* const image, const TColor& validColor, con
   dims[1] = this->GetLargestPossibleRegion().GetSize()[1];
   dims[2] = 1;
 
-  image->SetScalarTypeToUnsignedChar();
-  image->SetNumberOfScalarComponents(4);
+  //image->SetScalarTypeToUnsignedChar();
+  //image->SetNumberOfScalarComponents(4);
   image->SetDimensions(dims);
-  image->AllocateScalars();
+  //image->AllocateScalars();
+  image->AllocateScalars(VTK_UNSIGNED_CHAR, 4);
 
   for(int i = 0; i < dims[0]; ++i)
     {
