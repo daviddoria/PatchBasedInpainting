@@ -47,18 +47,21 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   const unsigned int PatchHalfWidth;
 
   std::string ResultFileName;
-  
+
+  unsigned int NumberOfFinishedPatches;
+
   InpaintingVisitor(TImage* const image, Mask* const mask,
                     TBoundaryNodeQueue& boundaryNodeQueue,
-                    TDescriptorVisitor& descriptorVisitor, TAcceptanceVisitor& acceptanceVisitor, TPriorityMap& priorityMap,
-                    TPriority* const priorityFunction,
-                    const unsigned int patchHalfWidth, TBoundaryStatusMap& boundaryStatusMap, const std::string& resultFileName,
+                    TDescriptorVisitor& descriptorVisitor, TAcceptanceVisitor& acceptanceVisitor,
+                    TPriorityMap& priorityMap, TPriority* const priorityFunction,
+                    const unsigned int patchHalfWidth, TBoundaryStatusMap& boundaryStatusMap,
+                    const std::string& resultFileName,
                     const std::string& visitorName = "InpaintingVisitor") :
   InpaintingVisitorParent<TGraph>(visitorName),
   Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
   DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
   PriorityMap(priorityMap), BoundaryStatusMap(boundaryStatusMap),
-  PatchHalfWidth(patchHalfWidth), ResultFileName(resultFileName)
+  PatchHalfWidth(patchHalfWidth), ResultFileName(resultFileName), NumberOfFinishedPatches(0)
   {
   }
 
@@ -82,7 +85,8 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 //     if(!get(FillStatusMap, source))
 //     {
 //       std::stringstream ss;
-//       ss << "Potential source pixel " << source[0] << " " << source[1] << " does not have 'true' value in FillStatusMap!";
+//       ss << "Potential source pixel " << source[0] << " " << source[1]
+//          << " does not have 'true' value in FillStatusMap!";
 //       throw std::runtime_error(ss.str());
 //     }
     if(!MaskImage->IsValid(ITKHelpers::CreateIndex(source)))
@@ -163,8 +167,9 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
     regionToFinish.Crop(Image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
 
-    // Update the priority function. This must be done BEFORE the mask is filled, as the old mask is required in some of the Priority functors to determine where to update some things.
-    this->PriorityFunction->Update(sourceNode, targetNode);
+    // Update the priority function. This must be done BEFORE the mask is filled,
+    // as the old mask is required in some of the Priority functors to determine where to update some things.
+    this->PriorityFunction->Update(sourceNode, targetNode, this->NumberOfFinishedPatches);
 
     // Mark all the pixels in this region as filled (in the mask and in the FillStatusMap).
     {
@@ -202,7 +207,8 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       // This makes them ignored if they are still in the boundaryNodeQueue.
       if(MaskImage->HasHoleNeighbor(imageIterator.GetIndex()))
         {
-        // Note: must set the value in the priority map before pushing the node into the queue (as the priority is what
+        // Note: must set the value in the priority map before pushing the node
+        // into the queue (as the priority is what
         // determines the node's position in the queue).
         float priority = this->PriorityFunction->ComputePriority(imageIterator.GetIndex());
         //std::cout << "updated priority: " << priority << std::endl;
@@ -220,7 +226,9 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       }
     }
 
-    // std::cout << "FinishVertex after traversing finishing region there are " << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap) << " valid nodes in the queue." << std::endl;
+    // std::cout << "FinishVertex after traversing finishing region there are "
+    //           << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap)
+    //           << " valid nodes in the queue." << std::endl;
     
     // Sometimes pixels that are not in the finishing region that were boundary pixels are no longer
     // boundary pixels after the filling. Check for these.
@@ -240,6 +248,8 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 // std::cout << "FinishVertex after removing stale nodes outside finishing region there are "
 //               << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap)
 //               << " valid nodes in the queue." << std::endl;
+
+  NumberOfFinishedPatches++;
   }; // finish_vertex
 
   void InpaintingComplete() const

@@ -24,7 +24,8 @@ struct FillOrderLoggerVisitor : public InpaintingVisitorParent<TGraph>
   
   FillOrderLoggerVisitor(const std::string& outputFileName, const Mask* const mask, const unsigned int patchHalfWidth,
                          const std::string& visitorName = "FillOrderLoggerVisitor") :
-  InpaintingVisitorParent<TGraph>(visitorName), PatchHalfWidth(patchHalfWidth), MaskImage(mask), NumberOfPatchesFilled(0), OutputFileName(outputFileName)
+  InpaintingVisitorParent<TGraph>(visitorName), PatchHalfWidth(patchHalfWidth), MaskImage(mask),
+  NumberOfPatchesFilled(0), OutputFileName(outputFileName)
   {
     FillOrderImage = ImageType::New();
     FillOrderImage->SetRegions(mask->GetLargestPossibleRegion());

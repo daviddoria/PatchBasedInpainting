@@ -59,7 +59,8 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
       (*boundaryNodeQueue).pop();
     } while( get(*boundaryStatusMap, targetNode) == false );
 
-//     std::cout << "Before DiscoverVertex there are " << (*boundaryNodeQueue).size() << " nodes in the queue." << std::endl;
+//     std::cout << "Before DiscoverVertex there are " << (*boundaryNodeQueue).size()
+//               << " nodes in the queue." << std::endl;
 //     std::cout << "Before DiscoverVertex there are "
 //               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
 //               << " valid nodes in the queue." << std::endl;
@@ -67,7 +68,8 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
     vis.DiscoverVertex(targetNode);
 
     // Find the source node that matches best to the target node
-//     std::cout << "Before PotentialMatchMade there are " << (*boundaryNodeQueue).size() << " nodes in the queue." << std::endl;
+//     std::cout << "Before PotentialMatchMade there are " << (*boundaryNodeQueue).size()
+//               << " nodes in the queue." << std::endl;
 //     std::cout << "Before PotentialMatchMade there are "
 //               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
 //               << " valid nodes in the queue." << std::endl;
@@ -79,17 +81,23 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
     // Do the in-painting of the target patch from the source patch.
     // the inpaint_patch functor should take care of calling
     // "vis.paint_vertex(target, source, g)" on the individual vertices in the patch.
-//     std::cout << "Before inpaint_patch there are " << (*boundaryNodeQueue).size() << " nodes in the queue." << std::endl;
-//     std::cout << "Before inpaint_patch there are " << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
+//     std::cout << "Before inpaint_patch there are " << (*boundaryNodeQueue).size()
+//               << " nodes in the queue." << std::endl;
+//     std::cout << "Before inpaint_patch there are "
+//               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
 //               << " valid nodes in the queue." << std::endl;
     inpaint_patch(targetNode, sourceNode, vis);
+    vis.PaintPatch(targetNode, sourceNode);
 
-//     std::cout << "Before FinishVertex there are " << (*boundaryNodeQueue).size() << " nodes in the queue." << std::endl;
-//     std::cout << "Before FinishVertex there are " << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
+//     std::cout << "Before FinishVertex there are " << (*boundaryNodeQueue).size()
+//               << " nodes in the queue." << std::endl;
+//     std::cout << "Before FinishVertex there are "
+//               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
 //               << " valid nodes in the queue." << std::endl;
     vis.FinishVertex(targetNode, sourceNode);
 
-//     std::cout << "At the end of the iteration there are " << (*boundaryNodeQueue).size() << " nodes in the queue." << std::endl;
+//     std::cout << "At the end of the iteration there are " << (*boundaryNodeQueue).size()
+//               << " nodes in the queue." << std::endl;
 //     std::cout << "At the end of the iteration there are "
 //               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
 //               << " valid nodes in the queue." << std::endl;

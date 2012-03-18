@@ -27,7 +27,7 @@
        the confidence term of PriorityOnionPeel.
 */
 template <typename TNode, typename TImage>
-class PriorityCriminisi : public PriorityOnionPeel <TNode>
+class PriorityCriminisi : public PriorityOnionPeel
 {
 public:
 
@@ -45,7 +45,7 @@ public:
 // 
 //   static std::vector<std::string> GetImageNames();
 
-  using PriorityOnionPeel<TNode>::ComputeConfidenceTerm;
+  using PriorityOnionPeel::ComputeConfidenceTerm;
   ///////////////////////////////////////////
   //////////////// New functions   //////////
   ///////////////////////////////////////////
@@ -55,18 +55,18 @@ public:
 
 protected:
 
-  typedef PriorityOnionPeel<TNode> Superclass;
+  typedef PriorityOnionPeel Superclass;
 
-  // Compute the Data at a pixel.
+  /** Compute the Data at a pixel. */
   float ComputeDataTerm(const itk::Index<2>& queryPixel) const;
 
-  // Compute the normals of the hole boundary.
+  /** Compute the normals of the hole boundary. */
   void ComputeBoundaryNormals(const float blurVariance);
 
-  // Isophotes of the image.
+  /** Isophotes of the image. */
   FloatVector2ImageType::Pointer IsophoteImage;
 
-  // Boundary normals.
+  /** Boundary normals. */
   FloatVector2ImageType::Pointer BoundaryNormalsImage;
 
 private:

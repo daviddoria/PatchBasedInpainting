@@ -24,20 +24,15 @@
 #include "Helpers/ITKVTKHelpers.h"
 #include "Helpers/OutputHelpers.h"
 
-// ITK
-#include "itkInvertIntensityImageFilter.h"
-#include "itkRescaleIntensityImageFilter.h"
-
-// VTK
-#include <vtkSmartPointer.h>
-
-
 template <typename TNode>
-void PriorityOnionPeel::Update(const TNode& sourceNode, const TNode& targetNode)
+void PriorityOnionPeel::Update(const TNode& sourceNode, const TNode& targetNode, const unsigned int patchNumber)
 {
   float value = ComputeConfidenceTerm(targetNode);
   UpdateConfidences(targetNode, value);
 
+  std::stringstream ss;
+  ss << "ConfidenceMap_" << patchNumber << ".mha";
+  OutputHelpers::WriteImage(ConfidenceMapImage.GetPointer(), ss.str());
 }
 
 template <typename TNode>
@@ -70,10 +65,10 @@ void PriorityOnionPeel::UpdateConfidences(const TNode& targetNode, const float v
       }
 
     ++maskIterator;
-    } // end while looop with iterator
+    } // end while loop with iterator
 
 //   std::cout << "PriorityOnionPeel::UpdateConfidences() writing Confidence Map..." << std::endl;
-//   OutputHelpers::WriteImage(ConfidenceMapImage.GetPointer(), "ConfidenceMapUpdated.mha");
+   
 //   OutputHelpers::WriteScaledScalarImage(ConfidenceMapImage.GetPointer(), "ConfidenceMapUpdated.png");
 }
 
@@ -89,7 +84,8 @@ float PriorityOnionPeel::ComputeConfidenceTerm(const TNode& queryNode) const
 
   itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, region);
 
-  // The confidence is computed as the sum of the confidences of patch pixels in the source region / area of the patch
+  // The confidence is computed as the sum of the confidences of patch pixels
+  // in the source region / area of the patch
 
   float sum = 0.0f;
 

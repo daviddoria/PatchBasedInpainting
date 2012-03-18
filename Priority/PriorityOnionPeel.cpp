@@ -2,7 +2,8 @@
 
 #include "Helpers/OutputHelpers.h"
 
-PriorityOnionPeel::PriorityOnionPeel(const Mask* const maskImage, const unsigned int patchRadius) : MaskImage(maskImage), PatchRadius(patchRadius)
+PriorityOnionPeel::PriorityOnionPeel(const Mask* const maskImage, const unsigned int patchRadius) :
+MaskImage(maskImage), PatchRadius(patchRadius)
 {
   this->ConfidenceMapImage = FloatScalarImageType::New();
   InitializeConfidenceMap();
@@ -13,7 +14,8 @@ void PriorityOnionPeel::InitializeConfidenceMap()
   this->ConfidenceMapImage->SetRegions(MaskImage->GetLargestPossibleRegion());
   this->ConfidenceMapImage->Allocate();
 
-  itk::ImageRegionIterator<ConfidenceImageType> imageIterator(ConfidenceMapImage, ConfidenceMapImage->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<ConfidenceImageType> imageIterator(ConfidenceMapImage,
+                                                              ConfidenceMapImage->GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
     {

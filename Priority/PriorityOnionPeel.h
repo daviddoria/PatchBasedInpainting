@@ -43,7 +43,7 @@ public:
 
   /** Update the priority function in the region around the target node.*/
   template <typename TNode>
-  void Update(const TNode& sourceNode, const TNode& targetNode);
+  void Update(const TNode& sourceNode, const TNode& targetNode, const unsigned int patchNumber = 0);
 
 protected:
 

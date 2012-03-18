@@ -19,6 +19,8 @@
 // Custom
 #include "Helpers/OutputHelpers.h"
 
+#include "Visitors/InformationVisitors/FillOrderLoggerVisitor.hpp"
+
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
@@ -56,6 +58,8 @@
 
 // Priority
 #include "Priority/PriorityRandom.h"
+#include "Priority/PriorityOnionPeel.h"
+#include "Priority/PriorityCriminisi.h"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -158,15 +162,18 @@ int main(int argc, char *argv[])
   InpainterType patchInpainter(patchHalfWidth, mask);
 
   // Create the priority function
-  typedef PriorityRandom PriorityType;
-  PriorityType priorityFunction;
+//   typedef PriorityRandom PriorityType;
+//   PriorityType priorityFunction;
+
+  typedef PriorityOnionPeel PriorityType;
+  PriorityType priorityFunction(mask, patchHalfWidth);
 
   // Create the boundary node queue. The priority of each node is used to order the queue.
   typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;
   IndexInHeapMap index_in_heap(indexMap);
 
-  // Create the priority compare functor
-  typedef std::less<float> PriorityCompareType;
+  // Create the priority compare functor - we want to use the highest priority pixels first
+  typedef std::greater<float> PriorityCompareType;
   PriorityCompareType lessThanFunctor;
 
   typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap,
@@ -197,12 +204,16 @@ int main(int argc, char *argv[])
   typedef DebugVisitor<VertexListGraphType, ImageType, BoundaryStatusMapType, BoundaryNodeQueueType>
           DebugVisitorType;
   DebugVisitorType debugVisitor(image, mask, patchHalfWidth, boundaryStatusMap, boundaryNodeQueue);
-  
+
+  typedef FillOrderLoggerVisitor<VertexListGraphType> FillOrderLoggerVisitorType;
+  FillOrderLoggerVisitorType fillOrderLoggerVisitor("fill_order.mha", mask, patchHalfWidth);
+
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeVisitorType;
   CompositeVisitorType compositeVisitor;
   compositeVisitor.AddVisitor(&inpaintingVisitor);
   compositeVisitor.AddVisitor(&displayVisitor);
   compositeVisitor.AddVisitor(&debugVisitor);
+  compositeVisitor.AddVisitor(&fillOrderLoggerVisitor);
 
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 

@@ -21,7 +21,7 @@
 // Custom
 #include "../ImageProcessing/BoundaryNormals.h"
 #include "Helpers/Helpers.h"
-#include "Helpers/HelpersOutput.h"
+#include "Helpers/OutputHelpers.h"
 #include "../ImageProcessing/Isophotes.h"
 #include "Helpers/ITKHelpers.h"
 #include "Helpers/ITKVTKHelpers.h"
@@ -36,8 +36,9 @@
 #include <vtkSmartPointer.h>
 
 template <typename TNode, typename TImage>
-PriorityCriminisi<TNode, TImage>::PriorityCriminisi(const TImage* const image, const Mask* const maskImage, unsigned int patchRadius) :
-PriorityOnionPeel<TNode>(maskImage, patchRadius), Image(image)
+PriorityCriminisi<TNode, TImage>::PriorityCriminisi(const TImage* const image, const Mask* const maskImage,
+                                                    unsigned int patchRadius) :
+PriorityOnionPeel(maskImage, patchRadius), Image(image)
 {
   this->BoundaryNormalsImage = FloatVector2ImageType::New();
   ITKHelpers::InitializeImage<FloatVector2ImageType>(this->BoundaryNormalsImage, image->GetLargestPossibleRegion());
@@ -135,7 +136,8 @@ void PriorityCriminisi<TNode, TImage>::ComputeBoundaryNormals(const float blurVa
   // BoundaryNormals boundaryNormals(this->BoundaryImage, this->MaskImage);
   // this->BoundaryNormalsImage = boundaryNormals.ComputeBoundaryNormals(blurVariance);
 
-  //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(this->BoundaryNormalsImage, "Debug/ComputeBoundaryNormals.BoundaryNormals.mha", this->DebugImages);
+  //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(this->BoundaryNormalsImage,
+  //    "Debug/ComputeBoundaryNormals.BoundaryNormals.mha", this->DebugImages);
 }
 
 template <typename TNode, typename TImage>
