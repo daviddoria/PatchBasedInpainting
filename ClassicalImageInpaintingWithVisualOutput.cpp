@@ -127,8 +127,9 @@ int main(int argc, char *argv[])
 
   // Create the graph
   typedef boost::grid_graph<2> VertexListGraphType;
-  boost::array<std::size_t, 2> graphSideLengths = { { imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0],
-                                                      imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[1] } };
+  boost::array<std::size_t, 2> graphSideLengths =
+               { { imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0],
+                   imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[1] } };
   VertexListGraphType graph(graphSideLengths);
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
 
@@ -151,7 +152,8 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<ImagePatchPixelDescriptorType, IndexMapType> ImagePatchDescriptorMapType;
   ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
 
-  // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
+  // Create the patch inpainter. The inpainter needs to know the status of each pixel
+  // to determine if they should be inpainted.
   typedef MaskImagePatchInpainter InpainterType;
   InpainterType patchInpainter(patchHalfWidth, mask);
 
@@ -167,26 +169,33 @@ int main(int argc, char *argv[])
   typedef std::less<float> PriorityCompareType;
   PriorityCompareType lessThanFunctor;
 
-  typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType> BoundaryNodeQueueType;
+  typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap,
+                                     PriorityMapType, PriorityCompareType> BoundaryNodeQueueType;
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
   // Create the descriptor visitor
-  typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> ImagePatchDescriptorVisitorType;
+  typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
+            ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
   typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
   AcceptanceVisitorType acceptanceVisitor;
-  
+
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
-                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
+                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType,
+                            PriorityMapType, BoundaryStatusMapType>
+                            InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
-                                          imagePatchDescriptorVisitor, acceptanceVisitor, priorityMap, &priorityFunction, patchHalfWidth, boundaryStatusMap);
-
+                                          imagePatchDescriptorVisitor, acceptanceVisitor, priorityMap,
+                                          &priorityFunction, patchHalfWidth,
+                                          boundaryStatusMap, outputFilename);
+  
   typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
   DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
 
-  typedef DebugVisitor<VertexListGraphType, ImageType, BoundaryStatusMapType, BoundaryNodeQueueType> DebugVisitorType;
+  typedef DebugVisitor<VertexListGraphType, ImageType, BoundaryStatusMapType, BoundaryNodeQueueType>
+          DebugVisitorType;
   DebugVisitorType debugVisitor(image, mask, patchHalfWidth, boundaryStatusMap, boundaryNodeQueue);
   
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeVisitorType;
@@ -198,12 +207,14 @@ int main(int argc, char *argv[])
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage<ImagePatchDescriptorVisitorType, VertexDescriptorType>(mask.GetPointer(), &imagePatchDescriptorVisitor);
+  InitializeFromMaskImage<ImagePatchDescriptorVisitorType, VertexDescriptorType>(mask.GetPointer(),
+                                                                                 &imagePatchDescriptorVisitor);
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
-//   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
+//   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
+//            ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
 //   BestSearchType searchBest(imagePatchDescriptorMap);
 
 //   typedef DefaultSearchBest BestSearchType;
@@ -221,20 +232,28 @@ int main(int argc, char *argv[])
 
   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()),
                    Qt::BlockingQueuedConnection);
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
-                   &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&,
+                                                                const itk::ImageRegion<2>&)),
+                   &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&,
+                                                              const itk::ImageRegion<2>&)),
                    Qt::BlockingQueuedConnection);
   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)),
                    &basicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)),
                    Qt::BlockingQueuedConnection);
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
-                   &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshResult(const itk::ImageRegion<2>&,
+                                                                const itk::ImageRegion<2>&)),
+                   &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&,
+                                                              const itk::ImageRegion<2>&)),
                    Qt::BlockingQueuedConnection);
 
-  QtConcurrent::run(boost::bind(InpaintingAlgorithm<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>,
-                              graph, compositeVisitor, &boundaryStatusMap, &boundaryNodeQueue, searchBest, patchInpainter));
+  QtConcurrent::run(boost::bind(InpaintingAlgorithm<VertexListGraphType, CompositeVisitorType,
+                                BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>,
+                              graph, compositeVisitor, &boundaryStatusMap, &boundaryNodeQueue, searchBest,
+                              patchInpainter));
 
-//   InpaintingAlgorithm<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType, BoundaryNodeQueueType, BestSearchType, InpainterType>(
-//                               graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, searchBest, patchInpainter);
+//   InpaintingAlgorithm<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType,
+//  BoundaryNodeQueueType, BestSearchType, InpainterType>(
+//                               graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue,
+//  searchBest, patchInpainter);
   return app.exec();
 }
