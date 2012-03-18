@@ -30,6 +30,8 @@ void InpaintingPrecomputedAlgorithm(TNodePairQueue& nodeQueue, TVisitor vis,
     
     inpaint_patch(targetNode, sourceNode);
 
+    vis.FinishVertex(targetNode, sourceNode);
+
     nodeQueue.pop();
   } // end main iteration loop
 

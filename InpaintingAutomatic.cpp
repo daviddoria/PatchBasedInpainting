@@ -26,24 +26,7 @@
 #include "PixelDescriptors/ImagePatchVectorized.h"
 #include "PixelDescriptors/ImagePatchVectorizedIndices.h"
 
-// Acceptance visitors
-#include "Visitors/AcceptanceVisitors/AverageDifferenceAcceptanceVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/CompositeAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/ANDAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/DilatedSourceHoleTargetValidAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/DilatedSourceValidTargetValidAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/SourceHoleTargetValidCompare.hpp"
-#include "Visitors/AcceptanceVisitors/SourceValidTargetValidCompare.hpp"
-#include "Visitors/AcceptanceVisitors/HoleSizeAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/VarianceFunctor.hpp"
-#include "Visitors/AcceptanceVisitors/AverageFunctor.hpp"
-#include "Visitors/AcceptanceVisitors/ScoreThresholdAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/CorrelationAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/PatchDistanceAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/HistogramDifferenceAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/HoleHistogramDifferenceAcceptanceVisitor.hpp"
-// #include "Visitors/AcceptanceVisitors/QuadrantHistogramCompareAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/AllQuadrantHistogramCompareAcceptanceVisitor.hpp"
 
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
@@ -256,24 +239,6 @@ int main(int argc, char *argv[])
   typedef CompositeAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
   CompositeAcceptanceVisitorType compositeAcceptanceVisitor;
 
-  // If the hole is less than 15% of the patch, always accept the initial best match
-  HoleSizeAcceptanceVisitor<VertexListGraphType> holeSizeAcceptanceVisitor(mask, patchHalfWidth, .15);
-  compositeAcceptanceVisitor.AddOverrideVisitor(&holeSizeAcceptanceVisitor);
-
-  std::vector<float> minValues = ITKHelpers::MinValues(image);
-  std::cout << "min values: ";
-  OutputHelpers::OutputVector(minValues);
-
-  std::vector<float> maxValues = ITKHelpers::MaxValues(image);
-  std::cout << "max values: ";
-  OutputHelpers::OutputVector(maxValues);
-
-  float allowableQuadrantError = 1.0f;
-  AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType>
-               allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth,
-                                                            minValues, maxValues, allowableQuadrantError * 4.0f);
-  compositeAcceptanceVisitor.AddRequiredPassVisitor(&allQuadrantHistogramCompareAcceptanceVisitor);
-
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
                             CompositeDescriptorVisitorType, CompositeAcceptanceVisitorType, PriorityType,
                             PriorityMapType, BoundaryStatusMapType>
@@ -298,10 +263,10 @@ int main(int argc, char *argv[])
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
   CompositeInpaintingVisitorType compositeInpaintingVisitor;
   compositeInpaintingVisitor.AddVisitor(&inpaintingVisitor);
-  compositeInpaintingVisitor.AddVisitor(&inpaintRGBVisitor);
-  compositeInpaintingVisitor.AddVisitor(&displayVisitor);
-  compositeInpaintingVisitor.AddVisitor(&debugVisitor);
-  compositeInpaintingVisitor.AddVisitor(&loggerVisitor);
+  //compositeInpaintingVisitor.AddVisitor(&inpaintRGBVisitor);
+  //compositeInpaintingVisitor.AddVisitor(&displayVisitor);
+  //compositeInpaintingVisitor.AddVisitor(&debugVisitor);
+  //compositeInpaintingVisitor.AddVisitor(&loggerVisitor);
 
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
@@ -319,42 +284,36 @@ int main(int argc, char *argv[])
                                    ImagePatchDifferenceType > BestSearchType;
   BestSearchType bestSearch(imagePatchDescriptorMap, imagePatchDifferenceFunction);
 
-  BasicViewerWidget<ImageType> basicViewerWidget(image, mask);
-  basicViewerWidget.show();
+//   BasicViewerWidget<ImageType> basicViewerWidget(image, mask);
+//   basicViewerWidget.show();
+  
   // These connections are Qt::BlockingQueuedConnection because the algorithm quickly
   // goes on to fill the hole, and since we are sharing the image memory, we want to make sure these things are
   // refreshed at the right time, not after the hole has already been filled
   // (this actually happens, it is not just a theoretical thing).
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()),
-                   Qt::BlockingQueuedConnection);
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
-                   &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
-                   Qt::BlockingQueuedConnection);
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)),
-                   &basicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)),
-                   Qt::BlockingQueuedConnection);
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
-                   &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
-                   Qt::BlockingQueuedConnection);
-
-  TopPatchesDialog<ImageType> topPatchesDialog(image, mask, patchHalfWidth, &basicViewerWidget);
-  typedef VisualSelectionBest<ImageType> ManualSearchType;
-  ManualSearchType manualSearchBest(image, mask, patchHalfWidth, &topPatchesDialog);
-  
-  // Display the priority of the boundary in a different window
-//   PriorityViewerWidget<PriorityType, BoundaryStatusMapType>
-//             priorityViewerWidget(&priorityFunction, image->GetLargestPossibleRegion().GetSize(), boundaryStatusMap);
-//   priorityViewerWidget.show();
-//
-//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &priorityViewerWidget, SLOT(slot_UpdateImage()),
+//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()),
+//                    Qt::BlockingQueuedConnection);
+//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&,
+//                                                                 const itk::ImageRegion<2>&)),
+//                    &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&,
+//                                                               const itk::ImageRegion<2>&)),
+//                    Qt::BlockingQueuedConnection);
+//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)),
+//                    &basicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)),
+//                    Qt::BlockingQueuedConnection);
+//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshResult(const itk::ImageRegion<2>&,
+//                                                                 const itk::ImageRegion<2>&)),
+//                    &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&,
+//                                                               const itk::ImageRegion<2>&)),
 //                    Qt::BlockingQueuedConnection);
 
-  // Passively display the top patches at every iteration
-//   TopPatchesWidget<ImageType> topPatchesWidget(image, patchHalfWidth);
-//   topPatchesWidget.show();
-//   QObject::connect(&nearestNeighborsDisplayVisitor, SIGNAL(signal_Refresh(const std::vector<Node>&)),
-//                    &topPatchesWidget, SLOT(SetNodes(const std::vector<Node>&)));
+//   TopPatchesDialog<ImageType> topPatchesDialog(image, mask, patchHalfWidth, &basicViewerWidget);
+//   typedef VisualSelectionBest<ImageType> ManualSearchType;
+//   ManualSearchType manualSearchBest(image, mask, patchHalfWidth, &topPatchesDialog);
 
+  typedef DefaultSearchBest ManualSearchType;
+  DefaultSearchBest manualSearchBest;
+  
   // By specifying the radius as the image size/8, we are searching up to 1/4 of the image each time
   typedef NeighborhoodSearch<VertexDescriptorType> NeighborhoodSearchType;
   NeighborhoodSearchType neighborhoodSearch(fullRegion, fullRegion.GetSize()[0]/8);
@@ -364,8 +323,9 @@ int main(int argc, char *argv[])
                                 VertexListGraphType, CompositeInpaintingVisitorType, BoundaryStatusMapType,
                                 BoundaryNodeQueueType, NeighborhoodSearchType, KNNSearchType, BestSearchType,
                                 ManualSearchType, InpainterType>,
-                                graph, compositeInpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, neighborhoodSearch,
-                                knnSearch, bestSearch, boost::ref(manualSearchBest), patchInpainter));
+                                graph, compositeInpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue,
+                                neighborhoodSearch, knnSearch, bestSearch, boost::ref(manualSearchBest),
+                                patchInpainter));
 
   return app.exec();
 }

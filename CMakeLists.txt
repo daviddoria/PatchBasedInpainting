@@ -124,6 +124,35 @@ if(InpaintingRGBD)
   INSTALL( TARGETS InpaintingRGBD RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
+SET(InpaintingAutomatic CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+if(InpaintingAutomatic)
+  QT4_WRAP_UI(InpaintingAutomatic_UISrcs Interactive/BasicViewerWidget.ui
+              Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
+              Interactive/PriorityViewerWidget.ui
+              Interactive/ManualPatchSelectionDialog.ui)
+  QT4_WRAP_CPP(InpaintingAutomatic_MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
+                       Visitors/NearestNeighborsDisplayVisitor.hpp
+                       #NearestNeighbor/VisualSelectionBest.hpp
+                       Interactive/TopPatchesWidget.h
+                       Interactive/TopPatchesDialog.h
+                       Interactive/Delegates/PixmapDelegate.h
+                       Interactive/PriorityViewerWidget.h
+                       Interactive/ManualPatchSelectionDialog.h
+                       Interactive/MovablePatch.h)
+
+  ADD_EXECUTABLE(InpaintingAutomatic InpaintingAutomatic.cpp
+                Interactive/Layer.cpp
+                Interactive/Delegates/PixmapDelegate.cpp
+                Interactive/MovablePatch.cpp
+                Interactive/HelpersQt.cpp
+                Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+                ${InpaintingAutomatic_UISrcs} ${InpaintingAutomatic_MOCSrcs})
+
+  TARGET_LINK_LIBRARIES(InpaintingAutomatic PatchBasedInpainting
+                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+  INSTALL( TARGETS InpaintingAutomatic RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
 SET(InpaintingCIELab CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
 if(InpaintingCIELab)
   QT4_WRAP_UI(InpaintingCIELabUISrcs Interactive/BasicViewerWidget.ui

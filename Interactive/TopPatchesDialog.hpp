@@ -24,11 +24,15 @@
 #include "Interactive/ManualPatchSelectionDialog.h"
 
 template <typename TImage>
-TopPatchesDialog<TImage>::TopPatchesDialog(TImage* const image, Mask* const mask, const unsigned int patchHalfWidth) :
-Image(image), MaskImage(mask), ValidSelection(false), PatchHalfWidth(patchHalfWidth)
+TopPatchesDialog<TImage>::TopPatchesDialog(TImage* const image, Mask* const mask, const unsigned int patchHalfWidth, QWidget* parent) :
+TopPatchesDialogParent(parent), Image(image), MaskImage(mask), ValidSelection(false), PatchHalfWidth(patchHalfWidth)
 {
   this->setupUi(this);
 
+  if(parent)
+  {
+    this->setGeometry(QRect(parent->pos().x() + parent->width(), parent->pos().y(), this->width(), this->height()));
+  }
 //   if(image->GetNumberOfComponentsPerPixel() == 3)
 //   {
 //     // assume the image is RGB, and use it directly

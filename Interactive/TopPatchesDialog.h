@@ -35,6 +35,9 @@ class TopPatchesDialogParent : public QDialog, public Ui::TopPatchesDialog
 {
 Q_OBJECT
 
+public:
+  TopPatchesDialogParent(QWidget* parent = NULL) : QDialog(parent) {}
+
 public slots:
 
   /** Ideally this would be templated on the node type, but since it is a slot it cannot be templated. */
@@ -88,7 +91,7 @@ private:
 
 public:
   /** Constructor */
-  TopPatchesDialog(TImage* const image, Mask* const mask, const unsigned int patchHalfWidth);
+  TopPatchesDialog(TImage* const image, Mask* const mask, const unsigned int patchHalfWidth, QWidget* parent = NULL);
 
   /** Set the source nodes from which the user can choose. */
   void SetSourceNodes(const std::vector<Node>& nodes);

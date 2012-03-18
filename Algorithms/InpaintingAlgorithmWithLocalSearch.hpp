@@ -46,7 +46,9 @@ void InpaintingAlgorithmWithLocalSearch(TVertexListGraph& g, TInpaintingVisitor 
         std::cout << "Inpainting complete." << std::endl;
         vis.InpaintingComplete();
 
-        return;  //terminate if the queue is empty.
+        throw std::runtime_error("Quit from different thread.");
+        //exit(-1);
+        //return;  //terminate if the queue is empty.
       }
       targetNode = (*boundaryNodeQueue).top();
       (*boundaryNodeQueue).pop();

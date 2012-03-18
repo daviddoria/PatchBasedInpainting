@@ -73,7 +73,8 @@ void SetRegionCenterPixel(vtkImageData* const image, const itk::ImageRegion<2>& 
 void ITKVectorImageToVTKImageFromDimension(const FloatVectorImageType* const image, vtkImageData* const outputImage)
 {
   // If the image has 3 channels, assume it is RGB.
-  if(image->GetNumberOfComponentsPerPixel() == 3)
+  //if(image->GetNumberOfComponentsPerPixel() == 3)
+  if(image->GetNumberOfComponentsPerPixel() >= 3)
     {
     ITKImageToVTKRGBImage(image, outputImage);
     }

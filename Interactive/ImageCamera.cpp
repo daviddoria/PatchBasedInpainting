@@ -40,10 +40,13 @@ ImageCamera::ImageCamera(vtkRenderer* const renderer) : Renderer(renderer)
 
 void ImageCamera::SetCameraPosition()
 {
-  double leftToRight[3] = {this->CameraLeftToRightVector[0], this->CameraLeftToRightVector[1], this->CameraLeftToRightVector[2]};
-  double bottomToTop[3] = {this->CameraBottomToTopVector[0], this->CameraBottomToTopVector[1], this->CameraBottomToTopVector[2]};
+  double leftToRight[3] = {this->CameraLeftToRightVector[0], this->CameraLeftToRightVector[1],
+                          this->CameraLeftToRightVector[2]};
+  double bottomToTop[3] = {this->CameraBottomToTopVector[0], this->CameraBottomToTopVector[1],
+                          this->CameraBottomToTopVector[2]};
 
-  InteractorStyleImageWithDrag::SafeDownCast(this->Renderer->GetRenderWindow()->GetInteractor()->GetInteractorStyle())->SetImageOrientation(leftToRight, bottomToTop);
+  InteractorStyleImageWithDrag::SafeDownCast(this->Renderer->GetRenderWindow()->GetInteractor()->
+          GetInteractorStyle())->SetImageOrientation(leftToRight, bottomToTop);
 
   this->Renderer->ResetCamera();
   this->Renderer->ResetCameraClippingRange();

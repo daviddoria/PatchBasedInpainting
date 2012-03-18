@@ -20,7 +20,9 @@
 #include "Helpers/OutputHelpers.h"
 
 // Inpainting visitors
-#include "Visitors/InpaintPatchVisitor.hpp"
+#include "Visitors/SimpleVisitors/InpaintPatchVisitor.hpp"
+#include "Visitors/InformationVisitors/IterationWriterVisitor.hpp"
+#include "Visitors/SimpleVisitors/CompositeSimpleVisitor.hpp"
 
 // Inpainters
 //#include "Inpainters/MaskImagePatchInpainter.hpp"
@@ -51,12 +53,14 @@ int main(int argc, char *argv[])
   // Verify arguments
   if(argc != 6)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width precomputed.txt output.mha" << std::endl;
-    std::cerr << "Input arguments: ";
+    std::stringstream ss;
+    ss << "Required arguments: image.mha imageMask.mha patch_half_width precomputed.txt output.mha" << std::endl;
+    ss << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
-      std::cerr << argv[i] << " ";
+      ss << argv[i] << " ";
       }
+    throw std::runtime_error(ss.str());
     return EXIT_FAILURE;
     }
 
@@ -122,17 +126,25 @@ int main(int argc, char *argv[])
     nodePairQueue.push(nodePair);
     }
 
-  // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
+  // Create the patch inpainter. The inpainter needs to know the status of each pixel to
+  // determine if they should be inpainted.
 //   typedef MaskImagePatchInpainter InpainterType;
 //   InpainterType patchInpainter(patchHalfWidth, mask);
 
   ImageAndMaskPatchInpainter<ImageType> patchInpainter(image, mask, patchHalfWidth);
 
-  // Create the inpainting visitor
-  InpaintPatchVisitor<ImageType> inpaintPatchVisitor(image, mask, patchHalfWidth);
+  IterationWriterVisitor<itk::Index<2>, ImageType> iterationWriterVisitor(image, mask);
 
+  // Create the inpainting visitor
+  InpaintPatchVisitor<itk::Index<2>, ImageType> inpaintPatchVisitor(image, mask, patchHalfWidth);
+
+  typedef CompositeSimpleVisitor<itk::Index<2> > CompositeSimpleVisitorType;
+  CompositeSimpleVisitorType compositeSimpleVisitor;
+  compositeSimpleVisitor.AddVisitor(&inpaintPatchVisitor);
+  compositeSimpleVisitor.AddVisitor(&iterationWriterVisitor);
+  
   // Perform the inpainting
-  InpaintingPrecomputedAlgorithm(nodePairQueue, inpaintPatchVisitor, patchInpainter);
+  InpaintingPrecomputedAlgorithm(nodePairQueue, compositeSimpleVisitor, patchInpainter);
 
   OutputHelpers::WriteImage(image.GetPointer(), outputFilename);
 
