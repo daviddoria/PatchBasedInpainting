@@ -35,70 +35,54 @@
 // VTK
 #include <vtkSmartPointer.h>
 
-template <typename TNode, typename TImage>
-PriorityCriminisi<TNode, TImage>::PriorityCriminisi(const TImage* const image, const Mask* const maskImage,
-                                                    unsigned int patchRadius) :
+template <typename TImage>
+PriorityCriminisi<TImage>::PriorityCriminisi(const TImage* const image, const Mask* const maskImage,
+                                             const unsigned int patchRadius) :
 PriorityOnionPeel(maskImage, patchRadius), Image(image)
 {
   this->BoundaryNormalsImage = FloatVector2ImageType::New();
-  ITKHelpers::InitializeImage<FloatVector2ImageType>(this->BoundaryNormalsImage, image->GetLargestPossibleRegion());
+  //ITKHelpers::InitializeImage(this->BoundaryNormalsImage.GetPointer(), image->GetLargestPossibleRegion());
 
   unsigned int blurVariance = 2;
   ComputeBoundaryNormals(blurVariance);
 
   this->IsophoteImage = FloatVector2ImageType::New();
-  ITKHelpers::InitializeImage<FloatVector2ImageType>(this->IsophoteImage, image->GetLargestPossibleRegion());
-  Isophotes::ComputeColorIsophotesInRegion(image, maskImage, image->GetLargestPossibleRegion(), this->IsophoteImage);
+  ITKHelpers::InitializeImage(this->IsophoteImage.GetPointer(), image->GetLargestPossibleRegion());
+  Isophotes::ComputeColorIsophotesInRegion(image, maskImage, image->GetLargestPossibleRegion(),
+                                           this->IsophoteImage.GetPointer());
 
 }
 
-// template <typename TImage>
-// std::vector<std::string> PriorityCriminisi<TImage>::GetImageNames()
-// {
-//   std::vector<std::string> imageNames = PriorityOnionPeel<TImage>::GetImageNames();
-//   imageNames.push_back("Isophotes");
-//   imageNames.push_back("BoundaryNormals");
-//   return imageNames;
-// }
-// 
-// template <typename TImage>
-// std::vector<NamedVTKImage> PriorityCriminisi<TImage>::GetNamedImages()
-// {
-//   std::vector<NamedVTKImage> namedImages = PriorityOnionPeel<TImage>::GetNamedImages();
-// 
-//   NamedVTKImage isophoteNamedImage;
-//   isophoteNamedImage.Name = "Isophotes";
-//   vtkSmartPointer<vtkImageData> isophoteImageVTK = vtkSmartPointer<vtkImageData>::New();
-//   ITKVTKHelpers::ITKImageToVTKVectorFieldImage(this->IsophoteImage, isophoteImageVTK);
-//   isophoteNamedImage.ImageData = isophoteImageVTK;
-//   isophoteNamedImage.DisplayType = NamedVTKImage::VECTORS;
-//   namedImages.push_back(isophoteNamedImage);
-// 
-//   NamedVTKImage boundaryNormalsNamedImage;
-//   boundaryNormalsNamedImage.Name = "BoundaryNormals";
-//   vtkSmartPointer<vtkImageData> boundaryNormalsImageVTK = vtkSmartPointer<vtkImageData>::New();
-//   ITKVTKHelpers::ITKImageToVTKVectorFieldImage(this->BoundaryNormalsImage, boundaryNormalsImageVTK);
-//   boundaryNormalsNamedImage.ImageData = isophoteImageVTK;
-//   boundaryNormalsNamedImage.DisplayType = NamedVTKImage::VECTORS;
-//   namedImages.push_back(boundaryNormalsNamedImage);
-// 
-//   return namedImages;
-// }
-
-template <typename TNode, typename TImage>
-void PriorityCriminisi<TNode, TImage>::Update(const TNode& filledPixel)
+template <typename TImage>
+template <typename TNode>
+void PriorityCriminisi<TImage>::Update(const TNode& sourceNode, const TNode& targetNode,
+                                       const unsigned int patchNumber)
 {
-  Superclass::Update(filledPixel);
+  Superclass::Update(sourceNode, targetNode);
 
-  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(filledPixel, this->PatchRadius);
-  Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage, region, this->IsophoteImage);
+  itk::Index<2> targetIndex = Helpers::ConvertFrom<itk::Index<2>, TNode>(targetNode);
+  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->PatchRadius);
 
+  // For debugging, we want to do this over the whole image
+  //Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage, region, this->IsophoteImage);
+  Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage,
+                                           this->Image->GetLargestPossibleRegion(), this->IsophoteImage);
+
+  std::stringstream ss_isophote;
+  ss_isophote << "IsophoteImage_" << patchNumber << ".mha";
+  OutputHelpers::WriteImage(this->IsophoteImage.GetPointer(), ss_isophote.str());
+  
   unsigned int blurVariance = 2;
   ComputeBoundaryNormals(blurVariance);
+
+  std::stringstream ss;
+  ss << "DataImage_" << patchNumber << ".mha";
+  WriteDataImage(ss.str());
 }
 
-template <typename TNode, typename TImage>
-float PriorityCriminisi<TNode, TImage>::ComputePriority(const TNode& queryPixel) const
+template <typename TImage>
+template <typename TNode>
+float PriorityCriminisi<TImage>::ComputePriority(const TNode& queryPixel) const
 {
   //std::cout << "PriorityCriminisi::ComputePriority()" << std::endl;
   float confidenceTerm = ComputeConfidenceTerm(queryPixel);
@@ -110,8 +94,8 @@ float PriorityCriminisi<TNode, TImage>::ComputePriority(const TNode& queryPixel)
 }
 
 
-template <typename TNode, typename TImage>
-float PriorityCriminisi<TNode, TImage>::ComputeDataTerm(const itk::Index<2>& queryPixel) const
+template <typename TImage>
+float PriorityCriminisi<TImage>::ComputeDataTerm(const itk::Index<2>& queryPixel) const
 {
   // D(p) = |dot(isophote at p, normalized normal of the front at p)|/alpha
 
@@ -128,22 +112,43 @@ float PriorityCriminisi<TNode, TImage>::ComputeDataTerm(const itk::Index<2>& que
   return dataTerm;
 }
 
-template <typename TNode, typename TImage>
-void PriorityCriminisi<TNode, TImage>::ComputeBoundaryNormals(const float blurVariance)
+template <typename TImage>
+void PriorityCriminisi<TImage>::ComputeBoundaryNormals(const float blurVariance)
 {
-  // TODO: The boundary image is no longer stored, so should we just blur the mask image locally
-  // to compute the boundary normal for each pixel separately (per ComputePriority() call)?
-  // BoundaryNormals boundaryNormals(this->BoundaryImage, this->MaskImage);
-  // this->BoundaryNormalsImage = boundaryNormals.ComputeBoundaryNormals(blurVariance);
+  Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
+  boundaryImage->SetRegions(this->Image->GetLargestPossibleRegion());
+  boundaryImage->Allocate();
 
-  //HelpersOutput::WriteImageConditional<FloatVector2ImageType>(this->BoundaryNormalsImage,
-  //    "Debug/ComputeBoundaryNormals.BoundaryNormals.mha", this->DebugImages);
+  this->MaskImage->FindBoundary(boundaryImage);
+  
+  BoundaryNormals boundaryNormals(boundaryImage, this->MaskImage);
+
+  boundaryNormals.ComputeBoundaryNormals(blurVariance, this->BoundaryNormalsImage.GetPointer());
+
+  OutputHelpers::WriteImage(this->BoundaryNormalsImage.GetPointer(), "BoundaryNormals.mha");
 }
 
-template <typename TNode, typename TImage>
-FloatScalarImageType* PriorityCriminisi<TNode, TImage>::GetDataImage()
+template <typename TImage>
+void PriorityCriminisi<TImage>::WriteDataImage(const std::string& fileName)
 {
-  // TODO: Actually create the data image. This is not used for the algorithm, but just for debugging output.
+  // This is not used for the algorithm, but just for debugging output.
   FloatScalarImageType::Pointer dataImage = FloatScalarImageType::New();
-  return dataImage;
+  dataImage->SetRegions(this->Image->GetLargestPossibleRegion());
+  dataImage->Allocate();
+
+  Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
+  boundaryImage->SetRegions(this->Image->GetLargestPossibleRegion());
+  boundaryImage->Allocate();
+  
+  this->MaskImage->FindBoundary(boundaryImage);
+
+  typedef std::vector<itk::Index<2> > PixelCollection;
+  PixelCollection boundaryPixels = ITKHelpers::GetNonZeroPixels(boundaryImage.GetPointer());
+
+  for(PixelCollection::const_iterator iter = boundaryPixels.begin(); iter != boundaryPixels.end(); ++iter)
+    {
+    dataImage->SetPixel(*iter, ComputePriority(*iter));
+    }
+
+  OutputHelpers::WriteImage(dataImage.GetPointer(), fileName);
 }

@@ -165,8 +165,11 @@ int main(int argc, char *argv[])
 //   typedef PriorityRandom PriorityType;
 //   PriorityType priorityFunction;
 
-  typedef PriorityOnionPeel PriorityType;
-  PriorityType priorityFunction(mask, patchHalfWidth);
+//   typedef PriorityOnionPeel PriorityType;
+//   PriorityType priorityFunction(mask, patchHalfWidth);
+
+  typedef PriorityCriminisi<ImageType> PriorityType;
+  PriorityType priorityFunction(image, mask, patchHalfWidth);
 
   // Create the boundary node queue. The priority of each node is used to order the queue.
   typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;

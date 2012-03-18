@@ -46,6 +46,7 @@ Utilities/itkCommandLineArgumentParser.cxx
 ImageProcessing/Isophotes.cpp
 ImageProcessing/Mask.cpp
 ImageProcessing/MaskOperations.cpp
+ImageProcessing/BoundaryNormals.cpp
 Priority/Priority.cpp
 Priority/PriorityCriminisi.cpp
 Priority/PriorityDepth.cpp

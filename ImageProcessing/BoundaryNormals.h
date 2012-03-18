@@ -28,7 +28,7 @@ public:
   
   BoundaryNormals(const UnsignedCharScalarImageType* const boundaryImage, const Mask* const mask);
 
-  FloatVector2ImageType* ComputeBoundaryNormals(const float blurVariance);
+  void ComputeBoundaryNormals(const float blurVariance, FloatVector2ImageType* const boundaryNormals);
 
 private:
   const UnsignedCharScalarImageType* BoundaryImage;

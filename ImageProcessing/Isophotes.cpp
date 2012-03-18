@@ -30,16 +30,18 @@
 namespace Isophotes
 {
 
-void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* const image, const Mask* const mask, const itk::ImageRegion<2>& region,
-                                    FloatVector2ImageType* const outputIsophotes)
+void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* const image, const Mask* const mask,
+                                    const itk::ImageRegion<2>& region, FloatVector2ImageType* const outputIsophotes)
 {
-  //Helpers::WriteImageConditional<FloatScalarImageType>(image, "Debug/ComputeMaskedIsophotes.luminance.mha", this->DebugImages);
+  //Helpers::WriteImageConditional<FloatScalarImageType>(image, "Debug/ComputeMaskedIsophotes.luminance.mha",
+//                                                      this->DebugImages);
 
   FloatVector2ImageType::Pointer gradient = FloatVector2ImageType::New();
   ITKHelpers::InitializeImage<FloatVector2ImageType>(gradient, image->GetLargestPossibleRegion());
   Derivatives::MaskedGradientInRegion<FloatScalarImageType>(image, mask, region, gradient);
 
-  //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha", this->DebugImages);
+  //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient,
+  //               "Debug/ComputeMaskedIsophotes.gradient.mha", this->DebugImages);
   //Helpers::Write2DVectorImage(gradient, "Debug/ComputeMaskedIsophotes.gradient.mha");
 
   // Rotate the gradient 90 degrees to obtain isophotes from gradient
@@ -51,7 +53,8 @@ void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* const image, con
   rotateFilter->SetInput(gradient);
   rotateFilter->Update();
 
-  //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.Isophotes.mha", this->DebugImages);
+  //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(rotateFilter->GetOutput(),
+  //                   "Debug/ComputeMaskedIsophotes.Isophotes.mha", this->DebugImages);
   //Helpers::Write2DVectorImage(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.Isophotes.mha");
 
   ITKHelpers::CopyRegion<FloatVector2ImageType>(rotateFilter->GetOutput(), outputIsophotes, region, region);
@@ -60,6 +63,10 @@ void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* const image, con
 void ComputeColorIsophotesInRegion(const FloatVectorImageType* const image, const Mask* const mask,
                                    const itk::ImageRegion<2>& region , FloatVector2ImageType* const isophotes)
 {
+  /*
+   * 'isophotes' must already be initialized to the right size and allocated.
+   */
+  
   //EnterFunction("ComputeIsophotes()");
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   ITKHelpers::VectorImageToRGBImage(image, rgbImage);
@@ -72,16 +79,19 @@ void ComputeColorIsophotesInRegion(const FloatVectorImageType* const image, cons
   luminanceFilter->Update();
 
   FloatScalarImageType::Pointer luminanceImage = FloatScalarImageType::New();
-  ITKHelpers::DeepCopy<FloatScalarImageType>(luminanceFilter->GetOutput(), luminanceImage);
+  ITKHelpers::DeepCopy(luminanceFilter->GetOutput(), luminanceImage.GetPointer());
 
   FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
-  // Blur with a Gaussian kernel. From TestIsophotes.cpp, it actually seems like not blurring, but using a masked sobel operator produces the most reliable isophotes.
+  // Blur with a Gaussian kernel. From TestIsophotes.cpp, it actually seems like not blurring,
+  // but using a masked sobel operator produces the most reliable isophotes.
   unsigned int kernelRadius = 0;
-  MaskOperations::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), mask, kernelRadius, blurredLuminance);
+  MaskOperations::MaskedBlur(luminanceFilter->GetOutput(), mask,
+                             kernelRadius, blurredLuminance.GetPointer());
 
-  //HelpersOutput::WriteImageConditional<FloatScalarImageType>(blurredLuminance, "Debug/Initialize.blurredLuminance.mha", true);
+  //HelpersOutput::WriteImageConditional(blurredLuminance,
+  //                                  "Debug/Initialize.blurredLuminance.mha", true);
 
-  ITKHelpers::InitializeImage<FloatVector2ImageType>(isophotes, image->GetLargestPossibleRegion());
+  //ITKHelpers::InitializeImage(isophotes, image->GetLargestPossibleRegion());
   Isophotes::ComputeMaskedIsophotesInRegion(blurredLuminance, mask, region, isophotes);
 
 //   if(this->DebugImages)
@@ -90,4 +100,5 @@ void ComputeColorIsophotesInRegion(const FloatVectorImageType* const image, cons
 //     }
   //LeaveFunction("ComputeIsophotes()");
 }
+
 } // end namespace

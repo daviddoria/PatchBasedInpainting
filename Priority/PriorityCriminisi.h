@@ -26,20 +26,22 @@
 \brief This class implements Criminisi's priority function. It includes a Data term ontop of
        the confidence term of PriorityOnionPeel.
 */
-template <typename TNode, typename TImage>
+template <typename TImage>
 class PriorityCriminisi : public PriorityOnionPeel
 {
 public:
 
-  PriorityCriminisi(const TImage* const image, const Mask* const maskImage, unsigned int patchRadius);
+  PriorityCriminisi(const TImage* const image, const Mask* const maskImage, const unsigned int patchRadius);
 
   ///////////////////////////////////////////
   // Functions reimplemented from Priority //
   ///////////////////////////////////////////
 
+  template <typename TNode>
   float ComputePriority(const TNode& queryPixel) const;
 
-  void Update(const TNode& filledPixel);
+  template <typename TNode>
+  void Update(const TNode& sourceNode, const TNode& targetNode, const unsigned int patchNumber = 0);
 
 //   std::vector<NamedVTKImage> GetNamedImages();
 // 
@@ -50,8 +52,8 @@ public:
   //////////////// New functions   //////////
   ///////////////////////////////////////////
 
-  // Get the current data image
-  FloatScalarImageType* GetDataImage();
+  /** Get the current data image */
+  void WriteDataImage(const std::string& fileName);
 
 protected:
 
@@ -70,6 +72,7 @@ protected:
   FloatVector2ImageType::Pointer BoundaryNormalsImage;
 
 private:
+  /** A pointer to the image we are inpainting */
   const TImage* Image;
 };
 
