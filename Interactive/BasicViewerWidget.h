@@ -36,6 +36,7 @@
 #include "ImageProcessing/Mask.h"
 #include "Node.h"
 #include "Interactive/Layer.h"
+#include "Interactive/PatchHighlighter.h"
 
 class InteractorStyleImageWithDrag;
 
@@ -106,6 +107,9 @@ private:
   void SetupConnections();
 
   ImageCamera* Camera;
+
+  PatchHighlighter* SourceHighlighter;
+  PatchHighlighter* TargetHighlighter;
 };
 
 #include "BasicViewerWidget.hpp"

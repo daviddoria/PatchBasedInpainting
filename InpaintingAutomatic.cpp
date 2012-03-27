@@ -212,25 +212,27 @@ int main(int argc, char *argv[])
   //ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(cielabImage,
   //                                                            mask, imagePatchDescriptorMap, patchHalfWidth);
 
-//   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> >
-//             ImagePatchDifferenceType;
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> >
+            ImagePatchDifferenceType;
+  ImagePatchDifferenceType imagePatchDifferenceFunction;
 
-  typedef WeightedSumAbsolutePixelDifference<ImageType::PixelType> PixelDifferenceFunctorType;
-  PixelDifferenceFunctorType pixelDifferenceFunctor;
-  std::vector<float> weights;
-  weights.push_back(1.0f);
-  weights.push_back(1.0f);
-  weights.push_back(1.0f);
-  float gradientWeight = 500.0f;
-  weights.push_back(gradientWeight);
-  weights.push_back(gradientWeight);
-  pixelDifferenceFunctor.Weights = weights;
-  std::cout << "Weights: ";
-  OutputHelpers::OutputVector(pixelDifferenceFunctor.Weights);
+//   typedef WeightedSumAbsolutePixelDifference<ImageType::PixelType> PixelDifferenceFunctorType;
+//   PixelDifferenceFunctorType pixelDifferenceFunctor;
+//   std::vector<float> weights;
+//   weights.push_back(1.0f);
+//   weights.push_back(1.0f);
+//   weights.push_back(1.0f);
+//   float gradientWeight = 500.0f;
+//   weights.push_back(gradientWeight);
+//   weights.push_back(gradientWeight);
+//   pixelDifferenceFunctor.Weights = weights;
+//   std::cout << "Weights: ";
+//   OutputHelpers::OutputVector(pixelDifferenceFunctor.Weights);
 
-  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, PixelDifferenceFunctorType >
-          ImagePatchDifferenceType;
-  ImagePatchDifferenceType imagePatchDifferenceFunction(pixelDifferenceFunctor);
+//   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, PixelDifferenceFunctorType >
+//           ImagePatchDifferenceType;
+// 
+//   ImagePatchDifferenceType imagePatchDifferenceFunction(pixelDifferenceFunctor);
 
   typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
   CompositeDescriptorVisitorType compositeDescriptorVisitor;
@@ -264,8 +266,8 @@ int main(int argc, char *argv[])
   CompositeInpaintingVisitorType compositeInpaintingVisitor;
   compositeInpaintingVisitor.AddVisitor(&inpaintingVisitor);
   //compositeInpaintingVisitor.AddVisitor(&inpaintRGBVisitor);
-  //compositeInpaintingVisitor.AddVisitor(&displayVisitor);
-  //compositeInpaintingVisitor.AddVisitor(&debugVisitor);
+  compositeInpaintingVisitor.AddVisitor(&displayVisitor);
+  compositeInpaintingVisitor.AddVisitor(&debugVisitor);
   //compositeInpaintingVisitor.AddVisitor(&loggerVisitor);
 
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
@@ -284,28 +286,28 @@ int main(int argc, char *argv[])
                                    ImagePatchDifferenceType > BestSearchType;
   BestSearchType bestSearch(imagePatchDescriptorMap, imagePatchDifferenceFunction);
 
-//   BasicViewerWidget<ImageType> basicViewerWidget(image, mask);
-//   basicViewerWidget.show();
+  BasicViewerWidget<ImageType> basicViewerWidget(image, mask);
+  basicViewerWidget.show();
   
   // These connections are Qt::BlockingQueuedConnection because the algorithm quickly
   // goes on to fill the hole, and since we are sharing the image memory, we want to make sure these things are
   // refreshed at the right time, not after the hole has already been filled
   // (this actually happens, it is not just a theoretical thing).
-//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()),
-//                    Qt::BlockingQueuedConnection);
-//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&,
-//                                                                 const itk::ImageRegion<2>&)),
-//                    &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&,
-//                                                               const itk::ImageRegion<2>&)),
-//                    Qt::BlockingQueuedConnection);
-//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)),
-//                    &basicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)),
-//                    Qt::BlockingQueuedConnection);
-//   QObject::connect(&displayVisitor, SIGNAL(signal_RefreshResult(const itk::ImageRegion<2>&,
-//                                                                 const itk::ImageRegion<2>&)),
-//                    &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&,
-//                                                               const itk::ImageRegion<2>&)),
-//                    Qt::BlockingQueuedConnection);
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()),
+                   Qt::BlockingQueuedConnection);
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&,
+                                                                const itk::ImageRegion<2>&)),
+                   &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&,
+                                                              const itk::ImageRegion<2>&)),
+                   Qt::BlockingQueuedConnection);
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)),
+                   &basicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)),
+                   Qt::BlockingQueuedConnection);
+  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshResult(const itk::ImageRegion<2>&,
+                                                                const itk::ImageRegion<2>&)),
+                   &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&,
+                                                              const itk::ImageRegion<2>&)),
+                   Qt::BlockingQueuedConnection);
 
 //   TopPatchesDialog<ImageType> topPatchesDialog(image, mask, patchHalfWidth, &basicViewerWidget);
 //   typedef VisualSelectionBest<ImageType> ManualSearchType;

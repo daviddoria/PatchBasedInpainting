@@ -37,7 +37,7 @@
 #include "ImageProcessing/Mask.h"
 
 template <typename TImage>
-BasicViewerWidget<TImage>::BasicViewerWidget(TImage* const image, Mask* const mask) : Image(image), MaskImage(mask)
+BasicViewerWidget<TImage>::BasicViewerWidget(TImage* const image, Mask* const mask) : Image(image), MaskImage(mask), SourceHighlighter(NULL), TargetHighlighter(NULL)
 {
   qRegisterMetaType<itk::ImageRegion<2> >("itkImageRegion");
 
@@ -46,11 +46,9 @@ BasicViewerWidget<TImage>::BasicViewerWidget(TImage* const image, Mask* const ma
   int dims[3];
   this->ImageLayer.ImageData->GetDimensions(dims);
 
-  // This automatically scales the image if it is not 3 channel
   typename TImage::Pointer tempImage = TImage::New();
   ITKHelpers::DeepCopy(image, tempImage.GetPointer());
-  //QColor green(Qt::green);
-  //mask->ApplyColorToImage(tempImage.GetPointer(), green);
+
   typename TImage::PixelType zeroPixel(tempImage->GetNumberOfComponentsPerPixel());
   zeroPixel.Fill(0);
   mask->ApplyToImage(tempImage.GetPointer(), zeroPixel);
@@ -112,14 +110,11 @@ void BasicViewerWidget<TImage>::SetupScenes()
 template <typename TImage>
 void BasicViewerWidget<TImage>::slot_UpdateImage()
 {
-  // std::cout << "Update image." << std::endl;
-  //ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
+  std::cout << "Update image." << std::endl;
 
-  // This automatically scales the image if it is not 3 channel
   typename TImage::Pointer tempImage = TImage::New();
   ITKHelpers::DeepCopy(this->Image, tempImage.GetPointer());
-//   QColor green(Qt::green);
-//   this->MaskImage->ApplyColorToImage(tempImage.GetPointer(), green);
+
   typename TImage::PixelType zeroPixel(tempImage->GetNumberOfComponentsPerPixel());
   zeroPixel.Fill(0);
   this->MaskImage->ApplyToImage(tempImage.GetPointer(), zeroPixel);
@@ -148,8 +143,14 @@ template <typename TImage>
 void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
 {
   // This function needs the targetRegion because this is the region of the Mask that is used to mask the source patch.
-  // std::cout << "Update source." << std::endl;
+  std::cout << "Update source " << sourceRegion << std::endl;
 
+  if(!SourceHighlighter)
+    {
+    SourceHighlighter = new PatchHighlighter(sourceRegion.GetSize()[0]/2, this->Renderer, Qt::green);
+    }
+  SourceHighlighter->SetRegion(sourceRegion);
+  
   QImage sourceImage = HelpersQt::GetQImageColor(Image, sourceRegion);
   QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
   gfxSource->fitInView(item);
@@ -158,31 +159,39 @@ void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sou
   QGraphicsPixmapItem* maskedItem = this->MaskedSourcePatchScene->addPixmap(QPixmap::fromImage(maskedSourceImage));
   gfxMaskedSource->fitInView(maskedItem);
 
-  unsigned char blue[3] = {0, 0, 255};
-  ITKVTKHelpers::OutlineRegion(this->ImageLayer.ImageData, sourceRegion, blue);
+  //unsigned char blue[3] = {0, 0, 255};
+  //ITKVTKHelpers::OutlineRegion(this->ImageLayer.ImageData, sourceRegion, blue);
+  //ITKVTKHelpers::BlankAndOutlineRegion(this->ImageLayer.ImageData, sourceRegion, blue);
 
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 template <typename TImage>
-void BasicViewerWidget<TImage>::slot_UpdateTarget(const itk::ImageRegion<2>& region)
+void BasicViewerWidget<TImage>::slot_UpdateTarget(const itk::ImageRegion<2>& targetRegion)
 {
-  // std::cout << "Update target." << std::endl;
+  std::cout << "Update target " << targetRegion << std::endl;
 
-  unsigned char red[3] = {255, 0, 0};
-  ITKVTKHelpers::OutlineRegion(this->ImageLayer.ImageData, region, red);
+  if(!TargetHighlighter)
+    {
+    TargetHighlighter = new PatchHighlighter(targetRegion.GetSize()[0]/2, this->Renderer, Qt::red);
+    }
 
-  this->qvtkWidget->GetRenderWindow()->Render();
+  TargetHighlighter->SetRegion(targetRegion);
   
+  //unsigned char red[3] = {255, 0, 0};
+  //ITKVTKHelpers::OutlineRegion(this->ImageLayer.ImageData, targetRegion, red);
+
   // Target patch
-  QImage targetImage = HelpersQt::GetQImageColor(Image, region);
+  QImage targetImage = HelpersQt::GetQImageColor(Image, targetRegion);
   QGraphicsPixmapItem* item = this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
   gfxTarget->fitInView(item);
 
   // Masked target patch
-  QImage maskedTargetImage = HelpersQt::GetQImageMasked(Image, MaskImage, region);
+  QImage maskedTargetImage = HelpersQt::GetQImageMasked(Image, MaskImage, targetRegion);
   QGraphicsPixmapItem* maskedItem = this->MaskedTargetPatchScene->addPixmap(QPixmap::fromImage(maskedTargetImage));
   gfxMaskedTarget->fitInView(maskedItem);
+  
+  this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 template <typename TImage>

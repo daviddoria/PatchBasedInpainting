@@ -22,6 +22,7 @@
 
 // Custom
 #include "Helpers/Helpers.h"
+#include "Helpers/ITKHelpers.h"
 #include "ImageProcessing/Mask.h"
 
 // VTK
@@ -167,6 +168,46 @@ void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::I
   writer->Update();
 }
 
+template<typename TImage>
+void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename,
+                       const typename TImage::PixelType& holeColor)
+{
+  typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  regionOfInterestImageFilter->SetRegionOfInterest(region);
+  regionOfInterestImageFilter->SetInput(image);
+  regionOfInterestImageFilter->Update();
+
+  typedef itk::RegionOfInterestImageFilter<Mask, Mask> RegionOfInterestMaskFilterType;
+  typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter = RegionOfInterestMaskFilterType::New();
+  regionOfInterestMaskFilter->SetRegionOfInterest(region);
+  regionOfInterestMaskFilter->SetInput(mask);
+  regionOfInterestMaskFilter->Update();
+
+  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+
+  while(!imageIterator.IsAtEnd())
+    {
+    typename TImage::PixelType pixel = imageIterator.Get();
+
+    itk::Index<2> index = imageIterator.GetIndex();
+
+    if(regionOfInterestMaskFilter->GetOutput()->IsHole(imageIterator.GetIndex()))
+      {
+      regionOfInterestImageFilter->GetOutput()->SetPixel(index, holeColor);
+      }
+
+    ++imageIterator;
+    }
+
+  RGBImageType::Pointer rgbImage = RGBImageType::New();
+  ITKHelpers::VectorImageToRGBImage(regionOfInterestImageFilter->GetOutput(), rgbImage.GetPointer());
+    
+  typename itk::ImageFileWriter<RGBImageType>::Pointer writer = itk::ImageFileWriter<RGBImageType>::New();
+  writer->SetFileName(filename);
+  writer->SetInput(rgbImage.GetPointer());
+  writer->Update();
+}
 
 template<typename TImage>
 void WriteRegion(const TImage* const image, const itk::ImageRegion<2>& region, const std::string& filename)

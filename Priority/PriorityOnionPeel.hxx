@@ -30,9 +30,9 @@ void PriorityOnionPeel::Update(const TNode& sourceNode, const TNode& targetNode,
   float value = ComputeConfidenceTerm(targetNode);
   UpdateConfidences(targetNode, value);
 
-  std::stringstream ss;
-  ss << "ConfidenceMap_" << patchNumber << ".mha";
-  OutputHelpers::WriteImage(ConfidenceMapImage.GetPointer(), ss.str());
+//   std::stringstream ss;
+//   ss << "ConfidenceMap_" << patchNumber << ".mha";
+//   OutputHelpers::WriteImage(ConfidenceMapImage.GetPointer(), ss.str());
 }
 
 template <typename TNode>

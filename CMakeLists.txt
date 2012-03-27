@@ -96,8 +96,8 @@ add_subdirectory(Interactive)
 #   INSTALL( TARGETS InpaintingWithLocalSearch RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 
-SET(InpaintingRGBD CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
-if(InpaintingRGBD)
+SET(inpainting_InpaintingRGBD CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+if(inpainting_InpaintingRGBD)
   QT4_WRAP_UI(InpaintingRGBD_UISrcs Interactive/BasicViewerWidget.ui
               Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
               Interactive/PriorityViewerWidget.ui
@@ -125,8 +125,8 @@ if(InpaintingRGBD)
   INSTALL( TARGETS InpaintingRGBD RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(InpaintingAutomatic CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
-if(InpaintingAutomatic)
+SET(inpainting_InpaintingAutomatic CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+if(inpainting_InpaintingAutomatic)
   QT4_WRAP_UI(InpaintingAutomatic_UISrcs Interactive/BasicViewerWidget.ui
               Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
               Interactive/PriorityViewerWidget.ui
@@ -154,8 +154,8 @@ if(InpaintingAutomatic)
   INSTALL( TARGETS InpaintingAutomatic RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(InpaintingCIELab CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
-if(InpaintingCIELab)
+SET(inpainting_InpaintingCIELab CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+if(inpainting_InpaintingCIELab)
   QT4_WRAP_UI(InpaintingCIELabUISrcs Interactive/BasicViewerWidget.ui
               Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
               Interactive/PriorityViewerWidget.ui
@@ -183,8 +183,9 @@ if(InpaintingCIELab)
 endif()
 
 # add_subdirectory(Interactive)
-SET(InpaintingWithVerification CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
-if(InpaintingWithVerification)
+SET(inpainting_InpaintingWithVerification CACHE BOOL "Build an inpainting program that displays a list of the top patches for the user to select if the best patch does not pass some acceptance tests.")
+if(inpainting_InpaintingWithVerification)
+  message("Building InpaintingWithVerification")
   QT4_WRAP_UI(InpaintingWithVerificationUISrcs Interactive/BasicViewerWidget.ui
               Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
               Interactive/PriorityViewerWidget.ui
@@ -203,6 +204,7 @@ if(InpaintingWithVerification)
                 Interactive/Delegates/PixmapDelegate.cpp
                 Interactive/MovablePatch.cpp
                 Interactive/HelpersQt.cpp
+                Interactive/PatchHighlighter.cpp
                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
                 ${InpaintingWithVerificationUISrcs} ${InpaintingWithVerificationMOCSrcs})
 
@@ -240,8 +242,8 @@ endif()
 #   INSTALL( TARGETS InpaintingVectorized RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 
-SET(PrecomputedInpainting CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
-if(PrecomputedInpainting)
+SET(inpainting_PrecomputedInpainting CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+if(inpainting_PrecomputedInpainting)
   QT4_WRAP_UI(PrecomputedInpaintingUISrcs )
   QT4_WRAP_CPP(PrecomputedInpaintingMOCSrcs )
 
@@ -295,8 +297,8 @@ endif()
 # endif()
 # 
 # 
-SET(ClassicalImageInpaintingWithVisualOutput CACHE BOOL "Build a traditional patch comparison image inpainting that displays the image at every iteration.")
-if(ClassicalImageInpaintingWithVisualOutput)
+SET(inpainting_ClassicalImageInpaintingWithVisualOutput CACHE BOOL "Build a traditional patch comparison image inpainting that displays the image at every iteration.")
+if(inpainting_ClassicalImageInpaintingWithVisualOutput)
   QT4_WRAP_UI(ClassicalImageInpaintingWithVisualOutputUISrcs Interactive/BasicViewerWidget.ui)
   QT4_WRAP_CPP(ClassicalImageInpaintingWithVisualOutputMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp)
 
@@ -324,8 +326,8 @@ endif()
 
 
 
-SET(ClassicalImageInpainting CACHE BOOL "Build a traditional patch comparison image inpainting.")
-if(ClassicalImageInpainting)
+SET(inpainting_ClassicalImageInpainting CACHE BOOL "Build a traditional patch comparison image inpainting.")
+if(inpainting_ClassicalImageInpainting)
   ADD_EXECUTABLE(ClassicalImageInpainting ClassicalImageInpainting.cpp)
   TARGET_LINK_LIBRARIES(ClassicalImageInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
   INSTALL( TARGETS ClassicalImageInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
@@ -340,29 +342,29 @@ endif()
 
 
 
-SET(SmallPatchBigPatchInpainting CACHE BOOL "Build a two step (compare small patches, then compare big patches at the best of the small patches) image inpainting.")
-if(SmallPatchBigPatchInpainting)
+SET(inpainting_SmallPatchBigPatchInpainting CACHE BOOL "Build a two step (compare small patches, then compare big patches at the best of the small patches) image inpainting.")
+if(inpainting_SmallPatchBigPatchInpainting)
   ADD_EXECUTABLE(SmallPatchBigPatchInpainting SmallPatchBigPatchInpainting.cpp)
   TARGET_LINK_LIBRARIES(SmallPatchBigPatchInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
   INSTALL( TARGETS SmallPatchBigPatchInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(NarrowSearchByFeaturesInpainting CACHE BOOL "Build a two step (features, then patch comparison) image inpainting.")
-if(NarrowSearchByFeaturesInpainting)
+SET(inpainting_NarrowSearchByFeaturesInpainting CACHE BOOL "Build a two step (features, then patch comparison) image inpainting.")
+if(inpainting_NarrowSearchByFeaturesInpainting)
   ADD_EXECUTABLE(NarrowSearchByFeaturesInpainting NarrowSearchByFeaturesInpainting.cpp PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
   TARGET_LINK_LIBRARIES(NarrowSearchByFeaturesInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} libHelpers)
   INSTALL( TARGETS NarrowSearchByFeaturesInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(NarrowSearchByNormalsInpainting CACHE BOOL "Build a two step (normals, then patch comparison) image inpainting.")
-if(NarrowSearchByNormalsInpainting)
+SET(inpainting_NarrowSearchByNormalsInpainting CACHE BOOL "Build a two step (normals, then patch comparison) image inpainting.")
+if(inpainting_NarrowSearchByNormalsInpainting)
   ADD_EXECUTABLE(NarrowSearchByNormalsInpainting NarrowSearchByNormalsInpainting.cpp PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
   TARGET_LINK_LIBRARIES(NarrowSearchByNormalsInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} libHelpers)
   INSTALL( TARGETS NarrowSearchByNormalsInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(BuildTests CACHE BOOL "Build tests.")
-if(BuildTests)
+SET(inpainting_BuildTests CACHE BOOL "Build tests.")
+if(inpainting_BuildTests)
   ENABLE_TESTING()
   add_subdirectory(Testing)
   #add_subdirectory(Tests)
@@ -373,7 +375,7 @@ if(BuildTests)
   #add_subdirectory(Utilities/Tests)
    add_subdirectory(Interactive/Tests)
 
-ENDIF(BuildTests)
+ENDIF(inpainting_BuildTests)
 
 # SET(BuildInteractiveTests CACHE BOOL "Build interactive tests.")
 # if(BuildInteractiveTests)
@@ -381,10 +383,10 @@ ENDIF(BuildTests)
 #   add_subdirectory(Interactive/Tests)
 # ENDIF(BuildInteractiveTests)
 
-SET(BuildDemos CACHE BOOL "Build demos.")
-if(BuildDemos)
+SET(inpainting_BuildDemos CACHE BOOL "Build demos.")
+if(inpainting_BuildDemos)
   add_subdirectory(Demos)
-ENDIF(BuildDemos)
+ENDIF(inpainting_BuildDemos)
 
 add_subdirectory(NearestNeighbor)
 add_subdirectory(Visitors)

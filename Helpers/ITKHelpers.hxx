@@ -589,7 +589,8 @@ void ChangeValue(TImage* const image, const typename TImage::PixelType& oldValue
 }
 
 template<typename TPixel>
-void ExtractChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel, itk::Image<TPixel, 2>* const output)
+void ExtractChannel(const itk::VectorImage<TPixel, 2>* const image, const unsigned int channel,
+                    itk::Image<TPixel, 2>* const output)
 {
   typedef itk::VectorImage<TPixel, 2> VectorImageType;
   typedef itk::Image<TPixel, 2> ScalarImageType;

@@ -78,7 +78,7 @@ void ITKImageToVTKVectorFieldImage(const FloatVector2ImageType* image, vtkImageD
 void ConvertNonZeroPixelsToVectors(const FloatVector2ImageType* const vectorImage, vtkPolyData* const output);
 
 
-// Simply calls OutlineRegion followed by BlankRegion
+// Simply calls BlankRegion followed by OutlineRegion
 void BlankAndOutlineRegion(vtkImageData* const image, const itk::ImageRegion<2>& region, const unsigned char value[3]);
 
 // Set pixels on the boundary of 'region' in 'image' to 'value'.

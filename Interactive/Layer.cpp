@@ -26,15 +26,13 @@
 Layer::Layer()
 {
   this->ImageData = vtkSmartPointer<vtkImageData>::New();
-  //this->ImageData->SetScalarTypeToUnsignedChar();
-  //this->ImageData->SetNumberOfScalarComponents(4); // RGBA
   this->ImageData->AllocateScalars(VTK_UNSIGNED_CHAR, 4); // RGBA
 
   this->ImageSlice = vtkSmartPointer<vtkImageSlice>::New();
-  this->ImageSlice->GetProperty()->SetInterpolationTypeToNearest();
+  this->ImageSlice->GetProperty()->SetInterpolationTypeToNearest(); // Don't blur, but rather show pixels
 
   this->ImageSliceMapper = vtkSmartPointer<vtkImageSliceMapper>::New();
-  this->ImageSliceMapper->BorderOn();
+  this->ImageSliceMapper->BorderOn(); // Draw the full border pixels.
   this->ImageSlice->SetMapper(this->ImageSliceMapper);
 
   Setup();
