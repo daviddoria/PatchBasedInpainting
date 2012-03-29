@@ -5,7 +5,7 @@
 #include "itkImageRegionConstIteratorWithIndex.h"
 
 // Custom
-#include "ImageProcessing/Mask.h"
+#include "Mask/Mask.h"
 
 template <typename TVisitor, typename TNode>
 inline void InitializeFromMaskImage(Mask* const maskImage, TVisitor* const visitor)

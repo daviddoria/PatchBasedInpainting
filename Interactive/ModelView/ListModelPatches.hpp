@@ -5,8 +5,9 @@
 
 // Custom
 #include "Helpers/Helpers.h"
-#include "Interactive/HelpersQt.h"
-#include "Helpers/ITKHelpers.h"
+#include "QtHelpers/QtHelpers.h"
+#include "QtHelpers/ITKQtHelpers.h"
+#include "ITKHelpers/ITKHelpers.h"
 
 template <typename TImage>
 ListModelPatches<TImage>::ListModelPatches(TImage* const image, const unsigned int patchHalfWidth, QObject * const parent) :
@@ -75,7 +76,7 @@ QVariant ListModelPatches<TImage>::data(const QModelIndex& index, int role) cons
         
         return QVariant();
       }
-      patchImage = HelpersQt::GetQImageColor<FloatVectorImageType>(this->Image, this->Regions[index.row()]);
+      patchImage = ITKQtHelpers::GetQImageColor(this->Image, this->Regions[index.row()]);
     }
     catch (...)
     {

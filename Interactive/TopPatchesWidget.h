@@ -30,7 +30,7 @@
 
 // Custom
 #include "ImageCamera.h"
-#include "ImageProcessing/Mask.h"
+#include "Mask/Mask.h"
 #include "Interactive/ModelView/ListModelPatches.h"
 #include "Node.h"
 

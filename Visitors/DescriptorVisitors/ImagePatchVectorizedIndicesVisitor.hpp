@@ -13,7 +13,7 @@
 #include <boost/property_map/property_map.hpp>
 
 // Helpers
-#include "Helpers/ITKHelpers.h"
+#include "ITKHelpers/ITKHelpers.h"
 
 /**
  * This is a visitor that complies with the InpaintingVisitorConcept. It creates

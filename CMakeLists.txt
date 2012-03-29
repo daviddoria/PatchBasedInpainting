@@ -37,15 +37,18 @@ else ( QT4_FOUND )
   message ( "QT4 NOT found successfully." )
 endif ( QT4_FOUND )
 
-
+add_subdirectory(Mask)
 add_subdirectory(Helpers)
+add_subdirectory(ITKHelpers)
+add_subdirectory(VTKHelpers)
+add_subdirectory(ITKVTKHelpers)
+add_subdirectory(QtHelpers)
+add_subdirectory(BoostHelpers)
 
 add_library(PatchBasedInpainting
 ImageProcessing/Derivatives.cpp
 Utilities/itkCommandLineArgumentParser.cxx
 ImageProcessing/Isophotes.cpp
-ImageProcessing/Mask.cpp
-ImageProcessing/MaskOperations.cpp
 ImageProcessing/BoundaryNormals.cpp
 Priority/Priority.cpp
 Priority/PriorityCriminisi.cpp
@@ -87,7 +90,6 @@ add_subdirectory(Interactive)
 #                 Interactive/Layer.cpp
 #                 Interactive/Delegates/PixmapDelegate.cpp
 #                 Interactive/MovablePatch.cpp
-#                 Interactive/HelpersQt.cpp
 #                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
 #                 ${InpaintingWithLocalSearchUISrcs} ${InpaintingWithLocalSearchMOCSrcs})
 # 
@@ -95,92 +97,89 @@ add_subdirectory(Interactive)
 #                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
 #   INSTALL( TARGETS InpaintingWithLocalSearch RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
-
-SET(inpainting_InpaintingRGBD CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
-if(inpainting_InpaintingRGBD)
-  QT4_WRAP_UI(InpaintingRGBD_UISrcs Interactive/BasicViewerWidget.ui
-              Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
-              Interactive/PriorityViewerWidget.ui
-              Interactive/ManualPatchSelectionDialog.ui)
-  QT4_WRAP_CPP(InpaintingRGBD_MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
-                       Visitors/NearestNeighborsDisplayVisitor.hpp
-                       #NearestNeighbor/VisualSelectionBest.hpp
-                       Interactive/TopPatchesWidget.h
-                       Interactive/TopPatchesDialog.h
-                       Interactive/Delegates/PixmapDelegate.h
-                       Interactive/PriorityViewerWidget.h
-                       Interactive/ManualPatchSelectionDialog.h
-                       Interactive/MovablePatch.h)
-
-  ADD_EXECUTABLE(InpaintingRGBD InpaintingRGBD.cpp
-                Interactive/Layer.cpp
-                Interactive/Delegates/PixmapDelegate.cpp
-                Interactive/MovablePatch.cpp
-                Interactive/HelpersQt.cpp
-                Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
-                ${InpaintingRGBD_UISrcs} ${InpaintingRGBD_MOCSrcs})
-
-  TARGET_LINK_LIBRARIES(InpaintingRGBD PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
-  INSTALL( TARGETS InpaintingRGBD RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
-
-SET(inpainting_InpaintingAutomatic CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
-if(inpainting_InpaintingAutomatic)
-  QT4_WRAP_UI(InpaintingAutomatic_UISrcs Interactive/BasicViewerWidget.ui
-              Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
-              Interactive/PriorityViewerWidget.ui
-              Interactive/ManualPatchSelectionDialog.ui)
-  QT4_WRAP_CPP(InpaintingAutomatic_MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
-                       Visitors/NearestNeighborsDisplayVisitor.hpp
-                       #NearestNeighbor/VisualSelectionBest.hpp
-                       Interactive/TopPatchesWidget.h
-                       Interactive/TopPatchesDialog.h
-                       Interactive/Delegates/PixmapDelegate.h
-                       Interactive/PriorityViewerWidget.h
-                       Interactive/ManualPatchSelectionDialog.h
-                       Interactive/MovablePatch.h)
-
-  ADD_EXECUTABLE(InpaintingAutomatic InpaintingAutomatic.cpp
-                Interactive/Layer.cpp
-                Interactive/Delegates/PixmapDelegate.cpp
-                Interactive/MovablePatch.cpp
-                Interactive/HelpersQt.cpp
-                Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
-                ${InpaintingAutomatic_UISrcs} ${InpaintingAutomatic_MOCSrcs})
-
-  TARGET_LINK_LIBRARIES(InpaintingAutomatic PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
-  INSTALL( TARGETS InpaintingAutomatic RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
-
-SET(inpainting_InpaintingCIELab CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
-if(inpainting_InpaintingCIELab)
-  QT4_WRAP_UI(InpaintingCIELabUISrcs Interactive/BasicViewerWidget.ui
-              Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
-              Interactive/PriorityViewerWidget.ui
-              Interactive/ManualPatchSelectionDialog.ui)
-  QT4_WRAP_CPP(InpaintingCIELabMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
-                       Visitors/NearestNeighborsDisplayVisitor.hpp
-                       Interactive/TopPatchesWidget.h
-                       Interactive/TopPatchesDialog.h
-                       Interactive/Delegates/PixmapDelegate.h
-                       Interactive/PriorityViewerWidget.h
-                       Interactive/ManualPatchSelectionDialog.h
-                       Interactive/MovablePatch.h)
-
-  ADD_EXECUTABLE(InpaintingCIELab InpaintingCIELab.cpp
-                Interactive/Layer.cpp
-                Interactive/Delegates/PixmapDelegate.cpp
-                Interactive/MovablePatch.cpp
-                Interactive/HelpersQt.cpp
-                Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
-                ${InpaintingCIELabUISrcs} ${InpaintingCIELabMOCSrcs})
-
-  TARGET_LINK_LIBRARIES(InpaintingCIELab PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
-  INSTALL( TARGETS InpaintingCIELab RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
+# 
+# SET(inpainting_InpaintingRGBD CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+# if(inpainting_InpaintingRGBD)
+#   QT4_WRAP_UI(InpaintingRGBD_UISrcs Interactive/BasicViewerWidget.ui
+#               Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
+#               Interactive/PriorityViewerWidget.ui
+#               Interactive/ManualPatchSelectionDialog.ui)
+#   QT4_WRAP_CPP(InpaintingRGBD_MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
+#                        Visitors/NearestNeighborsDisplayVisitor.hpp
+#                        #NearestNeighbor/VisualSelectionBest.hpp
+#                        Interactive/TopPatchesWidget.h
+#                        Interactive/TopPatchesDialog.h
+#                        Interactive/Delegates/PixmapDelegate.h
+#                        Interactive/PriorityViewerWidget.h
+#                        Interactive/ManualPatchSelectionDialog.h
+#                        Interactive/MovablePatch.h)
+# 
+#   ADD_EXECUTABLE(InpaintingRGBD InpaintingRGBD.cpp
+#                 Interactive/Layer.cpp
+#                 Interactive/Delegates/PixmapDelegate.cpp
+#                 Interactive/MovablePatch.cpp
+#                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+#                 ${InpaintingRGBD_UISrcs} ${InpaintingRGBD_MOCSrcs})
+# 
+#   TARGET_LINK_LIBRARIES(InpaintingRGBD PatchBasedInpainting
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers libMask)
+#   INSTALL( TARGETS InpaintingRGBD RUNTIME DESTINATION ${INSTALL_DIR} )
+# endif()
+# 
+# SET(inpainting_InpaintingAutomatic CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+# if(inpainting_InpaintingAutomatic)
+#   QT4_WRAP_UI(InpaintingAutomatic_UISrcs Interactive/BasicViewerWidget.ui
+#               Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
+#               Interactive/PriorityViewerWidget.ui
+#               Interactive/ManualPatchSelectionDialog.ui)
+#   QT4_WRAP_CPP(InpaintingAutomatic_MOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
+#                        Visitors/NearestNeighborsDisplayVisitor.hpp
+#                        #NearestNeighbor/VisualSelectionBest.hpp
+#                        Interactive/TopPatchesWidget.h
+#                        Interactive/TopPatchesDialog.h
+#                        Interactive/Delegates/PixmapDelegate.h
+#                        Interactive/PriorityViewerWidget.h
+#                        Interactive/ManualPatchSelectionDialog.h
+#                        Interactive/MovablePatch.h)
+# 
+#   ADD_EXECUTABLE(InpaintingAutomatic InpaintingAutomatic.cpp
+#                 Interactive/Layer.cpp
+#                 Interactive/Delegates/PixmapDelegate.cpp
+#                 Interactive/MovablePatch.cpp
+#                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+#                 ${InpaintingAutomatic_UISrcs} ${InpaintingAutomatic_MOCSrcs})
+# 
+#   TARGET_LINK_LIBRARIES(InpaintingAutomatic PatchBasedInpainting
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers libMask)
+#   INSTALL( TARGETS InpaintingAutomatic RUNTIME DESTINATION ${INSTALL_DIR} )
+# endif()
+# 
+# SET(inpainting_InpaintingCIELab CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+# if(inpainting_InpaintingCIELab)
+#   QT4_WRAP_UI(InpaintingCIELabUISrcs Interactive/BasicViewerWidget.ui
+#               Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
+#               Interactive/PriorityViewerWidget.ui
+#               Interactive/ManualPatchSelectionDialog.ui)
+#   QT4_WRAP_CPP(InpaintingCIELabMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp
+#                        Visitors/NearestNeighborsDisplayVisitor.hpp
+#                        Interactive/TopPatchesWidget.h
+#                        Interactive/TopPatchesDialog.h
+#                        Interactive/Delegates/PixmapDelegate.h
+#                        Interactive/PriorityViewerWidget.h
+#                        Interactive/ManualPatchSelectionDialog.h
+#                        Interactive/MovablePatch.h)
+# 
+#   ADD_EXECUTABLE(InpaintingCIELab InpaintingCIELab.cpp
+#                 Interactive/Layer.cpp
+#                 Interactive/Delegates/PixmapDelegate.cpp
+#                 Interactive/MovablePatch.cpp
+#                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+#                 ${InpaintingCIELabUISrcs} ${InpaintingCIELabMOCSrcs})
+# 
+#   TARGET_LINK_LIBRARIES(InpaintingCIELab PatchBasedInpainting
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers libMask)
+#   INSTALL( TARGETS InpaintingCIELab RUNTIME DESTINATION ${INSTALL_DIR} )
+# endif()
 
 # add_subdirectory(Interactive)
 SET(inpainting_InpaintingWithVerification CACHE BOOL "Build an inpainting program that displays a list of the top patches for the user to select if the best patch does not pass some acceptance tests.")
@@ -203,13 +202,13 @@ if(inpainting_InpaintingWithVerification)
                 Interactive/Layer.cpp
                 Interactive/Delegates/PixmapDelegate.cpp
                 Interactive/MovablePatch.cpp
-                Interactive/HelpersQt.cpp
                 Interactive/PatchHighlighter.cpp
-                Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+                Interactive/InteractorStyleImageWithDrag.cpp
+                Interactive/ImageCamera.cpp
                 ${InpaintingWithVerificationUISrcs} ${InpaintingWithVerificationMOCSrcs})
 
   TARGET_LINK_LIBRARIES(InpaintingWithVerification PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libVTKHelpers libITKHelpers libITKVTKHelpers libMask libQtHelpers)
   INSTALL( TARGETS InpaintingWithVerification RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
@@ -233,7 +232,6 @@ endif()
 #                 Interactive/Layer.cpp
 #                 Interactive/Delegates/PixmapDelegate.cpp
 #                 Interactive/MovablePatch.cpp
-#                 Interactive/HelpersQt.cpp
 #                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
 #                 ${InpaintingVectorizedUISrcs} ${InpaintingVectorizedMOCSrcs})
 # 
@@ -251,7 +249,7 @@ if(inpainting_PrecomputedInpainting)
                 ${PrecomputedInpaintingUISrcs} ${PrecomputedInpaintingMOCSrcs})
 
   TARGET_LINK_LIBRARIES(PrecomputedInpainting PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers)
   INSTALL( TARGETS PrecomputedInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
@@ -307,7 +305,7 @@ if(inpainting_ClassicalImageInpaintingWithVisualOutput)
     Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
     ${ClassicalImageInpaintingWithVisualOutputUISrcs} ${ClassicalImageInpaintingWithVisualOutputMOCSrcs})
 
-  TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithVisualOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+  TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithVisualOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers)
   INSTALL( TARGETS ClassicalImageInpaintingWithVisualOutput RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 

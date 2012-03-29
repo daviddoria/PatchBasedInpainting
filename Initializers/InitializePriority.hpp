@@ -5,12 +5,9 @@
 #include "itkImageRegionConstIteratorWithIndex.h"
 
 // Custom
-#include "ImageProcessing/Mask.h"
+#include "Mask/Mask.h"
 #include "Priority/Priority.h"
-#include "Helpers/ITKHelpers.h"
-
-// Debug
-#include "Helpers/OutputHelpers.h"
+#include "ITKHelpers/ITKHelpers.h"
 
 template <typename TBoundaryNodeQueue, typename TPriorityMap, typename TBoundaryStatusMap, typename TPriority>
 inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& boundaryNodeQueue, TPriorityMap& priorityMap,

@@ -19,7 +19,7 @@
 #ifndef BoundaryEnergy_H
 #define BoundaryEnergy_H
 
-#include "Mask.h"
+#include "Mask/Mask.h"
 
 #include "itkVariableLengthVector.h"
 

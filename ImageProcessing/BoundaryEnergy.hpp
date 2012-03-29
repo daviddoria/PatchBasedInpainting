@@ -1,8 +1,7 @@
 #include "BoundaryEnergy.h" // Appease syntax parser
 
-#include "Helpers/ITKHelpers.h"
-#include "Helpers/OutputHelpers.h"
-#include "ImageProcessing/MaskOperations.h"
+#include "ITKHelpers/ITKHelpers.h"
+#include "Mask/MaskOperations.h"
 #include "ImageProcessing/PixelFilterFunctors.hpp"
 
 template<typename TImage>
@@ -64,7 +63,7 @@ float BoundaryEnergy<TImage>::operator()(const itk::ImageRegion<2>& sourceRegion
     std::stringstream ss;
     ss << "Cannot compute boundary energy - there are no boundary pixels in the specified target region: " << targetRegion;
     ITKHelpers::SetRegionToConstant(MaskImage, targetRegion, 122);
-    OutputHelpers::WriteImage(MaskImage, "BoundaryError.png");
+    ITKHelpers::WriteImage(MaskImage, "BoundaryError.png");
     throw std::runtime_error(ss.str());
   }
 

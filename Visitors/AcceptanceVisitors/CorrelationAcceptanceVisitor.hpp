@@ -9,7 +9,7 @@
 #include "Visitors/AcceptanceVisitors/AverageFunctor.hpp"
 
 // Custom
-#include "Helpers/ITKHelpers.h"
+#include "ITKHelpers/ITKHelpers.h"
 
 // ITK
 #include "itkAddImageFilter.h"

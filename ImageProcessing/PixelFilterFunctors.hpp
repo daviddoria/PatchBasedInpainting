@@ -20,7 +20,7 @@
 #define PixelFilterFunctors_H
 
 // Custom
-#include "Mask.h"
+#include "Mask/Mask.h"
 
 // ITK
 #include "itkImageRegionConstIteratorWithIndex.h"

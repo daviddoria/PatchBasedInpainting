@@ -1,7 +1,7 @@
 #ifndef MaskImagePatchInpainter_HPP
 #define MaskImagePatchInpainter_HPP
 
-#include "Helpers/ITKHelpers.h"
+#include "ITKHelpers/ITKHelpers.h"
 
 /**
  * This class template is a patch inpainter (i.e. paints the holes in one patch with the values of

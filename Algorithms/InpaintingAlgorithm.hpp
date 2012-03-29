@@ -11,7 +11,7 @@
 #include <stdexcept>
 
 // Custom
-#include "Helpers/BoostHelpers.h"
+#include "BoostHelpers/BoostHelpers.h"
 
 /** When this function is called, the priority-queue must already be filled with
   * all the boundary nodes (which should also have their boundaryStatusMap set appropriately).

@@ -21,7 +21,7 @@
 
 #include "Priority.h"
 
-#include "ImageProcessing/Mask.h"
+#include "Mask/Mask.h"
 
 /**
 \class PriorityOnionPeel

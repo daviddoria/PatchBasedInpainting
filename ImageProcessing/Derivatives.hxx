@@ -18,8 +18,8 @@
 
 // Custom
 #include "Helpers/Helpers.h"
-#include "Helpers/ITKHelpers.h"
-#include "Mask.h"
+#include "ITKHelpers/ITKHelpers.h"
+#include "Mask/Mask.h"
 
 // ITK
 #include "itkGaussianOperator.h"

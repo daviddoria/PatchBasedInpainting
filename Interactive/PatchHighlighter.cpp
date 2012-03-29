@@ -13,9 +13,10 @@
 
 // Custom
 #include "Helpers/Helpers.h"
-#include "Helpers/VTKHelpers.h"
-#include "Helpers/ITKVTKHelpers.h"
-#include "HelpersQt.h"
+#include "ITKHelpers/ITKHelpers.h"
+#include "VTKHelpers/VTKHelpers.h"
+#include "ITKVTKHelpers/ITKVTKHelpers.h"
+#include "QtHelpers/QtHelpers.h"
 #include "InteractorStyleImageWithDrag.h"
 
 PatchHighlighter::PatchHighlighter() : Radius(0), Renderer(NULL)
@@ -42,7 +43,7 @@ PatchHighlighter::PatchHighlighter(const unsigned int radius, vtkRenderer* const
   // Create the patch (transparent center and solid outline)
   ITKVTKHelpers::CreateTransparentVTKImage(ITKHelpers::SizeFromRadius(radius), this->PatchLayer.ImageData);
   unsigned char userPatchColor[3];
-  HelpersQt::QColorToUCharColor(color, userPatchColor);
+  QtHelpers::QColorToUCharColor(color, userPatchColor);
   VTKHelpers::BlankAndOutlineImage(this->PatchLayer.ImageData, userPatchColor);
 
   this->PatchLayer.ImageSlice->SetPosition(position);

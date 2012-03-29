@@ -7,10 +7,10 @@
 #include "Visitors/AcceptanceVisitors/AcceptanceVisitorParent.h"
 
 // Custom
-#include "ImageProcessing/Mask.h"
-#include "ImageProcessing/MaskOperations.h"
-#include "Helpers/ITKHelpers.h"
-#include "Utilities/Histogram.h"
+#include "Mask/Mask.h"
+#include "Mask/MaskOperations.h"
+#include "ITKHelpers/ITKHelpers.h"
+#include "Utilities//Histogram.h"
 
 // ITK
 #include "itkImage.h"

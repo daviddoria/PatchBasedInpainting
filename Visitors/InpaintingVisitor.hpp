@@ -14,9 +14,8 @@
 #include <boost/property_map/property_map.hpp>
 
 // Helpers
-#include "Helpers/ITKHelpers.h"
-#include "Helpers/OutputHelpers.h"
-#include "Helpers/BoostHelpers.h"
+#include "ITKHelpers/ITKHelpers.h"
+#include "BoostHelpers/BoostHelpers.h"
 
 /**
  * This is a visitor that complies with the InpaintingVisitorConcept. It forwards
@@ -254,7 +253,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   void InpaintingComplete() const
   {
-    OutputHelpers::WriteImage(Image, ResultFileName);
+    ITKHelpers::WriteImage(Image, ResultFileName);
   }
 
 }; // InpaintingVisitor

@@ -16,11 +16,11 @@
 
 // Custom
 #include "Helpers/Helpers.h"
-#include "Helpers/OutputHelpers.h"
-#include "Helpers/ITKVTKHelpers.h"
-#include "Interactive/HelpersQt.h"
+
+#include "ITKVTKHelpers/ITKVTKHelpers.h"
+#include "QtHelpers/QtHelpers.h"
 #include "InteractorStyleImageWithDrag.h"
-#include "ImageProcessing/Mask.h"
+#include "Mask/Mask.h"
 #include "Interactive/Delegates/PixmapDelegate.h"
 
 Q_DECLARE_METATYPE(std::vector<Node>)

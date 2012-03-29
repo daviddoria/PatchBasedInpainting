@@ -13,10 +13,14 @@
 
 // Custom
 #include "Helpers/Helpers.h"
-#include "Helpers/VTKHelpers.h"
-#include "Helpers/ITKVTKHelpers.h"
-#include "HelpersQt.h"
+#include "ITKHelpers/ITKHelpers.h"
+#include "VTKHelpers/VTKHelpers.h"
+#include "ITKVTKHelpers/ITKVTKHelpers.h"
+#include "QtHelpers/QtHelpers.h"
 #include "InteractorStyleImageWithDrag.h"
+
+// STL
+#include <stdexcept>
 
 MovablePatch::MovablePatch() : Radius(0), InteractorStyle(NULL), View(NULL), PatchScene(NULL)
 {
@@ -43,7 +47,7 @@ MovablePatch::MovablePatch(const unsigned int radius, InteractorStyleImageWithDr
   // Create the patch (transparent center and solid outline)
   ITKVTKHelpers::CreateTransparentVTKImage(ITKHelpers::SizeFromRadius(radius), this->PatchLayer.ImageData);
   unsigned char userPatchColor[3];
-  HelpersQt::QColorToUCharColor(color, userPatchColor);
+  QtHelpers::QColorToUCharColor(color, userPatchColor);
   VTKHelpers::BlankAndOutlineImage(this->PatchLayer.ImageData, userPatchColor);
 
   this->PatchLayer.ImageSlice->SetPosition(position);

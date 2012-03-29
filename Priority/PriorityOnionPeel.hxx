@@ -20,9 +20,8 @@
 
 // Custom
 #include "Helpers/Helpers.h"
-#include "Helpers/ITKHelpers.h"
-#include "Helpers/ITKVTKHelpers.h"
-#include "Helpers/OutputHelpers.h"
+#include "ITKHelpers/ITKHelpers.h"
+#include "ITKVTKHelpers/ITKVTKHelpers.h"
 
 template <typename TNode>
 void PriorityOnionPeel::Update(const TNode& sourceNode, const TNode& targetNode, const unsigned int patchNumber)

@@ -5,10 +5,9 @@
 
 // Custom
 #include "Visitors/InpaintingVisitorParent.h"
-#include "ImageProcessing/Mask.h"
-#include "Helpers/OutputHelpers.h"
-#include "Helpers/ITKHelpers.h"
-#include "Helpers/BoostHelpers.h"
+#include "Mask/Mask.h"
+#include "ITKHelpers/ITKHelpers.h"
+#include "BoostHelpers/BoostHelpers.h"
 
 // ITK
 #include "itkImage.h"
@@ -63,7 +62,7 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, HalfWidth);
 
-    OutputHelpers::WriteVectorImageRegionAsRGB(Image, sourceRegion,
+    ITKHelpers::WriteVectorImageRegionAsRGB(Image, sourceRegion,
                                                Helpers::GetSequentialFileName("sourcePatch",
                                                                               this->NumberOfFinishedVertices, "png"));
     }
@@ -74,10 +73,10 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
 
-    OutputHelpers::WriteVectorImageRegionAsRGB(Image, region,
+    ITKHelpers::WriteVectorImageRegionAsRGB(Image, region,
                                                Helpers::GetSequentialFileName("targetPatch",
                                                                               this->NumberOfFinishedVertices, "png"));
-    OutputHelpers::WriteRegion(MaskImage, region,
+    ITKHelpers::WriteRegion(MaskImage, region,
                                Helpers::GetSequentialFileName("maskPatch", this->NumberOfFinishedVertices, "png"));
 
 
@@ -86,7 +85,7 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
     holeColor[0] = 255;
     holeColor[1] = 0;
     holeColor[2] = 0;
-    OutputHelpers::WriteMaskedRegionPNG(Image, MaskImage, region, Helpers::GetSequentialFileName("maskedTargetPatch", this->NumberOfFinishedVertices, "png"),
+    MaskOperations::WriteMaskedRegionPNG(Image, MaskImage, region, Helpers::GetSequentialFileName("maskedTargetPatch", this->NumberOfFinishedVertices, "png"),
                        holeColor);
     }
   };
@@ -104,13 +103,13 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
   void FinishVertex(VertexDescriptorType target, VertexDescriptorType sourceNode)
   {
     //OutputHelpers::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask", this->NumberOfFinishedVertices, "png"));
-    OutputHelpers::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask",
+    ITKHelpers::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask",
                                                                         this->NumberOfFinishedVertices, "mha"));
     //OutputHelpers::WriteVectorImageAsRGB(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
-    OutputHelpers::WriteImage(Image, Helpers::GetSequentialFileName("output",
+    ITKHelpers::WriteImage(Image, Helpers::GetSequentialFileName("output",
                                                                     this->NumberOfFinishedVertices, "mha"));
 
-    OutputHelpers::WriteRGBImage(Image, Helpers::GetSequentialFileName("output",
+    ITKHelpers::WriteRGBImage(Image, Helpers::GetSequentialFileName("output",
                                                                     this->NumberOfFinishedVertices, "png"));
 
     typename TImage::PixelType holeColor;
@@ -119,7 +118,7 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
     holeColor[1] = 0;
     holeColor[2] = 0;
 
-    OutputHelpers::WriteMaskedRegionPNG(Image, MaskImage, Image->GetLargestPossibleRegion(), Helpers::GetSequentialFileName("maskedOutput", this->NumberOfFinishedVertices, "png"),
+    MaskOperations::WriteMaskedRegionPNG(Image, MaskImage, Image->GetLargestPossibleRegion(), Helpers::GetSequentialFileName("maskedOutput", this->NumberOfFinishedVertices, "png"),
                        holeColor);
 
 

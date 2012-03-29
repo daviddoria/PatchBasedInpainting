@@ -33,7 +33,7 @@
 
 // Custom
 // #include "ImageCamera.h"
-#include "ImageProcessing/Mask.h"
+#include "Mask/Mask.h"
 #include "Node.h"
 #include "Interactive/Layer.h"
 #include "Interactive/MovablePatch.h"

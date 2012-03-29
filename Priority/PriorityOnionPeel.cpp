@@ -1,11 +1,9 @@
 #include "PriorityOnionPeel.h"
 
-#include "Helpers/OutputHelpers.h"
-
 PriorityOnionPeel::PriorityOnionPeel(const Mask* const maskImage, const unsigned int patchRadius) :
 MaskImage(maskImage), PatchRadius(patchRadius)
 {
-  this->ConfidenceMapImage = FloatScalarImageType::New();
+  this->ConfidenceMapImage = ITKHelpers::FloatScalarImageType::New();
   InitializeConfidenceMap();
 }
 

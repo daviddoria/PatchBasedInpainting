@@ -7,8 +7,8 @@
 #include "Visitors/AcceptanceVisitors/AcceptanceVisitorParent.h"
 
 // Custom
-#include "Helpers/ITKHelpers.h"
-#include "Utilities/Statistics.h"
+#include "ITKHelpers/ITKHelpers.h"
+#include "Helpers/Statistics.h"
 
 /**
 

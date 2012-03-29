@@ -25,10 +25,10 @@
 
 // Custom
 #include "Helpers/Helpers.h"
-#include "Helpers/OutputHelpers.h"
-#include "Helpers/ITKVTKHelpers.h"
-#include "Helpers/VTKHelpers.h"
-#include "Interactive/HelpersQt.h"
+#include "ITKHelpers/ITKHelpers.h"
+#include "ITKVTKHelpers/ITKVTKHelpers.h"
+#include "VTKHelpers/VTKHelpers.h"
+#include "QtHelpers/QtHelpers.h"
 #include "InteractorStyleImageWithDrag.h"
 
 template <typename TPriority, typename TBoundaryStatusMapType>

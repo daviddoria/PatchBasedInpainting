@@ -7,8 +7,8 @@ endif(NOT QT4_FOUND)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(libGUI Layer.cpp InteractorStyleImageWithDrag.cpp HelpersQt.cpp ImageCamera.cpp)
-target_link_libraries(libGUI libHelpers ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES})
+add_library(libGUI Layer.cpp InteractorStyleImageWithDrag.cpp ImageCamera.cpp)
+target_link_libraries(libGUI libHelpers ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES} libQtHelpers)
 
 # if(BuildInteractive)
 #   message("Interactive/Building interactive.")
@@ -22,7 +22,6 @@ target_link_libraries(libGUI libHelpers ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} $
 #   ColorPalette.cpp
 #   DisplayState.cpp
 #   FileSelector.cpp
-#   HelpersQt.cpp
 #   ImageCamera.cpp
 #   ImageInput.cpp
 #   InpaintingComputationObject.cpp

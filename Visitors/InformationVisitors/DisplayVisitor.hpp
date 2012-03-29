@@ -5,9 +5,8 @@
 
 // Custom
 #include "Visitors/InpaintingVisitorParent.h"
-#include "ImageProcessing/Mask.h"
-#include "Helpers/OutputHelpers.h"
-#include "Helpers/ITKHelpers.h"
+#include "Mask/Mask.h"
+#include "ITKHelpers/ITKHelpers.h"
 #include "Node.h"
 
 // ITK

@@ -18,13 +18,13 @@
 
 #include "PriorityManual.h" // Appease syntax parser
 
-#include "Helpers/ITKHelpers.h"
+#include "ITKHelpers/ITKHelpers.h"
 
 template< typename TNode, typename TImage, typename TPriority>
 PriorityManual<TNode, TImage, TPriority>::PriorityManual(const TImage* const manualPriorityImage, TPriority* const priorityFunction) : PriorityFunction(priorityFunction)
 {
   this->ManualPriorityImage = UnsignedCharScalarImageType::New();
-  ITKHelpers::DeepCopy<UnsignedCharScalarImageType>(manualPriorityImage, this->ManualPriorityImage);
+  ITKHelpers::DeepCopy(manualPriorityImage, this->ManualPriorityImage);
 }
 
 // template< typename TImage, typename TPriority>

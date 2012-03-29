@@ -15,13 +15,13 @@
 
 // Custom
 #include "Helpers/Helpers.h"
-#include "Helpers/OutputHelpers.h"
-#include "Helpers/ITKVTKHelpers.h"
-#include "Interactive/HelpersQt.h"
+#include "ITKVTKHelpers/ITKVTKHelpers.h"
+#include "QtHelpers/QtHelpers.h"
 #include "InteractorStyleImageWithDrag.h"
-#include "ImageProcessing/Mask.h"
+#include "Mask/Mask.h"
 #include "Interactive/Delegates/PixmapDelegate.h"
 #include "Interactive/ManualPatchSelectionDialog.h"
+#include "Utilities/PatchHelpers.h"
 
 template <typename TImage>
 TopPatchesDialog<TImage>::TopPatchesDialog(TImage* const image, Mask* const mask, const unsigned int patchHalfWidth, QWidget* parent) :
@@ -87,7 +87,7 @@ void TopPatchesDialog<TImage>::SetQueryNode(const Node& queryNode)
 
   itk::Index<2> queryIndex = ITKHelpers::CreateIndex(queryNode);
   itk::ImageRegion<2> queryRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, PatchHalfWidth);
-  QImage maskedQueryPatch = HelpersQt::GetQImageMasked(Image, MaskImage, queryRegion);
+  QImage maskedQueryPatch = MaskOperations::GetQImageMasked(Image, MaskImage, queryRegion);
   MaskedQueryPatchItem = this->QueryPatchScene->addPixmap(QPixmap::fromImage(maskedQueryPatch));
 
   // We do this here because we could potentially call SetQueryNode after the widget is constructed as well.
@@ -112,7 +112,7 @@ void TopPatchesDialog<TImage>::slot_SingleClicked(const QModelIndex& selected)
   itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(Nodes[selected.row()]);
   itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, PatchHalfWidth);
   
-  QImage proposedPatch = HelpersQt::GetQImageCombinedPatch(Image, sourceRegion, queryRegion, MaskImage);
+  QImage proposedPatch = PatchHelpers::GetQImageCombinedPatch(Image, sourceRegion, queryRegion, MaskImage);
   ProposedPatchItem = this->ProposedPatchScene->addPixmap(QPixmap::fromImage(proposedPatch));
   gfxProposedPatch->fitInView(ProposedPatchItem);
 }

@@ -21,7 +21,7 @@
 
 #include "ImagePatchVectorized.h" // Appease syntax parser
 
-#include "ImageProcessing/Mask.h"
+#include "Mask/Mask.h"
 
 #include "itkImageRegionConstIteratorWithIndex.h"
 #include "itkImageRegionConstIterator.h"

@@ -21,7 +21,7 @@
 // Custom
 #include "Derivatives.h"
 #include "Helpers/Helpers.h"
-#include "MaskOperations.h"
+#include "Mask/MaskOperations.h"
 #include "Utilities/RotateVectors.h"
 
 // ITK

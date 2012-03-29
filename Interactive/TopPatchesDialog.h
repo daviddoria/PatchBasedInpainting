@@ -26,7 +26,7 @@
 #include <QObject>
 
 // Custom
-#include "ImageProcessing/Mask.h"
+#include "Mask/Mask.h"
 #include "Node.h"
 #include "Interactive/ModelView/ListModelPatches.h"
 

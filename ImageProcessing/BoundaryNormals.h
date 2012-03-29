@@ -19,7 +19,9 @@
 #ifndef BoundaryNormals_H
 #define BoundaryNormals_H
 
-#include "Mask.h"
+#include "Mask/Mask.h"
+
+#include "ITKHelpers/ITKHelpers.h"
 
 class BoundaryNormals
 {
@@ -28,7 +30,7 @@ public:
   
   BoundaryNormals(const UnsignedCharScalarImageType* const boundaryImage, const Mask* const mask);
 
-  void ComputeBoundaryNormals(const float blurVariance, FloatVector2ImageType* const boundaryNormals);
+  void ComputeBoundaryNormals(const float blurVariance, ITKHelpers::FloatVector2ImageType* const boundaryNormals);
 
 private:
   const UnsignedCharScalarImageType* BoundaryImage;

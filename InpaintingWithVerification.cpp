@@ -17,7 +17,6 @@
  *=========================================================================*/
 
 // Helpers
-#include "Helpers/OutputHelpers.h"
 
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
@@ -102,7 +101,6 @@
 #include <boost/graph/detail/d_ary_heap.hpp>
 
 // Debug
-#include "Helpers/OutputHelpers.h"
 
 // Qt
 #include <QApplication>

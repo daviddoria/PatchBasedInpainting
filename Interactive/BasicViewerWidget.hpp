@@ -29,12 +29,14 @@
 
 // Custom
 #include "Helpers/Helpers.h"
-#include "Helpers/OutputHelpers.h"
-#include "Helpers/ITKVTKHelpers.h"
-#include "Helpers/VTKHelpers.h"
-#include "Interactive/HelpersQt.h"
+#include "ITKHelpers/ITKHelpers.h"
+#include "ITKVTKHelpers/ITKVTKHelpers.h"
+#include "VTKHelpers/VTKHelpers.h"
+#include "QtHelpers/QtHelpers.h"
+#include "QtHelpers/ITKQtHelpers.h"
 #include "InteractorStyleImageWithDrag.h"
-#include "ImageProcessing/Mask.h"
+#include "Mask/Mask.h"
+#include "Mask/MaskOperations.h"
 
 template <typename TImage>
 BasicViewerWidget<TImage>::BasicViewerWidget(TImage* const image, Mask* const mask) : Image(image), MaskImage(mask), SourceHighlighter(NULL), TargetHighlighter(NULL)
@@ -151,11 +153,11 @@ void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sou
     }
   SourceHighlighter->SetRegion(sourceRegion);
   
-  QImage sourceImage = HelpersQt::GetQImageColor(Image, sourceRegion);
+  QImage sourceImage = ITKQtHelpers::GetQImageColor(Image, sourceRegion);
   QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
   gfxSource->fitInView(item);
 
-  QImage maskedSourceImage = HelpersQt::GetQImageMasked(Image, sourceRegion, MaskImage, targetRegion);
+  QImage maskedSourceImage = MaskOperations::GetQImageMasked(Image, sourceRegion, MaskImage, targetRegion);
   QGraphicsPixmapItem* maskedItem = this->MaskedSourcePatchScene->addPixmap(QPixmap::fromImage(maskedSourceImage));
   gfxMaskedSource->fitInView(maskedItem);
 
@@ -182,12 +184,12 @@ void BasicViewerWidget<TImage>::slot_UpdateTarget(const itk::ImageRegion<2>& tar
   //ITKVTKHelpers::OutlineRegion(this->ImageLayer.ImageData, targetRegion, red);
 
   // Target patch
-  QImage targetImage = HelpersQt::GetQImageColor(Image, targetRegion);
+  QImage targetImage = ITKQtHelpers::GetQImageColor(Image, targetRegion);
   QGraphicsPixmapItem* item = this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
   gfxTarget->fitInView(item);
 
   // Masked target patch
-  QImage maskedTargetImage = HelpersQt::GetQImageMasked(Image, MaskImage, targetRegion);
+  QImage maskedTargetImage = MaskOperations::GetQImageMasked(Image, MaskImage, targetRegion);
   QGraphicsPixmapItem* maskedItem = this->MaskedTargetPatchScene->addPixmap(QPixmap::fromImage(maskedTargetImage));
   gfxMaskedTarget->fitInView(maskedItem);
   
@@ -214,7 +216,7 @@ void BasicViewerWidget<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sou
 
   while(!maskIterator.IsAtEnd())
     {
-    FloatVectorImageType::PixelType pixel;
+    ITKHelpers::FloatVectorImageType::PixelType pixel;
 
     if(MaskImage->IsHole(maskIterator.GetIndex()))
       {
@@ -236,7 +238,7 @@ void BasicViewerWidget<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sou
     ++maskIterator;
     }
 
-  qimage = HelpersQt::GetQImageColor(resultPatch.GetPointer(), resultPatch->GetLargestPossibleRegion());
+  qimage = ITKQtHelpers::GetQImageColor(resultPatch.GetPointer(), resultPatch->GetLargestPossibleRegion());
 
   this->ResultPatchScene->clear();
   QGraphicsPixmapItem* item = this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));

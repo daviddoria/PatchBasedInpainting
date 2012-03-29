@@ -19,7 +19,7 @@
 #ifndef Isophotes_H
 #define Isophotes_H
 
-#include "Mask.h"
+#include "Mask/Mask.h"
 #include "ImageTypes.h"
 
 namespace Isophotes

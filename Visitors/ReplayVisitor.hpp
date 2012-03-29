@@ -17,8 +17,7 @@
 #include <boost/property_map/property_map.hpp>
 
 // Helpers
-#include "Helpers/ITKHelpers.h"
-#include "Helpers/OutputHelpers.h"
+#include "ITKHelpers/ITKHelpers.h"
 
 /**
  * This is a visitor that replays an inpainting from a log file.
@@ -142,7 +141,7 @@ struct ReplayVisitor : public InpaintingVisitorParent<TGraph>
 
   void InpaintingComplete() const
   {
-    OutputHelpers::WriteImage(Image, "output.mha");
+    ITKHelpers::WriteImage(Image, "output.mha");
   }
 
 }; // Replay
