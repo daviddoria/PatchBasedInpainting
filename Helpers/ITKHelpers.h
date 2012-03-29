@@ -172,10 +172,6 @@ template<typename TImage>
 void DeepCopyInRegion(const TImage* const input, const itk::ImageRegion<2>& region, TImage* const output);
 
 template <class TImage>
-void CopyRegion(const TImage* const sourceImage, TImage* const targetImage, const itk::Index<2>& sourcePosition,
-                const itk::Index<2>& targetPosition, const unsigned int radius);
-
-template <class TImage>
 void CopyRegion(const TImage* const sourceImage, TImage* const targetImage, const itk::ImageRegion<2>& sourceRegion,
                const itk::ImageRegion<2>& targetRegion);
 
