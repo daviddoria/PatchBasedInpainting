@@ -10,7 +10,6 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) #fix the dynamic linking error (RPAT
 # This is needed for shared_ptr and the trick using enable_if and if_fundamental to allow scalars to be treated as the 0th component of a vector.
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
 
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 # VTK
@@ -28,15 +27,20 @@ INCLUDE(${ITK_USE_FILE})
 # add_definitions(${PCL_DEFINITIONS})
 
 # Check for Qt4. If it is available, build the PatchBasedInpainting library using it so that SelfPatchCompare can use QtConcurrent.
-FIND_PACKAGE(Qt4)
-if(QT4_FOUND)
-  message ( "QT4 found successfully." )
-  INCLUDE(${QT_USE_FILE})
-  list(APPEND compileflags "USE_QT_PARALLEL")
-else ( QT4_FOUND )
-  message ( "QT4 NOT found successfully." )
-endif ( QT4_FOUND )
+# FIND_PACKAGE(Qt4)
+# if(QT4_FOUND)
+#   message ( "QT4 found successfully." )
+#   INCLUDE(${QT_USE_FILE})
+#   list(APPEND compileflags "USE_QT_PARALLEL")
+# else ( QT4_FOUND )
+#   message ( "QT4 NOT found successfully." )
+# endif ( QT4_FOUND )
 
+FIND_PACKAGE(Qt4)
+INCLUDE(${QT_USE_FILE})
+list(APPEND compileflags "USE_QT_PARALLEL")
+
+# Submodules
 add_subdirectory(Mask)
 add_subdirectory(Helpers)
 add_subdirectory(ITKHelpers)
@@ -45,6 +49,7 @@ add_subdirectory(ITKVTKHelpers)
 add_subdirectory(QtHelpers)
 add_subdirectory(BoostHelpers)
 
+# Core source files
 add_library(PatchBasedInpainting
 ImageProcessing/Derivatives.cpp
 Utilities/itkCommandLineArgumentParser.cxx
@@ -208,7 +213,7 @@ if(inpainting_InpaintingWithVerification)
                 ${InpaintingWithVerificationUISrcs} ${InpaintingWithVerificationMOCSrcs})
 
   TARGET_LINK_LIBRARIES(InpaintingWithVerification PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libVTKHelpers libITKHelpers libITKVTKHelpers libMask libQtHelpers)
+                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers libVTKHelpers libITKHelpers libITKVTKHelpers libMask libQtHelpers)
   INSTALL( TARGETS InpaintingWithVerification RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 

@@ -32,6 +32,7 @@ class InteractorStyleImageWithDrag;
 // Qt
 #include <QColor>
 #include <QGraphicsScene>
+#include <QObject>
 class QGraphicsView;
 
 // VTK
