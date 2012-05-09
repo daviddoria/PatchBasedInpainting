@@ -53,6 +53,16 @@ add_subdirectory(ITKVTKHelpers)
 add_subdirectory(QtHelpers)
 add_subdirectory(BoostHelpers)
 
+if( (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Mask/.git") OR
+(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Helpers/.git") OR
+(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKHelpers/.git") OR
+(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VTKHelpers/.git") OR
+(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKVTKHelpers/.git") OR
+(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/QtHelpers/.git") OR
+(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/BoostHelpers/.git") )
+  message( SEND_ERROR "At least one of the git submodules is not available. Please run git submodule update --init --recursive")
+endif()
+
 # Core source files
 add_library(PatchBasedInpainting
 ImageProcessing/Derivatives.cpp
