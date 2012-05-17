@@ -24,6 +24,9 @@ endif( "${VTK_MAJOR_VERSION}" LESS 6 )
 FIND_PACKAGE(ITK REQUIRED)
 INCLUDE(${ITK_USE_FILE})
 
+#FIND_PACKAGE(Boost COMPONENTS array REQUIRED) # 'array' does not seem to be a library
+#INCLUDE(${Boost_USE_FILE}) # Boost_USE_FILE is not a real variable
+
 # PCL
 # find_package(PCL 1.4 REQUIRED)
 # include_directories(${PCL_INCLUDE_DIRS})
@@ -78,18 +81,17 @@ Priority/PriorityRandom.cpp
 )
 
 # Interactive
-# SET(BuildInteractive CACHE BOOL "Build the interactive version.")
-# if(BuildInteractive)
-#   add_subdirectory(Interactive)
-# endif()
-# 
-# SET(BuildViewer CACHE BOOL "Build the viewer.")
-# if(BuildViewer)
-#   message("Building the viewer.")
-#   add_subdirectory(Interactive)
-# endif()
+SET(BuildInteractive CACHE BOOL "Build the interactive version.")
+if(BuildInteractive)
+  add_subdirectory(Interactive)
+endif()
 
-add_subdirectory(Interactive)
+SET(BuildViewer CACHE BOOL "Build the viewer.")
+if(BuildViewer)
+  message("Building the viewer.")
+  add_subdirectory(Interactive)
+endif()
+
 # SET(InpaintingWithLocalSearch CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
 # if(InpaintingWithLocalSearch)
 #   QT4_WRAP_UI(InpaintingWithLocalSearchUISrcs Interactive/BasicViewerWidget.ui
@@ -227,7 +229,8 @@ if(inpainting_InpaintingWithVerification)
                 ${InpaintingWithVerificationUISrcs} ${InpaintingWithVerificationMOCSrcs})
 
   TARGET_LINK_LIBRARIES(InpaintingWithVerification PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers libVTKHelpers libITKHelpers libITKVTKHelpers libMask libQtHelpers)
+                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES}
+                        libHelpers libVTKHelpers libITKHelpers libITKVTKHelpers libMask libQtHelpers)
   INSTALL( TARGETS InpaintingWithVerification RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
@@ -259,18 +262,18 @@ endif()
 #   INSTALL( TARGETS InpaintingVectorized RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 
-SET(inpainting_PrecomputedInpainting CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
-if(inpainting_PrecomputedInpainting)
-  QT4_WRAP_UI(PrecomputedInpaintingUISrcs )
-  QT4_WRAP_CPP(PrecomputedInpaintingMOCSrcs )
-
-  ADD_EXECUTABLE(PrecomputedInpainting PrecomputedInpainting.cpp
-                ${PrecomputedInpaintingUISrcs} ${PrecomputedInpaintingMOCSrcs})
-
-  TARGET_LINK_LIBRARIES(PrecomputedInpainting PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers)
-  INSTALL( TARGETS PrecomputedInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
+# SET(inpainting_PrecomputedInpainting CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+# if(inpainting_PrecomputedInpainting)
+#   QT4_WRAP_UI(PrecomputedInpaintingUISrcs )
+#   QT4_WRAP_CPP(PrecomputedInpaintingMOCSrcs )
+# 
+#   ADD_EXECUTABLE(PrecomputedInpainting PrecomputedInpainting.cpp
+#                 ${PrecomputedInpaintingUISrcs} ${PrecomputedInpaintingMOCSrcs})
+# 
+#   TARGET_LINK_LIBRARIES(PrecomputedInpainting PatchBasedInpainting
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers)
+#   INSTALL( TARGETS PrecomputedInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+# endif()
 
 # add_subdirectory(Interactive)
 # SET(InpaintingWithManualSelection CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for manual selection.")
@@ -314,21 +317,19 @@ endif()
 # endif()
 # 
 # 
-SET(inpainting_ClassicalImageInpaintingWithVisualOutput CACHE BOOL "Build a traditional patch comparison image inpainting that displays the image at every iteration.")
-if(inpainting_ClassicalImageInpaintingWithVisualOutput)
-  QT4_WRAP_UI(ClassicalImageInpaintingWithVisualOutputUISrcs Interactive/BasicViewerWidget.ui)
-  QT4_WRAP_CPP(ClassicalImageInpaintingWithVisualOutputMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp)
-
-  ADD_EXECUTABLE(ClassicalImageInpaintingWithVisualOutput ClassicalImageInpaintingWithVisualOutput.cpp
-    Interactive/Layer.cpp
-    Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
-    ${ClassicalImageInpaintingWithVisualOutputUISrcs} ${ClassicalImageInpaintingWithVisualOutputMOCSrcs})
-
-  TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithVisualOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers)
-  INSTALL( TARGETS ClassicalImageInpaintingWithVisualOutput RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
-
-
+# SET(inpainting_ClassicalImageInpaintingWithVisualOutput CACHE BOOL "Build a traditional patch comparison image inpainting that displays the image at every iteration.")
+# if(inpainting_ClassicalImageInpaintingWithVisualOutput)
+#   QT4_WRAP_UI(ClassicalImageInpaintingWithVisualOutputUISrcs Interactive/BasicViewerWidget.ui)
+#   QT4_WRAP_CPP(ClassicalImageInpaintingWithVisualOutputMOCSrcs Interactive/BasicViewerWidget.h Visitors/InformationVisitors/DisplayVisitor.hpp)
+# 
+#   ADD_EXECUTABLE(ClassicalImageInpaintingWithVisualOutput ClassicalImageInpaintingWithVisualOutput.cpp
+#     Interactive/Layer.cpp
+#     Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
+#     ${ClassicalImageInpaintingWithVisualOutputUISrcs} ${ClassicalImageInpaintingWithVisualOutputMOCSrcs})
+# 
+#   TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithVisualOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers)
+#   INSTALL( TARGETS ClassicalImageInpaintingWithVisualOutput RUNTIME DESTINATION ${INSTALL_DIR} )
+# endif()
 
 
 
@@ -342,43 +343,45 @@ endif()
 
 
 
-
-SET(inpainting_ClassicalImageInpainting CACHE BOOL "Build a traditional patch comparison image inpainting.")
-if(inpainting_ClassicalImageInpainting)
-  ADD_EXECUTABLE(ClassicalImageInpainting ClassicalImageInpainting.cpp)
-  TARGET_LINK_LIBRARIES(ClassicalImageInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
-  INSTALL( TARGETS ClassicalImageInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
-
-SET(ClassicalImageInpaintingWithTextOutput CACHE BOOL "Build a traditional patch comparison image inpainting.")
-if(ClassicalImageInpaintingWithTextOutput)
-  ADD_EXECUTABLE(ClassicalImageInpaintingWithTextOutput ClassicalImageInpaintingWithTextOutput.cpp)
-  TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithTextOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
-  INSTALL( TARGETS ClassicalImageInpaintingWithTextOutput RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
-
-
-
-SET(inpainting_SmallPatchBigPatchInpainting CACHE BOOL "Build a two step (compare small patches, then compare big patches at the best of the small patches) image inpainting.")
-if(inpainting_SmallPatchBigPatchInpainting)
-  ADD_EXECUTABLE(SmallPatchBigPatchInpainting SmallPatchBigPatchInpainting.cpp)
-  TARGET_LINK_LIBRARIES(SmallPatchBigPatchInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
-  INSTALL( TARGETS SmallPatchBigPatchInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
-
-SET(inpainting_NarrowSearchByFeaturesInpainting CACHE BOOL "Build a two step (features, then patch comparison) image inpainting.")
-if(inpainting_NarrowSearchByFeaturesInpainting)
-  ADD_EXECUTABLE(NarrowSearchByFeaturesInpainting NarrowSearchByFeaturesInpainting.cpp PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
-  TARGET_LINK_LIBRARIES(NarrowSearchByFeaturesInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} libHelpers)
-  INSTALL( TARGETS NarrowSearchByFeaturesInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
-
-SET(inpainting_NarrowSearchByNormalsInpainting CACHE BOOL "Build a two step (normals, then patch comparison) image inpainting.")
-if(inpainting_NarrowSearchByNormalsInpainting)
-  ADD_EXECUTABLE(NarrowSearchByNormalsInpainting NarrowSearchByNormalsInpainting.cpp PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
-  TARGET_LINK_LIBRARIES(NarrowSearchByNormalsInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} libHelpers)
-  INSTALL( TARGETS NarrowSearchByNormalsInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
-endif()
+# 
+# 
+# 
+# SET(inpainting_ClassicalImageInpainting CACHE BOOL "Build a traditional patch comparison image inpainting.")
+# if(inpainting_ClassicalImageInpainting)
+#   ADD_EXECUTABLE(ClassicalImageInpainting ClassicalImageInpainting.cpp)
+#   TARGET_LINK_LIBRARIES(ClassicalImageInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+#   INSTALL( TARGETS ClassicalImageInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+# endif()
+# 
+# SET(ClassicalImageInpaintingWithTextOutput CACHE BOOL "Build a traditional patch comparison image inpainting.")
+# if(ClassicalImageInpaintingWithTextOutput)
+#   ADD_EXECUTABLE(ClassicalImageInpaintingWithTextOutput ClassicalImageInpaintingWithTextOutput.cpp)
+#   TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithTextOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+#   INSTALL( TARGETS ClassicalImageInpaintingWithTextOutput RUNTIME DESTINATION ${INSTALL_DIR} )
+# endif()
+# 
+# 
+# 
+# SET(inpainting_SmallPatchBigPatchInpainting CACHE BOOL "Build a two step (compare small patches, then compare big patches at the best of the small patches) image inpainting.")
+# if(inpainting_SmallPatchBigPatchInpainting)
+#   ADD_EXECUTABLE(SmallPatchBigPatchInpainting SmallPatchBigPatchInpainting.cpp)
+#   TARGET_LINK_LIBRARIES(SmallPatchBigPatchInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+#   INSTALL( TARGETS SmallPatchBigPatchInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+# endif()
+# 
+# SET(inpainting_NarrowSearchByFeaturesInpainting CACHE BOOL "Build a two step (features, then patch comparison) image inpainting.")
+# if(inpainting_NarrowSearchByFeaturesInpainting)
+#   ADD_EXECUTABLE(NarrowSearchByFeaturesInpainting NarrowSearchByFeaturesInpainting.cpp PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
+#   TARGET_LINK_LIBRARIES(NarrowSearchByFeaturesInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} libHelpers)
+#   INSTALL( TARGETS NarrowSearchByFeaturesInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+# endif()
+# 
+# SET(inpainting_NarrowSearchByNormalsInpainting CACHE BOOL "Build a two step (normals, then patch comparison) image inpainting.")
+# if(inpainting_NarrowSearchByNormalsInpainting)
+#   ADD_EXECUTABLE(NarrowSearchByNormalsInpainting NarrowSearchByNormalsInpainting.cpp PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
+#   TARGET_LINK_LIBRARIES(NarrowSearchByNormalsInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} libHelpers)
+#   INSTALL( TARGETS NarrowSearchByNormalsInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+# endif()
 
 SET(inpainting_BuildTests CACHE BOOL "Build tests.")
 if(inpainting_BuildTests)
