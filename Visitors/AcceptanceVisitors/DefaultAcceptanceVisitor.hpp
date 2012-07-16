@@ -7,7 +7,7 @@
 #include "Visitors/AcceptanceVisitors/AcceptanceVisitorParent.h"
 
 /**
-
+  This acceptance visitor always accepts a match.
  */
 template <typename TGraph>
 struct DefaultAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>

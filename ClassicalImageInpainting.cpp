@@ -17,7 +17,7 @@
  *=========================================================================*/
 
 // Custom
-#include "Helpers/OutputHelpers.h"
+#include "Helpers/Helpers.h"
 
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
@@ -27,6 +27,7 @@
 
 // Inpainting visitors
 #include "Visitors/InpaintingVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
 
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchBestProperty.hpp"
@@ -43,6 +44,7 @@
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
 
 // Inpainting
 #include "Algorithms/InpaintingAlgorithm.hpp"
@@ -57,9 +59,6 @@
 #include <boost/graph/grid_graph.hpp>
 #include <boost/property_map/property_map.hpp>
 #include <boost/graph/detail/d_ary_heap.hpp>
-
-// Debug
-#include "Helpers/HelpersOutput.h"
 
 // Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 filled.mha
 int main(int argc, char *argv[])
@@ -93,6 +92,7 @@ int main(int argc, char *argv[])
   std::cout << "Patch half width: " << patch_half_width << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
+  typedef itk::VectorImage<float, 2> FloatVectorImageType;
   typedef FloatVectorImageType ImageType;
 
   typedef  itk::ImageFileReader<ImageType> ImageReaderType;
@@ -142,8 +142,8 @@ int main(int argc, char *argv[])
   ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
 
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
-  typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
-  InpainterType patchInpainter(patch_half_width, fillStatusMap);
+  typedef MaskImagePatchInpainter InpainterType;
+  InpainterType patchInpainter(patch_half_width, mask);
 
   // Create the priority function
   typedef PriorityRandom PriorityType;
@@ -166,29 +166,41 @@ int main(int argc, char *argv[])
       ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patch_half_width);
 
+  typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
+  AcceptanceVisitorType acceptanceVisitor;
+
   // Create the inpainting visitor
-  typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
-                            ImagePatchDescriptorVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType>
+  typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
+                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType,
+                            PriorityMapType, BoundaryStatusMapType>
                             InpaintingVisitorType;
-  InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
-                                          imagePatchDescriptorVisitor, priorityMap, &priorityFunction, patch_half_width,
-                                          boundaryStatusMap);
-  
+  InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
+                                          imagePatchDescriptorVisitor, acceptanceVisitor, priorityMap,
+                                          &priorityFunction, patch_half_width,
+                                          boundaryStatusMap, outputFilename);
+
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage(mask, &inpaintingVisitor, graph, fillStatusMap);
+  InitializeFromMaskImage<InpaintingVisitorType, VertexDescriptorType>(mask, &inpaintingVisitor);
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
 
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > PatchDifferenceType;
+
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
-                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
+                                   PatchDifferenceType> BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
 
   // Perform the inpainting
-  InpaintingAlgorithm(graph, inpaintingVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
+  InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, linearSearchBest, patchInpainter);
 
+//   InpaintingAlgorithmWithVerification<
+//                                 VertexListGraphType, CompositeInpaintingVisitorType, BoundaryStatusMapType,
+//                                 BoundaryNodeQueueType, KNNSearchType, BestSearchType, ManualSearchType, InpainterType>,
+//                                 graph, compositeInpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, knnSearch,
+//                                 bestSearch, boost::ref(manualSearchBest), patchInpainter))
   return EXIT_SUCCESS;
 }

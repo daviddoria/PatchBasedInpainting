@@ -27,12 +27,6 @@ INCLUDE(${ITK_USE_FILE})
 #FIND_PACKAGE(Boost COMPONENTS array REQUIRED) # 'array' does not seem to be a library
 #INCLUDE(${Boost_USE_FILE}) # Boost_USE_FILE is not a real variable
 
-# PCL
-# find_package(PCL 1.4 REQUIRED)
-# include_directories(${PCL_INCLUDE_DIRS})
-# link_directories(${PCL_LIBRARY_DIRS})
-# add_definitions(${PCL_DEFINITIONS})
-
 # Check for Qt4. If it is available, build the PatchBasedInpainting library using it so that SelfPatchCompare can use QtConcurrent.
 # FIND_PACKAGE(Qt4)
 # if(QT4_FOUND)
@@ -48,13 +42,33 @@ INCLUDE(${QT_USE_FILE})
 list(APPEND compileflags "USE_QT_PARALLEL")
 
 # Submodules
-add_subdirectory(Mask)
-add_subdirectory(Helpers)
-add_subdirectory(ITKHelpers)
-add_subdirectory(VTKHelpers)
-add_subdirectory(ITKVTKHelpers)
-add_subdirectory(QtHelpers)
-add_subdirectory(BoostHelpers)
+if(NOT TARGET Mask)
+  add_subdirectory(Mask)
+endif()
+
+if(NOT TARGET Helpers)
+  add_subdirectory(Helpers)
+endif()
+
+if(NOT TARGET ITKHelpers)
+  add_subdirectory(ITKHelpers)
+endif()
+
+if(NOT TARGET VTKHelpers)
+  add_subdirectory(VTKHelpers)
+endif()
+
+if(NOT TARGET ITKVTKHelpers)
+  add_subdirectory(ITKVTKHelpers)
+endif()
+
+if(NOT TARGET QtHelpers)
+  add_subdirectory(QtHelpers)
+endif()
+
+if(NOT TARGET BoostHelpers)
+  add_subdirectory(BoostHelpers)
+endif()
 
 if( (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Mask/.git") OR
 (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Helpers/.git") OR
@@ -327,7 +341,8 @@ endif()
 #     Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
 #     ${ClassicalImageInpaintingWithVisualOutputUISrcs} ${ClassicalImageInpaintingWithVisualOutputMOCSrcs})
 # 
-#   TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithVisualOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers)
+#   TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithVisualOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES}
+#                        ${QT_LIBRARIES} libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers)
 #   INSTALL( TARGETS ClassicalImageInpaintingWithVisualOutput RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 
@@ -346,12 +361,13 @@ endif()
 # 
 # 
 # 
-# SET(inpainting_ClassicalImageInpainting CACHE BOOL "Build a traditional patch comparison image inpainting.")
-# if(inpainting_ClassicalImageInpainting)
-#   ADD_EXECUTABLE(ClassicalImageInpainting ClassicalImageInpainting.cpp)
-#   TARGET_LINK_LIBRARIES(ClassicalImageInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
-#   INSTALL( TARGETS ClassicalImageInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
-# endif()
+SET(inpainting_ClassicalImageInpainting CACHE BOOL "Build a traditional patch comparison image inpainting.")
+if(inpainting_ClassicalImageInpainting)
+  ADD_EXECUTABLE(ClassicalImageInpainting ClassicalImageInpainting.cpp)
+  TARGET_LINK_LIBRARIES(ClassicalImageInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES}
+                       ${QT_LIBRARIES} libHelpers ITKHelpers Mask)
+  INSTALL( TARGETS ClassicalImageInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
 # 
 # SET(ClassicalImageInpaintingWithTextOutput CACHE BOOL "Build a traditional patch comparison image inpainting.")
 # if(ClassicalImageInpaintingWithTextOutput)

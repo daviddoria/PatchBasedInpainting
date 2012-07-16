@@ -28,14 +28,14 @@ class PriorityRandom
 {
 public:
   PriorityRandom();
-  
+
   /** Return a random value.*/
   template <typename TNode>
   float ComputePriority(const TNode& queryPixel) const;
 
   /** There is no reason to update anything.*/
   template <typename TNode>
-  void Update(const TNode& sourceNode, const TNode& targetNode){}
+  void Update(const TNode& sourceNode, const TNode& targetNode, const unsigned int patchNumber = 0){}
 
 };
 
