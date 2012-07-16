@@ -33,10 +33,10 @@ float BoundaryEnergy<TImage>::operator()(const itk::ImageRegion<2>& region)
   for(unsigned int i = 0; i < pixelsSatisfyingFunctor.size(); ++i)
   {
     typename TImage::PixelType averageMaskedNeighborValue =
-      MaskOperations::AverageMaskedNeighborValue(Image, MaskImage, pixelsSatisfyingFunctor[i]);
+      MaskOperations::AverageHoleNeighborValue(Image, MaskImage, pixelsSatisfyingFunctor[i]);
 
     typename TImage::PixelType averageValidNeighborValue =
-      MaskOperations::AverageNonMaskedNeighborValue(Image, MaskImage, pixelsSatisfyingFunctor[i]);
+      MaskOperations::AverageValidNeighborValue(Image, MaskImage, pixelsSatisfyingFunctor[i]);
 
     totalDifference += Difference(averageMaskedNeighborValue, averageValidNeighborValue);
   }
@@ -72,7 +72,7 @@ float BoundaryEnergy<TImage>::operator()(const itk::ImageRegion<2>& sourceRegion
   {
     // Compute the average of the target pixels in the target region
     typename TImage::PixelType averageMaskedNeighborValue =
-      MaskOperations::AverageMaskedNeighborValue(Image, MaskImage, boundaryPixels[i]);
+      MaskOperations::AverageHoleNeighborValue(Image, MaskImage, boundaryPixels[i]);
 
     // Compute the average of the source pixels in the source region
     itk::Offset<2> boundaryPixelOffsetFromTargetCorner = boundaryPixels[i] - targetRegion.GetIndex();

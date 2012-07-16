@@ -17,8 +17,8 @@
  *=========================================================================*/
 
 // Custom
-#include "Helpers/Helpers.h"
-#include "ITKHelpers/ITKHelpers.h"
+#include "Helpers.h"
+#include "ITKHelpers.h"
 #include "Mask/Mask.h"
 
 // ITK

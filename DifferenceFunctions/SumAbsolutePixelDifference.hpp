@@ -6,7 +6,7 @@
 
 // Custom
 #include "Helpers/Helpers.h"
-#include "ITKHelpers/ITKHelpers.h"
+#include "ITKHelpers/ITKContainerInterface.h"
 
 /**
  */
@@ -15,16 +15,12 @@ struct SumAbsolutePixelDifference
 {
   float operator()(const PixelType& a, const PixelType& b) const
   {
-    using Helpers::length;
-    using ITKHelpers::length;
-    using Helpers::index;
-    using ITKHelpers::index;
-    assert(length(a) == length(b));
-    
+    assert(Helpers::length(a) == Helpers::length(b));
+
     float pixelDifference = 0.0f;
-    for(unsigned int component = 0; component < ITKHelpers::length(a); ++component)
+    for(unsigned int component = 0; component < Helpers::length(a); ++component)
       {
-      float componentDifference = fabs(index(a,component) - index(b,component));
+      float componentDifference = fabs(Helpers::index(a,component) - Helpers::index(b,component));
       pixelDifference += componentDifference;
       }
     return pixelDifference;

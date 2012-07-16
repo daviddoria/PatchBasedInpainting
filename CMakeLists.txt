@@ -10,6 +10,7 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) #fix the dynamic linking error (RPAT
 # This is needed for shared_ptr and the trick using enable_if and if_fundamental to allow scalars to be treated as the 0th component of a vector.
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
 
+# Setup include directories for Qt
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 # VTK
@@ -21,7 +22,8 @@ if( "${VTK_MAJOR_VERSION}" LESS 6 )
 endif( "${VTK_MAJOR_VERSION}" LESS 6 )
 
 # ITK
-FIND_PACKAGE(ITK REQUIRED)
+FIND_PACKAGE(ITK REQUIRED ITKCommon ITKIOImageBase
+ITKImageIntensity ITKImageFeature ITKMathematicalMorphology ITKBinaryMathematicalMorphology ITKDistanceMap)
 INCLUDE(${ITK_USE_FILE})
 
 #FIND_PACKAGE(Boost COMPONENTS array REQUIRED) # 'array' does not seem to be a library
@@ -44,14 +46,8 @@ list(APPEND compileflags "USE_QT_PARALLEL")
 # Submodules
 if(NOT TARGET Mask)
   add_subdirectory(Mask)
-endif()
-
-if(NOT TARGET Helpers)
-  add_subdirectory(Helpers)
-endif()
-
-if(NOT TARGET ITKHelpers)
-  add_subdirectory(ITKHelpers)
+  include_directories(${Mask_includes})
+  message("Directly used Mask submodule.")
 endif()
 
 if(NOT TARGET VTKHelpers)
@@ -60,6 +56,8 @@ endif()
 
 if(NOT TARGET ITKVTKHelpers)
   add_subdirectory(ITKVTKHelpers)
+  include_directories(${ITKVTKHelpers_includes})
+  message("Directly used ITKVTKHelpers submodule.")
 endif()
 
 if(NOT TARGET QtHelpers)
@@ -71,13 +69,12 @@ if(NOT TARGET BoostHelpers)
 endif()
 
 if( (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Mask/.git") OR
-(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Helpers/.git") OR
-(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKHelpers/.git") OR
 (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VTKHelpers/.git") OR
 (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKVTKHelpers/.git") OR
 (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/QtHelpers/.git") OR
 (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/BoostHelpers/.git") )
-  message( SEND_ERROR "At least one of the git submodules is not available. Please run git submodule update --init --recursive")
+  message( SEND_ERROR "At least one of the git submodules is not available.
+                       Please run git submodule update --init --recursive")
 endif()
 
 # Core source files
@@ -129,7 +126,7 @@ endif()
 #                 ${InpaintingWithLocalSearchUISrcs} ${InpaintingWithLocalSearchMOCSrcs})
 # 
 #   TARGET_LINK_LIBRARIES(InpaintingWithLocalSearch PatchBasedInpainting
-#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Helpers)
 #   INSTALL( TARGETS InpaintingWithLocalSearch RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 # 
@@ -157,7 +154,7 @@ endif()
 #                 ${InpaintingRGBD_UISrcs} ${InpaintingRGBD_MOCSrcs})
 # 
 #   TARGET_LINK_LIBRARIES(InpaintingRGBD PatchBasedInpainting
-#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers libMask)
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Helpers QtHelpers VTKHelpers ITKHelpers ITKVTKHelpers Mask)
 #   INSTALL( TARGETS InpaintingRGBD RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 # 
@@ -185,7 +182,7 @@ endif()
 #                 ${InpaintingAutomatic_UISrcs} ${InpaintingAutomatic_MOCSrcs})
 # 
 #   TARGET_LINK_LIBRARIES(InpaintingAutomatic PatchBasedInpainting
-#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers libMask)
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Helpers QtHelpers VTKHelpers ITKHelpers ITKVTKHelpers Mask)
 #   INSTALL( TARGETS InpaintingAutomatic RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 # 
@@ -212,7 +209,7 @@ endif()
 #                 ${InpaintingCIELabUISrcs} ${InpaintingCIELabMOCSrcs})
 # 
 #   TARGET_LINK_LIBRARIES(InpaintingCIELab PatchBasedInpainting
-#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers libMask)
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Helpers QtHelpers VTKHelpers ITKHelpers ITKVTKHelpers Mask)
 #   INSTALL( TARGETS InpaintingCIELab RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 
@@ -244,7 +241,7 @@ if(inpainting_InpaintingWithVerification)
 
   TARGET_LINK_LIBRARIES(InpaintingWithVerification PatchBasedInpainting
                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES}
-                        libHelpers libVTKHelpers libITKHelpers libITKVTKHelpers libMask libQtHelpers)
+                        Helpers VTKHelpers ITKHelpers ITKVTKHelpers Mask QtHelpers)
   INSTALL( TARGETS InpaintingWithVerification RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
@@ -272,7 +269,7 @@ endif()
 #                 ${InpaintingVectorizedUISrcs} ${InpaintingVectorizedMOCSrcs})
 # 
 #   TARGET_LINK_LIBRARIES(InpaintingVectorized PatchBasedInpainting
-#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Helpers)
 #   INSTALL( TARGETS InpaintingVectorized RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 
@@ -285,7 +282,7 @@ endif()
 #                 ${PrecomputedInpaintingUISrcs} ${PrecomputedInpaintingMOCSrcs})
 # 
 #   TARGET_LINK_LIBRARIES(PrecomputedInpainting PatchBasedInpainting
-#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers)
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Helpers QtHelpers VTKHelpers ITKHelpers ITKVTKHelpers)
 #   INSTALL( TARGETS PrecomputedInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 
@@ -307,7 +304,7 @@ endif()
 #                 ${InpaintingWithManualSelectionUISrcs} ${InpaintingWithManualSelectionMOCSrcs})
 # 
 #   TARGET_LINK_LIBRARIES(InpaintingWithManualSelection PatchBasedInpainting
-#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Helpers)
 #   INSTALL( TARGETS InpaintingWithManualSelection RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 
@@ -326,7 +323,7 @@ endif()
 #                 ${InpaintingWithTopPatchDisplayUISrcs} ${InpaintingWithTopPatchDisplayMOCSrcs})
 # 
 #   TARGET_LINK_LIBRARIES(InpaintingWithTopPatchDisplay PatchBasedInpainting
-#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} QVTK libHelpers)
+#                         ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Helpers)
 #   INSTALL( TARGETS InpaintingWithTopPatchDisplay RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 # 
@@ -342,7 +339,7 @@ endif()
 #     ${ClassicalImageInpaintingWithVisualOutputUISrcs} ${ClassicalImageInpaintingWithVisualOutputMOCSrcs})
 # 
 #   TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithVisualOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES}
-#                        ${QT_LIBRARIES} libHelpers libQtHelpers libVTKHelpers libITKHelpers libITKVTKHelpers)
+#                        ${QT_LIBRARIES} Helpers QtHelpers VTKHelpers ITKHelpers ITKVTKHelpers)
 #   INSTALL( TARGETS ClassicalImageInpaintingWithVisualOutput RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 
@@ -365,14 +362,14 @@ SET(inpainting_ClassicalImageInpainting CACHE BOOL "Build a traditional patch co
 if(inpainting_ClassicalImageInpainting)
   ADD_EXECUTABLE(ClassicalImageInpainting ClassicalImageInpainting.cpp)
   TARGET_LINK_LIBRARIES(ClassicalImageInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES}
-                       ${QT_LIBRARIES} libHelpers ITKHelpers Mask)
+                       ${QT_LIBRARIES} Helpers ITKHelpers Mask)
   INSTALL( TARGETS ClassicalImageInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 # 
 # SET(ClassicalImageInpaintingWithTextOutput CACHE BOOL "Build a traditional patch comparison image inpainting.")
 # if(ClassicalImageInpaintingWithTextOutput)
 #   ADD_EXECUTABLE(ClassicalImageInpaintingWithTextOutput ClassicalImageInpaintingWithTextOutput.cpp)
-#   TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithTextOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+#   TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithTextOutput PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Helpers)
 #   INSTALL( TARGETS ClassicalImageInpaintingWithTextOutput RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 # 
@@ -381,21 +378,21 @@ endif()
 # SET(inpainting_SmallPatchBigPatchInpainting CACHE BOOL "Build a two step (compare small patches, then compare big patches at the best of the small patches) image inpainting.")
 # if(inpainting_SmallPatchBigPatchInpainting)
 #   ADD_EXECUTABLE(SmallPatchBigPatchInpainting SmallPatchBigPatchInpainting.cpp)
-#   TARGET_LINK_LIBRARIES(SmallPatchBigPatchInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+#   TARGET_LINK_LIBRARIES(SmallPatchBigPatchInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Helpers)
 #   INSTALL( TARGETS SmallPatchBigPatchInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 # 
 # SET(inpainting_NarrowSearchByFeaturesInpainting CACHE BOOL "Build a two step (features, then patch comparison) image inpainting.")
 # if(inpainting_NarrowSearchByFeaturesInpainting)
 #   ADD_EXECUTABLE(NarrowSearchByFeaturesInpainting NarrowSearchByFeaturesInpainting.cpp PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
-#   TARGET_LINK_LIBRARIES(NarrowSearchByFeaturesInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} libHelpers)
+#   TARGET_LINK_LIBRARIES(NarrowSearchByFeaturesInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} Helpers)
 #   INSTALL( TARGETS NarrowSearchByFeaturesInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 # 
 # SET(inpainting_NarrowSearchByNormalsInpainting CACHE BOOL "Build a two step (normals, then patch comparison) image inpainting.")
 # if(inpainting_NarrowSearchByNormalsInpainting)
 #   ADD_EXECUTABLE(NarrowSearchByNormalsInpainting NarrowSearchByNormalsInpainting.cpp PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
-#   TARGET_LINK_LIBRARIES(NarrowSearchByNormalsInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} libHelpers)
+#   TARGET_LINK_LIBRARIES(NarrowSearchByNormalsInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} Helpers)
 #   INSTALL( TARGETS NarrowSearchByNormalsInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif()
 
@@ -427,6 +424,7 @@ ENDIF(inpainting_BuildDemos)
 add_subdirectory(NearestNeighbor)
 add_subdirectory(Visitors)
 add_subdirectory(Inpainters)
+add_subdirectory(ImageProcessing)
 add_subdirectory(Initializers)
 add_subdirectory(PixelDescriptors)
 add_subdirectory(DifferenceFunctions)
