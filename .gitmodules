@@ -1,12 +1,6 @@
 [submodule "BoostHelpers"]
 	path = BoostHelpers
 	url = git@github.com:daviddoria/BoostHelpers.git
-[submodule "Helpers"]
-	path = Helpers
-	url = git@github.com:daviddoria/Helpers.git
-[submodule "ITKHelpers"]
-	path = ITKHelpers
-	url = git@github.com:daviddoria/ITKHelpers.git
 [submodule "QtHelpers"]
 	path = QtHelpers
 	url = git@github.com:daviddoria/QtHelpers.git
