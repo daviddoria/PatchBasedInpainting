@@ -1,6 +1,6 @@
 /*=========================================================================
  *
- *  Copyright David Doria 2011 daviddoria@gmail.com
+ *  Copyright David Doria 2012 daviddoria@gmail.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@
 
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchBestProperty.hpp"
-#include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
 // Initializers
 #include "Initializers/InitializeFromMaskImage.hpp"
@@ -59,13 +58,13 @@
 #include <boost/property_map/property_map.hpp>
 #include <boost/graph/detail/d_ary_heap.hpp>
 
-// Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 filled.mha
+// Run with: Data/trashcan.png Data/trashcan.mask 15 filled.png
 int main(int argc, char *argv[])
 {
   // Verify arguments
   if(argc != 5)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width output.mha" << std::endl;
+    std::cerr << "Required arguments: image.png imageMask.mask patchHalfWidth output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
@@ -78,17 +77,17 @@ int main(int argc, char *argv[])
   std::string imageFilename = argv[1];
   std::string maskFilename = argv[2];
 
-  std::stringstream ssPatchRadius;
-  ssPatchRadius << argv[3];
-  unsigned int patch_half_width = 0;
-  ssPatchRadius >> patch_half_width;
+  std::stringstream ssPatchHalfWidth;
+  ssPatchHalfWidth << argv[3];
+  unsigned int patchHalfWidth = 0;
+  ssPatchHalfWidth >> patchHalfWidth;
 
   std::string outputFilename = argv[4];
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
-  std::cout << "Patch half width: " << patch_half_width << std::endl;
+  std::cout << "Patch half width: " << patchHalfWidth << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
   typedef itk::VectorImage<float, 2> FloatVectorImageType;
@@ -142,7 +141,7 @@ int main(int argc, char *argv[])
 
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
   typedef MaskImagePatchInpainter InpainterType;
-  InpainterType patchInpainter(patch_half_width, mask);
+  InpainterType patchInpainter(patchHalfWidth, mask);
 
   // Create the priority function
   typedef PriorityRandom PriorityType;
@@ -163,7 +162,7 @@ int main(int argc, char *argv[])
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
       ImagePatchDescriptorVisitorType;
-  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patch_half_width);
+  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
   typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
   AcceptanceVisitorType acceptanceVisitor;
@@ -175,7 +174,7 @@ int main(int argc, char *argv[])
                             InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
                                           imagePatchDescriptorVisitor, acceptanceVisitor, priorityMap,
-                                          &priorityFunction, patch_half_width,
+                                          &priorityFunction, patchHalfWidth,
                                           boundaryStatusMap, outputFilename);
 
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);

@@ -14,10 +14,10 @@ template <typename ImagePatchType, typename PixelDifferenceFunctorType>
 struct ImagePatchDifference
 {
   PixelDifferenceFunctorType PixelDifferenceFunctor;
-  
+
   ImagePatchDifference(PixelDifferenceFunctorType pixelDifferenceFunctor = PixelDifferenceFunctorType()) :
   PixelDifferenceFunctor(pixelDifferenceFunctor) {}
-  
+
   float operator()(const ImagePatchType& a, const ImagePatchType& b) const
   {
     // This comparison must allow source patches to be compared to source patches (to create the tree) as well as source patches

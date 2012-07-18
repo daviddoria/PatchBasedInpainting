@@ -1,6 +1,6 @@
 /*=========================================================================
  *
- *  Copyright David Doria 2011 daviddoria@gmail.com
+ *  Copyright David Doria 2012 daviddoria@gmail.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  *=========================================================================*/
 
 // Custom
-#include "Helpers/HelpersOutput.h"
+#include "Helpers/Helpers.h"
 
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
@@ -25,27 +25,24 @@
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
 
-// Information visitors
-#include "Visitors/InformationVisitors/DebugVisitor.hpp"
-
 // Inpainting visitors
 #include "Visitors/InpaintingVisitor.hpp"
-#include "Visitors/CompositeInpaintingVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
 
 // Nearest neighbors
-#include "NearestNeighbor/LinearSearchBestProperty.hpp"
-#include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
+#include "NearestNeighbor/LocalOptimizationSearchBestProperty.hpp"
 
 // Initializers
 #include "Initializers/InitializeFromMaskImage.hpp"
 #include "Initializers/InitializePriority.hpp"
 
 // Inpainters
-#include "Inpainters/MaskedGridPatchInpainter.hpp"
+#include "Inpainters/MaskImagePatchInpainter.hpp"
 #include "Inpainters/HoleListPatchInpainter.hpp"
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
 
 // Inpainting
 #include "Algorithms/InpaintingAlgorithm.hpp"
@@ -61,16 +58,13 @@
 #include <boost/property_map/property_map.hpp>
 #include <boost/graph/detail/d_ary_heap.hpp>
 
-// Debug
-#include "Helpers/HelpersOutput.h"
-
-// Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 filled.mha
+// Run with: Data/trashcan.png Data/trashcan.mask 15 filled.png
 int main(int argc, char *argv[])
 {
   // Verify arguments
   if(argc != 5)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width output.mha" << std::endl;
+    std::cerr << "Required arguments: image.png imageMask.mask patch_half_width output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
@@ -83,10 +77,10 @@ int main(int argc, char *argv[])
   std::string imageFilename = argv[1];
   std::string maskFilename = argv[2];
 
-  std::stringstream ssPatchRadius;
-  ssPatchRadius << argv[3];
+  std::stringstream ssPatchHalfWidth;
+  ssPatchHalfWidth << argv[3];
   unsigned int patchHalfWidth = 0;
-  ssPatchRadius >> patchHalfWidth;
+  ssPatchHalfWidth >> patchHalfWidth;
 
   std::string outputFilename = argv[4];
 
@@ -96,6 +90,7 @@ int main(int argc, char *argv[])
   std::cout << "Patch half width: " << patchHalfWidth << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
+  typedef itk::VectorImage<float, 2> FloatVectorImageType;
   typedef FloatVectorImageType ImageType;
 
   typedef  itk::ImageFileReader<ImageType> ImageReaderType;
@@ -133,7 +128,7 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<bool, IndexMapType> FillStatusMapType;
   FillStatusMapType fillStatusMap(num_vertices(graph), indexMap);
 
-  // Create the boundary status map. A node is on the current boundary if this property is true. 
+  // Create the boundary status map. A node is on the current boundary if this property is true.
   // This property helps the boundaryNodeQueue because we can mark here if a node has become no longer
   // part of the boundary, so when the queue is popped we can check this property to see if it should
   // actually be processed.
@@ -145,8 +140,8 @@ int main(int argc, char *argv[])
   ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
 
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
-  typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
-  InpainterType patchInpainter(patchHalfWidth, fillStatusMap);
+  typedef MaskImagePatchInpainter InpainterType;
+  InpainterType patchInpainter(patchHalfWidth, mask);
 
   // Create the priority function
   typedef PriorityRandom PriorityType;
@@ -160,43 +155,45 @@ int main(int argc, char *argv[])
   typedef std::less<float> PriorityCompareType;
   PriorityCompareType lessThanFunctor;
 
-  typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType> BoundaryNodeQueueType;
+  typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType>
+      BoundaryNodeQueueType;
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
 
   // Create the descriptor visitor
-  typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> ImagePatchDescriptorVisitorType;
+  typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
+      ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
+  typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
+  AcceptanceVisitorType acceptanceVisitor;
+
   // Create the inpainting visitor
-  typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
-                            ImagePatchDescriptorVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
-  InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
-                                          imagePatchDescriptorVisitor, priorityMap, &priorityFunction, patchHalfWidth, boundaryStatusMap);
-  
-  typedef DebugVisitor<VertexListGraphType, ImageType> DebugVisitorType;
-  DebugVisitorType debugVisitor(image, mask, patchHalfWidth);
-  
-  typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeVisitorType;
-  CompositeVisitorType compositeVisitor;
-  compositeVisitor.AddVisitor(&inpaintingVisitor);
-  compositeVisitor.AddVisitor(&debugVisitor);
-  
+  typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
+                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType,
+                            PriorityMapType, BoundaryStatusMapType>
+                            InpaintingVisitorType;
+  InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
+                                          imagePatchDescriptorVisitor, acceptanceVisitor, priorityMap,
+                                          &priorityFunction, patchHalfWidth,
+                                          boundaryStatusMap, outputFilename);
+
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage(mask, &compositeVisitor, graph, fillStatusMap);
+  InitializeFromMaskImage<InpaintingVisitorType, VertexDescriptorType>(mask, &inpaintingVisitor);
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
 
-  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
-  BestSearchType linearSearchBest(imagePatchDescriptorMap);
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > PatchDifferenceType;
+
+  typedef LocalOptimizationSearchBestProperty<ImagePatchDescriptorMapType,
+                                   PatchDifferenceType> BestSearchType;
+  BestSearchType searchFunctor(imagePatchDescriptorMap);
 
   // Perform the inpainting
-  inpainting_loop(graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, linearSearchBest, patchInpainter);
-
-  HelpersOutput::WriteImage<ImageType>(image, outputFilename);
+  InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, searchFunctor, patchInpainter);
 
   return EXIT_SUCCESS;
 }

@@ -175,6 +175,14 @@ if(inpainting_ClassicalImageInpainting)
   INSTALL( TARGETS ClassicalImageInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
+SET(inpainting_LocalOptimizationImageInpainting CACHE BOOL "Build a inpainting algorithm that uses locally (spatially and temporally) optimal choices instead of purely greedy choices.")
+if(inpainting_LocalOptimizationImageInpainting)
+  ADD_EXECUTABLE(LocalOptimizationImageInpainting LocalOptimizationImageInpainting.cpp)
+  TARGET_LINK_LIBRARIES(LocalOptimizationImageInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES}
+                       ${QT_LIBRARIES} Helpers ITKHelpers Mask)
+  INSTALL( TARGETS LocalOptimizationImageInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
 SET(ClassicalImageInpaintingWithTextOutput CACHE BOOL "Build a traditional patch comparison image inpainting.")
 if(ClassicalImageInpaintingWithTextOutput)
   ADD_EXECUTABLE(ClassicalImageInpaintingWithTextOutput ClassicalImageInpaintingWithTextOutput.cpp)
