@@ -31,7 +31,6 @@
 
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchBestProperty.hpp"
-#include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
 // Initializers

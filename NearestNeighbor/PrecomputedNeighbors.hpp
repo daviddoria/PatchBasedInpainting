@@ -20,12 +20,13 @@ struct PrecomputedNeighbors
   {
     Node targetNode;
     Node sourceNode;
-    std::string junk;
+    std::string junk; // TODO: Replace with Helpers::InlineIgnore
     std::string line;
     while(getline(inputStream, line))
       {
       std::stringstream ss;
       ss << line;
+      //ss >> targetNode[0] >> targetNode[1] >> Helpers::InlineIgnore >> sourceNode[0] >> sourceNode[1];
       ss >> targetNode[0] >> targetNode[1] >> junk >> sourceNode[0] >> sourceNode[1];
       NeighborMap[targetNode] = sourceNode;
       }
