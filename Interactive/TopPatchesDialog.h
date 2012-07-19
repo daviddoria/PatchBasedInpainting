@@ -1,6 +1,6 @@
 /*=========================================================================
  *
- *  Copyright David Doria 2011 daviddoria@gmail.com
+ *  Copyright David Doria 2012 daviddoria@gmail.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public slots:
 
   /** Ideally this would be templated on the node type, but since it is a slot it cannot be templated. */
   virtual void SetSourceNodes(const std::vector<Node>& sourceNodes) = 0;
-  
+
   virtual void SetQueryNode(const Node& queryNode) = 0;
 
   /** The click events. */
@@ -78,10 +78,10 @@ private:
 
   QGraphicsScene* QueryPatchScene;
   QGraphicsPixmapItem* MaskedQueryPatchItem;
-  
+
   QGraphicsScene* ProposedPatchScene;
   QGraphicsPixmapItem* ProposedPatchItem;
-  
+
   // The color to use as the background of the QGraphicsScenes
   QColor SceneBackground;
 
@@ -98,7 +98,7 @@ public:
 
   template <typename TNode>
   void SetSourceNodes(const std::vector<TNode>& sourceNodes);
-  
+
   /** Set the query node that the user will choose the best match to. */
   void SetQueryNode(const Node& node);
 
@@ -109,7 +109,7 @@ public:
   void slot_DoubleClicked(const QModelIndex & index);
 
   void on_btnSelectManually_clicked();
-  
+
   /** Get the node that user selected. */
   Node GetSelectedNode();
 

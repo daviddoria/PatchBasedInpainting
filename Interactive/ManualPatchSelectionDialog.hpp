@@ -57,7 +57,7 @@ ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const ima
   typename TImage::PixelType zeroPixel(tempImage->GetNumberOfComponentsPerPixel());
   zeroPixel.Fill(0);
   mask->ApplyToImage(tempImage.GetPointer(), zeroPixel);
-  ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(tempImage, this->ImageLayer.ImageData);
+  ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(tempImage.GetPointer(), this->ImageLayer.ImageData);
 
   SetupScenes();
 
@@ -164,7 +164,7 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateSource(const itk::ImageRegio
 
   typename TImage::PixelType zeroPixel(3);
   zeroPixel.Fill(0);
-  this->MaskImage->ApplyToImage(tempImage, zeroPixel);
+  this->MaskImage->ApplyToImage(tempImage.GetPointer(), zeroPixel);
   QImage maskedSourceImage = ITKQtHelpers::GetQImageColor(tempImage.GetPointer(), sourceRegion);
   QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(maskedSourceImage));
   gfxSource->fitInView(item);

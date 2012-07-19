@@ -91,7 +91,9 @@ void TopPatchesDialog<TImage>::SetQueryNode(const Node& queryNode)
   typename TImage::Pointer tempImage = TImage::New();
   ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
 
-  this->MaskImage->ApplyToImage(tempImage.GetPointer());
+  typename TImage::PixelType zeroPixel(3);
+  zeroPixel.Fill(0);
+  this->MaskImage->ApplyToImage(tempImage.GetPointer(), zeroPixel);
 
   QImage maskedQueryPatch = ITKQtHelpers::GetQImageColor(tempImage.GetPointer(), queryRegion);
   MaskedQueryPatchItem = this->QueryPatchScene->addPixmap(QPixmap::fromImage(maskedQueryPatch));

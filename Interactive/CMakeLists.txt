@@ -7,8 +7,23 @@ endif(NOT QT4_FOUND)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(libGUI Layer.cpp InteractorStyleImageWithDrag.cpp ImageCamera.cpp)
-target_link_libraries(libGUI libHelpers ${VTK_LIBRARIES} QVTK ${ITK_LIBRARIES} ${QT_LIBRARIES} libQtHelpers)
+QT4_WRAP_UI(InpaintingGUI_UISrcs
+            BasicViewerWidget.ui
+            TopPatchesWidget.ui
+            TopPatchesDialog.ui)
+QT4_WRAP_CPP(InpaintingGUI_MOCSrcs
+            BasicViewerWidget.h
+            #NearestNeighbor/VisualSelectionBest.hpp
+            MovablePatch.h
+            TopPatchesWidget.h
+            TopPatchesDialog.h
+            Delegates/PixmapDelegate.h
+            ManualPatchSelectionDialog.h)
+
+add_library(InpaintingGUI Layer.cpp InteractorStyleImageWithDrag.cpp
+            ImageCamera.cpp MovablePatch.cpp PatchHighlighter.cpp
+            Delegates/PixmapDelegate.cpp ${InpaintingGUI_UISrcs} ${InpaintingGUI_MOCSrcs})
+target_link_libraries(InpaintingGUI ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Helpers VTKHelpers QtHelpers)
 
 # if(BuildInteractive)
 #   message("Interactive/Building interactive.")

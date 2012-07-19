@@ -120,7 +120,7 @@ void BasicViewerWidget<TImage>::slot_UpdateImage()
   typename TImage::PixelType zeroPixel(tempImage->GetNumberOfComponentsPerPixel());
   zeroPixel.Fill(0);
   this->MaskImage->ApplyToImage(tempImage.GetPointer(), zeroPixel);
-  ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(tempImage, this->ImageLayer.ImageData);
+  ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(tempImage.GetPointer(), this->ImageLayer.ImageData);
 
 //   if(chkScaleImage->isChecked())
 //   {

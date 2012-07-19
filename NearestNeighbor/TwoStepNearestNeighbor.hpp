@@ -48,7 +48,7 @@ struct TwoStepNearestNeighbor
 
     // Step 1 - K-NN search on first topology
     std::vector<VertexDescriptorType> outputContainer;
-    this->MultipleNeighborFinder(first, last, queryNode, outputContainer);
+    this->MultipleNeighborFinder(first, last, queryNode, outputContainer.begin());
 
     std::cout << "There are " << outputContainer.size() << " items to search in the second step." << std::endl;
     if(outputContainer.size() <= 0)

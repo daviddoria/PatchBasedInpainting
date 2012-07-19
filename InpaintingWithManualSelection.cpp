@@ -216,6 +216,9 @@ int main(int argc, char *argv[])
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
+  // A two step nearest neighbor selection process is employed. First, a KNN finder finds the top patches. These patches
+  // are passed to the VisualSelectionBest widget which displays them and asks the user to choose one.
+
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > PatchDifferenceType;
   // Create the nearest neighbor finders
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
@@ -257,7 +260,7 @@ int main(int argc, char *argv[])
   QtConcurrent::run(boost::bind(InpaintingAlgorithm<
                                 VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType,
                                 BoundaryNodeQueueType, TwoStepSearchType, InpainterType>,
-                                graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, boost::ref(twoStepSearch),
+                                graph, compositeVisitor, &boundaryStatusMap, &boundaryNodeQueue, boost::ref(twoStepSearch),
                                 patchInpainter));
 
   return app.exec();
