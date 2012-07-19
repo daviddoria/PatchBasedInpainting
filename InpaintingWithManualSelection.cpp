@@ -78,13 +78,13 @@
 #include "Interactive/TopPatchesWidget.h"
 #include "Interactive/TopPatchesDialog.h"
 
-// Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 filled.mha
+// Run with: Data/trashcan.png Data/trashcan.mask 15 filled.png
 int main(int argc, char *argv[])
 {
   // Verify arguments
   if(argc != 5)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width output.mha" << std::endl;
+    std::cerr << "Required arguments: image.png image.mask patch_half_width output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
