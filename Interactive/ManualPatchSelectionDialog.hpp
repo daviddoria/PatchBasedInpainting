@@ -28,13 +28,13 @@
 #include <vtkSmartPointer.h>
 #include <QVTKWidget.h>
 
-// Custom
+// Submodules
 #include "Helpers/Helpers.h"
 #include "ITKHelpers/ITKHelpers.h"
 #include "ITKVTKHelpers/ITKVTKHelpers.h"
 #include "VTKHelpers/VTKHelpers.h"
 #include "QtHelpers/QtHelpers.h"
-#include "QtHelpers/ITKQtHelpers.h"
+#include "ITKQtHelpers/ITKQtHelpers.h"
 #include "InteractorStyleImageWithDrag.h"
 #include "Mask/Mask.h"
 #include "Mask/MaskOperations.h"
@@ -161,8 +161,11 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateSource(const itk::ImageRegio
 
   typename TImage::Pointer tempImage = TImage::New();
   ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
-  
-  QImage maskedSourceImage = MaskOperations::GetQImageMasked(tempImage.GetPointer(), sourceRegion, MaskImage, sourceRegion);
+
+  typename TImage::PixelType zeroPixel(3);
+  zeroPixel.Fill(0);
+  this->MaskImage->ApplyToImage(tempImage, zeroPixel);
+  QImage maskedSourceImage = ITKQtHelpers::GetQImageColor(tempImage.GetPointer(), sourceRegion);
   QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(maskedSourceImage));
   gfxSource->fitInView(item);
 
@@ -193,8 +196,10 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateTarget(const itk::ImageRegio
   // Masked target patch
   typename TImage::Pointer tempImage = TImage::New();
   ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
-  
-  QImage maskedTargetImage = MaskOperations::GetQImageMasked(tempImage.GetPointer(), MaskImage, region);
+  typename TImage::PixelType zeroPixel(3);
+  zeroPixel.Fill(0);
+  this->MaskImage->ApplyToImage(tempImage.GetPointer(), zeroPixel);
+  QImage maskedTargetImage = ITKQtHelpers::GetQImageColor(tempImage.GetPointer(), region);
   QGraphicsPixmapItem* maskedItem = this->TargetPatchScene->addPixmap(QPixmap::fromImage(maskedTargetImage));
   gfxTarget->fitInView(maskedItem);
 }

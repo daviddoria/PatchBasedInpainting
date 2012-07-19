@@ -1,7 +1,7 @@
 #ifndef ImageAndMaskPatchInpainter_HPP
 #define ImageAndMaskPatchInpainter_HPP
 
-#include "Helpers/ITKHelpers.h"
+#include "ITKHelpers/ITKHelpers.h"
 
 /**
 
@@ -17,8 +17,8 @@ struct ImageAndMaskPatchInpainter
   Image(image), MaskImage(mask), patch_half_width(aPatchHalfWidth)
   { };
 
-  template <typename Vertex>
-  void operator()(Vertex target, Vertex source)
+  template <typename Vertex, typename InpaintingVisitor>
+  void operator()(Vertex target, Vertex source, InpaintingVisitor vis)
   {
     std::cout << "Painting " << target[0] << " " << target[1] << " with " << source[0] << " " << source[1] << std::endl;
 
@@ -46,7 +46,7 @@ struct ImageAndMaskPatchInpainter
         if( MaskImage->IsHole(target_index) )
         {
           Image->SetPixel(target_index, Image->GetPixel(source_index));
-	  MaskImage->SetPixel(target_index, MaskImage->GetPixel(source_index));
+          MaskImage->SetPixel(target_index, MaskImage->GetPixel(source_index));
         }
 
       }

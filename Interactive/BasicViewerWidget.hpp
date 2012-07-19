@@ -33,7 +33,7 @@
 #include "ITKVTKHelpers/ITKVTKHelpers.h"
 #include "VTKHelpers/VTKHelpers.h"
 #include "QtHelpers/QtHelpers.h"
-#include "QtHelpers/ITKQtHelpers.h"
+#include "ITKQtHelpers/ITKQtHelpers.h"
 #include "InteractorStyleImageWithDrag.h"
 #include "Mask/Mask.h"
 #include "Mask/MaskOperations.h"
@@ -44,7 +44,7 @@ BasicViewerWidget<TImage>::BasicViewerWidget(TImage* const image, Mask* const ma
   qRegisterMetaType<itk::ImageRegion<2> >("itkImageRegion");
 
   this->setupUi(this);
-  
+
   int dims[3];
   this->ImageLayer.ImageData->GetDimensions(dims);
 
@@ -54,8 +54,8 @@ BasicViewerWidget<TImage>::BasicViewerWidget(TImage* const image, Mask* const ma
   typename TImage::PixelType zeroPixel(tempImage->GetNumberOfComponentsPerPixel());
   zeroPixel.Fill(0);
   mask->ApplyToImage(tempImage.GetPointer(), zeroPixel);
-  ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(tempImage, this->ImageLayer.ImageData);
-  
+  ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(tempImage.GetPointer(), this->ImageLayer.ImageData);
+
 //   if(chkScaleImage->isChecked())
 //   {
 //     VTKHelpers::ScaleImage(this->ImageLayer.ImageData);
@@ -157,7 +157,13 @@ void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sou
   QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
   gfxSource->fitInView(item);
 
-  QImage maskedSourceImage = MaskOperations::GetQImageMasked(Image, sourceRegion, MaskImage, targetRegion);
+  typename TImage::Pointer tempImage = TImage::New();
+  ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
+  typename TImage::PixelType zeroPixel(3);
+  zeroPixel.Fill(0);
+  this->MaskImage->ApplyRegionToImageRegion(sourceRegion, tempImage.GetPointer(), targetRegion, zeroPixel);
+  
+  QImage maskedSourceImage = ITKQtHelpers::GetQImageColor(tempImage.GetPointer(), sourceRegion);
   QGraphicsPixmapItem* maskedItem = this->MaskedSourcePatchScene->addPixmap(QPixmap::fromImage(maskedSourceImage));
   gfxMaskedSource->fitInView(maskedItem);
 
@@ -189,10 +195,16 @@ void BasicViewerWidget<TImage>::slot_UpdateTarget(const itk::ImageRegion<2>& tar
   gfxTarget->fitInView(item);
 
   // Masked target patch
-  QImage maskedTargetImage = MaskOperations::GetQImageMasked(Image, MaskImage, targetRegion);
+  typename TImage::Pointer tempImage = TImage::New();
+  ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
+  typename TImage::PixelType zeroPixel(3);
+  zeroPixel.Fill(0);
+  this->MaskImage->ApplyToImage(tempImage.GetPointer(), zeroPixel);
+  QImage maskedTargetImage = ITKQtHelpers::GetQImageColor(tempImage.GetPointer(), targetRegion);
+
   QGraphicsPixmapItem* maskedItem = this->MaskedTargetPatchScene->addPixmap(QPixmap::fromImage(maskedTargetImage));
   gfxMaskedTarget->fitInView(maskedItem);
-  
+
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 

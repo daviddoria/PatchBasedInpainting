@@ -195,10 +195,5 @@ int main(int argc, char *argv[])
   // Perform the inpainting
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, linearSearchBest, patchInpainter);
 
-//   InpaintingAlgorithmWithVerification<
-//                                 VertexListGraphType, CompositeInpaintingVisitorType, BoundaryStatusMapType,
-//                                 BoundaryNodeQueueType, KNNSearchType, BestSearchType, ManualSearchType, InpainterType>,
-//                                 graph, compositeInpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, knnSearch,
-//                                 bestSearch, boost::ref(manualSearchBest), patchInpainter))
   return EXIT_SUCCESS;
 }

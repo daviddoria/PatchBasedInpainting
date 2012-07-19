@@ -62,7 +62,7 @@ template <typename TImage>
 void TopPatchesDialog<TImage>::SetSourceNodes(const std::vector<Node>& nodes)
 {
   Nodes = nodes;
-  
+
   this->PatchesModel->SetNodes(nodes);
 }
 
@@ -76,7 +76,7 @@ void TopPatchesDialog<TImage>::SetSourceNodes(const std::vector<TNode>& sourceNo
     Node node = Helpers::ConvertFrom<Node, TNode>(sourceNodes[i]);
     nodes.push_back(node);
     }
-    
+
   SetSourceNodes(nodes);
 }
 
@@ -87,7 +87,13 @@ void TopPatchesDialog<TImage>::SetQueryNode(const Node& queryNode)
 
   itk::Index<2> queryIndex = ITKHelpers::CreateIndex(queryNode);
   itk::ImageRegion<2> queryRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, PatchHalfWidth);
-  QImage maskedQueryPatch = MaskOperations::GetQImageMasked(Image, MaskImage, queryRegion);
+
+  typename TImage::Pointer tempImage = TImage::New();
+  ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
+
+  this->MaskImage->ApplyToImage(tempImage.GetPointer());
+
+  QImage maskedQueryPatch = ITKQtHelpers::GetQImageColor(tempImage.GetPointer(), queryRegion);
   MaskedQueryPatchItem = this->QueryPatchScene->addPixmap(QPixmap::fromImage(maskedQueryPatch));
 
   // We do this here because we could potentially call SetQueryNode after the widget is constructed as well.

@@ -3,10 +3,10 @@
 // Qt
 #include <QPixmap>
 
-// Custom
+// Submodules
 #include "Helpers/Helpers.h"
 #include "QtHelpers/QtHelpers.h"
-#include "QtHelpers/ITKQtHelpers.h"
+#include "ITKQtHelpers/ITKQtHelpers.h"
 #include "ITKHelpers/ITKHelpers.h"
 
 template <typename TImage>

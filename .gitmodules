@@ -13,3 +13,6 @@
 [submodule "Mask"]
 	path = Mask
 	url = git@github.com:daviddoria/Mask.git
+[submodule "ITKQtHelpers"]
+	path = ITKQtHelpers
+	url = https://github.com/daviddoria/ITKQtHelpers.git

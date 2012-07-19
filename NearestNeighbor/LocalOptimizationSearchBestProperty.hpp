@@ -51,11 +51,6 @@ struct LocalOptimizationSearchBestProperty
     // here we perform a LinearSearchKNNProperty for the 'query' as well as all of its neighbors.
 
     // Compute the best patches for the direct query patch
-    
-//     typedef LinearSearchBestProperty<PropertyMapType,
-//                                    DistanceFunctionType> SingleBestSearchType;
-//     SingleBestSearchType singleSearchFunctor(propertyMap);
-//     TIterator::value_type queryBest(first, last, query);
 
     // This is the number of best matches to store for every neighbor patch and the query patch itself
     unsigned int numberOfMatchesToMaintain = 10;
@@ -66,8 +61,7 @@ struct LocalOptimizationSearchBestProperty
 
     typedef std::vector<typename std::iterator_traits<TIterator>::value_type> KNNContainerType;
     KNNContainerType queryBestMatches(numberOfMatchesToMaintain);
-    //TIterator resultIterator = knnSearchFunctor(first, last, query, queryBestMatches.begin());
-    //typename KNNContainerType::iterator resultIterator = knnSearchFunctor(first, last, query, queryBestMatches.begin()); // output not used
+
     knnSearchFunctor(first, last, query, queryBestMatches.begin());
 
     std::cout << "Found top source patches for direct query patch." << std::endl;
@@ -79,7 +73,7 @@ struct LocalOptimizationSearchBestProperty
           ITKHelpers::Get8NeighborsInRegion(get(this->PropertyMap, query).GetImage()->GetLargestPossibleRegion(), queryIndex);
     std::vector<itk::ImageRegion<2> > neighborRegions(neighborPixels.size());
 
-    unsigned int radius = 15; // TODO: this should not be hard coded!
+    unsigned int radius = get(this->PropertyMap, query).GetRegion().GetSize()[0]/2;
     for(unsigned int i = 0; i < neighborPixels.size(); ++i)
     {
       neighborRegions[i] = ITKHelpers::GetRegionInRadiusAroundPixel(neighborPixels[i],
