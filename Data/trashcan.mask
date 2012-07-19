@@ -1,0 +1,1 @@
+0 255 trashcan_mask.png
