@@ -56,12 +56,15 @@ private:
   TImage* Image;
 
 public: // Required implementation from TopPatchesWidgetParent
+
+  /** The slot to refresh the widget. */
   void slot_Refresh();
 
+  /** Set the nodes to display in the list of top patches. */
   void SetNodes(const std::vector<Node>& nodes);
 
 public:
-  // Constructor
+  /** Constructor */
   TopPatchesWidget(TImage* const image, const unsigned int patchHalfWidth);
 
   // ListModelPatches<TImage>* GetPatchesModel();
@@ -70,16 +73,19 @@ public:
 
 private:
 
+  /** Setup the scenes for the source and target patches. */
   void SetupScenes();
 
+  /** The scene for the source patch. */
   QGraphicsScene* SourcePatchScene;
 
-  // The color to use as the background of the QGraphicsScenes
+  /** The color to use as the background of the QGraphicsScenes */
   QColor SceneBackground;
 
-  // Connect all signals and slots.
+  /** Connect all signals and slots. */
   void SetupConnections();
 
+  /** The model to use to display the patches. */
   ListModelPatches<TImage>* PatchesModel;
 };
 

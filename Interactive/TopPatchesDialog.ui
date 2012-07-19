@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>183</width>
+    <width>227</width>
     <height>808</height>
    </rect>
   </property>
@@ -76,6 +76,13 @@
     <widget class="QPushButton" name="btnSelectManually">
      <property name="text">
       <string>Select manually</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btnSavePair">
+     <property name="text">
+      <string>Save Pair</string>
      </property>
     </widget>
    </item>

@@ -123,6 +123,8 @@ void TopPatchesDialog<TImage>::slot_SingleClicked(const QModelIndex& selected)
   QImage proposedPatch = PatchHelpers::GetQImageCombinedPatch(Image, sourceRegion, queryRegion, MaskImage);
   ProposedPatchItem = this->ProposedPatchScene->addPixmap(QPixmap::fromImage(proposedPatch));
   gfxProposedPatch->fitInView(ProposedPatchItem);
+
+  this->SelectedIndex = selected;
 }
 
 template <typename TImage>
@@ -174,6 +176,22 @@ template <typename TImage>
 bool TopPatchesDialog<TImage>::IsSelectionValid() const
 {
   return ValidSelection;
+}
+
+template <typename TImage>
+void TopPatchesDialog<TImage>::on_btnSavePair_clicked()
+{
+  // Save the query patch
+  itk::Index<2> queryIndex = ITKHelpers::CreateIndex(QueryNode);
+  itk::ImageRegion<2> queryRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, PatchHalfWidth);
+  ITKHelpers::WriteRegion(this->Image, queryRegion, "query.png");
+
+  // Save the source patch
+  // Can't do this - it is protected. Instead we have created a member variable 'SelectedIndex'.
+  //QModelIndex selectedIndex = this->listView->selectedIndexes().begin(); 
+  itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(Nodes[this->SelectedIndex.row()]);
+  itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, PatchHalfWidth);
+  ITKHelpers::WriteRegion(this->Image, sourceRegion, "source.png");
 }
 
 #endif

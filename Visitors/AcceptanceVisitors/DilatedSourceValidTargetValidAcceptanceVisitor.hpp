@@ -54,7 +54,7 @@ struct DilatedSourceValidTargetValidAcceptanceVisitor : public AcceptanceVisitor
     ITKHelpers::ExtractRegion(MaskImage, targetRegion, targetRegionMask.GetPointer());
 
     Mask::Pointer dilatedTargetRegionMask = Mask::New();
-    ITKHelpers::DilateImage(targetRegionMask.GetPointer(), dilatedTargetRegionMask.GetPointer(), 6);
+    ITKHelpers::DilateImage(targetRegionMask.GetPointer(), 6, dilatedTargetRegionMask.GetPointer());
 
     typedef itk::Image<bool, 2> BoolImage;
     BoolImage::Pointer rindImage = BoolImage::New(); // "rind" like an "orange rind"
@@ -63,7 +63,8 @@ struct DilatedSourceValidTargetValidAcceptanceVisitor : public AcceptanceVisitor
 
     std::vector<itk::Index<2> > rindPixels = ITKHelpers::GetPixelsWithValue(rindImage.GetPointer(), rindImage->GetLargestPossibleRegion(), true);
 
-    std::vector<itk::Offset<2> > rindOffsets = ITKHelpers::IndicesToOffsets(rindPixels, ITKHelpers::ZeroIndex());
+    itk::Index<2> zeroIndex = {{0,0}};
+    std::vector<itk::Offset<2> > rindOffsets = ITKHelpers::IndicesToOffsets(rindPixels, zeroIndex);
 
     std::vector<itk::Index<2> > targetRindPixelIndices = ITKHelpers::OffsetsToIndices(rindOffsets, targetRegion.GetIndex());
     std::vector<typename TImage::PixelType> targetRindPixels = ITKHelpers::GetPixelValues(Image, targetRindPixelIndices);

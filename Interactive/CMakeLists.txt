@@ -7,8 +7,11 @@ endif(NOT QT4_FOUND)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
+set(Interactive_includes ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} PARENT_SCOPE)
+
 QT4_WRAP_UI(InpaintingGUI_UISrcs
             BasicViewerWidget.ui
+            ManualPatchSelectionDialog.ui
             TopPatchesWidget.ui
             TopPatchesDialog.ui)
 QT4_WRAP_CPP(InpaintingGUI_MOCSrcs

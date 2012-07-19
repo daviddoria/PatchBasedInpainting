@@ -67,7 +67,8 @@ struct DilatedSourceHoleTargetValidAcceptanceVisitor : public AcceptanceVisitorP
 
     std::vector<itk::Index<2> > holeRindPixels = ITKHelpers::GetPixelsWithValue(holeRindImage.GetPointer(), holeRindImage->GetLargestPossibleRegion(), true);
 
-    std::vector<itk::Offset<2> > holeRindOffsets = ITKHelpers::IndicesToOffsets(holeRindPixels, ITKHelpers::ZeroIndex());
+    itk::Index<2> zeroIndex = {{0,0}};
+    std::vector<itk::Offset<2> > holeRindOffsets = ITKHelpers::IndicesToOffsets(holeRindPixels, zeroIndex);
 
     std::vector<itk::Index<2> > sourceRindPixelIndices = ITKHelpers::OffsetsToIndices(holeRindOffsets, sourceRegion.GetIndex());
     std::vector<typename TImage::PixelType> sourceRindPixels = ITKHelpers::GetPixelValues(Image, sourceRindPixelIndices);
@@ -91,7 +92,8 @@ struct DilatedSourceHoleTargetValidAcceptanceVisitor : public AcceptanceVisitorP
 
     std::vector<itk::Index<2> > validRindPixels = ITKHelpers::GetPixelsWithValue(validRindImage.GetPointer(), validRindImage->GetLargestPossibleRegion(), true);
 
-    std::vector<itk::Offset<2> > validRindOffsets = ITKHelpers::IndicesToOffsets(validRindPixels, ITKHelpers::ZeroIndex());
+    itk::Index<2> zeroIndex = {{0,0}};
+    std::vector<itk::Offset<2> > validRindOffsets = ITKHelpers::IndicesToOffsets(validRindPixels, zeroIndex);
 
     std::vector<itk::Index<2> > targetRindPixelIndices = ITKHelpers::OffsetsToIndices(validRindOffsets, targetRegion.GetIndex());
     std::vector<typename TImage::PixelType> targetRindPixels = ITKHelpers::GetPixelValues(Image, targetRindPixelIndices);

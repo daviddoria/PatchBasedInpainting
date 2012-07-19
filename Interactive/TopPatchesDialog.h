@@ -36,19 +36,25 @@ class TopPatchesDialogParent : public QDialog, public Ui::TopPatchesDialog
 Q_OBJECT
 
 public:
+  /** Constructor. */
   TopPatchesDialogParent(QWidget* parent = NULL) : QDialog(parent) {}
 
 public slots:
 
-  /** Ideally this would be templated on the node type, but since it is a slot it cannot be templated. */
+  /** Set the source nodes. Ideally this would be templated on the node type, but since it is a slot it cannot be templated. */
   virtual void SetSourceNodes(const std::vector<Node>& sourceNodes) = 0;
 
+  /** Set the query node. */
   virtual void SetQueryNode(const Node& queryNode) = 0;
+
+  /** The slot to handle when the btnSavePair button is clicked. */
+  virtual void on_btnSavePair_clicked() = 0;
 
   /** The click events. */
   virtual void slot_SingleClicked(const QModelIndex & index) = 0;
   virtual void slot_DoubleClicked(const QModelIndex & index) = 0;
 
+  /** The slot to handle when the btnSelectManually button is clicked. */
   virtual void on_btnSelectManually_clicked() = 0;
 };
 
@@ -59,6 +65,8 @@ class TopPatchesDialog : public TopPatchesDialogParent
 private:
   /** The image that will be displayed, and the from which the patches will be extracted before being displayed. */
   TImage* Image;
+
+  /** The mask to use. */
   Mask* MaskImage;
 
   Node QueryNode;
@@ -76,17 +84,21 @@ private:
   /** The half-width of the patch. */
   unsigned int PatchHalfWidth;
 
+  /** The scene and item for the query patch.*/
   QGraphicsScene* QueryPatchScene;
   QGraphicsPixmapItem* MaskedQueryPatchItem;
 
+  /** The scene and item for the proposed patch.*/
   QGraphicsScene* ProposedPatchScene;
   QGraphicsPixmapItem* ProposedPatchItem;
 
-  // The color to use as the background of the QGraphicsScenes
+  /** The color to use as the background of the QGraphicsScenes */
   QColor SceneBackground;
 
+  /** The model to use to display the patches. */
   ListModelPatches<TImage>* PatchesModel;
 
+  /** These actions are performed when the widget is displayed. */
   void showEvent(QShowEvent* event);
 
 public:
@@ -96,6 +108,7 @@ public:
   /** Set the source nodes from which the user can choose. */
   void SetSourceNodes(const std::vector<Node>& nodes);
 
+  /** Set the source nodes to display. */
   template <typename TNode>
   void SetSourceNodes(const std::vector<TNode>& sourceNodes);
 
@@ -108,15 +121,24 @@ public:
   /** Catch the signal that the ListView emits when it is double clicked. */
   void slot_DoubleClicked(const QModelIndex & index);
 
+  /** The slot to handle when the btnSavePair button is clicked. */
+  void on_btnSavePair_clicked();
+
+  /** The slot to handle when the btnSelectManually button is clicked. */
   void on_btnSelectManually_clicked();
 
   /** Get the node that user selected. */
   Node GetSelectedNode();
 
+  /** The list of nodes to display. */
   std::vector<Node> Nodes;
   //void on_btnRefresh_clicked();
 
+  /** Check if the selection is valid. */
   bool IsSelectionValid() const;
+
+  /** After the listView has been clicked, this variable contains which item is selected. */
+  QModelIndex SelectedIndex;
 };
 
 #include "TopPatchesDialog.hpp"
