@@ -16,3 +16,6 @@
 [submodule "ITKQtHelpers"]
 	path = ITKQtHelpers
 	url = https://github.com/daviddoria/ITKQtHelpers.git
+[submodule "Utilities/Histogram"]
+	path = Utilities/Histogram
+	url = https://github.com/daviddoria/Histogram.git
