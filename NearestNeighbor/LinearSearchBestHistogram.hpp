@@ -6,7 +6,7 @@
 #include <limits>
 
 // Submodules
-#include <Histogram/Histogram.h>
+#include <Utilities/Histogram/Histogram.h>
 
 /**
    * This function template is similar to std::min_element but can be used when the comparison
@@ -59,6 +59,8 @@ struct LinearSearchBestHistogram
                   this->Image, get(this->PropertyMap, query).GetRegion(), numberOfBinsPerDimension,
                   rangeMin, rangeMax);
 
+    typedef float DistanceValueType;
+
     typedef std::less<DistanceValueType> CompareFunctionType;
     CompareFunctionType compareFunction;
 
@@ -71,7 +73,7 @@ struct LinearSearchBestHistogram
     {
       HistogramType testHistogram =
           Histogram<BinValueType>::ComputeImageHistogram1D(
-                      this->Image.GetPointer(), get(this->PropertyMap, *current).GetRegion(), numberOfBinsPerDimension,
+                      this->Image, get(this->PropertyMap, *current).GetRegion(), numberOfBinsPerDimension,
                       rangeMin, rangeMax);
 
       float histogramDifference = Histogram<BinValueType>::HistogramDifference(queryHistogram, testHistogram);

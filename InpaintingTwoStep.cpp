@@ -110,10 +110,6 @@ int main(int argc, char *argv[])
   ImageType::Pointer image = ImageType::New();
   ITKHelpers::DeepCopy(imageReader->GetOutput(), image.GetPointer());
 
-  typedef itk::Image<itk::CovariantVector<float, 3>, 2> HSVImageType;
-  HSVImageType::Pointer hsvImage = HSVImageType::New();
-  ITKVTKHelpers::ConvertRGBtoHSV(image, hsvImage.GetPointer());
-
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
 
@@ -207,7 +203,7 @@ int main(int argc, char *argv[])
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
 
   typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType> BestSearchType;
-  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer());
+  BestSearchType linearSearchBest(imagePatchDescriptorMap);
 
 //  typedef NearestNeighborsDefaultVisitor NNVisitorType;
 //  NNVisitorType defaultNNVisitor; // This is required, but not used here.

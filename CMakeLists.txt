@@ -76,10 +76,7 @@ if(NOT TARGET BoostHelpers)
     include_directories(${BoostHelpers_includes})
 endif()
 
-if(NOT TARGET Histogram)
-  add_subdirectory(Utilities/Histogram)
-  include_directories(${Histogram_includes})
-endif()
+add_subdirectory(Utilities)
 
 if( (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Mask/.git") OR
 (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VTKHelpers/.git") OR

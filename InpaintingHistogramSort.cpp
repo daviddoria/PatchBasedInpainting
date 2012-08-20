@@ -62,6 +62,9 @@
 // ITK
 #include "itkImageFileReader.h"
 
+// Submodules
+#include <ITKVTKHelpers/ITKVTKHelpers.h>
+
 // Boost
 #include <boost/graph/grid_graph.hpp>
 #include <boost/property_map/property_map.hpp>
@@ -71,9 +74,9 @@
 int main(int argc, char *argv[])
 {
   // Verify arguments
-  if(argc != 5)
+  if(argc != 6)
     {
-    std::cerr << "Required arguments: image.png imageMask.mask patchHalfWidth output.png" << std::endl;
+    std::cerr << "Required arguments: image.png imageMask.mask patchHalfWidth numberOfKNN output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
@@ -82,21 +85,30 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
     }
 
+  std::stringstream ssArguments;
+  for(int i = 1; i < argc; ++i)
+  {
+    ssArguments << argv[i] << " ";
+    std::cout << argv[i] << " ";
+  }
+
   // Parse arguments
-  std::string imageFilename = argv[1];
-  std::string maskFilename = argv[2];
+  std::string imageFilename;
+  std::string maskFilename;
 
-  std::stringstream ssPatchHalfWidth;
-  ssPatchHalfWidth << argv[3];
   unsigned int patchHalfWidth = 0;
-  ssPatchHalfWidth >> patchHalfWidth;
 
-  std::string outputFilename = argv[4];
+  unsigned int numberOfKNN = 0;
+
+  std::string outputFilename;
+
+  ssArguments >> imageFilename >> maskFilename >> patchHalfWidth >> numberOfKNN >> outputFilename;
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
   std::cout << "Patch half width: " << patchHalfWidth << std::endl;
+  std::cout << "numberOfKNN: " << numberOfKNN << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
   typedef itk::VectorImage<float, 2> FloatVectorImageType;
@@ -109,6 +121,11 @@ int main(int argc, char *argv[])
 
   ImageType::Pointer image = ImageType::New();
   ITKHelpers::DeepCopy(imageReader->GetOutput(), image.GetPointer());
+
+  // Convert the image to HSV (will be used in the LinearSearchBestHistogram)
+  typedef itk::Image<itk::CovariantVector<float, 3>, 2> HSVImageType;
+  HSVImageType::Pointer hsvImage = HSVImageType::New();
+  ITKVTKHelpers::ConvertRGBtoHSV(image.GetPointer(), hsvImage.GetPointer());
 
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
@@ -199,11 +216,10 @@ int main(int argc, char *argv[])
 
   // Create the  neighbor finder
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
-  unsigned int numberOfKNN = 1000;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
 
   typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType> BestSearchType;
-  BestSearchType linearSearchBest(imagePatchDescriptorMap);
+  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer());
 
   TwoStepNearestNeighbor<KNNSearchType, BestSearchType> twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
