@@ -22,6 +22,9 @@
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
+// Visitors
+#include "Visitors/NearestNeighborsDefaultVisitor.hpp"
+
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
 
@@ -29,8 +32,10 @@
 #include "Visitors/InpaintingVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
 
-// Nearest neighbors
+// Nearest neighbors functions
 #include "NearestNeighbor/LinearSearchBestProperty.hpp"
+#include "NearestNeighbor/LinearSearchKNNProperty.hpp"
+#include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
 // Initializers
 #include "Initializers/InitializeFromMaskImage.hpp"
@@ -43,6 +48,7 @@
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
 #include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
+#include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
 
 // Utilities
 #include "Utilities/PatchHelpers.h"
@@ -104,6 +110,10 @@ int main(int argc, char *argv[])
   ImageType::Pointer image = ImageType::New();
   ITKHelpers::DeepCopy(imageReader->GetOutput(), image.GetPointer());
 
+  typedef itk::Image<itk::CovariantVector<float, 3>, 2> HSVImageType;
+  HSVImageType::Pointer hsvImage = HSVImageType::New();
+  ITKVTKHelpers::ConvertRGBtoHSV(image, hsvImage.GetPointer());
+
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
 
@@ -133,11 +143,7 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<float, IndexMapType> PriorityMapType;
   PriorityMapType priorityMap(num_vertices(graph), indexMap);
 
-  // Create the node fill status map. Each pixel is either filled (true) or not filled (false).
-  typedef boost::vector_property_map<bool, IndexMapType> FillStatusMapType;
-  FillStatusMapType fillStatusMap(num_vertices(graph), indexMap);
-
-  // Create the boundary status map. A node is on the current boundary if this property is true. 
+  // Create the boundary status map. A node is on the current boundary if this property is true.
   // This property helps the boundaryNodeQueue because we can mark here if a node has become no longer
   // part of the boundary, so when the queue is popped we can check this property to see if it should
   // actually be processed.
@@ -193,16 +199,24 @@ int main(int argc, char *argv[])
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
-  // Create the nearest neighbor finder
-
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > PatchDifferenceType;
 
-  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
-                                   PatchDifferenceType> BestSearchType;
-  BestSearchType linearSearchBest(imagePatchDescriptorMap);
+  // Create the  neighbor finder
+  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
+  unsigned int numberOfKNN = 1000;
+  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
+
+  typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType> BestSearchType;
+  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer());
+
+//  typedef NearestNeighborsDefaultVisitor NNVisitorType;
+//  NNVisitorType defaultNNVisitor; // This is required, but not used here.
+//  TwoStepNearestNeighbor<KNNSearchType, BestSearchType, NNVisitorType> twoStepNearestNeighbor(linearSearchKNN, linearSearchBest, defaultNNVisitor);
+
+  TwoStepNearestNeighbor<KNNSearchType, BestSearchType> twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
   // Perform the inpainting
-  InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, linearSearchBest, patchInpainter);
+  InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, twoStepNearestNeighbor, patchInpainter);
 
   return EXIT_SUCCESS;
 }

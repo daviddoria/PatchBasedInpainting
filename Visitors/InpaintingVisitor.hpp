@@ -249,11 +249,20 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 //               << " valid nodes in the queue." << std::endl;
 
   NumberOfFinishedPatches++;
-  }; // finish_vertex
+  } // finish_vertex
 
   void InpaintingComplete() const
   {
-    ITKHelpers::WriteImage(Image, ResultFileName);
+    // If the output filename is a png file, then use the RGBImage writer so that it is first
+    // casted to unsigned char. Otherwise, write the file directly.
+    if(Helpers::GetFileExtension(this->ResultFileName) == "png")
+    {
+      ITKHelpers::WriteRGBImage(this->Image, this->ResultFileName);
+    }
+    else
+    {
+      ITKHelpers::WriteImage(this->Image, this->ResultFileName);
+    }
   }
 
 }; // InpaintingVisitor

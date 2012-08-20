@@ -56,7 +56,7 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
 //       {
 //       descriptor.SetStatus(DescriptorType::SOURCE_NODE);
 //       }
-  };
+  }
 
   void DiscoverVertex(VertexDescriptorType v) const
   {
@@ -76,7 +76,7 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
     DescriptorType& descriptor = get(DescriptorMap, v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
     descriptor.SetValidOffsets(validOffsets);
-  };
+  }
 
 }; // ImagePatchDescriptorVisitor
 

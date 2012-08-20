@@ -76,6 +76,11 @@ if(NOT TARGET BoostHelpers)
     include_directories(${BoostHelpers_includes})
 endif()
 
+if(NOT TARGET Histogram)
+  add_subdirectory(Utilities/Histogram)
+  include_directories(${Histogram_includes})
+endif()
+
 if( (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Mask/.git") OR
 (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VTKHelpers/.git") OR
 (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKVTKHelpers/.git") OR
@@ -103,6 +108,7 @@ add_subdirectory(SearchRegions)
 add_library(PatchBasedInpainting
 ImageProcessing/Derivatives.cpp
 Utilities/itkCommandLineArgumentParser.cxx
+Utilities/PatchHelpers.cpp
 ImageProcessing/Isophotes.cpp
 ImageProcessing/BoundaryNormals.cpp
 Priority/Priority.cpp
@@ -174,6 +180,22 @@ endif()
 SET(inpainting_ClassicalImageInpaintingWithVisualOutput CACHE BOOL "Build a traditional patch comparison image inpainting that displays the image at every iteration.")
 if(inpainting_ClassicalImageInpaintingWithVisualOutput)
   include(ClassicalImageInpaintingWithVisualOutput.cmake)
+endif()
+
+SET(inpainting_InpaintingHistogramSort CACHE BOOL "Build a patch based image inpainting algorithm that uses a histogram difference sort on the top N SSD matches.")
+if(inpainting_InpaintingHistogramSort)
+  ADD_EXECUTABLE(InpaintingHistogramSort InpaintingHistogramSort.cpp)
+  TARGET_LINK_LIBRARIES(InpaintingHistogramSort PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES}
+                       ${QT_LIBRARIES} Helpers ITKHelpers Mask)
+  INSTALL( TARGETS InpaintingHistogramSort RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
+SET(inpainting_InpaintingTwoStep CACHE BOOL "Build a patch based image inpainting program that uses a two step (knn + best) search strategy.")
+if(inpainting_InpaintingTwoStep)
+  ADD_EXECUTABLE(InpaintingTwoStep InpaintingTwoStep.cpp)
+  TARGET_LINK_LIBRARIES(InpaintingTwoStep PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES}
+                       ${QT_LIBRARIES} Helpers ITKHelpers Mask)
+  INSTALL( TARGETS InpaintingTwoStep RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
 SET(inpainting_ClassicalImageInpainting CACHE BOOL "Build a traditional patch comparison image inpainting.")

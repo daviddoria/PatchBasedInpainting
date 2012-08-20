@@ -3,10 +3,15 @@
 
 #include "PatchHelpers.h"
 
-#include "ITKHelpers/ITKHelpers.h"
+// Submodules
+#include <ITKHelpers/ITKHelpers.h>
 
+// STL
 #include <cassert>
 #include <stdexcept>
+
+// Qt
+#include <QColor>
 
 namespace PatchHelpers
 {

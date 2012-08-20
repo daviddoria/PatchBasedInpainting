@@ -1,6 +1,6 @@
 /*=========================================================================
  *
- *  Copyright David Doria 2011 daviddoria@gmail.com
+ *  Copyright David Doria 2012 daviddoria@gmail.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -99,7 +99,8 @@
 #include <boost/property_map/property_map.hpp>
 #include <boost/graph/detail/d_ary_heap.hpp>
 
-// Debug
+// Utilities
+#include "Utilities/PatchHelpers.h"
 
 // Qt
 #include <QApplication>
@@ -160,8 +161,11 @@ int main(int argc, char *argv[])
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
 
-  itk::Index<2> testIndex = {{508, 324}};
-  mask->GetPixel(testIndex);
+  bool compatibleMask = PatchHelpers::CheckSurroundingRegionsOfAllHolePixels(mask, patchHalfWidth);
+  if(!compatibleMask)
+  {
+    throw std::runtime_error("The mask is not compatible!");
+  }
 
   std::cout << "Mask size: " << mask->GetLargestPossibleRegion().GetSize() << std::endl;
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;

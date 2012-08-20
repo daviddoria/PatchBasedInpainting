@@ -15,7 +15,7 @@ struct NearestNeighborsDefaultVisitor
   template <typename TContainer>
   void FoundNeighbors(const TContainer& container)
   {
-    std::cout << "NearestNeighborsDefaultVisitor: Found " << container.size() << " neighbors." << std::endl;
+    // std::cout << "NearestNeighborsDefaultVisitor: Found " << container.size() << " neighbors." << std::endl;
   }
 
 }; // NearestNeighborsDefaultVisitor

@@ -1,6 +1,12 @@
 #ifndef PatchHelpers_H
 #define PatchHelpers_H
 
+// Qt
+#include <QImage>
+
+// Submodules
+#include <Mask/Mask.h>
+
 namespace PatchHelpers
 {
 
@@ -18,6 +24,8 @@ void CopyPatchIntoImage(const TImage* const patch, TImage* const image, const Ma
 
 template <class TImage>
 void CopyPatchIntoImage(const TImage* patch, TImage* const image, const itk::Index<2>& centerPixel);
+
+bool CheckSurroundingRegionsOfAllHolePixels(const Mask* const mask, const unsigned int patchRadius);
 
 }
 
