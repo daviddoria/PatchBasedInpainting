@@ -6,11 +6,11 @@
 // Parent class
 #include "Visitors/AcceptanceVisitors/AcceptanceVisitorParent.h"
 
-// Custom
-#include "Mask/Mask.h"
-#include "Mask/MaskOperations.h"
-#include "ITKHelpers/ITKHelpers.h"
-#include "Utilities/Histogram.h"
+// Submodules
+#include <Mask/Mask.h>
+#include <Mask/MaskOperations.h>
+#include <ITKHelpers/ITKHelpers.h>
+#include "Utilities/Histogram/Histogram.h"
 
 // ITK
 #include "itkImage.h"
@@ -104,8 +104,8 @@ struct QuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorParen
         sourceValues[pixelId] = validPixelsSourceRegion[pixelId][component];
       }
 
-      std::vector<float> targetHistogram = Histogram::ScalarHistogram(targetValues, 20, Mins[component], Maxs[component]);
-      std::vector<float> sourceHistogram = Histogram::ScalarHistogram(sourceValues, 20, Mins[component], Maxs[component]);
+      std::vector<float> targetHistogram = Histogram<int>::ScalarHistogram(targetValues, 20, Mins[component], Maxs[component]);
+      std::vector<float> sourceHistogram = Histogram<int>::ScalarHistogram(sourceValues, 20, Mins[component], Maxs[component]);
 
 //       std::cout << "targetHistogram size " << targetHistogram.size() << std::endl;
 //       std::cout << "sourceHistogram size " << sourceHistogram.size() << std::endl;

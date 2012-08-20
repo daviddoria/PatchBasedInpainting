@@ -47,8 +47,6 @@
 
 // Descriptor visitors
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
-#include "Visitors/DescriptorVisitors/ImagePatchVectorizedIndicesVisitor.hpp"
-#include "Visitors/DescriptorVisitors/ImagePatchVectorizedVisitor.hpp"
 #include "Visitors/DescriptorVisitors/CompositeDescriptorVisitor.hpp"
 
 // Information visitors
@@ -224,10 +222,7 @@ int main(int argc, char *argv[])
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
           ImagePatchDescriptorVisitorType;
-//   typedef ImagePatchVectorizedVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
-//           ImagePatchDescriptorVisitorType;
-//   typedef ImagePatchVectorizedIndicesVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
-//           ImagePatchDescriptorVisitorType;
+
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> >

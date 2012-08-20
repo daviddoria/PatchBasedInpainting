@@ -6,11 +6,11 @@
 // Parent class
 #include "Visitors/AcceptanceVisitors/AcceptanceVisitorParent.h"
 
-// Custom
-#include "Mask/Mask.h"
-#include "Mask/MaskOperations.h"
-#include "ITKHelpers/ITKHelpers.h"
-#include "Utilities/Histogram.h"
+// Submodules
+#include <Mask/Mask.h>
+#include <Mask/MaskOperations.h>
+#include <ITKHelpers/ITKHelpers.h>
+#include "Utilities/Histogram/Histogram.h"
 
 // ITK
 #include "itkImage.h"
@@ -83,8 +83,8 @@ struct HoleHistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent
         sourceValues[pixelId] = sourceRegionPixels[pixelId][component];
       }
 
-      std::vector<float> targetHistogram = Histogram::ScalarHistogram(targetValues, 20, Mins[component], Maxs[component]);
-      std::vector<float> sourceHistogram = Histogram::ScalarHistogram(sourceValues, 20, Mins[component], Maxs[component]);
+      std::vector<float> targetHistogram = Histogram<int>::ScalarHistogram(targetValues, 20, Mins[component], Maxs[component]);
+      std::vector<float> sourceHistogram = Histogram<int>::ScalarHistogram(sourceValues, 20, Mins[component], Maxs[component]);
 
       // We normalize the histograms because the magnitude of the histogram difference should not change based on the number of pixels that were in the valid region of the patches.
       Helpers::NormalizeVector(targetHistogram);

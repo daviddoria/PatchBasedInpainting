@@ -7,10 +7,12 @@
 #include "Visitors/AcceptanceVisitors/AcceptanceVisitorParent.h"
 
 // Custom
-#include "Mask/Mask.h"
-#include "Mask/MaskOperations.h"
-#include "ITKHelpers/ITKHelpers.h"
-#include "Utilities//Histogram.h"
+#include "Utilities/Histogram/Histogram.h"
+
+// Submodules
+#include <Mask/Mask.h>
+#include <Mask/MaskOperations.h>
+#include <ITKHelpers/ITKHelpers.h>
 
 // ITK
 #include "itkImage.h"
@@ -86,9 +88,9 @@ struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGr
         sourceValues[pixelId] = validPixelsSourceRegion[pixelId][component];
       }
 
-      std::vector<float> targetHistogram = Histogram::ScalarHistogram(targetValues, 20,
+      std::vector<float> targetHistogram = Histogram<int>::ScalarHistogram(targetValues, 20,
                                                                       Mins[component], Maxs[component]);
-      std::vector<float> sourceHistogram = Histogram::ScalarHistogram(sourceValues, 20,
+      std::vector<float> sourceHistogram = Histogram<int>::ScalarHistogram(sourceValues, 20,
                                                                       Mins[component], Maxs[component]);
 
       // We normalize the histograms because the magnitude of the histogram difference should not

@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
+
 PROJECT(PatchBasedInpainting)
+SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 SET(ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -47,29 +49,31 @@ list(APPEND compileflags "USE_QT_PARALLEL")
 if(NOT TARGET Mask)
   add_subdirectory(Mask)
   include_directories(${Mask_includes})
-  message("Directly used Mask submodule.")
 endif()
 
 if(NOT TARGET VTKHelpers)
   add_subdirectory(VTKHelpers)
+include_directories(${VTKHelpers_includes})
 endif()
 
 if(NOT TARGET ITKVTKHelpers)
   add_subdirectory(ITKVTKHelpers)
   include_directories(${ITKVTKHelpers_includes})
-  message("Directly used ITKVTKHelpers submodule.")
 endif()
 
 if(NOT TARGET QtHelpers)
   add_subdirectory(QtHelpers)
+  include_directories(${QtHelpers_includes})
 endif()
 
 if(NOT TARGET ITKQtHelpers)
   add_subdirectory(ITKQtHelpers)
+    include_directories(${ITKQtHelpers_includes})
 endif()
 
 if(NOT TARGET BoostHelpers)
   add_subdirectory(BoostHelpers)
+    include_directories(${BoostHelpers_includes})
 endif()
 
 if( (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Mask/.git") OR
@@ -112,6 +116,7 @@ Priority/PriorityRandom.cpp
 # Interactive
 SET(BuildInteractive CACHE BOOL "Build the interactive version.")
 if(BuildInteractive)
+    message("Building the interactive components.")
   add_subdirectory(Interactive)
 endif()
 
