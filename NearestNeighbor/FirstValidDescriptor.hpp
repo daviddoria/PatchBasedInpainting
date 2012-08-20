@@ -25,7 +25,7 @@ struct FirstValidDescriptor
         return *iter;
       }
     };
-    throw std::runtime_error("There were no valid descriptors!");
+    throw std::runtime_error("FirstValidDescriptor: There were no valid descriptors!");
   }
 };
 

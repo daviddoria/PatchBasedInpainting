@@ -18,12 +18,16 @@ struct MaskImagePatchInpainter
 
   MaskImagePatchInpainter(std::size_t aPatchHalfWidth, const Mask* const mask) :
   patch_half_width(aPatchHalfWidth), MaskImage(mask)
-  { };
+  {
+    std::cout << "MaskImagePatchInpainter: Mask size: " << this->MaskImage->GetLargestPossibleRegion().GetSize() << std::endl;
+  }
 
   template <typename Vertex, typename InpaintingVisitor>
   void operator()(Vertex target, Vertex source, InpaintingVisitor vis)
   {
+    assert(this->MaskImage);
     std::cout << "Painting " << target[0] << " " << target[1] << " with " << source[0] << " " << source[1] << std::endl;
+    std::cout << "MaskImagePatchInpainter: Mask size: " << this->MaskImage->GetLargestPossibleRegion().GetSize() << std::endl;
 
     Vertex target_patch_corner;
     target_patch_corner[0] = target[0] - patch_half_width;
@@ -46,7 +50,7 @@ struct MaskImagePatchInpainter
         source_node[1] = source_patch_corner[1] + j;
 
         // Only paint the pixel if it is currently a hole
-        if( MaskImage->IsHole(ITKHelpers::CreateIndex(target_node)) )
+        if( this->MaskImage->IsHole(ITKHelpers::CreateIndex(target_node)) )
         {
           //std::cout << "Copying pixel " << source_node << " to pixel " << target_node << std::endl;
           vis.PaintVertex(target_node, source_node); //paint the vertex.

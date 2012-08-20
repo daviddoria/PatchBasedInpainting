@@ -64,6 +64,7 @@
 #include "NearestNeighbor/DefaultSearchBest.hpp"
 #include "NearestNeighbor/LinearSearchBestProperty.hpp"
 #include "NearestNeighbor/VisualSelectionBest.hpp"
+#include "NearestNeighbor/FirstValidDescriptor.hpp"
 
 // Nearest neighbors visitor
 #include "Visitors/NearestNeighborsDisplayVisitor.hpp"
@@ -110,13 +111,13 @@
 #include "Interactive/TopPatchesDialog.h"
 #include "Interactive/PriorityViewerWidget.h"
 
-// Run with: Data/trashcan.mha Data/trashcan_mask.mha 15 filled.mha
+// Run with: image.png image.mask 15 filled.png
 int main(int argc, char *argv[])
 {
   // Verify arguments
   if(argc != 5)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patchHalfWidth output.mha" << std::endl;
+    std::cerr << "Required arguments: image.png image.mask patchHalfWidth output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
@@ -159,12 +160,14 @@ int main(int argc, char *argv[])
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
 
+  itk::Index<2> testIndex = {{508, 324}};
+  mask->GetPixel(testIndex);
+
+  std::cout << "Mask size: " << mask->GetLargestPossibleRegion().GetSize() << std::endl;
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
 
   typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
-  //typedef ImagePatchVectorized<ImageType> ImagePatchPixelDescriptorType;
-  //typedef ImagePatchVectorizedIndices<ImageType> ImagePatchPixelDescriptorType;
 
   // Create the graph
   typedef boost::grid_graph<2> VertexListGraphType;
@@ -232,31 +235,13 @@ int main(int argc, char *argv[])
 //   typedef ImagePatchVectorizedIndicesDifference<ImagePatchPixelDescriptorType,
 //                                          SumAbsolutePixelDifference<ImageType::PixelType> > ImagePatchDifferenceType;
 
-  // Note: currently we can't do this "first search by small patches" because some small patches are valid while
-  // their corresponding big patches are not (near the image border)
-  // so the second step of the search (linear best) will be searching for big patches on the same nodes that small
-  // patches were valid, making them out of bounds)
-  // ImagePatchDescriptorVisitorType smallImagePatchDescriptorVisitor(image, mask, smallImagePatchDescriptorMap, 5);
-
   typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
   CompositeDescriptorVisitorType compositeDescriptorVisitor;
   compositeDescriptorVisitor.AddVisitor(&imagePatchDescriptorVisitor);
-  // compositeDescriptorVisitor.AddVisitor(&smallImagePatchDescriptorVisitor);
-
-  /*
-   * Grass statistics:
-  averageAverageDifference: 1.14196
-  averageVarianceDifference: 50.2063
-  averageCorrespondingDifference: 32.1023
-  */
 
   typedef CompositeAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
   CompositeAcceptanceVisitorType compositeAcceptanceVisitor;
 
-  typedef NeverAccept<VertexListGraphType> NeverAcceptVisitorType;
-  NeverAcceptVisitorType neverAcceptVisitor;
-  compositeAcceptanceVisitor.AddRequiredPassVisitor(&neverAcceptVisitor);
-  
 //   typedef ANDAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
 //   CompositeAcceptanceVisitorType compositeAcceptanceVisitor;
 
@@ -354,19 +339,19 @@ int main(int argc, char *argv[])
                                           &priorityFunction, patchHalfWidth,
                                           boundaryStatusMap, outputFilename);
 
-  typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
-  DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
+//  typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
+//  DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
 
-  typedef DebugVisitor<VertexListGraphType, ImageType, BoundaryStatusMapType, BoundaryNodeQueueType> DebugVisitorType;
-  DebugVisitorType debugVisitor(image, mask, patchHalfWidth, boundaryStatusMap, boundaryNodeQueue);
+//  typedef DebugVisitor<VertexListGraphType, ImageType, BoundaryStatusMapType, BoundaryNodeQueueType> DebugVisitorType;
+//  DebugVisitorType debugVisitor(image, mask, patchHalfWidth, boundaryStatusMap, boundaryNodeQueue);
 
   LoggerVisitor<VertexListGraphType> loggerVisitor("log.txt");
 
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
   CompositeInpaintingVisitorType compositeInpaintingVisitor;
   compositeInpaintingVisitor.AddVisitor(&inpaintingVisitor);
-  compositeInpaintingVisitor.AddVisitor(&displayVisitor);
-  compositeInpaintingVisitor.AddVisitor(&debugVisitor);
+//  compositeInpaintingVisitor.AddVisitor(&displayVisitor);
+//  compositeInpaintingVisitor.AddVisitor(&debugVisitor);
   compositeInpaintingVisitor.AddVisitor(&loggerVisitor);
 
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
@@ -393,60 +378,26 @@ int main(int argc, char *argv[])
 //   typedef DefaultSearchBest BestSearchType;
 //   BestSearchType bestSearch;
 
-  TopPatchesDialog<ImageType> topPatchesDialog(image, mask, patchHalfWidth);
-  typedef VisualSelectionBest<ImageType> ManualSearchType;
-  ManualSearchType manualSearchBest(image, mask, patchHalfWidth, &topPatchesDialog);
+//  TopPatchesDialog<ImageType> topPatchesDialog(image, mask, patchHalfWidth);
+//  typedef VisualSelectionBest<ImageType> ManualSearchType;
+//  ManualSearchType manualSearchBest(image, mask, patchHalfWidth, &topPatchesDialog);
 
-  BasicViewerWidget<ImageType> basicViewerWidget(image, mask);
-  basicViewerWidget.show();
-  // These connections are Qt::BlockingQueuedConnection because the algorithm quickly
-  // goes on to fill the hole, and since we are sharing the image memory, we want to make sure these things are
-  // refreshed at the right time, not after the hole has already been filled
-  // (this actually happens, it is not just a theoretical thing).
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()),
-                   Qt::BlockingQueuedConnection);
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
-                   &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
-                   Qt::BlockingQueuedConnection);
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)),
-                   &basicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)),
-                   Qt::BlockingQueuedConnection);
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
-                   &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
-                   Qt::BlockingQueuedConnection);
+  typedef FirstValidDescriptor<ImagePatchDescriptorMapType> ManualSearchType;
+  ManualSearchType manualSearchBest(imagePatchDescriptorMap);
 
-  // Display the priority of the boundary in a different window
-  PriorityViewerWidget<PriorityType, BoundaryStatusMapType>
-            priorityViewerWidget(&priorityFunction, image->GetLargestPossibleRegion().GetSize(), boundaryStatusMap);
-  priorityViewerWidget.show();
+//  // Run the remaining inpainting with interaction
+//  QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
+//                                VertexListGraphType, CompositeInpaintingVisitorType, BoundaryStatusMapType,
+//                                BoundaryNodeQueueType, KNNSearchType, BestSearchType, ManualSearchType, InpainterType>,
+//                                graph, compositeInpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, knnSearch,
+//                                bestSearch, boost::ref(manualSearchBest), patchInpainter));
 
-  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &priorityViewerWidget, SLOT(slot_UpdateImage()),
-                   Qt::BlockingQueuedConnection);
-  
-  // Passively display the top patches at every iteration
-//   TopPatchesWidget<ImageType> topPatchesWidget(image, patchHalfWidth);
-//   topPatchesWidget.show();
-//   QObject::connect(&nearestNeighborsDisplayVisitor, SIGNAL(signal_Refresh(const std::vector<Node>&)),
-//                    &topPatchesWidget, SLOT(SetNodes(const std::vector<Node>&)));
-
-  // Partially replay the inpainting from a log.
-
-//   typedef ReplayVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
-//                 FillStatusMapType, BoundaryStatusMapType> ReplayVisitorType;
-//   ReplayVisitorType replayVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
-//                                   patchHalfWidth, boundaryStatusMap);
-
-//   InpaintingAlgorithm<VertexListGraphType, ReplayVisitorType, BoundaryStatusMapType,
-//                                 BoundaryNodeQueueType, KNNSearchType, BestSearchType, ManualSearchType, InpainterType>
-//                                 (graph, replayVisitor, boundaryStatusMap, boundaryNodeQueue, knnSearch,
-//                                 defaultSearchBest, patchInpainter);
-
-  // Run the remaining inpainting
-  QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
-                                VertexListGraphType, CompositeInpaintingVisitorType, BoundaryStatusMapType,
-                                BoundaryNodeQueueType, KNNSearchType, BestSearchType, ManualSearchType, InpainterType>,
-                                graph, compositeInpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, knnSearch,
-                                bestSearch, boost::ref(manualSearchBest), patchInpainter));
+  // Run the remaining inpainting without interaction
+  InpaintingAlgorithmWithVerification<VertexListGraphType, CompositeInpaintingVisitorType,
+                                      BoundaryStatusMapType, BoundaryNodeQueueType, KNNSearchType,
+                                      BestSearchType, ManualSearchType, InpainterType>
+         (graph, compositeInpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, knnSearch,
+          bestSearch, manualSearchBest, patchInpainter);
 
   return app.exec();
 }

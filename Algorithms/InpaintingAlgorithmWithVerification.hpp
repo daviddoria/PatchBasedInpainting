@@ -83,6 +83,6 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
     vis.FinishVertex(targetNode, sourceNode);
   } // end main iteration loop
 
-};
+}
 
 #endif

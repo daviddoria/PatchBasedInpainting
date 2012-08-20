@@ -67,12 +67,12 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   void InitializeVertex(VertexDescriptorType v) const
   {
     DescriptorVisitor.InitializeVertex(v);
-  };
+  }
 
   void DiscoverVertex(VertexDescriptorType v) const
   {
     DescriptorVisitor.DiscoverVertex(v);
-  };
+  }
 
   void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
@@ -101,7 +101,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       ss << "Potential target pixel " << target[0] << " " << target[1] << " does not have a hole neighbor!";
       throw std::runtime_error(ss.str());
     }
-  };
+  }
 
   void PaintPatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
@@ -146,13 +146,13 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     assert(Image->GetLargestPossibleRegion().IsInside(target_index));
 
     Image->SetPixel(target_index, Image->GetPixel(source_index));
-  };
+  }
 
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
     float energy = 0.0f;
     return AcceptanceVisitor.AcceptMatch(target, source, energy);
-  };
+  }
 
   void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)
   {
