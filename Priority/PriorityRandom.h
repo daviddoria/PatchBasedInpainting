@@ -27,7 +27,12 @@
 class PriorityRandom
 {
 public:
+  /** Constructor that seeds the random number generator with the time.*/
   PriorityRandom();
+
+  /** Constructor that seeds the random number generator with either the time or 0, depending on the value of 'random'.
+    * If 'random' == false, we can reproduce results from one run to the next. */
+  PriorityRandom(const bool random);
 
   /** Return a random value.*/
   template <typename TNode>
@@ -36,6 +41,8 @@ public:
   /** There is no reason to update anything.*/
   template <typename TNode>
   void Update(const TNode& sourceNode, const TNode& targetNode, const unsigned int patchNumber = 0){}
+
+private:
 
 };
 
