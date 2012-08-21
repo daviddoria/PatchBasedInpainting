@@ -75,15 +75,15 @@ int main(int argc, char *argv[])
 {
   // Verify arguments
   if(argc != 6)
-    {
+  {
     std::cerr << "Required arguments: image.png imageMask.mask patchHalfWidth numberOfKNN output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
-      {
+    {
       std::cerr << argv[i] << " ";
-      }
-    return EXIT_FAILURE;
     }
+    return EXIT_FAILURE;
+  }
 
   std::stringstream ssArguments;
   for(int i = 1; i < argc; ++i)
@@ -197,9 +197,9 @@ int main(int argc, char *argv[])
 
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
-                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType,
-                            PriorityMapType, BoundaryStatusMapType>
-                            InpaintingVisitorType;
+      ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType,
+      PriorityMapType, BoundaryStatusMapType>
+      InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
                                           imagePatchDescriptorVisitor, acceptanceVisitor, priorityMap,
                                           &priorityFunction, patchHalfWidth,
@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
 
   typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType> BestSearchType;
-  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer());
+  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
 
   TwoStepNearestNeighbor<KNNSearchType, BestSearchType> twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 

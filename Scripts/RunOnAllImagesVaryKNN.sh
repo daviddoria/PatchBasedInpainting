@@ -17,6 +17,6 @@ for knn in 1 10 50 1000; do
       ImagePrefix=`basename $i .mask`;
       echo "ImagePrefix $ImagePrefix";
       ZeroPaddedKNN=`printf %04d ${knn}`
-      ~/build/Projects/PatchBasedInpainting/InpaintingHistogramSort ${ImageDirectory}/${ImagePrefix}.png $i $PatchRadius $knn ${ImagePrefix}_filled_${ZeroPaddedKNN}.png;
+      ~/build/Projects/PatchBasedInpainting/InpaintingHistogramSort ${ImageDirectory}/${ImagePrefix}.png $i $PatchRadius $knn ${ImagePrefix}_filled_${ZeroPaddedKNN}.png >> ${ImagePrefix}_filled_${ZeroPaddedKNN}.txt;
     done;
 done;
