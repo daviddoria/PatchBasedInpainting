@@ -56,46 +56,46 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
                     const unsigned int patchHalfWidth, TBoundaryStatusMap& boundaryStatusMap,
                     const std::string& resultFileName,
                     const std::string& visitorName = "InpaintingVisitor") :
-  InpaintingVisitorParent<TGraph>(visitorName),
-  Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
-  DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
-  PriorityMap(priorityMap), BoundaryStatusMap(boundaryStatusMap),
-  PatchHalfWidth(patchHalfWidth), ResultFileName(resultFileName), NumberOfFinishedPatches(0)
+    InpaintingVisitorParent<TGraph>(visitorName),
+    Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
+    DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
+    PriorityMap(priorityMap), BoundaryStatusMap(boundaryStatusMap),
+    PatchHalfWidth(patchHalfWidth), ResultFileName(resultFileName), NumberOfFinishedPatches(0)
   {
   }
 
   void InitializeVertex(VertexDescriptorType v) const
   {
-    DescriptorVisitor.InitializeVertex(v);
+    this->DescriptorVisitor.InitializeVertex(v);
   }
 
   void DiscoverVertex(VertexDescriptorType v) const
   {
-    DescriptorVisitor.DiscoverVertex(v);
+    this->DescriptorVisitor.DiscoverVertex(v);
   }
 
   void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
     // Debug only checks
     //assert(get(FillStatusMap, source));
-    assert(ITKHelpers::HasNeighborWithValue(ITKHelpers::CreateIndex(target), MaskImage, MaskImage->GetHoleValue()));
+    assert(ITKHelpers::HasNeighborWithValue(ITKHelpers::CreateIndex(target), this->MaskImage, this->MaskImage->GetHoleValue()));
 
     // For faster debugging (so we can "printf debug" in release mode), we make these cheks at runtime as well
-//     if(!get(FillStatusMap, source))
-//     {
-//       std::stringstream ss;
-//       ss << "Potential source pixel " << source[0] << " " << source[1]
-//          << " does not have 'true' value in FillStatusMap!";
-//       throw std::runtime_error(ss.str());
-//     }
-    if(!MaskImage->IsValid(ITKHelpers::CreateIndex(source)))
+    //     if(!get(FillStatusMap, source))
+    //     {
+    //       std::stringstream ss;
+    //       ss << "Potential source pixel " << source[0] << " " << source[1]
+    //          << " does not have 'true' value in FillStatusMap!";
+    //       throw std::runtime_error(ss.str());
+    //     }
+    if(!this->MaskImage->IsValid(ITKHelpers::CreateIndex(source)))
     {
       std::stringstream ss;
       ss << "Potential source pixel " << source[0] << " " << source[1] << " is not valid in the mask!";
       throw std::runtime_error(ss.str());
     }
 
-    if(!ITKHelpers::HasNeighborWithValue(ITKHelpers::CreateIndex(target), MaskImage, MaskImage->GetHoleValue()))
+    if(!ITKHelpers::HasNeighborWithValue(ITKHelpers::CreateIndex(target), this->MaskImage, this->MaskImage->GetHoleValue()))
     {
       std::stringstream ss;
       ss << "Potential target pixel " << target[0] << " " << target[1] << " does not have a hole neighbor!";
@@ -134,7 +134,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
       }
     }
-  };
+  }
   
   void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
   {
@@ -172,56 +172,56 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
     // Mark all the pixels in this region as filled (in the mask and in the FillStatusMap).
     {
-    itk::ImageRegionIteratorWithIndex<Mask> maskIterator(MaskImage, regionToFinish);
+      itk::ImageRegionIteratorWithIndex<Mask> maskIterator(MaskImage, regionToFinish);
 
-    while(!maskIterator.IsAtEnd())
+      while(!maskIterator.IsAtEnd())
       {
-      MaskImage->MarkAsValid(maskIterator.GetIndex());
-      ++maskIterator;
+        this->MaskImage->MarkAsValid(maskIterator.GetIndex());
+        ++maskIterator;
       }
     }
 
     // Initialize all vertices in the newly filled region because they may now be valid source nodes.
-    // (You may not want to do this in some cases (i.e. if the descriptors needed cannot be 
+    // (You may not want to do this in some cases (i.e. if the descriptors needed cannot be
     // computed on newly filled regions))
     {
-    itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(Image, regionToFinish);
-    while(!gridIterator.IsAtEnd())
+      itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(Image, regionToFinish);
+      while(!gridIterator.IsAtEnd())
       {
-      VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(gridIterator.GetIndex());
+        VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(gridIterator.GetIndex());
 
-      InitializeVertex(v);
-      ++gridIterator;
+        InitializeVertex(v);
+        ++gridIterator;
       }
     }
 
     {
-    // Add pixels that are on the new boundary to the queue, and mark other pixels as not in the queue.
-    itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(MaskImage, regionToFinish);
+      // Add pixels that are on the new boundary to the queue, and mark other pixels as not in the queue.
+      itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(MaskImage, regionToFinish);
 
-    while(!imageIterator.IsAtEnd())
+      while(!imageIterator.IsAtEnd())
       {
-      VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(imageIterator.GetIndex());
+        VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(imageIterator.GetIndex());
 
-      // This makes them ignored if they are still in the boundaryNodeQueue.
-      if(MaskImage->HasHoleNeighbor(imageIterator.GetIndex()))
+        // This makes them ignored if they are still in the boundaryNodeQueue.
+        if(MaskImage->HasHoleNeighbor(imageIterator.GetIndex()))
         {
-        // Note: must set the value in the priority map before pushing the node
-        // into the queue (as the priority is what
-        // determines the node's position in the queue).
-        float priority = this->PriorityFunction->ComputePriority(imageIterator.GetIndex());
-        //std::cout << "updated priority: " << priority << std::endl;
-        put(PriorityMap, v, priority);
+          // Note: must set the value in the priority map before pushing the node
+          // into the queue (as the priority is what
+          // determines the node's position in the queue).
+          float priority = this->PriorityFunction->ComputePriority(imageIterator.GetIndex());
+          //std::cout << "updated priority: " << priority << std::endl;
+          put(PriorityMap, v, priority);
 
-        put(BoundaryStatusMap, v, true);
-        this->BoundaryNodeQueue.push(v);
+          put(BoundaryStatusMap, v, true);
+          this->BoundaryNodeQueue.push(v);
         }
-      else
+        else
         {
-        put(BoundaryStatusMap, v, false);
+          put(BoundaryStatusMap, v, false);
         }
 
-      ++imageIterator;
+        ++imageIterator;
       }
     }
 
@@ -232,23 +232,23 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     // Sometimes pixels that are not in the finishing region that were boundary pixels are no longer
     // boundary pixels after the filling. Check for these.
     {
-    // Expand the region
-    itk::ImageRegion<2> expandedRegion = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, PatchHalfWidth + 1);
-    std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetBoundaryPixels(expandedRegion);
-    for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
+      // Expand the region
+      itk::ImageRegion<2> expandedRegion = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, PatchHalfWidth + 1);
+      std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetBoundaryPixels(expandedRegion);
+      for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
       {
-      if(!ITKHelpers::HasNeighborWithValue(boundaryPixels[i], MaskImage, MaskImage->GetHoleValue()))
+        if(!ITKHelpers::HasNeighborWithValue(boundaryPixels[i], MaskImage, MaskImage->GetHoleValue()))
         {
-        VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(boundaryPixels[i]);
-        put(BoundaryStatusMap, v, false);
+          VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(boundaryPixels[i]);
+          put(BoundaryStatusMap, v, false);
         }
       }
     }
-// std::cout << "FinishVertex after removing stale nodes outside finishing region there are "
-//               << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap)
-//               << " valid nodes in the queue." << std::endl;
+    // std::cout << "FinishVertex after removing stale nodes outside finishing region there are "
+    //               << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap)
+    //               << " valid nodes in the queue." << std::endl;
 
-  NumberOfFinishedPatches++;
+    NumberOfFinishedPatches++;
   } // finish_vertex
 
   void InpaintingComplete() const

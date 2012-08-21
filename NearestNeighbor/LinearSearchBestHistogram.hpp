@@ -24,7 +24,7 @@
 #include <limits>
 
 // Submodules
-#include <Utilities/Histogram/Histogram.h>
+#include <Utilities/Histogram/MaskedHistogram.h>
 
 /**
    * This function template is similar to std::min_element but can be used when the comparison
@@ -80,9 +80,11 @@ public:
 
     unsigned int numberOfBinsPerDimension = 30;
 
+    itk::ImageRegion<2> queryRegion = get(this->PropertyMap, query).GetRegion();
+
     HistogramType queryHistogram =
-      Histogram<BinValueType>::ComputeImageHistogram1D(
-                  this->Image, get(this->PropertyMap, query).GetRegion(), numberOfBinsPerDimension,
+      MaskedHistogram::ComputeMaskedImage1DHistogram(
+                  this->Image, queryRegion, this->MaskImage, queryRegion, numberOfBinsPerDimension,
                   rangeMin, rangeMax);
 
     typedef float DistanceValueType;
@@ -97,9 +99,13 @@ public:
     // Iterate through all of the input elements
     for(TIterator current = first; current != last; ++current)
     {
+
+      itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *current).GetRegion();
+
+      // Compute the histogram of the source region using the queryRegion mask
       HistogramType testHistogram =
-          Histogram<BinValueType>::ComputeImageHistogram1D(
-                      this->Image, get(this->PropertyMap, *current).GetRegion(), numberOfBinsPerDimension,
+          MaskedHistogram::ComputeMaskedImage1DHistogram(
+                      this->Image, currentRegion, this->MaskImage, queryRegion, numberOfBinsPerDimension,
                       rangeMin, rangeMax);
 
       float histogramDifference = Histogram<BinValueType>::HistogramDifference(queryHistogram, testHistogram);

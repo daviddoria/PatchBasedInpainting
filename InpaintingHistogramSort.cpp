@@ -173,7 +173,8 @@ int main(int argc, char *argv[])
 
   // Create the priority function
   typedef PriorityRandom PriorityType;
-  PriorityType priorityFunction;
+  bool random = false;
+  PriorityType priorityFunction(random);
 
   // Create the boundary node queue. The priority of each node is used to order the queue.
   typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;
