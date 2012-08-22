@@ -21,7 +21,8 @@
 
 #include "Priority.h"
 
-#include "Mask/Mask.h"
+// Submodules
+#include <Mask/Mask.h>
 
 /**
 \class PriorityOnionPeel

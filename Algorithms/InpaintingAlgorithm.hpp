@@ -68,9 +68,9 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
       //std::cout << "There are " << boundaryNodeQueue.size() << " nodes in the queue." << std::endl;
       if( (*boundaryNodeQueue).empty() )
       {
-      std::cout << "Inpainting complete." << std::endl;
-      vis.InpaintingComplete();
-//         std::cout << "(There are " << (*boundaryNodeQueue).size() << " nodes in the queue)." << std::endl;
+        std::cout << "Inpainting complete." << std::endl;
+        vis.InpaintingComplete();
+  //         std::cout << "(There are " << (*boundaryNodeQueue).size() << " nodes in the queue)." << std::endl;
         return;  //terminate if the queue is empty.
       }
       targetNode = (*boundaryNodeQueue).top();

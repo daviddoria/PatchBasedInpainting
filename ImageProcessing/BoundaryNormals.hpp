@@ -16,29 +16,29 @@
  *
  *=========================================================================*/
 
-#include "BoundaryNormals.h"
+#ifndef BoundaryNormals_HPP
+#define BoundaryNormals_HPP
 
+//#include "BoundaryNormals.h"
+
+// ITK
 #include "itkMaskImageFilter.h"
 #include "itkDiscreteGaussianImageFilter.h"
 #include "itkGradientImageFilter.h"
 
-#include "ITKHelpers/ITKHelpers.h"
+// Submodules
+#include <ITKHelpers/ITKHelpers.h>
 
-BoundaryNormals::BoundaryNormals(const UnsignedCharScalarImageType* const boundaryImage, const Mask* const mask) :
-BoundaryImage(boundaryImage), MaskImage(mask)
-{
-
-}
-
+template <typename TNormalsImage>
 void BoundaryNormals::ComputeBoundaryNormals(const float blurVariance,
-                                             ITKHelpers::FloatVector2ImageType* const boundaryNormalsImage)
+                                             TNormalsImage* const boundaryNormalsImage)
 {
   // Blur the mask, compute the gradient, then keep the normals only at the original mask boundary
 
-//   OutputHelpers::WriteImageConditional(this->BoundaryImage,
-//                                        "Debug/ComputeBoundaryNormals.BoundaryImage.mha", this->DebugImages);
+  //   OutputHelpers::WriteImageConditional(this->BoundaryImage,
+  //                                        "Debug/ComputeBoundaryNormals.BoundaryImage.mha", this->DebugImages);
   //HelpersOutput::WriteImageConditional(this->MaskImage, "Debug/ComputeBoundaryNormals.CurrentMask.mha",
-//                                    this->DebugImages);
+  //                                    this->DebugImages);
 
   // Blur the mask
   typedef itk::DiscreteGaussianImageFilter< Mask, ITKHelpers::FloatScalarImageType >  BlurFilterType;
@@ -47,8 +47,8 @@ void BoundaryNormals::ComputeBoundaryNormals(const float blurVariance,
   gaussianFilter->SetVariance(blurVariance);
   gaussianFilter->Update();
 
-//   OutputHelpers::WriteImageConditional(gaussianFilter->GetOutput(),
-//                                        "Debug/ComputeBoundaryNormals.BlurredMask.mha", this->DebugImages);
+  //   OutputHelpers::WriteImageConditional(gaussianFilter->GetOutput(),
+  //                                        "Debug/ComputeBoundaryNormals.BlurredMask.mha", this->DebugImages);
 
   // Compute the gradient of the blurred mask
   typedef itk::GradientImageFilter< ITKHelpers::FloatScalarImageType, float, float>  GradientFilterType;
@@ -56,39 +56,42 @@ void BoundaryNormals::ComputeBoundaryNormals(const float blurVariance,
   gradientFilter->SetInput(gaussianFilter->GetOutput());
   gradientFilter->Update();
 
-//   OutputHelpers::WriteImageConditional(gradientFilter->GetOutput(),
-//                                        "Debug/ComputeBoundaryNormals.BlurredMaskGradient.mha", this->DebugImages);
+  //   OutputHelpers::WriteImageConditional(gradientFilter->GetOutput(),
+  //                                        "Debug/ComputeBoundaryNormals.BlurredMaskGradient.mha", this->DebugImages);
 
   // Only keep the normals at the boundary
-  typedef itk::MaskImageFilter< ITKHelpers::FloatVector2ImageType, ITKHelpers::UnsignedCharScalarImageType, ITKHelpers::FloatVector2ImageType > MaskFilterType;
-  MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+  typedef itk::MaskImageFilter<TNormalsImage, ITKHelpers::UnsignedCharScalarImageType, TNormalsImage> MaskFilterType;
+  typename MaskFilterType::Pointer maskFilter = MaskFilterType::New();
   maskFilter->SetInput(gradientFilter->GetOutput());
   maskFilter->SetMaskImage(this->BoundaryImage);
   maskFilter->Update();
 
-//   HelpersOutput::WriteImageConditional(maskFilter->GetOutput(),
-//                                        "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha",
-//                                         this->DebugImages);
+  //   HelpersOutput::WriteImageConditional(maskFilter->GetOutput(),
+  //                                        "Debug/ComputeBoundaryNormals.BoundaryNormalsUnnormalized.mha",
+  //                                         this->DebugImages);
 
   // Allocate the image to return
   ITKHelpers::DeepCopy(maskFilter->GetOutput(), boundaryNormalsImage);
 
   // Normalize the vectors because we just care about their direction
   // (the Data term computation calls for the normalized boundary normal)
-  itk::ImageRegionIterator<ITKHelpers::FloatVector2ImageType> boundaryNormalsIterator(
-              boundaryNormalsImage, boundaryNormalsImage->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<TNormalsImage> boundaryNormalsIterator(
+        boundaryNormalsImage, boundaryNormalsImage->GetLargestPossibleRegion());
   itk::ImageRegionConstIterator<UnsignedCharScalarImageType> boundaryIterator(this->BoundaryImage,
-                                           this->BoundaryImage->GetLargestPossibleRegion());
+                                                                              this->BoundaryImage->GetLargestPossibleRegion());
 
   while(!boundaryNormalsIterator.IsAtEnd())
-    {
+  {
     if(boundaryIterator.Get()) // The pixel is on the boundary
-      {
-      ITKHelpers::FloatVector2ImageType::PixelType p = boundaryNormalsIterator.Get();
+    {
+      typename TNormalsImage::PixelType p = boundaryNormalsIterator.Get();
       p.Normalize();
       boundaryNormalsIterator.Set(p);
-      }
+    }
     ++boundaryNormalsIterator;
     ++boundaryIterator;
-    }
+  }
+
 }
+
+#endif

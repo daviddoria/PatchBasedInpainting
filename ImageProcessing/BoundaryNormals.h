@@ -19,22 +19,28 @@
 #ifndef BoundaryNormals_H
 #define BoundaryNormals_H
 
-#include "Mask/Mask.h"
-
-#include "ITKHelpers/ITKHelpers.h"
+// Submodules
+#include <Mask/Mask.h>
+#include <ITKHelpers/ITKHelpers.h>
 
 class BoundaryNormals
 {
 public:
   typedef itk::Image<unsigned char, 2> UnsignedCharScalarImageType;
   
-  BoundaryNormals(const UnsignedCharScalarImageType* const boundaryImage, const Mask* const mask);
+  /** Constructor. */
+  BoundaryNormals(const UnsignedCharScalarImageType* const boundaryImage, const Mask* const mask) :
+    BoundaryImage(boundaryImage), MaskImage(mask){}
 
-  void ComputeBoundaryNormals(const float blurVariance, ITKHelpers::FloatVector2ImageType* const boundaryNormals);
+//  /** Comput the boundary normals. */
+  template <typename TNormalsImage>
+  void ComputeBoundaryNormals(const float blurVariance, TNormalsImage* const boundaryNormals);
 
 private:
   const UnsignedCharScalarImageType* BoundaryImage;
   const Mask* MaskImage;
 };
+
+#include "BoundaryNormals.hpp"
 
 #endif

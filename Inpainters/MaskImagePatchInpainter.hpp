@@ -31,11 +31,16 @@
  */
 struct MaskImagePatchInpainter
 {
-  std::size_t patch_half_width;
+private:
+  std::size_t PatchHalfWidth;
   const Mask* MaskImage;
 
-  MaskImagePatchInpainter(std::size_t aPatchHalfWidth, const Mask* const mask) :
-  patch_half_width(aPatchHalfWidth), MaskImage(mask)
+  // Debug only
+  unsigned int Iteration;
+
+public:
+  MaskImagePatchInpainter(std::size_t patchHalfWidth, const Mask* const mask) :
+    PatchHalfWidth(patchHalfWidth), MaskImage(mask), Iteration(0)
   {
     std::cout << "MaskImagePatchInpainter: Mask size: " << this->MaskImage->GetLargestPossibleRegion().GetSize() << std::endl;
   }
@@ -45,22 +50,23 @@ struct MaskImagePatchInpainter
   {
     assert(this->MaskImage);
 
-//    std::cout << "Painting " << target[0] << " " << target[1] << " with " << source[0] << " " << source[1] << std::endl;
+    std::cout << "MaskImagePatchInpainter::operator(): Painting " << target[0] << " " << target[1]
+              << " with " << source[0] << " " << source[1] << std::endl;
 //    std::cout << "MaskImagePatchInpainter: Mask size: " << this->MaskImage->GetLargestPossibleRegion().GetSize() << std::endl;
 
     Vertex target_patch_corner;
-    target_patch_corner[0] = target[0] - patch_half_width;
-    target_patch_corner[1] = target[1] - patch_half_width;
+    target_patch_corner[0] = target[0] - this->PatchHalfWidth;
+    target_patch_corner[1] = target[1] - this->PatchHalfWidth;
 
     Vertex source_patch_corner;
-    source_patch_corner[0] = source[0] - patch_half_width;
-    source_patch_corner[1] = source[1] - patch_half_width;
+    source_patch_corner[0] = source[0] - this->PatchHalfWidth;
+    source_patch_corner[1] = source[1] - this->PatchHalfWidth;
 
     Vertex target_node;
     Vertex source_node;
-    for(std::size_t i = 0; i < patch_half_width * 2 + 1; ++i)
+    for(std::size_t i = 0; i < this->PatchHalfWidth * 2 + 1; ++i)
     {
-      for(std::size_t j = 0; j < patch_half_width * 2 + 1; ++j)
+      for(std::size_t j = 0; j < this->PatchHalfWidth * 2 + 1; ++j)
       {
         target_node[0] = target_patch_corner[0] + i;
         target_node[1] = target_patch_corner[1] + j;
@@ -77,8 +83,12 @@ struct MaskImagePatchInpainter
 
       }
     }
-  }
 
-};
+    std::cout << "After filling, there are " << this->MaskImage->CountHolePixels() << " hole pixels remaining." << std::endl;
+    ITKHelpers::WriteSequentialImage(this->MaskImage, "Mask", this->Iteration, 3, "png");
+    this->Iteration++;
+  } // end operator()
+
+}; // end MaskImagePatchInpainter
 
 #endif

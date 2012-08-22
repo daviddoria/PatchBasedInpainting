@@ -160,13 +160,14 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;
   IndexInHeapMap index_in_heap(indexMap);
 
-  // Create the priority compare functor
-  typedef std::less<float> PriorityCompareType;
-  PriorityCompareType lessThanFunctor;
+  // Create the priority compare functor (we want to use the highest priority pixels first, so the std::greater functor sorts the queue
+  // such that the highest values (highest priorities) are first in the queue)
+  typedef std::greater<float> PriorityCompareType;
+  PriorityCompareType queueSortFunctor;
 
   typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType>
       BoundaryNodeQueueType;
-  BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
+  BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, queueSortFunctor);
 
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>

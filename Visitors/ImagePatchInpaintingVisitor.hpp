@@ -13,9 +13,9 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
 
-// Helpers
-#include "Helpers/ITKHelpers.h"
-#include "Helpers/HelpersOutput.h"
+// Submodules
+#include <ITKHelpers/ITKHelpers.h>
+#include <Helpers/Helpers.h>
 
 /**
  * This is a visitor that complies with the InpaintingVisitorConcept. It creates
@@ -49,8 +49,8 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
                               TDescriptorMap& in_descriptorMap, TPriorityMap& in_priorityMap,
                               TPriority* const in_priorityFunction,
                               const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
-  Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue), PriorityFunction(in_priorityFunction), FillStatusMap(in_fillStatusMap), DescriptorMap(in_descriptorMap),
-  PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap), HalfWidth(in_half_width), NumberOfFinishedVertices(0)
+    Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue), PriorityFunction(in_priorityFunction), FillStatusMap(in_fillStatusMap), DescriptorMap(in_descriptorMap),
+    PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap), HalfWidth(in_half_width), NumberOfFinishedVertices(0)
   {
   }
 
@@ -68,28 +68,28 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
     descriptor.SetVertex(v);
     put(DescriptorMap, v, descriptor);
 
-  };
+  }
 
   void discover_vertex(VertexDescriptorType v, TGraph& g) const
   {
     itk::Index<2> index = {{v[0], v[1]}};
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, HalfWidth);
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, this->HalfWidth);
 
     // Create the list of valid pixels
-    std::vector<itk::Index<2> > validPixels = MaskImage->GetValidPixelsInRegion(region);
+    std::vector<itk::Index<2> > validPixels = this->MaskImage->GetValidPixelsInRegion(region);
     std::vector<itk::Offset<2> > validOffsets;
     for(size_t i = 0; i < validPixels.size(); ++i)
-      {
+    {
       itk::Offset<2> offset = validPixels[i] - region.GetIndex();
       validOffsets.push_back(offset);
-      }
+    }
 
     std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
-    std::cout << "Priority: " << get(PriorityMap, v) << std::endl;
-    DescriptorType& descriptor = get(DescriptorMap, v);
+    std::cout << "Priority: " << get(this->PriorityMap, v) << std::endl;
+    DescriptorType& descriptor = get(this->DescriptorMap, v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
     descriptor.SetValidOffsets(validOffsets);
-  };
+  }
 
   void vertex_match_made(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
@@ -97,7 +97,7 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
               << " with source: " << source[0] << " " << source[1] << std::endl;
     assert(get(FillStatusMap, source));
     assert(get(DescriptorMap, source).IsFullyValid());
-  };
+  }
 
   void paint_vertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
   {
@@ -112,13 +112,13 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
     assert(image->GetLargestPossibleRegion().IsInside(source_index));
     assert(image->GetLargestPossibleRegion().IsInside(target_index));
 
-    Image->SetPixel(target_index, Image->GetPixel(source_index));
-  };
+    this->Image->SetPixel(target_index, this->Image->GetPixel(source_index));
+  }
 
   bool accept_painted_vertex(VertexDescriptorType v, TGraph& g) const
   {
     return true;
-  };
+  }
 
   void finish_vertex(VertexDescriptorType v, TGraph& g)
   {
@@ -138,24 +138,24 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
     itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(Image, region);
 
     while(!gridIterator.IsAtEnd())
-      {
+    {
       VertexDescriptorType v;
       v[0] = gridIterator.GetIndex()[0];
       v[1] = gridIterator.GetIndex()[1];
       put(FillStatusMap, v, true);
       MaskImage->SetPixel(gridIterator.GetIndex(), MaskImage->GetValidValue());
       ++gridIterator;
-      }
+    }
 
     gridIterator.GoToBegin();
     while(!gridIterator.IsAtEnd())
-      {
+    {
       VertexDescriptorType v;
       v[0] = gridIterator.GetIndex()[0];
       v[1] = gridIterator.GetIndex()[1];
       initialize_vertex(v, g);
       ++gridIterator;
-      }
+    }
 
     // Update the priority function.
     this->priorityFunction->Update(indexToFinish);
@@ -164,7 +164,7 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
     itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(MaskImage, region);
 
     while(!imageIterator.IsAtEnd())
-      {
+    {
       VertexDescriptorType v;
       v[0] = imageIterator.GetIndex()[0];
       v[1] = imageIterator.GetIndex()[1];
@@ -172,7 +172,7 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
       // Mark all nodes in the patch around this node as filled (in the FillStatusMap).
       // This makes them ignored if they are still in the boundaryNodeQueue.
       if(ITKHelpers::HasNeighborWithValue(imageIterator.GetIndex(), MaskImage, MaskImage->GetHoleValue()))
-        {
+      {
         put(BoundaryStatusMap, v, true);
 
         // Note: the priority must be set before the node is pushed into the queue.
@@ -180,22 +180,22 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
         //std::cout << "updated priority: " << priority << std::endl;
         put(PriorityMap, v, priority);
         this->boundaryNodeQueue.push(v);
-        }
+      }
       else
-        {
+      {
         put(BoundaryStatusMap, v, false);
-        }
-
-      ++imageIterator;
       }
 
-    {
-    // Debug only - write the mask to a file
-    HelpersOutput::WriteImage(MaskImage, Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
-    HelpersOutput::WriteVectorImageAsRGB(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
-    this->NumberOfFinishedVertices++;
+      ++imageIterator;
     }
-  }; // finish_vertex
+
+    {
+      // Debug only - write the mask to a file
+      ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
+      ITKHelpers::WriteVectorImageAsRGB(this->Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
+      this->NumberOfFinishedVertices++;
+    }
+  } // finish_vertex
 
 }; // ImagePatchInpaintingVisitor
 

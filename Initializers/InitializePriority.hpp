@@ -11,7 +11,7 @@
 
 template <typename TBoundaryNodeQueue, typename TPriorityMap, typename TBoundaryStatusMap, typename TPriority>
 inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& boundaryNodeQueue, TPriorityMap& priorityMap,
-                               TPriority* const priorityFunction, 
+                               TPriority* const priorityFunction,
                                TBoundaryStatusMap& boundaryStatusMap)
 {
   std::cout << "InitializePriority" << std::endl;
@@ -20,19 +20,20 @@ inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& bounda
   Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
   maskImage->FindBoundary(boundaryImage, Mask::VALID, 255);
 
-//   HelpersOutput::WriteImage(maskImage, "mask.png");
-//   HelpersOutput::WriteImage(boundaryImage.GetPointer(), "boundary.png");
+  //   ITKHelpers::WriteImage(maskImage, "mask.png");
+  //   ITKHelpers::WriteImage(boundaryImage.GetPointer(), "boundary.png");
 
   // Add boundary nodes to the queue, compute their priority, and set their boundary status to true.
   itk::ImageRegionConstIteratorWithIndex<Mask::BoundaryImageType> imageIterator(boundaryImage,
                                                                                 boundaryImage->GetLargestPossibleRegion());
   while(!imageIterator.IsAtEnd())
-    {
-    typename TBoundaryNodeQueue::value_type node = Helpers::ConvertFrom<typename TBoundaryNodeQueue::value_type,
-           itk::Index<2> >(imageIterator.GetIndex());
+  {
+    typename TBoundaryNodeQueue::value_type node =
+        Helpers::ConvertFrom<typename TBoundaryNodeQueue::value_type,
+                              itk::Index<2> >(imageIterator.GetIndex());
 
     if(imageIterator.Get() != 0) // boundary pixel found
-      {
+    {
       itk::Index<2> index = ITKHelpers::CreateIndex(node);
 
       float priority = priorityFunction->ComputePriority(index);
@@ -44,13 +45,13 @@ inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& bounda
       boundaryNodeQueue.push(node);
 
       put(boundaryStatusMap, node, true);
-      }
-    else
-      {
-      put(boundaryStatusMap, node, false);
-      }
-    ++imageIterator;
     }
+    else
+    {
+      put(boundaryStatusMap, node, false);
+    }
+    ++imageIterator;
+  }
 
   std::cout << "InitializePriority: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;

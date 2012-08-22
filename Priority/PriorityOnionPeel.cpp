@@ -29,6 +29,6 @@ void PriorityOnionPeel::InitializeConfidenceMap()
     ++imageIterator;
     }
 
-//   OutputHelpers::WriteImage(ConfidenceMapImage.GetPointer(), "ConfidenceMapInitial.mha");
-//   OutputHelpers::WriteScaledScalarImage(ConfidenceMapImage.GetPointer(), "ConfidenceMapInitial.png");
+//   ITKHelpers::WriteImage(ConfidenceMapImage.GetPointer(), "ConfidenceMapInitial.mha");
+//   ITKHelpers::WriteScaledScalarImage(ConfidenceMapImage.GetPointer(), "ConfidenceMapInitial.png");
 }

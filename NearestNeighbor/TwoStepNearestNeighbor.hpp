@@ -61,7 +61,7 @@ struct TwoStepNearestNeighbor
     std::vector<VertexDescriptorType> outputContainer(this->MultipleNeighborFinder.GetK());
     this->MultipleNeighborFinder(first, last, queryNode, outputContainer.begin());
 
-    std::cout << "There are " << outputContainer.size() << " items to search in the second step." << std::endl;
+//    std::cout << "There are " << outputContainer.size() << " items to search in the second step." << std::endl;
     if(outputContainer.size() <= 0)
       {
       throw std::runtime_error("MultipleNeighborFinder did not find any neighbors!");

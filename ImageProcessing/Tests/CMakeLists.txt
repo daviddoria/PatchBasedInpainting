@@ -3,9 +3,10 @@ include_directories(../Testing ../Helpers)
 
 #####################
 
-add_executable(TestMask TestMask.cpp ../Mask.cpp ${ROOT_SOURCE_DIR}/Helpers/ITKHelpers.cpp ${ROOT_SOURCE_DIR}/Helpers/Helpers.cpp)
-target_link_libraries(TestMask ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-add_test(TestMask TestMask)
+# This test should be moved to the Mask submodule
+# add_executable(TestMask TestMask.cpp ../Mask.cpp ${ROOT_SOURCE_DIR}/Helpers/ITKHelpers.cpp ${ROOT_SOURCE_DIR}/Helpers/Helpers.cpp)
+# target_link_libraries(TestMask ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+# add_test(TestMask TestMask)
 
 # add_executable(TestDerivatives TestDerivatives.cpp ../Derivatives.cpp ../Mask.cpp)
 # target_link_libraries(TestDerivatives ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
@@ -31,6 +32,6 @@ add_test(TestMask TestMask)
 # target_link_libraries(TestPixelFilterFunctors ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 # add_test(TestPixelFilterFunctors TestPixelFilterFunctors)
 
-add_executable(TestMaskedLaplacian TestMaskedLaplacian.cpp ../Mask.cpp ../MaskOperations.cpp)
-target_link_libraries(TestMaskedLaplacian ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
-add_test(TestMaskedLaplacian TestMaskedLaplacian)
+# add_executable(TestMaskedLaplacian TestMaskedLaplacian.cpp ../Mask.cpp ../MaskOperations.cpp)
+# target_link_libraries(TestMaskedLaplacian ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
+# add_test(TestMaskedLaplacian TestMaskedLaplacian)

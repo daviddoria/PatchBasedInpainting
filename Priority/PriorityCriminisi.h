@@ -65,17 +65,20 @@ protected:
   /** Compute the normals of the hole boundary. */
   void ComputeBoundaryNormals(const float blurVariance);
 
+  typedef itk::CovariantVector<float, 2> Vector2Type;
+  typedef itk::Image<Vector2Type, 2> Vector2ImageType;
+
   /** Isophotes of the image. */
-  FloatVector2ImageType::Pointer IsophoteImage;
+  Vector2ImageType::Pointer IsophoteImage;
 
   /** Boundary normals. */
-  FloatVector2ImageType::Pointer BoundaryNormalsImage;
+  Vector2ImageType::Pointer BoundaryNormalsImage;
 
 private:
   /** A pointer to the image we are inpainting */
   const TImage* Image;
 };
 
-#include "PriorityCriminisi.hxx"
+#include "PriorityCriminisi.hpp"
 
 #endif

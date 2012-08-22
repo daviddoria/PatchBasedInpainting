@@ -16,13 +16,13 @@ inline void InitializeFromMaskImage(Mask* const maskImage, TVisitor* const visit
   itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(maskImage,
                                                              maskImage->GetLargestPossibleRegion());
   while(!imageIterator.IsAtEnd())
-    {
+  {
     TNode node = Helpers::ConvertFrom<TNode, itk::Index<2> >(imageIterator.GetIndex());
 
     visitor->InitializeVertex(node);
 
     ++imageIterator;
-    }
+  }
 
 }
 

@@ -63,6 +63,9 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
     itk::Index<2> index = {{v[0], v[1]}};
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, this->HalfWidth);
 
+    // Allow target patches to be not entirely inside the image. This occurs when the hole boundary is near the image boundary.
+    region.Crop(this->MaskImage->GetLargestPossibleRegion());
+
     // Create the list of valid pixels
     std::vector<itk::Index<2> > validPixels = this->MaskImage->GetValidPixelsInRegion(region);
     std::vector<itk::Offset<2> > validOffsets;

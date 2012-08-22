@@ -18,10 +18,10 @@
 
 #include "PriorityOnionPeel.h" // Appease syntax parser
 
-// Custom
-#include "Helpers/Helpers.h"
-#include "ITKHelpers/ITKHelpers.h"
-#include "ITKVTKHelpers/ITKVTKHelpers.h"
+// Submodules
+#include <Helpers/Helpers.h>
+#include <ITKHelpers/ITKHelpers.h>
+#include <ITKVTKHelpers/ITKVTKHelpers.h>
 
 template <typename TNode>
 void PriorityOnionPeel::Update(const TNode& sourceNode, const TNode& targetNode, const unsigned int patchNumber)
@@ -29,9 +29,7 @@ void PriorityOnionPeel::Update(const TNode& sourceNode, const TNode& targetNode,
   float value = ComputeConfidenceTerm(targetNode);
   UpdateConfidences(targetNode, value);
 
-//   std::stringstream ss;
-//   ss << "ConfidenceMap_" << patchNumber << ".mha";
-//   OutputHelpers::WriteImage(ConfidenceMapImage.GetPointer(), ss.str());
+  ITKHelpers::WriteSequentialImage(this->ConfidenceMapImage.GetPointer(), "ConfidenceMap", patchNumber, 3, "mha");
 }
 
 template <typename TNode>
@@ -56,19 +54,16 @@ void PriorityOnionPeel::UpdateConfidences(const TNode& targetNode, const float v
   itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, region);
 
   while(!maskIterator.IsAtEnd())
-    {
+  {
     if(this->MaskImage->IsHole(maskIterator.GetIndex()))
-      {
+    {
       this->ConfidenceMapImage->SetPixel(maskIterator.GetIndex(), value);
       // std::cout << "Set " << maskIterator.GetIndex() << " to " << value << std::endl;
-      }
+    }
 
     ++maskIterator;
-    } // end while loop with iterator
+  } // end while loop with iterator
 
-//   std::cout << "PriorityOnionPeel::UpdateConfidences() writing Confidence Map..." << std::endl;
-   
-//   OutputHelpers::WriteScaledScalarImage(ConfidenceMapImage.GetPointer(), "ConfidenceMapUpdated.png");
 }
 
 template <typename TNode>
@@ -89,13 +84,13 @@ float PriorityOnionPeel::ComputeConfidenceTerm(const TNode& queryNode) const
   float sum = 0.0f;
 
   while(!maskIterator.IsAtEnd())
-    {
+  {
     if(this->MaskImage->IsValid(maskIterator.GetIndex()))
-      {
+    {
       sum += this->ConfidenceMapImage->GetPixel(maskIterator.GetIndex());
-      }
-    ++maskIterator;
     }
+    ++maskIterator;
+  }
 
   unsigned int numberOfPixels = region.GetNumberOfPixels();
   float areaOfPatch = static_cast<float>(numberOfPixels);

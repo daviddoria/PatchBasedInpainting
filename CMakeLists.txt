@@ -107,9 +107,7 @@ ImageProcessing/Derivatives.cpp
 Utilities/itkCommandLineArgumentParser.cxx
 Utilities/PatchHelpers.cpp
 ImageProcessing/Isophotes.cpp
-ImageProcessing/BoundaryNormals.cpp
 Priority/Priority.cpp
-Priority/PriorityCriminisi.cpp
 Priority/PriorityDepth.cpp
 Priority/PriorityManual.cpp
 Priority/PriorityOnionPeel.cpp
@@ -183,7 +181,7 @@ SET(inpainting_InpaintingHistogramSort CACHE BOOL "Build a patch based image inp
 if(inpainting_InpaintingHistogramSort)
   ADD_EXECUTABLE(InpaintingHistogramSort InpaintingHistogramSort.cpp)
   TARGET_LINK_LIBRARIES(InpaintingHistogramSort PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES}
-                       ${QT_LIBRARIES} Helpers ITKHelpers Mask)
+                       ${QT_LIBRARIES} Mask)
   INSTALL( TARGETS InpaintingHistogramSort RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 

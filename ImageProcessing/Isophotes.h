@@ -24,12 +24,17 @@
 
 namespace Isophotes
 {
-void ComputeColorIsophotesInRegion(const FloatVectorImageType* image, const Mask* const mask,
-                                   const itk::ImageRegion<2>& region , FloatVector2ImageType* const isophotes);
 
-void ComputeMaskedIsophotesInRegion(const FloatScalarImageType* const image, const Mask* const mask, const itk::ImageRegion<2>& region,
-                                    FloatVector2ImageType* const outputIsophotes);
+template <typename TVectorImageType, typename TIsophoteImageType>
+void ComputeColorIsophotesInRegion(const TVectorImageType* image, const Mask* const mask,
+                                   const itk::ImageRegion<2>& region , TIsophoteImageType* const isophotes);
+
+template <typename TVectorImageType, typename TIsophoteImageType>
+void ComputeMaskedIsophotesInRegion(const TVectorImageType* const image, const Mask* const mask, const itk::ImageRegion<2>& region,
+                                    TIsophoteImageType* const outputIsophotes);
 
 }
+
+#include "Isophotes.hpp"
 
 #endif

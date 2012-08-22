@@ -35,42 +35,28 @@ ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor() : Image(NULL), Fu
 template <typename TImage>
 ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor(TImage* const image,
                                                              Mask* const maskImage, const itk::ImageRegion<2>& region) :
-Region(region), Image(image), MaskImage(maskImage), InsideImage(false)
+  Region(region), Image(image), MaskImage(maskImage), InsideImage(false)
 {
   if(image->GetLargestPossibleRegion().IsInside(region))
-    {
+  {
     this->InsideImage = true;
-    }
+  }
   else
-    {
+  {
     this->FullyValid = false;
     return;
-    }
+  }
 
   this->FullyValid = maskImage->IsValid(region);
 
-  // The below is exactly what the above call does.
-//  this->FullyValid = true;
-//  itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(maskImage, region);
-//  while(!maskIterator.IsAtEnd())
-//    {
-//    if(maskImage->IsHole(maskIterator.GetIndex()))
-//      {
-//      this->FullyValid = false;
-//      break;
-//      }
-
-//    ++maskIterator;
-//    }
-
   if(this->FullyValid)
-    {
+  {
     this->SetStatus(SOURCE_NODE);
-    }
+  }
   else
-    {
+  {
     this->SetStatus(INVALID);
-    }
+  }
 }
 
 template <typename TImage>
