@@ -1,3 +1,21 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef InpaintingVisitor_HPP
 #define InpaintingVisitor_HPP
 
@@ -16,6 +34,9 @@
 // Helpers
 #include "ITKHelpers/ITKHelpers.h"
 #include "BoostHelpers/BoostHelpers.h"
+
+// Submodules
+#include <ITKVTKHelpers/ITKVTKHelpers.h>
 
 /**
  * This is a visitor that complies with the InpaintingVisitorConcept. It forwards
@@ -255,14 +276,21 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   {
     // If the output filename is a png file, then use the RGBImage writer so that it is first
     // casted to unsigned char. Otherwise, write the file directly.
-    if(Helpers::GetFileExtension(this->ResultFileName) == "png")
-    {
-      ITKHelpers::WriteRGBImage(this->Image, this->ResultFileName);
-    }
-    else
-    {
-      ITKHelpers::WriteImage(this->Image, this->ResultFileName);
-    }
+//    if(Helpers::GetFileExtension(this->ResultFileName) == "png")
+//    {
+//      ITKHelpers::WriteRGBImage(this->Image, this->ResultFileName);
+//    }
+//    else
+//    {
+//      ITKHelpers::WriteImage(this->Image, this->ResultFileName);
+//    }
+
+    // Convert the image to RGB
+    typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> RGBImageType;
+    RGBImageType::Pointer rgbImage = RGBImageType::New();
+    ITKVTKHelpers::ConvertHSVtoRGB(this->Image, rgbImage.GetPointer());
+
+    ITKHelpers::WriteImage(rgbImage.GetPointer(), this->ResultFileName);
   }
 
 }; // InpaintingVisitor

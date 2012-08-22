@@ -114,22 +114,23 @@ int main(int argc, char *argv[])
 //  typedef itk::VectorImage<float, 2> FloatVectorImageType;
 //  typedef FloatVectorImageType ImageType;
 
-  typedef itk::VectorImage<unsigned char, 2> ImageType;
+  typedef itk::VectorImage<unsigned char, 2> InputImageType;
 
-  typedef  itk::ImageFileReader<ImageType> ImageReaderType;
+  typedef  itk::ImageFileReader<InputImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
   imageReader->SetFileName(imageFilename);
   imageReader->Update();
 
+//  ImageType::Pointer image = ImageType::New();
+//  ITKHelpers::DeepCopy(imageReader->GetOutput(), image.GetPointer());
+
+  // Convert the image to HSV
+  typedef itk::Image<itk::CovariantVector<float, 3>, 2> ImageType;
   ImageType::Pointer image = ImageType::New();
-  ITKHelpers::DeepCopy(imageReader->GetOutput(), image.GetPointer());
+  //ITKVTKHelpers::ConvertRGBtoHSV(image.GetPointer(), hsvImage.GetPointer());
+  ITKVTKHelpers::ConvertRGBtoHSV(imageReader->GetOutput(), image.GetPointer());
 
-  // Convert the image to HSV (will be used in the LinearSearchBestHistogram)
-  typedef itk::Image<itk::CovariantVector<float, 3>, 2> HSVImageType;
-  HSVImageType::Pointer hsvImage = HSVImageType::New();
-  ITKVTKHelpers::ConvertRGBtoHSV(image.GetPointer(), hsvImage.GetPointer());
-
-  ITKHelpers::WriteImage(hsvImage.GetPointer(), "HSVImage.mha");
+  ITKHelpers::WriteImage(image.GetPointer(), "HSVImage.mha");
 
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
@@ -137,18 +138,19 @@ int main(int argc, char *argv[])
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
 
-  bool compatibleMask = PatchHelpers::CheckSurroundingRegionsOfAllHolePixels(mask, patchHalfWidth);
-  if(!compatibleMask)
-  {
-    throw std::runtime_error("The mask is not compatible!");
-  }
+  // Check the mask for compatability (if it gets too close to the image boundary, the algorithm breaks).
+//  bool compatibleMask = PatchHelpers::CheckSurroundingRegionsOfAllHolePixels(mask, patchHalfWidth);
+//  if(!compatibleMask)
+//  {
+//    throw std::runtime_error("The mask is not compatible!");
+//  }
 
   typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
 
   // Create the graph
   typedef boost::grid_graph<2> VertexListGraphType;
-  boost::array<std::size_t, 2> graphSideLengths = { { imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0],
-                                                      imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[1] } };
+  boost::array<std::size_t, 2> graphSideLengths = { { image->GetLargestPossibleRegion().GetSize()[0],
+                                                      image->GetLargestPossibleRegion().GetSize()[1] } };
   VertexListGraphType graph(graphSideLengths);
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
 
@@ -223,8 +225,8 @@ int main(int argc, char *argv[])
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
 
-  typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType, ImageType> BestSearchType;
-  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask, image.GetPointer());
+  typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, ImageType> BestSearchType;
+  BestSearchType linearSearchBest(imagePatchDescriptorMap, image.GetPointer(), mask);
   linearSearchBest.SetNumberOfBinsPerDimension(30);
 
   TwoStepNearestNeighbor<KNNSearchType, BestSearchType> twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);

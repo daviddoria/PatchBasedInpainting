@@ -105,7 +105,7 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
 //               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
 //               << " valid nodes in the queue." << std::endl;
     inpaint_patch(targetNode, sourceNode, vis);
-    vis.PaintPatch(targetNode, sourceNode);
+    //vis.PaintPatch(targetNode, sourceNode);
 
 //     std::cout << "Before FinishVertex there are " << (*boundaryNodeQueue).size()
 //               << " nodes in the queue." << std::endl;

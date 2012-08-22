@@ -15,7 +15,10 @@ for patchRadius in 7 15; do
           ImagePrefix=`basename $i .mask`;
           echo "ImagePrefix $ImagePrefix";
           ZeroPaddedKNN=`printf %04d ${knn}`
-          ~/build/Projects/PatchBasedInpainting/InpaintingHistogramSort ${ImageDirectory}/${ImagePrefix}.png $i $patchRadius $knn ${ImagePrefix}_filled_${patchRadius}_${ZeroPaddedKNN}.png >> ${ImagePrefix}_filled_${patchRadius}_${ZeroPaddedKNN}.txt;
+          #Executable=~/build/Projects/PatchBasedInpainting/InpaintingHistogramSort
+          Executable=~/temp/InpaintingHistogramSort
+
+          ${Executable} ${ImageDirectory}/${ImagePrefix}.png $i $patchRadius $knn ${ImagePrefix}_filled_${patchRadius}_${ZeroPaddedKNN}.png >> ${ImagePrefix}_filled_${patchRadius}_${ZeroPaddedKNN}.txt;
         done;
     done;
 done;
