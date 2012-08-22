@@ -36,7 +36,7 @@
    * \tparam DistanceFunctionType The functor type to compute the distance measure.
    * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
    */
-template <typename PropertyMapType, typename TImage>
+template <typename PropertyMapType, typename TImage, typename TOriginalImage>
 struct LinearSearchBestHistogram
 {
 private:
@@ -49,11 +49,24 @@ private:
   /** The mask indicating which pixels (valid) to use in the histogram computations. */
   Mask* MaskImage;
 
+  unsigned int NumberOfBinsPerDimension;
+
+  // DEBUG ONLY
+  unsigned int Iteration; // This is to keep track of which iteration we are on for naming debug output images
+  /** This is the original (and intermediately inpainted image). We need this because
+    * TIMage* Image is often not the RGB image (HSV or otherwise). */
+  TOriginalImage* OriginalImage;
+
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
-  LinearSearchBestHistogram(PropertyMapType propertyMap, TImage* const image, Mask* const mask) :
-    PropertyMap(propertyMap), Image(image), MaskImage(mask)
+  LinearSearchBestHistogram(PropertyMapType propertyMap, TImage* const image, Mask* const mask, TOriginalImage* const originalImage) :
+    PropertyMap(propertyMap), Image(image), MaskImage(mask), NumberOfBinsPerDimension(0), Iteration(0), OriginalImage(originalImage)
   {}
+
+  void SetNumberOfBinsPerDimension(const unsigned int numberOfBinsPerDimension)
+  {
+    this->NumberOfBinsPerDimension = numberOfBinsPerDimension;
+  }
 
   /**
     * \param first Start of the range in which to search.
@@ -71,6 +84,10 @@ public:
       return *last;
     }
 
+    ITKHelpers::WriteSequentialImage(this->MaskImage, "HistogramMask", this->Iteration, 3, "png");
+    ITKHelpers::WriteSequentialImage(this->OriginalImage, "OriginalImage", this->Iteration, 3, "png");
+    ITKHelpers::WriteImage(this->Image, Helpers::GetSequentialFileName("Image", this->Iteration, "mha", 3));
+
     typedef int BinValueType;
     typedef Histogram<BinValueType>::HistogramType HistogramType;
 
@@ -78,13 +95,16 @@ public:
     float rangeMin = 0.0f;
     float rangeMax = 1.0f;
 
-    unsigned int numberOfBinsPerDimension = 30;
-
     itk::ImageRegion<2> queryRegion = get(this->PropertyMap, query).GetRegion();
+
+    {
+    ITKHelpers::WriteRegionAsImage(this->OriginalImage, queryRegion, Helpers::GetSequentialFileName("QueryRegion",this->Iteration,"png",3));
+    ITKHelpers::WriteRegionAsImage(this->OriginalImage, get(this->PropertyMap, *first).GetRegion(), Helpers::GetSequentialFileName("SSDRegion",this->Iteration,"png",3));
+    }
 
     HistogramType queryHistogram =
       MaskedHistogram::ComputeMaskedImage1DHistogram(
-                  this->Image, queryRegion, this->MaskImage, queryRegion, numberOfBinsPerDimension,
+                  this->Image, queryRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
                   rangeMin, rangeMax);
 
     typedef float DistanceValueType;
@@ -105,7 +125,7 @@ public:
       // Compute the histogram of the source region using the queryRegion mask
       HistogramType testHistogram =
           MaskedHistogram::ComputeMaskedImage1DHistogram(
-                      this->Image, currentRegion, this->MaskImage, queryRegion, numberOfBinsPerDimension,
+                      this->Image, currentRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
                       rangeMin, rangeMax);
 
       float histogramDifference = Histogram<BinValueType>::HistogramDifference(queryHistogram, testHistogram);
@@ -114,10 +134,14 @@ public:
       {
         d_best = histogramDifference;
         result = current;
-      };
-    };
+      }
+    }
 
     std::cout << "Best histogramDifference: " << d_best << std::endl;
+    ITKHelpers::WriteRegionAsImage(this->OriginalImage, get(this->PropertyMap, *first).GetRegion(), Helpers::GetSequentialFileName("HistogramRegion",this->Iteration,"png",3));
+
+    this->Iteration++;
+
     return *result;
   }
 };

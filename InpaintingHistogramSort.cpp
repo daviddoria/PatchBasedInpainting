@@ -111,8 +111,10 @@ int main(int argc, char *argv[])
   std::cout << "numberOfKNN: " << numberOfKNN << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
-  typedef itk::VectorImage<float, 2> FloatVectorImageType;
-  typedef FloatVectorImageType ImageType;
+//  typedef itk::VectorImage<float, 2> FloatVectorImageType;
+//  typedef FloatVectorImageType ImageType;
+
+  typedef itk::VectorImage<unsigned char, 2> ImageType;
 
   typedef  itk::ImageFileReader<ImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
@@ -126,6 +128,8 @@ int main(int argc, char *argv[])
   typedef itk::Image<itk::CovariantVector<float, 3>, 2> HSVImageType;
   HSVImageType::Pointer hsvImage = HSVImageType::New();
   ITKVTKHelpers::ConvertRGBtoHSV(image.GetPointer(), hsvImage.GetPointer());
+
+  ITKHelpers::WriteImage(hsvImage.GetPointer(), "HSVImage.mha");
 
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
@@ -219,8 +223,9 @@ int main(int argc, char *argv[])
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
 
-  typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType> BestSearchType;
-  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
+  typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType, ImageType> BestSearchType;
+  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask, image.GetPointer());
+  linearSearchBest.SetNumberOfBinsPerDimension(30);
 
   TwoStepNearestNeighbor<KNNSearchType, BestSearchType> twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 

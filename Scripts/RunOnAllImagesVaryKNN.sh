@@ -11,7 +11,7 @@ echo "ImageDirectory $ImageDirectory";
 PatchRadius=$2;
 echo "PatchRadius $PatchRadius";
 
-for knn in 1 10 50 1000; do
+for knn in 1 10 50 100 1000; do
     for i in ${ImageDirectory}/*.mask; do
       echo "Processing $i...";
       ImagePrefix=`basename $i .mask`;
