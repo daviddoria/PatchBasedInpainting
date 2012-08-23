@@ -126,6 +126,9 @@ public:
 
   void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
+    std::cout << "InpaintingVisitor::PotentialMatchMade: target " << target[0] << " " << target[1]
+              << " source: " << source[0] << " " << source[1] << std::endl;
+
     if(!this->MaskImage->IsValid(ITKHelpers::CreateIndex(source)))
     {
       std::stringstream ss;
@@ -141,65 +144,6 @@ public:
          << " does not have a hole neighbor (which means it is not on the boundary)!";
       throw std::runtime_error(ss.str());
     }
-  }
-
-  void PaintPatch(VertexDescriptorType target, VertexDescriptorType source) const
-  {
-    VertexDescriptorType target_patch_corner;
-    target_patch_corner[0] = target[0] - this->PatchHalfWidth;
-    target_patch_corner[1] = target[1] - this->PatchHalfWidth;
-
-    VertexDescriptorType source_patch_corner;
-    source_patch_corner[0] = source[0] - this->PatchHalfWidth;
-    source_patch_corner[1] = source[1] - this->PatchHalfWidth;
-
-    VertexDescriptorType target_node;
-    VertexDescriptorType source_node;
-    for(std::size_t i = 0; i < this->PatchHalfWidth * 2 + 1; ++i)
-    {
-      for(std::size_t j = 0; j < this->PatchHalfWidth * 2 + 1; ++j)
-      {
-        target_node[0] = target_patch_corner[0] + i;
-        target_node[1] = target_patch_corner[1] + j;
-
-        source_node[0] = source_patch_corner[0] + i;
-        source_node[1] = source_patch_corner[1] + j;
-
-        // Only paint the pixel if it is currently a hole
-        if( this->MaskImage->IsHole(ITKHelpers::CreateIndex(target_node)) )
-        {
-          //std::cout << "Copying pixel " << source_node << " to pixel " << target_node << std::endl;
-          PaintVertex(target_node, source_node); //paint the vertex.
-        }
-
-      }
-    }
-  }
-  
-  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
-  {
-    itk::Index<2> target_index = ITKHelpers::CreateIndex(target);
-
-    itk::Index<2> source_index = ITKHelpers::CreateIndex(source);
-
-    if(!Image->GetLargestPossibleRegion().IsInside(source_index))
-    {
-      std::stringstream ss;
-      ss << "InpaintingVisitor::PaintVertex: source_index (" << source_index[0] << ", " << source_index[1] << ") is not inside the image!";
-      throw std::runtime_error(ss.str());
-    }
-
-    if(!Image->GetLargestPossibleRegion().IsInside(target_index))
-    {
-      std::stringstream ss;
-      ss << "InpaintingVisitor::PaintVertex: target_index (" << target_index[0] << ", " << target_index[1] << ") is not inside the image!";
-      throw std::runtime_error(ss.str());
-    }
-
-//    assert(Image->GetLargestPossibleRegion().IsInside(source_index));
-//    assert(Image->GetLargestPossibleRegion().IsInside(target_index));
-
-    Image->SetPixel(target_index, Image->GetPixel(source_index));
   }
 
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
@@ -303,38 +247,13 @@ public:
     //               << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap)
     //               << " valid nodes in the queue." << std::endl;
 
-    if(this->DebugImages)
-    {
-      // Convert the image to RGB
-      typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> RGBImageType;
-      RGBImageType::Pointer rgbImage = RGBImageType::New();
-      ITKVTKHelpers::ConvertHSVtoRGB(this->Image, rgbImage.GetPointer());
-
-      ITKHelpers::WriteSequentialImage(rgbImage.GetPointer(), "Inpainted", this->NumberOfFinishedPatches, 3, "png");
-    }
-
     NumberOfFinishedPatches++;
   } // finish_vertex
 
   void InpaintingComplete() const
   {
-    // If the output filename is a png file, then use the RGBImage writer so that it is first
-    // casted to unsigned char. Otherwise, write the file directly.
-//    if(Helpers::GetFileExtension(this->ResultFileName) == "png")
-//    {
-//      ITKHelpers::WriteRGBImage(this->Image, this->ResultFileName);
-//    }
-//    else
-//    {
-//      ITKHelpers::WriteImage(this->Image, this->ResultFileName);
-//    }
-
-    // Convert the image to RGB
-    typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> RGBImageType;
-    RGBImageType::Pointer rgbImage = RGBImageType::New();
-    ITKVTKHelpers::ConvertHSVtoRGB(this->Image, rgbImage.GetPointer());
-
-    ITKHelpers::WriteImage(rgbImage.GetPointer(), this->ResultFileName);
+    std::cout << "Inpainting complete!" << std::endl;
+    // We prefer to write the final image in the calling function, as there we will know what type it is (i.e. do we need to convert back to RGB? etc.)
   }
 
 }; // end InpaintingVisitor

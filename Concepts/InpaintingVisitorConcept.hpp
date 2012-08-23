@@ -47,20 +47,21 @@ struct InpaintingVisitorConcept
     const Vertex& target = u;
     const Vertex& source = u;
 
-    // function called when a source vertex has been found that matches well to the
+    // Function called when a source vertex has been found that matches well to the
     // current target-vertex (the same vertex that was just discovered).
     vis.PotentialMatchMade(target, source);
 
-    //function called to paint the value of a target vertex with the value of the source vertex.
-    vis.PaintVertex(target, source);
+    // Function called to paint the value of a target vertex with the value of the source vertex.
+    // Ideally we would like to do this, but PatchInpainter::PaintPatch cannot be a template (c++ rules say so)
+    // vis.PaintVertex(target, source);
 
-    //function called to check if the match that was determined should be accepted.
+    // Function called to check if the match that was determined should be accepted.
     bool was_successfully_painted = vis.AcceptMatch(target, source);
     boost::ignore_unused_variable_warning(was_successfully_painted);
 
-    //function called when a vertex has been inpainted and removed from the set of target pixels.
+    // Function called when a vertex has been inpainted and removed from the set of target pixels.
     vis.FinishVertex(u, u);
-  };
+  }
 
 };
 

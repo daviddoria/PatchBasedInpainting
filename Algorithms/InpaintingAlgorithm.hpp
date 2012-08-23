@@ -37,6 +37,16 @@
   * actual code is externalized in the functors and visitors (vis, find_inpainting_source,
   * inpaint_patch, etc.).
   */
+// We declare this function here so we can use the gcc attribute keyword (it cannot be used on definitions)
+//template <typename TVertexListGraph, typename TInpaintingVisitor,
+//          typename TBoundaryStatusMap, typename TPriorityQueue,
+//          typename TNearestNeighborFinder, typename TPatchInpainter>
+//inline
+//void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
+//                        TBoundaryStatusMap* boundaryStatusMap, TPriorityQueue* boundaryNodeQueue,
+//                        TNearestNeighborFinder find_inpainting_source,
+//                        TPatchInpainter* patchInpainter) __attribute__((optimize(0)));
+
 template <typename TVertexListGraph, typename TInpaintingVisitor,
           typename TBoundaryStatusMap, typename TPriorityQueue,
           typename TNearestNeighborFinder, typename TPatchInpainter>
@@ -44,7 +54,7 @@ inline
 void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
                         TBoundaryStatusMap* boundaryStatusMap, TPriorityQueue* boundaryNodeQueue,
                         TNearestNeighborFinder find_inpainting_source,
-                        TPatchInpainter inpaint_patch)
+                        TPatchInpainter* patchInpainter)
 {
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<TInpaintingVisitor, TVertexListGraph>));
 
@@ -104,8 +114,11 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
 //     std::cout << "Before inpaint_patch there are "
 //               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
 //               << " valid nodes in the queue." << std::endl;
-    inpaint_patch(targetNode, sourceNode, vis);
-    //vis.PaintPatch(targetNode, sourceNode);
+    itk::Index<2> targetIndex = ITKHelpers::CreateIndex(targetNode);
+    itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(sourceNode);
+
+    patchInpainter->PaintPatch(targetIndex, sourceIndex);
+    // patchInpainter->PaintPatch(targetNode, sourceNode); // Ideally we would like to do this, but PatchInpainter::PaintPatch cannot be a template (c++ rules say so)
 
 //     std::cout << "Before FinishVertex there are " << (*boundaryNodeQueue).size()
 //               << " nodes in the queue." << std::endl;

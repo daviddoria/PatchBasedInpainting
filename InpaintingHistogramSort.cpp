@@ -39,8 +39,8 @@
 #include "Initializers/InitializePriority.hpp"
 
 // Inpainters
-#include "Inpainters/MaskImagePatchInpainter.hpp"
-#include "Inpainters/HoleListPatchInpainter.hpp"
+#include "Inpainters/PatchInpainter.hpp"
+#include "Inpainters/CompositePatchInpainter.hpp"
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
@@ -92,47 +92,52 @@ int main(int argc, char *argv[])
   }
 
   // Parse arguments
-  std::string imageFilename;
-  std::string maskFilename;
+  std::string imageFileName;
+  std::string maskFileName;
 
   unsigned int patchHalfWidth = 0;
 
   unsigned int numberOfKNN = 0;
 
-  std::string outputFilename;
+  std::string outputFileName;
 
-  ssArguments >> imageFilename >> maskFilename >> patchHalfWidth >> numberOfKNN >> outputFilename;
+  ssArguments >> imageFileName >> maskFileName >> patchHalfWidth >> numberOfKNN >> outputFileName;
 
   // Output arguments
-  std::cout << "Reading image: " << imageFilename << std::endl;
-  std::cout << "Reading mask: " << maskFilename << std::endl;
+  std::cout << "Reading image: " << imageFileName << std::endl;
+  std::cout << "Reading mask: " << maskFileName << std::endl;
   std::cout << "Patch half width: " << patchHalfWidth << std::endl;
   std::cout << "numberOfKNN: " << numberOfKNN << std::endl;
-  std::cout << "Output: " << outputFilename << std::endl;
+  std::cout << "Output: " << outputFileName << std::endl;
 
 //  typedef itk::VectorImage<float, 2> FloatVectorImageType;
 //  typedef FloatVectorImageType ImageType;
 
-  typedef itk::VectorImage<unsigned char, 2> InputImageType;
+  typedef itk::VectorImage<unsigned char, 2> OriginalImageType;
 
-  typedef  itk::ImageFileReader<InputImageType> ImageReaderType;
+  typedef  itk::ImageFileReader<OriginalImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
-  imageReader->SetFileName(imageFilename);
+  imageReader->SetFileName(imageFileName);
   imageReader->Update();
+
+  OriginalImageType* originalImage = imageReader->GetOutput();
+
+  itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
 
 //  ImageType::Pointer image = ImageType::New();
 //  ITKHelpers::DeepCopy(imageReader->GetOutput(), image.GetPointer());
 
   // Convert the image to HSV
-  typedef itk::Image<itk::CovariantVector<float, 3>, 2> ImageType;
-  ImageType::Pointer image = ImageType::New();
+  typedef itk::Image<itk::CovariantVector<float, 3>, 2> HSVImageType;
+  HSVImageType::Pointer hsvImage = HSVImageType::New();
   //ITKVTKHelpers::ConvertRGBtoHSV(image.GetPointer(), hsvImage.GetPointer());
-  ITKVTKHelpers::ConvertRGBtoHSV(imageReader->GetOutput(), image.GetPointer());
+  ITKVTKHelpers::ConvertRGBtoHSV(originalImage, hsvImage.GetPointer());
 
-  ITKHelpers::WriteImage(image.GetPointer(), "HSVImage.mha");
+  ITKHelpers::WriteImage(hsvImage.GetPointer(), "HSVImage.mha");
 
+  // Read the mask
   Mask::Pointer mask = Mask::New();
-  mask->Read(maskFilename);
+  mask->Read(maskFileName);
 
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
@@ -144,12 +149,12 @@ int main(int argc, char *argv[])
 //    throw std::runtime_error("The mask is not compatible!");
 //  }
 
-  typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
+  typedef ImagePatchPixelDescriptor<OriginalImageType> ImagePatchPixelDescriptorType;
 
   // Create the graph
   typedef boost::grid_graph<2> VertexListGraphType;
-  boost::array<std::size_t, 2> graphSideLengths = { { image->GetLargestPossibleRegion().GetSize()[0],
-                                                      image->GetLargestPossibleRegion().GetSize()[1] } };
+  boost::array<std::size_t, 2> graphSideLengths = { { fullRegion.GetSize()[0],
+                                                      fullRegion.GetSize()[1] } };
   VertexListGraphType graph(graphSideLengths);
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
 
@@ -173,8 +178,17 @@ int main(int argc, char *argv[])
   ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
 
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
-  typedef MaskImagePatchInpainter InpainterType;
-  InpainterType patchInpainter(patchHalfWidth, mask);
+  typedef PatchInpainter<OriginalImageType> ImageInpainterType;
+  ImageInpainterType originalImagePatchInpainter(patchHalfWidth, originalImage, mask);
+  originalImagePatchInpainter.SetDebugImages(true);
+  originalImagePatchInpainter.SetImageName("RGB");
+
+  typedef PatchInpainter<HSVImageType> MaskInpainterType;
+  MaskInpainterType hsvImagePatchInpainter(patchHalfWidth, hsvImage, mask);
+
+  CompositePatchInpainter inpainter;
+  inpainter.AddInpainter(&originalImagePatchInpainter);
+  inpainter.AddInpainter(&hsvImagePatchInpainter);
 
   // Create the priority function
 //  typedef PriorityRandom PriorityType;
@@ -201,22 +215,22 @@ int main(int argc, char *argv[])
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, queueSortFunctor);
 
   // Create the descriptor visitor
-  typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
+  typedef ImagePatchDescriptorVisitor<VertexListGraphType, OriginalImageType, ImagePatchDescriptorMapType>
       ImagePatchDescriptorVisitorType;
-  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
+  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(originalImage, mask, imagePatchDescriptorMap, patchHalfWidth);
 
   typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
   AcceptanceVisitorType acceptanceVisitor;
 
   // Create the inpainting visitor
-  typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
+  typedef InpaintingVisitor<VertexListGraphType, OriginalImageType, BoundaryNodeQueueType,
       ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType,
       PriorityMapType, BoundaryStatusMapType>
       InpaintingVisitorType;
-  InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
+  InpaintingVisitorType inpaintingVisitor(originalImage, mask, boundaryNodeQueue,
                                           imagePatchDescriptorVisitor, acceptanceVisitor, priorityMap,
                                           &priorityFunction, patchHalfWidth,
-                                          boundaryStatusMap, outputFilename);
+                                          boundaryStatusMap, outputFileName);
   inpaintingVisitor.SetDebugImages(true);
 
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
@@ -226,25 +240,37 @@ int main(int argc, char *argv[])
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
-//  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > PatchDifferenceType;
-  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumSquaredPixelDifference<ImageType::PixelType> > PatchDifferenceType;
+//  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<OriginalImageType::PixelType> > PatchDifferenceType;
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumSquaredPixelDifference<OriginalImageType::PixelType> > PatchDifferenceType;
 
   // Create the  neighbor finder
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
 
-  typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, ImageType> BestSearchType;
-  BestSearchType linearSearchBest(imagePatchDescriptorMap, image.GetPointer(), mask);
+  // This is templated on OriginalImageType because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
+  typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType, OriginalImageType> BestSearchType;
+  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
   linearSearchBest.SetNumberOfBinsPerDimension(30);
   // The range (0,1) is used because we use the HSV image.
   linearSearchBest.SetRangeMin(0.0f);
   linearSearchBest.SetRangeMax(1.0f);
-  linearSearchBest.SetWriteDebugPatches(true);
+  linearSearchBest.SetWriteDebugPatches(true, originalImage);
 
   TwoStepNearestNeighbor<KNNSearchType, BestSearchType> twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
   // Perform the inpainting
-  InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, twoStepNearestNeighbor, patchInpainter);
+  InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, twoStepNearestNeighbor, &inpainter);
+
+  // If the output filename is a png file, then use the RGBImage writer so that it is first
+  // casted to unsigned char. Otherwise, write the file directly.
+  if(Helpers::GetFileExtension(outputFileName) == "png")
+  {
+    ITKHelpers::WriteRGBImage(originalImage, outputFileName);
+  }
+  else
+  {
+    ITKHelpers::WriteImage(originalImage, outputFileName);
+  }
 
   return EXIT_SUCCESS;
 }

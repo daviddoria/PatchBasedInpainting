@@ -36,8 +36,8 @@
    * \tparam DistanceFunctionType The functor type to compute the distance measure.
    * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
    */
-template <typename PropertyMapType, typename TImage>
-struct LinearSearchBestHistogram
+template <typename PropertyMapType, typename TImage, typename TImageToWrite = TImage>
+class LinearSearchBestHistogram
 {
 private:
   /** The property map from which we will retrieve image regions from nodes. */
@@ -60,9 +60,9 @@ private:
   // DEBUG ONLY
   unsigned int Iteration; // This is to keep track of which iteration we are on for naming debug output images
 
-  /** This is the original (and intermediately inpainted image). We need this because
-    * TIMage* Image is often not the RGB image (HSV or otherwise). */
-  //TOriginalImage* OriginalImage;
+  /** This is the image to use if we have requested to write debug patches.. We need this because
+    * 'Image' is often not the RGB image (could be HSV, CIELab, etc.). */
+  TImageToWrite* ImageToWrite;
 
   /** A flag indicating whether or not to write the top patches. */
   bool WriteDebugPatches;
@@ -75,9 +75,10 @@ public:
     Iteration(0), WriteDebugPatches(false)
   {}
 
-  void SetWriteDebugPatches(const bool writeDebugPatches)
+  void SetWriteDebugPatches(const bool writeDebugPatches, TImageToWrite* const imageToWrite)
   {
     this->WriteDebugPatches = writeDebugPatches;
+    this->ImageToWrite = imageToWrite;
   }
 
   void SetNumberOfBinsPerDimension(const unsigned int numberOfBinsPerDimension)
@@ -131,8 +132,9 @@ public:
 
     if(this->WriteDebugPatches)
     {
-      ITKHelpers::WriteRegionAsImage(this->Image, queryRegion, Helpers::GetSequentialFileName("QueryRegion",this->Iteration,"png",3));
-      ITKHelpers::WriteRegionAsImage(this->Image, get(this->PropertyMap, *first).GetRegion(), Helpers::GetSequentialFileName("SSDRegion",this->Iteration,"png",3));
+      ITKHelpers::WriteRegionAsImage(this->ImageToWrite, queryRegion, Helpers::GetSequentialFileName("QueryRegion",this->Iteration,"png",3));
+      ITKHelpers::WriteRegionAsImage(this->ImageToWrite, get(this->PropertyMap, *first).GetRegion(),
+                                     Helpers::GetSequentialFileName("SSDRegion",this->Iteration,"png",3));
     }
 
     HistogramType queryHistogram =
@@ -147,7 +149,6 @@ public:
     // Iterate through all of the input elements
     for(TIterator current = first; current != last; ++current)
     {
-
       itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *current).GetRegion();
 
       // Compute the histogram of the source region using the queryRegion mask
@@ -167,7 +168,7 @@ public:
 
     if(this->WriteDebugPatches)
     {
-      ITKHelpers::WriteRegionAsImage(this->Image, get(this->PropertyMap, *first).GetRegion(), Helpers::GetSequentialFileName("HistogramRegion",this->Iteration,"png",3));
+      ITKHelpers::WriteRegionAsImage(this->ImageToWrite, get(this->PropertyMap, *first).GetRegion(), Helpers::GetSequentialFileName("HistogramRegion",this->Iteration,"png",3));
     }
 
     //std::cout << "Best histogramDifference: " << d_best << std::endl;
@@ -176,6 +177,7 @@ public:
 
     return *result;
   }
-};
+
+}; // end class LinearSearchBestHistogram
 
 #endif

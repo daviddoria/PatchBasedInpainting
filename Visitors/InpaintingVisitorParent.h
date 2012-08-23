@@ -22,10 +22,6 @@ struct InpaintingVisitorParent
 
   virtual void DiscoverVertex(VertexDescriptorType v) const = 0;
 
-  virtual void PaintPatch(VertexDescriptorType target, VertexDescriptorType source) const = 0;
-  
-  virtual void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const = 0;
-
   virtual bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const = 0;
 
   virtual void InpaintingComplete() const = 0;
