@@ -37,10 +37,17 @@ private:
 
   // Debug only
   unsigned int Iteration;
+  bool DebugImages;
 
 public:
+
+  void SetDebugImages(const bool debugImages)
+  {
+    this->DebugImages = debugImages;
+  }
+
   MaskImagePatchInpainter(std::size_t patchHalfWidth, const Mask* const mask) :
-    PatchHalfWidth(patchHalfWidth), MaskImage(mask), Iteration(0)
+    PatchHalfWidth(patchHalfWidth), MaskImage(mask), Iteration(0), DebugImages(false)
   {
     std::cout << "MaskImagePatchInpainter: Mask size: " << this->MaskImage->GetLargestPossibleRegion().GetSize() << std::endl;
   }
@@ -85,7 +92,11 @@ public:
     }
 
     std::cout << "After filling, there are " << this->MaskImage->CountHolePixels() << " hole pixels remaining." << std::endl;
-//    ITKHelpers::WriteSequentialImage(this->MaskImage, "Mask", this->Iteration, 3, "png");
+
+    if(this->DebugImages)
+    {
+      ITKHelpers::WriteSequentialImage(this->MaskImage, "Mask", this->Iteration, 3, "png");
+    }
     this->Iteration++;
   } // end operator()
 

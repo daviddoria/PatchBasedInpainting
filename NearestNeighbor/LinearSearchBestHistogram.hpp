@@ -51,21 +51,48 @@ private:
 
   unsigned int NumberOfBinsPerDimension;
 
+  /** The lower end of the lowest bin in the histogram. */
+  float RangeMin;
+
+  /** The upper end of the highest bin in the histogram. */
+  float RangeMax;
+
   // DEBUG ONLY
   unsigned int Iteration; // This is to keep track of which iteration we are on for naming debug output images
+
   /** This is the original (and intermediately inpainted image). We need this because
     * TIMage* Image is often not the RGB image (HSV or otherwise). */
   //TOriginalImage* OriginalImage;
 
+  /** A flag indicating whether or not to write the top patches. */
+  bool WriteDebugPatches;
+
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
   LinearSearchBestHistogram(PropertyMapType propertyMap, TImage* const image, Mask* const mask) :
-    PropertyMap(propertyMap), Image(image), MaskImage(mask), NumberOfBinsPerDimension(0), Iteration(0)
+    PropertyMap(propertyMap), Image(image), MaskImage(mask), NumberOfBinsPerDimension(0),
+    RangeMin(0.0f), RangeMax(0.0f),
+    Iteration(0), WriteDebugPatches(false)
   {}
+
+  void SetWriteDebugPatches(const bool writeDebugPatches)
+  {
+    this->WriteDebugPatches = writeDebugPatches;
+  }
 
   void SetNumberOfBinsPerDimension(const unsigned int numberOfBinsPerDimension)
   {
     this->NumberOfBinsPerDimension = numberOfBinsPerDimension;
+  }
+
+  void SetRangeMin(const float rangeMin)
+  {
+    this->RangeMin = rangeMin;
+  }
+
+  void SetRangeMax(const float rangeMax)
+  {
+    this->RangeMax = rangeMax;
   }
 
   /**
@@ -81,13 +108,16 @@ public:
     // If the input element range is empty, there is nothing to do.
     if(first == last)
     {
+      std::cerr << "LinearSearchBestHistogram: Nothing to do..." << std::endl;
       return *last;
     }
 
+    // If the input element range is empty, there is nothing to do.
+    if(!(this->RangeMax > this->RangeMin))
     {
-//    ITKHelpers::WriteSequentialImage(this->MaskImage, "HistogramMask", this->Iteration, 3, "png");
-    //ITKHelpers::WriteSequentialImage(this->OriginalImage, "OriginalImage", this->Iteration, 3, "png");
-//    ITKHelpers::WriteImage(this->Image, Helpers::GetSequentialFileName("Image", this->Iteration, "mha", 3));
+      std::stringstream ss;
+      ss << "RangeMax (" << this->RangeMax << ") must be > RangeMin (" << this->RangeMin << ")";
+      throw std::runtime_error(ss.str());
     }
 
     typedef int BinValueType;
@@ -99,9 +129,10 @@ public:
 
     itk::ImageRegion<2> queryRegion = get(this->PropertyMap, query).GetRegion();
 
+    if(this->WriteDebugPatches)
     {
-//    ITKHelpers::WriteRegionAsImage(this->OriginalImage, queryRegion, Helpers::GetSequentialFileName("QueryRegion",this->Iteration,"png",3));
-//    ITKHelpers::WriteRegionAsImage(this->OriginalImage, get(this->PropertyMap, *first).GetRegion(), Helpers::GetSequentialFileName("SSDRegion",this->Iteration,"png",3));
+      ITKHelpers::WriteRegionAsImage(this->Image, queryRegion, Helpers::GetSequentialFileName("QueryRegion",this->Iteration,"png",3));
+      ITKHelpers::WriteRegionAsImage(this->Image, get(this->PropertyMap, *first).GetRegion(), Helpers::GetSequentialFileName("SSDRegion",this->Iteration,"png",3));
     }
 
     HistogramType queryHistogram =
@@ -109,13 +140,8 @@ public:
                   this->Image, queryRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
                   rangeMin, rangeMax);
 
-    typedef float DistanceValueType;
-
-    typedef std::less<DistanceValueType> CompareFunctionType;
-    CompareFunctionType compareFunction;
-
     // Initialize
-    DistanceValueType d_best = std::numeric_limits<DistanceValueType>::infinity();
+    float bestDistance = std::numeric_limits<float>::infinity();
     TIterator result = last;
 
     // Iterate through all of the input elements
@@ -132,17 +158,19 @@ public:
 
       float histogramDifference = Histogram<BinValueType>::HistogramDifference(queryHistogram, testHistogram);
 
-      if(compareFunction(histogramDifference, d_best))
+      if(histogramDifference < bestDistance)
       {
-        d_best = histogramDifference;
+        bestDistance = histogramDifference;
         result = current;
       }
     }
 
+    if(this->WriteDebugPatches)
     {
-    //std::cout << "Best histogramDifference: " << d_best << std::endl;
-    //ITKHelpers::WriteRegionAsImage(this->OriginalImage, get(this->PropertyMap, *first).GetRegion(), Helpers::GetSequentialFileName("HistogramRegion",this->Iteration,"png",3));
+      ITKHelpers::WriteRegionAsImage(this->Image, get(this->PropertyMap, *first).GetRegion(), Helpers::GetSequentialFileName("HistogramRegion",this->Iteration,"png",3));
     }
+
+    //std::cout << "Best histogramDifference: " << d_best << std::endl;
 
     this->Iteration++;
 

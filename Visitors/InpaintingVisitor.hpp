@@ -48,28 +48,57 @@
 template <typename TGraph, typename TImage, typename TBoundaryNodeQueue,
           typename TDescriptorVisitor, typename TAcceptanceVisitor, typename TPriority,
           typename TPriorityMap, typename TBoundaryStatusMap>
-struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
+class InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 {
   BOOST_CONCEPT_ASSERT((DescriptorVisitorConcept<TDescriptorVisitor, TGraph>));
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
+  /** The image to inpaint. */
   TImage* Image;
+
+  /** The mask indicating the region to inpaint. */
   Mask* MaskImage;
+
+  /** A queue to use to determine which patch to inpaint next. */
   TBoundaryNodeQueue& BoundaryNodeQueue;
+
+  /** A function to determine the priority of each target patch. */
   TPriority* PriorityFunction;
+
+  /** A visitor to do patch descriptor specific operations. */
   TDescriptorVisitor& DescriptorVisitor;
+
+  /** A visitor to perform specified actions when a match is accepted. */
   TAcceptanceVisitor& AcceptanceVisitor;
 
+  /** A map indicating the priority of each pixel. */
   TPriorityMap& PriorityMap;
+
+  /** A map indicating if each pixel is on the boundary or not. */
   TBoundaryStatusMap& BoundaryStatusMap;
 
+  /** The radius of the patches to use to inpaint the image. */
   const unsigned int PatchHalfWidth;
 
+  /** The name of the file to output the inpainted image. */
   std::string ResultFileName;
 
+  /** How many patches have been finished so far. */
   unsigned int NumberOfFinishedPatches;
 
+  // Debug only
+  /** A flag that determines if debug images should be written at each iteration. */
+  bool DebugImages;
+
+public:
+
+  void SetDebugImages(const bool debugImages)
+  {
+    this->DebugImages = debugImages;
+  }
+
+  /** Constructor. Everything must be specified in this constructor. (There is no default constructor). */
   InpaintingVisitor(TImage* const image, Mask* const mask,
                     TBoundaryNodeQueue& boundaryNodeQueue,
                     TDescriptorVisitor& descriptorVisitor, TAcceptanceVisitor& acceptanceVisitor,
@@ -81,7 +110,7 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
     DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
     PriorityMap(priorityMap), BoundaryStatusMap(boundaryStatusMap),
-    PatchHalfWidth(patchHalfWidth), ResultFileName(resultFileName), NumberOfFinishedPatches(0)
+    PatchHalfWidth(patchHalfWidth), ResultFileName(resultFileName), NumberOfFinishedPatches(0), DebugImages(false)
   {
   }
 
@@ -201,10 +230,9 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
     while(!maskIterator.IsAtEnd())
     {
-      this->MaskImage->MarkAsValid(maskIterator.GetIndex());
+      maskIterator.Set(this->MaskImage->GetValidValue());
       ++maskIterator;
     }
-
 
     // Initialize all vertices in the newly filled region because they may now be valid source nodes.
     // (You may not want to do this in some cases (i.e. if the descriptors needed cannot be
@@ -221,7 +249,6 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
         ++gridIterator;
       }
     }
-
 
     // Add pixels that are on the new boundary to the queue, and mark other pixels as not in the queue.
     itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(this->MaskImage, regionToFinish);
@@ -252,7 +279,6 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       ++imageIterator;
     }
 
-
     // std::cout << "FinishVertex after traversing finishing region there are "
     //           << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap)
     //           << " valid nodes in the queue." << std::endl;
@@ -266,7 +292,6 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetBoundaryPixels(expandedRegion);
     for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
     {
-      //if(!this->MaskImage->HasHoleNeighborInRegion(boundaryPixels[i], this->MaskImage->GetLargestPossibleRegion()))
       if(!this->MaskImage->HasHoleNeighbor(boundaryPixels[i])) // the region (the entire image) can be omitted, as this function automatically checks if the pixels are inside the image
       {
         VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(boundaryPixels[i]);
@@ -277,6 +302,16 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     // std::cout << "FinishVertex after removing stale nodes outside finishing region there are "
     //               << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap)
     //               << " valid nodes in the queue." << std::endl;
+
+    if(this->DebugImages)
+    {
+      // Convert the image to RGB
+      typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> RGBImageType;
+      RGBImageType::Pointer rgbImage = RGBImageType::New();
+      ITKVTKHelpers::ConvertHSVtoRGB(this->Image, rgbImage.GetPointer());
+
+      ITKHelpers::WriteSequentialImage(rgbImage.GetPointer(), "Inpainted", this->NumberOfFinishedPatches, 3, "png");
+    }
 
     NumberOfFinishedPatches++;
   } // finish_vertex

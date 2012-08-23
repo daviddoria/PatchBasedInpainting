@@ -217,6 +217,7 @@ int main(int argc, char *argv[])
                                           imagePatchDescriptorVisitor, acceptanceVisitor, priorityMap,
                                           &priorityFunction, patchHalfWidth,
                                           boundaryStatusMap, outputFilename);
+  inpaintingVisitor.SetDebugImages(true);
 
   InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
 
@@ -235,6 +236,10 @@ int main(int argc, char *argv[])
   typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, ImageType> BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap, image.GetPointer(), mask);
   linearSearchBest.SetNumberOfBinsPerDimension(30);
+  // The range (0,1) is used because we use the HSV image.
+  linearSearchBest.SetRangeMin(0.0f);
+  linearSearchBest.SetRangeMax(1.0f);
+  linearSearchBest.SetWriteDebugPatches(true);
 
   TwoStepNearestNeighbor<KNNSearchType, BestSearchType> twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
