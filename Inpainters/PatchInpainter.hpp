@@ -108,9 +108,9 @@ public:
 
     if(this->DebugImages)
     {
-      std::cout << "MaskPatchInpainter::operator(): Painted patch " << targetCenter[0] << " " << targetCenter[1]
+      std::cout << "PatchInpainter::PaintPatch(): Painted patch " << targetCenter[0] << " " << targetCenter[1]
                 << " with " << sourceCenter[0] << " " << sourceCenter[1] << std::endl;
-      std::cout << "After filling, there are " << this->MaskImage->CountHolePixels() << " hole pixels remaining." << std::endl;
+      std::cout << "PatchInpainter::PaintPatch() After filling, there are " << this->MaskImage->CountHolePixels() << " hole pixels remaining." << std::endl;
       ITKHelpers::WriteSequentialImage(this->Image, this->ImageName, this->Iteration, 3, "png");
     }
 

@@ -152,10 +152,12 @@ public:
     return AcceptanceVisitor.AcceptMatch(target, source, energy);
   }
 
-  void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)
+  void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)// __attribute__((optimize(0)))
   {
     // Mark this pixel and the area around it as filled, and mark the mask in this region as filled.
     // Determine the new boundary, and setup the nodes in the boundary queue.
+
+    std::cout << "InpaintingVisitor::FinishVertex()" << std::endl;
 
     // Construct the region around the vertex
     itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(targetNode);

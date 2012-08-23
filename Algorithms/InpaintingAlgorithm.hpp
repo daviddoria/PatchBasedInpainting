@@ -92,6 +92,7 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
 //     std::cout << "Before DiscoverVertex there are "
 //               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
 //               << " valid nodes in the queue." << std::endl;
+
     // Notify the visitor that we have a hole target center.
     vis.DiscoverVertex(targetNode);
 
