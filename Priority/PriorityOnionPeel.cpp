@@ -9,19 +9,19 @@ MaskImage(maskImage), PatchRadius(patchRadius)
 
 void PriorityOnionPeel::InitializeConfidenceMap()
 {
-  this->ConfidenceMapImage->SetRegions(MaskImage->GetLargestPossibleRegion());
+  this->ConfidenceMapImage->SetRegions(this->MaskImage->GetLargestPossibleRegion());
   this->ConfidenceMapImage->Allocate();
 
-  itk::ImageRegionIterator<ConfidenceImageType> imageIterator(ConfidenceMapImage,
-                                                              ConfidenceMapImage->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<ConfidenceImageType> imageIterator(this->ConfidenceMapImage,
+                                                              this->ConfidenceMapImage->GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
     {
-    if(MaskImage->IsHole(imageIterator.GetIndex()))
+    if(this->MaskImage->IsHole(imageIterator.GetIndex()))
       {
       imageIterator.Set(0.0f);
       }
-    else if(MaskImage->IsValid(imageIterator.GetIndex()))
+    else if(this->MaskImage->IsValid(imageIterator.GetIndex()))
       {
       imageIterator.Set(1.0f);
       }

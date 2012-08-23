@@ -32,14 +32,12 @@ struct ImagePatchDifference
       return std::numeric_limits<float>::infinity();
     }
 
-    // If either patch is invalid, the comparison cannot be performed.
+    // If the source patch is invalid, the comparison cannot be performed.
     if(sourcePatch.GetStatus() == ImagePatchType::INVALID)
     {
       return std::numeric_limits<float>::infinity();
     }
 
-    // For now this image is required to be the same for both patches.
-    assert(sourcePatch.GetImage() == targetPatch.GetImage());
     typename ImagePatchType::ImageType* image = sourcePatch.GetImage();
 
     float totalDifference = 0.0f;
@@ -49,8 +47,8 @@ struct ImagePatchDifference
 
     for(OffsetVectorType::const_iterator iter = validOffsets->begin(); iter < validOffsets->end(); ++iter)
     {
-      float difference = PixelDifferenceFunctor(image->GetPixel(sourcePatch.GetCorner() + *iter),
-                                                image->GetPixel(targetPatch.GetCorner() + *iter));
+      float difference = this->PixelDifferenceFunctor(image->GetPixel(sourcePatch.GetCorner() + *iter),
+                                                      image->GetPixel(targetPatch.GetCorner() + *iter));
       totalDifference += difference;
     }
     totalDifference = totalDifference / static_cast<float>(validOffsets->size());

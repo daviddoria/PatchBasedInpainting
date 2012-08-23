@@ -16,9 +16,6 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "Helpers/Helpers.h"
-
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
@@ -64,6 +61,7 @@
 #include "itkImageFileReader.h"
 
 // Submodules
+#include <Helpers/Helpers.h>
 #include <ITKVTKHelpers/ITKVTKHelpers.h>
 
 // Boost
@@ -227,7 +225,8 @@ int main(int argc, char *argv[])
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
-  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > PatchDifferenceType;
+//  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> > PatchDifferenceType;
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumSquaredPixelDifference<ImageType::PixelType> > PatchDifferenceType;
 
   // Create the  neighbor finder
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;

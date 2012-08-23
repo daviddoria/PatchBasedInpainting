@@ -104,7 +104,8 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       throw std::runtime_error(ss.str());
     }
 
-    if(!this->MaskImage->HasHoleNeighborInRegion(ITKHelpers::CreateIndex(target), this->MaskImage->GetLargestPossibleRegion()))
+    //if(!this->MaskImage->HasHoleNeighborInRegion(ITKHelpers::CreateIndex(target), this->MaskImage->GetLargestPossibleRegion()))
+    if(!this->MaskImage->HasHoleNeighbor(ITKHelpers::CreateIndex(target)))
     {
       std::stringstream ss;
       ss << "InpaintingVisitor::PotentialMatchMade: Potential target pixel " << target[0] << " " << target[1]
@@ -230,7 +231,8 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
       VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(imageIterator.GetIndex());
 
       // This makes them ignored if they are still in the boundaryNodeQueue.
-      if(this->MaskImage->HasHoleNeighborInRegion(imageIterator.GetIndex(), this->MaskImage->GetLargestPossibleRegion()))
+      //if(this->MaskImage->HasHoleNeighborInRegion(imageIterator.GetIndex(), this->MaskImage->GetLargestPossibleRegion()))
+      if(this->MaskImage->HasHoleNeighbor(imageIterator.GetIndex()))
       {
         // Note: must set the value in the priority map before pushing the node
         // into the queue (as the priority is what
@@ -264,8 +266,8 @@ struct InpaintingVisitor : public InpaintingVisitorParent<TGraph>
     std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetBoundaryPixels(expandedRegion);
     for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
     {
-      //if(!ITKHelpers::HasNeighborWithValue(boundaryPixels[i], this->MaskImage, this->MaskImage->GetHoleValue()))
-      if(!this->MaskImage->HasHoleNeighborInRegion(boundaryPixels[i], this->MaskImage->GetLargestPossibleRegion()))
+      //if(!this->MaskImage->HasHoleNeighborInRegion(boundaryPixels[i], this->MaskImage->GetLargestPossibleRegion()))
+      if(!this->MaskImage->HasHoleNeighbor(boundaryPixels[i])) // the region (the entire image) can be omitted, as this function automatically checks if the pixels are inside the image
       {
         VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(boundaryPixels[i]);
         put(this->BoundaryStatusMap, v, false);

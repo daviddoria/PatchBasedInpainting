@@ -29,7 +29,7 @@ void PriorityOnionPeel::Update(const TNode& sourceNode, const TNode& targetNode,
   float value = ComputeConfidenceTerm(targetNode);
   UpdateConfidences(targetNode, value);
 
-  ITKHelpers::WriteSequentialImage(this->ConfidenceMapImage.GetPointer(), "ConfidenceMap", patchNumber, 3, "mha");
+//  ITKHelpers::WriteSequentialImage(this->ConfidenceMapImage.GetPointer(), "ConfidenceMap", patchNumber, 3, "mha");
 }
 
 template <typename TNode>
@@ -55,7 +55,8 @@ void PriorityOnionPeel::UpdateConfidences(const TNode& targetNode, const float v
 
   while(!maskIterator.IsAtEnd())
   {
-    if(this->MaskImage->IsHole(maskIterator.GetIndex()))
+    //if(this->MaskImage->IsHole(maskIterator.GetIndex()))
+    if(maskIterator.Get() == this->MaskImage->GetHoleValue()) // avoid the GetPixel call in the above line.
     {
       this->ConfidenceMapImage->SetPixel(maskIterator.GetIndex(), value);
       // std::cout << "Set " << maskIterator.GetIndex() << " to " << value << std::endl;
@@ -77,6 +78,7 @@ float PriorityOnionPeel::ComputeConfidenceTerm(const TNode& queryNode) const
   region.Crop(this->MaskImage->GetLargestPossibleRegion());
 
   itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, region);
+  itk::ImageRegionConstIterator<ConfidenceImageType> confidenceImageIterator(this->ConfidenceMapImage, region);
 
   // The confidence is computed as the sum of the confidences of patch pixels
   // in the source region / area of the patch
@@ -85,10 +87,13 @@ float PriorityOnionPeel::ComputeConfidenceTerm(const TNode& queryNode) const
 
   while(!maskIterator.IsAtEnd())
   {
-    if(this->MaskImage->IsValid(maskIterator.GetIndex()))
+    //if(this->MaskImage->IsValid(maskIterator.GetIndex()))
+    if(maskIterator.Get() == this->MaskImage->GetValidValue())
     {
-      sum += this->ConfidenceMapImage->GetPixel(maskIterator.GetIndex());
+//      sum += this->ConfidenceMapImage->GetPixel(maskIterator.GetIndex());
+      sum += confidenceImageIterator.Get();
     }
+    ++confidenceImageIterator;
     ++maskIterator;
   }
 
