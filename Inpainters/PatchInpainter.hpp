@@ -111,7 +111,15 @@ public:
       std::cout << "PatchInpainter::PaintPatch(): Painted patch " << targetCenter[0] << " " << targetCenter[1]
                 << " with " << sourceCenter[0] << " " << sourceCenter[1] << std::endl;
       std::cout << "PatchInpainter::PaintPatch() After filling, there are " << this->MaskImage->CountHolePixels() << " hole pixels remaining." << std::endl;
-      ITKHelpers::WriteSequentialImage(this->Image, this->ImageName, this->Iteration, 3, "png");
+
+      try
+      {
+        ITKHelpers::WriteSequentialImage(this->Image, this->ImageName, this->Iteration, 3, "png");
+      }
+      catch (...)
+      {
+        ITKHelpers::WriteSequentialRGBImage(this->Image, this->ImageName, this->Iteration, 3, "png");
+      }
     }
 
     this->Iteration++;

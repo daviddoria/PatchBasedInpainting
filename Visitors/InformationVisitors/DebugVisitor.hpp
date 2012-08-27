@@ -60,7 +60,7 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
     {
     itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(sourceNode);
 
-    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, HalfWidth);
+    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, this->HalfWidth);
 
     ITKHelpers::WriteVectorImageRegionAsRGB(Image, sourceRegion,
                                                Helpers::GetSequentialFileName("sourcePatch",
@@ -71,12 +71,12 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
     // Construct the region around the vertex
     itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(targetNode);
 
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, HalfWidth);
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, this->HalfWidth);
 
     ITKHelpers::WriteVectorImageRegionAsRGB(Image, region,
                                                Helpers::GetSequentialFileName("targetPatch",
                                                                               this->NumberOfFinishedVertices, "png"));
-    ITKHelpers::WriteRegion(MaskImage, region,
+    ITKHelpers::WriteRegionAsRGBImage(this->MaskImage, region,
                                Helpers::GetSequentialFileName("maskPatch", this->NumberOfFinishedVertices, "png"));
 
 
@@ -85,10 +85,11 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
     holeColor[0] = 255;
     holeColor[1] = 0;
     holeColor[2] = 0;
-    MaskOperations::WriteMaskedRegionPNG(Image, MaskImage, region, Helpers::GetSequentialFileName("maskedTargetPatch", this->NumberOfFinishedVertices, "png"),
+    MaskOperations::WriteMaskedRegionPNG(this->Image, this->MaskImage, region,
+                                         Helpers::GetSequentialFileName("maskedTargetPatch", this->NumberOfFinishedVertices, "png"),
                        holeColor);
     }
-  };
+  }
 
   void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
   {
@@ -98,7 +99,7 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
     return true;
-  };
+  }
 
   void FinishVertex(VertexDescriptorType target, VertexDescriptorType sourceNode)
   {
@@ -150,7 +151,7 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
     // std::cout << "Finished node " << this->NumberOfFinishedVertices << std::endl;
 
-  };
+  }
 
   void InpaintingComplete() const
   {

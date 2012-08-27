@@ -110,10 +110,9 @@ int main(int argc, char *argv[])
   std::cout << "numberOfKNN: " << numberOfKNN << std::endl;
   std::cout << "Output: " << outputFileName << std::endl;
 
-//  typedef itk::VectorImage<float, 2> FloatVectorImageType;
-//  typedef FloatVectorImageType ImageType;
-
-  typedef itk::VectorImage<unsigned char, 2> OriginalImageType;
+  // typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> OriginalImageType; // This doesn't allow for direct "a - b" pixel comparisons, because (100 - 150) or similar will underflow!
+  // typedef itk::Image<itk::CovariantVector<float, 3>, 2> OriginalImageType; // This is quite slow
+  typedef itk::Image<itk::CovariantVector<int, 3>, 2> OriginalImageType;
 
   typedef  itk::ImageFileReader<OriginalImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
