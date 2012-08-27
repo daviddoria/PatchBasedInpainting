@@ -96,6 +96,35 @@ public:
     this->RangeMax = rangeMax;
   }
 
+  template <typename TIterator>
+  void WriteTopPatches(const TIterator first, const TIterator last)
+  {
+    unsigned int patchSideLength = get(this->PropertyMap, *first).GetRegion().GetSize()[0];
+    itk::Size<2> patchSize = get(this->PropertyMap, *first).GetRegion().GetSize();
+    unsigned int numberOfTopPatches = (last - first);
+    std::cout << "WriteTopPatches:numberOfTopPatches = " << numberOfTopPatches << std::endl;
+
+    itk::Index<2> corner = {{0,0}};
+    itk::Size<2> topPatchesRegionSize = {{patchSideLength, patchSideLength * numberOfTopPatches}};
+    itk::ImageRegion<2> topPatchesImageRegion(corner, topPatchesRegionSize);
+
+    typename TImageToWrite::Pointer topPatchesImage = TImageToWrite::New();
+    topPatchesImage->SetRegions(topPatchesImageRegion);
+    topPatchesImage->Allocate();
+    topPatchesImage->FillBuffer(0);
+
+    for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
+    {
+      unsigned int currentPatchId = currentPatch - first;
+      itk::Index<2> topPatchesImageCorner = {{0, patchSideLength * currentPatchId}};
+      itk::ImageRegion<2> currentTopPatchesImageRegion(topPatchesImageCorner, patchSize);
+      itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
+      ITKHelpers::CopyRegion(this->ImageToWrite, topPatchesImage.GetPointer(), currentRegion, currentTopPatchesImageRegion);
+    }
+
+    ITKHelpers::WriteRGBImage(topPatchesImage.GetPointer(), Helpers::GetSequentialFileName("TopPatches",this->Iteration,"png",3));
+  }
+
   /**
     * \param first Start of the range in which to search.
     * \param last One element past the last element in the range in which to search.
@@ -104,7 +133,7 @@ public:
     *         the elements in the range with respect to the distance metric).
     */
   template <typename TIterator>
-  typename TIterator::value_type operator()(TIterator first, TIterator last, typename TIterator::value_type query)
+  typename TIterator::value_type operator()(const TIterator first, const TIterator last, typename TIterator::value_type query)
   {
     // If the input element range is empty, there is nothing to do.
     if(first == last)
@@ -132,9 +161,10 @@ public:
 
     if(this->WriteDebugPatches)
     {
-      ITKHelpers::WriteRegionAsImage(this->ImageToWrite, queryRegion, Helpers::GetSequentialFileName("QueryRegion",this->Iteration,"png",3));
-      ITKHelpers::WriteRegionAsImage(this->ImageToWrite, get(this->PropertyMap, *first).GetRegion(),
+      ITKHelpers::WriteRegionAsRGBImage(this->ImageToWrite, queryRegion, Helpers::GetSequentialFileName("QueryRegion",this->Iteration,"png",3));
+      ITKHelpers::WriteRegionAsRGBImage(this->ImageToWrite, get(this->PropertyMap, *first).GetRegion(),
                                      Helpers::GetSequentialFileName("SSDRegion",this->Iteration,"png",3));
+      this->WriteTopPatches(first, last);
     }
 
     HistogramType queryHistogram =
@@ -144,12 +174,12 @@ public:
 
     // Initialize
     float bestDistance = std::numeric_limits<float>::infinity();
-    TIterator result = last;
+    TIterator bestPatch = last;
 
     // Iterate through all of the input elements
-    for(TIterator current = first; current != last; ++current)
+    for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
     {
-      itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *current).GetRegion();
+      itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
 
       // Compute the histogram of the source region using the queryRegion mask
       HistogramType testHistogram =
@@ -162,20 +192,20 @@ public:
       if(histogramDifference < bestDistance)
       {
         bestDistance = histogramDifference;
-        result = current;
+        bestPatch = currentPatch;
       }
     }
 
     if(this->WriteDebugPatches)
     {
-      ITKHelpers::WriteRegionAsImage(this->ImageToWrite, get(this->PropertyMap, *first).GetRegion(), Helpers::GetSequentialFileName("HistogramRegion",this->Iteration,"png",3));
+      ITKHelpers::WriteRegionAsRGBImage(this->ImageToWrite, get(this->PropertyMap, *bestPatch).GetRegion(), Helpers::GetSequentialFileName("HistogramRegion",this->Iteration,"png",3));
     }
 
     //std::cout << "Best histogramDifference: " << d_best << std::endl;
 
     this->Iteration++;
 
-    return *result;
+    return *bestPatch;
   }
 
 }; // end class LinearSearchBestHistogram
