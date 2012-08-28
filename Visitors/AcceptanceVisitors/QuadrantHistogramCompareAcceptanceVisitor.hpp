@@ -17,7 +17,8 @@
 #include "itkImageRegion.h"
 
 /**
-
+  Accept a patch if the score of the histogram comparison of the unmasked region of a specified quadrant is
+  less than a specified threshold.
  */
 template <typename TGraph, typename TImage>
 struct QuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
@@ -54,16 +55,16 @@ struct QuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorParen
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& computedEnergy) const
   {
     itk::Index<2> targetPixel = ITKHelpers::CreateIndex(target);
-    itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, HalfWidth);
+    itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, this->HalfWidth);
 
     itk::Index<2> sourcePixel = ITKHelpers::CreateIndex(source);
-    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, HalfWidth);
+    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, this->HalfWidth);
 
     itk::ImageRegion<2> targetRegionQuadrant = ITKHelpers::GetQuadrant(targetRegion, this->Quadrant);
     itk::ImageRegion<2> sourceRegionQuadrant = ITKHelpers::GetQuadrant(sourceRegion, this->Quadrant);
 
     std::vector<typename TImage::PixelType> validPixelsTargetRegion =
-              MaskOperations::GetValidPixelsInRegion(Image, MaskImage, targetRegionQuadrant);
+              MaskOperations::GetValidPixelsInRegion(this->Image, this->MaskImage, targetRegionQuadrant);
 
     // If less than 20 percent of the quadrant has valid pixels, the comparison is too specific
     // and the energy will often be erroneously high
@@ -71,11 +72,11 @@ struct QuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorParen
                              static_cast<float>(targetRegionQuadrant.GetNumberOfPixels());
     if(quadrantCoverage < .2)
     {
-      std::cout << "Skipping quadrant " << Quadrant << " (coverage " << quadrantCoverage << ")" << std::endl;
+      std::cout << "Skipping quadrant " << this->Quadrant << " (coverage " << quadrantCoverage << ")" << std::endl;
       computedEnergy = 0.0f;
       return true;
     }
-    std::vector<itk::Offset<2> > validOffsets = MaskImage->GetValidOffsetsInRegion(targetRegionQuadrant);
+    std::vector<itk::Offset<2> > validOffsets = this->MaskImage->GetValidOffsetsInRegion(targetRegionQuadrant);
     std::vector<itk::Index<2> > sourcePatchValidPixelIndices =
             ITKHelpers::OffsetsToIndices(validOffsets, sourceRegionQuadrant.GetIndex());
     std::vector<typename TImage::PixelType> validPixelsSourceRegion =
@@ -104,8 +105,8 @@ struct QuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorParen
         sourceValues[pixelId] = validPixelsSourceRegion[pixelId][component];
       }
 
-      std::vector<float> targetHistogram = Histogram<int>::ScalarHistogram(targetValues, 20, Mins[component], Maxs[component]);
-      std::vector<float> sourceHistogram = Histogram<int>::ScalarHistogram(sourceValues, 20, Mins[component], Maxs[component]);
+      std::vector<float> targetHistogram = Histogram<int>::ScalarHistogram(targetValues, 20, this->Mins[component], this->Maxs[component]);
+      std::vector<float> sourceHistogram = Histogram<int>::ScalarHistogram(sourceValues, 20, this->Mins[component], this->Maxs[component]);
 
 //       std::cout << "targetHistogram size " << targetHistogram.size() << std::endl;
 //       std::cout << "sourceHistogram size " << sourceHistogram.size() << std::endl;
@@ -123,16 +124,16 @@ struct QuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorParen
     computedEnergy = totalHistogramDifference;
     std::cout << "QuadrantHistogramCompareAcceptanceVisitor Energy: " << computedEnergy << std::endl;
 
-    if(computedEnergy < DifferenceThreshold)
+    if(computedEnergy < this->DifferenceThreshold)
       {
       std::cout << "QuadrantHistogramCompareAcceptanceVisitor: Match accepted (less than "
-                << DifferenceThreshold << ")" << std::endl;
+                << this->DifferenceThreshold << ")" << std::endl;
       return true;
       }
     else
       {
       std::cout << "QuadrantHistogramCompareAcceptanceVisitor: Match rejected (greater than "
-                << DifferenceThreshold << ")" << std::endl;
+                << this->DifferenceThreshold << ")" << std::endl;
       return false;
       }
   };

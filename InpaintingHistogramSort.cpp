@@ -73,9 +73,9 @@
 int main(int argc, char *argv[])
 {
   // Verify arguments
-  if(argc != 6)
+  if(argc != 7)
   {
-    std::cerr << "Required arguments: image.png imageMask.mask patchHalfWidth numberOfKNN output.png" << std::endl;
+    std::cerr << "Required arguments: image.png imageMask.mask patchHalfWidth numberOfKNN binsPerChannel output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
     {
@@ -99,9 +99,11 @@ int main(int argc, char *argv[])
 
   unsigned int numberOfKNN = 0;
 
+  unsigned int binsPerChannel = 0;
+
   std::string outputFileName;
 
-  ssArguments >> imageFileName >> maskFileName >> patchHalfWidth >> numberOfKNN >> outputFileName;
+  ssArguments >> imageFileName >> maskFileName >> patchHalfWidth >> numberOfKNN >> binsPerChannel >> outputFileName;
 
   // Output arguments
   std::cout << "Reading image: " << imageFileName << std::endl;
@@ -249,7 +251,7 @@ int main(int argc, char *argv[])
   // This is templated on OriginalImageType because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
   typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType, OriginalImageType> BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
-  linearSearchBest.SetNumberOfBinsPerDimension(30);
+  linearSearchBest.SetNumberOfBinsPerDimension(binsPerChannel);
   // The range (0,1) is used because we use the HSV image.
   linearSearchBest.SetRangeMin(0.0f);
   linearSearchBest.SetRangeMax(1.0f);

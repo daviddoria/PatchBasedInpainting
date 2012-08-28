@@ -23,15 +23,15 @@ struct AllQuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorPa
                                                const unsigned int halfWidth, const std::vector<float>& mins,
                                                const std::vector<float>& maxs,
                                                const float differenceThreshold = 100.0f) :
-  AcceptanceVisitorParent<TGraph>("AllQuadrantHistogramCompareAcceptanceVisitor")
+    AcceptanceVisitorParent<TGraph>("AllQuadrantHistogramCompareAcceptanceVisitor")
   {
     for(unsigned int quadrant = 0; quadrant < 4; ++quadrant)
     {
       QuadrantVisitorType* quadrantHistogramCompareAcceptanceVisitor =
           new QuadrantVisitorType(image, mask, halfWidth, quadrant, mins, maxs, differenceThreshold/4.0f);
-      QuadrantVisitors.push_back(quadrantHistogramCompareAcceptanceVisitor);
+      this->QuadrantVisitors.push_back(quadrantHistogramCompareAcceptanceVisitor);
     }
-  };
+  }
 
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
@@ -43,17 +43,17 @@ struct AllQuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorPa
   {
     bool acceptAll = true;
     energy = 0.0f;
-    for(unsigned int visitorId = 0; visitorId < QuadrantVisitors.size(); ++visitorId)
-      {
+    for(unsigned int visitorId = 0; visitorId < this->QuadrantVisitors.size(); ++visitorId)
+    {
       float quadrantEnergy = 0.0f;
-      bool accept = QuadrantVisitors[visitorId]->AcceptMatch(target, source, quadrantEnergy);
+      bool accept = this->QuadrantVisitors[visitorId]->AcceptMatch(target, source, quadrantEnergy);
       std::cout << "AllQuadrantHistogramCompareAcceptanceVisitor: Quadrant " << visitorId
                 << " energy: " << quadrantEnergy << std::endl;
       energy += quadrantEnergy;
       acceptAll = acceptAll && accept;
-      }
+    }
     return acceptAll;
-  };
+  }
 
 private:
   // Have to store pointers because there is no default constructor
