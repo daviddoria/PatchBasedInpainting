@@ -159,7 +159,7 @@ public:
 
     itk::ImageRegion<2> queryRegion = get(this->PropertyMap, query).GetRegion();
 
-    HistogramType queryHistogram =
+    HistogramType targetHistogram =
 //      MaskedHistogram::ComputeMaskedImage1DHistogram(
         MaskedHistogram::ComputeQuadrantMaskedImage1DHistogram(
                   this->Image, queryRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
@@ -178,10 +178,10 @@ public:
           MaskedHistogram::ComputeQuadrantMaskedImage1DHistogram(
                       this->Image, get(this->PropertyMap, *first).GetRegion(), this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
                       rangeMin, rangeMax);
-      float ssdMatchHistogramScore = Histogram<BinValueType>::HistogramDifference(queryHistogram, bestSSDHistogram);
+      float ssdMatchHistogramScore = Histogram<BinValueType>::HistogramDifference(targetHistogram, bestSSDHistogram);
       std::cout << "Best SSDHistogramDifference: " << ssdMatchHistogramScore << std::endl;
       Histogram<int>::WriteHistogram(bestSSDHistogram, Helpers::GetSequentialFileName("BestSSDHistogram",this->Iteration,"txt",3));
-      Histogram<int>::WriteHistogram(queryHistogram, Helpers::GetSequentialFileName("QueryHistogram",this->Iteration,"txt",3));
+      Histogram<int>::WriteHistogram(targetHistogram, Helpers::GetSequentialFileName("TargetHistogram",this->Iteration,"txt",3));
     }
 
     // Initialize
@@ -203,7 +203,8 @@ public:
                       this->Image, currentRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
                       rangeMin, rangeMax);
 
-      float histogramDifference = Histogram<BinValueType>::HistogramDifference(queryHistogram, testHistogram);
+      // float histogramDifference = Histogram<BinValueType>::HistogramDifference(targetHistogram, testHistogram);
+      float histogramDifference = Histogram<BinValueType>::HistogramCoherence(targetHistogram, testHistogram);
 
       if(histogramDifference < bestDistance)
       {
