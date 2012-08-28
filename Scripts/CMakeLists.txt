@@ -1,0 +1,6 @@
+add_custom_target(Scripts SOURCES
+RunOnAllImages.bash
+RunOnAllImagesVaryKNNandRadius.bash
+RunOnAllImagesVaryKNN.bash
+WriteHistograms.bash
+)

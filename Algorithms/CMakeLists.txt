@@ -1,0 +1,6 @@
+add_custom_target(Algorithms SOURCES InpaintingAlgorithm.hpp
+InpaintingAlgorithmWithLocalSearch.hpp
+InpaintingAlgorithmWithVerification.hpp
+InpaintingForwardLookAlgorithm.hpp
+InpaintingPrecomputedAlgorithm.hpp
+)
