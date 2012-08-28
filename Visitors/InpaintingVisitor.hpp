@@ -87,6 +87,9 @@ class InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   /** How many patches have been finished so far. */
   unsigned int NumberOfFinishedPatches;
 
+  /** As the image is inpainted, this flag determines if new source patches can be created from patches which are now valid. */
+  bool AllowNewPatches;
+
   // Debug only
   /** A flag that determines if debug images should be written at each iteration. */
   bool DebugImages;
@@ -110,7 +113,7 @@ public:
     Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
     DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
     PriorityMap(priorityMap), BoundaryStatusMap(boundaryStatusMap),
-    PatchHalfWidth(patchHalfWidth), ResultFileName(resultFileName), NumberOfFinishedPatches(0), DebugImages(false)
+    PatchHalfWidth(patchHalfWidth), ResultFileName(resultFileName), NumberOfFinishedPatches(0), AllowNewPatches(false), DebugImages(false)
   {
   }
 
@@ -183,8 +186,8 @@ public:
     // Initialize all vertices in the newly filled region because they may now be valid source nodes.
     // (You may not want to do this in some cases (i.e. if the descriptors needed cannot be
     // computed on newly filled regions))
-    bool allowNewPatches = false; // For the moment, we do not want to allow this
-    if(allowNewPatches)
+
+    if(this->AllowNewPatches)
     {
       itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(Image, regionToFinish);
       while(!gridIterator.IsAtEnd())

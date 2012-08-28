@@ -87,7 +87,7 @@ if( (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Mask/.git") OR
                        Please run git submodule update --init --recursive")
 endif()
 
-
+add_subdirectory(Algorithms)
 add_subdirectory(NearestNeighbor)
 add_subdirectory(Visitors)
 add_subdirectory(Inpainters)
@@ -98,8 +98,9 @@ add_subdirectory(DifferenceFunctions)
 add_subdirectory(Concepts)
 add_subdirectory(Interactive/Delegates)
 add_subdirectory(LearnParameters)
-add_subdirectory(SpeedTests)
+add_subdirectory(Scripts)
 add_subdirectory(SearchRegions)
+add_subdirectory(SpeedTests)
 
 # Core source files
 add_library(PatchBasedInpainting
