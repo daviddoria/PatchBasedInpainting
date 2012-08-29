@@ -245,11 +245,14 @@ int main(int argc, char *argv[])
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
 
+  typedef std::vector<VertexDescriptorType>::iterator VertexDescriptorVectorIteratorType;
+
   // This is templated on OriginalImageType because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
   //typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType, OriginalImageType> BestSearchType;
 //  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexIteratorType, OriginalImageType> BestSearchType;
-  typedef std::vector<VertexDescriptorType>::iterator VertexDescriptorVectorIteratorType;
-  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
+//    typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
+  typedef LinearSearchBestHoleHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
+
   BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
   linearSearchBest.SetNumberOfBinsPerDimension(binsPerChannel);
   // The range (0,1) is used because we use the HSV image.

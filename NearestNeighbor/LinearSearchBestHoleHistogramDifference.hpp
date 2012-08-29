@@ -64,16 +64,20 @@ public:
       throw std::runtime_error(ss.str());
     }
 
-    typedef int BinValueType;
+//    typedef int BinValueType;
+    typedef float BinValueType;
     typedef Histogram<BinValueType>::HistogramType HistogramType;
 
     itk::ImageRegion<2> queryRegion = get(this->PropertyMap, query).GetRegion();
 
-    HistogramType targetHistogram =
-//      MaskedHistogram::ComputeMaskedImage1DHistogram(
-        MaskedHistogram::ComputeQuadrantMaskedImage1DHistogram(
-                  this->Image, queryRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
-                  this->RangeMin, this->RangeMax);
+    HistogramType targetPatchValidRegionHistogram =
+        MaskedHistogram<BinValueType>::ComputeMaskedImage1DHistogram(
+          this->Image, queryRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
+          this->RangeMin, this->RangeMax, true, this->MaskImage->GetValidValue());
+
+    Helpers::NormalizeVectorInPlace(targetPatchValidRegionHistogram);
+
+//    float percentValidPixels = this->MaskImage->CountValidPixels(queryRegion) / static_cast<float>(queryRegion.GetNumberOfPixels());
 
     if(this->WriteDebugPatches)
     {
@@ -94,17 +98,17 @@ public:
       this->WriteTopPatches(first, last);
 
       // Compute the histogram of the best SSD region using the queryRegion mask
-      HistogramType bestSSDHistogram =
-      // MaskedHistogram::ComputeMaskedImage1DHistogram(
-          MaskedHistogram::ComputeQuadrantMaskedImage1DHistogram(
-                      this->Image, get(this->PropertyMap, *first).GetRegion(), this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
-                      this->RangeMin, this->RangeMax);
+//      HistogramType bestSSDHistogram =
+//      // MaskedHistogram::ComputeMaskedImage1DHistogram(
+//          MaskedHistogram::ComputeQuadrantMaskedImage1DHistogram(
+//                      this->Image, get(this->PropertyMap, *first).GetRegion(), this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
+//                      this->RangeMin, this->RangeMax);
+
 //      float ssdMatchHistogramScore = Histogram<BinValueType>::HistogramDifference(targetHistogram, bestSSDHistogram);
-      float ssdMatchHistogramScore = Histogram<BinValueType>::WeightedHistogramDifference(targetHistogram, bestSSDHistogram);
-//      float ssdMatchHistogramScore = Histogram<BinValueType>::HistogramCoherence(targetHistogram, bestSSDHistogram);
-      std::cout << "Best SSDHistogramDifference: " << ssdMatchHistogramScore << std::endl;
-      Histogram<int>::WriteHistogram(bestSSDHistogram, Helpers::GetSequentialFileName("BestSSDHistogram",this->Iteration,"txt",3));
-      Histogram<int>::WriteHistogram(targetHistogram, Helpers::GetSequentialFileName("TargetHistogram",this->Iteration,"txt",3));
+
+//      std::cout << "Best SSDHistogramDifference: " << ssdMatchHistogramScore << std::endl;
+//      Histogram<int>::WriteHistogram(bestSSDHistogram, Helpers::GetSequentialFileName("BestSSDHistogram",this->Iteration,"txt",3));
+//      Histogram<int>::WriteHistogram(targetHistogram, Helpers::GetSequentialFileName("TargetHistogram",this->Iteration,"txt",3));
     }
 
     // Initialize
@@ -120,14 +124,15 @@ public:
       itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
 
       // Compute the histogram of the source region using the queryRegion mask
-      HistogramType testHistogram =
-//          MaskedHistogram::ComputeMaskedImage1DHistogram(
-          MaskedHistogram::ComputeQuadrantMaskedImage1DHistogram(
-                      this->Image, currentRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
-                      this->RangeMin, this->RangeMax);
+      HistogramType sourcePatchHoleRegionHistogram =
+          MaskedHistogram<BinValueType>::ComputeMaskedImage1DHistogram(
+            this->Image, currentRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
+            this->RangeMin, this->RangeMax, true, this->MaskImage->GetHoleValue());
+
+      Helpers::NormalizeVectorInPlace(sourcePatchHoleRegionHistogram);
 
       // float histogramDifference = Histogram<BinValueType>::HistogramDifference(targetHistogram, testHistogram);
-      float histogramDifference = Histogram<BinValueType>::WeightedHistogramDifference(targetHistogram, testHistogram);
+      float histogramDifference = Histogram<BinValueType>::WeightedHistogramDifference(targetPatchValidRegionHistogram, sourcePatchHoleRegionHistogram);
 //      float histogramDifference = Histogram<BinValueType>::HistogramCoherence(targetHistogram, testHistogram);
 
       if(histogramDifference < bestDistance)
@@ -137,7 +142,7 @@ public:
 
         // These are not needed - just for debugging
         bestId = currentPatch - first;
-        bestHistogram = testHistogram;
+        bestHistogram = sourcePatchHoleRegionHistogram;
       }
     }
 
@@ -145,7 +150,7 @@ public:
     {
       itk::ImageRegion<2> bestRegion = get(this->PropertyMap, *bestPatch).GetRegion();
       ITKHelpers::WriteRegionAsRGBImage(this->ImageToWrite, bestRegion, Helpers::GetSequentialFileName("HistogramRegion",this->Iteration,"png",3));
-      Histogram<int>::WriteHistogram(bestHistogram, Helpers::GetSequentialFileName("BestHistogram",this->Iteration,"txt",3));
+      Histogram<BinValueType>::WriteHistogram(bestHistogram, Helpers::GetSequentialFileName("BestHistogram",this->Iteration,"txt",3));
       std::cout << "Best histogram id: " << bestId << std::endl;
       std::cout << "Best histogramDifference: " << bestDistance << std::endl;
     }

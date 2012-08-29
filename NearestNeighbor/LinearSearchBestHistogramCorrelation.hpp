@@ -75,7 +75,7 @@ public:
 
     HistogramType targetHistogram =
 //      MaskedHistogram::ComputeMaskedImage1DHistogram(
-        MaskedHistogram::ComputeQuadrantMaskedImage1DHistogram(
+        MaskedHistogram<BinValueType>::ComputeQuadrantMaskedImage1DHistogram(
                   this->Image, queryRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
                   rangeMin, rangeMax);
 
@@ -100,7 +100,7 @@ public:
       // Compute the histogram of the best SSD region using the queryRegion mask
       HistogramType bestSSDHistogram =
       // MaskedHistogram::ComputeMaskedImage1DHistogram(
-          MaskedHistogram::ComputeQuadrantMaskedImage1DHistogram(
+          MaskedHistogram<BinValueType>::ComputeQuadrantMaskedImage1DHistogram(
                       this->Image, get(this->PropertyMap, *first).GetRegion(), this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
                       rangeMin, rangeMax);
 //      float ssdMatchHistogramScore = Histogram<BinValueType>::HistogramDifference(targetHistogram, bestSSDHistogram);
@@ -125,7 +125,7 @@ public:
       // Compute the histogram of the source region using the queryRegion mask
       HistogramType testHistogram =
 //          MaskedHistogram::ComputeMaskedImage1DHistogram(
-          MaskedHistogram::ComputeQuadrantMaskedImage1DHistogram(
+          MaskedHistogram<BinValueType>::ComputeQuadrantMaskedImage1DHistogram(
                       this->Image, currentRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
                       rangeMin, rangeMax);
 
