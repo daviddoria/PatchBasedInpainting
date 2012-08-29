@@ -63,9 +63,9 @@ struct TwoStepNearestNeighbor
 
 //    std::cout << "There are " << outputContainer.size() << " items to search in the second step." << std::endl;
     if(outputContainer.size() <= 0)
-      {
+    {
       throw std::runtime_error("MultipleNeighborFinder did not find any neighbors!");
-      }
+    }
 
     Visitor.FoundNeighbors(outputContainer);
 

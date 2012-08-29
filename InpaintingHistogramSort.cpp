@@ -30,8 +30,9 @@
 #include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
 
 // Nearest neighbors functions
-#include "NearestNeighbor/LinearSearchBestHistogram.hpp"
+#include "NearestNeighbor/LinearSearchBestHistogramCorrelation.hpp"
 #include "NearestNeighbor/LinearSearchBestHistogramDifference.hpp"
+#include "NearestNeighbor/LinearSearchBestHoleHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
@@ -152,6 +153,7 @@ int main(int argc, char *argv[])
                                                       fullRegion.GetSize()[1] } };
   VertexListGraphType graph(graphSideLengths);
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
+//  typedef boost::graph_traits<VertexListGraphType>::vertex_iterator VertexIteratorType;
 
   // Get the index map
   typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
@@ -245,7 +247,9 @@ int main(int argc, char *argv[])
 
   // This is templated on OriginalImageType because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
   //typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType, OriginalImageType> BestSearchType;
-  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, OriginalImageType> BestSearchType;
+//  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexIteratorType, OriginalImageType> BestSearchType;
+  typedef std::vector<VertexDescriptorType>::iterator VertexDescriptorVectorIteratorType;
+  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
   linearSearchBest.SetNumberOfBinsPerDimension(binsPerChannel);
   // The range (0,1) is used because we use the HSV image.
