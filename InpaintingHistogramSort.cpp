@@ -31,6 +31,7 @@
 
 // Nearest neighbors functions
 #include "NearestNeighbor/LinearSearchBestHistogram.hpp"
+#include "NearestNeighbor/LinearSearchBestHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
@@ -143,13 +144,6 @@ int main(int argc, char *argv[])
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
 
-  // Check the mask for compatability (if it gets too close to the image boundary, the algorithm breaks).
-//  bool compatibleMask = PatchHelpers::CheckSurroundingRegionsOfAllHolePixels(mask, patchHalfWidth);
-//  if(!compatibleMask)
-//  {
-//    throw std::runtime_error("The mask is not compatible!");
-//  }
-
   typedef ImagePatchPixelDescriptor<OriginalImageType> ImagePatchPixelDescriptorType;
 
   // Create the graph
@@ -179,13 +173,13 @@ int main(int argc, char *argv[])
   ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
 
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
-  typedef PatchInpainter<OriginalImageType> ImageInpainterType;
-  ImageInpainterType originalImagePatchInpainter(patchHalfWidth, originalImage, mask);
+  typedef PatchInpainter<OriginalImageType> OriginalImageInpainterType;
+  OriginalImageInpainterType originalImagePatchInpainter(patchHalfWidth, originalImage, mask);
   originalImagePatchInpainter.SetDebugImages(true);
   originalImagePatchInpainter.SetImageName("RGB");
 
-  typedef PatchInpainter<HSVImageType> MaskInpainterType;
-  MaskInpainterType hsvImagePatchInpainter(patchHalfWidth, hsvImage, mask);
+  typedef PatchInpainter<HSVImageType> HSVImageInpainterType;
+  HSVImageInpainterType hsvImagePatchInpainter(patchHalfWidth, hsvImage, mask);
 
   CompositePatchInpainter inpainter;
   inpainter.AddInpainter(&originalImagePatchInpainter);
@@ -241,6 +235,7 @@ int main(int argc, char *argv[])
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
+  // Select squared or absolute pixel error
 //  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<OriginalImageType::PixelType> > PatchDifferenceType;
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumSquaredPixelDifference<OriginalImageType::PixelType> > PatchDifferenceType;
 
@@ -249,7 +244,8 @@ int main(int argc, char *argv[])
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
 
   // This is templated on OriginalImageType because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
-  typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType, OriginalImageType> BestSearchType;
+  //typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType, OriginalImageType> BestSearchType;
+  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, OriginalImageType> BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
   linearSearchBest.SetNumberOfBinsPerDimension(binsPerChannel);
   // The range (0,1) is used because we use the HSV image.

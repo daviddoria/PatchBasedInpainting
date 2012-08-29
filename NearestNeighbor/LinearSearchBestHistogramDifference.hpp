@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef LinearSearchBestHistogram_HPP
-#define LinearSearchBestHistogram_HPP
+#ifndef LinearSearchBestHistogramDifference_HPP
+#define LinearSearchBestHistogramDifference_HPP
 
 // STL
 #include <iostream>
@@ -37,7 +37,7 @@
    * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
    */
 template <typename PropertyMapType, typename TImage, typename TImageToWrite = TImage>
-class LinearSearchBestHistogram
+class LinearSearchBestHistogramDifference
 {
 private:
   /** The property map from which we will retrieve image regions from nodes. */
@@ -69,7 +69,7 @@ private:
 
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
-  LinearSearchBestHistogram(PropertyMapType propertyMap, TImage* const image, Mask* const mask) :
+  LinearSearchBestHistogramDifference(PropertyMapType propertyMap, TImage* const image, Mask* const mask) :
     PropertyMap(propertyMap), Image(image), MaskImage(mask), NumberOfBinsPerDimension(0),
     RangeMin(0.0f), RangeMax(0.0f),
     Iteration(0), WriteDebugPatches(false)
@@ -153,17 +153,13 @@ public:
     typedef int BinValueType;
     typedef Histogram<BinValueType>::HistogramType HistogramType;
 
-    // This is the range of the HSV images we use.
-    float rangeMin = 0.0f;
-    float rangeMax = 1.0f;
-
     itk::ImageRegion<2> queryRegion = get(this->PropertyMap, query).GetRegion();
 
     HistogramType targetHistogram =
 //      MaskedHistogram::ComputeMaskedImage1DHistogram(
         MaskedHistogram::ComputeQuadrantMaskedImage1DHistogram(
                   this->Image, queryRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
-                  rangeMin, rangeMax);
+                  this->RangeMin, this->RangeMax);
 
     if(this->WriteDebugPatches)
     {
@@ -188,9 +184,10 @@ public:
       // MaskedHistogram::ComputeMaskedImage1DHistogram(
           MaskedHistogram::ComputeQuadrantMaskedImage1DHistogram(
                       this->Image, get(this->PropertyMap, *first).GetRegion(), this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
-                      rangeMin, rangeMax);
+                      this->RangeMin, this->RangeMax);
 //      float ssdMatchHistogramScore = Histogram<BinValueType>::HistogramDifference(targetHistogram, bestSSDHistogram);
-      float ssdMatchHistogramScore = Histogram<BinValueType>::HistogramCoherence(targetHistogram, bestSSDHistogram);
+      float ssdMatchHistogramScore = Histogram<BinValueType>::WeightedHistogramDifference(targetHistogram, bestSSDHistogram);
+//      float ssdMatchHistogramScore = Histogram<BinValueType>::HistogramCoherence(targetHistogram, bestSSDHistogram);
       std::cout << "Best SSDHistogramDifference: " << ssdMatchHistogramScore << std::endl;
       Histogram<int>::WriteHistogram(bestSSDHistogram, Helpers::GetSequentialFileName("BestSSDHistogram",this->Iteration,"txt",3));
       Histogram<int>::WriteHistogram(targetHistogram, Helpers::GetSequentialFileName("TargetHistogram",this->Iteration,"txt",3));
@@ -213,10 +210,11 @@ public:
 //          MaskedHistogram::ComputeMaskedImage1DHistogram(
           MaskedHistogram::ComputeQuadrantMaskedImage1DHistogram(
                       this->Image, currentRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
-                      rangeMin, rangeMax);
+                      this->RangeMin, this->RangeMax);
 
       // float histogramDifference = Histogram<BinValueType>::HistogramDifference(targetHistogram, testHistogram);
-      float histogramDifference = Histogram<BinValueType>::HistogramCoherence(targetHistogram, testHistogram);
+      float histogramDifference = Histogram<BinValueType>::WeightedHistogramDifference(targetHistogram, testHistogram);
+//      float histogramDifference = Histogram<BinValueType>::HistogramCoherence(targetHistogram, testHistogram);
 
       if(histogramDifference < bestDistance)
       {
@@ -243,6 +241,6 @@ public:
     return *bestPatch;
   }
 
-}; // end class LinearSearchBestHistogram
+}; // end class LinearSearchBestHistogramDifference
 
 #endif
