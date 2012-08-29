@@ -1,1 +1,15 @@
-
+add_custom_target(DifferenceFunctions SOURCES
+FeatureVectorAngleDifference.hpp
+FeatureVectorDifference.hpp
+FullImagePatchDifference.hpp
+ImagePatchDifference.hpp
+ImagePatchVectorizedDifference.hpp
+ImagePatchVectorizedIndicesDifference.hpp
+NormPixelDifference.hpp
+SumAbsolutePixelDifference.hpp
+SumAbsolutePixelDifferenceN.hpp
+SumSquaredPixelDifference.hpp
+WeightedFeatureVectorDifference.hpp
+WeightedImagePatchDifference.hpp
+WeightedSumAbsolutePixelDifference.hpp
+)

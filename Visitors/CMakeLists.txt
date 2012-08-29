@@ -1,7 +1,9 @@
-add_subdirectory(InformationVisitors)
 add_subdirectory(AcceptanceVisitors)
+add_subdirectory(DescriptorVisitors)
+add_subdirectory(InformationVisitors)
+add_subdirectory(SimpleVisitors)
 
-add_custom_target(Visitors SOURCES CompositeInpaintingVisitor.hpp
+add_custom_target(VisitorsSources SOURCES CompositeInpaintingVisitor.hpp
 DefaultInpaintingVisitor.hpp
 FeatureVectorInpaintingVisitor.hpp
 ImagePatchCreatorVisitor.hpp

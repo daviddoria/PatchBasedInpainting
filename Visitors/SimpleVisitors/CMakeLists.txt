@@ -1,0 +1,5 @@
+add_custom_target(SimpleVisitorsSources SOURCES
+CompositeSimpleVisitor.hpp
+InpaintPatchVisitor.hpp
+VisitorSuperclass.hpp
+)
