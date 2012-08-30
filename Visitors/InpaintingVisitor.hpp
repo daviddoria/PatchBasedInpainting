@@ -253,6 +253,8 @@ public:
     //               << " valid nodes in the queue." << std::endl;
 
     NumberOfFinishedPatches++;
+
+    std::cout << "Leave InpaintingVisitor::FinishVertex()" << std::endl;
   } // finish_vertex
 
   void InpaintingComplete() const
