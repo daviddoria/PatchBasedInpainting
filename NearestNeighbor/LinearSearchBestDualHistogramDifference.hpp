@@ -71,7 +71,7 @@ public:
       throw std::runtime_error(ss.str());
     }
 
-//    typedef int BinValueType;
+//    typedef int BinValueType; // Can't use this if we are going to normalize the histograms.
     typedef float BinValueType;
     typedef MaskedHistogramGenerator<BinValueType> MaskedHistogramGeneratorType;
     typedef MaskedHistogramGeneratorType::HistogramType HistogramType;
