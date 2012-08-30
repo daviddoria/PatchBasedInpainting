@@ -12,4 +12,5 @@ SumSquaredPixelDifference.hpp
 WeightedFeatureVectorDifference.hpp
 WeightedImagePatchDifference.hpp
 WeightedSumAbsolutePixelDifference.hpp
+PatchValidHistogramDifference.hpp
 )
