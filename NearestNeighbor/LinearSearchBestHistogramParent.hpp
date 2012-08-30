@@ -24,7 +24,7 @@
 #include <limits>
 
 // Submodules
-#include <Utilities/Histogram/MaskedHistogram.h>
+#include <Utilities/Histogram/MaskedHistogramGenerator.h>
 
 /**
    * This function template is similar to std::min_element but can be used when the comparison

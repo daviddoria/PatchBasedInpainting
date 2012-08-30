@@ -20,6 +20,8 @@
 #define LinearSearchBestHistogramCorrelation_HPP
 
 #include "LinearSearchBestHistogramParent.hpp"
+#include "Utilities/Histogram/HistogramHelpers.hpp"
+
 /**
    * This function template is similar to std::min_element but can be used when the comparison
    * involves computing a derived quantity (a.k.a. distance). This algorithm will search for the
@@ -65,7 +67,8 @@ public:
     }
 
     typedef int BinValueType;
-    typedef Histogram<BinValueType>::HistogramType HistogramType;
+    typedef MaskedHistogramGenerator<BinValueType> MaskedHistogramGeneratorType;
+    typedef MaskedHistogramGeneratorType::HistogramType HistogramType;
 
     // This is the range of the HSV images we use.
     float rangeMin = 0.0f;
@@ -75,7 +78,7 @@ public:
 
     HistogramType targetHistogram =
 //      MaskedHistogram::ComputeMaskedImage1DHistogram(
-        MaskedHistogram<BinValueType>::ComputeQuadrantMaskedImage1DHistogram(
+        MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogram(
                   this->Image, queryRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
                   rangeMin, rangeMax);
 
@@ -100,14 +103,14 @@ public:
       // Compute the histogram of the best SSD region using the queryRegion mask
       HistogramType bestSSDHistogram =
       // MaskedHistogram::ComputeMaskedImage1DHistogram(
-          MaskedHistogram<BinValueType>::ComputeQuadrantMaskedImage1DHistogram(
+          MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogram(
                       this->Image, get(this->PropertyMap, *first).GetRegion(), this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
                       rangeMin, rangeMax);
 //      float ssdMatchHistogramScore = Histogram<BinValueType>::HistogramDifference(targetHistogram, bestSSDHistogram);
       float ssdMatchHistogramScore = Statistics::Correlation(targetHistogram, bestSSDHistogram);
       std::cout << "Best SSDHistogramDifference: " << ssdMatchHistogramScore << std::endl;
-      Histogram<int>::WriteHistogram(bestSSDHistogram, Helpers::GetSequentialFileName("BestSSDHistogram",this->Iteration,"txt",3));
-      Histogram<int>::WriteHistogram(targetHistogram, Helpers::GetSequentialFileName("TargetHistogram",this->Iteration,"txt",3));
+      HistogramHelpers::WriteHistogram(bestSSDHistogram, Helpers::GetSequentialFileName("BestSSDHistogram",this->Iteration,"txt",3));
+      HistogramHelpers::WriteHistogram(targetHistogram, Helpers::GetSequentialFileName("TargetHistogram",this->Iteration,"txt",3));
     }
 
     // Initialize
@@ -125,7 +128,7 @@ public:
       // Compute the histogram of the source region using the queryRegion mask
       HistogramType testHistogram =
 //          MaskedHistogram::ComputeMaskedImage1DHistogram(
-          MaskedHistogram<BinValueType>::ComputeQuadrantMaskedImage1DHistogram(
+          MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogram(
                       this->Image, currentRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
                       rangeMin, rangeMax);
 
@@ -148,7 +151,7 @@ public:
     {
       itk::ImageRegion<2> bestRegion = get(this->PropertyMap, *bestPatch).GetRegion();
       ITKHelpers::WriteRegionAsRGBImage(this->ImageToWrite, bestRegion, Helpers::GetSequentialFileName("HistogramRegion",this->Iteration,"png",3));
-      Histogram<int>::WriteHistogram(bestHistogram, Helpers::GetSequentialFileName("BestHistogram",this->Iteration,"txt",3));
+      HistogramHelpers::WriteHistogram(bestHistogram, Helpers::GetSequentialFileName("BestHistogram",this->Iteration,"txt",3));
       std::cout << "Best histogram id: " << bestId << std::endl;
       std::cout << "Best histogram correlation: " << bestScore << std::endl;
     }
