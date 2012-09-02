@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef PRIORITYONIONPEEL_H
-#define PRIORITYONIONPEEL_H
+#ifndef PriorityConfidence_H
+#define PriorityConfidence_H
 
 #include "Priority.h"
 
@@ -25,14 +25,15 @@
 #include <Mask/Mask.h>
 
 /**
-\class PriorityOnionPeel
-\brief This class ranks the priority of a patch based on its closeness to the hole boundary.
+\class PriorityConfidence
+\brief This class ranks the priority of a patch based on confidence values
+       of the pixels it contains.
 */
-class PriorityOnionPeel
+class PriorityConfidence
 {
 public:
 
-  PriorityOnionPeel(const Mask* const maskImage, const unsigned int patchRadius);
+  PriorityConfidence(const Mask* const maskImage, const unsigned int patchRadius);
 
   ///////////////////////////////////////
   // Required to model PriorityConcept //
@@ -71,6 +72,6 @@ protected:
   const unsigned int PatchRadius;
 };
 
-#include "PriorityOnionPeel.hxx"
+#include "PriorityConfidence.hpp"
 
 #endif

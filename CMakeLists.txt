@@ -112,7 +112,7 @@ ImageProcessing/Isophotes.cpp
 Priority/Priority.cpp
 Priority/PriorityDepth.cpp
 Priority/PriorityManual.cpp
-Priority/PriorityOnionPeel.cpp
+Priority/PriorityConfidence.cpp
 Priority/PriorityRandom.cpp
 )
 

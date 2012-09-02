@@ -19,7 +19,7 @@
 #ifndef PriorityCriminisi_H
 #define PriorityCriminisi_H
 
-#include "PriorityOnionPeel.h"
+#include "PriorityConfidence.h"
 
 /**
 \class PriorityCriminisi
@@ -27,7 +27,7 @@
        the confidence term of PriorityOnionPeel.
 */
 template <typename TImage>
-class PriorityCriminisi : public PriorityOnionPeel
+class PriorityCriminisi : public PriorityConfidence
 {
 public:
 
@@ -47,7 +47,7 @@ public:
 // 
 //   static std::vector<std::string> GetImageNames();
 
-  using PriorityOnionPeel::ComputeConfidenceTerm;
+  using PriorityConfidence::ComputeConfidenceTerm;
   ///////////////////////////////////////////
   //////////////// New functions   //////////
   ///////////////////////////////////////////
@@ -57,7 +57,7 @@ public:
 
 protected:
 
-  typedef PriorityOnionPeel Superclass;
+  typedef PriorityConfidence Superclass;
 
   /** Compute the Data at a pixel. */
   float ComputeDataTerm(const itk::Index<2>& queryPixel) const;

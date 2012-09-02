@@ -10,8 +10,8 @@ Priority.hxx
 PriorityImprovedCriminisi.hxx
 PriorityManual.h
 PriorityManual.hxx
-PriorityOnionPeel.h
-PriorityOnionPeel.hxx
+PriorityConfidence.h
+PriorityConfidence.hpp
 PriorityRandom.h
 PriorityRandom.hpp
 )

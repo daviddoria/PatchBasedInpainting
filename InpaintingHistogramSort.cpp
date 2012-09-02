@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
 //  typedef PriorityCriminisi<ImageType> PriorityType;
 //  PriorityType priorityFunction(image, mask, patchHalfWidth);
 
-  typedef PriorityOnionPeel PriorityType;
+  typedef PriorityConfidence PriorityType;
   PriorityType priorityFunction(mask, patchHalfWidth);
 
   // Create the boundary node queue. The priority of each node is used to order the queue.

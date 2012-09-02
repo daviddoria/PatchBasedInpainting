@@ -38,7 +38,7 @@
 template <typename TImage>
 PriorityCriminisi<TImage>::PriorityCriminisi(const TImage* const image, const Mask* const maskImage,
                                              const unsigned int patchRadius) :
-PriorityOnionPeel(maskImage, patchRadius), Image(image)
+PriorityConfidence(maskImage, patchRadius), Image(image)
 {
   this->BoundaryNormalsImage = Vector2ImageType::New();
   //ITKHelpers::InitializeImage(this->BoundaryNormalsImage.GetPointer(), image->GetLargestPossibleRegion());

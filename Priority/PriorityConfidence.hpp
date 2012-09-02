@@ -16,7 +16,7 @@
  *
  *=========================================================================*/
 
-#include "PriorityOnionPeel.h" // Appease syntax parser
+#include "PriorityConfidence.h" // Appease syntax parser
 
 // Submodules
 #include <Helpers/Helpers.h>
@@ -24,7 +24,7 @@
 #include <ITKVTKHelpers/ITKVTKHelpers.h>
 
 template <typename TNode>
-void PriorityOnionPeel::Update(const TNode& sourceNode, const TNode& targetNode, const unsigned int patchNumber)
+void PriorityConfidence::Update(const TNode& sourceNode, const TNode& targetNode, const unsigned int patchNumber)
 {
   float value = ComputeConfidenceTerm(targetNode);
   UpdateConfidences(targetNode, value);
@@ -33,7 +33,7 @@ void PriorityOnionPeel::Update(const TNode& sourceNode, const TNode& targetNode,
 }
 
 template <typename TNode>
-float PriorityOnionPeel::ComputePriority(const TNode& queryPixel) const
+float PriorityConfidence::ComputePriority(const TNode& queryPixel) const
 {
   float priority = ComputeConfidenceTerm(queryPixel);
 
@@ -41,7 +41,7 @@ float PriorityOnionPeel::ComputePriority(const TNode& queryPixel) const
 }
 
 template <typename TNode>
-void PriorityOnionPeel::UpdateConfidences(const TNode& targetNode, const float value)
+void PriorityConfidence::UpdateConfidences(const TNode& targetNode, const float value)
 {
   itk::Index<2> targetPixel = ITKHelpers::CreateIndex(targetNode);
 
@@ -68,7 +68,7 @@ void PriorityOnionPeel::UpdateConfidences(const TNode& targetNode, const float v
 }
 
 template <typename TNode>
-float PriorityOnionPeel::ComputeConfidenceTerm(const TNode& queryNode) const
+float PriorityConfidence::ComputeConfidenceTerm(const TNode& queryNode) const
 {
   itk::Index<2> queryPixel = ITKHelpers::CreateIndex(queryNode);
 

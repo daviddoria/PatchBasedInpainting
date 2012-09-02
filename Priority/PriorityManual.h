@@ -20,9 +20,8 @@
 #define PRIORITYMANUAL_H
 
 #include "Priority.h"
-#include "PriorityOnionPeel.h"
+#include "PriorityConfidence.h"
 #include "PriorityRandom.h"
-#include "PriorityOnionPeel.h"
 #include "PriorityDepth.h"
 
 /**
