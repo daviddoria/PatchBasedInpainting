@@ -59,12 +59,12 @@ void TestBoundaryNormals()
   typedef itk::Image<itk::CovariantVector<float, 2>, 2> BoundaryNormalsImageType;
   BoundaryNormalsImageType::Pointer boundaryNormalsImage = BoundaryNormalsImageType::New();
   float blurVariance = 2.0f;
-  boundaryNormals.ComputeBoundaryNormals(blurVariance, boundaryNormalsImage.GetPointer());
+  boundaryNormals.ComputeBoundaryNormals(boundaryNormalsImage.GetPointer(), blurVariance);
 
   ITKHelpers::WriteImage(boundaryNormalsImage.GetPointer(), "BoundaryNormals_Blur2.mha");
 
   // Try the function with no blurring
-  boundaryNormals.ComputeBoundaryNormals(0.0f, boundaryNormalsImage.GetPointer()); // 0.0f for "no blur variance"
+  boundaryNormals.ComputeBoundaryNormals(boundaryNormalsImage.GetPointer());
   ITKHelpers::WriteImage(boundaryNormalsImage.GetPointer(), "BoundaryNormals_Blur0.mha");
 }
 

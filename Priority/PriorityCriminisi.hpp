@@ -41,7 +41,7 @@ PriorityCriminisi<TImage>::PriorityCriminisi(const TImage* const image, const Ma
   PriorityConfidence(maskImage, patchRadius), Image(image)
 {
   this->BoundaryNormalsImage = Vector2ImageType::New();
-  //ITKHelpers::InitializeImage(this->BoundaryNormalsImage.GetPointer(), image->GetLargestPossibleRegion());
+  ITKHelpers::InitializeImage(this->BoundaryNormalsImage.GetPointer(), image->GetLargestPossibleRegion());
 
   ComputeBoundaryNormals();
 
@@ -117,15 +117,9 @@ float PriorityCriminisi<TImage>::ComputeDataTerm(const itk::Index<2>& queryPixel
 template <typename TImage>
 void PriorityCriminisi<TImage>::ComputeBoundaryNormals()
 {
-  Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
-  boundaryImage->SetRegions(this->Image->GetLargestPossibleRegion());
-  boundaryImage->Allocate();
-
-  this->MaskImage->FindBoundary(boundaryImage, Mask::VALID, 255);
-  
   BoundaryNormals boundaryNormals(this->MaskImage);
 
-  boundaryNormals.ComputeBoundaryNormals(0.0f, this->BoundaryNormalsImage.GetPointer()); // 0.0f because we assume the image is already blurred
+  boundaryNormals.ComputeBoundaryNormals(this->BoundaryNormalsImage.GetPointer());
 }
 
 template <typename TImage>

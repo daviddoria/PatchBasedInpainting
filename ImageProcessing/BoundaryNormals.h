@@ -22,9 +22,10 @@
 // Submodules
 #include <Mask/Mask.h>
 #include <ITKHelpers/ITKHelpers.h>
+#include <Utilities/Debug/Debug.h>
 
 /** This class computes the boundary normals of a mask at the valid side of the mask boundary. */
-class BoundaryNormals
+class BoundaryNormals : public Debug
 {
 public:
 
@@ -34,7 +35,7 @@ public:
   /** Comput the boundary normals. 'TNormalsImage' should be a type that has an
     * operator[] for two components (a 2-vector).*/
   template <typename TNormalsImage>
-  void ComputeBoundaryNormals(const float blurVariance, TNormalsImage* const boundaryNormals);
+  void ComputeBoundaryNormals(TNormalsImage* const boundaryNormals, const float blurVariance = 0.0f);
 
 private:
 
