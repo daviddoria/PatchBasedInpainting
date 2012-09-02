@@ -195,11 +195,12 @@ int main(int argc, char *argv[])
 //  bool random = false;
 //  PriorityType priorityFunction(random);
 
-//  typedef PriorityCriminisi<ImageType> PriorityType;
-//  PriorityType priorityFunction(image, mask, patchHalfWidth);
+  typedef PriorityCriminisi<OriginalImageType> PriorityType;
+  PriorityType priorityFunction(originalImage, mask, patchHalfWidth);
+  priorityFunction.SetDebugLevel(1);
 
-  typedef PriorityConfidence PriorityType;
-  PriorityType priorityFunction(mask, patchHalfWidth);
+//  typedef PriorityConfidence PriorityType;
+//  PriorityType priorityFunction(mask, patchHalfWidth);
 
   // Create the boundary node queue. The priority of each node is used to order the queue.
   typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;

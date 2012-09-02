@@ -19,3 +19,6 @@
 [submodule "Utilities/Histogram"]
 	path = Utilities/Histogram
 	url = https://github.com/daviddoria/Histogram.git
+[submodule "Utilities/Debug"]
+	path = Utilities/Debug
+	url = https://github.com/daviddoria/Debug.git

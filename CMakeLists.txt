@@ -101,6 +101,7 @@ add_subdirectory(Priority)
 add_subdirectory(Scripts)
 add_subdirectory(SearchRegions)
 add_subdirectory(SpeedTests)
+add_subdirectory(Utilities/Debug)
 add_subdirectory(Visitors)
 
 # Core source files

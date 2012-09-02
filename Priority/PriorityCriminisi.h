@@ -21,13 +21,16 @@
 
 #include "PriorityConfidence.h"
 
+// Submodules
+#include <Utilities/Debug/Debug.h>
+
 /**
 \class PriorityCriminisi
 \brief This class implements Criminisi's priority function. It includes a Data term ontop of
        the confidence term of PriorityOnionPeel.
 */
 template <typename TImage>
-class PriorityCriminisi : public PriorityConfidence
+class PriorityCriminisi : public PriorityConfidence, Debug
 {
 public:
 

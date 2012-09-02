@@ -68,20 +68,22 @@ void PriorityCriminisi<TImage>::Update(const TNode& sourceNode, const TNode& tar
   Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage,
                                            this->Image->GetLargestPossibleRegion(), this->IsophoteImage.GetPointer());
 
-  { // Debug only
-  std::stringstream ss_isophote;
-  ss_isophote << "IsophoteImage_" << patchNumber << ".mha";
-  ITKHelpers::WriteSequentialImage(this->IsophoteImage.GetPointer(), "IsophoteImage", patchNumber, 3, "mha");
+  if(this->IsDebugOn())
+  {
+    std::stringstream ss_isophote;
+    ss_isophote << "IsophoteImage_" << patchNumber << ".mha";
+    ITKHelpers::WriteSequentialImage(this->IsophoteImage.GetPointer(), "IsophoteImage", patchNumber, 3, "mha");
   }
 
   float blurVariance = 2.0f;
   ComputeBoundaryNormals(blurVariance);
 
-  // Debug only
-  ITKHelpers::WriteSequentialImage(this->BoundaryNormalsImage.GetPointer(), "BoundaryNormals", patchNumber, 3, "mha");
+  if(this->IsDebugOn())
+  {
+    ITKHelpers::WriteSequentialImage(this->BoundaryNormalsImage.GetPointer(), "BoundaryNormals", patchNumber, 3, "mha");
 
-  // Debug only
-  WriteDataImage(Helpers::GetSequentialFileName("DataImage", patchNumber, "mha", 3));
+    WriteDataImage(Helpers::GetSequentialFileName("DataImage", patchNumber, "mha", 3));
+  }
 
 }
 
@@ -149,9 +151,9 @@ void PriorityCriminisi<TImage>::WriteDataImage(const std::string& fileName)
   PixelCollection boundaryPixels = ITKHelpers::GetNonZeroPixels(boundaryImage.GetPointer());
 
   for(PixelCollection::const_iterator iter = boundaryPixels.begin(); iter != boundaryPixels.end(); ++iter)
-    {
+  {
     dataImage->SetPixel(*iter, ComputePriority(*iter));
-    }
+  }
 
   ITKHelpers::WriteImage(dataImage.GetPointer(), fileName);
 }
