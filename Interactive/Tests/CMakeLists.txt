@@ -100,13 +100,13 @@
 # target_link_libraries(TestPriorityViewerWidget ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libGUI)
 # add_test(TestPriorityViewerWidget TestPriorityViewerWidget)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${CMAKE_CURRENT_BINARY_DIR}../)
-QT4_WRAP_UI(TestManualPatchSelectionDialogUISrcs ../ManualPatchSelectionDialog.ui)
-QT4_WRAP_CPP(TestManualPatchSelectionDialogMOCSrcs ../ManualPatchSelectionDialog.h ../MovablePatch.h)
-add_executable(TestManualPatchSelectionDialog TestManualPatchSelectionDialog.cpp
-               ../HelpersQt.cpp ../MovablePatch.cpp
-../../ImageProcessing/Mask.cpp
-               ${TestManualPatchSelectionDialogUISrcs} ${TestManualPatchSelectionDialogMOCSrcs})
-target_link_libraries(TestManualPatchSelectionDialog ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libGUI)
-add_test(TestManualPatchSelectionDialog TestManualPatchSelectionDialog)
+#include_directories(${CMAKE_CURRENT_BINARY_DIR})
+#include_directories(${CMAKE_CURRENT_BINARY_DIR}../)
+#QT4_WRAP_UI(TestManualPatchSelectionDialogUISrcs ../ManualPatchSelectionDialog.ui)
+#QT4_WRAP_CPP(TestManualPatchSelectionDialogMOCSrcs ../ManualPatchSelectionDialog.h ../MovablePatch.h)
+#add_executable(TestManualPatchSelectionDialog TestManualPatchSelectionDialog.cpp
+#               ../MovablePatch.cpp
+#../../ImageProcessing/Mask.cpp
+#               ${TestManualPatchSelectionDialogUISrcs} ${TestManualPatchSelectionDialogMOCSrcs})
+#target_link_libraries(TestManualPatchSelectionDialog ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libGUI)
+#add_test(TestManualPatchSelectionDialog TestManualPatchSelectionDialog)

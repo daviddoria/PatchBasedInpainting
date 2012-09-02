@@ -1,5 +1,4 @@
 include_directories(../) # so we can access the headers normally (e.g. #include "Patch.h") from the tests
-include_directories(../Testing ../Helpers)
 
 #####################
 
@@ -24,9 +23,9 @@ include_directories(../Testing ../Helpers)
 # target_link_libraries(TestBoundaryEnergy ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
 # add_test(TestBoundaryEnergy TestBoundaryEnergy)
 # 
-# add_executable(TestBoundaryNormals TestBoundaryNormals.cpp ../BoundaryNormals.cpp ../Mask.cpp)
-# target_link_libraries(TestBoundaryNormals ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
-# add_test(TestBoundaryNormals TestBoundaryNormals)
+add_executable(TestBoundaryNormals TestBoundaryNormals.cpp)
+target_link_libraries(TestBoundaryNormals ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting Helpers)
+add_test(TestBoundaryNormals TestBoundaryNormals)
 # 
 # add_executable(TestPixelFilterFunctors TestPixelFilterFunctors.cpp)
 # target_link_libraries(TestPixelFilterFunctors ${VTK_LIBRARIES} ${ITK_LIBRARIES})

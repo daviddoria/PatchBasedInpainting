@@ -6,7 +6,6 @@ PriorityCurvature.hpp
 PriorityDepth.h
 PriorityDepth.hxx
 Priority.h
-Priority.hxx
 PriorityImprovedCriminisi.hxx
 PriorityManual.h
 PriorityManual.hxx

@@ -38,13 +38,12 @@
 template <typename TImage>
 PriorityCriminisi<TImage>::PriorityCriminisi(const TImage* const image, const Mask* const maskImage,
                                              const unsigned int patchRadius) :
-  PriorityConfidence(maskImage, patchRadius), Image(image), BlurVariance(2.0f)
+  PriorityConfidence(maskImage, patchRadius), Image(image)
 {
   this->BoundaryNormalsImage = Vector2ImageType::New();
   //ITKHelpers::InitializeImage(this->BoundaryNormalsImage.GetPointer(), image->GetLargestPossibleRegion());
 
-  unsigned int blurVariance = 2;
-  ComputeBoundaryNormals(blurVariance);
+  ComputeBoundaryNormals();
 
   this->IsophoteImage = Vector2ImageType::New();
   ITKHelpers::InitializeImage(this->IsophoteImage.GetPointer(), image->GetLargestPossibleRegion());
@@ -69,20 +68,16 @@ void PriorityCriminisi<TImage>::Update(const TNode& sourceNode, const TNode& tar
   Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage,
                                            this->Image->GetLargestPossibleRegion(), this->IsophoteImage.GetPointer());
 
-  if(this->IsDebugOn())
-  {
-    std::stringstream ss_isophote;
-    ss_isophote << "IsophoteImage_" << patchNumber << ".mha";
-    ITKHelpers::WriteSequentialImage(this->IsophoteImage.GetPointer(), "IsophoteImage", patchNumber, 3, "mha");
-  }
-
-  ComputeBoundaryNormals(this->BlurVariance);
+  ComputeBoundaryNormals();
 
   if(this->IsDebugOn())
   {
     ITKHelpers::WriteSequentialImage(this->BoundaryNormalsImage.GetPointer(), "BoundaryNormals", patchNumber, 3, "mha");
+    ITKHelpers::WriteSequentialImage(this->IsophoteImage.GetPointer(), "IsophoteImage", patchNumber, 3, "mha");
 
-    WriteDataImage(Helpers::GetSequentialFileName("DataImage", patchNumber, "mha", 3));
+    WriteDataImage(patchNumber);
+    WriteBoundaryImage(patchNumber);
+    WritePriorityImage(patchNumber);
   }
 
 }
@@ -120,7 +115,7 @@ float PriorityCriminisi<TImage>::ComputeDataTerm(const itk::Index<2>& queryPixel
 }
 
 template <typename TImage>
-void PriorityCriminisi<TImage>::ComputeBoundaryNormals(const float blurVariance)
+void PriorityCriminisi<TImage>::ComputeBoundaryNormals()
 {
   Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
   boundaryImage->SetRegions(this->Image->GetLargestPossibleRegion());
@@ -128,18 +123,34 @@ void PriorityCriminisi<TImage>::ComputeBoundaryNormals(const float blurVariance)
 
   this->MaskImage->FindBoundary(boundaryImage, Mask::VALID, 255);
   
-  BoundaryNormals boundaryNormals(boundaryImage, this->MaskImage);
+  BoundaryNormals boundaryNormals(this->MaskImage);
 
-  boundaryNormals.ComputeBoundaryNormals(blurVariance, this->BoundaryNormalsImage.GetPointer());
+  boundaryNormals.ComputeBoundaryNormals(0.0f, this->BoundaryNormalsImage.GetPointer()); // 0.0f because we assume the image is already blurred
 }
 
 template <typename TImage>
-void PriorityCriminisi<TImage>::WriteDataImage(const std::string& fileName)
+void PriorityCriminisi<TImage>::WriteBoundaryImage(const unsigned int patchNumber)
+{
+  // This is not used for the algorithm, but just for debugging output.
+
+  Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
+  boundaryImage->SetRegions(this->Image->GetLargestPossibleRegion());
+  boundaryImage->Allocate();
+
+  this->MaskImage->FindBoundary(boundaryImage, Mask::VALID, 255);
+
+  ITKHelpers::WriteImage(boundaryImage.GetPointer(),
+                         Helpers::GetSequentialFileName("BoundaryImage", patchNumber, "mha", 3));
+}
+
+template <typename TImage>
+void PriorityCriminisi<TImage>::WriteDataImage(const unsigned int patchNumber)
 {
   // This is not used for the algorithm, but just for debugging output.
   FloatScalarImageType::Pointer dataImage = FloatScalarImageType::New();
   dataImage->SetRegions(this->Image->GetLargestPossibleRegion());
   dataImage->Allocate();
+  dataImage->FillBuffer(0);
 
   Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
   boundaryImage->SetRegions(this->Image->GetLargestPossibleRegion());
@@ -152,10 +163,38 @@ void PriorityCriminisi<TImage>::WriteDataImage(const std::string& fileName)
 
   for(PixelCollection::const_iterator iter = boundaryPixels.begin(); iter != boundaryPixels.end(); ++iter)
   {
-    dataImage->SetPixel(*iter, ComputePriority(*iter));
+    dataImage->SetPixel(*iter, ComputeDataTerm(*iter));
   }
 
-  ITKHelpers::WriteImage(dataImage.GetPointer(), fileName);
+  ITKHelpers::WriteImage(dataImage.GetPointer(),
+                         Helpers::GetSequentialFileName("DataImage", patchNumber, "mha", 3));
+}
+
+template <typename TImage>
+void PriorityCriminisi<TImage>::WritePriorityImage(const unsigned int patchNumber)
+{
+  // This is not used for the algorithm, but just for debugging output.
+  FloatScalarImageType::Pointer priorityImage = FloatScalarImageType::New();
+  priorityImage->SetRegions(this->Image->GetLargestPossibleRegion());
+  priorityImage->Allocate();
+  priorityImage->FillBuffer(0);
+
+  Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
+  boundaryImage->SetRegions(this->Image->GetLargestPossibleRegion());
+  boundaryImage->Allocate();
+
+  this->MaskImage->FindBoundary(boundaryImage, Mask::VALID, 255);
+
+  typedef std::vector<itk::Index<2> > PixelCollection;
+  PixelCollection boundaryPixels = ITKHelpers::GetNonZeroPixels(boundaryImage.GetPointer());
+
+  for(PixelCollection::const_iterator iter = boundaryPixels.begin(); iter != boundaryPixels.end(); ++iter)
+  {
+    priorityImage->SetPixel(*iter, ComputePriority(*iter));
+  }
+
+  ITKHelpers::WriteImage(priorityImage.GetPointer(),
+                         Helpers::GetSequentialFileName("PriorityImage", patchNumber, "mha", 3));
 }
 
 #endif

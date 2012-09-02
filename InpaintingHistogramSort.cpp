@@ -67,6 +67,7 @@
 // Submodules
 #include <Helpers/Helpers.h>
 #include <ITKVTKHelpers/ITKVTKHelpers.h>
+#include <Mask/MaskOperations.h>
 
 // Boost
 #include <boost/graph/grid_graph.hpp>
@@ -148,9 +149,16 @@ int main(int argc, char *argv[])
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
 
-  typedef ImagePatchPixelDescriptor<OriginalImageType> ImagePatchPixelDescriptorType;
+  // Blur the image
+  OriginalImageType::Pointer blurredImage = OriginalImageType::New();
+  float blurVariance = 2.0f;
+  MaskOperations::MaskedBlur(originalImage, mask, blurVariance, blurredImage.GetPointer());
+
+  ITKHelpers::WriteImage(blurredImage.GetPointer(), "BlurredImage.png");
 
   // Create the graph
+  typedef ImagePatchPixelDescriptor<OriginalImageType> ImagePatchPixelDescriptorType;
+
   typedef boost::grid_graph<2> VertexListGraphType;
   boost::array<std::size_t, 2> graphSideLengths = { { fullRegion.GetSize()[0],
                                                       fullRegion.GetSize()[1] } };

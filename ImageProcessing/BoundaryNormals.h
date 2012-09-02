@@ -23,21 +23,21 @@
 #include <Mask/Mask.h>
 #include <ITKHelpers/ITKHelpers.h>
 
+/** This class computes the boundary normals of a mask at the valid side of the mask boundary. */
 class BoundaryNormals
 {
 public:
-  typedef itk::Image<unsigned char, 2> UnsignedCharScalarImageType;
-  
-  /** Constructor. */
-  BoundaryNormals(const UnsignedCharScalarImageType* const boundaryImage, const Mask* const mask) :
-    BoundaryImage(boundaryImage), MaskImage(mask){}
 
-//  /** Comput the boundary normals. */
+  /** Constructor. */
+  BoundaryNormals(const Mask* const mask) : MaskImage(mask){}
+
+  /** Comput the boundary normals. 'TNormalsImage' should be a type that has an
+    * operator[] for two components (a 2-vector).*/
   template <typename TNormalsImage>
   void ComputeBoundaryNormals(const float blurVariance, TNormalsImage* const boundaryNormals);
 
 private:
-  const UnsignedCharScalarImageType* BoundaryImage;
+
   const Mask* MaskImage;
 };
 

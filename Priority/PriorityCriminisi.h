@@ -26,8 +26,11 @@
 
 /**
 \class PriorityCriminisi
-\brief This class implements Criminisi's priority function. It includes a Data term ontop of
-       the confidence term of PriorityOnionPeel.
+\brief This class implements Criminisi's priority function. It includes a Data term
+       (based on the image gradient (isophotes) and the boundary normals) in addition
+       to the confidence term (implemented in the parent class). It is recommended
+       to blur the image ahead of time and provide the blurred image to this class,
+       and ensure that that image is inpainted throughout the algorithm.
 */
 template <typename TImage>
 class PriorityCriminisi : public PriorityConfidence //, public Debug (this has to be done in the parent class
@@ -49,18 +52,6 @@ public:
 
   using PriorityConfidence::ComputeConfidenceTerm;
 
-  ///////////////////////////////////////////
-  //////////////// New functions   //////////
-  ///////////////////////////////////////////
-
-  /** Get the current data image */
-  void WriteDataImage(const std::string& fileName);
-
-  void SetBlurVariance(const float blurVariance)
-  {
-    this->BlurVariance = blurVariance;
-  }
-
 protected:
 
   typedef PriorityConfidence Superclass;
@@ -69,7 +60,7 @@ protected:
   float ComputeDataTerm(const itk::Index<2>& queryPixel) const;
 
   /** Compute the normals of the hole boundary. */
-  void ComputeBoundaryNormals(const float blurVariance);
+  void ComputeBoundaryNormals();
 
   typedef itk::CovariantVector<float, 2> Vector2Type;
   typedef itk::Image<Vector2Type, 2> Vector2ImageType;
@@ -83,9 +74,15 @@ protected:
   /** A pointer to the image we are inpainting */
   const TImage* Image;
 
-  /** We may want to blur the image before computing the gradients to prevent
-    * them from being extremely noisy. */
-  float BlurVariance;
+  /** Write the current data image. */
+  void WriteDataImage(const unsigned int patchNumber);
+
+  /** Write the current priority image. */
+  void WritePriorityImage(const unsigned int patchNumber);
+
+  /** Write the current boundary image. */
+  void WriteBoundaryImage(const unsigned int patchNumber);
+
 };
 
 #include "PriorityCriminisi.hpp"
