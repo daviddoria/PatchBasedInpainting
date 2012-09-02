@@ -30,15 +30,16 @@
        the confidence term of PriorityOnionPeel.
 */
 template <typename TImage>
-class PriorityCriminisi : public PriorityConfidence, Debug
+class PriorityCriminisi : public PriorityConfidence //, public Debug (this has to be done in the parent class
 {
 public:
 
-  PriorityCriminisi(const TImage* const image, const Mask* const maskImage, const unsigned int patchRadius);
+  PriorityCriminisi(const TImage* const image, const Mask* const maskImage,
+                    const unsigned int patchRadius);
 
-  ///////////////////////////////////////////
-  // Functions reimplemented from Priority //
-  ///////////////////////////////////////////
+  /////////////////////////////////////////////////
+  // Functions to satisfy the Priority interface //
+  /////////////////////////////////////////////////
 
   template <typename TNode>
   float ComputePriority(const TNode& queryPixel) const;
@@ -46,17 +47,19 @@ public:
   template <typename TNode>
   void Update(const TNode& sourceNode, const TNode& targetNode, const unsigned int patchNumber = 0);
 
-//   std::vector<NamedVTKImage> GetNamedImages();
-// 
-//   static std::vector<std::string> GetImageNames();
-
   using PriorityConfidence::ComputeConfidenceTerm;
+
   ///////////////////////////////////////////
   //////////////// New functions   //////////
   ///////////////////////////////////////////
 
   /** Get the current data image */
   void WriteDataImage(const std::string& fileName);
+
+  void SetBlurVariance(const float blurVariance)
+  {
+    this->BlurVariance = blurVariance;
+  }
 
 protected:
 
@@ -77,9 +80,12 @@ protected:
   /** Boundary normals. */
   Vector2ImageType::Pointer BoundaryNormalsImage;
 
-private:
   /** A pointer to the image we are inpainting */
   const TImage* Image;
+
+  /** We may want to blur the image before computing the gradients to prevent
+    * them from being extremely noisy. */
+  float BlurVariance;
 };
 
 #include "PriorityCriminisi.hpp"

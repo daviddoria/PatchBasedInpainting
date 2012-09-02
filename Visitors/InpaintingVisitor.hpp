@@ -168,20 +168,15 @@ public:
     itk::ImageRegion<2> regionToFinish = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, PatchHalfWidth);
 
     regionToFinish.Crop(this->Image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
-    // (because we allow target patches to not be entirely inside the image to handle the case where the hole boundary is near the image boundary)
+    // (because we allow target patches to not be entirely inside the image to handle the case where
+    // the hole boundary is near the image boundary)
 
     // Update the priority function. This must be done BEFORE the mask is filled,
     // as the old mask is required in some of the Priority functors to determine where to update some things.
     this->PriorityFunction->Update(sourceNode, targetNode, this->NumberOfFinishedPatches);
 
     // Mark all the pixels in this region as filled in the mask.
-    itk::ImageRegionIteratorWithIndex<Mask> maskIterator(this->MaskImage, regionToFinish);
-
-    while(!maskIterator.IsAtEnd())
-    {
-      maskIterator.Set(this->MaskImage->GetValidValue());
-      ++maskIterator;
-    }
+    ITKHelpers::SetRegionToConstant(this->MaskImage, regionToFinish, this->MaskImage->GetValidValue());
 
     // Initialize all vertices in the newly filled region because they may now be valid source nodes.
     // (You may not want to do this in some cases (i.e. if the descriptors needed cannot be
@@ -252,10 +247,10 @@ public:
     //               << BoostHelpers::CountValidQueueNodes(BoundaryNodeQueue, BoundaryStatusMap)
     //               << " valid nodes in the queue." << std::endl;
 
-    NumberOfFinishedPatches++;
+    this->NumberOfFinishedPatches++;
 
     std::cout << "Leave InpaintingVisitor::FinishVertex()" << std::endl;
-  } // finish_vertex
+  } // end FinishVertex
 
   void InpaintingComplete() const
   {

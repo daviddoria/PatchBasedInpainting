@@ -29,7 +29,11 @@ void PriorityConfidence::Update(const TNode& sourceNode, const TNode& targetNode
   float value = ComputeConfidenceTerm(targetNode);
   UpdateConfidences(targetNode, value);
 
-//  ITKHelpers::WriteSequentialImage(this->ConfidenceMapImage.GetPointer(), "ConfidenceMap", patchNumber, 3, "mha");
+  if(this->IsDebugOn())
+  {
+    std::cout << "PriorityConfidence::Update() called with patchNumber " << patchNumber << std::endl;
+    ITKHelpers::WriteSequentialImage(this->ConfidenceMapImage.GetPointer(), "ConfidenceMap", patchNumber, 3, "mha");
+  }
 }
 
 template <typename TNode>

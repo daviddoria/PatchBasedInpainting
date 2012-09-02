@@ -38,7 +38,7 @@
 template <typename TImage>
 PriorityCriminisi<TImage>::PriorityCriminisi(const TImage* const image, const Mask* const maskImage,
                                              const unsigned int patchRadius) :
-PriorityConfidence(maskImage, patchRadius), Image(image)
+  PriorityConfidence(maskImage, patchRadius), Image(image), BlurVariance(2.0f)
 {
   this->BoundaryNormalsImage = Vector2ImageType::New();
   //ITKHelpers::InitializeImage(this->BoundaryNormalsImage.GetPointer(), image->GetLargestPossibleRegion());
@@ -58,13 +58,14 @@ template <typename TNode>
 void PriorityCriminisi<TImage>::Update(const TNode& sourceNode, const TNode& targetNode,
                                        const unsigned int patchNumber)
 {
-  Superclass::Update(sourceNode, targetNode);
+  Superclass::Update(sourceNode, targetNode, patchNumber);
 
+  // Compute the isophotes we will need
 //  itk::Index<2> targetIndex = Helpers::ConvertFrom<itk::Index<2>, TNode>(targetNode);
 //  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->PatchRadius);
+//  Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage, region, this->IsophoteImage);
 
   // For debugging, we want to do this over the whole image
-  //Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage, region, this->IsophoteImage);
   Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage,
                                            this->Image->GetLargestPossibleRegion(), this->IsophoteImage.GetPointer());
 
@@ -75,8 +76,7 @@ void PriorityCriminisi<TImage>::Update(const TNode& sourceNode, const TNode& tar
     ITKHelpers::WriteSequentialImage(this->IsophoteImage.GetPointer(), "IsophoteImage", patchNumber, 3, "mha");
   }
 
-  float blurVariance = 2.0f;
-  ComputeBoundaryNormals(blurVariance);
+  ComputeBoundaryNormals(this->BlurVariance);
 
   if(this->IsDebugOn())
   {

@@ -29,7 +29,7 @@
 \brief This class ranks the priority of a patch based on confidence values
        of the pixels it contains.
 */
-class PriorityConfidence
+class PriorityConfidence : public Priority
 {
 public:
 

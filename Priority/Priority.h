@@ -22,28 +22,37 @@
 // ITK
 #include "itkIndex.h"
 
+// Submodules
+#include <Utilities/Debug/Debug.h>
+
 /**
 \class Priority
 \brief This is an abstract class to serve as a parent so that subclasses can be stored as parent pointers in a container.
        E.g. std::vector<Priority*> priorityFunctions
 */
-template <typename TNode>
-class Priority
+class Priority : public Debug
 {
 public:
 
-  // Would prefer this, but the language doesn't allow it:
+  // Would prefer this, but the language doesn't allow virtual function templates:
 //   template <typename TNode>
 //   virtual float ComputePriority(const TNode& queryPixel) = 0;
 // 
 //   template <typename TNode>
 //   virtual void Update(const TNode& filledPixel) = 0;
-//   
-  virtual float ComputePriority(const TNode& queryPixel) = 0;
 
-  virtual void Update(const TNode& filledPixel) = 0;
+  // Instead, we simply provide empty implementations
+  template <typename TNode>
+  float ComputePriority(const TNode& queryPixel)
+  {
+    throw std::runtime_error("Should not call Priority::ComputePriority()!");
+  }
+
+  template <typename TNode>
+  void Update(const TNode& filledPixel)
+  {
+    throw std::runtime_error("Should not call Priority::Update()!");
+  }
 };
-
-#include "Priority.hxx"
 
 #endif

@@ -34,18 +34,18 @@ void PriorityConfidence::InitializeConfidenceMap()
                                                               this->ConfidenceMapImage->GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
-    {
+  {
     if(this->MaskImage->IsHole(imageIterator.GetIndex()))
-      {
+    {
       imageIterator.Set(0.0f);
-      }
+    }
     else if(this->MaskImage->IsValid(imageIterator.GetIndex()))
-      {
+    {
       imageIterator.Set(1.0f);
-      }
+    }
 
     ++imageIterator;
-    }
+  }
 
 //   ITKHelpers::WriteImage(ConfidenceMapImage.GetPointer(), "ConfidenceMapInitial.mha");
 //   ITKHelpers::WriteScaledScalarImage(ConfidenceMapImage.GetPointer(), "ConfidenceMapInitial.png");
