@@ -128,6 +128,7 @@ int main(int argc, char *argv[])
   imageReader->Update();
 
   OriginalImageType* originalImage = imageReader->GetOutput();
+  ITKHelpers::WriteRGBImage(originalImage, "OriginalImage.png");
 
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
 
@@ -145,16 +146,18 @@ int main(int argc, char *argv[])
   // Read the mask
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFileName);
+  ITKHelpers::WriteImage(mask.GetPointer(), "Mask.mha");
 
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
 
   // Blur the image
-  OriginalImageType::Pointer blurredImage = OriginalImageType::New();
+  typedef OriginalImageType BlurredImageType; // Usually the blurred image is the same type as the original image.
+  BlurredImageType::Pointer blurredImage = BlurredImageType::New();
   float blurVariance = 2.0f;
   MaskOperations::MaskedBlur(originalImage, mask, blurVariance, blurredImage.GetPointer());
-
-  ITKHelpers::WriteImage(blurredImage.GetPointer(), "BlurredImage.png");
+  ITKHelpers::WriteImage(blurredImage.GetPointer(), "BlurredImage.mha");
+  ITKHelpers::WriteRGBImage(blurredImage.GetPointer(), "BlurredImage.png");
 
   // Create the graph
   typedef ImagePatchPixelDescriptor<OriginalImageType> ImagePatchPixelDescriptorType;
@@ -185,26 +188,37 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<ImagePatchPixelDescriptorType, IndexMapType> ImagePatchDescriptorMapType;
   ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
 
-  // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
+  // Create the patch inpainter.
   typedef PatchInpainter<OriginalImageType> OriginalImageInpainterType;
   OriginalImageInpainterType originalImagePatchInpainter(patchHalfWidth, originalImage, mask);
   originalImagePatchInpainter.SetDebugImages(true);
   originalImagePatchInpainter.SetImageName("RGB");
 
+  // Create an inpainter for the HSV image.
   typedef PatchInpainter<HSVImageType> HSVImageInpainterType;
   HSVImageInpainterType hsvImagePatchInpainter(patchHalfWidth, hsvImage, mask);
 
+  // Create an inpainter for the blurred image.
+  typedef PatchInpainter<BlurredImageType> BlurredImageInpainterType;
+  BlurredImageInpainterType blurredImagePatchInpainter(patchHalfWidth, blurredImage, mask);
+
+  // Create a composite inpainter.
   CompositePatchInpainter inpainter;
   inpainter.AddInpainter(&originalImagePatchInpainter);
   inpainter.AddInpainter(&hsvImagePatchInpainter);
+  inpainter.AddInpainter(&blurredImagePatchInpainter);
 
   // Create the priority function
 //  typedef PriorityRandom PriorityType;
 //  bool random = false;
 //  PriorityType priorityFunction(random);
 
-  typedef PriorityCriminisi<OriginalImageType> PriorityType;
-  PriorityType priorityFunction(originalImage, mask, patchHalfWidth);
+//  typedef PriorityCriminisi<OriginalImageType> PriorityType;
+//  PriorityType priorityFunction(originalImage, mask, patchHalfWidth);
+//  priorityFunction.SetDebugLevel(1);
+
+  typedef PriorityCriminisi<BlurredImageType> PriorityType;
+  PriorityType priorityFunction(blurredImage, mask, patchHalfWidth);
   priorityFunction.SetDebugLevel(1);
 
 //  typedef PriorityConfidence PriorityType;
