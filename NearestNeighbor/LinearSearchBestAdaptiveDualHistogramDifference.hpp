@@ -187,6 +187,11 @@ public:
 
     this->Iteration++;
 
+//    if(this->Iteration == 50)
+//    {
+//      throw std::runtime_error("Quit at iteration 50 for profiling speed purposes.");
+//    }
+
     return *bestPatch;
   }
 

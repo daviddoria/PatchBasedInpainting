@@ -67,12 +67,12 @@ public:
   OutputIteratorType operator()(ForwardIteratorType first,
                                 ForwardIteratorType last,
                                 typename ForwardIteratorType::value_type queryNode,
-                                OutputIteratorType output_first)
+                                OutputIteratorType outputFirst)
   {
     // Nothing to do if the input range is empty
     if(first == last)
     {
-      return output_first;
+      return outputFirst;
     }
 
     // Use a priority queue to keep the items sorted
@@ -80,38 +80,69 @@ public:
     typedef std::pair<DistanceValueType, ForwardIteratorType> PairType;
     typedef std::priority_queue< PairType,
         std::vector<PairType>,
-        compare_pair_first<DistanceValueType, ForwardIteratorType, std::less<DistanceValueType> > > PriorityQueueType;
+        compare_pair_first<DistanceValueType, ForwardIteratorType, std::greater<DistanceValueType> > > PriorityQueueType;
 
-    PriorityQueueType output_queue;
+    PriorityQueueType outputQueue;
+
+    typename PropertyMapType::value_type queryPatch = get(PropertyMap, queryNode);
 
     // The queue stores the items in descending score order.
-    for(; first != last; ++first)
+    for(ForwardIteratorType current = first; current != last; ++current)
     {
-      DistanceValueType d = DistanceFunction(get(PropertyMap, *first), get(PropertyMap, queryNode)); // (source, target) (the query node is the target node)
-      if(d == std::numeric_limits<float>::infinity())
-      {
-        continue;
-      }
+      DistanceValueType d = DistanceFunction(get(PropertyMap, *current), queryPatch); // (source, target) (the query node is the target node)
 
-      output_queue.push(PairType(d, first));
-
-      // Since the queue stores the items in descending score order, we can pop from the top to remove the worst matches
-      while(output_queue.size() > this->K)
-      {
-        output_queue.pop();
-      }
-
+      outputQueue.push(PairType(d, current));
     }
 
-    if(output_queue.size() < this->K)
+//    std::cout << "There are " << outputQueue.size() << " items in the queue." << std::endl;
+
+    // Keep only the best K matches
+    Helpers::KeepTopN(outputQueue, this->K);
+
+//    std::cout << "There are " << outputQueue.size() << " items in the queue." << std::endl;
+
+    // Check if any of the matches are infinity (indicating they were invalid for some reason)
+    auto hasInfinity = [] (PriorityQueueType q)
+      {
+        while(!q.empty())
+        {
+          if(q.top().first == std::numeric_limits<float>::infinity())
+          {
+            return true;
+          }
+          q.pop();
+        }
+
+        return false;
+      };
+
+    assert(!hasInfinity(outputQueue));
+//    if(hasInfinity(outputQueue))
+//    {
+//      std::stringstream ss;
+//      ss << "LinearSearchKNNProperty::operator(): One of the matches had a score of infinity!";
+//      throw std::runtime_error(ss.str());
+//    }
+
+    if(outputQueue.size() < this->K)
     {
       std::stringstream ss;
-      ss << "Requested " << this->K << " items but only found " << output_queue.size();
+      ss << "Requested " << this->K << " items but only found " << outputQueue.size();
       throw std::runtime_error(ss.str());
     }
 
+    // Copy the best matches from the queue into the output
+    OutputIteratorType currentOutputIterator = outputFirst;
+    while( !outputQueue.empty() )
+    {
+      *currentOutputIterator = *(outputQueue.top().second);
+      outputQueue.pop();
+      ++currentOutputIterator;
+    }
+
+    return currentOutputIterator;
     // Since the queue stores the items in descending score order, we have to reverse the queue using this function to get the matches in the desired order.
-    return copy_neighbors_from_queue<PriorityQueueType, OutputIteratorType>(output_queue, output_first);
+//    return copy_neighbors_from_queue<PriorityQueueType, OutputIteratorType>(outputQueue, outputFirst);
   }
 
   template <typename T1, typename T2, typename Compare>

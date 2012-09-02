@@ -1,3 +1,21 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef ImagePatchDifference_hpp
 #define ImagePatchDifference_hpp
 
@@ -45,10 +63,22 @@ struct ImagePatchDifference
     typedef std::vector<itk::Offset<2> > OffsetVectorType;
     const OffsetVectorType* validOffsets = targetPatch.GetValidOffsetsAddress();
 
-    for(OffsetVectorType::const_iterator iter = validOffsets->begin(); iter < validOffsets->end(); ++iter)
+    typedef std::vector<typename ImagePatchType::ImageType::PixelType> TargetPixelsContainerType;
+    TargetPixelsContainerType targetPatchPixels(validOffsets->size());
+
+    OffsetVectorType::const_iterator offsetIterator = validOffsets->begin();
+    typename TargetPixelsContainerType::iterator targetPixelsIterator = targetPatchPixels.begin();
+    for(; offsetIterator < validOffsets->end(); ++offsetIterator, ++targetPixelsIterator)
     {
-      float difference = this->PixelDifferenceFunctor(image->GetPixel(sourcePatch.GetCorner() + *iter),
-                                                      image->GetPixel(targetPatch.GetCorner() + *iter));
+      *targetPixelsIterator = image->GetPixel(targetPatch.GetCorner() + *offsetIterator);
+    }
+
+    offsetIterator = validOffsets->begin();
+    targetPixelsIterator = targetPatchPixels.begin();
+    for(; offsetIterator < validOffsets->end(); ++offsetIterator, ++targetPixelsIterator)
+    {
+      float difference = this->PixelDifferenceFunctor(image->GetPixel(sourcePatch.GetCorner() + *offsetIterator),
+                                                     *targetPixelsIterator);
       totalDifference += difference;
     }
     totalDifference = totalDifference / static_cast<float>(validOffsets->size());

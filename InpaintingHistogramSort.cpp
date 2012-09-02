@@ -119,6 +119,7 @@ int main(int argc, char *argv[])
   // typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> OriginalImageType; // This doesn't allow for direct "a - b" pixel comparisons, because (100 - 150) or similar will underflow!
   // typedef itk::Image<itk::CovariantVector<float, 3>, 2> OriginalImageType; // This is quite slow
   typedef itk::Image<itk::CovariantVector<int, 3>, 2> OriginalImageType;
+//  typedef itk::Image<itk::CovariantVector<short, 3>, 2> OriginalImageType; // Can't use this (signed range: -32768 to 32767 (not high enough, needs to handle 255*255 = 65025) )
 
   typedef  itk::ImageFileReader<OriginalImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
