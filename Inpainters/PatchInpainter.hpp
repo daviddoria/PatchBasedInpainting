@@ -76,34 +76,26 @@ public:
 
 //    std::cout << "PatchInpainter: Mask size: " << this->MaskImage->GetLargestPossibleRegion().GetSize() << std::endl;
 
-    // Compute the corners of the patches from their centers and the PatchHalfWidth
-    itk::Index<2> targetPatchCorner;
-    targetPatchCorner[0] = targetCenter[0] - this->PatchHalfWidth;
-    targetPatchCorner[1] = targetCenter[1] - this->PatchHalfWidth;
+    itk::ImageRegion<2> targetRegion =
+        ITKHelpers::GetRegionInRadiusAroundPixel(targetCenter, this->PatchHalfWidth);
+    itk::ImageRegion<2> sourceRegion =
+        ITKHelpers::GetRegionInRadiusAroundPixel(sourceCenter, this->PatchHalfWidth);
 
-    itk::Index<2> sourcePatchCorner;
-    sourcePatchCorner[0] = sourceCenter[0] - this->PatchHalfWidth;
-    sourcePatchCorner[1] = sourceCenter[1] - this->PatchHalfWidth;
+    // Iterate over all pixels in the target patch
+    targetRegion.Crop(this->Image->GetLargestPossibleRegion());
 
-    // Iterate over all pixels in the patch
-    itk::Index<2> targetNode;
-    itk::Index<2> sourceNode;
-    for(std::size_t i = 0; i < this->PatchHalfWidth * 2 + 1; ++i)
+    itk::ImageRegionConstIteratorWithIndex<TImage> targetIterator(this->Image, targetRegion);
+
+    while(!targetIterator.IsAtEnd())
     {
-      for(std::size_t j = 0; j < this->PatchHalfWidth * 2 + 1; ++j)
+      itk::Offset<2> offset = targetIterator.GetIndex() - targetRegion.GetIndex();
+      itk::Index<2> sourcePixel = sourceRegion.GetIndex() + offset;
+      // Only paint the pixel if it is currently a hole
+      if( this->MaskImage->IsHole(targetIterator.GetIndex()) )
       {
-        targetNode[0] = targetPatchCorner[0] + i;
-        targetNode[1] = targetPatchCorner[1] + j;
-
-        sourceNode[0] = sourcePatchCorner[0] + i;
-        sourceNode[1] = sourcePatchCorner[1] + j;
-
-        // Only paint the pixel if it is currently a hole
-        if( this->MaskImage->IsHole(targetNode) )
-        {
-          PaintVertex(targetNode, sourceNode);
-        }
+        PaintVertex(targetIterator.GetIndex(), sourcePixel);
       }
+      ++targetIterator;
     }
 
     if(this->DebugImages)
