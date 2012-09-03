@@ -167,9 +167,10 @@ public:
 
     itk::ImageRegion<2> regionToFinish = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, PatchHalfWidth);
 
-    regionToFinish.Crop(this->Image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image
+    // Make sure the region is entirely inside the image
     // (because we allow target patches to not be entirely inside the image to handle the case where
     // the hole boundary is near the image boundary)
+    regionToFinish.Crop(this->Image->GetLargestPossibleRegion());
 
     // Update the priority function. This must be done BEFORE the mask is filled,
     // as the old mask is required in some of the Priority functors to determine where to update some things.
@@ -229,6 +230,31 @@ public:
     
     // Sometimes pixels that are not in the finishing region that were boundary pixels are no longer
     // boundary pixels after the filling. Check for these.
+    // E.g. (H=hole, B=boundary, V=valid, Q=query, F=filled, N=new boundary,
+    // R=old boundary pixel that needs to be removed because it is no longer on the boundary)
+    // Before filling
+
+    /* V V V B H H H H
+     * V V V B H H H H
+     * V V V B H H H H
+     * V V V B B Q B B
+     * V V V V V V V V
+     */
+    // After filling
+
+    /* V V V B H H H H
+     * V V V B H H H H
+     * V V V B F F F H
+     * V V V B F F F B
+     * V V V V F F F V
+     */
+    // New boundary
+    /* V V V B H H H H
+     * V V V B H H H H
+     * V V V B N N N H
+     * V V V R F F N B
+     * V V V V F F F V
+     */
 
     // Expand the region
     itk::ImageRegion<2> expandedRegion = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, PatchHalfWidth + 1);
