@@ -87,7 +87,7 @@ template <typename TNode>
 float PriorityCriminisi<TImage>::ComputePriority(const TNode& queryPixel) const
 {
   //std::cout << "PriorityCriminisi::ComputePriority()" << std::endl;
-  float confidenceTerm = ComputeConfidenceTerm(queryPixel);
+  float confidenceTerm = Superclass::ComputeConfidenceTerm(queryPixel);
   float dataTerm = ComputeDataTerm(queryPixel);
 
   float priority = confidenceTerm * dataTerm;

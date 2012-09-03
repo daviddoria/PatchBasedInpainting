@@ -6,3 +6,14 @@ if(NOT TARGET Histogram)
   add_subdirectory(Histogram)
   include_directories(${Histogram_includes})
 endif()
+
+add_custom_target(UtilitiesSources SOURCES
+itkCommandLineArgumentParser.h
+ParallelSort.h
+ParallelSort.hxx
+PatchHelpers.h
+PatchHelpers.hpp
+RotateVectors.h
+TypeTraits.h
+Utilities.hpp
+)

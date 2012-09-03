@@ -31,7 +31,6 @@ void PriorityConfidence::Update(const TNode& sourceNode, const TNode& targetNode
 
   if(this->IsDebugOn())
   {
-    std::cout << "PriorityConfidence::Update() called with patchNumber " << patchNumber << std::endl;
     ITKHelpers::WriteSequentialImage(this->ConfidenceMapImage.GetPointer(), "ConfidenceMap", patchNumber, 3, "mha");
   }
 }
@@ -54,26 +53,40 @@ void PriorityConfidence::UpdateConfidences(const TNode& targetNode, const float 
   // Force the region to update to be entirely inside the image
   region.Crop(this->MaskImage->GetLargestPossibleRegion());
 
-  // Set the hole pixels in the region to 'value'.
-  itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, region);
+  // Set the hole pixels in the region to 'value'. Since this is sensitive to when we inpaint the mask (before or after this function)
+  // we instead use the technique below.
+//  itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, region);
 
-  while(!maskIterator.IsAtEnd())
+//  while(!maskIterator.IsAtEnd())
+//  {
+//    if(maskIterator.Get() == this->MaskImage->GetHoleValue()) // avoid the GetPixel call in the above line.
+//    {
+//      this->ConfidenceMapImage->SetPixel(maskIterator.GetIndex(), value);
+//      // std::cout << "Set " << maskIterator.GetIndex() << " to " << value << std::endl;
+//    }
+//    ++maskIterator;
+//  }
+
+  // Set the pixels which currently have a confidence of zero in the region to 'value'.
+  itk::ImageRegionIterator<ConfidenceImageType> confidenceImageIterator(this->ConfidenceMapImage, region);
+
+  while(!confidenceImageIterator.IsAtEnd())
   {
-    //if(this->MaskImage->IsHole(maskIterator.GetIndex()))
-    if(maskIterator.Get() == this->MaskImage->GetHoleValue()) // avoid the GetPixel call in the above line.
+    if(confidenceImageIterator.Get() == 0.0f)
     {
-      this->ConfidenceMapImage->SetPixel(maskIterator.GetIndex(), value);
+      confidenceImageIterator.Set(value);
       // std::cout << "Set " << maskIterator.GetIndex() << " to " << value << std::endl;
     }
-
-    ++maskIterator;
-  } // end while loop with iterator
+    ++confidenceImageIterator;
+  }
 
 }
 
 template <typename TNode>
 float PriorityConfidence::ComputeConfidenceTerm(const TNode& queryNode) const
 {
+  // Sum the confidence map values in the valid region
+
   itk::Index<2> queryPixel = ITKHelpers::CreateIndex(queryNode);
 
   itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius);
@@ -91,14 +104,17 @@ float PriorityConfidence::ComputeConfidenceTerm(const TNode& queryNode) const
 
   while(!maskIterator.IsAtEnd())
   {
-    //if(this->MaskImage->IsValid(maskIterator.GetIndex()))
     if(maskIterator.Get() == this->MaskImage->GetValidValue())
     {
-//      sum += this->ConfidenceMapImage->GetPixel(maskIterator.GetIndex());
       sum += confidenceImageIterator.Get();
     }
     ++confidenceImageIterator;
     ++maskIterator;
+  }
+
+  if(sum == 0.0f)
+  {
+    throw std::runtime_error("Confidence is zero!");
   }
 
   unsigned int numberOfPixels = region.GetNumberOfPixels();

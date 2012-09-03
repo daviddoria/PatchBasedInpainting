@@ -129,6 +129,7 @@ int main(int argc, char *argv[])
 
   OriginalImageType* originalImage = imageReader->GetOutput();
   ITKHelpers::WriteRGBImage(originalImage, "OriginalImage.png");
+  ITKHelpers::WriteImage(originalImage, "OriginalImage.mha");
 
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
 

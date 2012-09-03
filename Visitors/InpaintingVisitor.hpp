@@ -96,6 +96,11 @@ class InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
 public:
 
+  TImage* GetImage()
+  {
+    return this->Image;
+  }
+
   void SetDebugImages(const bool debugImages)
   {
     this->DebugImages = debugImages;
@@ -139,7 +144,6 @@ public:
       throw std::runtime_error(ss.str());
     }
 
-    //if(!this->MaskImage->HasHoleNeighborInRegion(ITKHelpers::CreateIndex(target), this->MaskImage->GetLargestPossibleRegion()))
     if(!this->MaskImage->HasHoleNeighbor(ITKHelpers::CreateIndex(target)))
     {
       std::stringstream ss;
@@ -172,14 +176,15 @@ public:
     // the hole boundary is near the image boundary)
     regionToFinish.Crop(this->Image->GetLargestPossibleRegion());
 
-    // Update the priority function. This must be done BEFORE the mask is filled,
-    // as the old mask is required in some of the Priority functors to determine where to update some things.
-    this->PriorityFunction->Update(sourceNode, targetNode, this->NumberOfFinishedPatches);
-
     // Mark all the pixels in this region as filled in the mask.
     ITKHelpers::SetRegionToConstant(this->MaskImage, regionToFinish, this->MaskImage->GetValidValue());
 
-    // Initialize all vertices in the newly filled region because they may now be valid source nodes.
+    // Update the priority function. This must be done AFTER the mask is filled,
+    // as some of the Priority functors only compute things on the hole boundary, or only
+    // use data from the valid region of the image (indicated by valid pixels in the mask).
+    this->PriorityFunction->Update(sourceNode, targetNode, this->NumberOfFinishedPatches);
+
+    // Initialize (if requested) all vertices in the newly filled region because they may now be valid source nodes.
     // (You may not want to do this in some cases (i.e. if the descriptors needed cannot be
     // computed on newly filled regions))
 
@@ -202,13 +207,10 @@ public:
     {
       VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(imageIterator.GetIndex());
 
-      // This makes them ignored if they are still in the boundaryNodeQueue.
-      //if(this->MaskImage->HasHoleNeighborInRegion(imageIterator.GetIndex(), this->MaskImage->GetLargestPossibleRegion()))
       if(this->MaskImage->HasHoleNeighbor(imageIterator.GetIndex()))
       {
-        // Note: must set the value in the priority map before pushing the node
-        // into the queue (as the priority is what
-        // determines the node's position in the queue).
+        // Note: we must set the value in the priority map before pushing the node
+        // into the queue (as the priority is what determines the node's position in the queue).
         float priority = this->PriorityFunction->ComputePriority(imageIterator.GetIndex());
         //std::cout << "updated priority: " << priority << std::endl;
         put(this->PriorityMap, v, priority);
@@ -218,6 +220,7 @@ public:
       }
       else
       {
+        // This makes a patch ignored if it is still in the boundaryNodeQueue.
         put(this->BoundaryStatusMap, v, false);
       }
 
@@ -258,11 +261,13 @@ public:
 
     // Expand the region
     itk::ImageRegion<2> expandedRegion = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, PatchHalfWidth + 1);
-    expandedRegion.Crop(this->Image->GetLargestPossibleRegion()); // Make sure the region is entirely inside the image (to allow for target regions near the image boundary)
+    // Make sure the region is entirely inside the image (to allow for target regions near the image boundary)
+    expandedRegion.Crop(this->Image->GetLargestPossibleRegion());
     std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetBoundaryPixels(expandedRegion);
     for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
     {
-      if(!this->MaskImage->HasHoleNeighbor(boundaryPixels[i])) // the region (the entire image) can be omitted, as this function automatically checks if the pixels are inside the image
+      // the region (the entire image) can be omitted, as this function automatically checks if the pixels are inside the image
+      if(!this->MaskImage->HasHoleNeighbor(boundaryPixels[i]))
       {
         VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(boundaryPixels[i]);
         put(this->BoundaryStatusMap, v, false);

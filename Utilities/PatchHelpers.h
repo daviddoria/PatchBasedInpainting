@@ -10,6 +10,10 @@
 namespace PatchHelpers
 {
 
+////////////// Non template functions //////////////
+bool CheckSurroundingRegionsOfAllHolePixels(const Mask* const mask, const unsigned int patchRadius);
+
+////////////// Template functions //////////////
 template <typename TImage>
 QImage GetQImageCombinedPatch(const TImage* const image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion, const Mask* const mask);
 
@@ -25,7 +29,18 @@ void CopyPatchIntoImage(const TImage* const patch, TImage* const image, const Ma
 template <class TImage>
 void CopyPatchIntoImage(const TImage* patch, TImage* const image, const itk::Index<2>& centerPixel);
 
-bool CheckSurroundingRegionsOfAllHolePixels(const Mask* const mask, const unsigned int patchRadius);
+template <class TPriorityQueue>
+void WritePriorityQueue(TPriorityQueue q, const std::string& fileName);
+
+/** Write an image of the priorities at the pixels that are valid in the propertyMap */
+template <typename TNodeQueue, typename TPropertyMap>
+void WriteValidQueueNodesPrioritiesImage(TNodeQueue nodeQueue, const TPropertyMap propertyMap,
+                                         const itk::ImageRegion<2>& fullRegion, const std::string& fileName);
+
+/** Write an image of the priorities at the pixels that are valid in the propertyMap */
+template <typename TNodeQueue, typename TPropertyMap>
+void WriteValidQueueNodesLocationsImage(TNodeQueue nodeQueue, const TPropertyMap propertyMap,
+                                       const itk::ImageRegion<2>& fullRegion, const std::string& fileName);
 
 }
 

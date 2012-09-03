@@ -16,6 +16,72 @@
 namespace PatchHelpers
 {
 
+template <typename TNodeQueue, typename TPropertyMap>
+void WriteValidQueueNodesLocationsImage(TNodeQueue nodeQueue, const TPropertyMap propertyMap,
+                                       const itk::ImageRegion<2>& fullRegion, const std::string& fileName)
+{
+  typedef itk::Image<unsigned char, 2> ImageType;
+  ImageType::Pointer image = ImageType::New();
+  image->SetRegions(fullRegion);
+  image->Allocate();
+  image->FillBuffer(0);
+
+  while(!nodeQueue.empty())
+  {
+    typename TNodeQueue::value_type queuedNode = nodeQueue.top();
+
+    bool valid = get(propertyMap, queuedNode);
+    if(valid)
+    {
+      itk::Index<2> index = Helpers::ConvertFrom<itk::Index<2>, typename TNodeQueue::value_type>(queuedNode);
+      image->SetPixel(index, 255);
+    }
+
+    nodeQueue.pop();
+  }
+
+  ITKHelpers::WriteImage(image.GetPointer(), fileName);
+}
+
+template <typename TNodeQueue, typename TPropertyMap>
+void WriteValidQueueNodesPrioritiesImage(TNodeQueue nodeQueue, const TPropertyMap propertyMap,
+                                         const itk::ImageRegion<2>& fullRegion, const std::string& fileName)
+{
+  typedef itk::Image<float, 2> ImageType;
+  ImageType::Pointer image = ImageType::New();
+  image->SetRegions(fullRegion);
+  image->Allocate();
+  image->FillBuffer(0);
+
+  while(!nodeQueue.empty())
+  {
+    typename TNodeQueue::value_type queuedNode = nodeQueue.top();
+
+    bool valid = get(propertyMap, queuedNode);
+    if(valid)
+    {
+      itk::Index<2> index = Helpers::ConvertFrom<itk::Index<2>, typename TNodeQueue::value_type>(queuedNode);
+      image->SetPixel(index, get(nodeQueue.keys(), queuedNode));
+    }
+
+    nodeQueue.pop();
+  }
+
+  ITKHelpers::WriteImage(image.GetPointer(), fileName);
+}
+
+template <class TPriorityQueue>
+void WritePriorityQueue(TPriorityQueue q, const std::string& fileName)
+{
+  std::ofstream fout(fileName.c_str());
+
+  while(!q.empty())
+  {
+    float priority = get(q.keys(), q.top());
+    fout << priority << std::endl;
+    q.pop();
+  }
+}
 
 template <typename TImage>
 QImage GetQImageCombinedPatch(const TImage* const image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion, const Mask* const mask)

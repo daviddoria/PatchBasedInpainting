@@ -65,6 +65,7 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
 //             << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
 //             << " valid nodes in the queue." << std::endl;
 
+  unsigned int iteration = 0;
   while(true) 
   {
     // Find the next target to in-paint. Some of the nodes in the queue
@@ -135,6 +136,16 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
 //     std::cout << "At the end of the iteration there are "
 //               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
 //               << " valid nodes in the queue." << std::endl;
+
+    PatchHelpers::WriteValidQueueNodesPrioritiesImage(*boundaryNodeQueue, *boundaryStatusMap,
+                                              vis.GetImage()->GetLargestPossibleRegion(),
+                                              Helpers::GetSequentialFileName("QueueImagePriorities", iteration, "mha", 3));
+
+//    PatchHelpers::WriteValidQueueNodesLocationsImage(*boundaryNodeQueue, *boundaryStatusMap,
+//                                              vis.GetImage()->GetLargestPossibleRegion(),
+//                                              Helpers::GetSequentialFileName("QueueImageLocations", iteration, "mha", 3));
+
+    iteration++;
   } // end main iteration loop
 
 }
