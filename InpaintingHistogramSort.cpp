@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
   BlurredImageType::Pointer blurredImage = BlurredImageType::New();
   float blurVariance = 2.0f;
   MaskOperations::MaskedBlur(originalImage, mask, blurVariance, blurredImage.GetPointer());
-  ITKHelpers::WriteImage(blurredImage.GetPointer(), "BlurredImage.mha");
+
   ITKHelpers::WriteRGBImage(blurredImage.GetPointer(), "BlurredImage.png");
 
   // Create the graph
@@ -228,19 +228,23 @@ int main(int argc, char *argv[])
   typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;
   IndexInHeapMap index_in_heap(indexMap);
 
-  // Create the priority compare functor (we want to use the highest priority pixels first, so the std::greater functor sorts the queue
+  // Create the priority compare functor (we want to use the highest priority pixels first,
+  // so the std::greater functor sorts the queue
   // such that the highest values (highest priorities) are first in the queue)
   typedef std::greater<float> PriorityCompareType;
   PriorityCompareType queueSortFunctor;
 
-  typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType>
+  typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap,
+                                     PriorityMapType, PriorityCompareType>
       BoundaryNodeQueueType;
   BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, queueSortFunctor);
 
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, OriginalImageType, ImagePatchDescriptorMapType>
       ImagePatchDescriptorVisitorType;
-  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(originalImage, mask, imagePatchDescriptorMap, patchHalfWidth);
+  ImagePatchDescriptorVisitorType
+      imagePatchDescriptorVisitor(originalImage, mask,
+                                  imagePatchDescriptorMap, patchHalfWidth);
 
   typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
   AcceptanceVisitorType acceptanceVisitor;
@@ -251,7 +255,8 @@ int main(int argc, char *argv[])
       PriorityMapType, BoundaryStatusMapType>
       InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(originalImage, mask, boundaryNodeQueue,
-                                          imagePatchDescriptorVisitor, acceptanceVisitor, priorityMap,
+                                          imagePatchDescriptorVisitor, acceptanceVisitor,
+                                          priorityMap,
                                           &priorityFunction, patchHalfWidth,
                                           boundaryStatusMap, outputFileName);
   inpaintingVisitor.SetDebugImages(true);
@@ -276,10 +281,11 @@ int main(int argc, char *argv[])
   // This is templated on OriginalImageType because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
   //typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType, OriginalImageType> BestSearchType;
 //  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexIteratorType, OriginalImageType> BestSearchType;
-//    typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
+//  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 //  typedef LinearSearchBestHoleHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 //  typedef LinearSearchBestDualHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
-  typedef LinearSearchBestAdaptiveDualHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
+  typedef LinearSearchBestAdaptiveDualHistogramDifference<ImagePatchDescriptorMapType,
+            HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 
   BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
   linearSearchBest.SetNumberOfBinsPerDimension(binsPerChannel);
@@ -288,10 +294,12 @@ int main(int argc, char *argv[])
   linearSearchBest.SetRangeMax(1.0f);
   linearSearchBest.SetWriteDebugPatches(true, originalImage);
 
-  TwoStepNearestNeighbor<KNNSearchType, BestSearchType> twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
+  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
+      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
   // Perform the inpainting
-  InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, twoStepNearestNeighbor, &inpainter);
+  InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue,
+                      twoStepNearestNeighbor, &inpainter);
 
   // If the output filename is a png file, then use the RGBImage writer so that it is first
   // casted to unsigned char. Otherwise, write the file directly.

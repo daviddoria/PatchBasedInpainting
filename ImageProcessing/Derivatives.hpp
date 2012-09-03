@@ -34,7 +34,8 @@ namespace Derivatives
 {
 
 template <typename TImage, typename TGradientImage>
-void MaskedDerivative(const TImage* const image, const Mask* const mask, const unsigned int direction, TGradientImage* const output)
+void MaskedDerivative(const TImage* const image, const Mask* const mask,
+                      const unsigned int direction, TGradientImage* const output)
 {
   // Setup the output
   output->SetRegions(image->GetLargestPossibleRegion());
@@ -97,7 +98,8 @@ void MaskedDerivative(const TImage* const image, const Mask* const mask, const u
 
 
 template <typename TImage, typename TGradientImage>
-void MaskedDerivativePrewitt(const TImage* const image, const Mask* const mask, const unsigned int direction, TGradientImage* const output)
+void MaskedDerivativePrewitt(const TImage* const image, const Mask* const mask,
+                             const unsigned int direction, TGradientImage* const output)
 {
   if(direction > 1)
     {
@@ -195,7 +197,8 @@ void MaskedDerivativePrewitt(const TImage* const image, const Mask* const mask, 
 
 
 template <typename TImage, typename TScalarImage>
-void MaskedDerivativeSobel(const TImage* const image, const Mask* const mask, const unsigned int direction, TScalarImage* const output)
+void MaskedDerivativeSobel(const TImage* const image, const Mask* const mask,
+                           const unsigned int direction, TScalarImage* const output)
 {
   if(direction > 1)
     {
@@ -424,18 +427,20 @@ void MaskedDerivativeGaussianInRegion(const TImage* const image, const Mask* con
 }
 
 template <typename TImage, typename TScalarImage>
-void MaskedDerivativeGaussian(const TImage* const image, const Mask* const mask, const unsigned int direction, TScalarImage* const output)
+void MaskedDerivativeGaussian(const TImage* const image, const Mask* const mask,
+                              const unsigned int direction, TScalarImage* const output)
 {
   MaskedDerivativeGaussianInRegion(image, mask, direction, image->GetLargestPossibleRegion(), output);
 }
 
 template <typename TImage, typename TGradientImage>
-void MaskedGradientInRegion(const TImage* const image, const Mask* const mask, const itk::ImageRegion<2>& region, TGradientImage* const output)
+void MaskedGradientInRegion(const TImage* const image, const Mask* const mask,
+                            const itk::ImageRegion<2>& region, TGradientImage* const output)
 {
   // Compute the derivatives
   // X derivative
   FloatScalarImageType::Pointer xDerivative = FloatScalarImageType::New();
-  ITKHelpers::InitializeImage<FloatScalarImageType>(xDerivative, image->GetLargestPossibleRegion());
+  ITKHelpers::InitializeImage(xDerivative.GetPointer(), image->GetLargestPossibleRegion());
 
   //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 0, xDerivative);
   //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 0, xDerivative);
@@ -445,7 +450,7 @@ void MaskedGradientInRegion(const TImage* const image, const Mask* const mask, c
 
   // Y derivative
   FloatScalarImageType::Pointer yDerivative = FloatScalarImageType::New();
-  ITKHelpers::InitializeImage<FloatScalarImageType>(yDerivative, image->GetLargestPossibleRegion());
+  ITKHelpers::InitializeImage(yDerivative.GetPointer(), image->GetLargestPossibleRegion());
 
   //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 1, yDerivative);
   //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 1, yDerivative);

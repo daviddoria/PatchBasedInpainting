@@ -118,6 +118,7 @@ template <typename TImage>
 void PriorityCriminisi<TImage>::ComputeBoundaryNormals()
 {
   BoundaryNormals boundaryNormals(this->MaskImage);
+  boundaryNormals.SetDebugLevel(1);
 
   boundaryNormals.ComputeBoundaryNormals(this->BoundaryNormalsImage.GetPointer());
 }

@@ -30,7 +30,7 @@
 #include <ITKHelpers/ITKHelpers.h>
 
 template <typename TNormalsImage>
-void BoundaryNormals::ComputeBoundaryNormals(TNormalsImage* const boundaryNormalsImage, const float blurVariance)
+void BoundaryNormals::ComputeBoundaryNormals(TNormalsImage* const boundaryNormalsImage, const float maskBlurVariance)
 {
   // Blur the mask, compute the gradient, then keep the normals only at the original mask boundary
 
@@ -45,11 +45,12 @@ void BoundaryNormals::ComputeBoundaryNormals(TNormalsImage* const boundaryNormal
                            "ComputeBoundaryNormals.BoundaryImage.mha");
   }
 
-  // Blur the mask
-  typedef itk::DiscreteGaussianImageFilter< Mask, ITKHelpers::FloatScalarImageType >  BlurFilterType;
+  // Blur the mask so that the normals are not quantized so much. Also, pixels with only diagonal
+  // valid neighbors have undefined gradients without this blurring.
+  typedef itk::DiscreteGaussianImageFilter<Mask, ITKHelpers::FloatScalarImageType>  BlurFilterType;
   BlurFilterType::Pointer gaussianFilter = BlurFilterType::New();
   gaussianFilter->SetInput(this->MaskImage);
-  gaussianFilter->SetVariance(blurVariance);
+  gaussianFilter->SetVariance(maskBlurVariance);
   gaussianFilter->Update();
 
   if(this->IsDebugOn())
@@ -59,7 +60,7 @@ void BoundaryNormals::ComputeBoundaryNormals(TNormalsImage* const boundaryNormal
   }
 
   // Compute the gradient of the blurred mask
-  typedef itk::GradientImageFilter< ITKHelpers::FloatScalarImageType, float, float>  GradientFilterType;
+  typedef itk::GradientImageFilter<ITKHelpers::FloatScalarImageType, float, float>  GradientFilterType;
   GradientFilterType::Pointer gradientFilter = GradientFilterType::New();
   gradientFilter->SetInput(gaussianFilter->GetOutput());
   gradientFilter->Update();
@@ -84,7 +85,8 @@ void BoundaryNormals::ComputeBoundaryNormals(TNormalsImage* const boundaryNormal
   }
 
   // Allocate the image to return
-  ITKHelpers::DeepCopy(maskFilter->GetOutput(), boundaryNormalsImage);
+//  ITKHelpers::DeepCopy(maskFilter->GetOutput(), boundaryNormalsImage);
+  ITKHelpers::InitializeImage(boundaryNormalsImage, this->MaskImage->GetLargestPossibleRegion());
 
   // Normalize the vectors because we just care about their direction
   std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetNonZeroPixels(boundaryImage.GetPointer());
@@ -92,7 +94,7 @@ void BoundaryNormals::ComputeBoundaryNormals(TNormalsImage* const boundaryNormal
   for(std::vector<itk::Index<2> >::const_iterator boundaryPixelIterator = boundaryPixels.begin();
       boundaryPixelIterator != boundaryPixels.end(); ++boundaryPixelIterator)
   {
-    typename TNormalsImage::PixelType p = boundaryNormalsImage->GetPixel(*boundaryPixelIterator);
+    typename TNormalsImage::PixelType p = maskFilter->GetOutput()->GetPixel(*boundaryPixelIterator);
     p.Normalize();
     boundaryNormalsImage->SetPixel(*boundaryPixelIterator, p);
   }
