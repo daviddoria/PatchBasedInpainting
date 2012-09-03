@@ -83,9 +83,11 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
   //         std::cout << "(There are " << (*boundaryNodeQueue).size() << " nodes in the queue)." << std::endl;
         return;  //terminate if the queue is empty.
       }
-      targetNode = (*boundaryNodeQueue).top();
+      targetNode = boundaryNodeQueue->top();
       (*boundaryNodeQueue).pop();
     } while( get(*boundaryStatusMap, targetNode) == false );
+
+    std::cout << "Processing pixel with priority: " << get(boundaryNodeQueue->keys(), targetNode) << std::endl;
 
 //     std::cout << "Before DiscoverVertex there are " << (*boundaryNodeQueue).size()
 //               << " nodes in the queue." << std::endl;
