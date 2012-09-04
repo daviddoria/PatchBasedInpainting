@@ -35,6 +35,7 @@
 #include "NearestNeighbor/LinearSearchBest/HoleHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchBest/DualHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchBest/AdaptiveDualHistogramDifference.hpp"
+#include "NearestNeighbor/LinearSearchBest/AdaptiveDualQuadrantHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
@@ -285,7 +286,9 @@ int main(int argc, char *argv[])
 //  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 //  typedef LinearSearchBestHoleHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 //  typedef LinearSearchBestDualHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
-  typedef LinearSearchBestAdaptiveDualHistogramDifference<ImagePatchDescriptorMapType,
+//  typedef LinearSearchBestAdaptiveDualHistogramDifference<ImagePatchDescriptorMapType,
+//            HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
+  typedef LinearSearchBestAdaptiveDualQuadrantHistogramDifference<ImagePatchDescriptorMapType,
             HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 
   BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);

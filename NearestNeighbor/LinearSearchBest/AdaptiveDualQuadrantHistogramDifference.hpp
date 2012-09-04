@@ -19,7 +19,7 @@
 #ifndef LinearSearchBestAdaptiveDualQuadrantHistogramDifference_HPP
 #define LinearSearchBestAdaptiveDualQuadrantHistogramDifference_HPP
 
-#include "LinearSearchBestHistogramParent.hpp"
+#include "HistogramParent.hpp"
 
 // Submodules
 #include <Utilities/Histogram/Histogram.h>
@@ -70,7 +70,7 @@ public:
     // If the input element range is empty, there is nothing to do.
     if(first == last)
     {
-      std::cerr << "LinearSearchBestHistogram: Nothing to do..." << std::endl;
+      std::cerr << "LinearSearchBestAdaptiveDualQuadrantHistogramDifference: Nothing to do..." << std::endl;
       return *last;
     }
 
@@ -81,11 +81,39 @@ public:
 
     itk::ImageRegion<2> targetRegion = get(this->PropertyMap, query).GetRegion();
 
-    HistogramType targetPatchValidRegionHistogram =
-        MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogramAdaptive(
-          this->Image, targetRegion, this->MaskImage, targetRegion, this->NumberOfBinsPerDimension,
-          rangeMins, rangeMaxs, true, this->MaskImage->GetValidValue());
+    typedef QuadrantHistogramProperties<typename TImage::PixelType> QuadrantHistogramPropertiesType;
+    QuadrantHistogramPropertiesType quadrantHistogramProperties;
+    QuadrantHistogramPropertiesType returnQuadrantHistogramProperties;
 
+    // Compute the quadrant histograms, to compare the valid regions of source/target patches
+    bool useProvidedRanges = false; // We want to compute the ranges here, and then use them to compute the source patch histograms
+    HistogramType targetPatchValidRegionQuadrantHistogram = MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogramAdaptive
+        (this->Image, targetRegion,
+         this->MaskImage, targetRegion, quadrantHistogramProperties,
+         useProvidedRanges,
+         this->MaskImage->GetValidValue(), returnQuadrantHistogramProperties);
+
+    Helpers::NormalizeVectorInPlace(targetPatchValidRegionQuadrantHistogram);
+
+    // Find the valid pixels and determine the ranges to use to compute the non-quadrant histogram
+    std::vector<itk::Index<2> > validPixelIndices = this->MaskImage->GetValidPixelsInRegion(targetRegion);
+    std::vector<typename TImage::PixelType> validPixels = ITKHelpers::GetPixelValues(this->Image, validPixelIndices);
+    unsigned int numberOfValidPixels = validPixels.size();
+
+    typename TImage::PixelType rangeMins;
+    Helpers::MinOfAllIndices(validPixels, rangeMins);
+
+    typename TImage::PixelType rangeMaxs;
+    Helpers::MaxOfAllIndices(validPixels, rangeMaxs);
+
+    // Compute the non-quadrant histogram
+    bool allowOutside = true;
+    HistogramType targetPatchValidRegionHistogram =
+        MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
+          this->Image, targetRegion, this->MaskImage, targetRegion, this->NumberOfBinsPerDimension,
+          rangeMins, rangeMaxs, allowOutside, this->MaskImage->GetValidValue());
+
+    // As this will be compared to a histogram from a region with a different number of pixels, we must normalize it
     Helpers::NormalizeVectorInPlace(targetPatchValidRegionHistogram);
 
 //    float percentValidPixels = this->MaskImage->CountValidPixels(queryRegion) / static_cast<float>(queryRegion.GetNumberOfPixels());
@@ -135,14 +163,19 @@ public:
       itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
 
       // Compute the histogram of the source region using the target mask
-      HistogramType sourcePatchValidRegionHistogram =
-          MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogramAdaptive(
-            this->Image, currentRegion, this->MaskImage, targetRegion, this->NumberOfBinsPerDimension,
-            rangeMins, rangeMaxs, true, this->MaskImage->GetValidValue());
+      useProvidedRanges = true; // We want to compute these histograms using the ranges found for the target patch valid region
+      HistogramType sourcePatchValidRegionQuadrantHistogram = MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogramAdaptive
+          (this->Image, currentRegion,
+           this->MaskImage, targetRegion, returnQuadrantHistogramProperties,
+           useProvidedRanges,
+           this->MaskImage->GetValidValue(), returnQuadrantHistogramProperties);
 
-      Helpers::NormalizeVectorInPlace(sourcePatchValidRegionHistogram);
+      // We must normalize this (even though it is being compared to a region with the same number of pixels)
+      // so that the difference computed can be combined with the difference computed for the hole region (which DOES have to be normalized)
+      Helpers::NormalizeVectorInPlace(sourcePatchValidRegionQuadrantHistogram);
 
-      float validRegionsHistogramDifference = HistogramDifferences::HistogramDifference(targetPatchValidRegionHistogram, sourcePatchValidRegionHistogram);
+      // Compute the difference between the quadrant histograms of the valid regions of the target/source patches
+      float validRegionsHistogramDifference = HistogramDifferences::HistogramDifference(targetPatchValidRegionQuadrantHistogram, sourcePatchValidRegionQuadrantHistogram);
 
       // Compute the histogram of the source region hole pixels (using the target mask)
       HistogramType sourcePatchHoleRegionHistogram =
