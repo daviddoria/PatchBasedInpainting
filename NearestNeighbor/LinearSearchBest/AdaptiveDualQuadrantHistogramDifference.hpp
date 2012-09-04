@@ -23,6 +23,7 @@
 
 // Submodules
 #include <Utilities/Histogram/Histogram.h>
+#include <Utilities/Histogram/QuadrantHistogram.h>
 #include <Utilities/Histogram/HistogramHelpers.hpp>
 
 #include <Helpers/TypeTraits.h>
@@ -76,15 +77,15 @@ public:
 
 //    typedef int BinValueType; // Can't use this if we are going to normalize the histograms.
     typedef float BinValueType;
-    typedef MaskedHistogramGenerator<BinValueType> MaskedHistogramGeneratorType;
-    typedef MaskedHistogramGeneratorType::HistogramType HistogramType;
-    typedef MaskedHistogramGeneratorType::QuadrantHistogramType QuadrantHistogramType;
+    typedef QuadrantHistogramProperties<typename TImage::PixelType> QuadrantPropertiesType;
+    typedef MaskedHistogramGenerator<BinValueType, QuadrantPropertiesType> MaskedHistogramGeneratorType;
+    typedef typename MaskedHistogramGeneratorType::HistogramType HistogramType;
+    typedef typename MaskedHistogramGeneratorType::QuadrantHistogramType QuadrantHistogramType;
 
     itk::ImageRegion<2> targetRegion = get(this->PropertyMap, query).GetRegion();
 
-    typedef QuadrantHistogramProperties<typename TImage::PixelType> QuadrantHistogramPropertiesType;
-    QuadrantHistogramPropertiesType quadrantHistogramProperties;
-    QuadrantHistogramPropertiesType returnQuadrantHistogramProperties;
+    QuadrantPropertiesType quadrantHistogramProperties;
+    QuadrantPropertiesType returnQuadrantHistogramProperties;
 
     // Compute the quadrant histograms, to compare the valid regions of source/target patches
     bool useProvidedRanges = false; // We want to compute the ranges here, and then use them to compute the source patch histograms
