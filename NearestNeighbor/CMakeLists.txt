@@ -11,6 +11,7 @@ LinearSearchBestHistogramDifference.hpp
 LinearSearchBestHoleHistogramDifference.hpp
 LinearSearchBestDualHistogramDifference.hpp
 LinearSearchBestAdaptiveDualHistogramDifference.hpp
+LinearSearchBestAdaptiveDualQuadrantHistogramDifference.hpp
 LinearSearchBest.hpp
 LinearSearchBestProperty.hpp
 LinearSearchCriteriaProperty.hpp

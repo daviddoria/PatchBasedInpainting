@@ -216,7 +216,7 @@ public:
         put(this->PriorityMap, v, priority);
 
         put(this->BoundaryStatusMap, v, true);
-        this->BoundaryNodeQueue.push(v);
+        this->BoundaryNodeQueue.push_or_update(v);
       }
       else
       {

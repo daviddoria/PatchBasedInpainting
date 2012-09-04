@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef LinearSearchBestAdaptiveDualHistogramDifference_HPP
-#define LinearSearchBestAdaptiveDualHistogramDifference_HPP
+#ifndef LinearSearchBestAdaptiveDualQuadrantHistogramDifference_HPP
+#define LinearSearchBestAdaptiveDualQuadrantHistogramDifference_HPP
 
 #include "LinearSearchBestHistogramParent.hpp"
 
@@ -49,11 +49,12 @@
    * \tparam TImageToWrite
    */
 template <typename PropertyMapType, typename TImage, typename TIterator, typename TImageToWrite = TImage>
-class LinearSearchBestAdaptiveDualHistogramDifference : public LinearSearchBestHistogramParent<PropertyMapType, TImage, TIterator, TImageToWrite>
+class LinearSearchBestAdaptiveDualQuadrantHistogramDifference :
+    public LinearSearchBestHistogramParent<PropertyMapType, TImage, TIterator, TImageToWrite>
 {
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
-  LinearSearchBestAdaptiveDualHistogramDifference(PropertyMapType propertyMap, TImage* const image, Mask* const mask) :
+  LinearSearchBestAdaptiveDualQuadrantHistogramDifference(PropertyMapType propertyMap, TImage* const image, Mask* const mask) :
     LinearSearchBestHistogramParent<PropertyMapType, TImage, TIterator, TImageToWrite>(propertyMap, image, mask)
   {}
 
@@ -80,20 +81,8 @@ public:
 
     itk::ImageRegion<2> targetRegion = get(this->PropertyMap, query).GetRegion();
 
-//    unsigned int numberOfValidPixels = this->MaskImage->CountValidPixels(targetRegion);
-    std::vector<itk::Index<2> > validPixelIndices = this->MaskImage->GetValidPixelsInRegion(targetRegion);
-    std::vector<typename TImage::PixelType> validPixels = ITKHelpers::GetPixelValues(this->Image, validPixelIndices);
-    unsigned int numberOfValidPixels = validPixels.size();
-    unsigned int numberOfComponents = Helpers::length(validPixels[0]);
-
-    std::vector<typename TypeTraits<typename TImage::PixelType>::ComponentType> rangeMins(numberOfComponents);
-    Helpers::MinOfAllIndices(validPixels, rangeMins);
-
-    std::vector<typename TypeTraits<typename TImage::PixelType>::ComponentType> rangeMaxs(numberOfComponents);
-    Helpers::MaxOfAllIndices(validPixels, rangeMaxs);
-
     HistogramType targetPatchValidRegionHistogram =
-        MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
+        MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogramAdaptive(
           this->Image, targetRegion, this->MaskImage, targetRegion, this->NumberOfBinsPerDimension,
           rangeMins, rangeMaxs, true, this->MaskImage->GetValidValue());
 
@@ -147,7 +136,7 @@ public:
 
       // Compute the histogram of the source region using the target mask
       HistogramType sourcePatchValidRegionHistogram =
-          MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
+          MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogramAdaptive(
             this->Image, currentRegion, this->MaskImage, targetRegion, this->NumberOfBinsPerDimension,
             rangeMins, rangeMaxs, true, this->MaskImage->GetValidValue());
 
@@ -201,6 +190,6 @@ public:
     return *bestPatch;
   }
 
-}; // end class LinearSearchBestHoleHistogramDifference
+}; // end class LinearSearchBestAdaptiveDualQuadrantHistogramDifference
 
 #endif
