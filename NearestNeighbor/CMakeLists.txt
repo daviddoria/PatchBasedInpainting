@@ -5,15 +5,7 @@
 add_custom_target(NearestNeighbor SOURCES DefaultSearchBest.hpp
 FirstValidDescriptor.hpp
 LinearSearchAlgorithm.hpp
-LinearSearchBestHistogramParent.hpp
-LinearSearchBestHistogramCorrelation.hpp
-LinearSearchBestHistogramDifference.hpp
-LinearSearchBestHoleHistogramDifference.hpp
-LinearSearchBestDualHistogramDifference.hpp
-LinearSearchBestAdaptiveDualHistogramDifference.hpp
-LinearSearchBestAdaptiveDualQuadrantHistogramDifference.hpp
 LinearSearchBest.hpp
-LinearSearchBestProperty.hpp
 LinearSearchCriteriaProperty.hpp
 LinearSearchKNN.hpp
 LinearSearchKNNProperty.hpp

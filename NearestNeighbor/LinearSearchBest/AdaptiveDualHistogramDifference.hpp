@@ -19,7 +19,7 @@
 #ifndef LinearSearchBestAdaptiveDualHistogramDifference_HPP
 #define LinearSearchBestAdaptiveDualHistogramDifference_HPP
 
-#include "LinearSearchBestHistogramParent.hpp"
+#include "HistogramParent.hpp"
 
 // Submodules
 #include <Utilities/Histogram/Histogram.h>

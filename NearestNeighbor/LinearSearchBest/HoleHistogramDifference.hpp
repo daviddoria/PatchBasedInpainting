@@ -19,7 +19,7 @@
 #ifndef LinearSearchBestHoleHistogramDifference_HPP
 #define LinearSearchBestHoleHistogramDifference_HPP
 
-#include "LinearSearchBestHistogramParent.hpp"
+#include "HistogramParent.hpp"
 
 #include <Utilities/Histogram/HistogramHelpers.hpp>
 #include <Utilities/Histogram/HistogramDifferences.hpp>

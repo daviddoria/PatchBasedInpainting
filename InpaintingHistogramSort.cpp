@@ -30,11 +30,11 @@
 #include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
 
 // Nearest neighbors functions
-#include "NearestNeighbor/LinearSearchBestHistogramCorrelation.hpp"
-#include "NearestNeighbor/LinearSearchBestHistogramDifference.hpp"
-#include "NearestNeighbor/LinearSearchBestHoleHistogramDifference.hpp"
-#include "NearestNeighbor/LinearSearchBestDualHistogramDifference.hpp"
-#include "NearestNeighbor/LinearSearchBestAdaptiveDualHistogramDifference.hpp"
+#include "NearestNeighbor/LinearSearchBest/HistogramCorrelation.hpp"
+#include "NearestNeighbor/LinearSearchBest/HistogramDifference.hpp"
+#include "NearestNeighbor/LinearSearchBest/HoleHistogramDifference.hpp"
+#include "NearestNeighbor/LinearSearchBest/DualHistogramDifference.hpp"
+#include "NearestNeighbor/LinearSearchBest/AdaptiveDualHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
