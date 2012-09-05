@@ -17,8 +17,8 @@
  *=========================================================================*/
 
 // Custom
-#include "Helpers/OutputHelpers.h"
-#include "Histogram.h"
+#include "Helpers/Helpers.h"
+#include "IntroducedEnergy.h"
 #include "Testing/Testing.h"
 
 // STL
@@ -26,14 +26,6 @@
 
 int main(int argc, char*argv[])
 {
-  std::vector<float> values;
-  values.push_back(1);
-  values.push_back(1);
-  values.push_back(1);
-  values.push_back(5);
-  
-  std::vector<float> histogram = Histogram::ScalarHistogram(values, 2, 0.0f, 10.0f);
-  OutputHelpers::OutputVector(histogram);
-  
+
   return EXIT_SUCCESS;
 }
