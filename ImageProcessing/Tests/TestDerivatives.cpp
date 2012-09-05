@@ -77,7 +77,27 @@ void TestMaskedDerivativeGaussianInRegion()
 void TestMaskedGradientInRegion()
 {
   //const TImage* const image, const Mask* const mask, const itk::ImageRegion<2>& region, FloatVector2ImageType* const output);
-  throw std::runtime_error("TestMaskedGradientInRegion not yet written!");
+  // Scalar
+  {
+  Mask::Pointer mask = Mask::New();
+  CreateMask(mask);
+
+  UnsignedCharScalarImageType::Pointer image = UnsignedCharScalarImageType::New();
+  CreateImage(image);
+
+  unsigned int direction = 0; // X-direction
+  FloatScalarImageType::Pointer output = FloatScalarImageType::New();
+  Derivatives::MaskedDerivative(image.GetPointer(), mask, direction, output);
+
+  FloatScalarImageType::Pointer correctDerivative = FloatScalarImageType::New();
+
+  if(!Testing::ImagesEqual<FloatScalarImageType>(output, correctDerivative))
+  {
+    throw std::runtime_error("MaskedDerivative output incorrect!");
+  }
+  }
+
+
 }
 
 void TestGradientFromDerivatives()

@@ -29,35 +29,37 @@ namespace Derivatives
 // This is NOT the same as finding the unmasked derivative and then extracting only the valid pixels - the result
 // can be very different depending on the 'image' values under the masked region. E.g. if the pixels in the hole are
 // black, the gradients will be very strong near the hole boundary (erroneously).
-template <typename TImage, typename TScalarImage>
-void MaskedDerivative(const TImage* const image, const Mask* const mask, const unsigned int direction, TScalarImage* const output);
+template <typename TImage, typename TDerivativeImage>
+void MaskedDerivative(const TImage* const image, const Mask* const mask, const unsigned int direction, TDerivativeImage* const derivativeImage);
 
-template <typename TImage, typename TScalarImage>
-void MaskedDerivativePrewitt(const TImage* const image, const Mask* const mask, const unsigned int direction, TScalarImage* const output);
+template <typename TImage, typename TDerivativeImage>
+void MaskedDerivativePrewitt(const TImage* const image, const Mask* const mask, const unsigned int direction, TDerivativeImage* const derivativeImage);
 
-template <typename TImage, typename TScalarImage>
-void MaskedDerivativeSobel(const TImage* const image, const Mask* const mask, const unsigned int direction, TScalarImage* const output);
+template <typename TImage, typename TDerivativeImage>
+void MaskedDerivativeSobel(const TImage* const image, const Mask* const mask, const unsigned int direction, TDerivativeImage* const derivativeImage);
 
-template <typename TImage, typename TScalarImage>
-void MaskedDerivativeGaussian(const TImage* const image, const Mask* const mask, const unsigned int direction, TScalarImage* const output);
+template <typename TImage, typename TDerivativeImage>
+void MaskedDerivativeGaussian(const TImage* const image, const Mask* const mask, const unsigned int direction, TDerivativeImage* const derivativeImage);
 
-template <typename TImage, typename TScalarImage>
+template <typename TImage, typename TDerivativeImage>
 void MaskedDerivativeGaussianInRegion(const TImage* const image, const Mask* const mask, const unsigned int direction,
-                                      const itk::ImageRegion<2>& region, TScalarImage* const output);
+                                      const itk::ImageRegion<2>& region, TDerivativeImage* const derivativeImage);
+
+////////////// Gradients ////////////////
 
 template <typename TImage, typename TGradientImage>
-void MaskedGradient(const TImage* const image, const Mask*const  mask, TGradientImage* const output);
+void MaskedGradient(const TImage* const image, const Mask*const  mask, TGradientImage* const gradientImage);
 
 template <typename TImage, typename TGradientImage>
-void MaskedGradientInRegion(const TImage* const image, const Mask* const mask, const itk::ImageRegion<2>& region, TGradientImage* const output);
+void MaskedGradientInRegion(const TImage* const image, const Mask* const mask, const itk::ImageRegion<2>& region, TGradientImage* const gradientImage);
 
 template<typename TPixel, typename TGradientImage>
 void GradientFromDerivatives(const itk::Image<TPixel, 2>* const xDerivative,
-                             const typename itk::Image<TPixel, 2>* const yDerivative, TGradientImage* const output);
+                             const typename itk::Image<TPixel, 2>* const yDerivative, TGradientImage* const gradientImage);
 
 template<typename TPixel, typename TGradientImage>
 void GradientFromDerivativesInRegion(const itk::Image<TPixel, 2>* const xDerivative, const itk::Image<TPixel, 2>* const yDerivative,
-                                     const itk::ImageRegion<2>& region, TGradientImage* const output);
+                                     const itk::ImageRegion<2>& region, TGradientImage* const gradientImage);
 
 
 } // end namespace

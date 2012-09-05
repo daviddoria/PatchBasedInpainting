@@ -36,16 +36,17 @@
 template <typename TImage>
 class IntroducedEnergy
 {
+public:
   /** This function computes the energy introduced across the (valid) patch boundary by copying a patch into a region. */
-  float ComputeIntroducedEnergyPatchBoundary(const TImage* const image, const Mask* const mask,
+  static float ComputeIntroducedEnergyPatchBoundary(const TImage* const image, const Mask* const mask,
                                              const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
 
   /** This function computes the energy introduced across the (valid) patch boundary by copying a patch into a region. */
-  float ComputeIntroducedEnergyMaskBoundary(const TImage* const image, const Mask* const mask,
+  static float ComputeIntroducedEnergyMaskBoundary(const TImage* const image, const Mask* const mask,
                                             const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
 
   /** This function computes the total introduced energy by copying a patch into a region. */
-  float ComputeIntroducedEnergy(const TImage* const image, const Mask* const mask,
+  static float ComputeIntroducedEnergy(const TImage* const image, const Mask* const mask,
                                 const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
 
 };
