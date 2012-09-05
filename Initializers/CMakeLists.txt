@@ -1,1 +1,7 @@
-
+add_custom_target(InitializeSources SOURCES
+InitializeFromMaskImage.hpp
+InitializeFromMaskImageWithMap.hpp
+InitializePriority.hpp
+SimpleInitializerFromMask.hpp
+SimpleInitializer.hpp
+)

@@ -28,8 +28,8 @@ FIND_PACKAGE(ITK REQUIRED ITKCommon ITKIOImageBase ITKIOPNG ITKIOMeta
 ITKImageIntensity ITKImageFeature ITKMathematicalMorphology ITKBinaryMathematicalMorphology ITKDistanceMap)
 INCLUDE(${ITK_USE_FILE})
 
-#FIND_PACKAGE(Boost COMPONENTS array REQUIRED) # 'array' does not seem to be a library
-#INCLUDE(${Boost_USE_FILE}) # Boost_USE_FILE is not a real variable
+FIND_PACKAGE(Boost 1.50 REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
 
 # Check for Qt4. If it is available, build the PatchBasedInpainting library using it so that SelfPatchCompare can use QtConcurrent.
 # FIND_PACKAGE(Qt4)

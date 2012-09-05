@@ -47,7 +47,7 @@
  */
 template <typename TGraph, typename TImage, typename TBoundaryNodeQueue,
           typename TDescriptorVisitor, typename TAcceptanceVisitor, typename TPriority,
-          typename TPriorityMap, typename TBoundaryStatusMap>
+          typename TPriorityMap, typename THandleMap, typename TBoundaryStatusMap>
 class InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 {
   BOOST_CONCEPT_ASSERT((DescriptorVisitorConcept<TDescriptorVisitor, TGraph>));
@@ -74,6 +74,9 @@ class InpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   /** A map indicating the priority of each pixel. */
   TPriorityMap& PriorityMap;
+
+  /** A map indicating the handle of each pixel (a Boost.Heap requirement). */
+  THandleMap& HandleMap;
 
   /** A map indicating if each pixel is on the boundary or not. */
   TBoundaryStatusMap& BoundaryStatusMap;
@@ -110,14 +113,14 @@ public:
   InpaintingVisitor(TImage* const image, Mask* const mask,
                     TBoundaryNodeQueue& boundaryNodeQueue,
                     TDescriptorVisitor& descriptorVisitor, TAcceptanceVisitor& acceptanceVisitor,
-                    TPriorityMap& priorityMap, TPriority* const priorityFunction,
+                    TPriorityMap& priorityMap, THandleMap& handleMap, TPriority* const priorityFunction,
                     const unsigned int patchHalfWidth, TBoundaryStatusMap& boundaryStatusMap,
                     const std::string& resultFileName,
                     const std::string& visitorName = "InpaintingVisitor") :
     InpaintingVisitorParent<TGraph>(visitorName),
     Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
     DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
-    PriorityMap(priorityMap), BoundaryStatusMap(boundaryStatusMap),
+    PriorityMap(priorityMap), HandleMap(handleMap), BoundaryStatusMap(boundaryStatusMap),
     PatchHalfWidth(patchHalfWidth), ResultFileName(resultFileName), NumberOfFinishedPatches(0), AllowNewPatches(false), DebugImages(false)
   {
   }
@@ -203,6 +206,8 @@ public:
     // Add pixels that are on the new boundary to the queue, and mark other pixels as not in the queue.
     itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(this->MaskImage, regionToFinish);
 
+    typedef typename TBoundaryNodeQueue::handle_type HandleType;
+
     while(!imageIterator.IsAtEnd())
     {
       VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(imageIterator.GetIndex());
@@ -216,7 +221,16 @@ public:
         put(this->PriorityMap, v, priority);
 
         put(this->BoundaryStatusMap, v, true);
-        this->BoundaryNodeQueue.push_or_update(v);
+
+        if(get(this->HandleMap, v).node_ != 0) // the node is not already in the queue (the node_pointer of the node_handle is not NULL)
+        {
+          this->BoundaryNodeQueue.update(get(this->HandleMap, v), v);
+        }
+        else
+        {
+          HandleType handle = this->BoundaryNodeQueue.push(v);
+          put(this->HandleMap, v, handle);
+        }
       }
       else
       {

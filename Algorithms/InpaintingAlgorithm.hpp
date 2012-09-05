@@ -49,10 +49,12 @@
 
 template <typename TVertexListGraph, typename TInpaintingVisitor,
           typename TBoundaryStatusMap, typename TPriorityQueue,
+          typename THandleMap,
           typename TNearestNeighborFinder, typename TPatchInpainter>
 inline
 void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
                         TBoundaryStatusMap* boundaryStatusMap, TPriorityQueue* boundaryNodeQueue,
+                        THandleMap& handleMap,
                         TNearestNeighborFinder find_inpainting_source,
                         TPatchInpainter* patchInpainter)
 {
@@ -85,10 +87,12 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
         return;  //terminate if the queue is empty.
       }
       targetNode = boundaryNodeQueue->top();
+      typename THandleMap::value_type invalidHandle(0);
+      put(handleMap, targetNode, invalidHandle);
       (*boundaryNodeQueue).pop();
     } while( get(*boundaryStatusMap, targetNode) == false );
 
-    std::cout << "Processing pixel with priority: " << get(boundaryNodeQueue->keys(), targetNode) << std::endl;
+//    std::cout << "Processing pixel with priority: " << get(boundaryNodeQueue->keys(), targetNode) << std::endl; // TODO: update this to use the binomial_heap API (will need the priority map)
 
 //     std::cout << "Before DiscoverVertex there are " << (*boundaryNodeQueue).size()
 //               << " nodes in the queue." << std::endl;

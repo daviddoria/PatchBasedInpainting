@@ -43,8 +43,8 @@ void WriteValidQueueNodesLocationsImage(TNodeQueue nodeQueue, const TPropertyMap
   ITKHelpers::WriteImage(image.GetPointer(), fileName);
 }
 
-template <typename TNodeQueue, typename TPropertyMap>
-void WriteValidQueueNodesPrioritiesImage(TNodeQueue nodeQueue, const TPropertyMap propertyMap,
+template <typename TNodeQueue, typename TPriorityMap>
+void WriteValidQueueNodesPrioritiesImage(TNodeQueue nodeQueue, const TPriorityMap priorityMap,
                                          const itk::ImageRegion<2>& fullRegion, const std::string& fileName)
 {
   typedef itk::Image<float, 2> ImageType;
@@ -57,11 +57,12 @@ void WriteValidQueueNodesPrioritiesImage(TNodeQueue nodeQueue, const TPropertyMa
   {
     typename TNodeQueue::value_type queuedNode = nodeQueue.top();
 
-    bool valid = get(propertyMap, queuedNode);
+    bool valid = get(priorityMap, queuedNode);
     if(valid)
     {
       itk::Index<2> index = Helpers::ConvertFrom<itk::Index<2>, typename TNodeQueue::value_type>(queuedNode);
-      image->SetPixel(index, get(nodeQueue.keys(), queuedNode));
+//      image->SetPixel(index, get(nodeQueue.keys(), queuedNode));
+      image->SetPixel(index, get(priorityMap, queuedNode));
     }
 
     nodeQueue.pop();

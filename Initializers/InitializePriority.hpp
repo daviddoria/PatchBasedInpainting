@@ -9,30 +9,34 @@
 #include "Priority/Priority.h"
 #include "ITKHelpers/ITKHelpers.h"
 
-template <typename TBoundaryNodeQueue, typename TPriorityMap, typename TBoundaryStatusMap, typename TPriority>
+template <typename TBoundaryNodeQueue, typename TPriorityMap, typename THandleMap, typename TBoundaryStatusMap, typename TPriority>
 inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& boundaryNodeQueue, TPriorityMap& priorityMap,
+                               THandleMap& handleMap,
                                TPriority* const priorityFunction,
                                TBoundaryStatusMap& boundaryStatusMap)
 {
   std::cout << "InitializePriority" << std::endl;
 
+  typedef typename TBoundaryNodeQueue::handle_type HandleType;
+
   // Compute the boundary image
   Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
-  maskImage->CreateBoundaryImage(boundaryImage, Mask::VALID, 255);
+  unsigned char boundaryPixelValue = 255;
+  maskImage->CreateBoundaryImage(boundaryImage, Mask::VALID, boundaryPixelValue);
 
   //   ITKHelpers::WriteImage(maskImage, "mask.png");
   //   ITKHelpers::WriteImage(boundaryImage.GetPointer(), "boundary.png");
 
   // Add boundary nodes to the queue, compute their priority, and set their boundary status to true.
-  itk::ImageRegionConstIteratorWithIndex<Mask::BoundaryImageType> imageIterator(boundaryImage,
+  itk::ImageRegionConstIteratorWithIndex<Mask::BoundaryImageType> boundaryImageIterator(boundaryImage,
                                                                                 boundaryImage->GetLargestPossibleRegion());
-  while(!imageIterator.IsAtEnd())
+  while(!boundaryImageIterator.IsAtEnd())
   {
     typename TBoundaryNodeQueue::value_type node =
         Helpers::ConvertFrom<typename TBoundaryNodeQueue::value_type,
-                              itk::Index<2> >(imageIterator.GetIndex());
+                              itk::Index<2> >(boundaryImageIterator.GetIndex());
 
-    if(imageIterator.Get() != 0) // boundary pixel found
+    if(boundaryImageIterator.Get() == boundaryPixelValue)
     {
       itk::Index<2> index = ITKHelpers::CreateIndex(node);
 
@@ -42,7 +46,8 @@ inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& bounda
 
       // Note: the priorityMap value must be set before pushing the node into the queue
       // (as the indirect queue is using the value from the map to determine the node's position)
-      boundaryNodeQueue.push(node);
+      HandleType handle = boundaryNodeQueue.push(node);
+      put(handleMap, node, handle);
 
       put(boundaryStatusMap, node, true);
     }
@@ -50,7 +55,7 @@ inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& bounda
     {
       put(boundaryStatusMap, node, false);
     }
-    ++imageIterator;
+    ++boundaryImageIterator;
   }
 
   std::cout << "InitializePriority: There are " << boundaryNodeQueue.size()
