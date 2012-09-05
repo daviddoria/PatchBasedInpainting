@@ -132,7 +132,7 @@ void PriorityCriminisi<TImage>::WriteBoundaryImage(const unsigned int patchNumbe
   boundaryImage->SetRegions(this->Image->GetLargestPossibleRegion());
   boundaryImage->Allocate();
 
-  this->MaskImage->FindBoundary(boundaryImage, Mask::VALID, 255);
+  this->MaskImage->CreateBoundaryImage(boundaryImage, Mask::VALID, 255);
 
   ITKHelpers::WriteImage(boundaryImage.GetPointer(),
                          Helpers::GetSequentialFileName("BoundaryImage", patchNumber, "mha", 3));
@@ -151,7 +151,7 @@ void PriorityCriminisi<TImage>::WriteDataImage(const unsigned int patchNumber)
   boundaryImage->SetRegions(this->Image->GetLargestPossibleRegion());
   boundaryImage->Allocate();
   
-  this->MaskImage->FindBoundary(boundaryImage, Mask::VALID, 255);
+  this->MaskImage->CreateBoundaryImage(boundaryImage, Mask::VALID, 255);
 
   typedef std::vector<itk::Index<2> > PixelCollection;
   PixelCollection boundaryPixels = ITKHelpers::GetNonZeroPixels(boundaryImage.GetPointer());
@@ -178,7 +178,7 @@ void PriorityCriminisi<TImage>::WritePriorityImage(const unsigned int patchNumbe
   boundaryImage->SetRegions(this->Image->GetLargestPossibleRegion());
   boundaryImage->Allocate();
 
-  this->MaskImage->FindBoundary(boundaryImage, Mask::VALID, 255);
+  this->MaskImage->CreateBoundaryImage(boundaryImage, Mask::VALID, 255);
 
   typedef std::vector<itk::Index<2> > PixelCollection;
   PixelCollection boundaryPixels = ITKHelpers::GetNonZeroPixels(boundaryImage.GetPointer());

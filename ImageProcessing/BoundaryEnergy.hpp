@@ -13,8 +13,9 @@ BoundaryEnergy<TImage>::BoundaryEnergy(const TImage* const image, const Mask* co
 template<typename TImage>
 float BoundaryEnergy<TImage>::operator()(const itk::ImageRegion<2>& region)
 {
+  // Get the boundary of the valid region
   Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
-  this->MaskImage->FindBoundaryInRegion(region, boundaryImage);
+  this->MaskImage->CreateBoundaryImageInRegion(region, boundaryImage.GetPointer(), Mask::VALID);
 
   // We are unsure about the values of the boundary pixels, but they are definitely greater than .5
   // (we'd hope non-boundary=0 and boundary = 1 or 255)
@@ -48,9 +49,9 @@ float BoundaryEnergy<TImage>::operator()(const itk::ImageRegion<2>& region)
 template<typename TImage>
 float BoundaryEnergy<TImage>::operator()(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
 {
-  // The boundary must be in the target region.
+  // Get the boundary of the valid region
   Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
-  this->MaskImage->FindBoundaryInRegion(targetRegion, boundaryImage);
+  this->MaskImage->CreateBoundaryImageInRegion(targetRegion, boundaryImage.GetPointer(), Mask::VALID);
 
   // We are unsure about the values of the boundary pixels, but they are definitely greater than .5
   // (we'd hope non-boundary=0 and boundary = 1 or 255)

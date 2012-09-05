@@ -50,14 +50,15 @@ struct LinearSearchBestProperty
     TIterator result = last;
 
     // Iterate through all of the input elements
-    for(; first != last; ++first)
+    #pragma omp parallel for
+    for(TIterator current = first; current != last; ++current)
     {
       //DistanceValueType d = DistanceFunction(*first, query);
       DistanceValueType d = DistanceFunction(get(PropertyMap, *first), get(PropertyMap, query));
       if(CompareFunction(d, d_best))
       {
         d_best = d;
-        result = first;
+        result = current;
       };
     };
 

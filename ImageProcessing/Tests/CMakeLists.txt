@@ -19,9 +19,9 @@ include_directories(../) # so we can access the headers normally (e.g. #include 
 # target_link_libraries(TestMaskOperations ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
 # add_test(TestMaskOperations TestMaskOperations)
 # 
-# add_executable(TestBoundaryEnergy TestBoundaryEnergy.cpp ../BoundaryEnergy.cpp ../Mask.cpp)
-# target_link_libraries(TestBoundaryEnergy ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
-# add_test(TestBoundaryEnergy TestBoundaryEnergy)
+ add_executable(TestBoundaryEnergy TestBoundaryEnergy.cpp ../BoundaryEnergy.cpp)
+ target_link_libraries(TestBoundaryEnergy ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting Mask)
+ add_test(TestBoundaryEnergy TestBoundaryEnergy)
 # 
 add_executable(TestBoundaryNormals TestBoundaryNormals.cpp)
 target_link_libraries(TestBoundaryNormals ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting Helpers)

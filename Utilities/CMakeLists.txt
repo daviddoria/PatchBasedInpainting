@@ -9,11 +9,16 @@ endif()
 
 add_custom_target(UtilitiesSources SOURCES
 itkCommandLineArgumentParser.h
+IntroducedEnergy.h
+IntroducedEnergy.hpp
 ParallelSort.h
 ParallelSort.hxx
 PatchHelpers.h
 PatchHelpers.hpp
 RotateVectors.h
-TypeTraits.h
 Utilities.hpp
 )
+
+if(inpainting_BuildTests)
+  add_subdirectory(Tests)
+endif()

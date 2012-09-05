@@ -184,7 +184,7 @@ SET(inpainting_InpaintingHistogramSort CACHE BOOL "Build a patch based image inp
 if(inpainting_InpaintingHistogramSort)
   ADD_EXECUTABLE(InpaintingHistogramSort InpaintingHistogramSort.cpp)
   TARGET_LINK_LIBRARIES(InpaintingHistogramSort PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES}
-                       ${QT_LIBRARIES} Mask)
+                       ${QT_LIBRARIES} Mask gomp)
   INSTALL( TARGETS InpaintingHistogramSort RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 

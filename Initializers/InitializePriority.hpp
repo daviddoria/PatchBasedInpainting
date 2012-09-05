@@ -18,7 +18,7 @@ inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& bounda
 
   // Compute the boundary image
   Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
-  maskImage->FindBoundary(boundaryImage, Mask::VALID, 255);
+  maskImage->CreateBoundaryImage(boundaryImage, Mask::VALID, 255);
 
   //   ITKHelpers::WriteImage(maskImage, "mask.png");
   //   ITKHelpers::WriteImage(boundaryImage.GetPointer(), "boundary.png");

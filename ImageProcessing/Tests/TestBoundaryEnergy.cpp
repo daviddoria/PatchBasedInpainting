@@ -19,8 +19,8 @@
 #include "BoundaryEnergy.h"
 
 // Custom
-#include "Mask.h"
-#include "Helpers/ITKHelpers.h"
+#include <Mask/Mask.h>
+#include <ITKHelpers/ITKHelpers.h>
 #include "Testing/Testing.h"
 
 // ITK

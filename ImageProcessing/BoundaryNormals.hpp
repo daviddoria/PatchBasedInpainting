@@ -37,7 +37,7 @@ void BoundaryNormals::ComputeBoundaryNormals(TNormalsImage* const boundaryNormal
   // Compute the boundary of the mask
   typedef itk::Image<unsigned char, 2> BoundaryImageType;
   BoundaryImageType::Pointer boundaryImage = BoundaryImageType::New();
-  this->MaskImage->FindBoundary(boundaryImage, Mask::VALID, 255);
+  this->MaskImage->CreateBoundaryImage(boundaryImage, Mask::VALID, 255);
 
   if(this->IsDebugOn())
   {
