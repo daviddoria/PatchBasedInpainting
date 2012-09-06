@@ -25,8 +25,17 @@
 
 template <typename TImage>
 float IntroducedEnergy<TImage>::ComputeIntroducedEnergyPatchBoundary(const TImage* const inputImage, const Mask* const mask,
-                                                                     const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
+                                                                     itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion)
 {
+  // Crop the source and target region so that the target region is inside the image and the source region has the same size/position crop
+  itk::Offset<2> offset = targetRegion.GetIndex() - sourceRegion.GetIndex();
+
+  targetRegion.Crop(inputImage->GetLargestPossibleRegion());
+
+  sourceRegion.SetIndex(sourceRegion.GetIndex() + offset);
+  sourceRegion.Crop(inputImage->GetLargestPossibleRegion());
+  sourceRegion.SetIndex(sourceRegion.GetIndex() - offset);
+
   // Create the magnitude image so we can compute gradients of a scalar image.
   typedef itk::Image<float, 2> MagnitudeImageType;
   MagnitudeImageType::Pointer magnitudeImage = MagnitudeImageType::New();
@@ -79,13 +88,26 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyPatchBoundary(const TImag
                                 inpaintedGradientImage->GetPixel(*boundaryPixelIterator)).GetSquaredNorm();
   }
 
-  return gradientMagnitudeChange;
+//  std::cout << "ComputeIntroducedEnergyPatchBoundary: " << gradientMagnitudeChange << std::endl;
+//  return gradientMagnitudeChange;
+
+  float normalized = gradientMagnitudeChange / static_cast<float>(patchBoundaryPixels.size());
+  return normalized;
 }
 
 template <typename TImage>
 float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage* const inputImage, const Mask* const mask,
-                                                                    const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
+                                                                    itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion)
 {
+  // Crop the source and target region so that the target region is inside the image and the source region has the same size/position crop
+  itk::Offset<2> offset = targetRegion.GetIndex() - sourceRegion.GetIndex();
+
+  targetRegion.Crop(inputImage->GetLargestPossibleRegion());
+
+  sourceRegion.SetIndex(sourceRegion.GetIndex() + offset);
+  sourceRegion.Crop(inputImage->GetLargestPossibleRegion());
+  sourceRegion.SetIndex(sourceRegion.GetIndex() - offset);
+
   // Create the magnitude image so we can compute gradients of a scalar image.
   typedef itk::Image<float, 2> MagnitudeImageType;
   MagnitudeImageType::Pointer magnitudeImage = MagnitudeImageType::New();
@@ -101,8 +123,10 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
   PixelContainer holeBoundaryPixels = mask->FindBoundaryPixelsInRegion(targetRegion, Mask::HOLE);
   PixelContainer validBoundaryPixels = mask->FindBoundaryPixelsInRegion(targetRegion, Mask::VALID);
   PixelContainer boundaryPixels;
-  boundaryPixels.insert(holeBoundaryPixels.begin(), holeBoundaryPixels.end(), boundaryPixels.end());
-  boundaryPixels.insert(validBoundaryPixels.begin(), validBoundaryPixels.end(), boundaryPixels.end());
+  boundaryPixels.insert(boundaryPixels.end(), holeBoundaryPixels.begin(), holeBoundaryPixels.end());
+  boundaryPixels.insert(boundaryPixels.end(), validBoundaryPixels.begin(), validBoundaryPixels.end());
+
+//  std::cout << "There are " << boundaryPixels.size() << " boundary pixels." << std::endl;
 
   // Compute gradients in the target region
   GradientImageType::Pointer targetRegionGradientImage = GradientImageType::New();
@@ -122,6 +146,8 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
   inpaintedGradientImage->SetRegions(image->GetLargestPossibleRegion());
   inpaintedGradientImage->Allocate();
 
+  Derivatives::MaskedGradientInRegion(inpaintedImage.GetPointer(), mask, targetRegion, inpaintedGradientImage.GetPointer());
+
   // Compare the gradient magnitude before and after the inpainting
   float gradientMagnitudeChange = 0.0f;
 
@@ -132,12 +158,16 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
                                 inpaintedGradientImage->GetPixel(*boundaryPixelIterator)).GetSquaredNorm();
   }
 
-  return gradientMagnitudeChange;
+//  std::cout << "ComputeIntroducedEnergyMaskBoundary: " << gradientMagnitudeChange << std::endl;
+
+  float normalized = gradientMagnitudeChange / static_cast<float>(boundaryPixels.size());
+  return normalized;
+//  return gradientMagnitudeChange;
 }
 
 template <typename TImage>
 float IntroducedEnergy<TImage>::ComputeIntroducedEnergy(const TImage* const image, const Mask* const mask,
-                                                        const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
+                                                        itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion)
 {
   return ComputeIntroducedEnergyPatchBoundary(image, mask, sourceRegion, targetRegion) +
       ComputeIntroducedEnergyMaskBoundary(image, mask, sourceRegion, targetRegion);

@@ -75,6 +75,8 @@ public:
     // Iterate through all of the input elements
     for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
     {
+//      std::cout << "Iteration " << currentPatch - first << std::endl;
+
       itk::ImageRegion<2> currentRegion = get(this->ImagePatchDescriptorMap, *currentPatch).GetRegion();
 
       float introducedEnergy = IntroducedEnergy<TImage>::ComputeIntroducedEnergy(this->Image, this->MaskImage,
