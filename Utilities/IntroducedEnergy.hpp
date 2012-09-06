@@ -91,8 +91,23 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyPatchBoundary(const TImag
 //  std::cout << "ComputeIntroducedEnergyPatchBoundary: " << gradientMagnitudeChange << std::endl;
 //  return gradientMagnitudeChange;
 
-  float normalized = gradientMagnitudeChange / static_cast<float>(patchBoundaryPixels.size());
-  return normalized;
+  if(this->GetDebugImages())
+  {
+    ITKHelpers::WriteImage(targetRegionGradientImage.GetPointer(), "PatchBoundaryEnergy_TargetGradient.mha");
+    ITKHelpers::WriteImage(inpaintedGradientImage.GetPointer(), "PatchBoundaryEnergy_InpaintedGradient.mha");
+    ITKHelpers::WriteImage(inpaintedImage.GetPointer(), "PatchBoundaryEnergy_Inpainted.mha");
+  }
+
+  if(patchBoundaryPixels.size() > 0)
+  {
+    float normalized = gradientMagnitudeChange / static_cast<float>(patchBoundaryPixels.size());
+    return normalized;
+  }
+  else
+  {
+    std::cout << "ComputeIntroducedEnergyPatchBoundary had 0 pixels to use!" << std::endl;
+    return 0;
+  }
 }
 
 template <typename TImage>
@@ -160,8 +175,23 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
 
 //  std::cout << "ComputeIntroducedEnergyMaskBoundary: " << gradientMagnitudeChange << std::endl;
 
-  float normalized = gradientMagnitudeChange / static_cast<float>(boundaryPixels.size());
-  return normalized;
+  if(this->GetDebugImages())
+  {
+    ITKHelpers::WriteImage(targetRegionGradientImage.GetPointer(), "MaskBoundaryEnergy_TargetGradient.mha");
+    ITKHelpers::WriteImage(inpaintedGradientImage.GetPointer(), "MaskBoundaryEnergy_InpaintedGradient.mha");
+    ITKHelpers::WriteImage(inpaintedImage.GetPointer(), "MaskBoundaryEnergy_Inpainted.mha");
+  }
+
+  if(boundaryPixels.size() > 0)
+  {
+    float normalized = gradientMagnitudeChange / static_cast<float>(boundaryPixels.size());
+    return normalized;
+  }
+  else
+  {
+    std::cout << "ComputeIntroducedEnergyMaskBoundary had 0 pixels to use!" << std::endl;
+    return 0;
+  }
 //  return gradientMagnitudeChange;
 }
 

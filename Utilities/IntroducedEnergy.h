@@ -21,6 +21,8 @@
 
 #include <Mask/Mask.h>
 
+#include <Utilities/Debug/Debug.h>
+
 /** When patches are copied into an image, there are two "energy" values that are worth studying.
   *
   * First, imagine if the entire source patch was copied into the target region. There is a potential for
@@ -34,20 +36,22 @@
   * along the valid/hole boundary (arbitrarily shaped).
   */
 template <typename TImage>
-class IntroducedEnergy
+class IntroducedEnergy : public Debug
 {
 public:
-  /** This function computes the energy introduced across the (valid) patch boundary by copying a patch into a region. */
-  static float ComputeIntroducedEnergyPatchBoundary(const TImage* const image, const Mask* const mask,
-                                                    itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion);
+  /** This function computes the energy introduced across the (valid) patch boundary by copying a patch into a region.
+    * The energy is normalized by the number of pixels that contributed. */
+  float ComputeIntroducedEnergyPatchBoundary(const TImage* const image, const Mask* const mask,
+                                             itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion);
 
-  /** This function computes the energy introduced across the (valid) patch boundary by copying a patch into a region. */
-  static float ComputeIntroducedEnergyMaskBoundary(const TImage* const image, const Mask* const mask,
-                                                   itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion);
+  /** This function computes the energy introduced across the (valid) patch boundary by copying a patch into a region.
+    * The energy is normalized by the number of pixels that contributed. */
+  float ComputeIntroducedEnergyMaskBoundary(const TImage* const image, const Mask* const mask,
+                                            itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion);
 
   /** This function computes the total introduced energy by copying a patch into a region. */
-  static float ComputeIntroducedEnergy(const TImage* const image, const Mask* const mask,
-                                       itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion);
+  float ComputeIntroducedEnergy(const TImage* const image, const Mask* const mask,
+                                itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion);
 
 };
 

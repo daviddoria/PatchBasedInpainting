@@ -7,6 +7,11 @@ if(NOT TARGET Histogram)
   include_directories(${Histogram_includes})
 endif()
 
+if(NOT TARGET Debug)
+  add_subdirectory(Debug)
+  include_directories(${Debug_includes})
+endif()
+
 add_custom_target(UtilitiesSources SOURCES
 itkCommandLineArgumentParser.h
 IntroducedEnergy.h
@@ -20,5 +25,8 @@ Utilities.hpp
 )
 
 if(inpainting_BuildTests)
+    message("Building Utilities/Tests")
   add_subdirectory(Tests)
+else()
+  message("Not building Utilities/Tests")
 endif()

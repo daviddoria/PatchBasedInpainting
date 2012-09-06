@@ -72,6 +72,8 @@ public:
 
     unsigned int bestId = 0; // Keep track of which of the top SSD patches is the best by histogram score (just for information sake)
 
+    IntroducedEnergy<TImage> introducedEnergyFunctor;
+
     // Iterate through all of the input elements
     for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
     {
@@ -79,7 +81,7 @@ public:
 
       itk::ImageRegion<2> currentRegion = get(this->ImagePatchDescriptorMap, *currentPatch).GetRegion();
 
-      float introducedEnergy = IntroducedEnergy<TImage>::ComputeIntroducedEnergy(this->Image, this->MaskImage,
+      float introducedEnergy = introducedEnergyFunctor.ComputeIntroducedEnergy(this->Image, this->MaskImage,
                                                                                  currentRegion, queryRegion);
 
       if(introducedEnergy < bestDistance)

@@ -76,8 +76,6 @@ if(NOT TARGET BoostHelpers)
     include_directories(${BoostHelpers_includes})
 endif()
 
-add_subdirectory(Utilities)
-
 if( (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Mask/.git") OR
 (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VTKHelpers/.git") OR
 (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKVTKHelpers/.git") OR
@@ -101,7 +99,7 @@ add_subdirectory(Priority)
 add_subdirectory(Scripts)
 add_subdirectory(SearchRegions)
 add_subdirectory(SpeedTests)
-add_subdirectory(Utilities/Debug)
+add_subdirectory(Utilities)
 add_subdirectory(Visitors)
 
 # Core source files

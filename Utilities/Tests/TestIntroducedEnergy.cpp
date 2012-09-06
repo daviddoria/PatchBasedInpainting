@@ -32,7 +32,28 @@
 
 int main(int, char*[])
 {
-  typedef itk::Image<itk::CovariantVector<int, 3>, 2> ImageType;
+//  typedef itk::Image<itk::CovariantVector<int, 3>, 2> ImageType;
+  typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> ImageType;
+
+  ImageType::PixelType red;
+  red.Fill(0);
+  red[0] = 255;
+
+  ImageType::PixelType black;
+  black.Fill(0);
+
+  ImageType::PixelType white;
+  white.Fill(255);
+
+  ImageType::PixelType green; // Note this is not 255 because then the magnitude of red and green would be the same,
+  // which makes debugging hard since the gradient of the magnitude image is used internally (in IntroducedEnergy).
+  green.Fill(0);
+  green[1] = 122;
+
+  ImageType::PixelType blue;
+  blue.Fill(0);
+  blue[2] = 255;
+
   ImageType::Pointer image = ImageType::New();
   itk::Index<2> imageCorner = {{0,0}};
   itk::Size<2> imageSize = {{100,100}};
@@ -44,14 +65,28 @@ int main(int, char*[])
   Mask::Pointer mask = Mask::New();
   mask->SetRegions(region);
   mask->Allocate();
-  mask->FillBuffer(mask->GetValidValue());
+
+  itk::ImageRegionIteratorWithIndex<Mask> initializeMaskIterator(mask, mask->GetLargestPossibleRegion());
+
+  while(!initializeMaskIterator.IsAtEnd())
+  {
+    if(initializeMaskIterator.GetIndex()[0] < 55)
+    {
+      initializeMaskIterator.Set(mask->GetHoleValue());
+    }
+    else
+    {
+      initializeMaskIterator.Set(mask->GetValidValue());
+    }
+
+    ++initializeMaskIterator;
+  }
+
+  ITKHelpers::WriteImage(mask.GetPointer(), "mask.png");
 
   // Create a red image
   itk::ImageRegionIterator<ImageType> initializeIterator(image, image->GetLargestPossibleRegion());
 
-  ImageType::PixelType red;
-  red.Fill(0);
-  red[0] = 255;
   while(!initializeIterator.IsAtEnd())
   {
     initializeIterator.Set(red);
@@ -68,12 +103,12 @@ int main(int, char*[])
   itk::Index<2> targetCorner = {{50,50}};
   itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
 
+  itk::Index<2> perfectSourceCorner = {{75,75}};
+  itk::ImageRegion<2> perfectSourceRegion(perfectSourceCorner, patchSize);
+
   // Make the source patch green
   itk::ImageRegionIterator<ImageType> sourceRegionIterator(image, sourceRegion);
 
-  ImageType::PixelType green;
-  green.Fill(0);
-  green[1] = 255;
   while(!sourceRegionIterator.IsAtEnd())
   {
     sourceRegionIterator.Set(green);
@@ -81,17 +116,51 @@ int main(int, char*[])
     ++sourceRegionIterator;
   }
 
-//  IntroducedEnergy<ImageType> introducedEnergy;
-  typedef IntroducedEnergy<ImageType> IntroducedEnergyType;
+  ITKHelpers::WriteImage(image.GetPointer(), "image.png");
 
-//  float patchBoundaryEnergy = IntroducedEnergyType::ComputeIntroducedEnergyPatchBoundary(image, mask, sourceRegion, targetRegion);
-//  std::cout << "patchBoundaryEnergy: " << patchBoundaryEnergy << std::endl;
+  {
+    ImageType::Pointer regionHighlightImage = ImageType::New();
+    ITKHelpers::DeepCopy(image.GetPointer(), regionHighlightImage.GetPointer());
 
-//  float maskBoundaryEnergy = IntroducedEnergyType::ComputeIntroducedEnergyMaskBoundary(image, mask, sourceRegion, targetRegion);
-//  std::cout << "maskBoundaryEnergy: " << maskBoundaryEnergy << std::endl;
+    ITKHelpers::OutlineRegion(regionHighlightImage.GetPointer(), sourceRegion, white);
+    ITKHelpers::OutlineRegion(regionHighlightImage.GetPointer(), targetRegion, black);
+    ITKHelpers::OutlineRegion(regionHighlightImage.GetPointer(), perfectSourceRegion, blue);
 
-//  float totalEnergy = IntroducedEnergyType::ComputeIntroducedEnergy(image, mask, sourceRegion, targetRegion);
-//  std::cout << "totalEnergy: " << totalEnergy << std::endl;
+    ITKHelpers::WriteImage(regionHighlightImage.GetPointer(), "regions.png");
+  }
+
+  IntroducedEnergy<ImageType> introducedEnergy;
+  introducedEnergy.SetDebugImages(true);
+
+  // Bad match
+  {
+    std::cout << "Bad match:" << std::endl;
+
+    float patchBoundaryEnergy = introducedEnergy.ComputeIntroducedEnergyPatchBoundary(image, mask, sourceRegion, targetRegion);
+    std::cout << "patchBoundaryEnergy: " << patchBoundaryEnergy << std::endl;
+
+    float maskBoundaryEnergy = introducedEnergy.ComputeIntroducedEnergyMaskBoundary(image, mask, sourceRegion, targetRegion);
+    std::cout << "maskBoundaryEnergy: " << maskBoundaryEnergy << std::endl;
+
+    float totalEnergy = introducedEnergy.ComputeIntroducedEnergy(image, mask, sourceRegion, targetRegion);
+    std::cout << "totalEnergy: " << totalEnergy << std::endl;
+  }
+
+  // Perfect match
+  {
+    std::cout << "Perfect match:" << std::endl;
+  //  IntroducedEnergy<ImageType> introducedEnergy;
+    typedef IntroducedEnergy<ImageType> IntroducedEnergyType;
+
+    float patchBoundaryEnergy = introducedEnergy.ComputeIntroducedEnergyPatchBoundary(image, mask, perfectSourceRegion, targetRegion);
+    std::cout << "patchBoundaryEnergy: " << patchBoundaryEnergy << std::endl;
+
+    float maskBoundaryEnergy = introducedEnergy.ComputeIntroducedEnergyMaskBoundary(image, mask, perfectSourceRegion, targetRegion);
+    std::cout << "maskBoundaryEnergy: " << maskBoundaryEnergy << std::endl;
+
+    float totalEnergy = introducedEnergy.ComputeIntroducedEnergy(image, mask, perfectSourceRegion, targetRegion);
+    std::cout << "totalEnergy: " << totalEnergy << std::endl;
+  }
 
   return EXIT_SUCCESS;
 }
