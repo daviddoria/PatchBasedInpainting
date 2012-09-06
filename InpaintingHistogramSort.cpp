@@ -36,6 +36,7 @@
 #include "NearestNeighbor/LinearSearchBest/DualHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchBest/AdaptiveDualHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchBest/AdaptiveDualQuadrantHistogramDifference.hpp"
+#include "NearestNeighbor/LinearSearchBest/IntroducedEnergy.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
@@ -238,11 +239,6 @@ int main(int argc, char *argv[])
   typedef boost::indirect_cmp<PriorityMapType, PriorityCompareType > IndirectComparisonType;
   IndirectComparisonType indirectComparison(priorityMap);
 
-//  typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap,
-//                                     PriorityMapType, PriorityCompareType>
-//      BoundaryNodeQueueType;
-//  BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, queueSortFunctor);
-
   // Create the queue
   typedef boost::heap::binomial_heap<VertexDescriptorType,boost::heap::compare<IndirectComparisonType> > BoundaryNodeQueueType;
   BoundaryNodeQueueType boundaryNodeQueue(indirectComparison);
@@ -294,30 +290,38 @@ int main(int argc, char *argv[])
 //  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<OriginalImageType::PixelType> > PatchDifferenceType;
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumSquaredPixelDifference<OriginalImageType::PixelType> > PatchDifferenceType;
 
-  // Create the  neighbor finder
+  // Create the first (KNN) neighbor finder
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
 
-  typedef std::vector<VertexDescriptorType>::iterator VertexDescriptorVectorIteratorType;
+  /////////////////////// Histogram neighbor finders /////////////////////////////////////
+  // Setup the second (1-NN) neighbor finder
+//  typedef std::vector<VertexDescriptorType>::iterator VertexDescriptorVectorIteratorType;
 
-  // This is templated on OriginalImageType because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
-  //typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType, OriginalImageType> BestSearchType;
-//  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexIteratorType, OriginalImageType> BestSearchType;
-//  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
-//  typedef LinearSearchBestHoleHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
-//  typedef LinearSearchBestDualHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
-//  typedef LinearSearchBestAdaptiveDualHistogramDifference<ImagePatchDescriptorMapType,
+//  // This is templated on OriginalImageType because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
+//  //typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType, OriginalImageType> BestSearchType;
+////  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexIteratorType, OriginalImageType> BestSearchType;
+////  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
+////  typedef LinearSearchBestHoleHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
+////  typedef LinearSearchBestDualHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
+////  typedef LinearSearchBestAdaptiveDualHistogramDifference<ImagePatchDescriptorMapType,
+////            HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
+//  typedef LinearSearchBestAdaptiveDualQuadrantHistogramDifference<ImagePatchDescriptorMapType,
 //            HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
-  typedef LinearSearchBestAdaptiveDualQuadrantHistogramDifference<ImagePatchDescriptorMapType,
-            HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 
-  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
-  linearSearchBest.SetNumberOfBinsPerDimension(binsPerChannel);
-  // The range (0,1) is used because we use the HSV image.
-  linearSearchBest.SetRangeMin(0.0f);
-  linearSearchBest.SetRangeMax(1.0f);
-  linearSearchBest.SetWriteDebugPatches(true, originalImage);
+//  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
+//  linearSearchBest.SetNumberOfBinsPerDimension(binsPerChannel);
+//  // The range (0,1) is used because we use the HSV image.
+//  linearSearchBest.SetRangeMin(0.0f);
+//  linearSearchBest.SetRangeMax(1.0f);
+//  linearSearchBest.SetWriteDebugPatches(true, originalImage);
 
+  /////////////////////// Other neighbor finders /////////////////////////////////////
+  typedef LinearSearchBestIntroducedEnergy<ImagePatchDescriptorMapType, OriginalImageType> BestSearchType;
+
+  BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
+
+  // Setup the two step neighbor finder
   TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
       twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 

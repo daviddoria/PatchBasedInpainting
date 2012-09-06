@@ -5,11 +5,11 @@
 add_custom_target(LinearSearchBest SOURCES
 AdaptiveDualHistogramDifference.hpp
 AdaptiveDualQuadrantHistogramDifference.hpp
-CMakeLists.txt
 DualHistogramDifference.hpp
 HistogramCorrelation.hpp
 HistogramDifference.hpp
 HistogramParent.hpp
 HoleHistogramDifference.hpp
+IntroducedEnergy.hpp
 Property.hpp
 )

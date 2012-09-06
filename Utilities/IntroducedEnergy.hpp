@@ -24,9 +24,18 @@
 #include "ImageProcessing/Derivatives.h"
 
 template <typename TImage>
-float IntroducedEnergy<TImage>::ComputeIntroducedEnergyPatchBoundary(const TImage* const image, const Mask* const mask,
+float IntroducedEnergy<TImage>::ComputeIntroducedEnergyPatchBoundary(const TImage* const inputImage, const Mask* const mask,
                                                                      const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
 {
+  // Create the magnitude image so we can compute gradients of a scalar image.
+  typedef itk::Image<float, 2> MagnitudeImageType;
+  MagnitudeImageType::Pointer magnitudeImage = MagnitudeImageType::New();
+  ITKHelpers::MagnitudeImage(inputImage, magnitudeImage.GetPointer());
+
+  // Call the data to operate on 'image' so the rest of this function
+  // syntatically seems like it is operating on the input image directly.
+  MagnitudeImageType* image = magnitudeImage;
+
   typedef itk::Image<itk::CovariantVector<float, 2> > GradientImageType;
 
   // Compute gradients in the target region
@@ -37,7 +46,7 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyPatchBoundary(const TImag
   Derivatives::MaskedGradientInRegion(image, mask, targetRegion, targetRegionGradientImage.GetPointer());
 
   // Copy the source patch to the target patch
-  typename TImage::Pointer inpaintedImage = TImage::New();
+  MagnitudeImageType::Pointer inpaintedImage = MagnitudeImageType::New();
   ITKHelpers::DeepCopy(image, inpaintedImage.GetPointer());
   ITKHelpers::CopyRegion(image, inpaintedImage.GetPointer(), sourceRegion, targetRegion);
 
@@ -74,9 +83,18 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyPatchBoundary(const TImag
 }
 
 template <typename TImage>
-float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage* const image, const Mask* const mask,
+float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage* const inputImage, const Mask* const mask,
                                                                     const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
 {
+  // Create the magnitude image so we can compute gradients of a scalar image.
+  typedef itk::Image<float, 2> MagnitudeImageType;
+  MagnitudeImageType::Pointer magnitudeImage = MagnitudeImageType::New();
+  ITKHelpers::MagnitudeImage(inputImage, magnitudeImage.GetPointer());
+
+  // Call the data to operate on 'image' so the rest of this function
+  // syntatically seems like it is operating on the input image directly.
+  MagnitudeImageType* image = magnitudeImage;
+
   typedef itk::Image<itk::CovariantVector<float, 2> > GradientImageType;
   // Find pixels in the region and on the mask boundary
   typedef std::vector<itk::Index<2> > PixelContainer;
@@ -93,8 +111,9 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
 
   Derivatives::MaskedGradientInRegion(image, mask, targetRegion, targetRegionGradientImage.GetPointer());
 
-  // Copy the patch into an image
-  typename TImage::Pointer inpaintedImage = TImage::New();
+  // Copy the patch into an image (we copy the patch in the magnitude image because there is no
+  // reason to copy it in the vector image and then take the magnitude again
+  MagnitudeImageType::Pointer inpaintedImage = MagnitudeImageType::New();
   ITKHelpers::DeepCopy(image, inpaintedImage.GetPointer());
   ITKHelpers::CopyRegion(image, inpaintedImage.GetPointer(), sourceRegion, targetRegion);
 
