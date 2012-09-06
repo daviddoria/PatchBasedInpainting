@@ -21,8 +21,10 @@
 
 #include "PatchInpainterParent.h"
 
+#include <Utilities/Debug/Debug.h>
+
 template <typename TImage>
-class PatchInpainter : public PatchInpainterParent
+class PatchInpainter : public PatchInpainterParent, public Debug
 {
   /** The image to inpaint. */
   TImage* Image;
@@ -36,9 +38,6 @@ class PatchInpainter : public PatchInpainterParent
   // Debug only
   /** Count how many times this classes function has been performed. */
   unsigned int Iteration;
-
-  /** A flag indicating if we would like to write debug images. */
-  bool DebugImages;
 
   /** The name of the image as the programmer would refer to it. I.e. "TheMask" or similar. */
   std::string ImageName;
@@ -57,15 +56,9 @@ public:
     this->ImageName = imageName;
   }
 
-  /** Determine if the debug images should be written. */
-  void SetDebugImages(const bool debugImages)
-  {
-    this->DebugImages = debugImages;
-  }
-
   /** Inpaint a patch only in the masked pixels. */
   PatchInpainter(std::size_t patchHalfWidth, TImage* const image, const Mask* const mask) :
-    Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth), Iteration(0), DebugImages(false), ImageName("Unnamed")
+    Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth), Iteration(0), ImageName("Unnamed")
   {
 //    std::cout << "PatchInpainter: size: " << this->Image->GetLargestPossibleRegion().GetSize() << std::endl;
   }
@@ -98,12 +91,15 @@ public:
       ++targetIterator;
     }
 
-    if(this->DebugImages)
+    if(this->GetDebugOutputs())
     {
       std::cout << "PatchInpainter::PaintPatch(): Painted patch " << targetCenter[0] << " " << targetCenter[1]
                 << " with " << sourceCenter[0] << " " << sourceCenter[1] << std::endl;
       std::cout << "PatchInpainter::PaintPatch() After filling, there are " << this->MaskImage->CountHolePixels() << " hole pixels remaining." << std::endl;
+    }
 
+    if(this->GetDebugImages())
+    {
       try
       {
         ITKHelpers::WriteSequentialImage(this->Image, this->ImageName, this->Iteration, 3, "png");

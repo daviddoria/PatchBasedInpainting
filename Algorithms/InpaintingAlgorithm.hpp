@@ -49,12 +49,12 @@
 
 template <typename TVertexListGraph, typename TInpaintingVisitor,
           typename TBoundaryStatusMap, typename TPriorityQueue,
-          typename THandleMap,
+          typename THandleMap, typename TPriorityMap,
           typename TNearestNeighborFinder, typename TPatchInpainter>
 inline
 void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
                         TBoundaryStatusMap* boundaryStatusMap, TPriorityQueue* boundaryNodeQueue,
-                        THandleMap& handleMap,
+                        THandleMap& handleMap, TPriorityMap& priorityMap,
                         TNearestNeighborFinder find_inpainting_source,
                         TPatchInpainter* patchInpainter)
 {
@@ -79,7 +79,7 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
     do
     {
       //std::cout << "There are " << boundaryNodeQueue.size() << " nodes in the queue." << std::endl;
-      if( (*boundaryNodeQueue).empty() )
+      if( boundaryNodeQueue->empty() )
       {
         std::cout << "Inpainting complete." << std::endl;
         vis.InpaintingComplete();
@@ -89,12 +89,12 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
       targetNode = boundaryNodeQueue->top();
       typename THandleMap::value_type invalidHandle(0);
       put(handleMap, targetNode, invalidHandle);
-      (*boundaryNodeQueue).pop();
+      boundaryNodeQueue->pop();
     } while( get(*boundaryStatusMap, targetNode) == false );
 
-//    std::cout << "Processing pixel with priority: " << get(boundaryNodeQueue->keys(), targetNode) << std::endl; // TODO: update this to use the binomial_heap API (will need the priority map)
+//    std::cout << "Processing node (" << targetNode[0] << ", " << targetNode[1] << ") with priority: " << get(priorityMap, targetNode) << std::endl;
 
-//     std::cout << "Before DiscoverVertex there are " << (*boundaryNodeQueue).size()
+//     std::cout << "Before DiscoverVertex there are " << boundaryNodeQueue->size()
 //               << " nodes in the queue." << std::endl;
 //     std::cout << "Before DiscoverVertex there are "
 //               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
@@ -104,7 +104,7 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
     vis.DiscoverVertex(targetNode);
 
     // Find the source node that matches best to the target node
-//     std::cout << "Before PotentialMatchMade there are " << (*boundaryNodeQueue).size()
+//     std::cout << "Before PotentialMatchMade there are " << boundaryNodeQueue->size()
 //               << " nodes in the queue." << std::endl;
 //     std::cout << "Before PotentialMatchMade there are "
 //               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
@@ -135,15 +135,15 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
 //               << " valid nodes in the queue." << std::endl;
     vis.FinishVertex(targetNode, sourceNode);
 
-//     std::cout << "At the end of the iteration there are " << (*boundaryNodeQueue).size()
+//     std::cout << "At the end of the iteration there are " << boundaryNodeQueue->size()
 //               << " nodes in the queue." << std::endl;
 //     std::cout << "At the end of the iteration there are "
 //               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
 //               << " valid nodes in the queue." << std::endl;
 
-    PatchHelpers::WriteValidQueueNodesPrioritiesImage(*boundaryNodeQueue, *boundaryStatusMap,
-                                              vis.GetImage()->GetLargestPossibleRegion(),
-                                              Helpers::GetSequentialFileName("QueueImagePriorities", iteration, "mha", 3));
+//    PatchHelpers::WriteValidQueueNodesPrioritiesImage(*boundaryNodeQueue, *boundaryStatusMap, priorityMap,
+//                                              vis.GetImage()->GetLargestPossibleRegion(),
+//                                              Helpers::GetSequentialFileName("QueueImagePriorities", iteration, "mha", 3));
 
 //    PatchHelpers::WriteValidQueueNodesLocationsImage(*boundaryNodeQueue, *boundaryStatusMap,
 //                                              vis.GetImage()->GetLargestPossibleRegion(),

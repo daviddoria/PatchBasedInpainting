@@ -137,8 +137,8 @@ public:
 
   void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
-    std::cout << "InpaintingVisitor::PotentialMatchMade: target " << target[0] << " " << target[1]
-              << " source: " << source[0] << " " << source[1] << std::endl;
+//    std::cout << "InpaintingVisitor::PotentialMatchMade: target " << target[0] << " " << target[1]
+//              << " source: " << source[0] << " " << source[1] << std::endl;
 
     if(!this->MaskImage->IsValid(ITKHelpers::CreateIndex(source)))
     {
@@ -167,7 +167,7 @@ public:
     // Mark this pixel and the area around it as filled, and mark the mask in this region as filled.
     // Determine the new boundary, and setup the nodes in the boundary queue.
 
-    std::cout << "InpaintingVisitor::FinishVertex()" << std::endl;
+//    std::cout << "InpaintingVisitor::FinishVertex()" << std::endl;
 
     // Construct the region around the vertex
     itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(targetNode);
@@ -217,7 +217,7 @@ public:
         // Note: we must set the value in the priority map before pushing the node
         // into the queue (as the priority is what determines the node's position in the queue).
         float priority = this->PriorityFunction->ComputePriority(imageIterator.GetIndex());
-        //std::cout << "updated priority: " << priority << std::endl;
+
         put(this->PriorityMap, v, priority);
 
         put(this->BoundaryStatusMap, v, true);
@@ -225,11 +225,13 @@ public:
         if(get(this->HandleMap, v).node_ != 0) // the node is not already in the queue (the node_pointer of the node_handle is not NULL)
         {
           this->BoundaryNodeQueue.update(get(this->HandleMap, v), v);
+//          std::cout << "Updated priority of node (" << v[0] << ", " << v[1] << "): " << priority << std::endl;
         }
         else
         {
           HandleType handle = this->BoundaryNodeQueue.push(v);
           put(this->HandleMap, v, handle);
+//          std::cout << "Added new node (" << v[0] << ", " << v[1] << "): " << priority << std::endl;
         }
       }
       else
@@ -294,7 +296,7 @@ public:
 
     this->NumberOfFinishedPatches++;
 
-    std::cout << "Leave InpaintingVisitor::FinishVertex()" << std::endl;
+//    std::cout << "Leave InpaintingVisitor::FinishVertex()" << std::endl;
   } // end FinishVertex
 
   void InpaintingComplete() const

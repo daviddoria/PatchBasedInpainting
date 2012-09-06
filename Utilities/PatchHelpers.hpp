@@ -1,3 +1,21 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef PatchHelpers_HPP
 #define PatchHelpers_HPP
 
@@ -16,8 +34,8 @@
 namespace PatchHelpers
 {
 
-template <typename TNodeQueue, typename TPropertyMap>
-void WriteValidQueueNodesLocationsImage(TNodeQueue nodeQueue, const TPropertyMap propertyMap,
+template <typename TNodeQueue, typename TPriorityMap>
+void WriteValidQueueNodesLocationsImage(TNodeQueue nodeQueue, const TPriorityMap propertyMap,
                                        const itk::ImageRegion<2>& fullRegion, const std::string& fileName)
 {
   typedef itk::Image<unsigned char, 2> ImageType;
@@ -43,8 +61,8 @@ void WriteValidQueueNodesLocationsImage(TNodeQueue nodeQueue, const TPropertyMap
   ITKHelpers::WriteImage(image.GetPointer(), fileName);
 }
 
-template <typename TNodeQueue, typename TPriorityMap>
-void WriteValidQueueNodesPrioritiesImage(TNodeQueue nodeQueue, const TPriorityMap priorityMap,
+template <typename TNodeQueue, typename TBoundaryStatusMap, typename TPriorityMap>
+void WriteValidQueueNodesPrioritiesImage(TNodeQueue nodeQueue, const TBoundaryStatusMap boundaryStatusMap, const TPriorityMap priorityMap,
                                          const itk::ImageRegion<2>& fullRegion, const std::string& fileName)
 {
   typedef itk::Image<float, 2> ImageType;
@@ -57,7 +75,7 @@ void WriteValidQueueNodesPrioritiesImage(TNodeQueue nodeQueue, const TPriorityMa
   {
     typename TNodeQueue::value_type queuedNode = nodeQueue.top();
 
-    bool valid = get(priorityMap, queuedNode);
+    bool valid = get(boundaryStatusMap, queuedNode);
     if(valid)
     {
       itk::Index<2> index = Helpers::ConvertFrom<itk::Index<2>, typename TNodeQueue::value_type>(queuedNode);
@@ -69,6 +87,24 @@ void WriteValidQueueNodesPrioritiesImage(TNodeQueue nodeQueue, const TPriorityMa
   }
 
   ITKHelpers::WriteImage(image.GetPointer(), fileName);
+}
+
+template <typename TNodeQueue, typename TBoundaryStatusMap, typename TPriorityMap>
+void DumpQueue(TNodeQueue nodeQueue, const TBoundaryStatusMap boundaryStatusMap, const TPriorityMap priorityMap)
+{
+  while(!nodeQueue.empty())
+  {
+    typename TNodeQueue::value_type queuedNode = nodeQueue.top();
+
+    bool valid = get(boundaryStatusMap, queuedNode);
+    if(valid)
+    {
+      float priority = get(priorityMap, queuedNode);
+      std::cout << "(" << queuedNode[0] << ", " << queuedNode[1] << ") : " << priority << std::endl;
+    }
+
+    nodeQueue.pop();
+  }
 }
 
 template <class TPriorityQueue>

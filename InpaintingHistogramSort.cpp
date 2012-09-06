@@ -231,10 +231,8 @@ int main(int argc, char *argv[])
 //  typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;
 //  IndexInHeapMap index_in_heap(indexMap);
 
-  // Create the priority compare functor (we want to use the highest priority pixels first,
-  // so the std::greater functor sorts the queue
-  // such that the highest values (highest priorities) are first in the queue)
-  typedef std::greater<float> PriorityCompareType;
+  // Create the priority compare functor (we want to process the highest priority pixels first)
+  typedef std::less<float> PriorityCompareType;
 
   // Create the indirect comparison function
   typedef boost::indirect_cmp<PriorityMapType, PriorityCompareType > IndirectComparisonType;
@@ -323,8 +321,11 @@ int main(int argc, char *argv[])
   TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
       twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
+  // For debugging, look at the initial priority queue
+//  PatchHelpers::DumpQueue(boundaryNodeQueue, boundaryStatusMap, priorityMap);
+
   // Perform the inpainting
-  InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, handleMap,
+  InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, handleMap, priorityMap,
                       twoStepNearestNeighbor, &inpainter);
 
   // If the output filename is a png file, then use the RGBImage writer so that it is first

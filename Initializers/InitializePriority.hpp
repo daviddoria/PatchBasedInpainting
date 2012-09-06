@@ -41,7 +41,7 @@ inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& bounda
       itk::Index<2> index = ITKHelpers::CreateIndex(node);
 
       float priority = priorityFunction->ComputePriority(index);
-      // std::cout << "initial priority: " << priority << std::endl;
+      std::cout << "initial priority for node (" << node[0] << ", " << node[1] << "): " << priority << std::endl;
       put(priorityMap, node, priority);
 
       // Note: the priorityMap value must be set before pushing the node into the queue
