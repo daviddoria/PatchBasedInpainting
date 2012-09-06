@@ -312,6 +312,8 @@ void MaskedDerivativeGaussianInRegion(const TImage* const image, const Mask* con
 {
   // It is assumed that 'output' is the right size and initialized already.
 
+  static_assert(std::is_pod<typename TImage::PixelType>::value, "In MaskedDerivativeGaussianInRegion, T must be a POD");
+
   if(direction > 1)
     {
     throw std::runtime_error("This function can only compute derivatives of 2D images!");
