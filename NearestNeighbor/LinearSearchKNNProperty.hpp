@@ -93,7 +93,7 @@ public:
     {
       DistanceValueType d = DistanceFunction(get(PropertyMap, *current), queryPatch); // (source, target) (the query node is the target node)
 
-      #pragma omp critical // This produces weird crashes without guarding it
+      #pragma omp critical // Ther are weird crashes without this guard
       outputQueue.push(PairType(d, current));
     }
 

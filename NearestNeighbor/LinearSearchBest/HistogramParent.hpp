@@ -51,11 +51,11 @@ protected:
 
   unsigned int NumberOfBinsPerDimension;
 
-  /** The lower end of the lowest bin in the histogram. */
-  float RangeMin;
+  /** The lower end of the lowest bin in the histogram for each channel of the image. */
+  typename TImage::PixelType RangeMin;
 
-  /** The upper end of the highest bin in the histogram. */
-  float RangeMax;
+  /** The upper end of the highest bin in the histogram for each channel of the image. */
+  typename TImage::PixelType RangeMax;
 
   // DEBUG ONLY
   unsigned int Iteration; // This is to keep track of which iteration we are on for naming debug output images

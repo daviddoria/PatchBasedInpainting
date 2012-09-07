@@ -61,11 +61,14 @@ public:
     }
 
     // If the input element range is empty, there is nothing to do.
-    if(!(this->RangeMax > this->RangeMin))
+    for(unsigned int channel = 0; channel < this->Image->GetNumberOfComponentsPerPixel(); ++channel)
     {
-      std::stringstream ss;
-      ss << "RangeMax (" << this->RangeMax << ") must be > RangeMin (" << this->RangeMin << ")";
-      throw std::runtime_error(ss.str());
+      if(!(this->RangeMax[channel] > this->RangeMin[channel]))
+      {
+        std::stringstream ss;
+        ss << "Channel " << channel << " has RangeMax (" << this->RangeMax[channel] << ") must be > RangeMin (" << this->RangeMin[channel] << ")";
+        throw std::runtime_error(ss.str());
+      }
     }
 
     typedef int BinValueType;
@@ -74,11 +77,11 @@ public:
 
     itk::ImageRegion<2> queryRegion = get(this->PropertyMap, query).GetRegion();
 
+    bool allowOutside = true;
     HistogramType targetHistogram =
-//      MaskedHistogram::ComputeMaskedImage1DHistogram(
-        MaskedHistogramGeneratorTypeComputeQuadrantMaskedImage1DHistogram(
-                  this->Image, queryRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
-                  this->RangeMin, this->RangeMax);
+      MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
+          this->Image, queryRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
+          this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetValidValue());
 
     if(this->WriteDebugPatches)
     {
@@ -101,12 +104,14 @@ public:
       // Compute the histogram of the best SSD region using the queryRegion mask
       HistogramType bestSSDHistogram =
        MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
-//          MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogram(
                       this->Image, get(this->PropertyMap, *first).GetRegion(), this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
-                      this->RangeMin, this->RangeMax);
-//      float ssdMatchHistogramScore = Histogram<BinValueType>::HistogramDifference(targetHistogram, bestSSDHistogram);
-      float ssdMatchHistogramScore = HistogramDifferences::WeightedHistogramDifference(targetHistogram, bestSSDHistogram);
-//      float ssdMatchHistogramScore = Histogram<BinValueType>::HistogramCoherence(targetHistogram, bestSSDHistogram);
+                      this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetValidValue());
+
+      float ssdMatchHistogramScore = HistogramDifferences::HistogramDifference(targetHistogram, bestSSDHistogram);
+//      float ssdMatchHistogramScore = HistogramDifferences::WeightedHistogramDifference(targetHistogram, bestSSDHistogram);
+//      float ssdMatchHistogramScore = HistogramDifferences::HistogramCoherence(targetHistogram, bestSSDHistogram);
+
+
       std::cout << "Best SSDHistogramDifference: " << ssdMatchHistogramScore << std::endl;
       HistogramHelpers::WriteHistogram(bestSSDHistogram, Helpers::GetSequentialFileName("BestSSDHistogram",this->Iteration,"txt",3));
       HistogramHelpers::WriteHistogram(targetHistogram, Helpers::GetSequentialFileName("TargetHistogram",this->Iteration,"txt",3));
@@ -127,13 +132,12 @@ public:
       // Compute the histogram of the source region using the queryRegion mask
       HistogramType testHistogram =
           MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
-//          MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogram(
                       this->Image, currentRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
-                      this->RangeMin, this->RangeMax);
+                      this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetValidValue());
 
-      // float histogramDifference = Histogram<BinValueType>::HistogramDifference(targetHistogram, testHistogram);
-      float histogramDifference = HistogramDifferences::WeightedHistogramDifference(targetHistogram, testHistogram);
-//      float histogramDifference = Histogram<BinValueType>::HistogramCoherence(targetHistogram, testHistogram);
+       float histogramDifference = HistogramDifferences::HistogramDifference(targetHistogram, testHistogram);
+//      float histogramDifference = HistogramDifferences::WeightedHistogramDifference(targetHistogram, testHistogram);
+//      float histogramDifference = HistogramDifferences::HistogramCoherence(targetHistogram, testHistogram);
 
       if(histogramDifference < bestDistance)
       {

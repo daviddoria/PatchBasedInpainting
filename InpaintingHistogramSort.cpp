@@ -38,6 +38,7 @@
 #include "NearestNeighbor/LinearSearchBest/AdaptiveDualQuadrantHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchBest/IntroducedEnergy.hpp"
 #include "NearestNeighbor/LinearSearchBest/First.hpp"
+#include "NearestNeighbor/LinearSearchBest/StrategySelection.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
@@ -324,8 +325,11 @@ int main(int argc, char *argv[])
 //  BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
 
   // First
-  typedef LinearSearchBestFirst BestSearchType;
-  BestSearchType linearSearchBest;
+//  typedef LinearSearchBestFirst BestSearchType;
+//  BestSearchType linearSearchBest;
+
+  typedef LinearSearchBestStrategySelection<ImagePatchDescriptorMapType, OriginalImageType> BestSearchType;
+  BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
 
   // Setup the two step neighbor finder
   TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
