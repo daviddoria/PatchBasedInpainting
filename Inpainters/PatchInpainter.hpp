@@ -74,9 +74,13 @@ public:
     itk::ImageRegion<2> sourceRegion =
         ITKHelpers::GetRegionInRadiusAroundPixel(sourceCenter, this->PatchHalfWidth);
 
-    // Iterate over all pixels in the target patch
+    // Ensure that the source patch will match the target patch after it is cropped
+    sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->Image->GetLargestPossibleRegion(), targetRegion);
+
+    // Ensure that the target patch is inside the image.
     targetRegion.Crop(this->Image->GetLargestPossibleRegion());
 
+    // Iterate over all pixels in the target patch (we must iterate over the target patch, because it may be smaller than the source patch)
     itk::ImageRegionConstIteratorWithIndex<TImage> targetIterator(this->Image, targetRegion);
 
     while(!targetIterator.IsAtEnd())
@@ -100,6 +104,7 @@ public:
 
     if(this->GetDebugImages())
     {
+      // Write the inpainted image after this iteration. If the writer fails to write the image directly as a png (it would be an unsupported pixel type), then convert it to a supported type before writing.
       try
       {
         ITKHelpers::WriteSequentialImage(this->Image, this->ImageName, this->Iteration, 3, "png");
@@ -107,6 +112,16 @@ public:
       catch (...)
       {
         ITKHelpers::WriteSequentialRGBImage(this->Image, this->ImageName, this->Iteration, 3, "png");
+      }
+
+      // Write the target patch that was inpainted.
+      try
+      {
+        ITKHelpers::WriteRegion(this->Image, targetRegion, Helpers::GetSequentialFileName("TargetPatch", this->Iteration, "png", 3));
+      }
+      catch (...)
+      {
+        ITKHelpers::WriteRegionAsRGBImage(this->Image, targetRegion, Helpers::GetSequentialFileName("TargetPatch", this->Iteration, "png", 3));
       }
     }
 
