@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
   // Create the patch inpainter.
   typedef PatchInpainter<OriginalImageType> OriginalImageInpainterType;
   OriginalImageInpainterType originalImagePatchInpainter(patchHalfWidth, originalImage, mask);
-//  originalImagePatchInpainter.SetDebugImages(true);
+  originalImagePatchInpainter.SetDebugImages(true);
   originalImagePatchInpainter.SetImageName("RGB");
 
   // Create an inpainter for the HSV image.

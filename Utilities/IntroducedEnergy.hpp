@@ -28,13 +28,9 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyPatchBoundary(const TImag
                                                                      itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion)
 {
   // Crop the source and target region so that the target region is inside the image and the source region has the same size/position crop
-  itk::Offset<2> offset = targetRegion.GetIndex() - sourceRegion.GetIndex();
+  sourceRegion = CropRegionAtPosition(sourceRegion, inputImage->GetLargestPossibleRegion(), targetRegion);
 
   targetRegion.Crop(inputImage->GetLargestPossibleRegion());
-
-  sourceRegion.SetIndex(sourceRegion.GetIndex() + offset);
-  sourceRegion.Crop(inputImage->GetLargestPossibleRegion());
-  sourceRegion.SetIndex(sourceRegion.GetIndex() - offset);
 
   // Create the magnitude image so we can compute gradients of a scalar image.
   typedef itk::Image<float, 2> MagnitudeImageType;
