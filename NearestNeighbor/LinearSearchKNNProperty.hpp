@@ -87,10 +87,13 @@ public:
     typename PropertyMapType::value_type queryPatch = get(PropertyMap, queryNode);
 
     // The queue stores the items in descending score order.
-    for(ForwardIteratorType current = first; current != last; ++current)
+    #pragma omp parallel for
+//    for(ForwardIteratorType current = first; current != last; ++current) // OpenMP 3 doesn't allow != in the loop ending condition
+    for(ForwardIteratorType current = first; current < last; ++current)
     {
       DistanceValueType d = DistanceFunction(get(PropertyMap, *current), queryPatch); // (source, target) (the query node is the target node)
 
+      #pragma omp critical // This produces weird crashes without guarding it
       outputQueue.push(PairType(d, current));
     }
 
@@ -102,21 +105,21 @@ public:
 //    std::cout << "There are " << outputQueue.size() << " items in the queue." << std::endl;
 
     // Check if any of the matches are infinity (indicating they were invalid for some reason)
-    auto hasInfinity = [] (PriorityQueueType q)
-      {
-        while(!q.empty())
-        {
-          if(q.top().first == std::numeric_limits<float>::infinity())
-          {
-            return true;
-          }
-          q.pop();
-        }
+//    auto hasInfinity = [] (PriorityQueueType q)
+//      {
+//        while(!q.empty())
+//        {
+//          if(q.top().first == std::numeric_limits<float>::infinity())
+//          {
+//            return true;
+//          }
+//          q.pop();
+//        }
 
-        return false;
-      };
+//        return false;
+//      };
 
-    assert(!hasInfinity(outputQueue));
+//    assert(!hasInfinity(outputQueue));
 //    if(hasInfinity(outputQueue))
 //    {
 //      std::stringstream ss;

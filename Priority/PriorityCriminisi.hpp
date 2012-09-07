@@ -60,13 +60,15 @@ void PriorityCriminisi<TImage>::Update(const TNode& sourceNode, const TNode& tar
   Superclass::Update(sourceNode, targetNode, patchNumber);
 
   // Compute the isophotes we will need
-//  itk::Index<2> targetIndex = Helpers::ConvertFrom<itk::Index<2>, TNode>(targetNode);
-//  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->PatchRadius);
-//  Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage, region, this->IsophoteImage);
+  itk::Index<2> targetIndex = Helpers::ConvertFrom<itk::Index<2>, TNode>(targetNode);
+  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->PatchRadius);
+  itk::ImageRegion<2> dilatedRegion = ITKHelpers::DilateRegion(region, this->PatchRadius);
+  dilatedRegion.Crop(this->IsophoteImage->GetLargestPossibleRegion());
+  Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage, dilatedRegion, this->IsophoteImage.GetPointer());
 
   // For debugging, we want to do this over the whole image
-  Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage,
-                                           this->Image->GetLargestPossibleRegion(), this->IsophoteImage.GetPointer());
+//  Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage,
+//                                           this->Image->GetLargestPossibleRegion(), this->IsophoteImage.GetPointer());
 
   ComputeBoundaryNormals();
 
@@ -118,7 +120,7 @@ template <typename TImage>
 void PriorityCriminisi<TImage>::ComputeBoundaryNormals()
 {
   BoundaryNormals boundaryNormals(this->MaskImage);
-  boundaryNormals.SetDebugLevel(1);
+//  boundaryNormals.SetDebugLevel(1);
 
   boundaryNormals.ComputeBoundaryNormals(this->BoundaryNormalsImage.GetPointer());
 }

@@ -16,19 +16,19 @@
  *
  *=========================================================================*/
 
-#ifndef LinearSearchBestPassThrough_HPP
-#define LinearSearchBestPassThrough_HPP
+#ifndef LinearSearchBestFirst_HPP
+#define LinearSearchBestFirst_HPP
 
-class LinearSearchBestPassThrough
+/** This class simply returns the first element in the range it is passed. */
+class LinearSearchBestFirst
 {
 public:
 
-  template <typename ForwardIteratorType, typename OutputContainerType>
-  typename TIterator::value_type operator()(ForwardIteratorType first, ForwardIteratorType last,
-                                            typename ForwardIteratorType::value_type queryNode, OutputContainerType& output)
+  template <typename ForwardIteratorType>
+  typename ForwardIteratorType::value_type operator()(ForwardIteratorType first, ForwardIteratorType last,
+                  typename ForwardIteratorType::value_type )
   {
-    output.clear();
-    std::copy(first, last, output.begin());
+    return *first;
   }
 
 };

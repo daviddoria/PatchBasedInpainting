@@ -28,7 +28,7 @@ FIND_PACKAGE(ITK REQUIRED ITKCommon ITKIOImageBase ITKIOPNG ITKIOMeta
 ITKImageIntensity ITKImageFeature ITKMathematicalMorphology ITKBinaryMathematicalMorphology ITKDistanceMap)
 INCLUDE(${ITK_USE_FILE})
 
-FIND_PACKAGE(Boost 1.50 REQUIRED)
+FIND_PACKAGE(Boost 1.51 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 # Check for Qt4. If it is available, build the PatchBasedInpainting library using it so that SelfPatchCompare can use QtConcurrent.

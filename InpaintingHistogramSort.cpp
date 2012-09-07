@@ -37,6 +37,7 @@
 #include "NearestNeighbor/LinearSearchBest/AdaptiveDualHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchBest/AdaptiveDualQuadrantHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchBest/IntroducedEnergy.hpp"
+#include "NearestNeighbor/LinearSearchBest/First.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
@@ -195,7 +196,7 @@ int main(int argc, char *argv[])
   // Create the patch inpainter.
   typedef PatchInpainter<OriginalImageType> OriginalImageInpainterType;
   OriginalImageInpainterType originalImagePatchInpainter(patchHalfWidth, originalImage, mask);
-  originalImagePatchInpainter.SetDebugImages(true);
+//  originalImagePatchInpainter.SetDebugImages(true);
   originalImagePatchInpainter.SetImageName("RGB");
 
   // Create an inpainter for the HSV image.
@@ -223,7 +224,7 @@ int main(int argc, char *argv[])
 
   typedef PriorityCriminisi<BlurredImageType> PriorityType;
   PriorityType priorityFunction(blurredImage, mask, patchHalfWidth);
-  priorityFunction.SetDebugLevel(1);
+//  priorityFunction.SetDebugLevel(1);
 
 //  typedef PriorityConfidence PriorityType;
 //  PriorityType priorityFunction(mask, patchHalfWidth);
@@ -257,7 +258,8 @@ int main(int argc, char *argv[])
     put(handleMap, *vertexIterator, invalidHandle);
   }
 
-  // Create the descriptor visitor
+  // Create the descriptor visitor (RGB). This is one thing that would need to be changed to use HSV pixel comparisons
+  // (along with the template paramater of the PatchDifferenceType defined further below).
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, OriginalImageType, ImagePatchDescriptorMapType>
       ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType
@@ -317,13 +319,18 @@ int main(int argc, char *argv[])
 //  linearSearchBest.SetWriteDebugPatches(true, originalImage);
 
   /////////////////////// Other neighbor finders /////////////////////////////////////
-  typedef LinearSearchBestIntroducedEnergy<ImagePatchDescriptorMapType, OriginalImageType> BestSearchType;
+  // IntroducedEnergy
+//  typedef LinearSearchBestIntroducedEnergy<ImagePatchDescriptorMapType, OriginalImageType> BestSearchType;
+//  BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
 
-  BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
+  // First
+  typedef LinearSearchBestFirst BestSearchType;
+  BestSearchType linearSearchBest;
 
   // Setup the two step neighbor finder
   TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
       twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
+
 
   // For debugging, look at the initial priority queue
 //  PatchHelpers::DumpQueue(boundaryNodeQueue, boundaryStatusMap, priorityMap);
