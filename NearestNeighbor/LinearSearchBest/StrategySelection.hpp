@@ -54,31 +54,73 @@ public:
 
     itk::ImageRegion<2> queryRegion = get(this->PropertyMap, query).GetRegion();
 
-   typename TImage::PixelType maxValue;
-   MaskOperations::FindMaximumValueInMaskedRegion(this->Image, this->MaskImage, queryRegion, this->MaskImage->GetValidValue(), maxValue);
+     typename TImage::PixelType maxValue;
+     MaskOperations::FindMaximumValueInMaskedRegion(this->Image, this->MaskImage, queryRegion, this->MaskImage->GetValidValue(), maxValue);
 
-   typename TImage::PixelType minValue;
-   MaskOperations::FindMinimumValueInMaskedRegion(this->Image, this->MaskImage, queryRegion, this->MaskImage->GetValidValue(), minValue);
+     typename TImage::PixelType minValue;
+     MaskOperations::FindMinimumValueInMaskedRegion(this->Image, this->MaskImage, queryRegion, this->MaskImage->GetValidValue(), minValue);
 
-   bool useProvidedRanges = false; // Compute the ranges internally
-   QuadrantHistogramProperties<typename TImage::PixelType> quadrantHistogramProperties;
-   QuadrantHistogramProperties<typename TImage::PixelType> returnQuadrantHistogramProperties;
-   QuadrantHistogramType targetQuadrantHistogram =
-       MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogramAdaptive(this->Image, queryRegion,
-         this->MaskImage, queryRegion, quadrantHistogramProperties,
-         useProvidedRanges,
-         this->MaskImage->GetValidValue(), returnQuadrantHistogramProperties);
+     bool useProvidedRanges = false; // Compute the ranges internally
+     QuadrantHistogramProperties<typename TImage::PixelType> quadrantHistogramProperties;
 
-    bool useHistogramComparison;
-    if(useHistogramComparison)
-    {
-      LinearSearchBestHistogramDifference<PropertyMapType, TImage, TIterator> linearSearchBestHistogramDifference(this->PropertyMap, this->Image, this->MaskImage);
-      return linearSearchBestHistogramDifference(first, last, query);
-    }
-    else
-    {
-      return *first;
-    }
+     QuadrantHistogramType targetQuadrantHistogram =
+         MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogramAdaptive(this->Image, queryRegion,
+           this->MaskImage, queryRegion, quadrantHistogramProperties,
+           useProvidedRanges, this->MaskImage->GetValidValue());
+     targetQuadrantHistogram.NormalizeHistograms();
+
+     std::vector<float> distances;
+
+     for(unsigned int i = 0; i < 4; ++i)
+     {
+       if(!targetQuadrantHistogram.Properties.Valid[i])
+       {
+         continue;
+       }
+
+       for(unsigned int j = 0; j < 4; ++j)
+       {
+         if(i == j)
+         {
+           continue;
+         }
+
+         if(!targetQuadrantHistogram.Properties.Valid[j])
+         {
+           continue;
+         }
+
+         typedef typename MaskedHistogramGeneratorType::HistogramType HistogramType;
+
+         float distance = HistogramDifferences::HistogramDifference(targetQuadrantHistogram.Histograms[i], targetQuadrantHistogram.Histograms[j]);
+         distances.push_back(distance);
+       }
+     }
+
+     // If there were no valid histograms to compare, just use the best SSD patch
+     if(distances.size() == 0)
+     {
+       return *first;
+     }
+
+     float maxDistance = Helpers::Max(distances);
+
+     bool useHistogramComparison = false;
+
+     if(maxDistance < 0.2f)
+     {
+       useHistogramComparison = true;
+     }
+
+     if(useHistogramComparison)
+     {
+       LinearSearchBestHistogramDifference<PropertyMapType, TImage, TIterator> linearSearchBestHistogramDifference(this->PropertyMap, this->Image, this->MaskImage);
+       return linearSearchBestHistogramDifference(first, last, query);
+     }
+     else // Just use the best SSD match
+     {
+       return *first;
+     }
 
   }
 
