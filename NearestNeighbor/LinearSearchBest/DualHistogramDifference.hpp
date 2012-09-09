@@ -63,12 +63,16 @@ public:
       return *last;
     }
 
-    // If the input element range is empty, there is nothing to do.
-    if(!(this->RangeMax > this->RangeMin))
+    // If the input element range is empty or invalid (backwards), there is nothing to do.
+    for(unsigned int component = 0; component < this->Image->GetNumberOfComponentsPerPixel(); ++component)
     {
-      std::stringstream ss;
-      ss << "RangeMax (" << this->RangeMax << ") must be > RangeMin (" << this->RangeMin << ")";
-      throw std::runtime_error(ss.str());
+      if(!(this->RangeMax[component] > this->RangeMin[component]))
+      {
+        std::stringstream ss;
+        ss << "RangeMax (" << this->RangeMax[component] << ") must be > RangeMin ("
+           << this->RangeMin[component] << ")";
+        throw std::runtime_error(ss.str());
+      }
     }
 
 //    typedef int BinValueType; // Can't use this if we are going to normalize the histograms.

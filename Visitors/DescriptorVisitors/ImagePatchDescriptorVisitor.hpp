@@ -63,16 +63,31 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
     itk::Index<2> index = {{v[0], v[1]}};
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, this->HalfWidth);
 
-    // Allow target patches to be not entirely inside the image. This occurs when the hole boundary is near the image boundary.
-    region.Crop(this->MaskImage->GetLargestPossibleRegion());
+    // Allow target patches to be not entirely inside the image.
+    // This occurs when the hole boundary is near the image boundary.
+//    region.Crop(this->MaskImage->GetLargestPossibleRegion()); // Don't do this! We must maintain
+    // the actual location of the patch (so that the vertex 'v' is at the center of the 'region'.
+    // This cropping must be done everywhere else, so that the source patches can be cropped
+    // the same as the target patch (this one).
+
+
+    itk::ImageRegion<2> croppedRegion = region;
+    croppedRegion.Crop(this->MaskImage->GetLargestPossibleRegion());
+
+    itk::Offset<2> croppedOffset = croppedRegion.GetIndex() - region.GetIndex();
 
     // Create the list of valid pixels
-    std::vector<itk::Index<2> > validPixels = this->MaskImage->GetValidPixelsInRegion(region);
+    std::vector<itk::Index<2> > validPixels = this->MaskImage->GetValidPixelsInRegion(croppedRegion);
+
+    // Create the list of offsets relative to the original region (before cropping)
     std::vector<itk::Offset<2> > validOffsets;
     for(size_t i = 0; i < validPixels.size(); ++i)
     {
+      // Compute the offset relative to the cropped region
       itk::Offset<2> offset = validPixels[i] - region.GetIndex();
-      validOffsets.push_back(offset);
+
+      // Store the offset relative to the original region
+      validOffsets.push_back(offset - croppedOffset);
     }
 
     // std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;

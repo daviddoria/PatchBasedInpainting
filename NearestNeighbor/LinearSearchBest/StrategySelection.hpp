@@ -59,6 +59,8 @@ public:
   template <typename TIterator>
   typename TIterator::value_type operator()(const TIterator first, const TIterator last, typename TIterator::value_type query)
   {
+    std::cout << "LinearSearchBestStrategySelection iteration: " << this->Iteration << std::endl;
+
     // If the input element range is empty, there is nothing to do.
     if(first == last)
     {
@@ -77,14 +79,20 @@ public:
      // bins will not correspond to each other!
      bool useProvidedRanges = true;
 
+     typename TImage::PixelType minValue = 0;
 
-     typename TImage::PixelType minValue;
-     MaskOperations::FindMinimumValueInMaskedRegion(this->Image, this->MaskImage,
-                                                    queryRegion, this->MaskImage->GetValidValue(), minValue);
+     typename TImage::PixelType maxValue = 255;
 
-     typename TImage::PixelType maxValue;
-     MaskOperations::FindMaximumValueInMaskedRegion(this->Image, this->MaskImage,
-                                                    queryRegion, this->MaskImage->GetValidValue(), maxValue);
+     // Use the range of the valid region of the target patch for the histograms. This is not necessarily the right thing
+     // to do, because we might have a pretty solid "sky" patch that has more white in one of the quadrants than blue so
+     // these quadrant histograms would match poorly even though the whole valid region was "sky" without any hard lines.
+//     typename TImage::PixelType minValue;
+//     MaskOperations::FindMinimumValueInMaskedRegion(this->Image, this->MaskImage,
+//                                                    queryRegion, this->MaskImage->GetValidValue(), minValue);
+
+//     typename TImage::PixelType maxValue;
+//     MaskOperations::FindMaximumValueInMaskedRegion(this->Image, this->MaskImage,
+//                                                    queryRegion, this->MaskImage->GetValidValue(), maxValue);
 
      QuadrantHistogramProperties<typename TImage::PixelType> quadrantHistogramProperties;
 
@@ -154,17 +162,19 @@ public:
      {
        std::cout << "Using histogram comparison with minValue: " << minValue
                  << " maxValue: " << maxValue << std::endl;
-       LinearSearchBestHistogramDifference<PropertyMapType, TImage, TIterator>
-           linearSearchBestHistogramDifference(this->PropertyMap, this->Image, this->MaskImage);
-       linearSearchBestHistogramDifference.SetRangeMin(minValue);
-       linearSearchBestHistogramDifference.SetRangeMax(maxValue);
-       linearSearchBestHistogramDifference.SetNumberOfBinsPerDimension(30);
+//       LinearSearchBestHistogramDifference<PropertyMapType, TImage, TIterator>
+//           histogramCheck(this->PropertyMap, this->Image, this->MaskImage);
+       LinearSearchBestDualHistogramDifference<PropertyMapType, TImage, TIterator>
+           histogramCheck(this->PropertyMap, this->Image, this->MaskImage);
+       histogramCheck.SetRangeMin(minValue);
+       histogramCheck.SetRangeMax(maxValue);
+       histogramCheck.SetNumberOfBinsPerDimension(30);
 
        fout << "H " << Helpers::ZeroPad(this->Iteration, 3)
             << " " << maxDistance << " : " << distances << std::endl; // 'H'istogram
        fout.close();
        this->Iteration++;
-       return linearSearchBestHistogramDifference(first, last, query);
+       return histogramCheck(first, last, query);
      }
      else // Just use the best SSD match
      {

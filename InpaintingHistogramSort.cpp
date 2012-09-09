@@ -324,7 +324,7 @@ int main(int argc, char *argv[])
 //  typedef LinearSearchBestIntroducedEnergy<ImagePatchDescriptorMapType, OriginalImageType> BestSearchType;
 //  BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
 
-  // First
+  // Just use the top match from the SSD sort
 //  typedef LinearSearchBestFirst BestSearchType;
 //  BestSearchType linearSearchBest;
 
