@@ -66,7 +66,9 @@ public:
       if(!(this->RangeMax[channel] > this->RangeMin[channel]))
       {
         std::stringstream ss;
-        ss << "Channel " << channel << " has RangeMax (" << this->RangeMax[channel] << ") must be > RangeMin (" << this->RangeMin[channel] << ")";
+        ss << "LinearSearchBestHistogramDifference: Channel " << channel
+           << " has RangeMax (" << this->RangeMax[channel] << ") must be > RangeMin ("
+           << this->RangeMin[channel] << ")";
         throw std::runtime_error(ss.str());
       }
     }

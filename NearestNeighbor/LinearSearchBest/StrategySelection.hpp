@@ -1,8 +1,25 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef LinearSearchBestStrategySelection_HPP
 #define LinearSearchBestStrategySelection_HPP
 
-
-#include "HistogramParent.hpp"
+#include "HistogramDifference.hpp"
 
 #include <Utilities/Histogram/HistogramHelpers.hpp>
 #include <Utilities/Histogram/HistogramDifferences.hpp>
@@ -24,10 +41,12 @@ class LinearSearchBestStrategySelection
   TImage* Image;
   Mask* MaskImage;
 
+  unsigned int Iteration;
+
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
   LinearSearchBestStrategySelection(PropertyMapType propertyMap, TImage* const image, Mask* const mask) :
-    PropertyMap(propertyMap), Image(image), MaskImage(mask)
+    PropertyMap(propertyMap), Image(image), MaskImage(mask), Iteration(0)
   {}
 
   /**
@@ -58,13 +77,14 @@ public:
      // bins will not correspond to each other!
      bool useProvidedRanges = true;
 
-     typename TImage::PixelType maxValue;
-     MaskOperations::FindMaximumValueInMaskedRegion(this->Image, this->MaskImage, queryRegion, this->MaskImage->GetValidValue(), maxValue);
 
      typename TImage::PixelType minValue;
-     MaskOperations::FindMinimumValueInMaskedRegion(this->Image, this->MaskImage, queryRegion, this->MaskImage->GetValidValue(), minValue);
+     MaskOperations::FindMinimumValueInMaskedRegion(this->Image, this->MaskImage,
+                                                    queryRegion, this->MaskImage->GetValidValue(), minValue);
 
-     std::cout << "minValue: " << minValue << " maxValue: " << maxValue << std::endl;
+     typename TImage::PixelType maxValue;
+     MaskOperations::FindMaximumValueInMaskedRegion(this->Image, this->MaskImage,
+                                                    queryRegion, this->MaskImage->GetValidValue(), maxValue);
 
      QuadrantHistogramProperties<typename TImage::PixelType> quadrantHistogramProperties;
 
@@ -76,11 +96,8 @@ public:
            this->MaskImage, queryRegion, quadrantHistogramProperties,
            useProvidedRanges, this->MaskImage->GetValidValue());
 
-     std::cout << "Before normalization:" << std::endl;
-     targetQuadrantHistogram.PrintHistograms();
      targetQuadrantHistogram.NormalizeHistograms();
-     std::cout << "After normalization:" << std::endl;
-     targetQuadrantHistogram.PrintHistograms();
+
      std::vector<float> distances;
 
      for(unsigned int i = 0; i < 4; ++i)
@@ -105,15 +122,21 @@ public:
          typedef typename MaskedHistogramGeneratorType::HistogramType HistogramType;
 
          float distance = HistogramDifferences::HistogramDifference(targetQuadrantHistogram.Histograms[i], targetQuadrantHistogram.Histograms[j]);
-         std::cout << "distance " << i << " " << j << " " << distance << std::endl;
+//         std::cout << "distance " << i << " " << j << " " << distance << std::endl;
          distances.push_back(distance);
        }
      }
+
+     std::string logFileName = "StrategySelection.txt";
+     std::ofstream fout(logFileName.c_str(), std::ios::app);
 
      // If there were no valid histograms to compare, just use the best SSD patch
      if(distances.size() == 0)
      {
        std::cout << "Using best SSD patch (not enough valid histogram quadrants)..." << std::endl;
+       fout << "F " << Helpers::ZeroPad(this->Iteration, 3) << std::endl; // 'F'ail
+       fout.close();
+       this->Iteration++;
        return *first;
      }
 
@@ -122,20 +145,34 @@ public:
      std::cout << "maxDistance: " << maxDistance << std::endl;
      bool useHistogramComparison = false;
 
-     if(maxDistance < 0.2f)
+     if(maxDistance < 0.5f)
      {
        useHistogramComparison = true;
      }
 
      if(useHistogramComparison)
      {
-       std::cout << "Using histogram comparison..." << std::endl;
-       LinearSearchBestHistogramDifference<PropertyMapType, TImage, TIterator> linearSearchBestHistogramDifference(this->PropertyMap, this->Image, this->MaskImage);
+       std::cout << "Using histogram comparison with minValue: " << minValue
+                 << " maxValue: " << maxValue << std::endl;
+       LinearSearchBestHistogramDifference<PropertyMapType, TImage, TIterator>
+           linearSearchBestHistogramDifference(this->PropertyMap, this->Image, this->MaskImage);
+       linearSearchBestHistogramDifference.SetRangeMin(minValue);
+       linearSearchBestHistogramDifference.SetRangeMax(maxValue);
+       linearSearchBestHistogramDifference.SetNumberOfBinsPerDimension(30);
+
+       fout << "H " << Helpers::ZeroPad(this->Iteration, 3)
+            << " " << maxDistance << " : " << distances << std::endl; // 'H'istogram
+       fout.close();
+       this->Iteration++;
        return linearSearchBestHistogramDifference(first, last, query);
      }
      else // Just use the best SSD match
      {
        std::cout << "Using best SSD patch..." << std::endl;
+       fout << "S " << Helpers::ZeroPad(this->Iteration, 3)
+            << " " << maxDistance << " : " << distances << std::endl; // 'S'SD
+       fout.close();
+       this->Iteration++;
        return *first;
      }
 

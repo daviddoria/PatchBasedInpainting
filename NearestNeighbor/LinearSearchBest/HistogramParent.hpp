@@ -86,12 +86,12 @@ public:
     this->NumberOfBinsPerDimension = numberOfBinsPerDimension;
   }
 
-  void SetRangeMin(const float rangeMin)
+  void SetRangeMin(const typename TImage::PixelType rangeMin)
   {
     this->RangeMin = rangeMin;
   }
 
-  void SetRangeMax(const float rangeMax)
+  void SetRangeMax(const typename TImage::PixelType rangeMax)
   {
     this->RangeMax = rangeMax;
   }
