@@ -80,6 +80,21 @@ public:
     // Ensure that the target patch is inside the image.
     targetRegion.Crop(this->Image->GetLargestPossibleRegion());
 
+    if(this->GetDebugImages())
+    {
+      // Write the target patch that was inpainted.
+      try
+      {
+        ITKHelpers::WriteRegion(this->Image, targetRegion,
+                                Helpers::GetSequentialFileName("TargetPatchBefore", this->Iteration, "png", 3));
+      }
+      catch (...)
+      {
+        ITKHelpers::WriteRegionAsRGBImage(this->Image, targetRegion,
+                                          Helpers::GetSequentialFileName("TargetPatchBefore", this->Iteration, "png", 3));
+      }
+    }
+
     // Iterate over all pixels in the target patch (we must iterate over the target patch, because it may be smaller than the source patch)
     itk::ImageRegionConstIteratorWithIndex<TImage> targetIterator(this->Image, targetRegion);
 
@@ -117,11 +132,13 @@ public:
       // Write the target patch that was inpainted.
       try
       {
-        ITKHelpers::WriteRegion(this->Image, targetRegion, Helpers::GetSequentialFileName("TargetPatch", this->Iteration, "png", 3));
+        ITKHelpers::WriteRegion(this->Image, targetRegion,
+                                Helpers::GetSequentialFileName("TargetPatchAfter", this->Iteration, "png", 3));
       }
       catch (...)
       {
-        ITKHelpers::WriteRegionAsRGBImage(this->Image, targetRegion, Helpers::GetSequentialFileName("TargetPatch", this->Iteration, "png", 3));
+        ITKHelpers::WriteRegionAsRGBImage(this->Image, targetRegion,
+                                          Helpers::GetSequentialFileName("TargetPatchAfter", this->Iteration, "png", 3));
       }
     }
 
