@@ -257,27 +257,46 @@ void CopyPatchIntoImage(const TImage* patch, TImage* const image, const itk::Ind
 template <typename TIterator, typename TImage, typename TPropertyMap>
 void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TIterator first, const TIterator last, const std::string& prefix, const unsigned int iteration)
 {
-  unsigned int patchSideLength = get(propertyMap, *first).GetRegion().GetSize()[0];
   itk::Size<2> patchSize = get(propertyMap, *first).GetRegion().GetSize();
-  unsigned int numberOfTopPatches = (last - first);
-  std::cout << "WriteTopPatches:numberOfTopPatches = " << numberOfTopPatches << std::endl;
 
-  itk::Index<2> corner = {{0,0}};
-  itk::Size<2> topPatchesRegionSize = {{patchSideLength, patchSideLength * numberOfTopPatches}};
-  itk::ImageRegion<2> topPatchesImageRegion(corner, topPatchesRegionSize);
+  unsigned int patchSideLength = patchSize[0]; // Assumes square patches
+
+  unsigned int numberOfTopPatches = last - first;
+//  std::cout << "WriteTopPatches:numberOfTopPatches = " << numberOfTopPatches << std::endl;
+
+  itk::Index<2> topPatchesImageCorner = {{0,0}};
+  itk::Size<2> topPatchesImageSize = {{patchSideLength, patchSideLength * numberOfTopPatches + numberOfTopPatches - 1}}; // Make space for all the patches and a colored line dividing them (and the -1 is so there is no dividing line at the bottom)
+  itk::ImageRegion<2> topPatchesImageRegion(topPatchesImageCorner, topPatchesImageSize);
+
+//  std::cout << "topPatchesImageRegion: " << topPatchesImageRegion << std::endl;
 
   typename TImage::Pointer topPatchesImage = TImage::New();
   topPatchesImage->SetRegions(topPatchesImageRegion);
   topPatchesImage->Allocate();
   topPatchesImage->FillBuffer(0);
 
+  typename TImage::PixelType green;
+  green.Fill(0);
+  green[1] = 255;
+
   for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
   {
     unsigned int currentPatchId = currentPatch - first;
-    itk::Index<2> topPatchesImageCorner = {{0, patchSideLength * currentPatchId}};
+    itk::Index<2> topPatchesImageCorner = {{0, patchSideLength * currentPatchId + currentPatchId}}; // The extra + currentPatchId is to skip the extra dividing lines that have been drawn
     itk::ImageRegion<2> currentTopPatchesImageRegion(topPatchesImageCorner, patchSize);
     itk::ImageRegion<2> currentRegion = get(propertyMap, *currentPatch).GetRegion();
     ITKHelpers::CopyRegion(image, topPatchesImage.GetPointer(), currentRegion, currentTopPatchesImageRegion);
+
+    if(currentPatchId != numberOfTopPatches - 1)
+    {
+//      std::cout << "CurrentPatchId " << currentPatchId << " numberOfPatches " << numberOfPatches << std::endl;
+      itk::Index<2> dividingLineCorner = {{0, topPatchesImageCorner[1] + patchSideLength}};
+      itk::Size<2> dividingLineSize = {{patchSideLength, 1}};
+      itk::ImageRegion<2> dividingLine(dividingLineCorner, dividingLineSize);
+//      std::cout << "Dividing line: " << dividingLine << std::endl;
+
+      ITKHelpers::SetRegionToConstant(topPatchesImage.GetPointer(), dividingLine, green);
+    }
   }
 
   ITKHelpers::WriteRGBImage(topPatchesImage.GetPointer(), Helpers::GetSequentialFileName(prefix, iteration,"png",3));
