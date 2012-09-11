@@ -67,18 +67,24 @@ struct ImagePatchDifference
     TargetPixelsContainerType targetPatchPixels(validOffsets->size());
 
     OffsetVectorType::const_iterator offsetIterator = validOffsets->begin();
-    typename TargetPixelsContainerType::iterator targetPixelsIterator = targetPatchPixels.begin();
+    typename TargetPixelsContainerType::iterator targetPixelsIterator = targetPatchPixels.begin(); // This is defined outside the loop because we use it again in the next loop
     for(; offsetIterator < validOffsets->end(); ++offsetIterator, ++targetPixelsIterator)
     {
-      *targetPixelsIterator = image->GetPixel(targetPatch.GetCorner() + *offsetIterator);
+      itk::Offset<2> currentOffset = *offsetIterator;
+      itk::Index<2> currentIndex = targetPatch.GetCorner() + currentOffset;
+      *targetPixelsIterator = image->GetPixel(currentIndex);
     }
 
     offsetIterator = validOffsets->begin();
     targetPixelsIterator = targetPatchPixels.begin();
     for(; offsetIterator < validOffsets->end(); ++offsetIterator, ++targetPixelsIterator)
     {
-      float difference = this->PixelDifferenceFunctor(image->GetPixel(sourcePatch.GetCorner() + *offsetIterator),
-                                                     *targetPixelsIterator);
+      typename ImagePatchType::ImageType::PixelType sourcePixel =
+          image->GetPixel(sourcePatch.GetCorner() + *offsetIterator);
+
+      typename ImagePatchType::ImageType::PixelType targetPixel = *targetPixelsIterator;
+      float difference = this->PixelDifferenceFunctor(sourcePixel,
+                                                     targetPixel);
       totalDifference += difference;
     }
     totalDifference = totalDifference / static_cast<float>(validOffsets->size());

@@ -63,6 +63,9 @@ template <typename TNodeQueue, typename TPropertyMap>
 void WriteValidQueueNodesLocationsImage(TNodeQueue nodeQueue, const TPropertyMap propertyMap,
                                        const itk::ImageRegion<2>& fullRegion, const std::string& fileName);
 
+template <typename TIterator, typename TImage, typename TPropertyMap>
+void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TIterator first, const TIterator last, const std::string& prefix, const unsigned int iteration);
+
 }
 
 #include "PatchHelpers.hpp"

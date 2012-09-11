@@ -38,6 +38,7 @@
 #include "NearestNeighbor/LinearSearchBest/AdaptiveDualQuadrantHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchBest/IntroducedEnergy.hpp"
 #include "NearestNeighbor/LinearSearchBest/First.hpp"
+#include "NearestNeighbor/LinearSearchBest/FirstAndWrite.hpp"
 #include "NearestNeighbor/LinearSearchBest/StrategySelection.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
@@ -169,8 +170,11 @@ int main(int argc, char *argv[])
   typedef ImagePatchPixelDescriptor<OriginalImageType> ImagePatchPixelDescriptorType;
 
   typedef boost::grid_graph<2> VertexListGraphType;
+
+  // We can't make this a signed type (size_t versus int) because we allow negative
   boost::array<std::size_t, 2> graphSideLengths = { { fullRegion.GetSize()[0],
-                                                      fullRegion.GetSize()[1] } };
+//  boost::array<int, 2> graphSideLengths = { { fullRegion.GetSize()[0],
+                                              fullRegion.GetSize()[1] } };
   VertexListGraphType graph(graphSideLengths);
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
   typedef boost::graph_traits<VertexListGraphType>::vertex_iterator VertexIteratorType;
@@ -270,7 +274,7 @@ int main(int argc, char *argv[])
   typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
   AcceptanceVisitorType acceptanceVisitor;
 
-  // Create the inpainting visitor
+  // Create the inpainting visitor. (The mask is inpainted in FinishVertex)
   typedef InpaintingVisitor<VertexListGraphType, OriginalImageType, BoundaryNodeQueueType,
       ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType,
       PriorityMapType, HandleMapType, BoundaryStatusMapType>
@@ -281,6 +285,7 @@ int main(int argc, char *argv[])
                                           &priorityFunction, patchHalfWidth,
                                           boundaryStatusMap, outputFileName);
   inpaintingVisitor.SetDebugImages(true);
+  inpaintingVisitor.SetAllowNewPatches(true);
 
   InitializePriority(mask, boundaryNodeQueue, priorityMap, handleMap, &priorityFunction, boundaryStatusMap);
 
@@ -328,7 +333,10 @@ int main(int argc, char *argv[])
 //  typedef LinearSearchBestFirst BestSearchType;
 //  BestSearchType linearSearchBest;
 
-  typedef LinearSearchBestStrategySelection<ImagePatchDescriptorMapType, OriginalImageType> BestSearchType;
+//  typedef LinearSearchBestStrategySelection<ImagePatchDescriptorMapType, OriginalImageType> BestSearchType;
+//  BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
+
+  typedef LinearSearchBestFirstAndWrite<ImagePatchDescriptorMapType, OriginalImageType, PatchDifferenceType> BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
 
   // Setup the two step neighbor finder

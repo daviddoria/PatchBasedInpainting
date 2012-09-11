@@ -37,6 +37,7 @@
 
 // Submodules
 #include <ITKVTKHelpers/ITKVTKHelpers.h>
+#include <Utilities/Debug/Debug.h>
 
 /**
  * This is a visitor that complies with the InpaintingVisitorConcept. It forwards
@@ -48,7 +49,7 @@
 template <typename TGraph, typename TImage, typename TBoundaryNodeQueue,
           typename TDescriptorVisitor, typename TAcceptanceVisitor, typename TPriority,
           typename TPriorityMap, typename THandleMap, typename TBoundaryStatusMap>
-class InpaintingVisitor : public InpaintingVisitorParent<TGraph>
+class InpaintingVisitor : public InpaintingVisitorParent<TGraph>, public Debug
 {
   BOOST_CONCEPT_ASSERT((DescriptorVisitorConcept<TDescriptorVisitor, TGraph>));
 
@@ -93,10 +94,6 @@ class InpaintingVisitor : public InpaintingVisitorParent<TGraph>
   /** As the image is inpainted, this flag determines if new source patches can be created from patches which are now valid. */
   bool AllowNewPatches;
 
-  // Debug only
-  /** A flag that determines if debug images should be written at each iteration. */
-  bool DebugImages;
-
 public:
 
   TImage* GetImage()
@@ -104,9 +101,9 @@ public:
     return this->Image;
   }
 
-  void SetDebugImages(const bool debugImages)
+  void SetAllowNewPatches(const bool allowNewPatches)
   {
-    this->DebugImages = debugImages;
+    this->AllowNewPatches = allowNewPatches;
   }
 
   /** Constructor. Everything must be specified in this constructor. (There is no default constructor). */
@@ -121,7 +118,7 @@ public:
     Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
     DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
     PriorityMap(priorityMap), HandleMap(handleMap), BoundaryStatusMap(boundaryStatusMap),
-    PatchHalfWidth(patchHalfWidth), ResultFileName(resultFileName), NumberOfFinishedPatches(0), AllowNewPatches(false), DebugImages(false)
+    PatchHalfWidth(patchHalfWidth), ResultFileName(resultFileName), NumberOfFinishedPatches(0), AllowNewPatches(false)
   {
   }
 
@@ -162,7 +159,8 @@ public:
     return AcceptanceVisitor.AcceptMatch(target, source, energy);
   }
 
-  void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)// __attribute__((optimize(0)))
+  /** The mask is inpainted with ValidValue in this function. */
+  void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)// __attribute__((optimize(0))) // This supposedly makes this function build in debug mode (-g -O0) when the rest of the program is built in -O3 or similar)
   {
     // Mark this pixel and the area around it as filled, and mark the mask in this region as filled.
     // Determine the new boundary, and setup the nodes in the boundary queue.
@@ -172,15 +170,49 @@ public:
     // Construct the region around the vertex
     itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(targetNode);
 
-    itk::ImageRegion<2> regionToFinish = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, PatchHalfWidth);
+    itk::ImageRegion<2> regionToFinishFull = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, this->PatchHalfWidth);
+
+    // Copy this region so that we can change (crop) the regionToFinish and still have a copy of the original region
+    itk::ImageRegion<2> regionToFinish = regionToFinishFull;
 
     // Make sure the region is entirely inside the image
     // (because we allow target patches to not be entirely inside the image to handle the case where
     // the hole boundary is near the image boundary)
     regionToFinish.Crop(this->Image->GetLargestPossibleRegion());
 
+    if(this->DebugImages)
+    {
+      ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("Mask_Before", this->NumberOfFinishedPatches, "png", 3));
+    }
+
     // Mark all the pixels in this region as filled in the mask.
     ITKHelpers::SetRegionToConstant(this->MaskImage, regionToFinish, this->MaskImage->GetValidValue());
+
+    if(this->DebugImages)
+    {
+      ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("Mask_After", this->NumberOfFinishedPatches, "png", 3));
+
+      typename TImage::PixelType red;
+      red.Fill(0);
+      red[0] = 255;
+
+      typename TImage::PixelType green;
+      green.Fill(0);
+      green[1] = 255;
+
+      typename TImage::Pointer patchesCopiedImage = TImage::New();
+      ITKHelpers::DeepCopy(this->Image, patchesCopiedImage.GetPointer());
+      ITKHelpers::OutlineRegion(patchesCopiedImage.GetPointer(), regionToFinish, red);
+
+      itk::Index<2> sourceRegionCenter = ITKHelpers::CreateIndex(sourceNode);
+      itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceRegionCenter, this->PatchHalfWidth);
+
+      sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->Image->GetLargestPossibleRegion(), regionToFinishFull);
+
+      ITKHelpers::OutlineRegion(patchesCopiedImage.GetPointer(), sourceRegion, green);
+
+      ITKHelpers::WriteRGBImage(patchesCopiedImage.GetPointer(), Helpers::GetSequentialFileName("PatchesCopied", this->NumberOfFinishedPatches, "png", 3));
+    }
 
     // Update the priority function. This must be done AFTER the mask is filled,
     // as some of the Priority functors only compute things on the hole boundary, or only
@@ -286,6 +318,7 @@ public:
       if(!this->MaskImage->HasHoleNeighbor(boundaryPixels[i]))
       {
         VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(boundaryPixels[i]);
+
         put(this->BoundaryStatusMap, v, false);
       }
     }

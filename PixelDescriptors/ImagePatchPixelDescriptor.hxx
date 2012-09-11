@@ -37,6 +37,14 @@ ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor(TImage* const image
                                                              Mask* const maskImage, const itk::ImageRegion<2>& region) :
   Region(region), Image(image), MaskImage(maskImage), InsideImage(false)
 {
+  if((region.GetIndex()[0] > 10000) || (region.GetIndex()[1] > 10000))
+  {
+    std::stringstream ss;
+    ss << "ImagePatchPixelDescriptor() region.GetIndex() is invalid! "
+       << region.GetIndex()[0] << ", " << region.GetIndex()[1] << " is not a valid vertex!";
+    throw std::runtime_error(ss.str());
+  }
+
   if(image->GetLargestPossibleRegion().IsInside(region))
   {
     this->InsideImage = true;

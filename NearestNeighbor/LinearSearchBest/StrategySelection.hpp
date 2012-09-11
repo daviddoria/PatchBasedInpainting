@@ -24,6 +24,8 @@
 #include <Utilities/Histogram/HistogramHelpers.hpp>
 #include <Utilities/Histogram/HistogramDifferences.hpp>
 
+#include <Utilities/PatchHelpers.h>
+
 /**
    * This function template is similar to std::min_element but can be used when the comparison
    * involves computing a derived quantity (a.k.a. distance). This algorithm will search for the
@@ -64,9 +66,11 @@ public:
     // If the input element range is empty, there is nothing to do.
     if(first == last)
     {
-      std::cerr << "LinearSearchBestHistogram: Nothing to do..." << std::endl;
+      std::cerr << "LinearSearchBestStrategySelection: Nothing to do..." << std::endl;
       return *last;
     }
+
+    PatchHelpers::WriteTopPatches(this->Image, this->PropertyMap, first, last, "BestPatches", this->Iteration);
 
     typedef float BinValueType;
     typedef QuadrantHistogramProperties<typename TImage::PixelType> QuadrantHistogramPropertiesType;

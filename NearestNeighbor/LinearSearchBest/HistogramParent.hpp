@@ -96,34 +96,6 @@ public:
     this->RangeMax = rangeMax;
   }
 
-  void WriteTopPatches(const TIterator first, const TIterator last)
-  {
-    unsigned int patchSideLength = get(this->PropertyMap, *first).GetRegion().GetSize()[0];
-    itk::Size<2> patchSize = get(this->PropertyMap, *first).GetRegion().GetSize();
-    unsigned int numberOfTopPatches = (last - first);
-    std::cout << "WriteTopPatches:numberOfTopPatches = " << numberOfTopPatches << std::endl;
-
-    itk::Index<2> corner = {{0,0}};
-    itk::Size<2> topPatchesRegionSize = {{patchSideLength, patchSideLength * numberOfTopPatches}};
-    itk::ImageRegion<2> topPatchesImageRegion(corner, topPatchesRegionSize);
-
-    typename TImageToWrite::Pointer topPatchesImage = TImageToWrite::New();
-    topPatchesImage->SetRegions(topPatchesImageRegion);
-    topPatchesImage->Allocate();
-    topPatchesImage->FillBuffer(0);
-
-    for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
-    {
-      unsigned int currentPatchId = currentPatch - first;
-      itk::Index<2> topPatchesImageCorner = {{0, patchSideLength * currentPatchId}};
-      itk::ImageRegion<2> currentTopPatchesImageRegion(topPatchesImageCorner, patchSize);
-      itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
-      ITKHelpers::CopyRegion(this->ImageToWrite, topPatchesImage.GetPointer(), currentRegion, currentTopPatchesImageRegion);
-    }
-
-    ITKHelpers::WriteRGBImage(topPatchesImage.GetPointer(), Helpers::GetSequentialFileName("TopPatches",this->Iteration,"png",3));
-  }
-
   /**
     * \param first Start of the range in which to search.
     * \param last One element past the last element in the range in which to search.

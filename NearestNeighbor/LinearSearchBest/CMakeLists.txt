@@ -13,6 +13,7 @@ HoleHistogramDifference.hpp
 IntroducedEnergy.hpp
 Property.hpp
 First.hpp
+FirstAndWrite.hpp
 StrategySelection.hpp
 QuadrantHistogramDifference.hpp
 )

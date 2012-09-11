@@ -144,9 +144,7 @@ public:
     }
 
     return currentOutputIterator;
-    // Since the queue stores the items in descending score order, we have to reverse the queue using this function to get the matches in the desired order.
-//    return copy_neighbors_from_queue<PriorityQueueType, OutputIteratorType>(outputQueue, outputFirst);
-  }
+  } // end operator()
 
   template <typename T1, typename T2, typename Compare>
   struct compare_pair_first : std::binary_function< std::pair<T1, T2>, std::pair<T1, T2>, bool>

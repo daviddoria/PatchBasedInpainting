@@ -23,6 +23,7 @@
 
 #include <Utilities/Histogram/Histogram.h>
 #include <Utilities/Histogram/HistogramHelpers.hpp>
+#include <Utilities/PatchHelpers.h>
 
 /**
    * This class computes both the "source hole pixels versus target valid pixels" histogram difference
@@ -109,7 +110,7 @@ public:
       MaskOperations::WriteMaskedRegionPNG(this->ImageToWrite, this->MaskImage, targetRegion,
                                            Helpers::GetSequentialFileName("MaskedQueryRegion",this->Iteration,"png",3), holeColor);
 
-      this->WriteTopPatches(first, last);
+      PatchHelpers::WriteTopPatches(this->ImageToWrite, this->PropertyMap, first, last, "TopPatches", this->Iteration);
 
       // Compute the histogram of the best SSD region using the queryRegion mask
 //      HistogramType bestSSDHistogram =

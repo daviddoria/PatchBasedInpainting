@@ -254,6 +254,35 @@ void CopyPatchIntoImage(const TImage* patch, TImage* const image, const itk::Ind
 
 }
 
+template <typename TIterator, typename TImage, typename TPropertyMap>
+void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TIterator first, const TIterator last, const std::string& prefix, const unsigned int iteration)
+{
+  unsigned int patchSideLength = get(propertyMap, *first).GetRegion().GetSize()[0];
+  itk::Size<2> patchSize = get(propertyMap, *first).GetRegion().GetSize();
+  unsigned int numberOfTopPatches = (last - first);
+  std::cout << "WriteTopPatches:numberOfTopPatches = " << numberOfTopPatches << std::endl;
+
+  itk::Index<2> corner = {{0,0}};
+  itk::Size<2> topPatchesRegionSize = {{patchSideLength, patchSideLength * numberOfTopPatches}};
+  itk::ImageRegion<2> topPatchesImageRegion(corner, topPatchesRegionSize);
+
+  typename TImage::Pointer topPatchesImage = TImage::New();
+  topPatchesImage->SetRegions(topPatchesImageRegion);
+  topPatchesImage->Allocate();
+  topPatchesImage->FillBuffer(0);
+
+  for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
+  {
+    unsigned int currentPatchId = currentPatch - first;
+    itk::Index<2> topPatchesImageCorner = {{0, patchSideLength * currentPatchId}};
+    itk::ImageRegion<2> currentTopPatchesImageRegion(topPatchesImageCorner, patchSize);
+    itk::ImageRegion<2> currentRegion = get(propertyMap, *currentPatch).GetRegion();
+    ITKHelpers::CopyRegion(image, topPatchesImage.GetPointer(), currentRegion, currentTopPatchesImageRegion);
+  }
+
+  ITKHelpers::WriteRGBImage(topPatchesImage.GetPointer(), Helpers::GetSequentialFileName(prefix, iteration,"png",3));
+}
+
 } // end namespace
 
 #endif
