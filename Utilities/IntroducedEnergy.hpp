@@ -134,14 +134,10 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
   MagnitudeImageType* image = magnitudeImage;
 
   typedef itk::Image<itk::CovariantVector<float, 2> > GradientImageType;
-  // Find pixels in the region and on the mask boundary
+  // Find pixels in the region and on the valid side of the mask boundary. Do NOT use boundary pixels on the hole
+  // side of the boundary, because they will always have a zero masked gradient.
   typedef std::vector<itk::Index<2> > PixelContainer;
-  PixelContainer holeBoundaryPixels = mask->FindBoundaryPixelsInRegion(targetRegion, Mask::HOLE);
-  PixelContainer validBoundaryPixels = mask->FindBoundaryPixelsInRegion(targetRegion, Mask::VALID);
-  PixelContainer boundaryPixels;
-  boundaryPixels.insert(boundaryPixels.end(), holeBoundaryPixels.begin(), holeBoundaryPixels.end());
-  boundaryPixels.insert(boundaryPixels.end(), validBoundaryPixels.begin(), validBoundaryPixels.end());
-
+  PixelContainer boundaryPixels = mask->FindBoundaryPixelsInRegion(targetRegion, mask->GetValidValue());
 //  std::cout << "There are " << boundaryPixels.size() << " boundary pixels." << std::endl;
 
   // Compute gradients in the target region
@@ -188,10 +184,21 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
 
   if(this->GetDebugImages())
   {
-    ITKHelpers::WriteRegion(magnitudeImage.GetPointer(), targetRegion, Helpers::GetSequentialFileName("MaskBoundaryEnergy_MagnitudeImage", this->DebugIteration, "mha", 3));
-    ITKHelpers::WriteRegion(inpaintedImage.GetPointer(), targetRegion, Helpers::GetSequentialFileName("MaskBoundaryEnergy_InpaintedImage", this->DebugIteration, "mha", 3));
-    ITKHelpers::WriteRegion(targetRegionGradientImage.GetPointer(), targetRegion, Helpers::GetSequentialFileName("MaskBoundaryEnergy_TargetGradient", this->DebugIteration, "mha", 3));
-    ITKHelpers::WriteRegion(inpaintedGradientImage.GetPointer(), targetRegion, Helpers::GetSequentialFileName("MaskBoundaryEnergy_InpaintedGradient", this->DebugIteration, "mha", 3));
+    std::stringstream ss;
+    ss << Helpers::ZeroPad(this->DebugIteration, 3) << "_" << Helpers::ZeroPad(this->PatchId, 3) << ".mha";
+    ITKHelpers::WriteRegion(magnitudeImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_MagnitudeImage_") + ss.str());
+    ITKHelpers::WriteRegion(inpaintedImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_InpaintedImage_") + ss.str());
+    ITKHelpers::WriteRegion(targetRegionGradientImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_TargetGradient_") + ss.str());
+    ITKHelpers::WriteRegion(inpaintedGradientImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_InpaintedGradient_") + ss.str());
+
+    typedef itk::Image<unsigned char, 2> IndicatorImageType;
+    IndicatorImageType::Pointer boundaryPixelImage = IndicatorImageType::New();
+    boundaryPixelImage->SetRegions(targetRegion);
+    boundaryPixelImage->Allocate();
+    boundaryPixelImage->FillBuffer(0);
+    ITKHelpers::SetPixels(boundaryPixelImage.GetPointer(), boundaryPixels, 255);
+    ITKHelpers::WriteImage(boundaryPixelImage.GetPointer(), std::string("MaskBoundaryEnergy_BoundaryPixels_") + ss.str());
+
 //    ITKHelpers::WriteImage(targetRegionGradientImage.GetPointer(), "MaskBoundaryEnergy_TargetGradient.mha");
 //    ITKHelpers::WriteImage(inpaintedGradientImage.GetPointer(), "MaskBoundaryEnergy_InpaintedGradient.mha");
 //    ITKHelpers::WriteImage(inpaintedImage.GetPointer(), "MaskBoundaryEnergy_Inpainted.mha");
