@@ -87,10 +87,13 @@ public:
 
 //      float introducedEnergy = introducedEnergyFunctor.ComputeIntroducedEnergy(this->Image, this->MaskImage,
 //                                                                                 currentRegion, queryRegion);
+
+      unsigned int patchId = currentPatch - first;
+      introducedEnergyFunctor.SetPatchId(patchId); // for debugging only
+
       float introducedEnergy = introducedEnergyFunctor.ComputeIntroducedEnergyMaskBoundary(this->Image, this->MaskImage,
                                                                                  currentRegion, queryRegion);
 
-      unsigned int patchId = currentPatch - first;
       fout << Helpers::ZeroPad(patchId, 3) << ": " << introducedEnergy << std::endl;
 
       if(introducedEnergy < bestDistance)

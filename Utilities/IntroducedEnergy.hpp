@@ -149,24 +149,30 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
   targetRegionGradientImage->SetRegions(image->GetLargestPossibleRegion());
   targetRegionGradientImage->Allocate();
 
-  // For the original (baseline) gradients, we use a masked gradient because there is not yet anything in the hole region
-//  ITKHelpers::ComputeGradientsInRegion(image, targetRegion, targetRegionGradientImage.GetPointer());
+  // For the original (baseline) gradients, we use a masked gradient because there is not yet anything in the hole region,
+  //and pixels outside but neighboring the region may also be hole pixels
   Derivatives::MaskedGradientInRegion(image, mask, targetRegion, targetRegionGradientImage.GetPointer());
 
   // Copy the patch into an image (we copy the patch in the magnitude image because there is no
   // reason to copy it in the vector image and then take the magnitude again
   MagnitudeImageType::Pointer inpaintedImage = MagnitudeImageType::New();
   ITKHelpers::DeepCopy(image, inpaintedImage.GetPointer());
-  ITKHelpers::CopyRegion(image, inpaintedImage.GetPointer(), sourceRegion, targetRegion);
+//  ITKHelpers::CopyRegion(image, inpaintedImage.GetPointer(), sourceRegion, targetRegion);
+  MaskOperations::CopyRegionIntoHolePortionOfTargetRegion(image, inpaintedImage.GetPointer(),
+                                                          mask, sourceRegion, targetRegion);
 
   // Compute the gradient of the inpainted image
   GradientImageType::Pointer inpaintedGradientImage = GradientImageType::New();
   inpaintedGradientImage->SetRegions(image->GetLargestPossibleRegion());
   inpaintedGradientImage->Allocate();
 
-  // For the inpainted patch, we do NOT use a masked gradient, as we are interested in what happens over the hole/valid region boundary
-  ITKHelpers::ComputeGradientsInRegion(image, targetRegion, targetRegionGradientImage.GetPointer());
-//  Derivatives::MaskedGradientInRegion(inpaintedImage.GetPointer(), mask, targetRegion, inpaintedGradientImage.GetPointer());
+  // Set the mask to valid in the target region
+  Mask::Pointer filledMask = Mask::New();
+  filledMask->DeepCopyFrom(mask);
+  ITKHelpers::SetRegionToConstant(filledMask.GetPointer(), targetRegion, filledMask->GetValidValue());
+
+  // For the inpainted patch, we cannot use an unmasked gradient, as there will certainly be hole pixels on the other side of some of the patch boundary pixels.
+  Derivatives::MaskedGradientInRegion(inpaintedImage.GetPointer(), filledMask, targetRegion, inpaintedGradientImage.GetPointer());
 
   // Compare the gradient magnitude before and after the inpainting
   float gradientMagnitudeChange = 0.0f;
@@ -182,6 +188,8 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
 
   if(this->GetDebugImages())
   {
+    ITKHelpers::WriteRegion(magnitudeImage.GetPointer(), targetRegion, Helpers::GetSequentialFileName("MaskBoundaryEnergy_MagnitudeImage", this->DebugIteration, "mha", 3));
+    ITKHelpers::WriteRegion(inpaintedImage.GetPointer(), targetRegion, Helpers::GetSequentialFileName("MaskBoundaryEnergy_InpaintedImage", this->DebugIteration, "mha", 3));
     ITKHelpers::WriteRegion(targetRegionGradientImage.GetPointer(), targetRegion, Helpers::GetSequentialFileName("MaskBoundaryEnergy_TargetGradient", this->DebugIteration, "mha", 3));
     ITKHelpers::WriteRegion(inpaintedGradientImage.GetPointer(), targetRegion, Helpers::GetSequentialFileName("MaskBoundaryEnergy_InpaintedGradient", this->DebugIteration, "mha", 3));
 //    ITKHelpers::WriteImage(targetRegionGradientImage.GetPointer(), "MaskBoundaryEnergy_TargetGradient.mha");

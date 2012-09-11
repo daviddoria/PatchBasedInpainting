@@ -38,8 +38,13 @@
 template <typename TImage>
 class IntroducedEnergy : public Debug
 {
+  unsigned int PatchId;
 
 public:
+
+  IntroducedEnergy() : PatchId(0)
+  {}
+
   /** This function computes the energy introduced across the (valid) patch boundary by copying a patch into a region.
     * The energy is normalized by the number of pixels that contributed. */
   float ComputeIntroducedEnergyPatchBoundary(const TImage* const image, const Mask* const mask,
@@ -54,6 +59,10 @@ public:
   float ComputeIntroducedEnergy(const TImage* const image, const Mask* const mask,
                                 itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion);
 
+  void SetPatchId(const unsigned int patchId)
+  {
+    this->PatchId = patchId;
+  }
 };
 
 #include "IntroducedEnergy.hpp"
