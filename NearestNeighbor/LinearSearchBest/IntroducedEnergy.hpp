@@ -73,6 +73,10 @@ public:
     unsigned int bestId = 0; // Keep track of which of the top SSD patches is the best by histogram score (just for information sake)
 
     IntroducedEnergy<TImage> introducedEnergyFunctor;
+    introducedEnergyFunctor.SetDebugIteration(this->Iteration);
+    introducedEnergyFunctor.SetDebugImages(true);
+
+    std::ofstream fout(Helpers::GetSequentialFileName("Energy", this->Iteration, "txt", 3).c_str());
 
     // Iterate through all of the input elements
     for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
@@ -81,16 +85,21 @@ public:
 
       itk::ImageRegion<2> currentRegion = get(this->ImagePatchDescriptorMap, *currentPatch).GetRegion();
 
-      float introducedEnergy = introducedEnergyFunctor.ComputeIntroducedEnergy(this->Image, this->MaskImage,
+//      float introducedEnergy = introducedEnergyFunctor.ComputeIntroducedEnergy(this->Image, this->MaskImage,
+//                                                                                 currentRegion, queryRegion);
+      float introducedEnergy = introducedEnergyFunctor.ComputeIntroducedEnergyMaskBoundary(this->Image, this->MaskImage,
                                                                                  currentRegion, queryRegion);
+
+      unsigned int patchId = currentPatch - first;
+      fout << Helpers::ZeroPad(patchId, 3) << ": " << introducedEnergy << std::endl;
 
       if(introducedEnergy < bestDistance)
       {
         bestDistance = introducedEnergy;
         bestPatch = currentPatch;
 
-        // These are not needed - just for debugging
-        bestId = currentPatch - first;
+        // This is not needed - just for debugging
+        bestId = patchId;
       }
     }
 

@@ -38,6 +38,7 @@
 template <typename TImage>
 class IntroducedEnergy : public Debug
 {
+
 public:
   /** This function computes the energy introduced across the (valid) patch boundary by copying a patch into a region.
     * The energy is normalized by the number of pixels that contributed. */

@@ -14,6 +14,7 @@ IntroducedEnergy.hpp
 Property.hpp
 First.hpp
 FirstAndWrite.hpp
+LinearSearchBestParent.hpp
 StrategySelection.hpp
 QuadrantHistogramDifference.hpp
 )

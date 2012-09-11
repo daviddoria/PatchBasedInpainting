@@ -40,15 +40,15 @@ struct LinearSearchBest
 
     DistanceValueType d_best = std::numeric_limits<DistanceValueType>::infinity();
     ForwardIteratorType result = last;
-    for(; first != last; ++first)
+    for(ForwardIteratorType current = first; current != last; ++current)
     {
-      DistanceValueType d = DistanceFunction(*first, query);
+      DistanceValueType d = DistanceFunction(*current, query);
       if(CompareFunction(d, d_best))
       {
         d_best = d;
-        result = first;
-      };
-    };
+        result = current;
+      }
+    }
 
     std::cout << "Best patch has difference " << d_best << std::endl;
     return result;

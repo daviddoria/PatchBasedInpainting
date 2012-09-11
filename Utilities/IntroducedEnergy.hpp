@@ -27,6 +27,8 @@ template <typename TImage>
 float IntroducedEnergy<TImage>::ComputeIntroducedEnergyPatchBoundary(const TImage* const inputImage, const Mask* const mask,
                                                                      itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion)
 {
+  // In this function, we do not care what is in the hole region (i.e. we use a masked gradient).
+
   // Crop the source and target region so that the target region is inside the image and the source region has the same size/position crop
   sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, inputImage->GetLargestPossibleRegion(), targetRegion);
 
@@ -89,9 +91,12 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyPatchBoundary(const TImag
 
   if(this->GetDebugImages())
   {
-    ITKHelpers::WriteImage(targetRegionGradientImage.GetPointer(), "PatchBoundaryEnergy_TargetGradient.mha");
-    ITKHelpers::WriteImage(inpaintedGradientImage.GetPointer(), "PatchBoundaryEnergy_InpaintedGradient.mha");
-    ITKHelpers::WriteImage(inpaintedImage.GetPointer(), "PatchBoundaryEnergy_Inpainted.mha");
+    ITKHelpers::WriteRegion(targetRegionGradientImage.GetPointer(), targetRegion, Helpers::GetSequentialFileName("PatchBoundaryEnergy_TargetGradient", this->DebugIteration, "mha", 3));
+    ITKHelpers::WriteRegion(inpaintedGradientImage.GetPointer(), targetRegion, Helpers::GetSequentialFileName("PatchBoundaryEnergy_InpaintedGradient", this->DebugIteration, "mha", 3));
+
+//    ITKHelpers::WriteImage(targetRegionGradientImage.GetPointer(), "PatchBoundaryEnergy_TargetGradient.mha");
+//    ITKHelpers::WriteImage(inpaintedGradientImage.GetPointer(), "PatchBoundaryEnergy_InpaintedGradient.mha");
+//    ITKHelpers::WriteImage(inpaintedImage.GetPointer(), "PatchBoundaryEnergy_Inpainted.mha");
   }
 
   if(patchBoundaryPixels.size() > 0)
@@ -144,6 +149,8 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
   targetRegionGradientImage->SetRegions(image->GetLargestPossibleRegion());
   targetRegionGradientImage->Allocate();
 
+  // For the original (baseline) gradients, we use a masked gradient because there is not yet anything in the hole region
+//  ITKHelpers::ComputeGradientsInRegion(image, targetRegion, targetRegionGradientImage.GetPointer());
   Derivatives::MaskedGradientInRegion(image, mask, targetRegion, targetRegionGradientImage.GetPointer());
 
   // Copy the patch into an image (we copy the patch in the magnitude image because there is no
@@ -157,7 +164,9 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
   inpaintedGradientImage->SetRegions(image->GetLargestPossibleRegion());
   inpaintedGradientImage->Allocate();
 
-  Derivatives::MaskedGradientInRegion(inpaintedImage.GetPointer(), mask, targetRegion, inpaintedGradientImage.GetPointer());
+  // For the inpainted patch, we do NOT use a masked gradient, as we are interested in what happens over the hole/valid region boundary
+  ITKHelpers::ComputeGradientsInRegion(image, targetRegion, targetRegionGradientImage.GetPointer());
+//  Derivatives::MaskedGradientInRegion(inpaintedImage.GetPointer(), mask, targetRegion, inpaintedGradientImage.GetPointer());
 
   // Compare the gradient magnitude before and after the inpainting
   float gradientMagnitudeChange = 0.0f;
@@ -173,9 +182,11 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
 
   if(this->GetDebugImages())
   {
-    ITKHelpers::WriteImage(targetRegionGradientImage.GetPointer(), "MaskBoundaryEnergy_TargetGradient.mha");
-    ITKHelpers::WriteImage(inpaintedGradientImage.GetPointer(), "MaskBoundaryEnergy_InpaintedGradient.mha");
-    ITKHelpers::WriteImage(inpaintedImage.GetPointer(), "MaskBoundaryEnergy_Inpainted.mha");
+    ITKHelpers::WriteRegion(targetRegionGradientImage.GetPointer(), targetRegion, Helpers::GetSequentialFileName("MaskBoundaryEnergy_TargetGradient", this->DebugIteration, "mha", 3));
+    ITKHelpers::WriteRegion(inpaintedGradientImage.GetPointer(), targetRegion, Helpers::GetSequentialFileName("MaskBoundaryEnergy_InpaintedGradient", this->DebugIteration, "mha", 3));
+//    ITKHelpers::WriteImage(targetRegionGradientImage.GetPointer(), "MaskBoundaryEnergy_TargetGradient.mha");
+//    ITKHelpers::WriteImage(inpaintedGradientImage.GetPointer(), "MaskBoundaryEnergy_InpaintedGradient.mha");
+//    ITKHelpers::WriteImage(inpaintedImage.GetPointer(), "MaskBoundaryEnergy_Inpainted.mha");
   }
 
   if(boundaryPixels.size() > 0)
