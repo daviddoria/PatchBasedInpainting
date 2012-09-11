@@ -24,7 +24,7 @@ class LinearSearchBestPassThrough
 public:
 
   template <typename ForwardIteratorType, typename OutputContainerType>
-  typename TIterator::value_type operator()(ForwardIteratorType first, ForwardIteratorType last,
+  typename ForwardIteratorType::value_type operator()(ForwardIteratorType first, ForwardIteratorType last,
                                             typename ForwardIteratorType::value_type queryNode, OutputContainerType& output)
   {
     output.clear();

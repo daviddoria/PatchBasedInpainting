@@ -326,8 +326,10 @@ int main(int argc, char *argv[])
 
   /////////////////////// Other neighbor finders /////////////////////////////////////
   // IntroducedEnergy
-//  typedef LinearSearchBestIntroducedEnergy<ImagePatchDescriptorMapType, OriginalImageType> BestSearchType;
-//  BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
+  typedef LinearSearchBestIntroducedEnergy<ImagePatchDescriptorMapType, OriginalImageType> BestSearchType;
+  BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
+  linearSearchBest.SetDebugOutputs(true);
+  linearSearchBest.SetDebugImages(true);
 
   // Just use the top match from the SSD sort
 //  typedef LinearSearchBestFirst BestSearchType;
@@ -336,13 +338,15 @@ int main(int argc, char *argv[])
 //  typedef LinearSearchBestStrategySelection<ImagePatchDescriptorMapType, OriginalImageType> BestSearchType;
 //  BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
 
-  typedef LinearSearchBestFirstAndWrite<ImagePatchDescriptorMapType, OriginalImageType, PatchDifferenceType> BestSearchType;
-  BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
+  typedef LinearSearchBestFirstAndWrite<ImagePatchDescriptorMapType, OriginalImageType, PatchDifferenceType> TopPatchesWriterType;
+  TopPatchesWriterType topPatchesWriter(imagePatchDescriptorMap, originalImage, mask);
 
   // Setup the two step neighbor finder
-  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
-      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
+//  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
+//      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
+  TwoStepNearestNeighbor<KNNSearchType, BestSearchType, TopPatchesWriterType>
+      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest,topPatchesWriter);
 
   // For debugging, look at the initial priority queue
 //  PatchHelpers::DumpQueue(boundaryNodeQueue, boundaryStatusMap, priorityMap);

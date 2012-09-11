@@ -21,6 +21,8 @@
 
 #include "Visitors/NearestNeighborsDefaultVisitor.hpp"
 
+#include "PassThrough.hpp"
+
 #include <stdexcept>
 
 /**
@@ -30,7 +32,7 @@
   * \tparam NeighborFinderKNN The functor that can find K-nearest neighbors.
   * \tparam NeighborFinderBest The functor that can find the best neighbor.
   */
-template <typename TMultipleNeighborFinder, typename TNearestNeighborFinder,
+template <typename TMultipleNeighborFinder, typename TNearestNeighborFinder, typename TTopPatchWriter = LinearSearchBestPassThrough,
           typename TVisitor = NearestNeighborsDefaultVisitor>
 struct TwoStepNearestNeighbor
 {
@@ -40,6 +42,8 @@ struct TwoStepNearestNeighbor
     * This must be a reference because this finder could potentially be a QObject (which cannot be copied) */
   TNearestNeighborFinder& NearestNeighborFinder;
 
+  TTopPatchWriter& TopPatchWriter;
+
   TVisitor& Visitor;
 
   /**
@@ -47,9 +51,9 @@ struct TwoStepNearestNeighbor
     * \param NeighborFinderKNN The functor to do the K-NN first step of the search.
     * \param NeighborFinderBest The functor to do the 1-NN second step of the search.
     */
-  TwoStepNearestNeighbor(TMultipleNeighborFinder multipleNeighborFinder, TNearestNeighborFinder& nearestNeighborFinder,
+  TwoStepNearestNeighbor(TMultipleNeighborFinder multipleNeighborFinder, TNearestNeighborFinder& nearestNeighborFinder, TTopPatchWriter& topPatchWriter,
                          TVisitor visitor = TVisitor()) :
-  MultipleNeighborFinder(multipleNeighborFinder), NearestNeighborFinder(nearestNeighborFinder), Visitor(visitor)
+    MultipleNeighborFinder(multipleNeighborFinder), NearestNeighborFinder(nearestNeighborFinder), TopPatchWriter(topPatchWriter), Visitor(visitor)
   { }
 
   template <typename TIterator>
@@ -68,6 +72,9 @@ struct TwoStepNearestNeighbor
     }
 
     Visitor.FoundNeighbors(outputContainer);
+
+    this->TopPatchWriter(outputContainer.begin(),
+                         outputContainer.end(), queryNode);
 
     // Step 2 - 1-NN search on result of first search, on second topology
     VertexDescriptorType nearestNeighbor = this->NearestNeighborFinder(outputContainer.begin(),

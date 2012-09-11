@@ -34,16 +34,16 @@
    * \tparam DistanceFunctionType The functor type to compute the distance measure.
    * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
    */
-template <typename ImagePatchDescriptorMapType, typename TImage>
+template <typename TImagePatchDescriptorMap, typename TImage>
 class LinearSearchBestIntroducedEnergy : public Debug, public LinearSearchBestParent
 {
   TImage* Image;
   Mask* MaskImage;
-  ImagePatchDescriptorMapType ImagePatchDescriptorMap;
+  TImagePatchDescriptorMap ImagePatchDescriptorMap;
 
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
-  LinearSearchBestIntroducedEnergy(ImagePatchDescriptorMapType imagePatchDescriptorMap, TImage* const image, Mask* const mask) :
+  LinearSearchBestIntroducedEnergy(TImagePatchDescriptorMap imagePatchDescriptorMap, TImage* const image, Mask* const mask) :
     Image(image), MaskImage(mask), ImagePatchDescriptorMap(imagePatchDescriptorMap)
   {}
 

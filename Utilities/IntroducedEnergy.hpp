@@ -28,7 +28,7 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyPatchBoundary(const TImag
                                                                      itk::ImageRegion<2> sourceRegion, itk::ImageRegion<2> targetRegion)
 {
   // Crop the source and target region so that the target region is inside the image and the source region has the same size/position crop
-  sourceRegion = CropRegionAtPosition(sourceRegion, inputImage->GetLargestPossibleRegion(), targetRegion);
+  sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, inputImage->GetLargestPossibleRegion(), targetRegion);
 
   targetRegion.Crop(inputImage->GetLargestPossibleRegion());
 
