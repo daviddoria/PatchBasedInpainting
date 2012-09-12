@@ -124,14 +124,26 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
   sourceRegion.Crop(inputImage->GetLargestPossibleRegion());
   sourceRegion.SetIndex(sourceRegion.GetIndex() - offset);
 
-  // Create the magnitude image so we can compute gradients of a scalar image.
-  typedef itk::Image<float, 2> MagnitudeImageType;
-  MagnitudeImageType::Pointer magnitudeImage = MagnitudeImageType::New();
-  ITKHelpers::MagnitudeImage(inputImage, magnitudeImage.GetPointer());
+  // Create a scalar image so we can compute gradients
+  typedef itk::Image<float, 2> ScalarImageType;
+  ScalarImageType::Pointer scalarImage = ScalarImageType::New();
+
+  // The magnitude image does not seem to do a good job
+//  ITKHelpers::MagnitudeImage(inputImage, scalarImage.GetPointer());
+
+  // Use the H channel of the HSV image
+//  typedef itk::Image<itk::CovariantVector<float, 3>, 2> HSVImageType;
+//  HSVImageType::Pointer hsvImage = HSVImageType::New();
+//  ITKHelpers::ITKImageToHSVImage(inputImage, hsvImage.GetPointer());
+
+//  ITKHelpers::ExtractChannel(hsvImage.GetPointer(), 0, scalarImage.GetPointer());
+
+  // Use the luminance image
+  ITKHelpers::CreateLuminanceImage(inputImage, scalarImage.GetPointer());
 
   // Call the data to operate on 'image' so the rest of this function
   // syntatically seems like it is operating on the input image directly.
-  MagnitudeImageType* image = magnitudeImage;
+  ScalarImageType* image = scalarImage;
 
   typedef itk::Image<itk::CovariantVector<float, 2> > GradientImageType;
   // Find pixels in the region and on the valid side of the mask boundary. Do NOT use boundary pixels on the hole
@@ -151,7 +163,7 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
 
   // Copy the patch into an image (we copy the patch in the magnitude image because there is no
   // reason to copy it in the vector image and then take the magnitude again
-  MagnitudeImageType::Pointer inpaintedImage = MagnitudeImageType::New();
+  ScalarImageType::Pointer inpaintedImage = ScalarImageType::New();
   ITKHelpers::DeepCopy(image, inpaintedImage.GetPointer());
 //  ITKHelpers::CopyRegion(image, inpaintedImage.GetPointer(), sourceRegion, targetRegion);
   MaskOperations::CopyRegionIntoHolePortionOfTargetRegion(image, inpaintedImage.GetPointer(),
@@ -186,7 +198,7 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
   {
     std::stringstream ss;
     ss << Helpers::ZeroPad(this->DebugIteration, 3) << "_" << Helpers::ZeroPad(this->PatchId, 3) << ".mha";
-    ITKHelpers::WriteRegion(magnitudeImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_MagnitudeImage_") + ss.str());
+    ITKHelpers::WriteRegion(scalarImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_ScalarImage_") + ss.str());
     ITKHelpers::WriteRegion(inpaintedImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_InpaintedImage_") + ss.str());
     ITKHelpers::WriteRegion(targetRegionGradientImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_TargetGradient_") + ss.str());
     ITKHelpers::WriteRegion(inpaintedGradientImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_InpaintedGradient_") + ss.str());

@@ -23,13 +23,16 @@
 
 // Submodules
 #include <ITKHelpers/ITKHelpers.h>
+#include <ITKQtHelpers/ITKQtHelpers.h>
 
 // STL
 #include <cassert>
 #include <stdexcept>
 
 // Qt
+#include <QApplication>
 #include <QColor>
+#include <QPainter>
 
 namespace PatchHelpers
 {
@@ -265,7 +268,7 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
 //  std::cout << "WriteTopPatches:numberOfTopPatches = " << numberOfTopPatches << std::endl;
 
   itk::Index<2> topPatchesImageCorner = {{0,0}};
-  itk::Size<2> topPatchesImageSize = {{patchSideLength, patchSideLength * numberOfTopPatches + numberOfTopPatches - 1}}; // Make space for all the patches and a colored line dividing them (and the -1 is so there is no dividing line at the bottom)
+  itk::Size<2> topPatchesImageSize = {{patchSideLength * 2, patchSideLength * numberOfTopPatches + numberOfTopPatches - 1}}; // Make space for all the patches and a colored line dividing them (and the -1 is so there is no dividing line at the bottom)
   itk::ImageRegion<2> topPatchesImageRegion(topPatchesImageCorner, topPatchesImageSize);
 
 //  std::cout << "topPatchesImageRegion: " << topPatchesImageRegion << std::endl;
@@ -279,9 +282,41 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
   green.Fill(0);
   green[1] = 255;
 
+  QApplication* app = 0;
+  if(!QApplication::instance())
+  {
+    int fakeargc = 1;
+    const char* fakeArgv[1];
+    fakeArgv[0] = "FakeQApplication";
+    app = new QApplication(fakeargc, const_cast<char**>(fakeArgv));
+  }
+
+  QPixmap pixmap(patchSideLength, patchSideLength);
+
+  QPainter painter(&pixmap);
+
+  QFont font("", 6); // arbitrary (default) font, size 6
+  painter.setFont(font);
+
+  painter.drawText(QPointF(10,10), "test"); // bottom left corner of the text seems to start at this point
+
+  typename TImage::Pointer numberImage = TImage::New();
+
+  QColor qtwhite(255,255,255);
+
   for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
   {
     unsigned int currentPatchId = currentPatch - first;
+
+    pixmap.fill(qtwhite);
+    std::stringstream ssNumber;
+    ssNumber << currentPatchId;
+    painter.drawText(QPointF(10,10), ssNumber.str().c_str()); // bottom left corner of the text seems to start at this point
+    ITKQtHelpers::QImageToITKImage(pixmap.toImage(), numberImage.GetPointer());
+    itk::Index<2> topPatchesImageNumberCorner = {{patchSideLength, patchSideLength * currentPatchId + currentPatchId}}; // The extra + currentPatchId is to skip the extra dividing lines that have been drawn
+    itk::ImageRegion<2> topPatchesImageNumberRegion(topPatchesImageNumberCorner, patchSize);
+    ITKHelpers::CopyRegion(numberImage.GetPointer(), topPatchesImage.GetPointer(), numberImage->GetLargestPossibleRegion(), topPatchesImageNumberRegion);
+
     itk::Index<2> topPatchesImageCorner = {{0, patchSideLength * currentPatchId + currentPatchId}}; // The extra + currentPatchId is to skip the extra dividing lines that have been drawn
     itk::ImageRegion<2> currentTopPatchesImageRegion(topPatchesImageCorner, patchSize);
     itk::ImageRegion<2> currentRegion = get(propertyMap, *currentPatch).GetRegion();
@@ -300,6 +335,8 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
   }
 
   ITKHelpers::WriteRGBImage(topPatchesImage.GetPointer(), Helpers::GetSequentialFileName(prefix, iteration,"png",3));
+
+  delete app;
 }
 
 } // end namespace
