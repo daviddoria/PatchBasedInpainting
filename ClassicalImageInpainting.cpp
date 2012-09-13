@@ -43,6 +43,7 @@
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
 #include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
+#include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
 
 // Utilities
 #include "Utilities/PatchHelpers.h"
@@ -103,17 +104,13 @@ int main(int argc, char *argv[])
 
   OriginalImageType* originalImage = imageReader->GetOutput();
 
+  itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
+
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
 
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
-
-  bool compatibleMask = PatchHelpers::CheckSurroundingRegionsOfAllHolePixels(mask, patchHalfWidth);
-  if(!compatibleMask)
-  {
-    throw std::runtime_error("The mask is not compatible!");
-  }
 
   // Blur the image
   typedef OriginalImageType BlurredImageType; // Usually the blurred image is the same type as the original image.
@@ -127,8 +124,8 @@ int main(int argc, char *argv[])
 
   // Create the graph
   typedef boost::grid_graph<2> VertexListGraphType;
-  boost::array<std::size_t, 2> graphSideLengths = { { imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0],
-                                                      imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[1] } };
+  boost::array<std::size_t, 2> graphSideLengths = { { fullRegion.GetSize()[0],
+                                                      fullRegion.GetSize()[1] } };
   VertexListGraphType graph(graphSideLengths);
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
   typedef boost::graph_traits<VertexListGraphType>::vertex_iterator VertexIteratorType;
@@ -140,10 +137,6 @@ int main(int argc, char *argv[])
   // Create the priority map
   typedef boost::vector_property_map<float, IndexMapType> PriorityMapType;
   PriorityMapType priorityMap(num_vertices(graph), indexMap);
-
-  // Create the node fill status map. Each pixel is either filled (true) or not filled (false).
-  typedef boost::vector_property_map<bool, IndexMapType> FillStatusMapType;
-  FillStatusMapType fillStatusMap(num_vertices(graph), indexMap);
 
   // Create the boundary status map. A node is on the current boundary if this property is true. 
   // This property helps the boundaryNodeQueue because we can mark here if a node has become no longer
@@ -195,7 +188,8 @@ int main(int argc, char *argv[])
 
   // Initialize the handle map
   VertexIteratorType vertexIterator, vertexIteratorEnd;
-  for( tie(vertexIterator, vertexIteratorEnd) = vertices(graph); vertexIterator != vertexIteratorEnd; ++vertexIterator)
+  for( tie(vertexIterator, vertexIteratorEnd) = vertices(graph);
+       vertexIterator != vertexIteratorEnd; ++vertexIterator)
   {
     HandleType invalidHandle(0); // An invalid node handle (a node_pointer of NULL)
     put(handleMap, *vertexIterator, invalidHandle);
@@ -228,8 +222,11 @@ int main(int argc, char *argv[])
 
   // Create the nearest neighbor finder
 
+//  typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
+//      SumAbsolutePixelDifference<OriginalImageType::PixelType> > PatchDifferenceType;
+
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
-      SumAbsolutePixelDifference<OriginalImageType::PixelType> > PatchDifferenceType;
+      SumSquaredPixelDifference<OriginalImageType::PixelType> > PatchDifferenceType;
 
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
                                    PatchDifferenceType> BestSearchType;

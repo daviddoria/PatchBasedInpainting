@@ -173,8 +173,7 @@ int main(int argc, char *argv[])
 
   // We can't make this a signed type (size_t versus int) because we allow negative
   boost::array<std::size_t, 2> graphSideLengths = { { fullRegion.GetSize()[0],
-//  boost::array<int, 2> graphSideLengths = { { fullRegion.GetSize()[0],
-                                              fullRegion.GetSize()[1] } };
+                                                      fullRegion.GetSize()[1] } };
   VertexListGraphType graph(graphSideLengths);
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
   typedef boost::graph_traits<VertexListGraphType>::vertex_iterator VertexIteratorType;
@@ -219,20 +218,9 @@ int main(int argc, char *argv[])
   inpainter.AddInpainter(&blurredImagePatchInpainter);
 
   // Create the priority function
-//  typedef PriorityRandom PriorityType;
-//  bool random = false;
-//  PriorityType priorityFunction(random);
-
-//  typedef PriorityCriminisi<OriginalImageType> PriorityType;
-//  PriorityType priorityFunction(originalImage, mask, patchHalfWidth);
-//  priorityFunction.SetDebugLevel(1);
-
   typedef PriorityCriminisi<BlurredImageType> PriorityType;
   PriorityType priorityFunction(blurredImage, mask, patchHalfWidth);
 //  priorityFunction.SetDebugLevel(1);
-
-//  typedef PriorityConfidence PriorityType;
-//  PriorityType priorityFunction(mask, patchHalfWidth);
 
   // Create the priority compare functor (we want to process the highest priority pixels first)
   typedef std::less<float> PriorityCompareType;
@@ -254,7 +242,8 @@ int main(int argc, char *argv[])
 
   // Initialize the handle map
   VertexIteratorType vertexIterator, vertexIteratorEnd;
-  for( tie(vertexIterator, vertexIteratorEnd) = vertices(graph); vertexIterator != vertexIteratorEnd; ++vertexIterator)
+  for( tie(vertexIterator, vertexIteratorEnd) = vertices(graph);
+       vertexIterator != vertexIteratorEnd; ++vertexIterator)
   {
     HandleType invalidHandle(0); // An invalid node handle (a node_pointer of NULL)
     put(handleMap, *vertexIterator, invalidHandle);
@@ -293,7 +282,8 @@ int main(int argc, char *argv[])
 
   // Select squared or absolute pixel error
 //  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<OriginalImageType::PixelType> > PatchDifferenceType;
-  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumSquaredPixelDifference<OriginalImageType::PixelType> > PatchDifferenceType;
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
+      SumSquaredPixelDifference<OriginalImageType::PixelType> > PatchDifferenceType;
 
   // Create the first (KNN) neighbor finder
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;

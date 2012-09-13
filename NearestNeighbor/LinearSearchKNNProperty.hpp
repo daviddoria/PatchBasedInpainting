@@ -84,16 +84,16 @@ public:
 
     PriorityQueueType outputQueue;
 
-    typename PropertyMapType::value_type queryPatch = get(PropertyMap, queryNode);
+    typename PropertyMapType::value_type queryPatch = get(this->PropertyMap, queryNode);
 
     // The queue stores the items in descending score order.
     #pragma omp parallel for
 //    for(ForwardIteratorType current = first; current != last; ++current) // OpenMP 3 doesn't allow != in the loop ending condition
     for(ForwardIteratorType current = first; current < last; ++current)
     {
-      DistanceValueType d = DistanceFunction(get(PropertyMap, *current), queryPatch); // (source, target) (the query node is the target node)
+      DistanceValueType d = this->DistanceFunction(get(this->PropertyMap, *current), queryPatch); // (source, target) (the query node is the target node)
 
-      #pragma omp critical // Ther are weird crashes without this guard
+      #pragma omp critical // There are weird crashes without this guard
       outputQueue.push(PairType(d, current));
     }
 
