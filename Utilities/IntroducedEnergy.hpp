@@ -132,14 +132,14 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
 //  ITKHelpers::MagnitudeImage(inputImage, scalarImage.GetPointer());
 
   // Use the H channel of the HSV image
-//  typedef itk::Image<itk::CovariantVector<float, 3>, 2> HSVImageType;
-//  HSVImageType::Pointer hsvImage = HSVImageType::New();
-//  ITKHelpers::ITKImageToHSVImage(inputImage, hsvImage.GetPointer());
+  typedef itk::Image<itk::CovariantVector<float, 3>, 2> HSVImageType;
+  HSVImageType::Pointer hsvImage = HSVImageType::New();
+  ITKHelpers::ITKImageToHSVImage(inputImage, hsvImage.GetPointer());
 
-//  ITKHelpers::ExtractChannel(hsvImage.GetPointer(), 0, scalarImage.GetPointer());
+  ITKHelpers::ExtractChannel(hsvImage.GetPointer(), 0, scalarImage.GetPointer());
 
   // Use the luminance image
-  ITKHelpers::CreateLuminanceImage(inputImage, scalarImage.GetPointer());
+//  ITKHelpers::CreateLuminanceImage(inputImage, scalarImage.GetPointer());
 
   // Call the data to operate on 'image' so the rest of this function
   // syntatically seems like it is operating on the input image directly.
@@ -157,9 +157,10 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
   targetRegionGradientImage->SetRegions(image->GetLargestPossibleRegion());
   targetRegionGradientImage->Allocate();
 
+  Helpers::HSV_H_Difference wrapDifferenceFunctor;
   // For the original (baseline) gradients, we use a masked gradient because there is not yet anything in the hole region,
   //and pixels outside but neighboring the region may also be hole pixels
-  Derivatives::MaskedGradientInRegion(image, mask, targetRegion, targetRegionGradientImage.GetPointer());
+  Derivatives::MaskedGradientInRegion(image, mask, targetRegion, targetRegionGradientImage.GetPointer(), wrapDifferenceFunctor);
 
   // Copy the patch into an image (we copy the patch in the magnitude image because there is no
   // reason to copy it in the vector image and then take the magnitude again
@@ -180,7 +181,7 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
   ITKHelpers::SetRegionToConstant(filledMask.GetPointer(), targetRegion, filledMask->GetValidValue());
 
   // For the inpainted patch, we cannot use an unmasked gradient, as there will certainly be hole pixels on the other side of some of the patch boundary pixels.
-  Derivatives::MaskedGradientInRegion(inpaintedImage.GetPointer(), filledMask, targetRegion, inpaintedGradientImage.GetPointer());
+  Derivatives::MaskedGradientInRegion(inpaintedImage.GetPointer(), filledMask, targetRegion, inpaintedGradientImage.GetPointer(), wrapDifferenceFunctor);
 
   // Compare the gradient magnitude before and after the inpainting
   float gradientMagnitudeChange = 0.0f;
@@ -196,12 +197,16 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
 
   if(this->GetDebugImages())
   {
-    std::stringstream ss;
-    ss << Helpers::ZeroPad(this->DebugIteration, 3) << "_" << Helpers::ZeroPad(this->PatchId, 3) << ".mha";
-    ITKHelpers::WriteRegion(scalarImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_ScalarImage_") + ss.str());
-    ITKHelpers::WriteRegion(inpaintedImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_InpaintedImage_") + ss.str());
-    ITKHelpers::WriteRegion(targetRegionGradientImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_TargetGradient_") + ss.str());
-    ITKHelpers::WriteRegion(inpaintedGradientImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_InpaintedGradient_") + ss.str());
+    std::stringstream ssIterationAndPatchId;
+    ssIterationAndPatchId << Helpers::ZeroPad(this->DebugIteration, 3) << "_" << Helpers::ZeroPad(this->PatchId, 3) << ".mha";
+
+    std::stringstream ssIteration;
+    ssIteration << Helpers::ZeroPad(this->DebugIteration, 3) << ".mha";
+
+    ITKHelpers::WriteRegionAsImage(scalarImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_ScalarImage_") + ssIteration.str());
+    ITKHelpers::WriteRegionAsImage(inpaintedImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_InpaintedImage_") + ssIterationAndPatchId.str());
+    ITKHelpers::WriteRegionAsImage(targetRegionGradientImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_TargetGradient_") + ssIteration.str());
+    ITKHelpers::WriteRegionAsImage(inpaintedGradientImage.GetPointer(), targetRegion, std::string("MaskBoundaryEnergy_InpaintedGradient_") + ssIterationAndPatchId.str());
 
     typedef itk::Image<unsigned char, 2> IndicatorImageType;
     IndicatorImageType::Pointer boundaryPixelImage = IndicatorImageType::New();
@@ -209,7 +214,7 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
     boundaryPixelImage->Allocate();
     boundaryPixelImage->FillBuffer(0);
     ITKHelpers::SetPixels(boundaryPixelImage.GetPointer(), boundaryPixels, 255);
-    ITKHelpers::WriteImage(boundaryPixelImage.GetPointer(), std::string("MaskBoundaryEnergy_BoundaryPixels_") + ss.str());
+    ITKHelpers::WriteImage(boundaryPixelImage.GetPointer(), std::string("MaskBoundaryEnergy_BoundaryPixels_") + ssIteration.str());
 
 //    ITKHelpers::WriteImage(targetRegionGradientImage.GetPointer(), "MaskBoundaryEnergy_TargetGradient.mha");
 //    ITKHelpers::WriteImage(inpaintedGradientImage.GetPointer(), "MaskBoundaryEnergy_InpaintedGradient.mha");
