@@ -23,6 +23,35 @@
 
 class Mask;
 
+/**
+ * Throughout this namespace, a TDifferenceFunction is specified. This is so that if we are computing the gradient
+ * of say the H channel of an HSV image, we can specify the pixel-to-pixel difference function to use (we need a
+ * wrapping distance function. Only the template parameter is necessary (as the difference function is only expected
+ * to need an operator()(T, T), but we also accept an argument of an instance of the functor so that we can propagate
+ * a functor through these functions (which sometimes call each other) using automatic deduction instead of having to
+ * specify all of the other template parameters in order to specify this new one. That is, we would have to do:
+ *
+ * template <typename TImage, typename TGradientImage, typename TDifferenceFunction = std::minus<typename TImage::PixelType> >
+ * void MaskedGradient(const TImage* const image, const Mask* const mask,
+ *                      const itk::ImageRegion<2>& region, TGradientImage* const gradientImage)
+ * {
+ *    ...
+ *    MaskedGradientInRegion<TImage, TGradientImage, TDifferenceFunction>(image, mask, image->GetLargestPossibleRegion(),
+ *                                                                        gradientImage);
+ * }
+ *
+ * instead of
+ *
+ * template <typename TImage, typename TGradientImage, typename TDifferenceFunction = std::minus<typename TImage::PixelType> >
+ * void MaskedGradient(const TImage* const image, const Mask* const mask,
+ *                      const itk::ImageRegion<2>& region, TGradientImage* const gradientImage,
+ *                      TDifferenceFunction differenceFunction = TDifferenceFunction())
+ * {
+ *    ...
+ *    MaskedGradientInRegion(image, mask, image->GetLargestPossibleRegion(), gradientImage, differenceFunction);
+ * }
+ *
+ */
 namespace Derivatives
 {
 // Compute the derivative of an image in a specified 'direction' only using pixels that are Valid in the 'mask'.
@@ -38,20 +67,25 @@ void MaskedDerivativePrewitt(const TImage* const image, const Mask* const mask, 
 template <typename TImage, typename TDerivativeImage>
 void MaskedDerivativeSobel(const TImage* const image, const Mask* const mask, const unsigned int direction, TDerivativeImage* const derivativeImage);
 
-template <typename TImage, typename TDerivativeImage>
-void MaskedDerivativeGaussian(const TImage* const image, const Mask* const mask, const unsigned int direction, TDerivativeImage* const derivativeImage);
+template <typename TImage, typename TDerivativeImage, typename TDifferenceFunction = std::minus<typename TImage::PixelType> >
+void MaskedDerivativeGaussian(const TImage* const image, const Mask* const mask, const unsigned int direction,
+                              TDerivativeImage* const derivativeImage, TDifferenceFunction differenceFunction = TDifferenceFunction());
 
-template <typename TImage, typename TDerivativeImage>
+template <typename TImage, typename TDerivativeImage, typename TDifferenceFunction = std::minus<typename TImage::PixelType> >
 void MaskedDerivativeGaussianInRegion(const TImage* const image, const Mask* const mask, const unsigned int direction,
-                                      const itk::ImageRegion<2>& region, TDerivativeImage* const derivativeImage);
+                                      const itk::ImageRegion<2>& region, TDerivativeImage* const derivativeImage,
+                                      TDifferenceFunction differenceFunction = TDifferenceFunction());
 
 ////////////// Gradients ////////////////
 
-template <typename TImage, typename TGradientImage>
-void MaskedGradient(const TImage* const image, const Mask*const  mask, TGradientImage* const gradientImage);
+template <typename TImage, typename TGradientImage, typename TDifferenceFunction = std::minus<typename TImage::PixelType> >
+void MaskedGradient(const TImage* const image, const Mask*const  mask, TGradientImage* const gradientImage,
+                    TDifferenceFunction differenceFunction = TDifferenceFunction());
 
-template <typename TImage, typename TGradientImage>
-void MaskedGradientInRegion(const TImage* const image, const Mask* const mask, const itk::ImageRegion<2>& region, TGradientImage* const gradientImage);
+template <typename TImage, typename TGradientImage, typename TDifferenceFunction = std::minus<typename TImage::PixelType> >
+void MaskedGradientInRegion(const TImage* const image, const Mask* const mask,
+                            const itk::ImageRegion<2>& region, TGradientImage* const gradientImage,
+                            TDifferenceFunction differenceFunction = TDifferenceFunction());
 
 template<typename TPixel, typename TGradientImage>
 void GradientFromDerivatives(const itk::Image<TPixel, 2>* const xDerivative,

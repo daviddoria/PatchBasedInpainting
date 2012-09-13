@@ -306,9 +306,10 @@ void MaskedDerivativeSobel(const TImage* const image, const Mask* const mask,
     }
 }
 
-template <typename TImage, typename TDerivativeImage>
+template <typename TImage, typename TDerivativeImage, typename TDifferenceFunction = std::minus<typename TImage::PixelType> >
 void MaskedDerivativeGaussianInRegion(const TImage* const image, const Mask* const mask, const unsigned int direction,
-                                      const itk::ImageRegion<2>& region, TDerivativeImage* const derivativeImage)
+                                      const itk::ImageRegion<2>& region, TDerivativeImage* const derivativeImage,
+                                      TDifferenceFunction differenceFunction)
 {
   // It is assumed that 'output' is the right size and initialized already.
 
@@ -406,7 +407,9 @@ void MaskedDerivativeGaussianInRegion(const TImage* const image, const Mask* con
         }
       else if(backwardValid && forwardValid) // Use full difference
         {
-        difference = (image->GetPixel(forwardIndex) - image->GetPixel(backwardIndex))/2.0f;
+//        difference = (image->GetPixel(forwardIndex) - image->GetPixel(backwardIndex))/2.0f; // standard operator-()
+        difference = differenceFunction(image->GetPixel(forwardIndex), image->GetPixel(backwardIndex))/2.0f;
+
         totalWeight += weight;
         }
       else// if(!backwardValid && !forwardValid) // No valid neighbors in this direction
@@ -430,16 +433,18 @@ void MaskedDerivativeGaussianInRegion(const TImage* const image, const Mask* con
     }
 }
 
-template <typename TImage, typename TDerivativeImage>
+template <typename TImage, typename TDerivativeImage, typename TDifferenceFunction = std::minus<typename TImage::PixelType> >
 void MaskedDerivativeGaussian(const TImage* const image, const Mask* const mask,
-                              const unsigned int direction, TDerivativeImage* const derivativeImage)
+                              const unsigned int direction, TDerivativeImage* const derivativeImage,
+                              TDifferenceFunction differenceFunction)
 {
-  MaskedDerivativeGaussianInRegion(image, mask, direction, image->GetLargestPossibleRegion(), derivativeImage);
+  MaskedDerivativeGaussianInRegion(image, mask, direction, image->GetLargestPossibleRegion(), derivativeImage, differenceFunction);
 }
 
-template <typename TImage, typename TGradientImage>
+template <typename TImage, typename TGradientImage, typename TDifferenceFunction = std::minus<typename TImage::PixelType> >
 void MaskedGradientInRegion(const TImage* const image, const Mask* const mask,
-                            const itk::ImageRegion<2>& region, TGradientImage* const gradientImage)
+                            const itk::ImageRegion<2>& region, TGradientImage* const gradientImage,
+                            TDifferenceFunction differenceFunction)
 {
   // Compute the derivatives
   // X derivative
@@ -449,7 +454,7 @@ void MaskedGradientInRegion(const TImage* const image, const Mask* const mask,
   //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 0, xDerivative);
   //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 0, xDerivative);
   //Helpers::MaskedDerivativeSobel<FloatScalarImageType>(image, mask, 0, xDerivative);
-  MaskedDerivativeGaussianInRegion(image, mask, 0, region, xDerivative.GetPointer());
+  MaskedDerivativeGaussianInRegion(image, mask, 0, region, xDerivative.GetPointer(), differenceFunction);
   //Helpers::DebugWriteImageConditional<FloatScalarImageType>(xDerivative, "Debug/ComputeMaskedIsophotes.xderivative.mha", this->DebugImages);
 
   // Y derivative
@@ -459,7 +464,7 @@ void MaskedGradientInRegion(const TImage* const image, const Mask* const mask,
   //Helpers::MaskedDerivative<FloatScalarImageType>(image, mask, 1, yDerivative);
   //Helpers::MaskedDerivativePrewitt<FloatScalarImageType>(image, mask, 1, yDerivative);
   //Helpers::MaskedDerivativeSobel<FloatScalarImageType>(image, mask, 1, yDerivative);
-  MaskedDerivativeGaussianInRegion(image, mask, 1, region, yDerivative.GetPointer());
+  MaskedDerivativeGaussianInRegion(image, mask, 1, region, yDerivative.GetPointer(), differenceFunction);
   //Helpers::DebugWriteImageConditional<FloatScalarImageType>(yDerivative, "Debug/ComputeMaskedIsophotes.yderivative.mha", this->DebugImages);
 
   // Combine derivatives
