@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
   // Convert the image to HSV
   typedef itk::Image<itk::CovariantVector<float, 3>, 2> HSVImageType;
   HSVImageType::Pointer hsvImage = HSVImageType::New();
-  //ITKVTKHelpers::ConvertRGBtoHSV(image.GetPointer(), hsvImage.GetPointer());
+//  ITKVTKHelpers::ConvertRGBtoHSV(image.GetPointer(), hsvImage.GetPointer());
   ITKVTKHelpers::ConvertRGBtoHSV(originalImage, hsvImage.GetPointer());
 
   ITKHelpers::WriteImage(hsvImage.GetPointer(), "HSVImage.mha");
@@ -234,10 +234,6 @@ int main(int argc, char *argv[])
 //  typedef PriorityConfidence PriorityType;
 //  PriorityType priorityFunction(mask, patchHalfWidth);
 
-  // Create the boundary node queue. The priority of each node is used to order the queue.
-//  typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;
-//  IndexInHeapMap index_in_heap(indexMap);
-
   // Create the priority compare functor (we want to process the highest priority pixels first)
   typedef std::less<float> PriorityCompareType;
 
@@ -246,7 +242,8 @@ int main(int argc, char *argv[])
   IndirectComparisonType indirectComparison(priorityMap);
 
   // Create the queue
-  typedef boost::heap::binomial_heap<VertexDescriptorType,boost::heap::compare<IndirectComparisonType> > BoundaryNodeQueueType;
+  typedef boost::heap::binomial_heap<VertexDescriptorType,boost::heap::compare<IndirectComparisonType> >
+      BoundaryNodeQueueType;
   BoundaryNodeQueueType boundaryNodeQueue(indirectComparison);
 
   // Create the handle map
@@ -329,7 +326,7 @@ int main(int argc, char *argv[])
   typedef LinearSearchBestIntroducedEnergy<ImagePatchDescriptorMapType, OriginalImageType> BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
   linearSearchBest.SetDebugOutputs(true);
-  linearSearchBest.SetDebugImages(true);
+//  linearSearchBest.SetDebugImages(true);
 
   // Just use the top match from the SSD sort
 //  typedef LinearSearchBestFirst BestSearchType;

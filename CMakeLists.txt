@@ -198,7 +198,7 @@ SET(inpainting_ClassicalImageInpainting CACHE BOOL "Build a traditional patch co
 if(inpainting_ClassicalImageInpainting)
   ADD_EXECUTABLE(ClassicalImageInpainting ClassicalImageInpainting.cpp)
   TARGET_LINK_LIBRARIES(ClassicalImageInpainting PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES}
-                       ${QT_LIBRARIES} Helpers ITKHelpers Mask)
+                       ${QT_LIBRARIES} Mask gomp)
   INSTALL( TARGETS ClassicalImageInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 

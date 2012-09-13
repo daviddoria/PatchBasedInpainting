@@ -51,7 +51,8 @@ struct LinearSearchBestProperty
 
     // Iterate through all of the input elements
     #pragma omp parallel for
-    for(TIterator current = first; current != last; ++current)
+//    for(TIterator current = first; current != last; ++current)
+    for(TIterator current = first; current < last; ++current)
     {
       //DistanceValueType d = DistanceFunction(*first, query);
       DistanceValueType d = DistanceFunction(get(PropertyMap, *first), get(PropertyMap, query));
@@ -59,8 +60,8 @@ struct LinearSearchBestProperty
       {
         d_best = d;
         result = current;
-      };
-    };
+      }
+    }
 
     std::cout << "Best score: " << d_best << std::endl;
     return *result;
