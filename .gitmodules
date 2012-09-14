@@ -1,24 +1,24 @@
 [submodule "BoostHelpers"]
 	path = BoostHelpers
-	url = git@github.com:daviddoria/BoostHelpers.git
+	url = ../BoostHelpers.git
 [submodule "QtHelpers"]
 	path = QtHelpers
-	url = git@github.com:daviddoria/QtHelpers.git
+	url = ../QtHelpers.git
 [submodule "ITKVTKHelpers"]
 	path = ITKVTKHelpers
-	url = git@github.com:daviddoria/ITKVTKHelpers.git
+	url = ../ITKVTKHelpers.git
 [submodule "VTKHelpers"]
 	path = VTKHelpers
-	url = git@github.com:daviddoria/VTKHelpers.git
+	url = ../VTKHelpers.git
 [submodule "Mask"]
 	path = Mask
-	url = git@github.com:daviddoria/Mask.git
+	url = ../Mask.git
 [submodule "ITKQtHelpers"]
 	path = ITKQtHelpers
-	url = https://github.com/daviddoria/ITKQtHelpers.git
+	url = ../ITKQtHelpers.git
 [submodule "Utilities/Histogram"]
 	path = Utilities/Histogram
-	url = https://github.com/daviddoria/Histogram.git
+	url = ../Histogram.git
 [submodule "Utilities/Debug"]
 	path = Utilities/Debug
-	url = https://github.com/daviddoria/Debug.git
+	url = ../Debug.git
