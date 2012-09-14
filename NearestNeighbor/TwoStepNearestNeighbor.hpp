@@ -22,6 +22,7 @@
 #include "Visitors/NearestNeighborsDefaultVisitor.hpp"
 
 #include "PassThrough.hpp"
+#include "NearestNeighbor/DummyWriter.hpp"
 
 #include <stdexcept>
 
@@ -32,7 +33,8 @@
   * \tparam NeighborFinderKNN The functor that can find K-nearest neighbors.
   * \tparam NeighborFinderBest The functor that can find the best neighbor.
   */
-template <typename TMultipleNeighborFinder, typename TNearestNeighborFinder, typename TTopPatchWriter = LinearSearchBestPassThrough,
+template <typename TMultipleNeighborFinder, typename TNearestNeighborFinder,
+          typename TTopPatchWriter = DummyWriter,
           typename TVisitor = NearestNeighborsDefaultVisitor>
 struct TwoStepNearestNeighbor
 {
@@ -51,7 +53,8 @@ struct TwoStepNearestNeighbor
     * \param NeighborFinderKNN The functor to do the K-NN first step of the search.
     * \param NeighborFinderBest The functor to do the 1-NN second step of the search.
     */
-  TwoStepNearestNeighbor(TMultipleNeighborFinder multipleNeighborFinder, TNearestNeighborFinder& nearestNeighborFinder, TTopPatchWriter& topPatchWriter,
+  TwoStepNearestNeighbor(TMultipleNeighborFinder multipleNeighborFinder, TNearestNeighborFinder& nearestNeighborFinder,
+                         TTopPatchWriter topPatchWriter = DummyWriter(),
                          TVisitor visitor = TVisitor()) :
     MultipleNeighborFinder(multipleNeighborFinder), NearestNeighborFinder(nearestNeighborFinder), TopPatchWriter(topPatchWriter), Visitor(visitor)
   { }

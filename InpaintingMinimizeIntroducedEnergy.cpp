@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
 
   // Initialize the boundary node queue from the user provided mask image.
   InitializeFromMaskImage<InpaintingVisitorType, VertexDescriptorType>(mask, &inpaintingVisitor);
-  std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
+  std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.CountValidNodes()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Select squared or absolute pixel error
@@ -252,55 +252,13 @@ int main(int argc, char *argv[])
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
 
-  /////////////////////// Histogram neighbor finders /////////////////////////////////////
-  // Setup the second (1-NN) neighbor finder
-//  typedef std::vector<VertexDescriptorType>::iterator VertexDescriptorVectorIteratorType;
-
-//  // This is templated on OriginalImageType because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
-//  //typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType, OriginalImageType> BestSearchType;
-////  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexIteratorType, OriginalImageType> BestSearchType;
-////  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
-////  typedef LinearSearchBestHoleHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
-////  typedef LinearSearchBestDualHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
-////  typedef LinearSearchBestAdaptiveDualHistogramDifference<ImagePatchDescriptorMapType,
-////            HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
-//  typedef LinearSearchBestAdaptiveDualQuadrantHistogramDifference<ImagePatchDescriptorMapType,
-//            HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
-
-//  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
-//  linearSearchBest.SetNumberOfBinsPerDimension(binsPerChannel);
-//  // The range (0,1) is used because we use the HSV image.
-//  linearSearchBest.SetRangeMin(0.0f);
-//  linearSearchBest.SetRangeMax(1.0f);
-//  linearSearchBest.SetWriteDebugPatches(true, originalImage);
-
-  /////////////////////// Other neighbor finders /////////////////////////////////////
-  // IntroducedEnergy
+  // Introduced Energy
   typedef LinearSearchBestIntroducedEnergy<ImagePatchDescriptorMapType, OriginalImageType> BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
   linearSearchBest.SetDebugOutputs(true);
-//  linearSearchBest.SetDebugImages(true);
 
-  // Just use the top match from the SSD sort
-//  typedef LinearSearchBestFirst BestSearchType;
-//  BestSearchType linearSearchBest;
-
-//  typedef LinearSearchBestStrategySelection<ImagePatchDescriptorMapType, OriginalImageType> BestSearchType;
-//  BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
-
-  typedef LinearSearchBestFirstAndWrite<ImagePatchDescriptorMapType,
-      OriginalImageType, PatchDifferenceType> TopPatchesWriterType;
-  TopPatchesWriterType topPatchesWriter(imagePatchDescriptorMap, originalImage, mask);
-
-  // Setup the two step neighbor finder
-//  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
-//      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
-
-  TwoStepNearestNeighbor<KNNSearchType, BestSearchType, TopPatchesWriterType>
-      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest,topPatchesWriter);
-
-  // For debugging, look at the initial priority queue
-//  PatchHelpers::DumpQueue(boundaryNodeQueue, boundaryStatusMap, priorityMap);
+  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
+      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
   // Perform the inpainting
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,

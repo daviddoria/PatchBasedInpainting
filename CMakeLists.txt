@@ -186,6 +186,14 @@ if(inpainting_InpaintingHistogramSort)
   INSTALL( TARGETS InpaintingHistogramSort RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
+SET(inpainting_InpaintingMinimizeIntroducedEnergy CACHE BOOL "Build a patch based image inpainting algorithm that uses an introduced energy sort on the top N SSD matches.")
+if(inpainting_InpaintingMinimizeIntroducedEnergy)
+  ADD_EXECUTABLE(InpaintingMinimizeIntroducedEnergy InpaintingMinimizeIntroducedEnergy.cpp)
+  TARGET_LINK_LIBRARIES(InpaintingMinimizeIntroducedEnergy PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES}
+                       ${QT_LIBRARIES} Mask gomp)
+  INSTALL( TARGETS InpaintingMinimizeIntroducedEnergy RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
 SET(inpainting_InpaintingTwoStep CACHE BOOL "Build a patch based image inpainting program that uses a two step (knn + best) search strategy.")
 if(inpainting_InpaintingTwoStep)
   ADD_EXECUTABLE(InpaintingTwoStep InpaintingTwoStep.cpp)
