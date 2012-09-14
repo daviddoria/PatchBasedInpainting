@@ -88,13 +88,13 @@ int main(int argc, char *argv[])
   unsigned int patchHalfWidth = 0;
   ssPatchHalfWidth >> patchHalfWidth;
 
-  std::string outputFilename = argv[4];
+  std::string outputFileName = argv[4];
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
   std::cout << "Patch half width: " << patchHalfWidth << std::endl;
-  std::cout << "Output: " << outputFilename << std::endl;
+  std::cout << "Output: " << outputFileName << std::endl;
 
   typedef itk::Image<itk::CovariantVector<int, 3>, 2> OriginalImageType;
 
@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
   InpaintingVisitorType inpaintingVisitor(originalImage, mask, boundaryNodeQueue,
                                           imagePatchDescriptorVisitor, acceptanceVisitor,
                                           &priorityFunction, patchHalfWidth,
-                                          outputFilename);
+                                          outputFileName);
 
   InitializePriority(mask, boundaryNodeQueue, &priorityFunction);
 

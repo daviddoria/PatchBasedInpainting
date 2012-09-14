@@ -202,6 +202,34 @@ struct IndirectPriorityQueue
     this->Queue.update(get(this->HandleMap, value), value);
   }
 
+  void mark_as_invalid(ValueType v)
+  {
+    // This makes a patch ignored if it is still in the boundaryNodeQueue.
+    put(this->BoundaryStatusMap, v, false);
+  }
+
+  void push_or_update(ValueType v, const float priority)
+  {
+    // Note: we must set the value in the priority map before pushing the node
+    // into the queue (as the priority is what determines the node's position in the queue).
+
+    put(this->PriorityMap, v, priority);
+
+    put(this->BoundaryStatusMap, v, true);
+
+    if(get(this->HandleMap, v).node_ != 0) // the node is not already in the queue (the node_pointer of the node_handle is not NULL)
+    {
+      update(get(this->HandleMap, v), v);
+//          std::cout << "Updated priority of node (" << v[0] << ", " << v[1] << "): " << priority << std::endl;
+    }
+    else
+    {
+      HandleType handle = push(v);
+      put(this->HandleMap, v, handle);
+//          std::cout << "Added new node (" << v[0] << ", " << v[1] << "): " << priority << std::endl;
+    }
+  }
+
 };
 
 #endif // INDIRECTPRIORITYQUEUE_H

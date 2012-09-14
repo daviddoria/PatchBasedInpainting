@@ -235,30 +235,12 @@ public:
 
       if(this->MaskImage->HasHoleNeighbor(imageIterator.GetIndex()))
       {
-        // Note: we must set the value in the priority map before pushing the node
-        // into the queue (as the priority is what determines the node's position in the queue).
         float priority = this->PriorityFunction->ComputePriority(imageIterator.GetIndex());
-
-        put(this->BoundaryNodeQueue.PriorityMap, v, priority);
-
-        put(this->BoundaryNodeQueue.BoundaryStatusMap, v, true);
-
-        if(get(this->BoundaryNodeQueue.HandleMap, v).node_ != 0) // the node is not already in the queue (the node_pointer of the node_handle is not NULL)
-        {
-          this->BoundaryNodeQueue.update(get(this->BoundaryNodeQueue.HandleMap, v), v);
-//          std::cout << "Updated priority of node (" << v[0] << ", " << v[1] << "): " << priority << std::endl;
-        }
-        else
-        {
-          HandleType handle = this->BoundaryNodeQueue.push(v);
-          put(this->BoundaryNodeQueue.HandleMap, v, handle);
-//          std::cout << "Added new node (" << v[0] << ", " << v[1] << "): " << priority << std::endl;
-        }
+        this->BoundaryNodeQueue.push_or_update(v, priority);
       }
       else
       {
-        // This makes a patch ignored if it is still in the boundaryNodeQueue.
-        put(this->BoundaryNodeQueue.BoundaryStatusMap, v, false);
+        this->BoundaryNodeQueue.mark_as_invalid(v);
       }
 
       ++imageIterator;
