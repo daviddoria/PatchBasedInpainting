@@ -47,8 +47,7 @@
  * this size to traverse the inpainted region to update the boundary.
  */
 template <typename TGraph, typename TImage, typename TBoundaryNodeQueue,
-          typename TDescriptorVisitor, typename TAcceptanceVisitor, typename TPriority,
-          typename TPriorityMap, typename THandleMap, typename TBoundaryStatusMap>
+          typename TDescriptorVisitor, typename TAcceptanceVisitor, typename TPriority>
 class InpaintingVisitor : public InpaintingVisitorParent<TGraph>, public Debug
 {
   BOOST_CONCEPT_ASSERT((DescriptorVisitorConcept<TDescriptorVisitor, TGraph>));
@@ -72,15 +71,6 @@ class InpaintingVisitor : public InpaintingVisitorParent<TGraph>, public Debug
 
   /** A visitor to perform specified actions when a match is accepted. */
   TAcceptanceVisitor& AcceptanceVisitor;
-
-  /** A map indicating the priority of each pixel. */
-  TPriorityMap& PriorityMap;
-
-  /** A map indicating the handle of each pixel (a Boost.Heap requirement). */
-  THandleMap& HandleMap;
-
-  /** A map indicating if each pixel is on the boundary or not. */
-  TBoundaryStatusMap& BoundaryStatusMap;
 
   /** The radius of the patches to use to inpaint the image. */
   const unsigned int PatchHalfWidth;
@@ -110,14 +100,13 @@ public:
   InpaintingVisitor(TImage* const image, Mask* const mask,
                     TBoundaryNodeQueue& boundaryNodeQueue,
                     TDescriptorVisitor& descriptorVisitor, TAcceptanceVisitor& acceptanceVisitor,
-                    TPriorityMap& priorityMap, THandleMap& handleMap, TPriority* const priorityFunction,
-                    const unsigned int patchHalfWidth, TBoundaryStatusMap& boundaryStatusMap,
+                    TPriority* const priorityFunction,
+                    const unsigned int patchHalfWidth,
                     const std::string& resultFileName,
                     const std::string& visitorName = "InpaintingVisitor") :
     InpaintingVisitorParent<TGraph>(visitorName),
     Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
     DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
-    PriorityMap(priorityMap), HandleMap(handleMap), BoundaryStatusMap(boundaryStatusMap),
     PatchHalfWidth(patchHalfWidth), ResultFileName(resultFileName), NumberOfFinishedPatches(0), AllowNewPatches(false)
   {
   }
@@ -250,26 +239,26 @@ public:
         // into the queue (as the priority is what determines the node's position in the queue).
         float priority = this->PriorityFunction->ComputePriority(imageIterator.GetIndex());
 
-        put(this->PriorityMap, v, priority);
+        put(this->BoundaryNodeQueue.PriorityMap, v, priority);
 
-        put(this->BoundaryStatusMap, v, true);
+        put(this->BoundaryNodeQueue.BoundaryStatusMap, v, true);
 
-        if(get(this->HandleMap, v).node_ != 0) // the node is not already in the queue (the node_pointer of the node_handle is not NULL)
+        if(get(this->BoundaryNodeQueue.HandleMap, v).node_ != 0) // the node is not already in the queue (the node_pointer of the node_handle is not NULL)
         {
-          this->BoundaryNodeQueue.update(get(this->HandleMap, v), v);
+          this->BoundaryNodeQueue.update(get(this->BoundaryNodeQueue.HandleMap, v), v);
 //          std::cout << "Updated priority of node (" << v[0] << ", " << v[1] << "): " << priority << std::endl;
         }
         else
         {
           HandleType handle = this->BoundaryNodeQueue.push(v);
-          put(this->HandleMap, v, handle);
+          put(this->BoundaryNodeQueue.HandleMap, v, handle);
 //          std::cout << "Added new node (" << v[0] << ", " << v[1] << "): " << priority << std::endl;
         }
       }
       else
       {
         // This makes a patch ignored if it is still in the boundaryNodeQueue.
-        put(this->BoundaryStatusMap, v, false);
+        put(this->BoundaryNodeQueue.BoundaryStatusMap, v, false);
       }
 
       ++imageIterator;
@@ -319,7 +308,7 @@ public:
       {
         VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(boundaryPixels[i]);
 
-        put(this->BoundaryStatusMap, v, false);
+        put(this->BoundaryNodeQueue.BoundaryStatusMap, v, false);
       }
     }
 

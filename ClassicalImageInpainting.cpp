@@ -170,18 +170,14 @@ int main(int argc, char *argv[])
 
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, OriginalImageType, BoundaryNodeQueueType,
-                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType,
-                            BoundaryNodeQueueType::PriorityMapType, BoundaryNodeQueueType::HandleMapType,
-                            BoundaryNodeQueueType::BoundaryStatusMapType>
+                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType>
                             InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(originalImage, mask, boundaryNodeQueue,
-                                          imagePatchDescriptorVisitor, acceptanceVisitor, boundaryNodeQueue.PriorityMap,
-                                          boundaryNodeQueue.HandleMap,
+                                          imagePatchDescriptorVisitor, acceptanceVisitor,
                                           &priorityFunction, patchHalfWidth,
-                                          boundaryNodeQueue.BoundaryStatusMap, outputFilename);
+                                          outputFilename);
 
-  InitializePriority(mask, boundaryNodeQueue, boundaryNodeQueue.PriorityMap, boundaryNodeQueue.HandleMap,
-                     &priorityFunction, boundaryNodeQueue.BoundaryStatusMap);
+  InitializePriority(mask, boundaryNodeQueue, &priorityFunction);
 
   // Initialize the boundary node queue from the user provided mask image.
   InitializeFromMaskImage<InpaintingVisitorType, VertexDescriptorType>(mask, &inpaintingVisitor);
@@ -200,8 +196,7 @@ int main(int argc, char *argv[])
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
 
   // Perform the inpainting
-  InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue.BoundaryStatusMap, &boundaryNodeQueue,
-                      boundaryNodeQueue.HandleMap, boundaryNodeQueue.PriorityMap,
+  InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,
                       linearSearchBest, &inpainter);
 
   return EXIT_SUCCESS;

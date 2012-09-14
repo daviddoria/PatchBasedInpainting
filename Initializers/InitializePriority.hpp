@@ -9,11 +9,9 @@
 #include "Priority/Priority.h"
 #include "ITKHelpers/ITKHelpers.h"
 
-template <typename TBoundaryNodeQueue, typename TPriorityMap, typename THandleMap, typename TBoundaryStatusMap, typename TPriority>
-inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& boundaryNodeQueue, TPriorityMap& priorityMap,
-                               THandleMap& handleMap,
-                               TPriority* const priorityFunction,
-                               TBoundaryStatusMap& boundaryStatusMap)
+template <typename TBoundaryNodeQueue, typename TPriority>
+inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& boundaryNodeQueue,
+                               TPriority* const priorityFunction)
 {
   std::cout << "InitializePriority" << std::endl;
 
@@ -42,18 +40,18 @@ inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& bounda
 
       float priority = priorityFunction->ComputePriority(index);
 //      std::cout << "initial priority for node (" << node[0] << ", " << node[1] << "): " << priority << std::endl;
-      put(priorityMap, node, priority);
+      put(boundaryNodeQueue.PriorityMap, node, priority);
 
       // Note: the priorityMap value must be set before pushing the node into the queue
       // (as the indirect queue is using the value from the map to determine the node's position)
       HandleType handle = boundaryNodeQueue.push(node);
-      put(handleMap, node, handle);
+      put(boundaryNodeQueue.HandleMap, node, handle);
 
-      put(boundaryStatusMap, node, true);
+      put(boundaryNodeQueue.BoundaryStatusMap, node, true);
     }
     else
     {
-      put(boundaryStatusMap, node, false);
+      put(boundaryNodeQueue.BoundaryStatusMap, node, false);
     }
     ++boundaryImageIterator;
   }

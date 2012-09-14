@@ -48,13 +48,11 @@
 //                        TPatchInpainter* patchInpainter) __attribute__((optimize(0)));
 
 template <typename TVertexListGraph, typename TInpaintingVisitor,
-          typename TBoundaryStatusMap, typename TPriorityQueue,
-          typename THandleMap, typename TPriorityMap,
+          typename TPriorityQueue,
           typename TNearestNeighborFinder, typename TPatchInpainter>
 inline
 void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
-                        TBoundaryStatusMap* boundaryStatusMap, TPriorityQueue* boundaryNodeQueue,
-                        THandleMap& handleMap, TPriorityMap& priorityMap,
+                        TPriorityQueue* boundaryNodeQueue,
                         TNearestNeighborFinder find_inpainting_source,
                         TPatchInpainter* patchInpainter)
 {
@@ -87,10 +85,10 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
         return;  //terminate if the queue is empty.
       }
       targetNode = boundaryNodeQueue->top();
-      typename THandleMap::value_type invalidHandle(0);
-      put(handleMap, targetNode, invalidHandle);
+      typename TPriorityQueue::HandleMapType::value_type invalidHandle(0);
+      put(boundaryNodeQueue->HandleMap, targetNode, invalidHandle);
       boundaryNodeQueue->pop();
-    } while( get(*boundaryStatusMap, targetNode) == false );
+    } while( get(boundaryNodeQueue->BoundaryStatusMap, targetNode) == false );
 
 //    std::cout << "Processing node (" << targetNode[0] << ", " << targetNode[1] << ") with priority: " << get(priorityMap, targetNode) << std::endl;
 
