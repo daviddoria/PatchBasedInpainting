@@ -51,10 +51,27 @@ public:
     PropertyMap(propertyMap), Image(image), MaskImage(mask), Iteration(0)
   {}
 
+  bool IsLowVariance(const itk::ImageRegion<2>& queryRegion)
+  {
+    std::vector<itk::Index<2> > validIndices = this->MaskImage->GetValidPixelsInRegion(queryRegion);
+    std::vector<typename TImage::PixelType> validPixels = ITKHelpers::GetPixelValues(this->Image, validIndices);
+    typename TImage::PixelType varianceOfAllChannels = Statistics::Variance(validPixels);
+    float sumOfVariances = ITKHelpers::SumOfComponents(varianceOfAllChannels);
+
+    if(sumOfVariances < 1.0f)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+
   typedef QuadrantHistogramProperties<typename TImage::PixelType> QuadrantHistogramPropertiesType;
   typedef std::pair<bool, QuadrantHistogramPropertiesType> UseHistogramReturnPairType;
 
-  UseHistogramReturnPairType UseHistogramComparison(const itk::ImageRegion<2>& queryRegion)
+  UseHistogramReturnPairType ShouldUseHistogramComparison(const itk::ImageRegion<2>& queryRegion)
   {
     typedef float BinValueType;
 
@@ -149,6 +166,27 @@ public:
       return UseHistogramReturnPairType(false, quadrantHistogramProperties);
     }
 
+  } // end ShouldUseHistogramComparison
+
+  template<typename TIterator>
+  typename TIterator::value_type UseHistogramComparison(QuadrantHistogramPropertiesType quadrantHistogramProperties, TIterator first, TIterator last, typename TIterator::value_type query)
+  {
+    //       LinearSearchBestHistogramDifference<PropertyMapType, TImage, TIterator>
+    //           histogramCheck(this->PropertyMap, this->Image, this->MaskImage);
+    LinearSearchBestDualHistogramDifference<PropertyMapType, TImage, TIterator>
+        histogramCheck(this->PropertyMap, this->Image, this->MaskImage);
+
+    // This is a single histogram comparison, so we use the ranges of the 0th quadrant of the quadrant histogram. This is
+    // only reasonable as long as the same range is used for each quadrant (which it is in UseHistogramComparison()).
+    histogramCheck.SetRangeMin(quadrantHistogramProperties.QuadrantMinRanges[0]);
+    histogramCheck.SetRangeMax(quadrantHistogramProperties.QuadrantMaxRanges[0]);
+    histogramCheck.SetNumberOfBinsPerDimension(30);
+
+//      fout << "H " << Helpers::ZeroPad(this->Iteration, 3)
+//           << " " << maxDistance << " : " << distances << std::endl; // 'H'istogram
+//      fout.close();
+    this->Iteration++;
+    return histogramCheck(first, last, query);
   }
 
   /**
@@ -174,39 +212,28 @@ public:
 
     itk::ImageRegion<2> queryRegion = get(this->PropertyMap, query).GetRegion();
 
-    UseHistogramReturnPairType useHistogramComparison = UseHistogramComparison(queryRegion);
+    UseHistogramReturnPairType useHistogramComparison = ShouldUseHistogramComparison(queryRegion);
 
     QuadrantHistogramPropertiesType quadrantHistogramProperties = useHistogramComparison.second;
 
     if(useHistogramComparison.first)
     {
-      //       LinearSearchBestHistogramDifference<PropertyMapType, TImage, TIterator>
-      //           histogramCheck(this->PropertyMap, this->Image, this->MaskImage);
-      LinearSearchBestDualHistogramDifference<PropertyMapType, TImage, TIterator>
-          histogramCheck(this->PropertyMap, this->Image, this->MaskImage);
-
-      // This is a single histogram comparison, so we use the ranges of the 0th quadrant of the quadrant histogram. This is
-      // only reasonable as long as the same range is used for each quadrant (which it is in UseHistogramComparison()).
-      histogramCheck.SetRangeMin(quadrantHistogramProperties.QuadrantMinRanges[0]);
-      histogramCheck.SetRangeMax(quadrantHistogramProperties.QuadrantMaxRanges[0]);
-      histogramCheck.SetNumberOfBinsPerDimension(30);
-
-//      fout << "H " << Helpers::ZeroPad(this->Iteration, 3)
-//           << " " << maxDistance << " : " << distances << std::endl; // 'H'istogram
-//      fout.close();
-      this->Iteration++;
-      return histogramCheck(first, last, query);
+      return UseHistogramComparison(quadrantHistogramProperties, first, last, query);
     }
-    else // Just use the best SSD match
+
+    if(IsLowVariance(queryRegion))
     {
+      return UseHistogramComparison(quadrantHistogramProperties, first, last, query);
+    }
+
+    // Just use the best SSD match
+
 //      std::cout << "Using best SSD patch..." << std::endl;
 //      fout << "S " << Helpers::ZeroPad(this->Iteration, 3)
 //           << " " << maxDistance << " : " << distances << std::endl; // 'S'SD
 //      fout.close();
       this->Iteration++;
       return *first;
-    }
-
   }
 
 }; // end class
