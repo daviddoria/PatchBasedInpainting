@@ -199,5 +199,16 @@ int main(int argc, char *argv[])
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,
                       linearSearchBest, &inpainter);
 
+  // If the output filename is a png file, then use the RGBImage writer so that it is first
+  // casted to unsigned char. Otherwise, write the file directly.
+  if(Helpers::GetFileExtension(outputFileName) == "png")
+  {
+    ITKHelpers::WriteRGBImage(originalImage, outputFileName);
+  }
+  else
+  {
+    ITKHelpers::WriteImage(originalImage, outputFileName);
+  }
+
   return EXIT_SUCCESS;
 }

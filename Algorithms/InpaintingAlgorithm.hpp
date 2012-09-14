@@ -66,29 +66,10 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
 //             << " valid nodes in the queue." << std::endl;
 
   unsigned int iteration = 0;
-  while(true) 
+  while(!boundaryNodeQueue->empty())
   {
-    // Find the next target to in-paint. Some of the nodes in the queue
-    // can be already filled (they get "covered up" when a patch is filled around
-    // a target node). So we do not just process the node at the front of the queue,
-    // we also check that it has not been filled (by looking at its boundaryStatusMap
-    // value).
-    VertexDescriptorType targetNode;
-    do
-    {
-      //std::cout << "There are " << boundaryNodeQueue.size() << " nodes in the queue." << std::endl;
-      if( boundaryNodeQueue->empty() )
-      {
-        std::cout << "Inpainting complete." << std::endl;
-        vis.InpaintingComplete();
-  //         std::cout << "(There are " << (*boundaryNodeQueue).size() << " nodes in the queue)." << std::endl;
-        return;  //terminate if the queue is empty.
-      }
-      targetNode = boundaryNodeQueue->top();
-      typename TPriorityQueue::HandleMapType::value_type invalidHandle(0);
-      put(boundaryNodeQueue->HandleMap, targetNode, invalidHandle);
-      boundaryNodeQueue->pop();
-    } while( get(boundaryNodeQueue->BoundaryStatusMap, targetNode) == false );
+
+    VertexDescriptorType targetNode = boundaryNodeQueue->top();
 
 //    std::cout << "Processing node (" << targetNode[0] << ", " << targetNode[1] << ") with priority: " << get(priorityMap, targetNode) << std::endl;
 
@@ -149,6 +130,9 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
 
     iteration++;
   } // end main iteration loop
+
+  std::cout << "Inpainting complete." << std::endl;
+  vis.InpaintingComplete();
 
 }
 

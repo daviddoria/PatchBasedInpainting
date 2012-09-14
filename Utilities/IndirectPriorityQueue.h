@@ -116,12 +116,80 @@ struct IndirectPriorityQueue
 
   bool empty()
   {
-    return this->Queue.empty();
+    // We need to check if the queue contains any valid items
+//    return this->Queue.empty();
+
+    for (typename QueueType::iterator it = this->Queue.begin();
+         it != this->Queue.end(); ++it)
+    {
+      bool valid = get(this->BoundaryStatusMap, *it);
+      if(valid)
+      {
+        return false;
+      }
+    }
+    return true;
   }
 
   ValueType top()
   {
-    return this->Queue.top();
+    // Find the next target to in-paint. Some of the nodes in the queue
+    // can be already filled (they get "covered up" when a patch is filled around
+    // a target node). So we do not just process the node at the front of the queue,
+    // we also check that it has not been filled (by looking at its boundaryStatusMap
+    // value).
+
+
+    // return the first valid item, popping the invalid items off the queue
+//    return this->Queue.top();
+
+//    bool validNodeFound = false;
+//    ValueType topNode;
+//    do
+//    {
+//      // Get the top node
+//      topNode = this->Queue->top();
+
+//      // Invalidate the top node
+//      typename TPriorityQueue::HandleMapType::value_type invalidHandle(0);
+//      put(boundaryNodeQueue->HandleMap, targetNode, invalidHandle);
+
+//      // Pop the top node
+//      boundaryNodeQueue->pop();
+
+//      validNodeFound = get(this->BoundaryStatusMap, targetNode);
+//    } while( validNodeFound == false );
+
+//    return topNode;
+
+    bool validNodeFound = false;
+    ValueType topNode;
+    while(!this->Queue.empty())
+    {
+      // Get the top node
+      topNode = this->Queue.top();
+
+      // Invalidate the top node
+      typename HandleMapType::value_type invalidHandle(0);
+      put(this->HandleMap, topNode, invalidHandle);
+
+      // Pop the top node
+      this->Queue.pop();
+
+      validNodeFound = get(this->BoundaryStatusMap, topNode);
+
+      if(validNodeFound)
+      {
+        break;
+      }
+    }
+
+    if(!validNodeFound)
+    {
+      throw std::runtime_error("IndirectPriorityQueue: There were no valid nodes to return in top()!");
+    }
+
+    return topNode;
   }
 
   void pop()
