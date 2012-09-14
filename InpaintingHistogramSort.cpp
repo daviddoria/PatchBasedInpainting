@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
 
   /////////////////////// Histogram neighbor finders /////////////////////////////////////
   // Setup the second (1-NN) neighbor finder
-//  typedef std::vector<VertexDescriptorType>::iterator VertexDescriptorVectorIteratorType;
+  typedef std::vector<VertexDescriptorType>::iterator VertexDescriptorVectorIteratorType;
 
 //  // This is templated on OriginalImageType because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
 //  //typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType, OriginalImageType> BestSearchType;
@@ -264,8 +264,8 @@ int main(int argc, char *argv[])
 ////  typedef LinearSearchBestDualHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 ////  typedef LinearSearchBestAdaptiveDualHistogramDifference<ImagePatchDescriptorMapType,
 ////            HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
-//  typedef LinearSearchBestAdaptiveDualQuadrantHistogramDifference<ImagePatchDescriptorMapType,
-//            HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
+  typedef LinearSearchBestAdaptiveDualQuadrantHistogramDifference<ImagePatchDescriptorMapType,
+            HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 
   BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
   linearSearchBest.SetNumberOfBinsPerDimension(binsPerChannel);
@@ -274,23 +274,12 @@ int main(int argc, char *argv[])
   linearSearchBest.SetRangeMax(1.0f);
   linearSearchBest.SetWriteDebugPatches(true, originalImage);
 
-  /////////////////////// Other neighbor finders /////////////////////////////////////
-  // IntroducedEnergy
-  typedef LinearSearchBestIntroducedEnergy<ImagePatchDescriptorMapType, OriginalImageType> BestSearchType;
-  BestSearchType linearSearchBest(imagePatchDescriptorMap, originalImage, mask);
-  linearSearchBest.SetDebugOutputs(true);
-//  linearSearchBest.SetDebugImages(true);
-
-  typedef LinearSearchBestFirstAndWrite<ImagePatchDescriptorMapType,
-      OriginalImageType, PatchDifferenceType> TopPatchesWriterType;
-  TopPatchesWriterType topPatchesWriter(imagePatchDescriptorMap, originalImage, mask);
-
   // Setup the two step neighbor finder
-//  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
-//      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
+  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
+      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
-  TwoStepNearestNeighbor<KNNSearchType, BestSearchType, TopPatchesWriterType>
-      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest,topPatchesWriter);
+//  TwoStepNearestNeighbor<KNNSearchType, BestSearchType, TopPatchesWriterType>
+//      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest,topPatchesWriter);
 
   // Perform the inpainting
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,

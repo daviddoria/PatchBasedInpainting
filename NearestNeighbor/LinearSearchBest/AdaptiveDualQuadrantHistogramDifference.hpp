@@ -85,15 +85,15 @@ public:
     itk::ImageRegion<2> targetRegion = get(this->PropertyMap, query).GetRegion();
 
     QuadrantPropertiesType quadrantHistogramProperties;
-    QuadrantPropertiesType returnQuadrantHistogramProperties;
 
     // Compute the quadrant histograms, to compare the valid regions of source/target patches
     bool useProvidedRanges = false; // We want to compute the ranges here, and then use them to compute the source patch histograms
-    QuadrantHistogramType targetPatchValidRegionQuadrantHistogram = MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogramAdaptive
+    QuadrantHistogramType targetPatchValidRegionQuadrantHistogram =
+        MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogramAdaptive
         (this->Image, targetRegion,
          this->MaskImage, targetRegion, quadrantHistogramProperties,
          useProvidedRanges,
-         this->MaskImage->GetValidValue(), returnQuadrantHistogramProperties);
+         this->MaskImage->GetValidValue());
 
     targetPatchValidRegionQuadrantHistogram.NormalizeHistograms();
 
@@ -122,10 +122,13 @@ public:
 
     if(this->WriteDebugPatches)
     {
-      std::cout << "LinearSearchBestHistogram: Iteration " << this->Iteration << std::endl;
-      ITKHelpers::WriteRegionAsRGBImage(this->ImageToWrite, targetRegion, Helpers::GetSequentialFileName("QueryRegion",this->Iteration,"png",3));
+      std::cout << "LinearSearchBestAdaptiveDualQuadrantHistogramDifference: Iteration "
+                << this->Iteration << std::endl;
+      ITKHelpers::WriteRegionAsRGBImage(this->ImageToWrite, targetRegion,
+                                        Helpers::GetSequentialFileName("QueryRegion",this->Iteration,"png",3));
 //      ITKHelpers::WriteScalarImageRegion(this->MaskImage, queryRegion, Helpers::GetSequentialFileName("QueryMask",this->Iteration,"png",3));
-      ITKHelpers::WriteRegion(this->MaskImage, targetRegion, Helpers::GetSequentialFileName("QueryMask",this->Iteration,"png",3));
+      ITKHelpers::WriteRegion(this->MaskImage, targetRegion,
+                              Helpers::GetSequentialFileName("QueryMask",this->Iteration,"png",3));
       ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("Mask",this->Iteration,"png",3));
       ITKHelpers::WriteRegionAsRGBImage(this->ImageToWrite, get(this->PropertyMap, *first).GetRegion(),
                                         Helpers::GetSequentialFileName("SSDRegion",this->Iteration,"png",3));
@@ -136,7 +139,8 @@ public:
       MaskOperations::WriteMaskedRegionPNG(this->ImageToWrite, this->MaskImage, targetRegion,
                                            Helpers::GetSequentialFileName("MaskedQueryRegion",this->Iteration,"png",3), holeColor);
 
-      this->WriteTopPatches(first, last);
+      PatchHelpers::WriteTopPatches(this->ImageToWrite, this->PropertyMap, first, last,
+                                    "TopPatches", this->Iteration);
 
       // Compute the histogram of the best SSD region using the queryRegion mask
 //      HistogramType bestSSDHistogram =
@@ -166,11 +170,11 @@ public:
 
       // Compute the histogram of the source region using the target mask
       useProvidedRanges = true; // We want to compute these histograms using the ranges found for the target patch valid region
-      QuadrantHistogramType sourcePatchValidRegionQuadrantHistogram = MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogramAdaptive
-          (this->Image, currentRegion,
-           this->MaskImage, targetRegion, returnQuadrantHistogramProperties,
-           useProvidedRanges,
-           this->MaskImage->GetValidValue(), returnQuadrantHistogramProperties);
+      QuadrantHistogramType sourcePatchValidRegionQuadrantHistogram =
+          MaskedHistogramGeneratorType::ComputeQuadrantMaskedImage1DHistogramAdaptive
+          (this->Image, currentRegion, this->MaskImage, targetRegion,
+           targetPatchValidRegionQuadrantHistogram.Properties, useProvidedRanges,
+           this->MaskImage->GetValidValue());
 
       // We must normalize this (even though it is being compared to a region with the same number of pixels)
       // so that the difference computed can be combined with the difference computed for the hole region (which DOES have to be normalized)
