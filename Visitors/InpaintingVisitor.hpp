@@ -238,7 +238,7 @@ public:
     // Add pixels that are on the new boundary to the queue, and mark other pixels as not in the queue.
     itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(this->MaskImage, regionToFinish);
 
-    typedef typename TBoundaryNodeQueue::handle_type HandleType;
+    typedef typename TBoundaryNodeQueue::HandleType HandleType;
 
     while(!imageIterator.IsAtEnd())
     {

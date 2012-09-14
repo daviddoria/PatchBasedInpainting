@@ -17,7 +17,7 @@ inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& bounda
 {
   std::cout << "InitializePriority" << std::endl;
 
-  typedef typename TBoundaryNodeQueue::handle_type HandleType;
+  typedef typename TBoundaryNodeQueue::HandleType HandleType;
 
   // Compute the boundary image
   Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
@@ -32,8 +32,8 @@ inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& bounda
                                                                                 boundaryImage->GetLargestPossibleRegion());
   while(!boundaryImageIterator.IsAtEnd())
   {
-    typename TBoundaryNodeQueue::value_type node =
-        Helpers::ConvertFrom<typename TBoundaryNodeQueue::value_type,
+    typename TBoundaryNodeQueue::ValueType node =
+        Helpers::ConvertFrom<typename TBoundaryNodeQueue::ValueType,
                               itk::Index<2> >(boundaryImageIterator.GetIndex());
 
     if(boundaryImageIterator.Get() == boundaryPixelValue)
@@ -58,7 +58,7 @@ inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& bounda
     ++boundaryImageIterator;
   }
 
-  std::cout << "InitializePriority: There are " << boundaryNodeQueue.size()
+  std::cout << "InitializePriority: There are " << boundaryNodeQueue.CountValidNodes()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
 }

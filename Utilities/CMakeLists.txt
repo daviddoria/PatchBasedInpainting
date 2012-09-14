@@ -14,6 +14,7 @@ endif()
 
 add_custom_target(UtilitiesSources SOURCES
 itkCommandLineArgumentParser.h
+IndirectPriorityQueue.h
 IntroducedEnergy.h
 IntroducedEnergy.hpp
 ParallelSort.h
