@@ -79,37 +79,42 @@ public:
     typedef MaskedHistogramGenerator<BinValueType> MaskedHistogramGeneratorType;
     typedef HistogramGenerator<BinValueType>::HistogramType HistogramType;
 
-    itk::ImageRegion<2> queryRegion = get(this->PropertyMap, query).GetRegion();
+    itk::ImageRegion<2> originalQueryRegion = get(this->PropertyMap, query).GetRegion();
+
+    itk::ImageRegion<2> croppedQueryRegion = originalQueryRegion;
 
     bool allowOutside = true;
 
     HistogramType targetHistogram =
       MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
-          this->Image, queryRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
+          this->Image, croppedQueryRegion, this->MaskImage, croppedQueryRegion, this->NumberOfBinsPerDimension,
           this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetValidValue());
 
     if(this->WriteDebugPatches)
     {
+      // Compute the histogram of the best SSD region using the queryRegion mask
+      itk::ImageRegion<2> bestSSDRegion = get(this->PropertyMap, *first).GetRegion();
+      bestSSDRegion = ITKHelpers::CropRegionAtPosition(bestSSDRegion, this->MaskImage->GetLargestPossibleRegion(), originalQueryRegion);
+
       std::cout << "LinearSearchBestHistogram: Iteration " << this->Iteration << std::endl;
-      ITKHelpers::WriteRegionAsRGBImage(this->ImageToWrite, queryRegion, Helpers::GetSequentialFileName("QueryRegion",this->Iteration,"png",3));
+      ITKHelpers::WriteRegionAsRGBImage(this->ImageToWrite, croppedQueryRegion, Helpers::GetSequentialFileName("QueryRegion",this->Iteration,"png",3));
 //      ITKHelpers::WriteScalarImageRegion(this->MaskImage, queryRegion, Helpers::GetSequentialFileName("QueryMask",this->Iteration,"png",3));
-      ITKHelpers::WriteRegion(this->MaskImage, queryRegion, Helpers::GetSequentialFileName("QueryMask",this->Iteration,"png",3));
+      ITKHelpers::WriteRegion(this->MaskImage, croppedQueryRegion, Helpers::GetSequentialFileName("QueryMask",this->Iteration,"png",3));
       ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("Mask",this->Iteration,"png",3));
-      ITKHelpers::WriteRegionAsRGBImage(this->ImageToWrite, get(this->PropertyMap, *first).GetRegion(),
+      ITKHelpers::WriteRegionAsRGBImage(this->ImageToWrite, bestSSDRegion,
                                         Helpers::GetSequentialFileName("SSDRegion",this->Iteration,"png",3));
       typename TImage::PixelType holeColor;
       holeColor[0] = 0;
       holeColor[1] = 255;
       holeColor[2] = 0;
-      MaskOperations::WriteMaskedRegionPNG(this->ImageToWrite, this->MaskImage, queryRegion,
+      MaskOperations::WriteMaskedRegionPNG(this->ImageToWrite, this->MaskImage, croppedQueryRegion,
                                            Helpers::GetSequentialFileName("MaskedQueryRegion",this->Iteration,"png",3), holeColor);
 
       PatchHelpers::WriteTopPatches(this->ImageToWrite, this->PropertyMap, first, last, "HistogramNewColors", this->Iteration);
 
-      // Compute the histogram of the best SSD region using the queryRegion mask
       HistogramType bestSSDHistogram =
        MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
-                      this->Image, get(this->PropertyMap, *first).GetRegion(), this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
+                      this->Image, bestSSDRegion, this->MaskImage, croppedQueryRegion, this->NumberOfBinsPerDimension,
                       this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetValidValue());
 
       float ssdMatchHistogramScore = HistogramDifferences::HistogramDifference(targetHistogram, bestSSDHistogram);
@@ -133,11 +138,12 @@ public:
     for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
     {
       itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
+      currentRegion = ITKHelpers::CropRegionAtPosition(currentRegion, this->MaskImage->GetLargestPossibleRegion(), originalQueryRegion);
 
       // Compute the histogram of the source region using the queryRegion mask
       HistogramType testHistogram =
           MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
-                      this->Image, currentRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
+                      this->Image, currentRegion, this->MaskImage, croppedQueryRegion, this->NumberOfBinsPerDimension,
                       this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetValidValue());
 
        unsigned int numberOfNewColors = HistogramDifferences::CountNewColors(targetHistogram, testHistogram);
@@ -156,6 +162,8 @@ public:
     if(this->WriteDebugPatches)
     {
       itk::ImageRegion<2> bestRegion = get(this->PropertyMap, *bestPatch).GetRegion();
+      bestRegion = ITKHelpers::CropRegionAtPosition(bestRegion, this->MaskImage->GetLargestPossibleRegion(), originalQueryRegion);
+
       ITKHelpers::WriteRegionAsRGBImage(this->ImageToWrite, bestRegion, Helpers::GetSequentialFileName("HistogramRegion",this->Iteration,"png",3));
       HistogramHelpers::WriteHistogram(bestHistogram, Helpers::GetSequentialFileName("BestHistogram",this->Iteration,"txt",3));
       std::cout << "Best histogram id: " << bestId << std::endl;
