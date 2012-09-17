@@ -117,7 +117,7 @@ public:
                       this->Image, bestSSDRegion, this->MaskImage, croppedQueryRegion, this->NumberOfBinsPerDimension,
                       this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetValidValue());
 
-      float ssdMatchHistogramScore = HistogramDifferences::HistogramDifference(targetHistogram, bestSSDHistogram);
+      unsigned int ssdMatchHistogramScore = HistogramDifferences::CountNewColors(targetHistogram, bestSSDHistogram);
 //      float ssdMatchHistogramScore = HistogramDifferences::WeightedHistogramDifference(targetHistogram, bestSSDHistogram);
 //      float ssdMatchHistogramScore = HistogramDifferences::HistogramCoherence(targetHistogram, bestSSDHistogram);
 
@@ -128,7 +128,7 @@ public:
     }
 
     // Initialize
-    unsigned int fewestNewColors = std::numeric_limits<unsigned int>::infinity();
+    unsigned int fewestNewColors = std::numeric_limits<unsigned int>::max();
     TIterator bestPatch = last;
 
     unsigned int bestId = 0; // Keep track of which of the top SSD patches is the best by histogram score (just for information sake)

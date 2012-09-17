@@ -278,11 +278,18 @@ int main(int argc, char *argv[])
   linearSearchBest.SetWriteDebugPatches(true, originalImage);
 
   // Setup the two step neighbor finder
-  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
-      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
-//  TwoStepNearestNeighbor<KNNSearchType, BestSearchType, TopPatchesWriterType>
-//      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest,topPatchesWriter);
+  // Without writing top KNN patches
+//  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
+//      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
+
+  // With writing top KNN patches
+  typedef LinearSearchBestFirstAndWrite<ImagePatchDescriptorMapType,
+      OriginalImageType, PatchDifferenceType> TopPatchesWriterType;
+  TopPatchesWriterType topPatchesWriter(imagePatchDescriptorMap, originalImage, mask);
+
+  TwoStepNearestNeighbor<KNNSearchType, BestSearchType, TopPatchesWriterType>
+      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest, topPatchesWriter);
 
   // Perform the inpainting
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,
