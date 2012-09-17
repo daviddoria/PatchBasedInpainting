@@ -178,6 +178,14 @@ if(inpainting_ClassicalImageInpaintingWithVisualOutput)
   include(ClassicalImageInpaintingWithVisualOutput.cmake)
 endif()
 
+SET(inpainting_InpaintingTexture CACHE BOOL "Build a patch based image inpainting algorithm that uses a gradient magnitude histogram difference sort on the top N SSD matches (to determine if texture is similar).")
+if(inpainting_InpaintingTexture)
+  ADD_EXECUTABLE(InpaintingTexture InpaintingTexture.cpp)
+  TARGET_LINK_LIBRARIES(InpaintingTexture PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES}
+                       ${QT_LIBRARIES} Mask gomp)
+  INSTALL( TARGETS InpaintingTexture RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
 SET(inpainting_InpaintingHistogramSort CACHE BOOL "Build a patch based image inpainting algorithm that uses a histogram difference sort on the top N SSD matches.")
 if(inpainting_InpaintingHistogramSort)
   ADD_EXECUTABLE(InpaintingHistogramSort InpaintingHistogramSort.cpp)

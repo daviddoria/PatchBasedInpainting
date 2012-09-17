@@ -18,4 +18,5 @@ FirstAndWrite.hpp
 LinearSearchBestParent.hpp
 StrategySelection.hpp
 QuadrantHistogramDifference.hpp
+Texture.hpp
 )
