@@ -67,21 +67,26 @@ public:
     // Get the region to process
     itk::ImageRegion<2> queryRegion = get(this->PropertyMap, query).GetRegion();
 
-    // Compute gradients
-    typedef itk::Image<itk::CovariantVector<float, 2>, 2> GradientImageType;
-    GradientImageType::Pointer gradientImage = GradientImageType::New();
-
     // Create a scalar image to compute the gradient of (this could be the magnitude image, the H channel (of HSV), the luminance image, etc.)
     typedef itk::Image<float, 2> ScalarImageType;
     ScalarImageType::Pointer scalarImage = ScalarImageType::New();
     ITKHelpers::MagnitudeImage(this->Image, scalarImage.GetPointer());
+    ITKHelpers::WriteImage(scalarImage.GetPointer(), "ScalarImage.mha");
+
+    // Compute gradients
+    typedef itk::Image<itk::CovariantVector<float, 2>, 2> GradientImageType;
+    GradientImageType::Pointer gradientImage = GradientImageType::New();
+    gradientImage->SetRegions(this->Image->GetLargestPossibleRegion());
+    gradientImage->Allocate();
 
     Derivatives::MaskedGradientInRegion(scalarImage.GetPointer(), this->MaskImage,
                                         queryRegion, gradientImage.GetPointer());
+    ITKHelpers::WriteImage(gradientImage.GetPointer(), "GradientImage.mha");
 
     typedef itk::Image<float, 2> GradientMagnitudeImageType;
     GradientMagnitudeImageType::Pointer gradientMagnitudeImage = GradientMagnitudeImageType::New();
     ITKHelpers::MagnitudeImage(gradientImage.GetPointer(), gradientMagnitudeImage.GetPointer());
+    ITKHelpers::WriteImage(gradientMagnitudeImage.GetPointer(), "GradientMagnitudeImage.mha");
 
     std::vector<itk::Index<2> > validPixels = ITKHelpers::GetPixelsWithValueInRegion(this->MaskImage, queryRegion, this->MaskImage->GetValidValue());
 
@@ -113,13 +118,20 @@ public:
     {
       itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
 
+      Derivatives::MaskedGradientInRegion(scalarImage.GetPointer(), this->MaskImage,
+                                          currentRegion, gradientImage.GetPointer());
+      ITKHelpers::MagnitudeImage(gradientImage.GetPointer(), gradientMagnitudeImage.GetPointer());
+      ITKHelpers::WriteImage(gradientMagnitudeImage.GetPointer(), "GradientMagnitudeImage.mha");
+
       // Compute the histogram of the source region using the queryRegion mask
       HistogramType testHistogram =
           MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
                       gradientMagnitudeImage.GetPointer(), currentRegion, this->MaskImage, queryRegion, numberOfBins,
                       minGradientMagnitude, maxGradientMagnitude, allowOutside, this->MaskImage->GetValidValue());
 
-       float histogramDifference = HistogramDifferences::HistogramDifference(targetHistogram, testHistogram);
+      float histogramDifference = HistogramDifferences::HistogramDifference(targetHistogram, testHistogram);
+
+      std::cout << "histogramDifference " << currentPatch - first << " : " << histogramDifference << std::endl;
 
       if(histogramDifference < bestDistance)
       {
@@ -133,6 +145,7 @@ public:
     }
 
     std::cout << "BestId: " << bestId << std::endl;
+    std::cout << "Best distance: " << bestDistance << std::endl;
 
 //    this->Iteration++;
 

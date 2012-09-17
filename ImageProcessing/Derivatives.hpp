@@ -484,10 +484,22 @@ void GradientFromDerivativesInRegion(const itk::Image<TPixel, 2>* const xDerivat
   // It is assumed that 'output' is the right size and initialized already.
 
   if(xDerivative->GetLargestPossibleRegion() != yDerivative->GetLargestPossibleRegion())
-    {
-    std::cerr << "X and Y derivative images must be the same size!" << std::endl;
-    return;
-    }
+  {
+    std::stringstream ss;
+    ss << "GradientFromDerivativesInRegion: X and Y derivative images must be the same size! " << std::endl
+       << " X derivative image size is: " << xDerivative->GetLargestPossibleRegion()  << std::endl
+       << " Y derivative image size is: " << yDerivative->GetLargestPossibleRegion()  << std::endl;
+    throw std::runtime_error(ss.str());
+  }
+
+  if(xDerivative->GetLargestPossibleRegion() != gradientImage->GetLargestPossibleRegion())
+  {
+    std::stringstream ss;
+    ss << "GradientFromDerivativesInRegion: derivative images and gradient image must be the same size! " << std::endl
+       << " X derivative image size is: " << xDerivative->GetLargestPossibleRegion()  << std::endl
+       << " gradient image size is: " << gradientImage->GetLargestPossibleRegion()  << std::endl;
+    throw std::runtime_error(ss.str());
+  }
 
   itk::ImageRegionIterator<TGradientImage> imageIterator(gradientImage, region);
 
