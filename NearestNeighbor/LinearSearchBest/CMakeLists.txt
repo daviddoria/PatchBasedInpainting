@@ -8,6 +8,7 @@ AdaptiveDualQuadrantHistogramDifference.hpp
 DualHistogramDifference.hpp
 HistogramCorrelation.hpp
 HistogramDifference.hpp
+HistogramNewColors.hpp
 HistogramParent.hpp
 HoleHistogramDifference.hpp
 IntroducedEnergy.hpp

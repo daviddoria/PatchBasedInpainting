@@ -33,6 +33,7 @@
 #include "NearestNeighbor/LinearSearchBest/HistogramCorrelation.hpp"
 #include "NearestNeighbor/LinearSearchBest/HistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchBest/HoleHistogramDifference.hpp"
+#include "NearestNeighbor/LinearSearchBest/HistogramNewColors.hpp"
 #include "NearestNeighbor/LinearSearchBest/DualHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchBest/AdaptiveDualHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchBest/AdaptiveDualQuadrantHistogramDifference.hpp"
@@ -259,13 +260,15 @@ int main(int argc, char *argv[])
 //  // This is templated on OriginalImageType because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
 //  //typedef LinearSearchBestHistogram<ImagePatchDescriptorMapType, HSVImageType, OriginalImageType> BestSearchType;
 ////  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexIteratorType, OriginalImageType> BestSearchType;
+  typedef LinearSearchBestHistogramNewColors<ImagePatchDescriptorMapType, HSVImageType,
+      VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 ////  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 ////  typedef LinearSearchBestHoleHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 ////  typedef LinearSearchBestDualHistogramDifference<ImagePatchDescriptorMapType, HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 ////  typedef LinearSearchBestAdaptiveDualHistogramDifference<ImagePatchDescriptorMapType,
 ////            HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
-  typedef LinearSearchBestAdaptiveDualQuadrantHistogramDifference<ImagePatchDescriptorMapType,
-            HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
+//  typedef LinearSearchBestAdaptiveDualQuadrantHistogramDifference<ImagePatchDescriptorMapType,
+//            HSVImageType, VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 
   BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
   linearSearchBest.SetNumberOfBinsPerDimension(binsPerChannel);
