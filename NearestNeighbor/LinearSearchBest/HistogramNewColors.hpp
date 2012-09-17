@@ -90,9 +90,11 @@ public:
           this->Image, croppedQueryRegion, this->MaskImage, croppedQueryRegion, this->NumberOfBinsPerDimension,
           this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetValidValue());
 
+    targetHistogram.PrintPadded("Target histogram");
+
     if(this->WriteDebugPatches)
     {
-      // Compute the histogram of the best SSD region using the queryRegion mask
+      // Compute the histogram of the best SSD patch (in the hole region) using the queryRegion mask
       itk::ImageRegion<2> bestSSDRegion = get(this->PropertyMap, *first).GetRegion();
       bestSSDRegion = ITKHelpers::CropRegionAtPosition(bestSSDRegion, this->MaskImage->GetLargestPossibleRegion(), originalQueryRegion);
 
@@ -115,7 +117,7 @@ public:
       HistogramType bestSSDHistogram =
        MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
                       this->Image, bestSSDRegion, this->MaskImage, croppedQueryRegion, this->NumberOfBinsPerDimension,
-                      this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetValidValue());
+                      this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetHoleValue());
 
       unsigned int ssdMatchHistogramScore = HistogramDifferences::CountNewColors(targetHistogram, bestSSDHistogram);
 //      float ssdMatchHistogramScore = HistogramDifferences::WeightedHistogramDifference(targetHistogram, bestSSDHistogram);
@@ -140,22 +142,27 @@ public:
       itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
       currentRegion = ITKHelpers::CropRegionAtPosition(currentRegion, this->MaskImage->GetLargestPossibleRegion(), originalQueryRegion);
 
-      // Compute the histogram of the source region using the queryRegion mask
+      // Compute the histogram of the hole region of the source using the queryRegion mask
       HistogramType testHistogram =
           MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
                       this->Image, currentRegion, this->MaskImage, croppedQueryRegion, this->NumberOfBinsPerDimension,
-                      this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetValidValue());
+                      this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetHoleValue());
 
        unsigned int numberOfNewColors = HistogramDifferences::CountNewColors(targetHistogram, testHistogram);
 
       if(numberOfNewColors < fewestNewColors)
       {
+        // Update the best patch
         fewestNewColors = numberOfNewColors;
         bestPatch = currentPatch;
 
         // These are not needed - just for debugging
+        {
+        testHistogram.PrintPadded("Better histogram");
+
         bestId = currentPatch - first;
         bestHistogram = testHistogram;
+        }
       }
     }
 
