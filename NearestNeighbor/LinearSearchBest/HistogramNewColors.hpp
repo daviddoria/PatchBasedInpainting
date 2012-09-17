@@ -93,7 +93,7 @@ public:
     HistogramType targetHistogram =
         HistogramGeneratorType::ComputeImageJointChannelHistogram(
                     this->Image, croppedQueryRegion, this->NumberOfBinsPerDimension,
-                    this->RangeMin, this->RangeMax, this->MaskImage, this->MaskImage->GetHoleValue(),
+                    this->RangeMin, this->RangeMax, this->MaskImage, this->MaskImage->GetValidValue(),
                     croppedQueryRegion, allowOutside);
 
     targetHistogram.PrintPadded("Target histogram");
@@ -176,7 +176,7 @@ public:
 
         // These are not needed - just for debugging
         {
-        testHistogram.PrintPadded("Better histogram");
+//        testHistogram.PrintPadded("Better histogram");
 
         bestId = currentPatch - first;
         bestHistogram = testHistogram;
