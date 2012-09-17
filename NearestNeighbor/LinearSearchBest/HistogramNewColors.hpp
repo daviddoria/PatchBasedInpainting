@@ -76,8 +76,8 @@ public:
     }
 
     typedef int BinValueType;
-    typedef MaskedHistogramGenerator<BinValueType> MaskedHistogramGeneratorType;
-    typedef HistogramGenerator<BinValueType>::HistogramType HistogramType;
+    typedef HistogramGenerator<BinValueType> HistogramGeneratorType;
+    typedef HistogramGeneratorType::HistogramType HistogramType;
 
     itk::ImageRegion<2> originalQueryRegion = get(this->PropertyMap, query).GetRegion();
 
@@ -85,10 +85,16 @@ public:
 
     bool allowOutside = true;
 
+//    HistogramType targetHistogram =
+//      MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
+//          this->Image, croppedQueryRegion, this->MaskImage, croppedQueryRegion, this->NumberOfBinsPerDimension,
+//          this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetValidValue());
+
     HistogramType targetHistogram =
-      MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
-          this->Image, croppedQueryRegion, this->MaskImage, croppedQueryRegion, this->NumberOfBinsPerDimension,
-          this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetValidValue());
+        HistogramGeneratorType::ComputeImageJointChannelHistogram(
+                    this->Image, croppedQueryRegion, this->NumberOfBinsPerDimension,
+                    this->RangeMin, this->RangeMax, this->MaskImage, this->MaskImage->GetHoleValue(),
+                    croppedQueryRegion, allowOutside);
 
     targetHistogram.PrintPadded("Target histogram");
 
@@ -114,10 +120,16 @@ public:
 
       PatchHelpers::WriteTopPatches(this->ImageToWrite, this->PropertyMap, first, last, "HistogramNewColors", this->Iteration);
 
+//      HistogramType bestSSDHistogram =
+//       MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
+//                      this->Image, bestSSDRegion, this->MaskImage, croppedQueryRegion, this->NumberOfBinsPerDimension,
+//                      this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetHoleValue());
+
       HistogramType bestSSDHistogram =
-       MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
-                      this->Image, bestSSDRegion, this->MaskImage, croppedQueryRegion, this->NumberOfBinsPerDimension,
-                      this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetHoleValue());
+          HistogramGeneratorType::ComputeImageJointChannelHistogram(
+                      this->Image, bestSSDRegion, this->NumberOfBinsPerDimension,
+                      this->RangeMin, this->RangeMax, this->MaskImage, this->MaskImage->GetHoleValue(),
+                      croppedQueryRegion, allowOutside);
 
       unsigned int ssdMatchHistogramScore = HistogramDifferences::CountNewColors(targetHistogram, bestSSDHistogram);
 //      float ssdMatchHistogramScore = HistogramDifferences::WeightedHistogramDifference(targetHistogram, bestSSDHistogram);
@@ -143,12 +155,18 @@ public:
       currentRegion = ITKHelpers::CropRegionAtPosition(currentRegion, this->MaskImage->GetLargestPossibleRegion(), originalQueryRegion);
 
       // Compute the histogram of the hole region of the source using the queryRegion mask
-      HistogramType testHistogram =
-          MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
-                      this->Image, currentRegion, this->MaskImage, croppedQueryRegion, this->NumberOfBinsPerDimension,
-                      this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetHoleValue());
+//      HistogramType testHistogram =
+//          MaskedHistogramGeneratorType::ComputeMaskedImage1DHistogram(
+//                      this->Image, currentRegion, this->MaskImage, croppedQueryRegion, this->NumberOfBinsPerDimension,
+//                      this->RangeMin, this->RangeMax, allowOutside, this->MaskImage->GetHoleValue());
 
-       unsigned int numberOfNewColors = HistogramDifferences::CountNewColors(targetHistogram, testHistogram);
+      HistogramType testHistogram =
+          HistogramGeneratorType::ComputeImageJointChannelHistogram(
+                      this->Image, currentRegion, this->NumberOfBinsPerDimension,
+                      this->RangeMin, this->RangeMax, this->MaskImage, this->MaskImage->GetHoleValue(),
+                      croppedQueryRegion, allowOutside);
+
+      unsigned int numberOfNewColors = HistogramDifferences::CountNewColors(targetHistogram, testHistogram);
 
       if(numberOfNewColors < fewestNewColors)
       {
