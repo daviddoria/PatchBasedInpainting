@@ -131,6 +131,8 @@ public:
                       this->RangeMin, this->RangeMax, this->MaskImage, this->MaskImage->GetHoleValue(),
                       croppedQueryRegion, allowOutside);
 
+      bestSSDHistogram.PrintPadded("BestSSD histogram");
+
       unsigned int ssdMatchHistogramScore = HistogramDifferences::CountNewColors(targetHistogram, bestSSDHistogram);
 //      float ssdMatchHistogramScore = HistogramDifferences::WeightedHistogramDifference(targetHistogram, bestSSDHistogram);
 //      float ssdMatchHistogramScore = HistogramDifferences::HistogramCoherence(targetHistogram, bestSSDHistogram);
@@ -194,6 +196,8 @@ public:
       std::cout << "Best histogram id: " << bestId << std::endl;
       std::cout << "Fewest new colors: " << fewestNewColors << std::endl;
     }
+
+    bestHistogram.PrintPadded("Best histogram");
 
     this->Iteration++;
 
