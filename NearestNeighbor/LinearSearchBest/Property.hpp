@@ -1,5 +1,26 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef LinearSearchBestProperty_HPP
 #define LinearSearchBestProperty_HPP
+
+// Submodules
+#include <Utilities/Debug/Debug.h>
 
 // STL
 #include <iostream>
@@ -15,9 +36,8 @@
    * \tparam DistanceFunctionType The functor type to compute the distance measure.
    * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
    */
-template <typename PropertyMapType,
-          typename DistanceFunctionType>
-struct LinearSearchBestProperty
+template <typename PropertyMapType, typename DistanceFunctionType>
+struct LinearSearchBestProperty : public Debug
 {
   PropertyMapType PropertyMap;
   DistanceFunctionType DistanceFunction;
@@ -45,15 +65,17 @@ struct LinearSearchBestProperty
     float d_best = std::numeric_limits<float>::infinity();
     TIterator result = last;
 
+    typename PropertyMapType::value_type queryPatch = get(this->PropertyMap, query);
+
     // Iterate through all of the input elements
-//    #pragma omp parallel for
+    #pragma omp parallel for
 //    for(TIterator current = first; current != last; ++current)
     for(TIterator current = first; current < last; ++current)
     {
       //DistanceValueType d = DistanceFunction(*first, query);
-      float d = this->DistanceFunction(get(this->PropertyMap, *current), get(this->PropertyMap, query));
+      float d = this->DistanceFunction(get(this->PropertyMap, *current), queryPatch);
 
-//      #pragma omp critical // There are weird crashes without this guard
+      #pragma omp critical // There are weird crashes without this guard
       if(d < d_best)
       {
         d_best = d;
@@ -61,7 +83,10 @@ struct LinearSearchBestProperty
       }
     }
 
-    std::cout << "Best id: " << result - first << " score: " << d_best << std::endl;
+    std::cout << "Iteration: " << this->DebugIteration << " BestId: " << result - first << " score: " << d_best << std::endl;
+
+    this->DebugIteration++;
+
     return *result;
   }
 };

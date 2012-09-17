@@ -176,6 +176,8 @@ int main(int argc, char *argv[])
                                           imagePatchDescriptorVisitor, acceptanceVisitor,
                                           &priorityFunction, patchHalfWidth,
                                           outputFileName);
+  inpaintingVisitor.SetAllowNewPatches(false);
+  inpaintingVisitor.SetDebugImages(true);
 
   InitializePriority(mask, boundaryNodeQueue, &priorityFunction);
 

@@ -1,3 +1,21 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 /**
  * This is a visitor type that complies with the InpaintingVisitorConcept. It computes
  * and differences feature vectors (std::vector<float>) at each pixel.
@@ -6,6 +24,7 @@
 #ifndef FeatureVectorInpaintingVisitor_HPP
 #define FeatureVectorInpaintingVisitor_HPP
 
+// Custom
 #include "Priority/Priority.h"
 
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
@@ -23,9 +42,9 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 
-// Helpers
-#include "Helpers/ITKHelpers.h"
-#include "Helpers/VTKHelpers.h"
+// Submodules
+#include "ITKHelpers/ITKHelpers.h"
+#include "VTKHelpers/VTKHelpers.h"
 
 /**
  * This is a visitor that complies with the InpaintingVisitorConcept. It creates

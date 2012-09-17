@@ -264,7 +264,7 @@ int main(int argc, char *argv[])
 //      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
   TwoStepNearestNeighbor<KNNSearchType, BestSearchType, TopPatchesWriterType>
-      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest,topPatchesWriter);
+      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest, topPatchesWriter);
 
   // For debugging, look at the initial priority queue
 //  PatchHelpers::DumpQueue(boundaryNodeQueue, boundaryStatusMap, priorityMap);
