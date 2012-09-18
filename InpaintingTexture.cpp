@@ -248,7 +248,7 @@ int main(int argc, char *argv[])
                                           &priorityFunction, patchHalfWidth,
                                           outputFileName);
   inpaintingVisitor.SetDebugImages(true);
-  inpaintingVisitor.SetAllowNewPatches(true);
+  inpaintingVisitor.SetAllowNewPatches(false);
 
   InitializePriority(mask, boundaryNodeQueue, &priorityFunction);
 

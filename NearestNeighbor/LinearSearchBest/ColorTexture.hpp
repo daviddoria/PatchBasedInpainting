@@ -99,7 +99,8 @@ public:
       imageChannelGradients[channel] = gradientImage;
     }
 
-    typedef int BinValueType;
+//    typedef int BinValueType;
+    typedef float BinValueType; // bins must be float if we are going to normalize
     typedef MaskedHistogramGenerator<BinValueType> MaskedHistogramGeneratorType;
     typedef HistogramGenerator<BinValueType>::HistogramType HistogramType;
 
@@ -110,14 +111,21 @@ public:
     std::vector<GradientMagnitudeImageType::PixelType> minChannelGradientMagnitudes(this->Image->GetNumberOfComponentsPerPixel());
     std::vector<GradientMagnitudeImageType::PixelType> maxChannelGradientMagnitudes(this->Image->GetNumberOfComponentsPerPixel());
 
+
     std::vector<itk::Index<2> > validPixels = ITKHelpers::GetPixelsWithValueInRegion(this->MaskImage, queryRegion, this->MaskImage->GetValidValue());
+
+    std::vector<GradientMagnitudeImageType::Pointer> imageChannelGradientMagnitudes(this->Image->GetNumberOfComponentsPerPixel());
 
     for(unsigned int channel = 0; channel < this->Image->GetNumberOfComponentsPerPixel(); ++channel)
     {
       GradientMagnitudeImageType::Pointer gradientMagnitudeImage = GradientMagnitudeImageType::New();
       gradientMagnitudeImage->SetRegions(this->Image->GetLargestPossibleRegion());
+      gradientMagnitudeImage->Allocate();
+
+      imageChannelGradientMagnitudes[channel] = gradientMagnitudeImage;
+
       ITKHelpers::MagnitudeImageInRegion(imageChannelGradients[channel].GetPointer(), queryRegion, gradientMagnitudeImage.GetPointer());
-      ITKHelpers::WriteImage(imageChannelGradients[channel].GetPointer(), "GradientMagnitudeImage.mha");
+//      ITKHelpers::WriteImage(imageChannelGradients[channel].GetPointer(), "GradientMagnitudeImage.mha");
 
       std::vector<GradientMagnitudeImageType::PixelType> gradientMagnitudes = ITKHelpers::GetPixelValues(gradientMagnitudeImage.GetPointer(), validPixels);
 
@@ -133,6 +141,8 @@ public:
 
       targetHistogram.Append(targetChannelHistogram);
     }
+
+    targetHistogram.Normalize();
 
     // Initialize
     float bestDistance = std::numeric_limits<float>::max();
@@ -150,23 +160,35 @@ public:
 
       for(unsigned int channel = 0; channel < this->Image->GetNumberOfComponentsPerPixel(); ++channel)
       {
-        GradientMagnitudeImageType::Pointer gradientMagnitudeImage = GradientMagnitudeImageType::New();
-        gradientMagnitudeImage->SetRegions(this->Image->GetLargestPossibleRegion());
-
         Derivatives::MaskedGradientInRegion(imageChannels[channel].GetPointer(), this->MaskImage,
                                             currentRegion, imageChannelGradients[channel].GetPointer());
-        ITKHelpers::MagnitudeImageInRegion(imageChannelGradients[channel].GetPointer(), currentRegion, gradientMagnitudeImage.GetPointer());
-        ITKHelpers::WriteImage(gradientMagnitudeImage.GetPointer(), "GradientMagnitudeImage.mha");
+        ITKHelpers::MagnitudeImageInRegion(imageChannelGradients[channel].GetPointer(), currentRegion, imageChannelGradientMagnitudes[channel].GetPointer());
+//        ITKHelpers::WriteImage(gradientMagnitudeImage.GetPointer(), "GradientMagnitudeImage.mha");
 
         // Compute the histogram of the source region using the queryRegion mask
         bool allowOutside = true;
+        // Compare to the valid region of the source patch
+//        HistogramType testChannelHistogram =
+//            MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
+//                        imageChannelGradientMagnitudes[channel].GetPointer(), currentRegion, this->MaskImage, queryRegion, numberOfBins,
+//                        minChannelGradientMagnitudes[channel], maxChannelGradientMagnitudes[channel], allowOutside, this->MaskImage->GetValidValue());
+
+        // Compare to the hole region of the source patch
+//        HistogramType testChannelHistogram =
+//            MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
+//                        imageChannelGradientMagnitudes[channel].GetPointer(), currentRegion, this->MaskImage, queryRegion, numberOfBins,
+//                        minChannelGradientMagnitudes[channel], maxChannelGradientMagnitudes[channel], allowOutside, this->MaskImage->GetHoleValue());
+
+        // Compare to the entire source patch (by passing the source region as the mask region, which is entirely valid)
         HistogramType testChannelHistogram =
             MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
-                        gradientMagnitudeImage.GetPointer(), currentRegion, this->MaskImage, queryRegion, numberOfBins,
+                        imageChannelGradientMagnitudes[channel].GetPointer(), currentRegion, this->MaskImage, currentRegion, numberOfBins,
                         minChannelGradientMagnitudes[channel], maxChannelGradientMagnitudes[channel], allowOutside, this->MaskImage->GetValidValue());
 
         testHistogram.Append(testChannelHistogram);
       }
+
+      testHistogram.Normalize();
 
       float histogramDifference = HistogramDifferences::HistogramDifference(targetHistogram, testHistogram);
 
