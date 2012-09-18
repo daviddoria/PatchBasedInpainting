@@ -41,6 +41,7 @@
 #include "NearestNeighbor/LinearSearchBest/First.hpp"
 #include "NearestNeighbor/LinearSearchBest/FirstAndWrite.hpp"
 #include "NearestNeighbor/LinearSearchBest/Texture.hpp"
+#include "NearestNeighbor/LinearSearchBest/ColorTexture.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
@@ -166,6 +167,13 @@ int main(int argc, char *argv[])
 
   ITKHelpers::WriteRGBImage(blurredImage.GetPointer(), "BlurredImage.png");
 
+  // Blur the image slightly so that the SSD comparisons are not so noisy
+  BlurredImageType::Pointer slightBlurredImage = BlurredImageType::New();
+  float slightBlurVariance = 1.0f;
+  MaskOperations::MaskedBlur(originalImage, mask, slightBlurVariance, slightBlurredImage.GetPointer());
+
+  ITKHelpers::WriteRGBImage(slightBlurredImage.GetPointer(), "SlightlyBlurredImage.png");
+
   // Create the graph
   typedef ImagePatchPixelDescriptor<OriginalImageType> ImagePatchPixelDescriptorType;
 
@@ -200,11 +208,16 @@ int main(int argc, char *argv[])
   typedef PatchInpainter<BlurredImageType> BlurredImageInpainterType;
   BlurredImageInpainterType blurredImagePatchInpainter(patchHalfWidth, blurredImage, mask);
 
+  // Create an inpainter for the slightly blurred image.
+  typedef PatchInpainter<BlurredImageType> BlurredImageInpainterType;
+  BlurredImageInpainterType slightlyBlurredImagePatchInpainter(patchHalfWidth, slightBlurredImage, mask);
+
   // Create a composite inpainter.
   CompositePatchInpainter inpainter;
   inpainter.AddInpainter(&originalImagePatchInpainter);
   inpainter.AddInpainter(&hsvImagePatchInpainter);
   inpainter.AddInpainter(&blurredImagePatchInpainter);
+  inpainter.AddInpainter(&slightlyBlurredImagePatchInpainter);
 
   // Create the priority function
   typedef PriorityCriminisi<BlurredImageType> PriorityType;
@@ -215,12 +228,12 @@ int main(int argc, char *argv[])
   typedef IndirectPriorityQueue<VertexListGraphType> BoundaryNodeQueueType;
   BoundaryNodeQueueType boundaryNodeQueue(graph);
 
-  // Create the descriptor visitor (RGB). This is one thing that would need to be changed to use HSV pixel comparisons
-  // (along with the template paramater of the PatchDifferenceType defined further below).
+  // Create the descriptor visitor (use the slightBlurredImage for SSD comparisons).
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, OriginalImageType, ImagePatchDescriptorMapType>
       ImagePatchDescriptorVisitorType;
-  ImagePatchDescriptorVisitorType
-      imagePatchDescriptorVisitor(originalImage, mask,
+//  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(originalImage, mask,
+//                                  imagePatchDescriptorMap, patchHalfWidth); // Use the non-blurred image for the SSD comparisons
+  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(slightBlurredImage, mask,
                                   imagePatchDescriptorMap, patchHalfWidth);
 
   typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
@@ -257,7 +270,9 @@ int main(int argc, char *argv[])
   typedef std::vector<VertexDescriptorType>::iterator VertexDescriptorVectorIteratorType;
 
   // This is templated on OriginalImageType because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
-  typedef LinearSearchBestTexture<ImagePatchDescriptorMapType, HSVImageType,
+//  typedef LinearSearchBestTexture<ImagePatchDescriptorMapType, HSVImageType,
+//      VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
+  typedef LinearSearchBestColorTexture<ImagePatchDescriptorMapType, HSVImageType,
       VertexDescriptorVectorIteratorType, OriginalImageType> BestSearchType;
 
   BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);

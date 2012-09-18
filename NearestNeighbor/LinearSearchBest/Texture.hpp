@@ -131,7 +131,7 @@ public:
 
       float histogramDifference = HistogramDifferences::HistogramDifference(targetHistogram, testHistogram);
 
-      std::cout << "histogramDifference " << currentPatch - first << " : " << histogramDifference << std::endl;
+      std::cout << "gradient histogramDifference " << currentPatch - first << " : " << histogramDifference << std::endl;
 
       if(histogramDifference < bestDistance)
       {

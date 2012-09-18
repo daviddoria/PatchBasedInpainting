@@ -19,4 +19,5 @@ LinearSearchBestParent.hpp
 StrategySelection.hpp
 QuadrantHistogramDifference.hpp
 Texture.hpp
+ColorTexture.hpp
 )
