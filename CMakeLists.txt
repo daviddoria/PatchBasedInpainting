@@ -218,6 +218,14 @@ if(inpainting_InpaintingTwoStep)
   INSTALL( TARGETS InpaintingTwoStep RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
+SET(inpainting_InpaintingBlurredSSD CACHE BOOL "Build a traditional patch comparison image inpainting using SSD on the blurred image.")
+if(inpainting_InpaintingBlurredSSD)
+  ADD_EXECUTABLE(InpaintingBlurredSSD InpaintingBlurredSSD.cpp)
+  TARGET_LINK_LIBRARIES(InpaintingBlurredSSD PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES}
+                       ${QT_LIBRARIES} Mask gomp)
+  INSTALL( TARGETS InpaintingBlurredSSD RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
 SET(inpainting_ClassicalImageInpainting CACHE BOOL "Build a traditional patch comparison image inpainting.")
 if(inpainting_ClassicalImageInpainting)
   ADD_EXECUTABLE(ClassicalImageInpainting ClassicalImageInpainting.cpp)
