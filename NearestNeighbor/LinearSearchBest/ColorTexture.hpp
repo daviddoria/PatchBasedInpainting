@@ -110,13 +110,14 @@ public:
     std::vector<GradientMagnitudeImageType::PixelType> minChannelGradientMagnitudes(this->Image->GetNumberOfComponentsPerPixel());
     std::vector<GradientMagnitudeImageType::PixelType> maxChannelGradientMagnitudes(this->Image->GetNumberOfComponentsPerPixel());
 
+    std::vector<itk::Index<2> > validPixels = ITKHelpers::GetPixelsWithValueInRegion(this->MaskImage, queryRegion, this->MaskImage->GetValidValue());
+
     for(unsigned int channel = 0; channel < this->Image->GetNumberOfComponentsPerPixel(); ++channel)
     {
       GradientMagnitudeImageType::Pointer gradientMagnitudeImage = GradientMagnitudeImageType::New();
-      ITKHelpers::MagnitudeImage(imageChannelGradients[channel].GetPointer(), gradientMagnitudeImage.GetPointer());
+      gradientMagnitudeImage->SetRegions(this->Image->GetLargestPossibleRegion());
+      ITKHelpers::MagnitudeImageInRegion(imageChannelGradients[channel].GetPointer(), queryRegion, gradientMagnitudeImage.GetPointer());
       ITKHelpers::WriteImage(imageChannelGradients[channel].GetPointer(), "GradientMagnitudeImage.mha");
-
-      std::vector<itk::Index<2> > validPixels = ITKHelpers::GetPixelsWithValueInRegion(this->MaskImage, queryRegion, this->MaskImage->GetValidValue());
 
       std::vector<GradientMagnitudeImageType::PixelType> gradientMagnitudes = ITKHelpers::GetPixelValues(gradientMagnitudeImage.GetPointer(), validPixels);
 
@@ -150,10 +151,11 @@ public:
       for(unsigned int channel = 0; channel < this->Image->GetNumberOfComponentsPerPixel(); ++channel)
       {
         GradientMagnitudeImageType::Pointer gradientMagnitudeImage = GradientMagnitudeImageType::New();
+        gradientMagnitudeImage->SetRegions(this->Image->GetLargestPossibleRegion());
 
         Derivatives::MaskedGradientInRegion(imageChannels[channel].GetPointer(), this->MaskImage,
                                             currentRegion, imageChannelGradients[channel].GetPointer());
-        ITKHelpers::MagnitudeImage(imageChannelGradients[channel].GetPointer(), gradientMagnitudeImage.GetPointer());
+        ITKHelpers::MagnitudeImageInRegion(imageChannelGradients[channel].GetPointer(), currentRegion, gradientMagnitudeImage.GetPointer());
         ITKHelpers::WriteImage(gradientMagnitudeImage.GetPointer(), "GradientMagnitudeImage.mha");
 
         // Compute the histogram of the source region using the queryRegion mask
