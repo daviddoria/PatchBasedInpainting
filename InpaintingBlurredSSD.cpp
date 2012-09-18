@@ -34,6 +34,9 @@
 
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchBest/Property.hpp"
+#include "NearestNeighbor/LinearSearchKNNProperty.hpp"
+#include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
+#include "NearestNeighbor/LinearSearchBest/FirstAndWrite.hpp"
 
 // Initializers
 #include "Initializers/InitializeFromMaskImage.hpp"
@@ -69,15 +72,15 @@ int main(int argc, char *argv[])
 {
   // Verify arguments
   if(argc != 5)
-    {
+  {
     std::cerr << "Required arguments: image.png imageMask.mask patchHalfWidth output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
-      {
+    {
       std::cerr << argv[i] << " ";
-      }
-    return EXIT_FAILURE;
     }
+    return EXIT_FAILURE;
+  }
 
   // Parse arguments
   std::string imageFilename = argv[1];
@@ -113,13 +116,20 @@ int main(int argc, char *argv[])
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
 
-  // Blur the image
+  // Blur the image so that the gradients are not so noisy (for Criminisi priority)
   typedef OriginalImageType BlurredImageType; // Usually the blurred image is the same type as the original image.
   BlurredImageType::Pointer blurredImage = BlurredImageType::New();
   float blurVariance = 2.0f;
   MaskOperations::MaskedBlur(originalImage, mask, blurVariance, blurredImage.GetPointer());
 
   ITKHelpers::WriteRGBImage(blurredImage.GetPointer(), "BlurredImage.png");
+
+  // Blur the image slightly so that the SSD comparisons are not so noisy
+  BlurredImageType::Pointer slightBlurredImage = BlurredImageType::New();
+  float slightBlurVariance = 1.0f;
+  MaskOperations::MaskedBlur(originalImage, mask, slightBlurVariance, slightBlurredImage.GetPointer());
+
+  ITKHelpers::WriteRGBImage(slightBlurredImage.GetPointer(), "SlightlyBlurredImage.png");
 
   typedef ImagePatchPixelDescriptor<OriginalImageType> ImagePatchPixelDescriptorType;
 
@@ -150,20 +160,25 @@ int main(int argc, char *argv[])
   typedef PatchInpainter<BlurredImageType> BlurredImageInpainterType;
   BlurredImageInpainterType blurredImagePatchInpainter(patchHalfWidth, blurredImage, mask);
 
+  // Create an inpainter for the slightly blurred image.
+  typedef PatchInpainter<BlurredImageType> BlurredImageInpainterType;
+  BlurredImageInpainterType slightlyBlurredImagePatchInpainter(patchHalfWidth, slightBlurredImage, mask);
+
   // Create a composite inpainter.
   CompositePatchInpainter inpainter;
   inpainter.AddInpainter(&originalImagePatchInpainter);
   inpainter.AddInpainter(&blurredImagePatchInpainter);
+  inpainter.AddInpainter(&slightlyBlurredImagePatchInpainter);
 
   // Create the priority function
   typedef PriorityCriminisi<BlurredImageType> PriorityType;
   PriorityType priorityFunction(blurredImage, mask, patchHalfWidth);
 
 
-  // Create the descriptor visitor - here is where we specify which image to use (here the blurred image) for the SSD computation
+  // Create the descriptor visitor - here is where we specify which image to use (here the slightly blurred image) for the SSD computation
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, BlurredImageType, ImagePatchDescriptorMapType>
       ImagePatchDescriptorVisitorType;
-  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(blurredImage, mask, imagePatchDescriptorMap, patchHalfWidth);
+  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(slightBlurredImage, mask, imagePatchDescriptorMap, patchHalfWidth);
 
   typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
   AcceptanceVisitorType acceptanceVisitor;
@@ -193,13 +208,39 @@ int main(int argc, char *argv[])
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
       SumSquaredPixelDifference<OriginalImageType::PixelType> > PatchDifferenceType;
 
-  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
-                                   PatchDifferenceType> BestSearchType;
+//  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
+//                                   PatchDifferenceType> BestSearchType;
+//  BestSearchType linearSearchBest(imagePatchDescriptorMap);
+
+  // Create the first (KNN) neighbor finder
+  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
+  unsigned int numberOfKNN = 100;
+  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
+
+  // Setup the second (1-NN) neighbor finder
+  typedef std::vector<VertexDescriptorType>::iterator VertexDescriptorVectorIteratorType;
+
+  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, PatchDifferenceType> BestSearchType;
+
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
+
+  // Setup the two step neighbor finder
+
+  // Without writing top KNN patches
+//  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
+//      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
+
+  // With writing top KNN patches
+  typedef LinearSearchBestFirstAndWrite<ImagePatchDescriptorMapType,
+      OriginalImageType, PatchDifferenceType> TopPatchesWriterType;
+  TopPatchesWriterType topPatchesWriter(imagePatchDescriptorMap, originalImage, mask);
+
+  TwoStepNearestNeighbor<KNNSearchType, BestSearchType, TopPatchesWriterType>
+      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest, topPatchesWriter);
 
   // Perform the inpainting
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,
-                      linearSearchBest, &inpainter);
+                      twoStepNearestNeighbor, &inpainter);
 
   // If the output filename is a png file, then use the RGBImage writer so that it is first
   // casted to unsigned char. Otherwise, write the file directly.
