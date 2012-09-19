@@ -78,7 +78,7 @@ if(NOT TARGET ITKQtHelpers)
   add_subdirectory(ITKQtHelpers)
   include_directories(${ITKQtHelpers_includes})
   set(PatchBasedInpainting_includes ${PatchBasedInpainting_includes} ${ITKQtHelpers_includes})
-  set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ITKQtHelpers)
+  #set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ITKQtHelpers) # this is a header only submodule
 endif()
 
 if(NOT TARGET BoostHelpers)
