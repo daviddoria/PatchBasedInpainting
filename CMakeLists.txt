@@ -18,6 +18,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 # VTK
 FIND_PACKAGE(VTK REQUIRED)
 INCLUDE(${VTK_USE_FILE})
+set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${VTK_LIBRARIES})
 
 if( "${VTK_MAJOR_VERSION}" LESS 6 )
   MESSAGE(FATAL_ERROR "You must build this code with VTK >= 6.0!")
@@ -27,7 +28,9 @@ endif( "${VTK_MAJOR_VERSION}" LESS 6 )
 FIND_PACKAGE(ITK REQUIRED ITKCommon ITKIOImageBase ITKIOPNG ITKIOMeta
 ITKImageIntensity ITKImageFeature ITKMathematicalMorphology ITKBinaryMathematicalMorphology ITKDistanceMap)
 INCLUDE(${ITK_USE_FILE})
+set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${ITK_LIBRARIES})
 
+# Boost
 FIND_PACKAGE(Boost 1.51 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
@@ -55,8 +58,8 @@ endif()
 get_property(FoundVTKHelpers GLOBAL PROPERTY VTKHelpersIncludeDirs SET)
 if(NOT FoundVTKHelpers)
   add_subdirectory(VTKHelpers)
-include_directories(${VTKHelpers_includes})
 endif()
+
 get_property(VTKHelpersIncludeDirs GLOBAL PROPERTY VTKHelpersIncludeDirs)
 set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${VTKHelpersIncludeDirs})
 get_property(VTKHelpersLibs GLOBAL PROPERTY VTKHelpersLibs)
@@ -66,7 +69,6 @@ set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${VTKHelper
 get_property(FoundITKVTKHelpers GLOBAL PROPERTY ITKVTKHelpersIncludeDirs SET)
 if(NOT FoundITKVTKHelpers)
   add_subdirectory(ITKVTKHelpers)
-  include_directories(${ITKVTKHelpers_includes})
 endif()
 get_property(ITKVTKHelpersIncludeDirs GLOBAL PROPERTY ITKVTKHelpersIncludeDirs)
 set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${ITKVTKHelpersIncludeDirs})
@@ -78,11 +80,18 @@ if(NOT TARGET QtHelpers)
   include_directories(${QtHelpers_includes})
 endif()
 
-if(NOT TARGET ITKQtHelpers)
+# ITKQtHelpers
+get_property(FoundITKQtHelpers GLOBAL PROPERTY ITKQtHelpersIncludeDirs SET)
+if(NOT FoundITKQtHelpers)
   add_subdirectory(ITKQtHelpers)
-    include_directories(${ITKQtHelpers_includes})
+  include_directories(${ITKVTKHelpers_includes})
 endif()
+get_property(ITKQtHelpersIncludeDirs GLOBAL PROPERTY ITKQtHelpersIncludeDirs)
+set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${ITKQtHelpersIncludeDirs})
+get_property(ITKQtHelpersLibs GLOBAL PROPERTY ITKQtHelpersLibs)
+set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${ITKQtHelpersLibs})
 
+# BoostHelpers
 if(NOT TARGET BoostHelpers)
   add_subdirectory(BoostHelpers)
     include_directories(${BoostHelpers_includes})
@@ -96,6 +105,14 @@ if( (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Mask/.git") OR
   message( SEND_ERROR "At least one of the git submodules is not available.
                        Please run git submodule update --init --recursive")
 endif()
+
+# Give the compiler all of the required include directories
+include_directories(${PatchBasedInpainting_include_dirs})
+
+# Allow this project to be detected and used as a submodule
+set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${CMAKE_CURRENT_SOURCE_DIR})
+set_property(GLOBAL PROPERTY PatchBasedInpaintingIncludeDirs ${PatchBasedInpainting_include_dirs})
+set_property(GLOBAL PROPERTY PatchBasedInpaintingLibs ${PatchBasedInpainting_libraries})
 
 add_subdirectory(Algorithms)
 add_subdirectory(Concepts)
@@ -126,6 +143,8 @@ Priority/PriorityManual.cpp
 Priority/PriorityConfidence.cpp
 Priority/PriorityRandom.cpp
 )
+
+set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} PatchBasedInpainting)
 
 # Interactive
 SET(BuildInteractive CACHE BOOL "Build the interactive version.")
