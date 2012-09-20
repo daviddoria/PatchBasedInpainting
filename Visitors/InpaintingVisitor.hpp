@@ -75,9 +75,6 @@ class InpaintingVisitor : public InpaintingVisitorParent<TGraph>, public Debug
   /** The radius of the patches to use to inpaint the image. */
   const unsigned int PatchHalfWidth;
 
-  /** The name of the file to output the inpainted image. */
-  std::string ResultFileName;
-
   /** How many patches have been finished so far. */
   unsigned int NumberOfFinishedPatches;
 
@@ -102,12 +99,11 @@ public:
                     TDescriptorVisitor& descriptorVisitor, TAcceptanceVisitor& acceptanceVisitor,
                     TPriority* const priorityFunction,
                     const unsigned int patchHalfWidth,
-                    const std::string& resultFileName,
                     const std::string& visitorName = "InpaintingVisitor") :
     InpaintingVisitorParent<TGraph>(visitorName),
     Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
     DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
-    PatchHalfWidth(patchHalfWidth), ResultFileName(resultFileName), NumberOfFinishedPatches(0), AllowNewPatches(false)
+    PatchHalfWidth(patchHalfWidth), NumberOfFinishedPatches(0), AllowNewPatches(false)
   {
   }
 
