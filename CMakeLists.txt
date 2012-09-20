@@ -49,10 +49,15 @@ INCLUDE(${QT_USE_FILE})
 list(APPEND compileflags "USE_QT_PARALLEL")
 
 # Submodules
-if(NOT TARGET Mask)
+get_property(FoundMask GLOBAL PROPERTY MaskIncludeDirs SET)
+if(NOT FoundMask)
   add_subdirectory(Mask)
-  include_directories(${Mask_includes})
 endif()
+
+get_property(MaskIncludeDirs GLOBAL PROPERTY MaskIncludeDirs)
+set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${MaskIncludeDirs})
+get_property(MaskLibs GLOBAL PROPERTY MaskLibs)
+set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${MaskLibs})
 
 # VTKHelpers
 get_property(FoundVTKHelpers GLOBAL PROPERTY VTKHelpersIncludeDirs SET)
@@ -70,6 +75,7 @@ get_property(FoundITKVTKHelpers GLOBAL PROPERTY ITKVTKHelpersIncludeDirs SET)
 if(NOT FoundITKVTKHelpers)
   add_subdirectory(ITKVTKHelpers)
 endif()
+
 get_property(ITKVTKHelpersIncludeDirs GLOBAL PROPERTY ITKVTKHelpersIncludeDirs)
 set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${ITKVTKHelpersIncludeDirs})
 get_property(ITKVTKHelpersLibs GLOBAL PROPERTY ITKVTKHelpersLibs)
@@ -333,3 +339,5 @@ SET(inpainting_BuildDemos CACHE BOOL "Build demos.")
 if(inpainting_BuildDemos)
   add_subdirectory(Demos)
 ENDIF(inpainting_BuildDemos)
+
+message("PatchBasedInpainting_libraries: ${PatchBasedInpainting_libraries}")
