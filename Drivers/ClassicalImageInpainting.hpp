@@ -16,6 +16,9 @@
  *
  *=========================================================================*/
 
+#ifndef ClassicalImageInpainting_HPP
+#define ClassicalImageInpainting_HPP
+
 // Custom
 #include "Utilities/IndirectPriorityQueue.h"
 
@@ -152,3 +155,5 @@ void ClassicalImageInpainting(TImage* const originalImage, Mask* const mask, con
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,
                       linearSearchBest, &inpainter);
 }
+
+#endif

@@ -123,6 +123,7 @@ set_property(GLOBAL PROPERTY PatchBasedInpaintingLibs ${PatchBasedInpainting_lib
 add_subdirectory(Algorithms)
 add_subdirectory(Concepts)
 add_subdirectory(DifferenceFunctions)
+add_subdirectory(Drivers)
 add_subdirectory(Inpainters)
 add_subdirectory(Interactive/Delegates)
 add_subdirectory(ImageProcessing)
