@@ -22,7 +22,5 @@ message("Building InpaintingWithVerification")
                 Interactive/ImageCamera.cpp
                 ${InpaintingWithVerificationUISrcs} ${InpaintingWithVerificationMOCSrcs})
 
-  TARGET_LINK_LIBRARIES(InpaintingWithVerification PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES}
-                        Helpers VTKHelpers ITKHelpers ITKVTKHelpers Mask QtHelpers)
+  TARGET_LINK_LIBRARIES(InpaintingWithVerification ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS InpaintingWithVerification RUNTIME DESTINATION ${INSTALL_DIR} )

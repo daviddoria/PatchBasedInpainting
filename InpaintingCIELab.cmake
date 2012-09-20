@@ -18,6 +18,5 @@
                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
                 ${InpaintingCIELabUISrcs} ${InpaintingCIELabMOCSrcs})
 
-  TARGET_LINK_LIBRARIES(InpaintingCIELab PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Helpers QtHelpers VTKHelpers ITKHelpers ITKVTKHelpers Mask)
+  TARGET_LINK_LIBRARIES(InpaintingCIELab ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS InpaintingCIELab RUNTIME DESTINATION ${INSTALL_DIR} )

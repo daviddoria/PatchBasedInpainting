@@ -18,6 +18,5 @@
                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
                 ${InpaintingWithLocalSearchUISrcs} ${InpaintingWithLocalSearchMOCSrcs})
 
-  TARGET_LINK_LIBRARIES(InpaintingWithLocalSearch PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Helpers)
+  TARGET_LINK_LIBRARIES(InpaintingWithLocalSearch ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS InpaintingWithLocalSearch RUNTIME DESTINATION ${INSTALL_DIR} )

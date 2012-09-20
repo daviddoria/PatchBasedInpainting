@@ -8,6 +8,5 @@ QT4_WRAP_CPP(ManualSelection_MOCSrcs
 ADD_EXECUTABLE(InpaintingWithManualSelection InpaintingWithManualSelection.cpp
               ${InpaintingGUI_UISrcs} ${ManualSelection_MOCSrcs} ${InpaintingGUI_MOCSrcs})
 
-TARGET_LINK_LIBRARIES(InpaintingWithManualSelection PatchBasedInpainting
-                      ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} ITKHelpers Mask InpaintingGUI ITKVTKHelpers)
+TARGET_LINK_LIBRARIES(InpaintingWithManualSelection ${PatchBasedInpainting_libraries})
 INSTALL( TARGETS InpaintingWithManualSelection RUNTIME DESTINATION ${INSTALL_DIR} )

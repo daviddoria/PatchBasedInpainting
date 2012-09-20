@@ -19,6 +19,5 @@
                 Interactive/InteractorStyleImageWithDrag.cpp Interactive/ImageCamera.cpp
                 ${InpaintingAutomatic_UISrcs} ${InpaintingAutomatic_MOCSrcs})
 
-  TARGET_LINK_LIBRARIES(InpaintingAutomatic PatchBasedInpainting
-                        ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Helpers QtHelpers VTKHelpers ITKHelpers ITKVTKHelpers Mask)
+  TARGET_LINK_LIBRARIES(InpaintingAutomatic ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS InpaintingAutomatic RUNTIME DESTINATION ${INSTALL_DIR} )
