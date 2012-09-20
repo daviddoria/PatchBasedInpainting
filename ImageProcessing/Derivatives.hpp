@@ -471,10 +471,11 @@ void MaskedGradientInRegion(const TImage* const image, const Mask* const mask,
   GradientFromDerivatives(xDerivative.GetPointer(), yDerivative.GetPointer(), gradientImage);
 }
 
-template <typename TImage, typename TGradientImage>
-void MaskedGradient(const TImage* const image, const Mask* const mask, TGradientImage* const gradientImage)
+template <typename TImage, typename TGradientImage, typename TDifferenceFunction = std::minus<typename TImage::PixelType> >
+void MaskedGradient(const TImage* const image, const Mask* const mask, TGradientImage* const gradientImage,
+                    TDifferenceFunction differenceFunction = TDifferenceFunction())
 {
-  MaskedGradientInRegion(image, mask, image->GetLargestPossibleRegion(), gradientImage);
+  MaskedGradientInRegion(image, mask, image->GetLargestPossibleRegion(), gradientImage, differenceFunction);
 }
 
 template<typename TPixel, typename TGradientImage>
