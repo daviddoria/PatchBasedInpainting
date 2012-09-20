@@ -2,7 +2,6 @@ add_custom_target(InpaintersSources SOURCES
 CompositePatchInpainter.hpp
 FillStatusMapPatchInpainter.hpp
 HoleListPatchInpainter.hpp
-HoleListPatchInpainter.hpp~
 ImageAndMaskPatchInpainter.hpp
 MaskImagePatchInpainter.hpp
 PatchInpainter.hpp
