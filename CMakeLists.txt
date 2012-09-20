@@ -339,5 +339,3 @@ SET(inpainting_BuildDemos CACHE BOOL "Build demos.")
 if(inpainting_BuildDemos)
   add_subdirectory(Demos)
 ENDIF(inpainting_BuildDemos)
-
-message("PatchBasedInpainting_libraries: ${PatchBasedInpainting_libraries}")
