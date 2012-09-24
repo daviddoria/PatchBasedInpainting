@@ -276,7 +276,7 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
   typename TImage::Pointer topPatchesImage = TImage::New();
   topPatchesImage->SetRegions(topPatchesImageRegion);
   topPatchesImage->Allocate();
-  topPatchesImage->FillBuffer(0);
+  topPatchesImage->FillBuffer(itk::NumericTraits<typename TImage::PixelType>::Zero);
 
   typename TImage::PixelType green;
   green.Fill(0);
