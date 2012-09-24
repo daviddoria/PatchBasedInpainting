@@ -364,3 +364,9 @@ if(TurnOffAllInpainting)
 
     set(TurnOffAllInpainting OFF CACHE BOOL "test" FORCE)  # Set itself back to off, as this is a one time thing.
 endif()
+
+# Display where this code was used from (if it is used as a submodule, there may be multiple instances of this submodule in the project, only the first of which is used)
+option(PatchBasedInpainting_ShowSubmoduleLocation "Show the path from which PatchBasedInpainting was used?" OFF)
+if(PatchBasedInpainting_ShowSubmoduleLocation)
+  message("PatchBasedInpainting used from ${CMAKE_CURRENT_SOURCE_DIR}")
+endif(PatchBasedInpainting_ShowSubmoduleLocation)
