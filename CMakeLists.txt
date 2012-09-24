@@ -122,11 +122,6 @@ endif()
 # Give the compiler all of the required include directories
 include_directories(${PatchBasedInpainting_include_dirs})
 
-# Allow this project to be detected and used as a submodule
-set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${CMAKE_CURRENT_SOURCE_DIR})
-set_property(GLOBAL PROPERTY PatchBasedInpaintingIncludeDirs ${PatchBasedInpainting_include_dirs})
-set_property(GLOBAL PROPERTY PatchBasedInpaintingLibs ${PatchBasedInpainting_libraries})
-
 add_subdirectory(Algorithms)
 add_subdirectory(Concepts)
 add_subdirectory(DifferenceFunctions)
@@ -158,7 +153,15 @@ Priority/PriorityConfidence.cpp
 Priority/PriorityRandom.cpp
 )
 
+# Add the library to the list of libraries that are required to use this as a submodule.
 set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} PatchBasedInpainting)
+
+# Allow this project to be detected and used as a submodule
+set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${CMAKE_CURRENT_SOURCE_DIR})
+set_property(GLOBAL PROPERTY PatchBasedInpaintingIncludeDirs ${PatchBasedInpainting_include_dirs})
+set_property(GLOBAL PROPERTY PatchBasedInpaintingLibs ${PatchBasedInpainting_libraries})
+
+############ Executables ###########
 
 # Interactive
 SET(BuildInteractive CACHE BOOL "Build the interactive version.")
@@ -340,8 +343,8 @@ if(BuildInpaintingDemos)
 endif()
 
 # Add options to allow enabling/disabling of a set of targets
-option(TurnOnAllInpainting "All inpainting on")
-option(TurnOffAllInpainting "All inpainting off.")
+option(TurnOnAllInpainting "Turn on all variables starting with inpainting_")
+option(TurnOffAllInpainting "Turn off all variables starting with inpainting_")
 
 if(TurnOnAllInpainting AND TurnOffAllInpainting)
   message(FATAL_ERROR "You cannot turn targets on and off at the same time!")
@@ -350,17 +353,21 @@ endif()
 if(TurnOnAllInpainting)
     getListOfVarsStartingWith("inpainting_" matchedVars)
     foreach (_var IN LISTS matchedVars)
-        set(${_var} ON CACHE BOOL "test" FORCE)
+        get_property(currentHelpString CACHE "${_var}" PROPERTY HELPSTRING)
+        set(${_var} ON CACHE BOOL ${currentHelpString} FORCE)
     endforeach()
 
-    set(TurnOnAllInpainting OFF CACHE BOOL "test" FORCE)  # Set itself back to off, as this is a one time thing.
+    get_property(turnOnHelpString CACHE "TurnOnAll" PROPERTY HELPSTRING)
+    set(TurnOnAllInpainting OFF CACHE BOOL ${turnOnHelpString} FORCE)  # Set itself back to off, as this is a one time thing.
 endif()
 
 if(TurnOffAllInpainting)
     getListOfVarsStartingWith("inpainting_" matchedVars)
     foreach (_var IN LISTS matchedVars)
-        set(${_var} OFF CACHE BOOL "test" FORCE)
+        get_property(currentHelpString CACHE "${_var}" PROPERTY HELPSTRING)
+        set(${_var} OFF CACHE BOOL ${currentHelpString} FORCE)
     endforeach()
 
-    set(TurnOffAllInpainting OFF CACHE BOOL "test" FORCE)  # Set itself back to off, as this is a one time thing.
+    get_property(turnOffHelpString CACHE "TurnOnAll" PROPERTY HELPSTRING)
+    set(TurnOffAllInpainting OFF CACHE BOOL ${turnOffHelpString} FORCE)  # Set itself back to off, as this is a one time thing.
 endif()
