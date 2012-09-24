@@ -313,11 +313,16 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
     ssNumber << currentPatchId;
     painter.drawText(QPointF(10,10), ssNumber.str().c_str()); // bottom left corner of the text seems to start at this point
     ITKQtHelpers::QImageToITKImage(pixmap.toImage(), numberImage.GetPointer());
-    itk::Index<2> topPatchesImageNumberCorner = {{patchSideLength, patchSideLength * currentPatchId + currentPatchId}}; // The extra + currentPatchId is to skip the extra dividing lines that have been drawn
+
+    // The extra + currentPatchId is to skip the extra dividing lines that have been drawn
+    itk::Index<2> topPatchesImageNumberCorner = {{static_cast<itk::Index<2>::IndexValueType>(patchSideLength),
+                                                  static_cast<itk::Index<2>::IndexValueType>(patchSideLength * currentPatchId + currentPatchId)}};
+
     itk::ImageRegion<2> topPatchesImageNumberRegion(topPatchesImageNumberCorner, patchSize);
     ITKHelpers::CopyRegion(numberImage.GetPointer(), topPatchesImage.GetPointer(), numberImage->GetLargestPossibleRegion(), topPatchesImageNumberRegion);
 
-    itk::Index<2> topPatchesImageCorner = {{0, patchSideLength * currentPatchId + currentPatchId}}; // The extra + currentPatchId is to skip the extra dividing lines that have been drawn
+    // The extra + currentPatchId is to skip the extra dividing lines that have been drawn
+    itk::Index<2> topPatchesImageCorner = {{0, static_cast<itk::Index<2>::IndexValueType>(patchSideLength * currentPatchId + currentPatchId)}};
     itk::ImageRegion<2> currentTopPatchesImageRegion(topPatchesImageCorner, patchSize);
     itk::ImageRegion<2> currentRegion = get(propertyMap, *currentPatch).GetRegion();
     ITKHelpers::CopyRegion(image, topPatchesImage.GetPointer(), currentRegion, currentTopPatchesImageRegion);
@@ -325,7 +330,7 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
     if(currentPatchId != numberOfTopPatches - 1)
     {
 //      std::cout << "CurrentPatchId " << currentPatchId << " numberOfPatches " << numberOfPatches << std::endl;
-      itk::Index<2> dividingLineCorner = {{0, topPatchesImageCorner[1] + patchSideLength}};
+      itk::Index<2> dividingLineCorner = {{0, static_cast<itk::Index<2>::IndexValueType>(topPatchesImageCorner[1] + patchSideLength)}};
       itk::Size<2> dividingLineSize = {{patchSideLength, 1}};
       itk::ImageRegion<2> dividingLine(dividingLineCorner, dividingLineSize);
 //      std::cout << "Dividing line: " << dividingLine << std::endl;
