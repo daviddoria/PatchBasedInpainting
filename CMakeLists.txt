@@ -337,7 +337,7 @@ ENDIF()
 SET(BuildInpaintingDemos CACHE BOOL "Build demos.")
 if(BuildInpaintingDemos)
   add_subdirectory(Demos)
-ENDIF(inpainting_BuildDemos)
+endif()
 
 # Add options to allow enabling/disabling of a set of targets
 option(TurnOnAllInpainting "All inpainting on")
