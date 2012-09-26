@@ -85,20 +85,11 @@
 template <typename TImage>
 void InpaintingTexture(TImage* const originalImage, Mask* const mask, const unsigned int patchHalfWidth, const unsigned int numberOfKNN)
 {
-  // typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> OriginalImageType; // This doesn't allow for direct "a - b" pixel comparisons, because (100 - 150) or similar will underflow!
-  // typedef itk::Image<itk::CovariantVector<float, 3>, 2> OriginalImageType; // This is quite slow
-  typedef itk::Image<itk::CovariantVector<int, 3>, 2> OriginalImageType;
-//  typedef itk::Image<itk::CovariantVector<short, 3>, 2> OriginalImageType; // Can't use this (signed range: -32768 to 32767 (not high enough, needs to handle 255*255 = 65025) )
-
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
-
-//  ImageType::Pointer image = ImageType::New();
-//  ITKHelpers::DeepCopy(imageReader->GetOutput(), image.GetPointer());
 
   // Convert the image to HSV
   typedef itk::Image<itk::CovariantVector<float, 3>, 2> HSVImageType;
   HSVImageType::Pointer hsvImage = HSVImageType::New();
-//  ITKVTKHelpers::ConvertRGBtoHSV(image.GetPointer(), hsvImage.GetPointer());
   ITKVTKHelpers::ConvertRGBtoHSV(originalImage, hsvImage.GetPointer());
 
   ITKHelpers::WriteImage(hsvImage.GetPointer(), "HSVImage.mha");
@@ -178,7 +169,7 @@ void InpaintingTexture(TImage* const originalImage, Mask* const mask, const unsi
 //  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(originalImage, mask,
 //                                  imagePatchDescriptorMap, patchHalfWidth); // Use the non-blurred image for the SSD comparisons
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(slightBlurredImage, mask,
-                                  imagePatchDescriptorMap, patchHalfWidth);
+                                  imagePatchDescriptorMap, patchHalfWidth); // Use the blurred image for the SSD comparisons
 
   typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
   AcceptanceVisitorType acceptanceVisitor;
@@ -214,9 +205,9 @@ void InpaintingTexture(TImage* const originalImage, Mask* const mask, const unsi
 
   // This is templated on TImage because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
 //  typedef LinearSearchBestTexture<ImagePatchDescriptorMapType, HSVImageType,
-//      VertexDescriptorVectorIteratorType, TImage> BestSearchType;
+//      VertexDescriptorVectorIteratorType, TImage> BestSearchType; // Use the histogram of the gradient magnitudes of a scalar represetnation of the image (e.g. magnitude image)
   typedef LinearSearchBestColorTexture<ImagePatchDescriptorMapType, HSVImageType,
-      VertexDescriptorVectorIteratorType, TImage> BestSearchType;
+      VertexDescriptorVectorIteratorType, TImage> BestSearchType; // Use the concatenated histograms of the gradient magnitudes of each channel
 
   BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
 

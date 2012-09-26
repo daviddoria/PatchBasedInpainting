@@ -3,3 +3,4 @@
 *.user
 *.2.6pre1
 *.orig
+.autosave
