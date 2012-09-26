@@ -45,9 +45,13 @@
  * the descriptor type, to a visitor that models DescriptorVisitorConcept.
  * The visitor needs to know the patch size of the patch to be inpainted because it uses
  * this size to traverse the inpainted region to update the boundary.
+ *
+ * 'TImage' is provided a default value so that if 'image' is not passed to the constructor
+ * the value is not required to be specified (because we don't have an image to operate on anyway).
  */
-template <typename TGraph, typename TImage, typename TBoundaryNodeQueue,
-          typename TDescriptorVisitor, typename TAcceptanceVisitor, typename TPriority>
+template <typename TGraph, typename TBoundaryNodeQueue,
+          typename TDescriptorVisitor, typename TAcceptanceVisitor, typename TPriority,
+          typename TImage = itk::Image<unsigned char, 2> >
 class InpaintingVisitor : public InpaintingVisitorParent<TGraph>, public Debug
 {
   BOOST_CONCEPT_ASSERT((DescriptorVisitorConcept<TDescriptorVisitor, TGraph>));
@@ -81,12 +85,10 @@ class InpaintingVisitor : public InpaintingVisitorParent<TGraph>, public Debug
   /** As the image is inpainted, this flag determines if new source patches can be created from patches which are now valid. */
   bool AllowNewPatches;
 
-public:
+  /** The full region (the mask and image should both be this size). */
+  itk::ImageRegion<2> FullRegion;
 
-  TImage* GetImage()
-  {
-    return this->Image;
-  }
+public:
 
   void SetAllowNewPatches(const bool allowNewPatches)
   {
@@ -94,17 +96,18 @@ public:
   }
 
   /** Constructor. Everything must be specified in this constructor. (There is no default constructor). */
-  InpaintingVisitor(TImage* const image, Mask* const mask,
+  InpaintingVisitor(Mask* const mask,
                     TBoundaryNodeQueue& boundaryNodeQueue,
                     TDescriptorVisitor& descriptorVisitor, TAcceptanceVisitor& acceptanceVisitor,
                     TPriority* const priorityFunction,
                     const unsigned int patchHalfWidth,
-                    const std::string& visitorName = "InpaintingVisitor") :
+                    const std::string& visitorName = "InpaintingVisitor", TImage* const image = nullptr) :
     InpaintingVisitorParent<TGraph>(visitorName),
     Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
     DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
     PatchHalfWidth(patchHalfWidth), NumberOfFinishedPatches(0), AllowNewPatches(false)
   {
+    this->FullRegion = this->MaskImage->GetLargestPossibleRegion();
   }
 
   void InitializeVertex(VertexDescriptorType v) const
@@ -163,7 +166,7 @@ public:
     // Make sure the region is entirely inside the image
     // (because we allow target patches to not be entirely inside the image to handle the case where
     // the hole boundary is near the image boundary)
-    regionToFinish.Crop(this->Image->GetLargestPossibleRegion());
+    regionToFinish.Crop(this->FullRegion);
 
     if(this->DebugImages)
     {
@@ -173,7 +176,7 @@ public:
     // Mark all the pixels in this region as filled in the mask.
     ITKHelpers::SetRegionToConstant(this->MaskImage, regionToFinish, this->MaskImage->GetValidValue());
 
-    if(this->DebugImages)
+    if(this->DebugImages && this->Image)
     {
       ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("Mask_After", this->NumberOfFinishedPatches, "png", 3));
 
@@ -210,7 +213,7 @@ public:
 
     if(this->AllowNewPatches)
     {
-      itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(Image, regionToFinish);
+      itk::ImageRegionConstIteratorWithIndex<Mask> gridIterator(this->MaskImage, regionToFinish);
       while(!gridIterator.IsAtEnd())
       {
         VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(gridIterator.GetIndex());
@@ -277,7 +280,7 @@ public:
     // Expand the region
     itk::ImageRegion<2> expandedRegion = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, PatchHalfWidth + 1);
     // Make sure the region is entirely inside the image (to allow for target regions near the image boundary)
-    expandedRegion.Crop(this->Image->GetLargestPossibleRegion());
+    expandedRegion.Crop(this->FullRegion);
     std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetBoundaryPixels(expandedRegion);
     for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
     {
