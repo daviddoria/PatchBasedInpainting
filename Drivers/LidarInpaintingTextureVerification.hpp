@@ -81,34 +81,47 @@
 #include <boost/graph/grid_graph.hpp>
 #include <boost/property_map/property_map.hpp>
 
-// Run with: Data/trashcan.png Data/trashcan.mask 15 filled.png
+/** It is expected that this function be passed an RGBDxDy image. */
 template <typename TImage>
 void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const mask,
                                         const unsigned int patchHalfWidth, const unsigned int numberOfKNN)
 {
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
 
-  // Convert the image to HSV
+  // Extract the RGB image
+  typedef itk::Image<itk::CovariantVector<float, 3>, 2> RGBImageType;
+  std::vector<unsigned int> firstThreeChannels = {0,1,2};
+  RGBImageType::Pointer rgbImage = RGBImageType::New();
+  ITKHelpers::ExtractChannels(originalImage, firstThreeChannels, rgbImage.GetPointer());
+
+  // Create the HSV image
   typedef itk::Image<itk::CovariantVector<float, 3>, 2> HSVImageType;
   HSVImageType::Pointer hsvImage = HSVImageType::New();
-  ITKVTKHelpers::ConvertRGBtoHSV(originalImage, hsvImage.GetPointer());
+  ITKVTKHelpers::ConvertRGBtoHSV(rgbImage.GetPointer(), hsvImage.GetPointer());
 
   ITKHelpers::WriteImage(hsvImage.GetPointer(), "HSVImage.mha");
 
-  // Blur the image
-  typedef TImage BlurredImageType; // Usually the blurred image is the same type as the original image.
-  typename BlurredImageType::Pointer blurredImage = BlurredImageType::New();
+  // Stack the HSV image with the original rest of the channels
+  typedef itk::Image<itk::CovariantVector<float, 5>, 2> HSVDxDyImageType;
+  HSVDxDyImageType::Pointer hsvDxDyImage = HSVDxDyImageType::New();
+  ITKHelpers::DeepCopy(originalImage, hsvDxDyImage.GetPointer());
+
+  ITKHelpers::ReplaceChannels(hsvDxDyImage.GetPointer(), firstThreeChannels, hsvImage.GetPointer());
+
+  // Blur the image for gradient computation stability (Criminisi's data term)
+  RGBImageType::Pointer blurredImage = RGBImageType::New();
   float blurVariance = 2.0f;
-  MaskOperations::MaskedBlur(originalImage, mask, blurVariance, blurredImage.GetPointer());
+  MaskOperations::MaskedBlur(rgbImage.GetPointer(), mask, blurVariance, blurredImage.GetPointer());
 
   ITKHelpers::WriteRGBImage(blurredImage.GetPointer(), "BlurredImage.png");
 
   // Blur the image slightly so that the SSD comparisons are not so noisy
-  typename BlurredImageType::Pointer slightBlurredImage = BlurredImageType::New();
+  typename TImage::Pointer slightlyBlurredImage = TImage::New();
   float slightBlurVariance = 1.0f;
-  MaskOperations::MaskedBlur(originalImage, mask, slightBlurVariance, slightBlurredImage.GetPointer());
+//  MaskOperations::MaskedBlur(originalImage, mask, slightBlurVariance, slightlyBlurredImage.GetPointer());
+  MaskOperations::MaskedBlur(hsvDxDyImage.GetPointer(), mask, slightBlurVariance, slightlyBlurredImage.GetPointer());
 
-  ITKHelpers::WriteRGBImage(slightBlurredImage.GetPointer(), "SlightlyBlurredImage.png");
+  ITKHelpers::WriteRGBImage(slightlyBlurredImage.GetPointer(), "SlightlyBlurredImage.png");
 
   // Create the graph
   typedef ImagePatchPixelDescriptor<TImage> ImagePatchPixelDescriptorType;
@@ -141,12 +154,12 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   HSVImageInpainterType hsvImagePatchInpainter(patchHalfWidth, hsvImage, mask);
 
   // Create an inpainter for the blurred image.
-  typedef PatchInpainter<BlurredImageType> BlurredImageInpainterType;
+  typedef PatchInpainter<RGBImageType> BlurredImageInpainterType;
   BlurredImageInpainterType blurredImagePatchInpainter(patchHalfWidth, blurredImage, mask);
 
   // Create an inpainter for the slightly blurred image.
-  typedef PatchInpainter<BlurredImageType> BlurredImageInpainterType;
-  BlurredImageInpainterType slightlyBlurredImagePatchInpainter(patchHalfWidth, slightBlurredImage, mask);
+  typedef PatchInpainter<TImage> SlightlyBlurredImageInpainterType;
+  SlightlyBlurredImageInpainterType slightlyBlurredImagePatchInpainter(patchHalfWidth, slightlyBlurredImage, mask);
 
   // Create a composite inpainter.
   CompositePatchInpainter inpainter;
@@ -156,7 +169,7 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   inpainter.AddInpainter(&slightlyBlurredImagePatchInpainter);
 
   // Create the priority function
-  typedef PriorityCriminisi<BlurredImageType> PriorityType;
+  typedef PriorityCriminisi<RGBImageType> PriorityType;
   PriorityType priorityFunction(blurredImage, mask, patchHalfWidth);
 //  priorityFunction.SetDebugLevel(1);
 
@@ -164,24 +177,24 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   typedef IndirectPriorityQueue<VertexListGraphType> BoundaryNodeQueueType;
   BoundaryNodeQueueType boundaryNodeQueue(graph);
 
-  // Create the descriptor visitor (use the slightBlurredImage for SSD comparisons).
+  // Create the descriptor visitor (used for SSD comparisons).
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, TImage, ImagePatchDescriptorMapType>
       ImagePatchDescriptorVisitorType;
 //  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(originalImage, mask,
 //                                  imagePatchDescriptorMap, patchHalfWidth); // Use the non-blurred image for the SSD comparisons
-  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(slightBlurredImage, mask,
-                                  imagePatchDescriptorMap, patchHalfWidth); // Use the blurred image for the SSD comparisons
+  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(slightlyBlurredImage, mask,
+                                  imagePatchDescriptorMap, patchHalfWidth); // Use the slightly blurred HSV image for the SSD comparisons
 
   typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
   AcceptanceVisitorType acceptanceVisitor;
 
   // Create the inpainting visitor. (The mask is inpainted in FinishVertex)
-  typedef InpaintingVisitor<VertexListGraphType, TImage, BoundaryNodeQueueType,
-      ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType>
+  typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
+      ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType, TImage>
       InpaintingVisitorType;
-  InpaintingVisitorType inpaintingVisitor(originalImage, mask, boundaryNodeQueue,
+  InpaintingVisitorType inpaintingVisitor(mask, boundaryNodeQueue,
                                           imagePatchDescriptorVisitor, acceptanceVisitor,
-                                          &priorityFunction, patchHalfWidth);
+                                          &priorityFunction, patchHalfWidth, "InpaintingVisitor", originalImage);
   inpaintingVisitor.SetDebugImages(true);
   inpaintingVisitor.SetAllowNewPatches(false);
 
