@@ -38,23 +38,30 @@ struct ImagePatchDifference
 
   float operator()(const ImagePatchType& sourcePatch, const ImagePatchType& targetPatch) const
   {
-    // Require the source patch to be inside the image
-    if(!sourcePatch.IsInsideImage())
+    // If the source patch is invalid, the comparison cannot be performed.
+//    if(sourcePatch.GetStatus() == ImagePatchType::INVALID)
+    if(sourcePatch.GetStatus() != ImagePatchType::SOURCE_NODE)
     {
-      return std::numeric_limits<float>::infinity();
+//      return std::numeric_limits<float>::infinity();
+      return std::numeric_limits<float>::max();
     }
+
+    // Require the source patch to be inside the image. This should be taken care of because the list of
+    // source patches should all be inside the image
+    assert(sourcePatch.IsInsideImage());
+//    if(!sourcePatch.IsInsideImage())
+//    {
+//      return std::numeric_limits<float>::infinity();
+//    }
 
     // If we are comparing a patch to itself, return inf. Otherwise, the best match would always be the same patch!
-    if(sourcePatch.GetRegion() == targetPatch.GetRegion())
-    {
-      return std::numeric_limits<float>::infinity();
-    }
-
-    // If the source patch is invalid, the comparison cannot be performed.
-    if(sourcePatch.GetStatus() == ImagePatchType::INVALID)
-    {
-      return std::numeric_limits<float>::infinity();
-    }
+    // This should never be the case, because we do not compare target patches to target patches, and we do not compare
+    // source patches to anything.
+    assert(sourcePatch.GetRegion() != targetPatch.GetRegion());
+//    if(sourcePatch.GetRegion() == targetPatch.GetRegion())
+//    {
+//      return std::numeric_limits<float>::infinity();
+//    }
 
     typename ImagePatchType::ImageType* image = sourcePatch.GetImage();
 
@@ -63,30 +70,23 @@ struct ImagePatchDifference
     typedef std::vector<itk::Offset<2> > OffsetVectorType;
     const OffsetVectorType* validOffsets = targetPatch.GetValidOffsetsAddress();
 
-    typedef std::vector<typename ImagePatchType::ImageType::PixelType> TargetPixelsContainerType;
-    TargetPixelsContainerType targetPatchPixels(validOffsets->size());
+    assert(validOffsets->size() > 0);
 
-    OffsetVectorType::const_iterator offsetIterator = validOffsets->begin();
-    typename TargetPixelsContainerType::iterator targetPixelsIterator = targetPatchPixels.begin(); // This is defined outside the loop because we use it again in the next loop
-    for(; offsetIterator < validOffsets->end(); ++offsetIterator, ++targetPixelsIterator)
+    for(OffsetVectorType::const_iterator offsetIterator = validOffsets->begin(); offsetIterator < validOffsets->end(); ++offsetIterator)
     {
       itk::Offset<2> currentOffset = *offsetIterator;
-      itk::Index<2> currentIndex = targetPatch.GetCorner() + currentOffset;
-      *targetPixelsIterator = image->GetPixel(currentIndex);
-    }
+      itk::Index<2> currentTargetIndex = targetPatch.GetCorner() + currentOffset;
+      typename ImagePatchType::ImageType::PixelType targetPixel =
+          image->GetPixel(currentTargetIndex);
 
-    offsetIterator = validOffsets->begin();
-    targetPixelsIterator = targetPatchPixels.begin();
-    for(; offsetIterator < validOffsets->end(); ++offsetIterator, ++targetPixelsIterator)
-    {
       typename ImagePatchType::ImageType::PixelType sourcePixel =
-          image->GetPixel(sourcePatch.GetCorner() + *offsetIterator);
+          image->GetPixel(sourcePatch.GetCorner() + currentOffset);
 
-      typename ImagePatchType::ImageType::PixelType targetPixel = *targetPixelsIterator;
       float difference = this->PixelDifferenceFunctor(sourcePixel,
                                                      targetPixel);
       totalDifference += difference;
     }
+
     totalDifference = totalDifference / static_cast<float>(validOffsets->size());
     //std::cout << "Difference: " << totalDifference << std::endl;
     return totalDifference;
