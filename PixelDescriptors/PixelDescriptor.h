@@ -47,6 +47,9 @@ private:
   StatusEnum Status;
   
 public:
+
+  PixelDescriptor() : Status(INVALID) {}
+
   void SetVertex(VertexType& v)
   {
     this->Vertex = v;
@@ -58,10 +61,10 @@ public:
   }
 
   /** Get the status of the patch. */
-  StatusEnum GetStatus() const {return Status;}
+  StatusEnum GetStatus() const {return this->Status;}
 
   /** Set the status of the patch. */
-  void SetStatus(StatusEnum status) {Status = status;}
+  void SetStatus(StatusEnum status) {this->Status = status;}
   
 };
 

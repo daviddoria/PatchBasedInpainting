@@ -58,7 +58,8 @@ public:
   /** Output information about the patch. Even though this is inside a class template definition,
    * we still need to declare it as a function template. */
   template <typename T>
-  friend std::ostream& operator<<(std::ostream& output,  const ImagePatchPixelDescriptor<T>& patch);
+  friend std::ostream& operator<<(std::ostream& output,
+                                  const ImagePatchPixelDescriptor<T>& patch);
 
   /** Get the image to which this patch refers. */
   TImage* GetImage() const;

@@ -27,7 +27,8 @@
 #include "itkImageRegionConstIterator.h"
 
 template <typename TImage>
-ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor() : Image(NULL), FullyValid(false), InsideImage(false)
+ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor() :
+  Image(NULL), MaskImage(NULL), FullyValid(false), InsideImage(false)
 {
 
 }
@@ -35,35 +36,18 @@ ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor() : Image(NULL), Fu
 template <typename TImage>
 ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor(TImage* const image,
                                                              Mask* const maskImage, const itk::ImageRegion<2>& region) :
-  Region(region), Image(image), MaskImage(maskImage), InsideImage(false)
+  PixelDescriptor(), Region(region), Image(image), MaskImage(maskImage), FullyValid(false), InsideImage(false)
 {
-  if((region.GetIndex()[0] > 10000) || (region.GetIndex()[1] > 10000))
-  {
-    std::stringstream ss;
-    ss << "ImagePatchPixelDescriptor() region.GetIndex() is invalid! "
-       << region.GetIndex()[0] << ", " << region.GetIndex()[1] << " is not a valid vertex!";
-    throw std::runtime_error(ss.str());
-  }
-
   if(image->GetLargestPossibleRegion().IsInside(region))
   {
     this->InsideImage = true;
-  }
-  else
-  {
-    this->FullyValid = false;
-    return;
-  }
 
-  this->FullyValid = maskImage->IsValid(region);
+    this->FullyValid = maskImage->IsValid(region);
 
-  if(this->FullyValid)
-  {
-    this->SetStatus(SOURCE_NODE);
-  }
-  else
-  {
-    this->SetStatus(INVALID);
+    if(this->FullyValid)
+    {
+      this->SetStatus(SOURCE_NODE);
+    }
   }
 }
 
