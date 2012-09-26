@@ -78,7 +78,7 @@ struct LinearSearchKNN
     //for(; first != last; ++first)
 
     // Advance through the input elements by StrideLength until we pass the end of the input range.
-    while(try_advance(first, last, StrideLength))
+    while(try_advance(first, last, this->StrideLength))
     {
       TDistanceValue d = DistanceFunction(*first);
       if(!CompareFunction(d, std::numeric_limits<TDistanceValue>::infinity()))

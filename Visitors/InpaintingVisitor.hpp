@@ -213,6 +213,7 @@ public:
 
     if(this->AllowNewPatches)
     {
+      std::cout << "Initializing new vertices..." << std::endl;
       itk::ImageRegionConstIteratorWithIndex<Mask> gridIterator(this->MaskImage, regionToFinish);
       while(!gridIterator.IsAtEnd())
       {
