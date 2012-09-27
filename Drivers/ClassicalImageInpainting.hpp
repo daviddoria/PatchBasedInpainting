@@ -124,12 +124,12 @@ void ClassicalImageInpainting(TImage* const originalImage, Mask* const mask, con
   AcceptanceVisitorType acceptanceVisitor;
 
   // Create the inpainting visitor
-  typedef InpaintingVisitor<VertexListGraphType, TImage, BoundaryNodeQueueType,
-                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType>
+  typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
+                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType, TImage>
                             InpaintingVisitorType;
-  InpaintingVisitorType inpaintingVisitor(originalImage, mask, boundaryNodeQueue,
+  InpaintingVisitorType inpaintingVisitor(mask, boundaryNodeQueue,
                                           imagePatchDescriptorVisitor, acceptanceVisitor,
-                                          &priorityFunction, patchHalfWidth);
+                                          &priorityFunction, patchHalfWidth, "InpaintingVisitor", originalImage);
   inpaintingVisitor.SetAllowNewPatches(false);
   inpaintingVisitor.SetDebugImages(true);
 
