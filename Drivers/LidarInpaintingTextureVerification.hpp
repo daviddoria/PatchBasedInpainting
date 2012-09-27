@@ -43,8 +43,7 @@
 #include "NearestNeighbor/LinearSearchBest/IntroducedEnergy.hpp"
 #include "NearestNeighbor/LinearSearchBest/First.hpp"
 #include "NearestNeighbor/LinearSearchBest/FirstAndWrite.hpp"
-#include "NearestNeighbor/LinearSearchBest/Texture.hpp"
-#include "NearestNeighbor/LinearSearchBest/ColorTexture.hpp"
+#include "NearestNeighbor/LinearSearchBest/LidarTexture.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
@@ -146,7 +145,7 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   // Create the patch inpainter.
   typedef PatchInpainter<TImage> OriginalImageInpainterType;
   OriginalImageInpainterType originalImagePatchInpainter(patchHalfWidth, originalImage, mask);
-  originalImagePatchInpainter.SetDebugImages(true);
+//  originalImagePatchInpainter.SetDebugImages(true);
   originalImagePatchInpainter.SetImageName("RGB");
 
   // Create an inpainter for the HSV image.
@@ -195,7 +194,7 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   InpaintingVisitorType inpaintingVisitor(mask, boundaryNodeQueue,
                                           imagePatchDescriptorVisitor, acceptanceVisitor,
                                           &priorityFunction, patchHalfWidth, "InpaintingVisitor", originalImage);
-  inpaintingVisitor.SetDebugImages(true);
+//  inpaintingVisitor.SetDebugImages(true);
   inpaintingVisitor.SetAllowNewPatches(false);
 
   InitializePriority(mask, boundaryNodeQueue, &priorityFunction);
@@ -220,7 +219,7 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   // This is templated on TImage because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
 //  typedef LinearSearchBestTexture<ImagePatchDescriptorMapType, HSVImageType,
 //      VertexDescriptorVectorIteratorType, TImage> BestSearchType; // Use the histogram of the gradient magnitudes of a scalar represetnation of the image (e.g. magnitude image)
-  typedef LinearSearchBestColorTexture<ImagePatchDescriptorMapType, HSVImageType,
+  typedef LinearSearchBestLidarTexture<ImagePatchDescriptorMapType, HSVImageType,
       VertexDescriptorVectorIteratorType, TImage> BestSearchType; // Use the concatenated histograms of the gradient magnitudes of each channel
 
   BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
@@ -228,16 +227,16 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   // Setup the two step neighbor finder
 
   // Without writing top KNN patches
-//  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
-//      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
+  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
+      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
   // With writing top KNN patches
-  typedef LinearSearchBestFirstAndWrite<ImagePatchDescriptorMapType,
-      TImage, PatchDifferenceType> TopPatchesWriterType;
-  TopPatchesWriterType topPatchesWriter(imagePatchDescriptorMap, originalImage, mask);
+//  typedef LinearSearchBestFirstAndWrite<ImagePatchDescriptorMapType,
+//      TImage, PatchDifferenceType> TopPatchesWriterType;
+//  TopPatchesWriterType topPatchesWriter(imagePatchDescriptorMap, originalImage, mask);
 
-  TwoStepNearestNeighbor<KNNSearchType, BestSearchType, TopPatchesWriterType>
-      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest, topPatchesWriter);
+//  TwoStepNearestNeighbor<KNNSearchType, BestSearchType, TopPatchesWriterType>
+//      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest, topPatchesWriter);
 
   // Perform the inpainting
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,
