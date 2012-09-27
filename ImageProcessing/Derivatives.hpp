@@ -446,6 +446,8 @@ void MaskedGradientInRegion(const TImage* const image, const Mask* const mask,
                             const itk::ImageRegion<2>& region, TGradientImage* const gradientImage,
                             TDifferenceFunction differenceFunction)
 {
+  static_assert(std::is_pod<typename TImage::PixelType>::value, "In MaskedGradientInRegion, T must be a POD");
+
   // Compute the derivatives
   // X derivative
   FloatScalarImageType::Pointer xDerivative = FloatScalarImageType::New();
