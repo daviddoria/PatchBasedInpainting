@@ -22,6 +22,7 @@
 // Submodules
 #include <Utilities/Histogram/HistogramHelpers.hpp>
 #include <Utilities/Histogram/HistogramDifferences.hpp>
+#include <Utilities/Histogram/HistogramGenerator.hpp>
 
 #include <ITKHelpers/itkNormImageAdaptor.h>
 
@@ -119,7 +120,8 @@ public:
 //    typedef int BinValueType;
     typedef float BinValueType; // bins must be float if we are going to normalize
     typedef MaskedHistogramGenerator<BinValueType> MaskedHistogramGeneratorType;
-    typedef HistogramGenerator<BinValueType>::HistogramType HistogramType;
+    typedef HistogramGenerator<BinValueType> HistogramGeneratorType;
+    typedef HistogramGeneratorType::HistogramType HistogramType;
 
     HistogramType targetHistogram;
 
@@ -192,10 +194,17 @@ public:
 //                        minChannelGradientMagnitudes[channel], maxChannelGradientMagnitudes[channel], allowOutside, this->MaskImage->GetHoleValue());
 
         // Compare to the entire source patch (by passing the source region as the mask region, which is entirely valid)
-        HistogramType testChannelHistogram =
-            MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
-                        normImageAdaptor.GetPointer(), currentRegion, this->MaskImage, currentRegion, numberOfBins,
-                        minChannelGradientMagnitudes[channel], maxChannelGradientMagnitudes[channel], allowOutside, this->MaskImage->GetValidValue());
+//        HistogramType testChannelHistogram =
+//            MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
+//                        normImageAdaptor.GetPointer(), currentRegion, this->MaskImage, currentRegion, numberOfBins,
+//                        minChannelGradientMagnitudes[channel], maxChannelGradientMagnitudes[channel], allowOutside, this->MaskImage->GetValidValue());
+
+        // We don't need a masked histogram since we are using the full source patch
+        HistogramType testChannelHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
+                        normImageAdaptor.GetPointer(), currentRegion,
+                        numberOfBins,
+                        minChannelGradientMagnitudes[channel],
+                        maxChannelGradientMagnitudes[channel], allowOutside);
 
         testHistogram.Append(testChannelHistogram);
       }
