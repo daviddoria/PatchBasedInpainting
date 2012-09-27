@@ -149,7 +149,7 @@ public:
     typedef itk::AbsImageAdaptor<GradientChannelAdaptorType, GradientImageType::PixelType::RealValueType> AbsImageAdaptorType;
     typename AbsImageAdaptorType::Pointer absImageAdaptor = AbsImageAdaptorType::New();
 
-    // Compute the gradient magnitude images for each channel's gradient, and compute the histograms for the target/query region
+    // Compute the gradient magnitude images for each RGB channel's gradient, and compute the histograms for the target/query region
     for(unsigned int channel = 0; channel < 3; ++channel)
     {
       gradientChannelAdaptor->SetImage(imageChannelGradients[channel].GetPointer());
@@ -178,6 +178,38 @@ public:
     }
 
     targetHistogram.Normalize();
+
+    // Compute the histograms of the depth derivative channels
+    HistogramType targetDepthDerivativesHistogram;
+    typedef itk::AbsImageAdaptor<ImageChannelAdaptorType, GradientImageType::PixelType::RealValueType> DepthDerivativeAbsImageAdaptorType;
+    typename DepthDerivativeAbsImageAdaptorType::Pointer depthDerivativeAbsImageAdaptor = DepthDerivativeAbsImageAdaptorType::New();
+    for(unsigned int derivativeChannel = 0; derivativeChannel < 2; ++derivativeChannel)
+    {
+      imageChannelAdaptor->SelectNthElement(derivativeChannel + 3);
+
+      depthDerivativeAbsImageAdaptor->SetImage(imageChannelAdaptor.GetPointer());
+
+      std::vector<GradientImageType::PixelType::RealValueType> derivativeMagnitudes =
+          ITKHelpers::GetPixelValues(depthDerivativeAbsImageAdaptor.GetPointer(), validPixels);
+
+      minChannelDerivativeMagnitudes[derivativeChannel][derivativeChannel + 3] = Helpers::Min(derivativeMagnitudes);
+      maxChannelDerivativeMagnitudes[derivativeChannel][derivativeChannel + 3] = Helpers::Max(derivativeMagnitudes);
+
+      // Compute histograms of the gradient magnitudes (to measure texture)
+      bool allowOutside = false;
+      HistogramType targetChannelDerivativeHistogram =
+        MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
+            depthDerivativeAbsImageAdaptor.GetPointer(), queryRegion, this->MaskImage, queryRegion, numberOfBins,
+            minChannelDerivativeMagnitudes[derivativeChannel][derivativeChannel + 3],
+            maxChannelDerivativeMagnitudes[derivativeChannel][derivativeChannel + 3],
+            allowOutside, this->MaskImage->GetValidValue());
+
+      targetDepthDerivativesHistogram.Append(targetChannelDerivativeHistogram);
+    }
+
+    // Separately normalize the depth derivative histograms, then append them to the RGB histtograms
+    targetDepthDerivativesHistogram.Normalize();
+    targetHistogram.Append(targetDepthDerivativesHistogram);
 
     // Initialize
     float bestDistance = std::numeric_limits<float>::max();
@@ -238,6 +270,31 @@ public:
       } // end image channel loop
 
       testHistogram.Normalize();
+
+      // Compute the histograms of the depth derivative channels
+      HistogramType testDepthDerivativesHistogram;
+      typedef itk::AbsImageAdaptor<ImageChannelAdaptorType, GradientImageType::PixelType::RealValueType> DepthDerivativeAbsImageAdaptorType;
+      typename DepthDerivativeAbsImageAdaptorType::Pointer depthDerivativeAbsImageAdaptor = DepthDerivativeAbsImageAdaptorType::New();
+      for(unsigned int derivativeChannel = 0; derivativeChannel < 2; ++derivativeChannel)
+      {
+        imageChannelAdaptor->SelectNthElement(derivativeChannel + 3);
+
+        depthDerivativeAbsImageAdaptor->SetImage(imageChannelAdaptor.GetPointer());
+
+        // Compute histograms of the gradient magnitudes (to measure texture)
+        bool allowOutside = false;
+        HistogramType testChannelDerivativeHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
+              gradientChannelAdaptor.GetPointer(), currentRegion,
+              numberOfBins,
+              minChannelDerivativeMagnitudes[derivativeChannel][derivativeChannel + 3],
+              maxChannelDerivativeMagnitudes[derivativeChannel][derivativeChannel + 3], allowOutside);
+
+        testDepthDerivativesHistogram.Append(testChannelDerivativeHistogram);
+      }
+
+      // Separately normalize the depth derivative histograms, then append them to the RGB histtograms
+      testDepthDerivativesHistogram.Normalize();
+      testHistogram.Append(testDepthDerivativesHistogram);
 
       float histogramDifference = HistogramDifferences::HistogramDifference(targetHistogram, testHistogram);
 
