@@ -35,15 +35,20 @@
 #include "itkAbsImageAdaptor.h"
 
 /**
-   * This function template is similar to std::min_element but can be used when the comparison
-   * involves computing a derived quantity (a.k.a. distance). This algorithm will search for the
-   * the element in the range [first,last) which has the "smallest" distance (of course, both the
-   * distance metric and comparison can be overriden to perform something other than the canonical
-   * Euclidean distance and less-than comparison, which would yield the element with minimum distance).
-   * \tparam DistanceValueType The value-type for the distance measures.
-   * \tparam DistanceFunctionType The functor type to compute the distance measure.
-   * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
-   */
+ * This class uses comparisons of histograms of the derivatives
+ * (absolute values, as left vs right is irrelevant/arbitrary)
+ * to determine the best match
+ * from a list of patches (normally supplied by a KNN search using an SSD criterion).
+ *
+ * This function template is similar to std::min_element but can be used when the comparison
+ * involves computing a derived quantity (a.k.a. distance). This algorithm will search for the
+ * the element in the range [first,last) which has the "smallest" distance (of course, both the
+ * distance metric and comparison can be overriden to perform something other than the canonical
+ * Euclidean distance and less-than comparison, which would yield the element with minimum distance).
+ * \tparam DistanceValueType The value-type for the distance measures.
+ * \tparam DistanceFunctionType The functor type to compute the distance measure.
+ * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
+ */
 template <typename PropertyMapType, typename TImage, typename TIterator, typename TImageToWrite = TImage>
 class LinearSearchBestLidarTextureDerivatives : public Debug
 {
@@ -126,20 +131,27 @@ public:
 
     HistogramType targetHistogram;
 
-    // Store, for each channel (the elements of the vector), the min/max x/y derivative value of the valid region of the target patch
+    // Store, for each RGB channel (the elements of the vector), the min/max x/y derivative value of the valid region of the target patch
     typedef std::vector<GradientImageType::PixelType::RealValueType> ValueVectorType;
 
-    std::vector<ValueVectorType> minChannelDerivativeMagnitudes(2); // x and y
+    std::vector<ValueVectorType> minRGBChannelDerivativeMagnitudes(2); // x and y
     for(unsigned int i = 0; i < 2; ++i)
     {
-      minChannelDerivativeMagnitudes[i].resize(this->Image->GetNumberOfComponentsPerPixel());
+      minRGBChannelDerivativeMagnitudes[i].resize(3);
     }
 
-    std::vector<ValueVectorType> maxChannelDerivativeMagnitudes(2); // x and y
+    std::vector<ValueVectorType> maxRGBChannelDerivativeMagnitudes(2); // x and y
     for(unsigned int i = 0; i < 2; ++i)
     {
-      maxChannelDerivativeMagnitudes[i].resize(this->Image->GetNumberOfComponentsPerPixel());
+      maxRGBChannelDerivativeMagnitudes[i].resize(3);
     }
+
+    // Store, for each depth derivative channel (elements 0 is Dx, element 1 is Dy), the min/max value
+    typedef std::vector<GradientImageType::PixelType::RealValueType> ValueVectorType;
+
+    ValueVectorType minDepthChannelDerivativeMagnitudes(2); // Dx and Dy
+
+    ValueVectorType maxDepthChannelDerivativeMagnitudes(2); // Dx and Dy
 
     std::vector<itk::Index<2> > validPixels = ITKHelpers::GetPixelsWithValueInRegion(this->MaskImage, queryRegion, this->MaskImage->GetValidValue());
 
@@ -162,15 +174,16 @@ public:
         std::vector<GradientImageType::PixelType::RealValueType> derivativeMagnitudes =
             ITKHelpers::GetPixelValues(absImageAdaptor.GetPointer(), validPixels);
 
-        minChannelDerivativeMagnitudes[gradientChannel][channel] = Helpers::Min(derivativeMagnitudes);
-        maxChannelDerivativeMagnitudes[gradientChannel][channel] = Helpers::Max(derivativeMagnitudes);
+        minRGBChannelDerivativeMagnitudes[gradientChannel][channel] = Helpers::Min(derivativeMagnitudes);
+        maxRGBChannelDerivativeMagnitudes[gradientChannel][channel] = Helpers::Max(derivativeMagnitudes);
 
         // Compute histograms of the gradient magnitudes (to measure texture)
         bool allowOutside = false;
         HistogramType targetChannelDerivativeHistogram =
           MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
               absImageAdaptor.GetPointer(), queryRegion, this->MaskImage, queryRegion, numberOfBins,
-              minChannelDerivativeMagnitudes[gradientChannel][channel], maxChannelDerivativeMagnitudes[gradientChannel][channel],
+              minRGBChannelDerivativeMagnitudes[gradientChannel][channel],
+              maxRGBChannelDerivativeMagnitudes[gradientChannel][channel],
               allowOutside, this->MaskImage->GetValidValue());
 
         targetHistogram.Append(targetChannelDerivativeHistogram);
@@ -179,7 +192,7 @@ public:
 
     targetHistogram.Normalize();
 
-    // Compute the histograms of the depth derivative channels
+    // Compute the histograms of the depth derivative channels in the target/query region
     HistogramType targetDepthDerivativesHistogram;
     typedef itk::AbsImageAdaptor<ImageChannelAdaptorType, GradientImageType::PixelType::RealValueType> DepthDerivativeAbsImageAdaptorType;
     typename DepthDerivativeAbsImageAdaptorType::Pointer depthDerivativeAbsImageAdaptor = DepthDerivativeAbsImageAdaptorType::New();
@@ -192,16 +205,16 @@ public:
       std::vector<GradientImageType::PixelType::RealValueType> derivativeMagnitudes =
           ITKHelpers::GetPixelValues(depthDerivativeAbsImageAdaptor.GetPointer(), validPixels);
 
-      minChannelDerivativeMagnitudes[derivativeChannel][derivativeChannel + 3] = Helpers::Min(derivativeMagnitudes);
-      maxChannelDerivativeMagnitudes[derivativeChannel][derivativeChannel + 3] = Helpers::Max(derivativeMagnitudes);
+      minDepthChannelDerivativeMagnitudes[derivativeChannel] = Helpers::Min(derivativeMagnitudes);
+      maxDepthChannelDerivativeMagnitudes[derivativeChannel] = Helpers::Max(derivativeMagnitudes);
 
       // Compute histograms of the gradient magnitudes (to measure texture)
       bool allowOutside = false;
       HistogramType targetChannelDerivativeHistogram =
         MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
             depthDerivativeAbsImageAdaptor.GetPointer(), queryRegion, this->MaskImage, queryRegion, numberOfBins,
-            minChannelDerivativeMagnitudes[derivativeChannel][derivativeChannel + 3],
-            maxChannelDerivativeMagnitudes[derivativeChannel][derivativeChannel + 3],
+            minDepthChannelDerivativeMagnitudes[derivativeChannel],
+            maxDepthChannelDerivativeMagnitudes[derivativeChannel],
             allowOutside, this->MaskImage->GetValidValue());
 
       targetDepthDerivativesHistogram.Append(targetChannelDerivativeHistogram);
@@ -262,8 +275,8 @@ public:
           HistogramType testChannelHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
                 gradientChannelAdaptor.GetPointer(), currentRegion,
                 numberOfBins,
-                minChannelDerivativeMagnitudes[gradientChannel][channel],
-                maxChannelDerivativeMagnitudes[gradientChannel][channel], allowOutside);
+                minRGBChannelDerivativeMagnitudes[gradientChannel][channel],
+                maxRGBChannelDerivativeMagnitudes[gradientChannel][channel], allowOutside);
 
           testHistogram.Append(testChannelHistogram);
         } // end gradientChannel loop
@@ -282,12 +295,12 @@ public:
         depthDerivativeAbsImageAdaptor->SetImage(imageChannelAdaptor.GetPointer());
 
         // Compute histograms of the gradient magnitudes (to measure texture)
-        bool allowOutside = false;
+        bool allowOutside = true;
         HistogramType testChannelDerivativeHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
               gradientChannelAdaptor.GetPointer(), currentRegion,
               numberOfBins,
-              minChannelDerivativeMagnitudes[derivativeChannel][derivativeChannel + 3],
-              maxChannelDerivativeMagnitudes[derivativeChannel][derivativeChannel + 3], allowOutside);
+              minDepthChannelDerivativeMagnitudes[derivativeChannel],
+              maxDepthChannelDerivativeMagnitudes[derivativeChannel], allowOutside);
 
         testDepthDerivativesHistogram.Append(testChannelDerivativeHistogram);
       }

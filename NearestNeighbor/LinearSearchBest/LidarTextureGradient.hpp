@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef LinearSearchBestLidarTexture_HPP
-#define LinearSearchBestLidarTexture_HPP
+#ifndef LinearSearchBestLidarTextureGradient_HPP
+#define LinearSearchBestLidarTextureGradient_HPP
 
 // Submodules
 #include <Utilities/Histogram/HistogramHelpers.hpp>
@@ -34,17 +34,22 @@
 #include "itkNthElementImageAdaptor.h"
 
 /**
-   * This function template is similar to std::min_element but can be used when the comparison
-   * involves computing a derived quantity (a.k.a. distance). This algorithm will search for the
-   * the element in the range [first,last) which has the "smallest" distance (of course, both the
-   * distance metric and comparison can be overriden to perform something other than the canonical
-   * Euclidean distance and less-than comparison, which would yield the element with minimum distance).
-   * \tparam DistanceValueType The value-type for the distance measures.
-   * \tparam DistanceFunctionType The functor type to compute the distance measure.
-   * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
-   */
+ * This class uses comparisons of histograms of the gradient magnitudes to determine the best match
+ * from a list of patches (normally supplied by a KNN search using an SSD criterion).
+ *
+ * This class expects an RGBDxDy image to be passed.
+ *
+ * This function template is similar to std::min_element but can be used when the comparison
+ * involves computing a derived quantity (a.k.a. distance). This algorithm will search for the
+ * the element in the range [first,last) which has the "smallest" distance (of course, both the
+ * distance metric and comparison can be overriden to perform something other than the canonical
+ * Euclidean distance and less-than comparison, which would yield the element with minimum distance).
+ * \tparam DistanceValueType The value-type for the distance measures.
+ * \tparam DistanceFunctionType The functor type to compute the distance measure.
+ * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
+ */
 template <typename PropertyMapType, typename TImage, typename TIterator, typename TImageToWrite = TImage>
-class LinearSearchBestLidarTexture : public Debug
+class LinearSearchBestLidarTextureGradient : public Debug
 {
   PropertyMapType PropertyMap;
   TImage* Image;
@@ -52,7 +57,7 @@ class LinearSearchBestLidarTexture : public Debug
 
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
-  LinearSearchBestLidarTexture(PropertyMapType propertyMap, TImage* const image, Mask* const mask) :
+  LinearSearchBestLidarTextureGradient(PropertyMapType propertyMap, TImage* const image, Mask* const mask) :
     Debug(), PropertyMap(propertyMap), Image(image), MaskImage(mask)
   {}
 
@@ -88,7 +93,7 @@ public:
     std::vector<GradientImageType::Pointer> imageChannelGradients(this->Image->GetNumberOfComponentsPerPixel());
 
     // Compute the gradient of each channel
-    for(unsigned int channel = 0; channel < this->Image->GetNumberOfComponentsPerPixel(); ++channel)
+    for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of RGB channels
     {
       imageChannelAdaptor->SelectNthElement(channel);
 
@@ -117,7 +122,6 @@ public:
       imageChannelGradients[channel] = gradientImage;
     }
 
-//    typedef int BinValueType;
     typedef float BinValueType; // bins must be float if we are going to normalize
     typedef MaskedHistogramGenerator<BinValueType> MaskedHistogramGeneratorType;
     typedef HistogramGenerator<BinValueType> HistogramGeneratorType;
@@ -126,37 +130,72 @@ public:
     HistogramType targetHistogram;
 
     // Store, for each channel (the elements of the vector), the min/max value of the valid region of the target patch
-    std::vector<GradientImageType::PixelType::RealValueType> minChannelGradientMagnitudes(this->Image->GetNumberOfComponentsPerPixel());
-    std::vector<GradientImageType::PixelType::RealValueType> maxChannelGradientMagnitudes(this->Image->GetNumberOfComponentsPerPixel());
+    std::vector<GradientImageType::PixelType::RealValueType> minRGBChannelGradientMagnitudes(this->Image->GetNumberOfComponentsPerPixel());
+    std::vector<GradientImageType::PixelType::RealValueType> maxRGBChannelGradientMagnitudes(this->Image->GetNumberOfComponentsPerPixel());
 
     std::vector<itk::Index<2> > validPixels = ITKHelpers::GetPixelsWithValueInRegion(this->MaskImage, queryRegion, this->MaskImage->GetValidValue());
 
     typedef itk::NormImageAdaptor<GradientImageType, GradientImageType::PixelType::RealValueType> NormImageAdaptorType;
     typename NormImageAdaptorType::Pointer normImageAdaptor = NormImageAdaptorType::New();
 
-    // Compute the gradient magnitude images for each channel's gradient, and compute the histograms for the target/query region
-    for(unsigned int channel = 0; channel < this->Image->GetNumberOfComponentsPerPixel(); ++channel)
+    // Compute the gradient magnitude images for each RGB channel's gradient, and compute the histograms for the target/query region
+    for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of RGB channels
     {
       imageChannelAdaptor->SelectNthElement(channel);
 
       normImageAdaptor->SetImage(imageChannelGradients[channel].GetPointer());
 
-      std::vector<GradientImageType::PixelType::RealValueType> gradientMagnitudes = ITKHelpers::GetPixelValues(normImageAdaptor.GetPointer(), validPixels);
+      std::vector<GradientImageType::PixelType::RealValueType> gradientMagnitudes =
+          ITKHelpers::GetPixelValues(normImageAdaptor.GetPointer(), validPixels);
 
-      minChannelGradientMagnitudes[channel] = Helpers::Min(gradientMagnitudes);
-      maxChannelGradientMagnitudes[channel] = Helpers::Max(gradientMagnitudes);
+      minRGBChannelGradientMagnitudes[channel] = Helpers::Min(gradientMagnitudes);
+      maxRGBChannelGradientMagnitudes[channel] = Helpers::Max(gradientMagnitudes);
 
       // Compute histograms of the gradient magnitudes (to measure texture)
       bool allowOutside = false;
       HistogramType targetChannelHistogram =
         MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
             normImageAdaptor.GetPointer(), queryRegion, this->MaskImage, queryRegion, numberOfBins,
-            minChannelGradientMagnitudes[channel], maxChannelGradientMagnitudes[channel], allowOutside, this->MaskImage->GetValidValue());
+            minRGBChannelGradientMagnitudes[channel], maxRGBChannelGradientMagnitudes[channel],
+            allowOutside, this->MaskImage->GetValidValue());
+
+      targetChannelHistogram.Normalize();
 
       targetHistogram.Append(targetChannelHistogram);
     }
 
-    targetHistogram.Normalize();
+    // Compute the gradient magnitude from the depth derivatives, and compute the histogram for the target/query region
+    // Extract the depth derivative channels
+    std::vector<unsigned int> depthDerivativeChannels = {3,4};
+    typedef itk::Image<itk::CovariantVector<float, 2> > DepthDerivativesImageType;
+    DepthDerivativesImageType::Pointer depthDerivatives = DepthDerivativesImageType::New();
+    ITKHelpers::ExtractChannels(this->Image, depthDerivativeChannels, depthDerivatives.GetPointer());
+
+    // Compute the depth gradient magnitude image
+    typedef itk::Image<float, 2> DepthGradientMagnitudeImageType;
+    DepthGradientMagnitudeImageType::Pointer depthGradientMagnitude = DepthGradientMagnitudeImageType::New();
+    ITKHelpers::MagnitudeImage(depthDerivatives.GetPointer(), depthGradientMagnitude.GetPointer());
+
+    // Store the min/max values (histogram range)
+    std::vector<DepthGradientMagnitudeImageType::PixelType> depthGradientMagnitudes =
+        ITKHelpers::GetPixelValues(depthGradientMagnitude.GetPointer(), validPixels);
+
+    float minDepthChannelGradientMagnitude = Helpers::Min(depthGradientMagnitudes);
+    float maxDepthChannelGradientMagnitude = Helpers::Max(depthGradientMagnitudes);
+
+    // Compute histogram
+    bool allowOutsideForDepthHistogramCreation = false;
+    HistogramType targetDepthHistogram =
+      MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
+          depthGradientMagnitude.GetPointer(), queryRegion, this->MaskImage, queryRegion, numberOfBins,
+          minDepthChannelGradientMagnitude, maxDepthChannelGradientMagnitude,
+          allowOutsideForDepthHistogramCreation, this->MaskImage->GetValidValue());
+
+    targetDepthHistogram.Normalize();
+
+    targetHistogram.Append(targetDepthHistogram);
+    // TODO: Perhaps we need to add this 3 times so that the depth histogram will have equal weight as the RGB histograms (since there are 3 of them, there are 3x the bins for RGB than for depth).
+    // Either this, or divide the difference in normalized RGB histograms by 3 before adding it to the difference in depth histograms.
 
     // Initialize
     float bestDistance = std::numeric_limits<float>::max();
@@ -172,15 +211,15 @@ public:
 
       HistogramType testHistogram;
 
-      for(unsigned int channel = 0; channel < this->Image->GetNumberOfComponentsPerPixel(); ++channel)
+      bool allowOutside = true;
+      // Compute the RGB histograms of the source region using the queryRegion mask
+      for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of RGB channels
       {
         normImageAdaptor->SetImage(imageChannelGradients[channel].GetPointer());
 
         Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
                                             currentRegion, imageChannelGradients[channel].GetPointer());
 
-        // Compute the histogram of the source region using the queryRegion mask
-        bool allowOutside = true;
         // Compare to the valid region of the source patch
 //        HistogramType testChannelHistogram =
 //            MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
@@ -203,13 +242,23 @@ public:
         HistogramType testChannelHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
                         normImageAdaptor.GetPointer(), currentRegion,
                         numberOfBins,
-                        minChannelGradientMagnitudes[channel],
-                        maxChannelGradientMagnitudes[channel], allowOutside);
+                        minRGBChannelGradientMagnitudes[channel],
+                        maxRGBChannelGradientMagnitudes[channel], allowOutside);
 
+        testChannelHistogram.Normalize();
         testHistogram.Append(testChannelHistogram);
       }
 
-      testHistogram.Normalize();
+      // Compute the depth histogram of the source region using the queryRegion mask
+      HistogramType testDepthHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
+                      depthGradientMagnitude.GetPointer(), currentRegion,
+                      numberOfBins,
+                      minDepthChannelGradientMagnitude,
+                      maxDepthChannelGradientMagnitude, allowOutside);
+
+      testDepthHistogram.Normalize();
+
+      testHistogram.Append(testDepthHistogram);
 
       float histogramDifference = HistogramDifferences::HistogramDifference(targetHistogram, testHistogram);
 

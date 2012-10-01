@@ -141,11 +141,13 @@ void ClassicalImageInpainting(TImage* const originalImage, Mask* const mask, con
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
-  typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
-      SumAbsolutePixelDifference<typename TImage::PixelType> > PatchDifferenceType;
-
+  // SAD
 //  typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
-//      SumSquaredPixelDifference<OriginalImageType::PixelType> > PatchDifferenceType;
+//      SumAbsolutePixelDifference<typename TImage::PixelType> > PatchDifferenceType;
+
+  // SSD (takes about the same time as SAD)
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
+      SumSquaredPixelDifference<typename TImage::PixelType> > PatchDifferenceType;
 
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
                                    PatchDifferenceType> BestSearchType;

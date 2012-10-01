@@ -15,7 +15,7 @@ HistogramNewColors.hpp
 HistogramParent.hpp
 HoleHistogramDifference.hpp
 IntroducedEnergy.hpp
-LidarTexture.hpp
+LidarTextureGradient.hpp
 LidarTextureDerivatives.hpp
 LinearSearchBestParent.hpp
 Property.hpp
