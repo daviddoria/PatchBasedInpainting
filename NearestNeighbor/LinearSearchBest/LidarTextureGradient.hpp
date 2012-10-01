@@ -70,8 +70,17 @@ public:
     }
   };
 
-  typedef std::set<itk::ImageRegion<2>, RegionSorter> RegionSetType;
-  RegionSetType AlreadyComputedGradient;
+//  typedef std::set<itk::ImageRegion<2>, RegionSorter> RegionSetType;
+//  RegionSetType AlreadyComputedGradient;
+
+  typedef float BinValueType; // bins must be float if we are going to normalize
+  typedef MaskedHistogramGenerator<BinValueType> MaskedHistogramGeneratorType;
+  typedef HistogramGenerator<BinValueType> HistogramGeneratorType;
+  typedef HistogramGeneratorType::HistogramType HistogramType;
+
+  typedef std::map<itk::ImageRegion<2>, HistogramType, RegionSorter> HistogramMapType;
+  HistogramMapType PreviouslyComputedRGBHistograms;
+  HistogramMapType PreviouslyComputedDepthHistograms;
 
   /**
     * \param first Start of the range in which to search.
@@ -133,11 +142,6 @@ public:
 
       imageChannelGradients[channel] = gradientImage;
     }
-
-    typedef float BinValueType; // bins must be float if we are going to normalize
-    typedef MaskedHistogramGenerator<BinValueType> MaskedHistogramGeneratorType;
-    typedef HistogramGenerator<BinValueType> HistogramGeneratorType;
-    typedef HistogramGeneratorType::HistogramType HistogramType;
 
     HistogramType targetRGBHistogram;
 
@@ -218,6 +222,21 @@ public:
     {
       itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
 
+      // Determine if the gradient and histogram have already been computed
+      typename HistogramMapType::iterator histogramMapIterator;
+      histogramMapIterator = this->PreviouslyComputedRGBHistograms.find(currentRegion);
+
+      bool alreadyComputed;
+
+      if(histogramMapIterator == this->PreviouslyComputedRGBHistograms.end())
+      {
+        alreadyComputed = false;
+      }
+      else
+      {
+        alreadyComputed = true;
+      }
+
       HistogramType testRGBHistogram;
 
       bool allowOutside = true;
@@ -226,13 +245,39 @@ public:
       {
         normImageAdaptor->SetImage(imageChannelGradients[channel].GetPointer());
 
-        typename RegionSetType::iterator setIterator;
-        setIterator = this->AlreadyComputedGradient.find(currentRegion);
-        if(setIterator == this->AlreadyComputedGradient.end()) // not already computed
+//        typename RegionSetType::iterator setIterator;
+//        setIterator = this->AlreadyComputedGradient.find(currentRegion);
+//        if(setIterator == this->AlreadyComputedGradient.end()) // not already computed
+//        {
+//          Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
+//                                              currentRegion, imageChannelGradients[channel].GetPointer());
+//          this->AlreadyComputedGradient.insert(currentRegion);
+//        }
+
+        HistogramType testRGBChannelHistogram;
+
+        if(!alreadyComputed)
         {
+          // Compute the gradients
           Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
                                               currentRegion, imageChannelGradients[channel].GetPointer());
+
+          // We don't need a masked histogram since we are using the full source patch
+          testRGBChannelHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
+                          normImageAdaptor.GetPointer(), currentRegion,
+                          numberOfBins,
+                          minRGBChannelGradientMagnitudes[channel],
+                          maxRGBChannelGradientMagnitudes[channel], allowOutside);
+
+          testRGBChannelHistogram.Normalize();
+
+          this->PreviouslyComputedRGBHistograms[currentRegion] = testRGBChannelHistogram;
         }
+        else // already computed
+        {
+          testRGBChannelHistogram = this->PreviouslyComputedRGBHistograms[currentRegion];
+        }
+
 
         // Compare to the valid region of the source patch
 //        HistogramType testChannelHistogram =
@@ -252,25 +297,29 @@ public:
 //                        normImageAdaptor.GetPointer(), currentRegion, this->MaskImage, currentRegion, numberOfBins,
 //                        minChannelGradientMagnitudes[channel], maxChannelGradientMagnitudes[channel], allowOutside, this->MaskImage->GetValidValue());
 
-        // We don't need a masked histogram since we are using the full source patch
-        HistogramType testRGBChannelHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
-                        normImageAdaptor.GetPointer(), currentRegion,
-                        numberOfBins,
-                        minRGBChannelGradientMagnitudes[channel],
-                        maxRGBChannelGradientMagnitudes[channel], allowOutside);
 
-        testRGBChannelHistogram.Normalize();
         testRGBHistogram.Append(testRGBChannelHistogram);
       }
 
-      // Compute the depth histogram of the source region using the queryRegion mask
-      HistogramType testDepthHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
-                      depthGradientMagnitude.GetPointer(), currentRegion,
-                      numberOfBins,
-                      minDepthChannelGradientMagnitude,
-                      maxDepthChannelGradientMagnitude, allowOutside);
+      HistogramType testDepthHistogram;
 
-      testDepthHistogram.Normalize();
+      if(!alreadyComputed)
+      {
+        // Compute the depth histogram of the source region using the queryRegion mask
+        testDepthHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
+                        depthGradientMagnitude.GetPointer(), currentRegion,
+                        numberOfBins,
+                        minDepthChannelGradientMagnitude,
+                        maxDepthChannelGradientMagnitude, allowOutside);
+
+        testDepthHistogram.Normalize();
+
+        this->PreviouslyComputedDepthHistograms[currentRegion] = testDepthHistogram;
+      }
+      else
+      {
+        testDepthHistogram = this->PreviouslyComputedDepthHistograms[currentRegion];
+      }
 
       // Compute the differences in the histograms
       float rgbHistogramDifference = HistogramDifferences::HistogramDifference(targetRGBHistogram, testRGBHistogram);
