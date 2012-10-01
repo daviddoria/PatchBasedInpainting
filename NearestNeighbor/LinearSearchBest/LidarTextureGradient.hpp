@@ -127,7 +127,7 @@ public:
     typedef HistogramGenerator<BinValueType> HistogramGeneratorType;
     typedef HistogramGeneratorType::HistogramType HistogramType;
 
-    HistogramType targetHistogram;
+    HistogramType targetRGBHistogram;
 
     // Store, for each channel (the elements of the vector), the min/max value of the valid region of the target patch
     std::vector<GradientImageType::PixelType::RealValueType> minRGBChannelGradientMagnitudes(this->Image->GetNumberOfComponentsPerPixel());
@@ -153,15 +153,15 @@ public:
 
       // Compute histograms of the gradient magnitudes (to measure texture)
       bool allowOutside = false;
-      HistogramType targetChannelHistogram =
+      HistogramType targetRGBChannelHistogram =
         MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
             normImageAdaptor.GetPointer(), queryRegion, this->MaskImage, queryRegion, numberOfBins,
             minRGBChannelGradientMagnitudes[channel], maxRGBChannelGradientMagnitudes[channel],
             allowOutside, this->MaskImage->GetValidValue());
 
-      targetChannelHistogram.Normalize();
+      targetRGBChannelHistogram.Normalize();
 
-      targetHistogram.Append(targetChannelHistogram);
+      targetRGBHistogram.Append(targetRGBChannelHistogram);
     }
 
     // Compute the gradient magnitude from the depth derivatives, and compute the histogram for the target/query region
@@ -193,23 +193,20 @@ public:
 
     targetDepthHistogram.Normalize();
 
-    targetHistogram.Append(targetDepthHistogram);
-    // TODO: Perhaps we need to add this 3 times so that the depth histogram will have equal weight as the RGB histograms (since there are 3 of them, there are 3x the bins for RGB than for depth).
-    // Either this, or divide the difference in normalized RGB histograms by 3 before adding it to the difference in depth histograms.
-
     // Initialize
     float bestDistance = std::numeric_limits<float>::max();
     TIterator bestPatch = last;
 
     unsigned int bestId = 0; // Keep track of which of the top SSD patches is the best by histogram score (just for information sake)
-    HistogramType bestHistogram;
+    HistogramType bestRGBHistogram;
+    HistogramType bestDepthHistogram;
 
     // Iterate through all of the input elements
     for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
     {
       itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
 
-      HistogramType testHistogram;
+      HistogramType testRGBHistogram;
 
       bool allowOutside = true;
       // Compute the RGB histograms of the source region using the queryRegion mask
@@ -239,14 +236,14 @@ public:
 //                        minChannelGradientMagnitudes[channel], maxChannelGradientMagnitudes[channel], allowOutside, this->MaskImage->GetValidValue());
 
         // We don't need a masked histogram since we are using the full source patch
-        HistogramType testChannelHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
+        HistogramType testRGBChannelHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
                         normImageAdaptor.GetPointer(), currentRegion,
                         numberOfBins,
                         minRGBChannelGradientMagnitudes[channel],
                         maxRGBChannelGradientMagnitudes[channel], allowOutside);
 
-        testChannelHistogram.Normalize();
-        testHistogram.Append(testChannelHistogram);
+        testRGBChannelHistogram.Normalize();
+        testRGBHistogram.Append(testRGBChannelHistogram);
       }
 
       // Compute the depth histogram of the source region using the queryRegion mask
@@ -258,9 +255,12 @@ public:
 
       testDepthHistogram.Normalize();
 
-      testHistogram.Append(testDepthHistogram);
+      // Compute the differences in the histograms
+      float rgbHistogramDifference = HistogramDifferences::HistogramDifference(targetRGBHistogram, testRGBHistogram);
+      float depthHistogramDifference = HistogramDifferences::HistogramDifference(targetDepthHistogram, testDepthHistogram);
 
-      float histogramDifference = HistogramDifferences::HistogramDifference(targetHistogram, testHistogram);
+      // Weight the depth histogram 3x so that it is a 1:1 weighting of RGB and depth difference
+      float histogramDifference = rgbHistogramDifference + 3.0f * depthHistogramDifference;
 
       if(this->DebugOutputs)
       {
@@ -274,7 +274,8 @@ public:
 
         // These are not needed - just for debugging
         bestId = currentPatch - first;
-        bestHistogram = testHistogram;
+        bestRGBHistogram = testRGBHistogram;
+        bestDepthHistogram = testDepthHistogram;
       }
     }
 
