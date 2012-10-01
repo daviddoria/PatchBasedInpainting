@@ -61,6 +61,18 @@ public:
     Debug(), PropertyMap(propertyMap), Image(image), MaskImage(mask)
   {}
 
+  struct RegionSorter
+  {
+    itk::Functor::IndexLexicographicCompare<2> IndexCompareFunctor;
+    bool operator()(const itk::ImageRegion<2> region1, const itk::ImageRegion<2> region2) const
+    {
+      return IndexCompareFunctor(region1.GetIndex(), region2.GetIndex());
+    }
+  };
+
+  typedef std::set<itk::ImageRegion<2>, RegionSorter> RegionSetType;
+  RegionSetType AlreadyComputedGradient;
+
   /**
     * \param first Start of the range in which to search.
     * \param last One element past the last element in the range in which to search.
@@ -214,8 +226,13 @@ public:
       {
         normImageAdaptor->SetImage(imageChannelGradients[channel].GetPointer());
 
-        Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
-                                            currentRegion, imageChannelGradients[channel].GetPointer());
+        typename RegionSetType::iterator setIterator;
+        setIterator = this->AlreadyComputedGradient.find(currentRegion);
+        if(setIterator == this->AlreadyComputedGradient.end()) // not already computed
+        {
+          Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
+                                              currentRegion, imageChannelGradients[channel].GetPointer());
+        }
 
         // Compare to the valid region of the source patch
 //        HistogramType testChannelHistogram =
