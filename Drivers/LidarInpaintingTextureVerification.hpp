@@ -60,6 +60,7 @@
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
 #include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
 #include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
+#include "DifferenceFunctions/WeightedSumSquaredPixelDifference.hpp"
 
 // Utilities
 #include "Utilities/PatchHelpers.h"
@@ -205,14 +206,24 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.CountValidNodes()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
-  // Select squared or absolute pixel error
-//  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<TImage::PixelType> > PatchDifferenceType;
+  // Use an unweighted pixel difference
+//  typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
+//      SumSquaredPixelDifference<typename TImage::PixelType> > PatchDifferenceType;
+//  // Create the first (KNN) neighbor finder
+//  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
+//  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
+
+  // Use a weighted difference
+  typedef WeightedSumSquaredPixelDifference<typename TImage::PixelType> PixelDifferenceType;
+
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
-      SumSquaredPixelDifference<typename TImage::PixelType> > PatchDifferenceType;
+      PixelDifferenceType > PatchDifferenceType;
+  std::vector<float> weights = {1,1,1,100,100};
+  PixelDifferenceType pixelDifferenceFunctor(weights);
 
   // Create the first (KNN) neighbor finder
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
-  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
+  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN, pixelDifferenceFunctor);
 
   // Setup the second (1-NN) neighbor finder
   typedef std::vector<VertexDescriptorType>::iterator VertexDescriptorVectorIteratorType;
