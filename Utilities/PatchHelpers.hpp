@@ -258,7 +258,8 @@ void CopyPatchIntoImage(const TImage* patch, TImage* const image, const itk::Ind
 }
 
 template <typename TIterator, typename TImage, typename TPropertyMap>
-void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TIterator first, const TIterator last, const std::string& prefix, const unsigned int iteration)
+void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TIterator first, const TIterator last,
+                     const std::string& prefix, const unsigned int iteration)
 {
   itk::Size<2> patchSize = get(propertyMap, *first).GetRegion().GetSize();
 
