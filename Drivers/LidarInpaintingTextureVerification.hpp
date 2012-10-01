@@ -110,19 +110,19 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   ITKHelpers::ReplaceChannels(hsvDxDyImage.GetPointer(), firstThreeChannels, hsvImage.GetPointer());
 
   // Blur the image for gradient computation stability (Criminisi's data term)
-  RGBImageType::Pointer blurredImage = RGBImageType::New();
+  RGBImageType::Pointer blurredRGBImage = RGBImageType::New();
   float blurVariance = 2.0f;
-  MaskOperations::MaskedBlur(rgbImage.GetPointer(), mask, blurVariance, blurredImage.GetPointer());
+  MaskOperations::MaskedBlur(rgbImage.GetPointer(), mask, blurVariance, blurredRGBImage.GetPointer());
 
-  ITKHelpers::WriteRGBImage(blurredImage.GetPointer(), "BlurredImage.png");
+  ITKHelpers::WriteRGBImage(blurredRGBImage.GetPointer(), "BlurredRGBImage.png");
 
   // Blur the image slightly so that the SSD comparisons are not so noisy
-  typename TImage::Pointer slightlyBlurredImage = TImage::New();
+  typename HSVDxDyImageType::Pointer slightlyBlurredHSVDxDyImage = TImage::New();
   float slightBlurVariance = 1.0f;
-//  MaskOperations::MaskedBlur(originalImage, mask, slightBlurVariance, slightlyBlurredImage.GetPointer());
-  MaskOperations::MaskedBlur(hsvDxDyImage.GetPointer(), mask, slightBlurVariance, slightlyBlurredImage.GetPointer());
+  MaskOperations::MaskedBlur(hsvDxDyImage.GetPointer(), mask, slightBlurVariance, slightlyBlurredHSVDxDyImage.GetPointer());
 
-  ITKHelpers::WriteRGBImage(slightlyBlurredImage.GetPointer(), "SlightlyBlurredImage.mha");
+//  ITKHelpers::WriteRGBImage(slightlyBlurredHSVDxDyImage.GetPointer(), "SlightlyBlurredHSVDxDyImage.png"); // only if 3-channel uchar
+  ITKHelpers::WriteImage(slightlyBlurredHSVDxDyImage.GetPointer(), "SlightlyBlurredHSVDxDyImage.mha");
 
   // Create the graph
   typedef ImagePatchPixelDescriptor<TImage> ImagePatchPixelDescriptorType;
@@ -156,22 +156,22 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
 
   // Create an inpainter for the blurred image.
   typedef PatchInpainter<RGBImageType> BlurredImageInpainterType;
-  BlurredImageInpainterType blurredImagePatchInpainter(patchHalfWidth, blurredImage, mask);
+  BlurredImageInpainterType blurredRGBImagePatchInpainter(patchHalfWidth, blurredRGBImage, mask);
 
   // Create an inpainter for the slightly blurred image.
-  typedef PatchInpainter<TImage> SlightlyBlurredImageInpainterType;
-  SlightlyBlurredImageInpainterType slightlyBlurredImagePatchInpainter(patchHalfWidth, slightlyBlurredImage, mask);
+  typedef PatchInpainter<TImage> SlightlyBlurredHSVDxDyImageImageInpainterType;
+  SlightlyBlurredHSVDxDyImageImageInpainterType slightlyBlurredHSVDxDyImageImagePatchInpainter(patchHalfWidth, slightlyBlurredHSVDxDyImage, mask);
 
   // Create a composite inpainter.
   CompositePatchInpainter inpainter;
   inpainter.AddInpainter(&originalImagePatchInpainter);
   inpainter.AddInpainter(&hsvImagePatchInpainter);
-  inpainter.AddInpainter(&blurredImagePatchInpainter);
-  inpainter.AddInpainter(&slightlyBlurredImagePatchInpainter);
+  inpainter.AddInpainter(&blurredRGBImagePatchInpainter);
+  inpainter.AddInpainter(&slightlyBlurredHSVDxDyImageImagePatchInpainter);
 
   // Create the priority function
   typedef PriorityCriminisi<RGBImageType> PriorityType;
-  PriorityType priorityFunction(blurredImage, mask, patchHalfWidth);
+  PriorityType priorityFunction(blurredRGBImage, mask, patchHalfWidth);
 //  priorityFunction.SetDebugLevel(1);
 
   // Queue
@@ -183,7 +183,7 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
       ImagePatchDescriptorVisitorType;
 //  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(originalImage, mask,
 //                                  imagePatchDescriptorMap, patchHalfWidth); // Use the non-blurred image for the SSD comparisons
-  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(slightlyBlurredImage, mask,
+  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(slightlyBlurredHSVDxDyImage, mask,
                                   imagePatchDescriptorMap, patchHalfWidth); // Use the slightly blurred HSV image for the SSD comparisons
 
   typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
@@ -206,13 +206,9 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.CountValidNodes()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
-  // Use an unweighted pixel difference
-//  typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
-//      SumSquaredPixelDifference<typename TImage::PixelType> > PatchDifferenceType;
-//  // Create the first (KNN) neighbor finder
-//  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
-//  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
+#define DUseWeightedDifference
 
+#ifdef DUseWeightedDifference
   // Use a weighted difference
   typedef WeightedSumSquaredPixelDifference<typename TImage::PixelType> PixelDifferenceType;
 
@@ -225,6 +221,15 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   // Create the first (KNN) neighbor finder
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN, pixelDifferenceFunctor);
+#else
+  // Use an unweighted pixel difference
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
+      SumSquaredPixelDifference<typename TImage::PixelType> > PatchDifferenceType;
+
+  // Create the first (KNN) neighbor finder
+  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
+  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
+#endif
 
   // Setup the second (1-NN) neighbor finder
   typedef std::vector<VertexDescriptorType>::iterator VertexDescriptorVectorIteratorType;
@@ -235,23 +240,30 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
 //  typedef LinearSearchBestLidarTextureDerivatives<ImagePatchDescriptorMapType, HSVImageType,
 //      VertexDescriptorVectorIteratorType, TImage> BestSearchType; // Use the concatenated histograms of the absolute value of the derivatives of each channel
   typedef LinearSearchBestLidarTextureGradient<ImagePatchDescriptorMapType, HSVDxDyImageType,
-      VertexDescriptorVectorIteratorType> BestSearchType; // Use the concatenated histograms of the gradient magnitudes of each channel. This HSVDxDyImageType must match the hsvDxDyImage provided below
+      VertexDescriptorVectorIteratorType, RGBImageType> BestSearchType; // Use the concatenated histograms of the gradient magnitudes of each channel. This HSVDxDyImageType must match the hsvDxDyImage provided below
 
-  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvDxDyImage.GetPointer(), mask);
+//  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvDxDyImage.GetPointer(), mask); // use non-blurred for texture sorting
+  BestSearchType linearSearchBest(imagePatchDescriptorMap, slightlyBlurredHSVDxDyImage.GetPointer(), mask, rgbImage.GetPointer()); // use slightly blurred for texture sorting
+  linearSearchBest.WritePatches = true;
 
   // Setup the two step neighbor finder
 
-  // Without writing top KNN patches
-  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
-      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
+//#define DWriteTopPatches
 
-  // With writing top KNN patches
+//#ifdef DWriteTopPatches
 //  typedef LinearSearchBestFirstAndWrite<ImagePatchDescriptorMapType,
 //      TImage, PatchDifferenceType> TopPatchesWriterType;
 //  TopPatchesWriterType topPatchesWriter(imagePatchDescriptorMap, originalImage, mask);
 
 //  TwoStepNearestNeighbor<KNNSearchType, BestSearchType, TopPatchesWriterType>
 //      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest, topPatchesWriter);
+//#else
+//  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
+//      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
+//#endif
+
+  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
+      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
   // Perform the inpainting
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,

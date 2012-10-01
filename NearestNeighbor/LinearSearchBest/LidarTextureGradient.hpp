@@ -54,11 +54,13 @@ class LinearSearchBestLidarTextureGradient : public Debug
   PropertyMapType PropertyMap;
   TImage* Image;
   Mask* MaskImage;
+  unsigned int Iteration = 0;
+  TImageToWrite* ImageToWrite = nullptr;
 
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
-  LinearSearchBestLidarTextureGradient(PropertyMapType propertyMap, TImage* const image, Mask* const mask) :
-    Debug(), PropertyMap(propertyMap), Image(image), MaskImage(mask)
+  LinearSearchBestLidarTextureGradient(PropertyMapType propertyMap, TImage* const image, Mask* const mask, TImageToWrite* imageToWrite = nullptr) :
+    Debug(), PropertyMap(propertyMap), Image(image), MaskImage(mask), ImageToWrite(imageToWrite)
   {}
 
   struct RegionSorter
@@ -82,6 +84,8 @@ public:
   HistogramMapType PreviouslyComputedRGBHistograms;
   HistogramMapType PreviouslyComputedDepthHistograms;
 
+  bool WritePatches = false;
+
   /**
     * \param first Start of the range in which to search.
     * \param last One element past the last element in the range in which to search.
@@ -91,6 +95,16 @@ public:
     */
   typename TIterator::value_type operator()(const TIterator first, const TIterator last, typename TIterator::value_type query)
   {
+    if(WritePatches)
+    {
+      if(this->ImageToWrite == nullptr)
+      {
+        throw std::runtime_error("LinearSearchBestLidarTextureGradient cannot WriteTopPatches without having an ImageToWrite!");
+      }
+      PatchHelpers::WriteTopPatches(this->ImageToWrite, this->PropertyMap, first, last,
+                                    "BestPatches", this->Iteration);
+    }
+
     unsigned int numberOfBins = 30;
 
     // If the input element range is empty, there is nothing to do.
@@ -348,7 +362,7 @@ public:
     std::cout << "BestId: " << bestId << std::endl;
     std::cout << "Best distance: " << bestDistance << std::endl;
 
-//    this->Iteration++;
+    this->Iteration++;
 
     return *bestPatch;
   }
