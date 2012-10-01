@@ -218,7 +218,8 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
 
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
       PixelDifferenceType > PatchDifferenceType;
-  std::vector<float> weights = {1,1,1,100,100};
+  float DepthDerivativeWeight = 20.0f;
+  std::vector<float> weights = {1.0f, 1.0f, 1.0f, DepthDerivativeWeight, DepthDerivativeWeight};
   PixelDifferenceType pixelDifferenceFunctor(weights);
 
   // Create the first (KNN) neighbor finder
