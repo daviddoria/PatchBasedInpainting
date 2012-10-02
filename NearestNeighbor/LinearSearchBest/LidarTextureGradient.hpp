@@ -57,11 +57,34 @@ class LinearSearchBestLidarTextureGradient : public Debug
   unsigned int Iteration = 0;
   TImageToWrite* ImageToWrite = nullptr;
 
+  typedef itk::Image<itk::CovariantVector<float, 2>, 2> GradientImageType;
+  std::vector<GradientImageType::Pointer> RGBChannelGradients;
+
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
   LinearSearchBestLidarTextureGradient(PropertyMapType propertyMap, TImage* const image, Mask* const mask, TImageToWrite* imageToWrite = nullptr) :
     Debug(), PropertyMap(propertyMap), Image(image), MaskImage(mask), ImageToWrite(imageToWrite)
-  {}
+  {
+    // Compute the gradients in all source patches
+    typedef itk::NthElementImageAdaptor<TImage, float> ImageChannelAdaptorType;
+    typename ImageChannelAdaptorType::Pointer imageChannelAdaptor = ImageChannelAdaptorType::New();
+    imageChannelAdaptor->SetImage(this->Image);
+
+    RGBChannelGradients.resize(3);
+
+    for(unsigned int channel = 0; channel < 3; ++channel) // 3 RGB channels
+    {
+      imageChannelAdaptor->SelectNthElement(channel);
+
+      GradientImageType::Pointer gradientImage = GradientImageType::New();
+      gradientImage->SetRegions(this->Image->GetLargestPossibleRegion());
+      gradientImage->Allocate();
+
+      Derivatives::MaskedGradient(imageChannelAdaptor.GetPointer(), this->MaskImage, gradientImage.GetPointer());
+
+      RGBChannelGradients[channel] = gradientImage;
+    }
+  }
 
   struct RegionSorter
   {
@@ -71,9 +94,6 @@ public:
       return IndexCompareFunctor(region1.GetIndex(), region2.GetIndex());
     }
   };
-
-//  typedef std::set<itk::ImageRegion<2>, RegionSorter> RegionSetType;
-//  RegionSetType AlreadyComputedGradient;
 
   typedef float BinValueType; // bins must be float if we are going to normalize
   typedef MaskedHistogramGenerator<BinValueType> MaskedHistogramGeneratorType;
@@ -122,39 +142,20 @@ public:
     typename ImageChannelAdaptorType::Pointer imageChannelAdaptor = ImageChannelAdaptorType::New();
     imageChannelAdaptor->SetImage(this->Image);
 
-    typedef itk::Image<itk::CovariantVector<float, 2>, 2> GradientImageType;
-
-    // Setup storage for the gradient of each channel
-    std::vector<GradientImageType::Pointer> imageChannelGradients(this->Image->GetNumberOfComponentsPerPixel());
-
     // Compute the gradient of each channel
     for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of RGB channels
     {
       imageChannelAdaptor->SelectNthElement(channel);
 
-      if(this->DebugImages)
-      {
-        std::stringstream ssImageFile;
-        ssImageFile << "ImageChannel_" << channel << ".mha";
-        ITKHelpers::WriteImage(imageChannelAdaptor.GetPointer(), ssImageFile.str());
-      }
-
-      // Compute gradients
-      GradientImageType::Pointer gradientImage = GradientImageType::New();
-      gradientImage->SetRegions(this->Image->GetLargestPossibleRegion()); // We allocate the full image because in the next loop we will compute gradients in all of the source patch regions.
-      gradientImage->Allocate();
-
       Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
-                                          queryRegion, gradientImage.GetPointer());
+                                          queryRegion, this->RGBChannelGradients[channel].GetPointer());
 
       if(this->DebugImages)
       {
         std::stringstream ssGradientFile;
         ssGradientFile << "GradientImage_" << channel << ".mha";
-        ITKHelpers::WriteImage(gradientImage.GetPointer(), ssGradientFile.str());
+        ITKHelpers::WriteImage(this->RGBChannelGradients[channel].GetPointer(), ssGradientFile.str());
       }
-
-      imageChannelGradients[channel] = gradientImage;
     }
 
     HistogramType targetRGBHistogram;
@@ -173,7 +174,7 @@ public:
     {
       imageChannelAdaptor->SelectNthElement(channel);
 
-      normImageAdaptor->SetImage(imageChannelGradients[channel].GetPointer());
+      normImageAdaptor->SetImage(this->RGBChannelGradients[channel].GetPointer());
 
       std::vector<GradientImageType::PixelType::RealValueType> gradientMagnitudes =
           ITKHelpers::GetPixelValues(normImageAdaptor.GetPointer(), validPixels);
@@ -231,7 +232,7 @@ public:
     HistogramType bestRGBHistogram;
     HistogramType bestDepthHistogram;
 
-    // Iterate through all of the input elements
+    // Iterate through all of the supplied source patches
     for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
     {
       itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
@@ -257,25 +258,12 @@ public:
       // Compute the RGB histograms of the source region using the queryRegion mask
       for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of RGB channels
       {
-        normImageAdaptor->SetImage(imageChannelGradients[channel].GetPointer());
-
-//        typename RegionSetType::iterator setIterator;
-//        setIterator = this->AlreadyComputedGradient.find(currentRegion);
-//        if(setIterator == this->AlreadyComputedGradient.end()) // not already computed
-//        {
-//          Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
-//                                              currentRegion, imageChannelGradients[channel].GetPointer());
-//          this->AlreadyComputedGradient.insert(currentRegion);
-//        }
+        normImageAdaptor->SetImage(this->RGBChannelGradients[channel].GetPointer());
 
         HistogramType testRGBChannelHistogram;
 
         if(!alreadyComputed)
         {
-          // Compute the gradients
-          Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
-                                              currentRegion, imageChannelGradients[channel].GetPointer());
-
           // We don't need a masked histogram since we are using the full source patch
           testRGBChannelHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
                           normImageAdaptor.GetPointer(), currentRegion,
