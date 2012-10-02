@@ -48,6 +48,7 @@
 
 // Multi-Nearest neighbors functions
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
+#include "NearestNeighbor/LinearSearchKNNPropertyLimitLocalReuse.hpp"
 #include "NearestNeighbor/LinearSearchKNNPropertyLimitReuse.hpp"
 #include "NearestNeighbor/LinearSearchKNNPropertyNoReuse.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
@@ -243,9 +244,14 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
 //  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN,
 //                                patchDifferenceFunctor, inpaintingVisitor.GetUsedNodesSetPointer());
 
-  typedef LinearSearchKNNPropertyLimitReuse<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
+//  typedef LinearSearchKNNPropertyLimitReuse<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
+//  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
+//                                patchDifferenceFunctor, inpaintingVisitor.GetCopiedPixelsImage());
+
+  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
-                                patchDifferenceFunctor, inpaintingVisitor.GetCopiedPixelsImage());
+                                patchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage());
+  linearSearchKNN.SetDebugImages(true);
 #endif
 
   // Setup the second (1-NN) neighbor finder

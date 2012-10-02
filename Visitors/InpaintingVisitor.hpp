@@ -96,11 +96,20 @@ class InpaintingVisitor : public InpaintingVisitorParent<TGraph>, public Debug
   typedef itk::Image<bool, 2> CopiedPixelsImageType;
   CopiedPixelsImageType::Pointer CopiedPixelsImage;
 
+  /** Track where pixels have been copied from. */
+  typedef itk::Image<itk::Index<2>, 2> SourcePixelMapImageType;
+  SourcePixelMapImageType::Pointer SourcePixelMapImage;
+
 public:
 
   CopiedPixelsImageType* GetCopiedPixelsImage()
   {
     return this->CopiedPixelsImage;
+  }
+
+  SourcePixelMapImageType* GetSourcePixelMapImage()
+  {
+    return this->SourcePixelMapImage;
   }
 
   UsedNodesSetType* GetUsedNodesSetPointer()
@@ -131,6 +140,12 @@ public:
     this->CopiedPixelsImage->SetRegions(this->FullRegion);
     this->CopiedPixelsImage->Allocate();
     this->CopiedPixelsImage->FillBuffer(false);
+
+    this->SourcePixelMapImage = SourcePixelMapImageType::New();
+    this->SourcePixelMapImage->SetRegions(this->FullRegion);
+    this->SourcePixelMapImage->Allocate();
+    itk::Index<2> dummyIndex = {{-1, -1}};
+    this->SourcePixelMapImage->FillBuffer(dummyIndex);
   }
 
   void InitializeVertex(VertexDescriptorType v) const
@@ -200,17 +215,20 @@ public:
     sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->Image->GetLargestPossibleRegion(), regionToFinishFull);
 
     // Mark all pixels that were copied (in the hole region of the source patch) as having been used.
-    itk::ImageRegionConstIteratorWithIndex<Mask> copiedPixelSourceIterator(this->MaskImage, sourceRegion);
-    itk::ImageRegionConstIteratorWithIndex<Mask> copiedPixelTargetIterator(this->MaskImage, regionToFinish);
-    while(!copiedPixelSourceIterator.IsAtEnd())
+    itk::ImageRegionConstIteratorWithIndex<Mask> sourcePatchIterator(this->MaskImage, sourceRegion);
+    itk::ImageRegionConstIteratorWithIndex<Mask> targetPatchIterator(this->MaskImage, regionToFinish);
+    while(!sourcePatchIterator.IsAtEnd())
     {
-      if(copiedPixelTargetIterator.Get() == this->MaskImage->GetHoleValue())
+      if(targetPatchIterator.Get() == this->MaskImage->GetHoleValue())
       {
-        this->CopiedPixelsImage->SetPixel(copiedPixelSourceIterator.GetIndex(), true); // mark this pixel as used
+        this->CopiedPixelsImage->SetPixel(sourcePatchIterator.GetIndex(), true); // mark this pixel as used
+
+        this->SourcePixelMapImage->SetPixel(targetPatchIterator.GetIndex(),
+                                            sourcePatchIterator.GetIndex()); // save the location from which this pixel came
       }
 
-      ++copiedPixelSourceIterator;
-      ++copiedPixelTargetIterator;
+      ++sourcePatchIterator;
+      ++targetPatchIterator;
     }
 
     if(this->DebugImages)

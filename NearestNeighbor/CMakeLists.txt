@@ -9,6 +9,7 @@ LinearSearchBest.hpp
 LinearSearchCriteriaProperty.hpp
 LinearSearchKNN.hpp
 LinearSearchKNNProperty.hpp
+LinearSearchKNNPropertyLimitLocalReuse.hpp
 LinearSearchKNNPropertyLimitReuse.hpp
 LinearSearchKNNPropertyNoReuse.hpp
 LocalOptimizationSearchBestProperty.hpp

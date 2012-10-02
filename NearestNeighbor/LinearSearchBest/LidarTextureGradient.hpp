@@ -164,9 +164,9 @@ public:
         ITKHelpers::WriteRegionAsImage(this->RGBChannelGradients[channel].GetPointer(), queryRegion, ssGradientFile.str());
 
         // Full gradient image
-        std::stringstream ss;
-        ss << "RGB_Gradient_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << channel << ".mha";
-        ITKHelpers::WriteImage(this->RGBChannelGradients[channel].GetPointer(), ss.str());
+//        std::stringstream ss;
+//        ss << "RGB_Gradient_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << channel << ".mha";
+//        ITKHelpers::WriteImage(this->RGBChannelGradients[channel].GetPointer(), ss.str());
       }
     }
 
