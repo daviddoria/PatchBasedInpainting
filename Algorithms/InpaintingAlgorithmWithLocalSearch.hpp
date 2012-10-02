@@ -29,7 +29,7 @@
 #include <stdexcept>
 
 // Custom
-#include "Helpers/BoostHelpers.h"
+#include <BoostHelpers/BoostHelpers.h>
 
 /** When this function is called, the priority-queue must already be filled with
   * all the boundary nodes (which should also have their boundaryStatusMap set appropriately).
@@ -37,98 +37,46 @@
   * actual code is externalized in the functors and visitors (vis, find_inpainting_source,
   * inpaint_patch, etc.).
   */
-
 template <typename TVertexListGraph, typename TInpaintingVisitor,
-          typename TBoundaryStatusMap, typename TPriorityQueue, typename TSearchRegion,
-          typename TKNNFinder, typename TBestNeighborFinder, typename TManualNeighborFinder,
-          typename TPatchInpainter>
-inline
-void InpaintingAlgorithmWithLocalSearch(TVertexListGraph& g, TInpaintingVisitor vis,
-                        TBoundaryStatusMap* boundaryStatusMap, TPriorityQueue* boundaryNodeQueue,
-                        TSearchRegion& searchRegion,
-                        TKNNFinder knnFinder, TBestNeighborFinder& bestNeighborFinder,
-                        TManualNeighborFinder& manualNeighborFinder,
-                        TPatchInpainter inpaint_patch)
+          typename TPriorityQueue, typename TSearchRegion,
+          typename TPatchInpainter, typename TBestPatchFinder>
+inline void
+InpaintingAlgorithmWithLocalSearch(TVertexListGraph& g, TInpaintingVisitor vis,
+                                   TPriorityQueue* boundaryNodeQueue,
+                                   TBestPatchFinder bestPatchFinder,
+                                   TPatchInpainter* patchInpainter,
+                                   TSearchRegion& searchRegion)
 {
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<TInpaintingVisitor, TVertexListGraph>));
 
   typedef typename boost::graph_traits<TVertexListGraph>::vertex_descriptor VertexDescriptorType;
 
-  while(true)
+  while(!boundaryNodeQueue->empty())
   {
-    VertexDescriptorType targetNode;
-    do
-    {
-      if( (*boundaryNodeQueue).empty() )
-      {
-        std::cout << "Inpainting complete." << std::endl;
-        vis.InpaintingComplete();
-
-        throw std::runtime_error("Quit from different thread.");
-        //exit(-1);
-        //return;  //terminate if the queue is empty.
-      }
-      targetNode = (*boundaryNodeQueue).top();
-      (*boundaryNodeQueue).pop();
-    } while( get(*boundaryStatusMap, targetNode) == false );
+    VertexDescriptorType targetNode = boundaryNodeQueue->top();
 
     // Notify the visitor that we have a hole target center.
     vis.DiscoverVertex(targetNode);
 
+    // Create a list of the source patches to search
     std::vector<VertexDescriptorType> searchRegionNodes = searchRegion(targetNode);
 
-    std::vector<VertexDescriptorType> outputContainer(knnFinder.GetK());
-    knnFinder(searchRegionNodes.begin(), searchRegionNodes.end(), targetNode, outputContainer.begin());
-    outputContainer.resize(searchRegionNodes.size());
-
-    VertexDescriptorType sourceNode = bestNeighborFinder(outputContainer.begin(), outputContainer.end(), targetNode);
+    VertexDescriptorType sourceNode = bestPatchFinder(searchRegionNodes.begin(),
+                                                      searchRegionNodes.end(), targetNode);
 
     vis.PotentialMatchMade(targetNode, sourceNode);
 
-    // Local search only
-    if(!vis.AcceptMatch(targetNode, sourceNode))
-      {
-      std::cout << "Automatic match not accepted!" << std::endl;
+    // Inpaint the target patch from the source patch.
+    itk::Index<2> targetIndex = ITKHelpers::CreateIndex(targetNode);
+    itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(sourceNode);
 
-    // Find the valid nodes
-//       typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
-//       tie(vi,vi_end) = vertices(g);
-//       std::vector<VertexDescriptorType> validNodes;
-//       for(; vi != vi_end; ++vi)
-//       {
-//         if(
-//       }
-      // sourceNode = manualNeighborFinder(vi, vi_end, targetNode); // Can't do this directly, because some of the nodes correspond to patches that are partially outside the image
-
-      sourceNode = manualNeighborFinder(outputContainer.begin(), outputContainer.end(), targetNode);
-      }
-
-    // Local search followed by global search
-//     if(!vis.AcceptMatch(targetNode, sourceNode))
-//       {
-//       std::cout << "Automatic match not accepted!" << std::endl;
-// 
-//       // If the match was not accepted automatically, search the full image.
-//       typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
-//       tie(vi,vi_end) = vertices(g);
-//       std::vector<VertexDescriptorType> fullSearchOutputContainer(knnFinder.GetK());
-//       knnFinder(vi, vi_end, targetNode, fullSearchOutputContainer.begin());
-//       sourceNode = bestNeighborFinder(fullSearchOutputContainer.begin(), fullSearchOutputContainer.end(), targetNode);
-// 
-//       // If the match is still not acceptable, allow the user to choose a patch manually
-//       if(!vis.AcceptMatch(targetNode, sourceNode))
-//         {
-//         sourceNode = manualNeighborFinder(fullSearchOutputContainer.begin(), fullSearchOutputContainer.end(), targetNode);
-//         }
-//       }
-      
-    //inpaint_patch(targetNode, sourceNode, vis);
-    vis.PaintPatch(targetNode, sourceNode);
+    patchInpainter->PaintPatch(targetIndex, sourceIndex);
 
     vis.FinishVertex(targetNode, sourceNode);
+  }
 
-  } // end main iteration loop
-
-};
+  std::cout << "Inpainting complete." << std::endl;
+  vis.InpaintingComplete();
+}
 
 #endif

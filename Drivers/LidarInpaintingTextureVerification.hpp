@@ -68,6 +68,8 @@
 
 // Inpainting
 #include "Algorithms/InpaintingAlgorithm.hpp"
+#include "Algorithms/InpaintingAlgorithmWithLocalSearch.hpp"
+#include "SearchRegions/NeighborhoodSearch.hpp"
 
 // Priority
 #include "Priority/PriorityRandom.h"
@@ -247,27 +249,25 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   linearSearchBest.WritePatches = true;
 
   // Setup the two step neighbor finder
-
-//#define DWriteTopPatches
-
-//#ifdef DWriteTopPatches
-//  typedef LinearSearchBestFirstAndWrite<ImagePatchDescriptorMapType,
-//      TImage, PatchDifferenceType> TopPatchesWriterType;
-//  TopPatchesWriterType topPatchesWriter(imagePatchDescriptorMap, originalImage, mask);
-
-//  TwoStepNearestNeighbor<KNNSearchType, BestSearchType, TopPatchesWriterType>
-//      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest, topPatchesWriter);
-//#else
-//  TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
-//      twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
-//#endif
-
   TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
       twoStepNearestNeighbor(linearSearchKNN, linearSearchBest);
 
-  // Perform the inpainting
+  // #define DFullSearch // comment/uncomment this line to set the search region
+
+#ifdef DFullSearch
+  // Perform the inpainting (full search)
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,
                       twoStepNearestNeighbor, &inpainter);
+#else
+  unsigned int searchRadius = originalImage->GetLargestPossibleRegion().GetSize()[0]/2/2; // half of the image radius
+  NeighborhoodSearch<VertexDescriptorType> neighborhoodSearch(originalImage->GetLargestPossibleRegion(),
+                                                              searchRadius);
+
+
+  // Perform the inpainting (local search)
+  InpaintingAlgorithmWithLocalSearch(graph, inpaintingVisitor, &boundaryNodeQueue,
+                                     twoStepNearestNeighbor, &inpainter, neighborhoodSearch);
+#endif
 
 }
 
