@@ -9,6 +9,7 @@ LinearSearchBest.hpp
 LinearSearchCriteriaProperty.hpp
 LinearSearchKNN.hpp
 LinearSearchKNNProperty.hpp
+LinearSearchKNNPropertyLimitReuse.hpp
 LinearSearchKNNPropertyNoReuse.hpp
 LocalOptimizationSearchBestProperty.hpp
 metric_space_concept.hpp

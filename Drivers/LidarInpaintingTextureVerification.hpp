@@ -48,6 +48,7 @@
 
 // Multi-Nearest neighbors functions
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
+#include "NearestNeighbor/LinearSearchKNNPropertyLimitReuse.hpp"
 #include "NearestNeighbor/LinearSearchKNNPropertyNoReuse.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
@@ -167,7 +168,7 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   typedef PatchInpainter<TImage> SlightlyBlurredHSVDxDyImageImageInpainterType;
   SlightlyBlurredHSVDxDyImageImageInpainterType slightlyBlurredHSVDxDyImageImagePatchInpainter(patchHalfWidth, slightlyBlurredHSVDxDyImage, mask);
 
-  // Create a composite inpainter.
+  // Create a composite inpainter. (Note: the mask is inpainted in InpaintingVisitor::FinishVertex)
   CompositePatchInpainter inpainter;
   inpainter.AddInpainter(&originalImagePatchInpainter);
   inpainter.AddInpainter(&hsvImagePatchInpainter);
@@ -238,9 +239,13 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN, patchDifferenceFunctor);
 #else
-  typedef LinearSearchKNNPropertyNoReuse<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
+//  typedef LinearSearchKNNPropertyNoReuse<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
+//  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN,
+//                                patchDifferenceFunctor, inpaintingVisitor.GetUsedNodesSetPointer());
+
+  typedef LinearSearchKNNPropertyLimitReuse<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN,
-                                patchDifferenceFunctor, inpaintingVisitor.GetUsedNodesSetPointer());
+                                patchDifferenceFunctor, inpaintingVisitor.GetCopiedPixelsImage());
 #endif
 
   // Setup the second (1-NN) neighbor finder

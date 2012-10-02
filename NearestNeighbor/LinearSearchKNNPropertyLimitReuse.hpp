@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef LinearSearchKNNPropertyNoReuse_HPP
-#define LinearSearchKNNPropertyNoReuse_HPP
+#ifndef LinearSearchKNNPropertyLimitReuse_HPP
+#define LinearSearchKNNPropertyLimitReuse_HPP
 
 // STL
 #include <algorithm> // for lower_bound()
@@ -43,7 +43,7 @@
   */
 template <typename PropertyMapType,
           typename PatchDistanceFunctionType>
-class LinearSearchKNNPropertyNoReuse
+class LinearSearchKNNPropertyLimitReuse
 {
   typedef float DistanceValueType;
 
@@ -56,15 +56,16 @@ class LinearSearchKNNPropertyNoReuse
   /** The function to use to compare patches. */
   PatchDistanceFunctionType PatchDistanceFunction;
 
-  /** Store a pointer to the InpaintingVisitor's UsedNodesSet */
-  typedef std::set<itk::Index<2>, itk::Index<2>::LexicographicCompare> UsedNodesSetType;
-  UsedNodesSetType* UsedNodesSet;
+  /** An image indicating which pixels have been used as source pixels.*/
+  typedef itk::Image<bool, 2> CopiedPixelsImageType;
+  CopiedPixelsImageType* CopiedPixelsImage;
 
 public:
-  LinearSearchKNNPropertyNoReuse(PropertyMapType propertyMap, const unsigned int k = 1000,
-                                 PatchDistanceFunctionType patchDistanceFunction = PatchDistanceFunctionType(),
-                                 UsedNodesSetType* usedNodesSet = nullptr) :
-    PropertyMap(propertyMap), K(k), PatchDistanceFunction(patchDistanceFunction), UsedNodesSet(usedNodesSet)
+  LinearSearchKNNPropertyLimitReuse(PropertyMapType propertyMap, const unsigned int k = 1000,
+                                    PatchDistanceFunctionType patchDistanceFunction = PatchDistanceFunctionType(),
+                                    CopiedPixelsImageType* copiedPixelsImage = nullptr) :
+    PropertyMap(propertyMap), K(k), PatchDistanceFunction(patchDistanceFunction),
+    CopiedPixelsImage(copiedPixelsImage)
   {
   }
 
@@ -124,9 +125,28 @@ public:
       NodeType currentNode = *currentIterator;
 
       itk::Index<2> currentIndex = Helpers::ConvertFrom<itk::Index<2>, NodeType>(currentNode);
-      UsedNodesSetType::iterator usedNodesSetIterator = this->UsedNodesSet->find(currentIndex);
 
-      if(usedNodesSetIterator == this->UsedNodesSet->end()) // not already used
+      itk::ImageRegion<2> potentialSourceRegion =
+          ITKHelpers::GetRegionInRadiusAroundPixel(currentIndex,
+                                                   get(this->PropertyMap, currentNode).GetRegion().GetSize()[0]/2);
+      potentialSourceRegion.Crop(this->CopiedPixelsImage->GetLargestPossibleRegion());
+      // Count the number of pixels that were already copied fromt this patch
+      itk::ImageRegionConstIteratorWithIndex<CopiedPixelsImageType> copiedPixelIterator(this->CopiedPixelsImage,
+                                                                                        potentialSourceRegion);
+      unsigned int usedPixelCounter = 0;
+      while(!copiedPixelIterator.IsAtEnd())
+      {
+        if(copiedPixelIterator.Get() == true)
+        {
+          usedPixelCounter++;
+        }
+
+        ++copiedPixelIterator;
+      }
+
+      unsigned int maxUsedPixels = potentialSourceRegion.GetNumberOfPixels() / 4;
+
+      if(usedPixelCounter > maxUsedPixels)
       {
         DistanceValueType d = this->PatchDistanceFunction(get(this->PropertyMap, currentNode), queryPatch); // (source, target) (the query node is the target node)
 

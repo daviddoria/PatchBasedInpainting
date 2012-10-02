@@ -88,11 +88,20 @@ class InpaintingVisitor : public InpaintingVisitorParent<TGraph>, public Debug
   /** The full region (the mask and image should both be this size). */
   itk::ImageRegion<2> FullRegion;
 
-  /** Track which nodes have been used. */
+  /** Track which nodes have been used as source nodes. */
   typedef std::set<itk::Index<2>, itk::Index<2>::LexicographicCompare> UsedNodesSetType;
   UsedNodesSetType UsedNodesSet;
 
+  /** Track which pixels have been used as source pixels. */
+  typedef itk::Image<bool, 2> CopiedPixelsImageType;
+  CopiedPixelsImageType::Pointer CopiedPixelsImage;
+
 public:
+
+  CopiedPixelsImageType* GetCopiedPixelsImage()
+  {
+    return this->CopiedPixelsImage;
+  }
 
   UsedNodesSetType* GetUsedNodesSetPointer()
   {
@@ -117,6 +126,11 @@ public:
     PatchHalfWidth(patchHalfWidth), NumberOfFinishedPatches(0), AllowNewPatches(false)
   {
     this->FullRegion = this->MaskImage->GetLargestPossibleRegion();
+
+    this->CopiedPixelsImage = CopiedPixelsImageType::New();
+    this->CopiedPixelsImage->SetRegions(this->FullRegion);
+    this->CopiedPixelsImage->Allocate();
+    this->CopiedPixelsImage->FillBuffer(false);
   }
 
   void InitializeVertex(VertexDescriptorType v) const
@@ -157,7 +171,7 @@ public:
   }
 
   /** The mask is inpainted with ValidValue in this function. */
-  void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)// __attribute__((optimize(0))) // This supposedly makes this function build in debug mode (-g -O0) when the rest of the program is built in -O3 or similar)
+  void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)
   {
     // Mark this pixel and the area around it as filled, and mark the mask in this region as filled.
     // Determine the new boundary, and setup the nodes in the boundary queue.
@@ -167,6 +181,7 @@ public:
     // Construct the region around the vertex
     itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(targetNode);
 
+    // Mark this node as having been used as a source node.
     this->UsedNodesSet.insert(indexToFinish);
 
     itk::ImageRegion<2> regionToFinishFull = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, this->PatchHalfWidth);
@@ -178,6 +193,25 @@ public:
     // (because we allow target patches to not be entirely inside the image to handle the case where
     // the hole boundary is near the image boundary)
     regionToFinish.Crop(this->FullRegion);
+
+    itk::Index<2> sourceRegionCenter = ITKHelpers::CreateIndex(sourceNode);
+    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceRegionCenter, this->PatchHalfWidth);
+
+    sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->Image->GetLargestPossibleRegion(), regionToFinishFull);
+
+    // Mark all pixels that were copied (in the hole region of the source patch) as having been used.
+    itk::ImageRegionConstIteratorWithIndex<Mask> copiedPixelSourceIterator(this->MaskImage, sourceRegion);
+    itk::ImageRegionConstIteratorWithIndex<Mask> copiedPixelTargetIterator(this->MaskImage, regionToFinish);
+    while(!copiedPixelSourceIterator.IsAtEnd())
+    {
+      if(copiedPixelTargetIterator.Get() == this->MaskImage->GetHoleValue())
+      {
+        this->CopiedPixelsImage->SetPixel(copiedPixelSourceIterator.GetIndex(), true); // mark this pixel as used
+      }
+
+      ++copiedPixelSourceIterator;
+      ++copiedPixelTargetIterator;
+    }
 
     if(this->DebugImages)
     {
@@ -202,11 +236,6 @@ public:
       typename TImage::Pointer patchesCopiedImage = TImage::New();
       ITKHelpers::DeepCopy(this->Image, patchesCopiedImage.GetPointer());
       ITKHelpers::OutlineRegion(patchesCopiedImage.GetPointer(), regionToFinish, red);
-
-      itk::Index<2> sourceRegionCenter = ITKHelpers::CreateIndex(sourceNode);
-      itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceRegionCenter, this->PatchHalfWidth);
-
-      sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->Image->GetLargestPossibleRegion(), regionToFinishFull);
 
       ITKHelpers::OutlineRegion(patchesCopiedImage.GetPointer(), sourceRegion, green);
 
