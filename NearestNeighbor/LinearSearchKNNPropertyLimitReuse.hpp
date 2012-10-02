@@ -146,7 +146,7 @@ public:
 
       unsigned int maxUsedPixels = potentialSourceRegion.GetNumberOfPixels() / 4;
 
-      if(usedPixelCounter > maxUsedPixels)
+      if(usedPixelCounter < maxUsedPixels)
       {
         DistanceValueType d = this->PatchDistanceFunction(get(this->PropertyMap, currentNode), queryPatch); // (source, target) (the query node is the target node)
 
@@ -155,7 +155,7 @@ public:
       }
       else
       {
-        std::cout << "Prevented use." << std::endl;
+        std::cout << "Prevented use because " << usedPixelCounter << " pixels were already used." << std::endl;
       }
     }
 
