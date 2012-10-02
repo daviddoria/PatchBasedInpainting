@@ -260,8 +260,17 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
       VertexDescriptorVectorIteratorType, RGBImageType> BestSearchType; // Use the concatenated histograms of the gradient magnitudes of each channel. This HSVDxDyImageType must match the hsvDxDyImage provided below
 
 //  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvDxDyImage.GetPointer(), mask); // use non-blurred for texture sorting
-  BestSearchType linearSearchBest(imagePatchDescriptorMap, slightlyBlurredHSVDxDyImage.GetPointer(), mask, rgbImage.GetPointer()); // use slightly blurred for texture sorting
+  Debug debug;
+  debug.SetDebugOutputs(true);
+  debug.SetDebugImages(true);
+//  linearSearchBest.SetDebugOutputs(true);
+//  linearSearchBest.SetDebugImages(true);
+
+   // use slightly blurred for texture sorting
+  BestSearchType linearSearchBest(imagePatchDescriptorMap, slightlyBlurredHSVDxDyImage.GetPointer(),
+                                  mask, rgbImage.GetPointer(), debug);
   linearSearchBest.WritePatches = true;
+
 
   // Setup the two step neighbor finder
   TwoStepNearestNeighbor<KNNSearchType, BestSearchType>
