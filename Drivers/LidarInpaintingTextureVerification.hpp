@@ -45,7 +45,10 @@
 #include "NearestNeighbor/LinearSearchBest/FirstAndWrite.hpp"
 #include "NearestNeighbor/LinearSearchBest/LidarTextureDerivatives.hpp"
 #include "NearestNeighbor/LinearSearchBest/LidarTextureGradient.hpp"
+
+// Multi-Nearest neighbors functions
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
+#include "NearestNeighbor/LinearSearchKNNPropertyNoReuse.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
 // Initializers
@@ -213,24 +216,31 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
 #ifdef DUseWeightedDifference
   // Use a weighted difference
   typedef WeightedSumSquaredPixelDifference<typename TImage::PixelType> PixelDifferenceType;
-
-  typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
-      PixelDifferenceType > PatchDifferenceType;
   float DepthDerivativeWeight = 20.0f;
   std::vector<float> weights = {1.0f, 1.0f, 1.0f, DepthDerivativeWeight, DepthDerivativeWeight};
   PixelDifferenceType pixelDifferenceFunctor(weights);
 
-  // Create the first (KNN) neighbor finder
-  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
-  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN, pixelDifferenceFunctor);
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
+      PixelDifferenceType > PatchDifferenceType;
+  PatchDifferenceType patchDifferenceFunctor(pixelDifferenceFunctor);
 #else
   // Use an unweighted pixel difference
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
       SumSquaredPixelDifference<typename TImage::PixelType> > PatchDifferenceType;
 
+  PatchDifferenceType patchDifferenceFunctor;
+#endif
+
+//#define DAllowReuse // comment/uncomment this line to toggle allowing patches to be used as the source patch more than once
+
+#ifdef DAllowReuse
   // Create the first (KNN) neighbor finder
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
-  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN);
+  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN, patchDifferenceFunctor);
+#else
+  typedef LinearSearchKNNPropertyNoReuse<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
+  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN,
+                                patchDifferenceFunctor, inpaintingVisitor.GetUsedNodesSetPointer());
 #endif
 
   // Setup the second (1-NN) neighbor finder

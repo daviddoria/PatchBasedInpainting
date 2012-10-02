@@ -88,7 +88,16 @@ class InpaintingVisitor : public InpaintingVisitorParent<TGraph>, public Debug
   /** The full region (the mask and image should both be this size). */
   itk::ImageRegion<2> FullRegion;
 
+  /** Track which nodes have been used. */
+  typedef std::set<itk::Index<2>, itk::Index<2>::LexicographicCompare> UsedNodesSetType;
+  UsedNodesSetType UsedNodesSet;
+
 public:
+
+  UsedNodesSetType* GetUsedNodesSetPointer()
+  {
+    return &UsedNodesSet;
+  }
 
   void SetAllowNewPatches(const bool allowNewPatches)
   {
@@ -157,6 +166,8 @@ public:
 
     // Construct the region around the vertex
     itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(targetNode);
+
+    this->UsedNodesSet.insert(indexToFinish);
 
     itk::ImageRegion<2> regionToFinishFull = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, this->PatchHalfWidth);
 
