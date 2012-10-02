@@ -62,15 +62,15 @@ class LinearSearchBestLidarTextureGradient : public Debug
 
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
-  LinearSearchBestLidarTextureGradient(PropertyMapType propertyMap, TImage* const image, Mask* const mask, TImageToWrite* imageToWrite = nullptr) :
-    Debug(), PropertyMap(propertyMap), Image(image), MaskImage(mask), ImageToWrite(imageToWrite)
+  LinearSearchBestLidarTextureGradient(PropertyMapType propertyMap, TImage* const image, Mask* const mask, TImageToWrite* imageToWrite = nullptr, const Debug& debug = Debug()) :
+    Debug(debug), PropertyMap(propertyMap), Image(image), MaskImage(mask), ImageToWrite(imageToWrite)
   {
     // Compute the gradients in all source patches
     typedef itk::NthElementImageAdaptor<TImage, float> ImageChannelAdaptorType;
     typename ImageChannelAdaptorType::Pointer imageChannelAdaptor = ImageChannelAdaptorType::New();
     imageChannelAdaptor->SetImage(this->Image);
 
-    RGBChannelGradients.resize(3);
+    this->RGBChannelGradients.resize(3);
 
     for(unsigned int channel = 0; channel < 3; ++channel) // 3 RGB channels
     {
@@ -82,7 +82,14 @@ public:
 
       Derivatives::MaskedGradient(imageChannelAdaptor.GetPointer(), this->MaskImage, gradientImage.GetPointer());
 
-      RGBChannelGradients[channel] = gradientImage;
+      this->RGBChannelGradients[channel] = gradientImage;
+
+      if(this->DebugImages)
+      {
+        std::stringstream ss;
+        ss << "RGB_Gradient_" << channel << ".mha";
+        ITKHelpers::WriteImage(this->RGBChannelGradients[channel].GetPointer(), ss.str());
+      }
     }
   }
 
@@ -115,7 +122,7 @@ public:
     */
   typename TIterator::value_type operator()(const TIterator first, const TIterator last, typename TIterator::value_type query)
   {
-    if(WritePatches)
+    if(this->WritePatches)
     {
       if(this->ImageToWrite == nullptr)
       {
@@ -137,7 +144,6 @@ public:
     // Get the region to process
     itk::ImageRegion<2> queryRegion = get(this->PropertyMap, query).GetRegion();
 
-//    typedef itk::Image<float, 2> ImageChannelType;
     typedef itk::NthElementImageAdaptor<TImage, float> ImageChannelAdaptorType;
     typename ImageChannelAdaptorType::Pointer imageChannelAdaptor = ImageChannelAdaptorType::New();
     imageChannelAdaptor->SetImage(this->Image);
@@ -152,9 +158,15 @@ public:
 
       if(this->DebugImages)
       {
+        // Gradient of patch
         std::stringstream ssGradientFile;
-        ssGradientFile << "GradientImage_" << channel << ".mha";
-        ITKHelpers::WriteImage(this->RGBChannelGradients[channel].GetPointer(), ssGradientFile.str());
+        ssGradientFile << "QueryGradient_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << channel << ".mha";
+        ITKHelpers::WriteRegionAsImage(this->RGBChannelGradients[channel].GetPointer(), queryRegion, ssGradientFile.str());
+
+        // Full gradient image
+        std::stringstream ss;
+        ss << "RGB_Gradient_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << channel << ".mha";
+        ITKHelpers::WriteImage(this->RGBChannelGradients[channel].GetPointer(), ss.str());
       }
     }
 
@@ -224,6 +236,12 @@ public:
 
     targetDepthHistogram.Normalize();
 
+    if(this->DebugOutputs)
+    {
+      targetRGBHistogram.Write(Helpers::GetSequentialFileName("TargetRGBHistogram", this->Iteration, "txt", 3));
+      targetDepthHistogram.Write(Helpers::GetSequentialFileName("TargetDepthHistogram", this->Iteration, "txt", 3));
+    }
+
     // Initialize
     float bestDistance = std::numeric_limits<float>::max();
     TIterator bestPatch = last;
@@ -233,6 +251,8 @@ public:
     HistogramType bestDepthHistogram;
 
     // Iterate through all of the supplied source patches
+    std::vector<float> scores(last - first);
+
     for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
     {
       itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
@@ -258,6 +278,13 @@ public:
       // Compute the RGB histograms of the source region using the queryRegion mask
       for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of RGB channels
       {
+        if(this->DebugImages)
+        {
+          std::stringstream ssSourceGradientFile;
+          ssSourceGradientFile << "SourceGradient_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << channel << "_" << Helpers::ZeroPad(currentPatch - first, 3) <<  ".mha";
+          ITKHelpers::WriteRegionAsImage(this->RGBChannelGradients[channel].GetPointer(), currentRegion, ssSourceGradientFile.str());
+        }
+
         normImageAdaptor->SetImage(this->RGBChannelGradients[channel].GetPointer());
 
         HistogramType testRGBChannelHistogram;
@@ -323,12 +350,22 @@ public:
         testDepthHistogram = this->PreviouslyComputedDepthHistograms[currentRegion];
       }
 
+      if(this->DebugOutputs)
+      {
+        std::stringstream ssEnding;
+        ssEnding << "_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << Helpers::ZeroPad(currentPatch - first, 3) << ".txt";
+        testRGBHistogram.Write("TestRGBHistogram" + ssEnding.str());
+        testDepthHistogram.Write("TestDepthHistogram" + ssEnding.str());
+      }
+
       // Compute the differences in the histograms
       float rgbHistogramDifference = HistogramDifferences::HistogramDifference(targetRGBHistogram, testRGBHistogram);
       float depthHistogramDifference = HistogramDifferences::HistogramDifference(targetDepthHistogram, testDepthHistogram);
 
       // Weight the depth histogram 3x so that it is a 1:1 weighting of RGB and depth difference
       float histogramDifference = rgbHistogramDifference + 3.0f * depthHistogramDifference;
+
+      scores[currentPatch - first] = histogramDifference;
 
       if(this->DebugOutputs)
       {
@@ -351,6 +388,11 @@ public:
     std::cout << "Best distance: " << bestDistance << std::endl;
 
     this->Iteration++;
+
+    if(this->DebugOutputs)
+    {
+      Helpers::WriteVectorToFileLines(scores, Helpers::GetSequentialFileName("Scores", this->Iteration, "txt", 3));
+    }
 
     return *bestPatch;
   }
