@@ -215,6 +215,7 @@ public:
 
     if(this->DebugImages)
     {
+      ITKHelpers::WriteBoolImage(this->CopiedPixelsImage, Helpers::GetSequentialFileName("CopiedPixels", this->NumberOfFinishedPatches, "png", 3));
       ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("Mask_Before", this->NumberOfFinishedPatches, "png", 3));
     }
 

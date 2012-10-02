@@ -170,7 +170,9 @@ public:
       }
       else
       {
-        std::cout << "Prevented use because " << usedPixelCounter << " pixels were already used (out of " << numberOfHolePixels << " hole pixels)." << std::endl;
+//        std::cout << "Prevented use because " << usedPixelCounter
+//                  << " pixels were already used (out of " << numberOfHolePixels
+//                  << " hole pixels)." << std::endl;
       }
     }
 
