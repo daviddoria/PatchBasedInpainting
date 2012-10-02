@@ -51,8 +51,11 @@ InpaintingAlgorithmWithLocalSearch(TVertexListGraph& g, TInpaintingVisitor vis,
 
   typedef typename boost::graph_traits<TVertexListGraph>::vertex_descriptor VertexDescriptorType;
 
+  unsigned int iteration = 0;
   while(!boundaryNodeQueue->empty())
   {
+    std::cout << "Algorithm: Iteration " << iteration << std::endl;
+
     VertexDescriptorType targetNode = boundaryNodeQueue->top();
 
     // Notify the visitor that we have a hole target center.
@@ -73,6 +76,8 @@ InpaintingAlgorithmWithLocalSearch(TVertexListGraph& g, TInpaintingVisitor vis,
     patchInpainter->PaintPatch(targetIndex, sourceIndex);
 
     vis.FinishVertex(targetNode, sourceNode);
+
+    iteration++;
   }
 
   std::cout << "Inpainting complete." << std::endl;
