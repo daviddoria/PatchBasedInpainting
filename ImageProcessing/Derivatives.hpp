@@ -473,7 +473,7 @@ void MaskedGradientInRegion(const TImage* const image, const Mask* const mask,
   //Helpers::DebugWriteImageConditional<FloatScalarImageType>(yDerivative, "Debug/ComputeMaskedIsophotes.yderivative.mha", this->DebugImages);
 
   // Combine derivatives
-  GradientFromDerivatives(xDerivative.GetPointer(), yDerivative.GetPointer(), gradientImage);
+  GradientFromDerivativesInRegion(xDerivative.GetPointer(), yDerivative.GetPointer(), region, gradientImage);
 }
 
 template <typename TImage, typename TGradientImage, typename TDifferenceFunction = std::minus<typename TImage::PixelType> >
