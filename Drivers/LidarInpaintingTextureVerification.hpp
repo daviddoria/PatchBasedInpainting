@@ -244,7 +244,7 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
 //                                patchDifferenceFunctor, inpaintingVisitor.GetUsedNodesSetPointer());
 
   typedef LinearSearchKNNPropertyLimitReuse<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
-  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN,
+  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
                                 patchDifferenceFunctor, inpaintingVisitor.GetCopiedPixelsImage());
 #endif
 

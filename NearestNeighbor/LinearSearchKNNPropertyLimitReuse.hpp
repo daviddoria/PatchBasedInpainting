@@ -31,6 +31,9 @@
 // Custom
 #include "Utilities/Utilities.hpp"
 
+// Submodules
+#include <Mask/Mask.h>
+
 /**
   * This function template is similar to std::min_element but can be used when the comparison
   * involves computing a derived quantity (a.k.a. distance). This algorithm will search for the
@@ -60,12 +63,15 @@ class LinearSearchKNNPropertyLimitReuse
   typedef itk::Image<bool, 2> CopiedPixelsImageType;
   CopiedPixelsImageType* CopiedPixelsImage;
 
+  /** The current inpainting mask. */
+  Mask* MaskImage;
+
 public:
-  LinearSearchKNNPropertyLimitReuse(PropertyMapType propertyMap, const unsigned int k = 1000,
+  LinearSearchKNNPropertyLimitReuse(PropertyMapType propertyMap, Mask* mask, const unsigned int k = 1000,
                                     PatchDistanceFunctionType patchDistanceFunction = PatchDistanceFunctionType(),
                                     CopiedPixelsImageType* copiedPixelsImage = nullptr) :
     PropertyMap(propertyMap), K(k), PatchDistanceFunction(patchDistanceFunction),
-    CopiedPixelsImage(copiedPixelsImage)
+    CopiedPixelsImage(copiedPixelsImage), MaskImage(mask)
   {
   }
 
@@ -117,6 +123,13 @@ public:
 
     typedef typename ForwardIteratorType::value_type NodeType;
 
+    // Create a region from the node
+    itk::Index<2> queryIndex = Helpers::ConvertFrom<itk::Index<2>, NodeType>(queryNode);
+
+    itk::ImageRegion<2> queryRegion =
+        ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex,
+                                                 get(this->PropertyMap, queryNode).GetRegion().GetSize()[0]/2);
+
     // The queue stores the items in descending score order.
     #pragma omp parallel for
 //    for(ForwardIteratorType current = first; current != last; ++current) // OpenMP 3 doesn't allow != in the loop ending condition
@@ -144,9 +157,11 @@ public:
         ++copiedPixelIterator;
       }
 
-      unsigned int maxUsedPixels = potentialSourceRegion.GetNumberOfPixels() / 4;
+//      unsigned int maxUsedPixels = potentialSourceRegion.GetNumberOfPixels() / 4;
+      unsigned int numberOfHolePixels = this->MaskImage->CountHolePixels(queryRegion);
+      unsigned int maxAllowedUsedPixels = numberOfHolePixels / 2; // Arbitrary - only allow half of the hole pixels to have been used
 
-      if(usedPixelCounter < maxUsedPixels)
+      if(usedPixelCounter < maxAllowedUsedPixels)
       {
         DistanceValueType d = this->PatchDistanceFunction(get(this->PropertyMap, currentNode), queryPatch); // (source, target) (the query node is the target node)
 
@@ -155,7 +170,7 @@ public:
       }
       else
       {
-        std::cout << "Prevented use because " << usedPixelCounter << " pixels were already used." << std::endl;
+        std::cout << "Prevented use because " << usedPixelCounter << " pixels were already used (out of " << numberOfHolePixels << " hole pixels)." << std::endl;
       }
     }
 
