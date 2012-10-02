@@ -1,1 +1,4 @@
-
+add_custom_target(SearchRegionsSources SOURCES
+FullImageSearch.hpp
+NeighborhoodSearch.hpp
+)

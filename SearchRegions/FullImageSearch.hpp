@@ -1,12 +1,31 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef FullImageSearch_HPP
 #define FullImageSearch_HPP
 
 // Custom
-#include "Helpers.h"
+#include <Helpers/Helpers.h>
 
 // ITK
 #include "itkImageRegionConstIteratorWithIndex.h"
 #include "itkImage.h"
+
 /**
 
  */
@@ -31,18 +50,18 @@ struct FullImageSearch
     unsigned int counter = 0;
     itk::ImageRegionConstIteratorWithIndex<ImageType> imageIterator(image, FullRegion);
     while(!imageIterator.IsAtEnd())
-      {
+    {
       TVertexDescriptorType vert = Helpers::ConvertFrom<TVertexDescriptorType, itk::Index<2> > (imageIterator.GetIndex());
       Vertices[counter] = vert;
       counter++;
       ++imageIterator;
-      }
-  };
+    }
+  }
 
   VectorType operator()(const TVertexDescriptorType& center)
   {
-    // Do nothing, we already composed the vector of all vertices in the constructor
-    return Vertices;
+    // Do nothing but return the result, we already composed the vector of all vertices in the constructor
+    return this->Vertices;
   }
 
 };
