@@ -29,7 +29,7 @@
 #include <stdexcept>
 
 // Custom
-#include "BoostHelpers/BoostHelpers.h"
+#include <BoostHelpers/BoostHelpers.h>
 
 /** When this function is called, the priority-queue must already be filled with
   * all the boundary nodes (which should also have their boundaryStatusMap set appropriately).
@@ -37,24 +37,14 @@
   * actual code is externalized in the functors and visitors (vis, find_inpainting_source,
   * inpaint_patch, etc.).
   */
-// We declare this function here so we can use the gcc attribute keyword (it cannot be used on definitions)
-//template <typename TVertexListGraph, typename TInpaintingVisitor,
-//          typename TBoundaryStatusMap, typename TPriorityQueue,
-//          typename TNearestNeighborFinder, typename TPatchInpainter>
-//inline
-//void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
-//                        TBoundaryStatusMap* boundaryStatusMap, TPriorityQueue* boundaryNodeQueue,
-//                        TNearestNeighborFinder find_inpainting_source,
-//                        TPatchInpainter* patchInpainter) __attribute__((optimize(0)));
-
 template <typename TVertexListGraph, typename TInpaintingVisitor,
-          typename TPriorityQueue,
-          typename TNearestNeighborFinder, typename TPatchInpainter>
-inline
-void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
-                        TPriorityQueue* boundaryNodeQueue,
-                        TNearestNeighborFinder find_inpainting_source,
-                        TPatchInpainter* patchInpainter)
+          typename TPriorityQueue, typename TBestPatchFinder,
+          typename TPatchInpainter>
+inline void
+InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
+                    TPriorityQueue* boundaryNodeQueue,
+                    TBestPatchFinder bestPatchFinder,
+                    TPatchInpainter* patchInpainter)
 {
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<TInpaintingVisitor, TVertexListGraph>));
 
@@ -68,65 +58,29 @@ void InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
   unsigned int iteration = 0;
   while(!boundaryNodeQueue->empty())
   {
-
-    VertexDescriptorType targetNode = boundaryNodeQueue->top();
-
-//    std::cout << "Processing node (" << targetNode[0] << ", " << targetNode[1] << ") with priority: " << get(priorityMap, targetNode) << std::endl;
-
-//     std::cout << "Before DiscoverVertex there are " << boundaryNodeQueue->size()
-//               << " nodes in the queue." << std::endl;
-//     std::cout << "Before DiscoverVertex there are "
-//               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
-//               << " valid nodes in the queue." << std::endl;
+    VertexDescriptorType targetNode = boundaryNodeQueue->top(); // This also pops the node
 
     // Notify the visitor that we have a hole target center.
     vis.DiscoverVertex(targetNode);
 
-    // Find the source node that matches best to the target node
-//     std::cout << "Before PotentialMatchMade there are " << boundaryNodeQueue->size()
-//               << " nodes in the queue." << std::endl;
-//     std::cout << "Before PotentialMatchMade there are "
-//               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
-//               << " valid nodes in the queue." << std::endl;
+    // Create a list of the source patches to search (all of them)
     typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
     tie(vi,vi_end) = vertices(g);
-    VertexDescriptorType sourceNode = find_inpainting_source(vi, vi_end, targetNode);
+
+    // Find the source node that matches best to the target node
+    VertexDescriptorType sourceNode = bestPatchFinder(vi, vi_end, targetNode);
     vis.PotentialMatchMade(targetNode, sourceNode);
 
-    // Do the in-painting of the target patch from the source patch.
-    // the inpaint_patch functor should take care of calling
-    // "vis.paint_vertex(target, source, g)" on the individual vertices in the patch.
-//     std::cout << "Before inpaint_patch there are " << (*boundaryNodeQueue).size()
-//               << " nodes in the queue." << std::endl;
-//     std::cout << "Before inpaint_patch there are "
-//               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
-//               << " valid nodes in the queue." << std::endl;
+    // Inpaint the target patch from the source patch.
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(targetNode);
     itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(sourceNode);
 
     patchInpainter->PaintPatch(targetIndex, sourceIndex);
-    // patchInpainter->PaintPatch(targetNode, sourceNode); // Ideally we would like to do this, but PatchInpainter::PaintPatch cannot be a template (c++ rules say so)
+    // Ideally we would like to do this, but PatchInpainter::PaintPatch
+    // cannot be a template because it is virtual (c++ rules say so)
+    // patchInpainter->PaintPatch(targetNode, sourceNode);
 
-//     std::cout << "Before FinishVertex there are " << (*boundaryNodeQueue).size()
-//               << " nodes in the queue." << std::endl;
-//     std::cout << "Before FinishVertex there are "
-//               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
-//               << " valid nodes in the queue." << std::endl;
     vis.FinishVertex(targetNode, sourceNode);
-
-//     std::cout << "At the end of the iteration there are " << boundaryNodeQueue->size()
-//               << " nodes in the queue." << std::endl;
-//     std::cout << "At the end of the iteration there are "
-//               << BoostHelpers::CountValidQueueNodes(*boundaryNodeQueue, *boundaryStatusMap)
-//               << " valid nodes in the queue." << std::endl;
-
-//    PatchHelpers::WriteValidQueueNodesPrioritiesImage(*boundaryNodeQueue, *boundaryStatusMap, priorityMap,
-//                                              vis.GetImage()->GetLargestPossibleRegion(),
-//                                              Helpers::GetSequentialFileName("QueueImagePriorities", iteration, "mha", 3));
-
-//    PatchHelpers::WriteValidQueueNodesLocationsImage(*boundaryNodeQueue, *boundaryStatusMap,
-//                                              vis.GetImage()->GetLargestPossibleRegion(),
-//                                              Helpers::GetSequentialFileName("QueueImageLocations", iteration, "mha", 3));
 
     iteration++;
   } // end main iteration loop

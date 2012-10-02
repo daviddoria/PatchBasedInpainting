@@ -139,29 +139,6 @@ struct IndirectPriorityQueue
     // we also check that it has not been filled (by looking at its boundaryStatusMap
     // value).
 
-
-    // return the first valid item, popping the invalid items off the queue
-//    return this->Queue.top();
-
-//    bool validNodeFound = false;
-//    ValueType topNode;
-//    do
-//    {
-//      // Get the top node
-//      topNode = this->Queue->top();
-
-//      // Invalidate the top node
-//      typename TPriorityQueue::HandleMapType::value_type invalidHandle(0);
-//      put(boundaryNodeQueue->HandleMap, targetNode, invalidHandle);
-
-//      // Pop the top node
-//      boundaryNodeQueue->pop();
-
-//      validNodeFound = get(this->BoundaryStatusMap, targetNode);
-//    } while( validNodeFound == false );
-
-//    return topNode;
-
     bool validNodeFound = false;
     ValueType topNode;
     while(!this->Queue.empty())
