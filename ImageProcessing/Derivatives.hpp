@@ -40,9 +40,12 @@ void MaskedDerivative(const TImage* const image, const Mask* const mask,
                       const unsigned int direction, TGradientImage* const output)
 {
   // Setup the output
-  output->SetRegions(image->GetLargestPossibleRegion());
-  output->Allocate();
-  output->FillBuffer(0);
+  if(output->GetLargestPossibleRegion() != image->GetLargestPossibleRegion())
+  {
+    output->SetRegions(image->GetLargestPossibleRegion());
+    output->Allocate();
+    output->FillBuffer(0);
+  }
 
   itk::ImageRegionConstIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
 
