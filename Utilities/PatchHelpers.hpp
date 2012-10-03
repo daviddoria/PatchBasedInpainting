@@ -320,13 +320,19 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
                                                   static_cast<itk::Index<2>::IndexValueType>(patchSideLength * currentPatchId + currentPatchId)}};
 
     itk::ImageRegion<2> topPatchesImageNumberRegion(topPatchesImageNumberCorner, patchSize);
-    ITKHelpers::CopyRegion(numberImage.GetPointer(), topPatchesImage.GetPointer(), numberImage->GetLargestPossibleRegion(), topPatchesImageNumberRegion);
+    ITKHelpers::CopyRegion(numberImage.GetPointer(), topPatchesImage.GetPointer(),
+                           numberImage->GetLargestPossibleRegion(), topPatchesImageNumberRegion);
 
     // The extra + currentPatchId is to skip the extra dividing lines that have been drawn
     itk::Index<2> topPatchesImageCorner = {{0, static_cast<itk::Index<2>::IndexValueType>(patchSideLength * currentPatchId + currentPatchId)}};
     itk::ImageRegion<2> currentTopPatchesImageRegion(topPatchesImageCorner, patchSize);
     itk::ImageRegion<2> currentRegion = get(propertyMap, *currentPatch).GetRegion();
-    ITKHelpers::CopyRegion(image, topPatchesImage.GetPointer(), currentRegion, currentTopPatchesImageRegion);
+    // The patches passed to this function aren't necessarily inside the image. If they are not, we cannot write them into the list of top patches,
+    // and we simply leave the patch blank.
+    if(image->GetLargestPossibleRegion().IsInside(currentRegion))
+    {
+      ITKHelpers::CopyRegion(image, topPatchesImage.GetPointer(), currentRegion, currentTopPatchesImageRegion);
+    }
 
     if(currentPatchId != numberOfTopPatches - 1)
     {
@@ -342,7 +348,7 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
 
   ITKHelpers::WriteRGBImage(topPatchesImage.GetPointer(), Helpers::GetSequentialFileName(prefix, iteration,"png",3));
 
-  delete app;
+  delete app; // c++ allows null pointers to be deleted
 }
 
 } // end namespace
