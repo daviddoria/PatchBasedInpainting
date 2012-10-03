@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef LidarInpaintingTextureVerification_HPP
-#define LidarInpaintingTextureVerification_HPP
+#ifndef LidarInpaintingHSVTextureVerification_HPP
+#define LidarInpaintingHSVTextureVerification_HPP
 
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
@@ -92,8 +92,8 @@
 
 /** It is expected that this function be passed an RGBDxDy image. */
 template <typename TImage>
-void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const mask,
-                                        const unsigned int patchHalfWidth, const unsigned int numberOfKNN)
+void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* const mask,
+                                           const unsigned int patchHalfWidth, const unsigned int numberOfKNN)
 {
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
 
@@ -296,7 +296,7 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
 //      VertexDescriptorVectorIteratorType, TImage> BestSearchType; // Use the histogram of the gradient magnitudes of a scalar represetnation of the image (e.g. magnitude image)
 //  typedef LinearSearchBestLidarTextureDerivatives<ImagePatchDescriptorMapType, HSVImageType,
 //      VertexDescriptorVectorIteratorType, TImage> BestSearchType; // Use the concatenated histograms of the absolute value of the derivatives of each channel
-  typedef LinearSearchBestLidarTextureGradient<ImagePatchDescriptorMapType, HSVDxDyImageType,
+  typedef LinearSearchBestLidarHSVTextureGradient<ImagePatchDescriptorMapType, HSVDxDyImageType,
       VertexDescriptorVectorIteratorType, RGBImageType> BestSearchType; // Use the concatenated histograms of the gradient magnitudes of each channel. This HSVDxDyImageType must match the hsvDxDyImage provided below
 
 //  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvDxDyImage.GetPointer(), mask); // use non-blurred for texture sorting

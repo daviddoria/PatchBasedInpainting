@@ -49,7 +49,7 @@
  * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
  */
 template <typename PropertyMapType, typename TImage, typename TIterator, typename TImageToWrite = TImage>
-class LinearSearchBestLidarTextureGradient : public Debug
+class LinearSearchBestLidarRGBTextureGradient : public Debug
 {
   PropertyMapType PropertyMap;
   TImage* Image;
@@ -62,7 +62,7 @@ class LinearSearchBestLidarTextureGradient : public Debug
 
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
-  LinearSearchBestLidarTextureGradient(PropertyMapType propertyMap, TImage* const image, Mask* const mask, TImageToWrite* imageToWrite = nullptr, const Debug& debug = Debug()) :
+  LinearSearchBestLidarRGBTextureGradient(PropertyMapType propertyMap, TImage* const image, Mask* const mask, TImageToWrite* imageToWrite = nullptr, const Debug& debug = Debug()) :
     Debug(debug), PropertyMap(propertyMap), Image(image), MaskImage(mask), ImageToWrite(imageToWrite)
   {
     // Compute the gradients in all source patches

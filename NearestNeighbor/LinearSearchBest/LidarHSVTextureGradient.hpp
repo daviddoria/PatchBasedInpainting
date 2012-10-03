@@ -45,7 +45,7 @@
  * Euclidean distance and less-than comparison, which would yield the element with minimum distance).
  */
 template <typename PropertyMapType, typename TImage, typename TIterator, typename TImageToWrite = TImage>
-class LinearSearchBestLidarTextureGradient : public Debug
+class LinearSearchBestLidarHSVTextureGradient : public Debug
 {
   PropertyMapType PropertyMap;
   TImage* Image;
@@ -58,7 +58,7 @@ class LinearSearchBestLidarTextureGradient : public Debug
 
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
-  LinearSearchBestLidarTextureGradient(PropertyMapType propertyMap, TImage* const image, Mask* const mask,
+  LinearSearchBestLidarHSVTextureGradient(PropertyMapType propertyMap, TImage* const image, Mask* const mask,
                                        TImageToWrite* imageToWrite = nullptr, const Debug& debug = Debug()) :
     Debug(debug), PropertyMap(propertyMap), Image(image), MaskImage(mask), ImageToWrite(imageToWrite)
   {
