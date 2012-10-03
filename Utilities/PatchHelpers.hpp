@@ -316,7 +316,7 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
     std::stringstream ssNumber;
     ssNumber << currentPatchId;
     painter.drawText(QPointF(1,10), ssNumber.str().c_str()); // bottom left corner of the text seems to start at this point
-//    painter.drawText(QPointF(10,10), ssNumber.str().c_str()); // bottom left corner of the text seems to start at this point
+
     ITKQtHelpers::QImageToITKImage(pixmap.toImage(), numberImage.GetPointer());
 
     // The extra + currentPatchId is to skip the extra dividing lines that have been drawn

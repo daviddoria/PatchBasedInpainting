@@ -129,7 +129,6 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   float slightBlurVariance = 1.0f;
   MaskOperations::MaskedBlur(hsvDxDyImage.GetPointer(), mask, slightBlurVariance, slightlyBlurredHSVDxDyImage.GetPointer());
 
-//  ITKHelpers::WriteRGBImage(slightlyBlurredHSVDxDyImage.GetPointer(), "SlightlyBlurredHSVDxDyImage.png"); // only if 3-channel uchar
   ITKHelpers::WriteImage(slightlyBlurredHSVDxDyImage.GetPointer(), "SlightlyBlurredHSVDxDyImage.mha");
 
   // Create the graph
