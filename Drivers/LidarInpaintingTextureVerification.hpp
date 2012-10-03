@@ -218,8 +218,10 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
 #ifdef DUseWeightedDifference
   // Use a weighted difference
   typedef WeightedSumSquaredPixelDifference<typename TImage::PixelType> PixelDifferenceType;
-  float DepthDerivativeWeight = 20.0f;
-  std::vector<float> weights = {1.0f, 1.0f, 1.0f, DepthDerivativeWeight, DepthDerivativeWeight};
+  // The absolute value of the depth derivative range is usually about [0,12], so to make
+  // it comparable to to the color image channel range of [0,255], we multiply by 255/12 ~= 20.
+  float depthDerivativeWeight = 20.0f;
+  std::vector<float> weights = {1.0f, 1.0f, 1.0f, depthDerivativeWeight, depthDerivativeWeight};
   PixelDifferenceType pixelDifferenceFunctor(weights);
 
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
@@ -248,9 +250,10 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
 //  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
 //                                patchDifferenceFunctor, inpaintingVisitor.GetCopiedPixelsImage());
 
-  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
+  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, PatchDifferenceType, RGBImageType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
-                                patchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage());
+                                patchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage(),
+                                rgbImage.GetPointer());
   linearSearchKNN.SetDebugImages(true);
 #endif
 

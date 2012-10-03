@@ -45,20 +45,20 @@
   * \tparam DistanceValueType The value-type for the distance measures.
   * \tparam DistanceFunctionType The functor type to compute the distance measure.
   */
-template <typename PropertyMapType,
-          typename PatchDistanceFunctionType>
+template <typename TPropertyMap, typename TPatchDistanceFunction,
+          typename TImageToWrite>
 class LinearSearchKNNPropertyLimitLocalReuse : public Debug
 {
   typedef float DistanceValueType;
 
   /** The map of vertex descriptors. */
-  PropertyMapType PropertyMap;
+  TPropertyMap PropertyMap;
 
   /** How many top patches to return. */
   unsigned int K;
 
   /** The function to use to compare patches. */
-  PatchDistanceFunctionType PatchDistanceFunction;
+  TPatchDistanceFunction PatchDistanceFunction;
 
   /** An image indicating where each pixel came from. */
   typedef itk::Image<itk::Index<2>, 2> SourcePixelMapImageType;
@@ -72,12 +72,14 @@ class LinearSearchKNNPropertyLimitLocalReuse : public Debug
 
   unsigned int Iteration = 0;
 
+  TImageToWrite* ImageToWrite;
+
 public:
-  LinearSearchKNNPropertyLimitLocalReuse(PropertyMapType propertyMap, Mask* mask, const unsigned int k = 1000,
-                                         PatchDistanceFunctionType patchDistanceFunction = PatchDistanceFunctionType(),
-                                         SourcePixelMapImageType* sourcePixelMapImage = nullptr) :
+  LinearSearchKNNPropertyLimitLocalReuse(TPropertyMap propertyMap, Mask* mask, const unsigned int k = 1000,
+                                         TPatchDistanceFunction patchDistanceFunction = TPatchDistanceFunction(),
+                                         SourcePixelMapImageType* sourcePixelMapImage = nullptr, TImageToWrite* imageToWrite = nullptr) :
     PropertyMap(propertyMap), K(k), PatchDistanceFunction(patchDistanceFunction),
-    SourcePixelMapImage(sourcePixelMapImage), MaskImage(mask)
+    SourcePixelMapImage(sourcePixelMapImage), MaskImage(mask), ImageToWrite(imageToWrite)
   {
     this->FullRegion = this->MaskImage->GetLargestPossibleRegion();
   }
@@ -118,6 +120,16 @@ public:
       return outputFirst;
     }
 
+    if(this->DebugImages && this->Iteration == 140)
+    {
+      if(this->ImageToWrite == nullptr)
+      {
+        throw std::runtime_error("LinearSearchBestLidarTextureGradient cannot WriteTopPatches without having an ImageToWrite!");
+      }
+      PatchHelpers::WriteTopPatches(this->ImageToWrite, this->PropertyMap, first, last,
+                                    "KNNPatches", this->Iteration);
+    }
+
     if(this->DebugImages)
     {
       ITKHelpers::WriteIndexImage(this->SourcePixelMapImage, Helpers::GetSequentialFileName("SourcePixelMap", this->Iteration, "mha", 3));
@@ -131,7 +143,7 @@ public:
 
     PriorityQueueType outputQueue;
 
-    typename PropertyMapType::value_type queryPatch = get(this->PropertyMap, queryNode);
+    typename TPropertyMap::value_type queryPatch = get(this->PropertyMap, queryNode);
 
     typedef typename ForwardIteratorType::value_type NodeType;
 

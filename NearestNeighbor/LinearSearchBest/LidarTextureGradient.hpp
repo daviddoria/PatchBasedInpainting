@@ -160,7 +160,7 @@ public:
       {
         // Gradient of patch
         std::stringstream ssGradientFile;
-        ssGradientFile << "QueryGradient_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << channel << ".mha";
+        ssGradientFile << "QueryRGBGradient_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << channel << ".mha";
         ITKHelpers::WriteRegionAsImage(this->RGBChannelGradients[channel].GetPointer(), queryRegion, ssGradientFile.str());
 
         // Full gradient image
@@ -369,7 +369,7 @@ public:
 
       if(this->DebugOutputs)
       {
-        std::cout << "histogramDifference " << currentPatch - first << " : " << histogramDifference << std::endl;
+//        std::cout << "histogramDifference " << currentPatch - first << " : " << histogramDifference << std::endl;
       }
 
       if(histogramDifference < bestDistance)
