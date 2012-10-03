@@ -110,7 +110,7 @@ public:
       ++targetIterator;
     }
 
-    if(this->GetDebugOutputs())
+    if(this->GetDebugScreenOutputs())
     {
       std::cout << "PatchInpainter::PaintPatch(): Painted patch " << targetCenter[0] << " " << targetCenter[1]
                 << " with " << sourceCenter[0] << " " << sourceCenter[1] << std::endl;

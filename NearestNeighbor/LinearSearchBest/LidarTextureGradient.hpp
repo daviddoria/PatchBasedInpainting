@@ -156,7 +156,7 @@ public:
       Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
                                           queryRegion, this->RGBChannelGradients[channel].GetPointer());
 
-      if(this->DebugImages)
+      if(this->DebugImages && this->DebugLevel > 1)
       {
         // Gradient of patch
         std::stringstream ssGradientFile;
@@ -236,7 +236,7 @@ public:
 
     targetDepthHistogram.Normalize();
 
-    if(this->DebugOutputs)
+    if(this->DebugOutputFiles)
     {
       targetRGBHistogram.Write(Helpers::GetSequentialFileName("TargetRGBHistogram", this->Iteration, "txt", 3));
       targetDepthHistogram.Write(Helpers::GetSequentialFileName("TargetDepthHistogram", this->Iteration, "txt", 3));
@@ -278,7 +278,7 @@ public:
       // Compute the RGB histograms of the source region using the queryRegion mask
       for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of RGB channels
       {
-        if(this->DebugImages)
+        if(this->DebugImages && this->DebugLevel > 1)
         {
           std::stringstream ssSourceGradientFile;
           ssSourceGradientFile << "SourceGradient_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << channel << "_" << Helpers::ZeroPad(currentPatch - first, 3) <<  ".mha";
@@ -350,7 +350,7 @@ public:
         testDepthHistogram = this->PreviouslyComputedDepthHistograms[currentRegion];
       }
 
-      if(this->DebugOutputs)
+      if(this->DebugOutputFiles)
       {
         std::stringstream ssEnding;
         ssEnding << "_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << Helpers::ZeroPad(currentPatch - first, 3) << ".txt";
@@ -367,9 +367,9 @@ public:
 
       scores[currentPatch - first] = histogramDifference;
 
-      if(this->DebugOutputs)
+      if(this->DebugScreenOutputs)
       {
-//        std::cout << "histogramDifference " << currentPatch - first << " : " << histogramDifference << std::endl;
+        std::cout << "histogramDifference " << currentPatch - first << " : " << histogramDifference << std::endl;
       }
 
       if(histogramDifference < bestDistance)
@@ -389,7 +389,7 @@ public:
 
     this->Iteration++;
 
-    if(this->DebugOutputs)
+    if(this->DebugOutputFiles)
     {
       Helpers::WriteVectorToFileLines(scores, Helpers::GetSequentialFileName("Scores", this->Iteration, "txt", 3));
     }

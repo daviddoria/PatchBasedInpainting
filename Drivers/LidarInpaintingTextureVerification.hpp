@@ -299,8 +299,8 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
 
 //  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvDxDyImage.GetPointer(), mask); // use non-blurred for texture sorting
   Debug debug;
-  debug.SetDebugOutputs(true);
-  debug.SetDebugImages(true);
+//  debug.SetDebugOutputs(true);
+//  debug.SetDebugImages(true);
 //  linearSearchBest.SetDebugOutputs(true);
 //  linearSearchBest.SetDebugImages(true);
 
