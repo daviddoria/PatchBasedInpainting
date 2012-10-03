@@ -229,16 +229,18 @@ public:
     sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->Image->GetLargestPossibleRegion(), regionToFinishFull);
 
     // Mark all pixels that were copied (in the hole region of the source patch) as having been used.
-    itk::ImageRegionConstIteratorWithIndex<Mask> sourcePatchIterator(this->MaskImage, sourceRegion);
+    itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType> sourcePatchIterator(this->SourcePixelMapImage, sourceRegion);
     itk::ImageRegionConstIteratorWithIndex<Mask> targetPatchIterator(this->MaskImage, regionToFinish);
     while(!sourcePatchIterator.IsAtEnd())
     {
       if(targetPatchIterator.Get() == this->MaskImage->GetHoleValue())
       {
-        this->CopiedPixelsImage->SetPixel(sourcePatchIterator.GetIndex(), true); // mark this pixel as used
+        this->CopiedPixelsImage->SetPixel(sourcePatchIterator.GetIndex(), true); // Mark this pixel as used
 
+        // Save the location from which this pixel came. We want to use the index value in the SourcePixelMapImage,
+        // because the value might not equal the current index in the case where new patches are allowed.
         this->SourcePixelMapImage->SetPixel(targetPatchIterator.GetIndex(),
-                                            sourcePatchIterator.GetIndex()); // save the location from which this pixel came
+                                            sourcePatchIterator.Get());
       }
 
       ++sourcePatchIterator;

@@ -204,7 +204,8 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
                                           imagePatchDescriptorVisitor, acceptanceVisitor,
                                           &priorityFunction, patchHalfWidth, "InpaintingVisitor", originalImage);
   inpaintingVisitor.SetDebugImages(true); // This produces PatchesCopied* images showing where patches were copied from/to at each iteration
-  inpaintingVisitor.SetAllowNewPatches(false);
+//  inpaintingVisitor.SetAllowNewPatches(false);
+  inpaintingVisitor.SetAllowNewPatches(true); // we can do this as long as we use one of the LinearSearchKNNProperty*Reuse (like LinearSearchKNNPropertyLimitLocalReuse) in the steps below
 
   InitializePriority(mask, boundaryNodeQueue, &priorityFunction);
 

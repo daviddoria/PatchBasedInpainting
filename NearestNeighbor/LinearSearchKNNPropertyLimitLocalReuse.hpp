@@ -201,7 +201,9 @@ public:
         UsedIndexSetType::iterator usedIndexSetIterator;
         if(this->MaskImage->IsHole(queryRegionIterator.GetIndex()))
         {
-          usedIndexSetIterator = usedIndices.find(sourceRegionIterator.GetIndex());
+          // We want to use the index value in the SourcePixelMapImage,
+          // because the value might not equal the current index in the case where new patches are allowed.
+          usedIndexSetIterator = usedIndices.find(sourceRegionIterator.Get());
 
           if(usedIndexSetIterator != usedIndices.end()) // found
           {
