@@ -146,6 +146,20 @@ public:
     this->SourcePixelMapImage->Allocate();
     itk::Index<2> dummyIndex = {{-1, -1}};
     this->SourcePixelMapImage->FillBuffer(dummyIndex);
+
+    // Initialize by setting all valid pixels to their own index
+    itk::ImageRegionIteratorWithIndex<SourcePixelMapImageType>
+        sourcePixelMapImageIterator(this->SourcePixelMapImage, this->FullRegion);
+    while(!sourcePixelMapImageIterator.IsAtEnd())
+    {
+      if(this->MaskImage->IsValid(sourcePixelMapImageIterator.GetIndex()))
+      {
+        this->SourcePixelMapImage->SetPixel(sourcePixelMapImageIterator.GetIndex(),
+                                            sourcePixelMapImageIterator.GetIndex());
+      }
+
+      ++sourcePixelMapImageIterator;
+    }
   }
 
   void InitializeVertex(VertexDescriptorType v) const
