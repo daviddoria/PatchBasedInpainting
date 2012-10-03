@@ -269,7 +269,10 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
 //  std::cout << "WriteTopPatches:numberOfTopPatches = " << numberOfTopPatches << std::endl;
 
   itk::Index<2> topPatchesImageCorner = {{0,0}};
-  itk::Size<2> topPatchesImageSize = {{patchSideLength * 2, patchSideLength * numberOfTopPatches + numberOfTopPatches - 1}}; // Make space for all the patches and a colored line dividing them (and the -1 is so there is no dividing line at the bottom)
+
+  // Make space for all the patches and a colored line dividing them (and the -1 is so there is no dividing line at the bottom)
+  itk::Size<2> topPatchesImageSize = {{patchSideLength * 2,
+                                       patchSideLength * numberOfTopPatches + numberOfTopPatches - 1}};
   itk::ImageRegion<2> topPatchesImageRegion(topPatchesImageCorner, topPatchesImageSize);
 
 //  std::cout << "topPatchesImageRegion: " << topPatchesImageRegion << std::endl;
@@ -299,7 +302,7 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
   QFont font("", 6); // arbitrary (default) font, size 6
   painter.setFont(font);
 
-  painter.drawText(QPointF(10,10), "test"); // bottom left corner of the text seems to start at this point
+//  painter.drawText(QPointF(10,10), "test"); // bottom left corner of the text seems to start at this point
 
   typename TImage::Pointer numberImage = TImage::New();
 
@@ -312,7 +315,8 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
     pixmap.fill(qtwhite);
     std::stringstream ssNumber;
     ssNumber << currentPatchId;
-    painter.drawText(QPointF(10,10), ssNumber.str().c_str()); // bottom left corner of the text seems to start at this point
+    painter.drawText(QPointF(1,10), ssNumber.str().c_str()); // bottom left corner of the text seems to start at this point
+//    painter.drawText(QPointF(10,10), ssNumber.str().c_str()); // bottom left corner of the text seems to start at this point
     ITKQtHelpers::QImageToITKImage(pixmap.toImage(), numberImage.GetPointer());
 
     // The extra + currentPatchId is to skip the extra dividing lines that have been drawn
