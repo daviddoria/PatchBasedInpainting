@@ -221,8 +221,36 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   typedef WeightedSumSquaredPixelDifference<typename TImage::PixelType> PixelDifferenceType;
   // The absolute value of the depth derivative range is usually about [0,12], so to make
   // it comparable to to the color image channel range of [0,255], we multiply by 255/12 ~= 20.
-  float depthDerivativeWeight = 20.0f;
-  std::vector<float> weights = {1.0f, 1.0f, 1.0f, depthDerivativeWeight, depthDerivativeWeight};
+//  float depthDerivativeWeight = 20.0f;
+
+  // This should not be computed "by eye" by looking at the Dx and Dy channels of the PTX scan, because there are typically
+  // huge depth discontinuties around the objects that are going to be inpainted. We'd have to look at the masked version of this
+  // image to determine the min/max values of the unmasked pixels. They will be much smaller than the min/max values of the original
+  // image, which will make the depth derivative weights much higher (~100 or so)
+
+//  std::vector<typename TImage::PixelType> channelMins = ITKHelpers::ComputeMinOfAllChannels(originalImage);
+//  std::vector<typename TImage::PixelType> channelMaxs = ITKHelpers::ComputeMaxOfAllChannels(originalImage);
+  typename TImage::PixelType channelMins;
+  ITKHelpers::ComputeMinOfAllChannels(originalImage, channelMins);
+
+  typename TImage::PixelType channelMaxs;
+  ITKHelpers::ComputeMaxOfAllChannels(originalImage, channelMaxs);
+
+  float minX = fabs(channelMins[3]);
+  float maxX = fabs(channelMaxs[3]);
+  float maxValueX = std::max(minX, maxX);
+  std::cout << "maxValueX = " << maxValueX << std::endl;
+  float depthDerivativeWeightX = 255.0f / maxValueX;
+  std::cout << "Computed depthDerivativeWeightX = " << depthDerivativeWeightX << std::endl;
+
+  float minY = fabs(channelMins[4]);
+  float maxY = fabs(channelMaxs[4]);
+  float maxValueY = std::max(minY, maxY);
+  std::cout << "maxValueY = " << maxValueY << std::endl;
+  float depthDerivativeWeightY = 255.0f / maxValueY;
+  std::cout << "Computed depthDerivativeWeightY = " << depthDerivativeWeightY << std::endl;
+
+  std::vector<float> weights = {1.0f, 1.0f, 1.0f, depthDerivativeWeightX, depthDerivativeWeightY};
   PixelDifferenceType pixelDifferenceFunctor(weights);
 
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
