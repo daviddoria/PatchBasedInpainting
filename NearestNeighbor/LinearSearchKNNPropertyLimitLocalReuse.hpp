@@ -120,15 +120,18 @@ public:
       return outputFirst;
     }
 
-    if(this->DebugImages && this->Iteration == 140)
-    {
-      if(this->ImageToWrite == nullptr)
-      {
-        throw std::runtime_error("LinearSearchBestLidarTextureGradient cannot WriteTopPatches without having an ImageToWrite!");
-      }
-      PatchHelpers::WriteTopPatches(this->ImageToWrite, this->PropertyMap, first, last,
-                                    "KNNPatches", this->Iteration);
-    }
+    // This doesn't work correctly - the image is written but it cannot be opened in a viewer like gwenview,
+    // and in Paraview it does not seem to contain columns of patches and numbers? Perhaps because of the extreme
+    // size of the image?
+//    if(this->DebugImages && this->Iteration == 140)
+//    {
+//      if(this->ImageToWrite == nullptr)
+//      {
+//        throw std::runtime_error("LinearSearchBestLidarTextureGradient cannot WriteTopPatches without having an ImageToWrite!");
+//      }
+//      PatchHelpers::WriteTopPatches(this->ImageToWrite, this->PropertyMap, first, last,
+//                                    "KNNPatches", this->Iteration);
+//    }
 
     if(this->DebugImages)
     {
