@@ -179,18 +179,23 @@ public:
       // The image that this is iterating over is irrelevant, we just need the indices.
       itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType> sourceRegionIterator(this->SourcePixelMapImage,
                                                                                            potentialSourceRegion);
-
+      itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType> queryRegionIterator(this->SourcePixelMapImage,
+                                                                                           queryRegion);
       while(!sourceRegionIterator.IsAtEnd())
       {
         UsedIndexSetType::iterator usedIndexSetIterator;
-        usedIndexSetIterator = usedIndices.find(sourceRegionIterator.GetIndex());
-
-        if(usedIndexSetIterator != usedIndices.end()) // found
+        if(this->MaskImage->IsHole(queryRegionIterator.GetIndex()))
         {
-          usedPixelCounter++;
+          usedIndexSetIterator = usedIndices.find(sourceRegionIterator.GetIndex());
+
+          if(usedIndexSetIterator != usedIndices.end()) // found
+          {
+            usedPixelCounter++;
+          }
         }
 
         ++sourceRegionIterator;
+        ++queryRegionIterator;
       }
 
 //      unsigned int maxUsedPixels = potentialSourceRegion.GetNumberOfPixels() / 4;
