@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef LinearSearchBestLidarTextureGradient_HPP
-#define LinearSearchBestLidarTextureGradient_HPP
+#ifndef LinearSearchBestLidarHSVTextureGradient_HPP
+#define LinearSearchBestLidarHSVTextureGradient_HPP
 
 // Submodules
 #include <Utilities/Histogram/HistogramHelpers.hpp>
@@ -37,16 +37,12 @@
  * This class uses comparisons of histograms of the gradient magnitudes to determine the best match
  * from a list of patches (normally supplied by a KNN search using an SSD criterion).
  *
- * This class expects an RGBDxDy image to be passed.
+ * This class expects an HSVDxDy image to be passed.
  *
- * This function template is similar to std::min_element but can be used when the comparison
- * involves computing a derived quantity (a.k.a. distance). This algorithm will search for the
+ * This algorithm will search for the
  * the element in the range [first,last) which has the "smallest" distance (of course, both the
  * distance metric and comparison can be overriden to perform something other than the canonical
  * Euclidean distance and less-than comparison, which would yield the element with minimum distance).
- * \tparam DistanceValueType The value-type for the distance measures.
- * \tparam DistanceFunctionType The functor type to compute the distance measure.
- * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
  */
 template <typename PropertyMapType, typename TImage, typename TIterator, typename TImageToWrite = TImage>
 class LinearSearchBestLidarTextureGradient : public Debug
@@ -58,11 +54,12 @@ class LinearSearchBestLidarTextureGradient : public Debug
   TImageToWrite* ImageToWrite = nullptr;
 
   typedef itk::Image<itk::CovariantVector<float, 2>, 2> GradientImageType;
-  std::vector<GradientImageType::Pointer> RGBChannelGradients;
+  std::vector<GradientImageType::Pointer> HSVChannelGradients;
 
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
-  LinearSearchBestLidarTextureGradient(PropertyMapType propertyMap, TImage* const image, Mask* const mask, TImageToWrite* imageToWrite = nullptr, const Debug& debug = Debug()) :
+  LinearSearchBestLidarTextureGradient(PropertyMapType propertyMap, TImage* const image, Mask* const mask,
+                                       TImageToWrite* imageToWrite = nullptr, const Debug& debug = Debug()) :
     Debug(debug), PropertyMap(propertyMap), Image(image), MaskImage(mask), ImageToWrite(imageToWrite)
   {
     // Compute the gradients in all source patches
@@ -70,9 +67,9 @@ public:
     typename ImageChannelAdaptorType::Pointer imageChannelAdaptor = ImageChannelAdaptorType::New();
     imageChannelAdaptor->SetImage(this->Image);
 
-    this->RGBChannelGradients.resize(3);
+    this->HSVChannelGradients.resize(3);
 
-    for(unsigned int channel = 0; channel < 3; ++channel) // 3 RGB channels
+    for(unsigned int channel = 0; channel < 3; ++channel) // 3 HSV channels
     {
       imageChannelAdaptor->SelectNthElement(channel);
 
@@ -80,15 +77,25 @@ public:
       gradientImage->SetRegions(this->Image->GetLargestPossibleRegion());
       gradientImage->Allocate();
 
-      Derivatives::MaskedGradient(imageChannelAdaptor.GetPointer(), this->MaskImage, gradientImage.GetPointer());
+      if(channel == 0) // H Channel
+      {
+        Helpers::HSV_H_Difference hsvHDifference;
+        Derivatives::MaskedGradient(imageChannelAdaptor.GetPointer(), this->MaskImage,
+                                    gradientImage.GetPointer(), hsvHDifference);
+      }
+      else
+      {
+        Derivatives::MaskedGradient(imageChannelAdaptor.GetPointer(), this->MaskImage,
+                                    gradientImage.GetPointer());
+      }
 
-      this->RGBChannelGradients[channel] = gradientImage;
+      this->HSVChannelGradients[channel] = gradientImage;
 
       if(this->DebugImages)
       {
         std::stringstream ss;
-        ss << "RGB_Gradient_" << channel << ".mha";
-        ITKHelpers::WriteImage(this->RGBChannelGradients[channel].GetPointer(), ss.str());
+        ss << "HSV_Gradient_" << channel << ".mha";
+        ITKHelpers::WriteImage(this->HSVChannelGradients[channel].GetPointer(), ss.str());
       }
     }
   }
@@ -108,7 +115,7 @@ public:
   typedef HistogramGeneratorType::HistogramType HistogramType;
 
   typedef std::map<itk::ImageRegion<2>, HistogramType, RegionSorter> HistogramMapType;
-  HistogramMapType PreviouslyComputedRGBHistograms;
+  HistogramMapType PreviouslyComputedHSVHistograms;
   HistogramMapType PreviouslyComputedDepthHistograms;
 
   bool WritePatches = false;
@@ -149,62 +156,71 @@ public:
     imageChannelAdaptor->SetImage(this->Image);
 
     // Compute the gradient of each channel
-    for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of RGB channels
+    for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of HSV channels
     {
       imageChannelAdaptor->SelectNthElement(channel);
 
-      Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
-                                          queryRegion, this->RGBChannelGradients[channel].GetPointer());
+      if(channel == 0) // H channel
+      {
+        Helpers::HSV_H_Difference hsvHDifference;
+        Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
+                                            queryRegion, this->HSVChannelGradients[channel].GetPointer(), hsvHDifference);
+      }
+      else
+      {
+        Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
+                                            queryRegion, this->HSVChannelGradients[channel].GetPointer());
+      }
 
       if(this->DebugImages && this->DebugLevel > 1)
       {
         // Gradient of patch
         std::stringstream ssGradientFile;
-        ssGradientFile << "QueryRGBGradient_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << channel << ".mha";
-        ITKHelpers::WriteRegionAsImage(this->RGBChannelGradients[channel].GetPointer(), queryRegion, ssGradientFile.str());
+        ssGradientFile << "QueryHSVGradient_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << channel << ".mha";
+        ITKHelpers::WriteRegionAsImage(this->HSVChannelGradients[channel].GetPointer(), queryRegion, ssGradientFile.str());
 
         // Full gradient image
 //        std::stringstream ss;
-//        ss << "RGB_Gradient_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << channel << ".mha";
-//        ITKHelpers::WriteImage(this->RGBChannelGradients[channel].GetPointer(), ss.str());
+//        ss << "HSV_Gradient_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << channel << ".mha";
+//        ITKHelpers::WriteImage(this->HSVChannelGradients[channel].GetPointer(), ss.str());
       }
     }
 
-    HistogramType targetRGBHistogram;
+    HistogramType targetHSVHistogram;
 
     // Store, for each channel (the elements of the vector), the min/max value of the valid region of the target patch
-    std::vector<GradientImageType::PixelType::RealValueType> minRGBChannelGradientMagnitudes(this->Image->GetNumberOfComponentsPerPixel());
-    std::vector<GradientImageType::PixelType::RealValueType> maxRGBChannelGradientMagnitudes(this->Image->GetNumberOfComponentsPerPixel());
+    std::vector<GradientImageType::PixelType::RealValueType> minHSVChannelGradientMagnitudes(this->Image->GetNumberOfComponentsPerPixel());
+    std::vector<GradientImageType::PixelType::RealValueType> maxHSVChannelGradientMagnitudes(this->Image->GetNumberOfComponentsPerPixel());
 
     std::vector<itk::Index<2> > validPixels = ITKHelpers::GetPixelsWithValueInRegion(this->MaskImage, queryRegion, this->MaskImage->GetValidValue());
 
     typedef itk::NormImageAdaptor<GradientImageType, GradientImageType::PixelType::RealValueType> NormImageAdaptorType;
     typename NormImageAdaptorType::Pointer normImageAdaptor = NormImageAdaptorType::New();
 
-    // Compute the gradient magnitude images for each RGB channel's gradient, and compute the histograms for the target/query region
-    for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of RGB channels
+    // Compute the gradient magnitude images for each HSV channel's gradient, and compute the histograms for the target/query region
+    for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of HSV channels
     {
       imageChannelAdaptor->SelectNthElement(channel);
 
-      normImageAdaptor->SetImage(this->RGBChannelGradients[channel].GetPointer());
+      normImageAdaptor->SetImage(this->HSVChannelGradients[channel].GetPointer());
 
       std::vector<GradientImageType::PixelType::RealValueType> gradientMagnitudes =
           ITKHelpers::GetPixelValues(normImageAdaptor.GetPointer(), validPixels);
 
-      minRGBChannelGradientMagnitudes[channel] = Helpers::Min(gradientMagnitudes);
-      maxRGBChannelGradientMagnitudes[channel] = Helpers::Max(gradientMagnitudes);
+      minHSVChannelGradientMagnitudes[channel] = Helpers::Min(gradientMagnitudes);
+      maxHSVChannelGradientMagnitudes[channel] = Helpers::Max(gradientMagnitudes);
 
       // Compute histograms of the gradient magnitudes (to measure texture)
       bool allowOutside = false;
-      HistogramType targetRGBChannelHistogram =
+      HistogramType targetHSVChannelHistogram =
         MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
             normImageAdaptor.GetPointer(), queryRegion, this->MaskImage, queryRegion, numberOfBins,
-            minRGBChannelGradientMagnitudes[channel], maxRGBChannelGradientMagnitudes[channel],
+            minHSVChannelGradientMagnitudes[channel], maxHSVChannelGradientMagnitudes[channel],
             allowOutside, this->MaskImage->GetValidValue());
 
-      targetRGBChannelHistogram.Normalize();
+      targetHSVChannelHistogram.Normalize();
 
-      targetRGBHistogram.Append(targetRGBChannelHistogram);
+      targetHSVHistogram.Append(targetHSVChannelHistogram);
     }
 
     // Compute the gradient magnitude from the depth derivatives, and compute the histogram for the target/query region
@@ -238,7 +254,7 @@ public:
 
     if(this->DebugOutputFiles)
     {
-      targetRGBHistogram.Write(Helpers::GetSequentialFileName("TargetRGBHistogram", this->Iteration, "txt", 3));
+      targetHSVHistogram.Write(Helpers::GetSequentialFileName("TargetHSVHistogram", this->Iteration, "txt", 3));
       targetDepthHistogram.Write(Helpers::GetSequentialFileName("TargetDepthHistogram", this->Iteration, "txt", 3));
     }
 
@@ -247,7 +263,7 @@ public:
     TIterator bestPatch = last;
 
     unsigned int bestId = 0; // Keep track of which of the top SSD patches is the best by histogram score (just for information sake)
-    HistogramType bestRGBHistogram;
+    HistogramType bestHSVHistogram;
     HistogramType bestDepthHistogram;
 
     // Iterate through all of the supplied source patches
@@ -259,11 +275,11 @@ public:
 
       // Determine if the gradient and histogram have already been computed
       typename HistogramMapType::iterator histogramMapIterator;
-      histogramMapIterator = this->PreviouslyComputedRGBHistograms.find(currentRegion);
+      histogramMapIterator = this->PreviouslyComputedHSVHistograms.find(currentRegion);
 
       bool alreadyComputed;
 
-      if(histogramMapIterator == this->PreviouslyComputedRGBHistograms.end())
+      if(histogramMapIterator == this->PreviouslyComputedHSVHistograms.end())
       {
         alreadyComputed = false;
       }
@@ -272,62 +288,42 @@ public:
         alreadyComputed = true;
       }
 
-      HistogramType testRGBHistogram;
+      HistogramType testHSVHistogram;
 
       bool allowOutside = true;
-      // Compute the RGB histograms of the source region using the queryRegion mask
-      for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of RGB channels
+      // Compute the HSV histograms of the source region using the queryRegion mask
+      for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of HSV channels
       {
         if(this->DebugImages && this->DebugLevel > 1)
         {
           std::stringstream ssSourceGradientFile;
           ssSourceGradientFile << "SourceGradient_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << channel << "_" << Helpers::ZeroPad(currentPatch - first, 3) <<  ".mha";
-          ITKHelpers::WriteRegionAsImage(this->RGBChannelGradients[channel].GetPointer(), currentRegion, ssSourceGradientFile.str());
+          ITKHelpers::WriteRegionAsImage(this->HSVChannelGradients[channel].GetPointer(), currentRegion, ssSourceGradientFile.str());
         }
 
-        normImageAdaptor->SetImage(this->RGBChannelGradients[channel].GetPointer());
+        normImageAdaptor->SetImage(this->HSVChannelGradients[channel].GetPointer());
 
-        HistogramType testRGBChannelHistogram;
+        HistogramType testHSVChannelHistogram;
 
         if(!alreadyComputed)
         {
           // We don't need a masked histogram since we are using the full source patch
-          testRGBChannelHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
+          testHSVChannelHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
                           normImageAdaptor.GetPointer(), currentRegion,
                           numberOfBins,
-                          minRGBChannelGradientMagnitudes[channel],
-                          maxRGBChannelGradientMagnitudes[channel], allowOutside);
+                          minHSVChannelGradientMagnitudes[channel],
+                          maxHSVChannelGradientMagnitudes[channel], allowOutside);
 
-          testRGBChannelHistogram.Normalize();
+          testHSVChannelHistogram.Normalize();
 
-          this->PreviouslyComputedRGBHistograms[currentRegion] = testRGBChannelHistogram;
+          this->PreviouslyComputedHSVHistograms[currentRegion] = testHSVChannelHistogram;
         }
         else // already computed
         {
-          testRGBChannelHistogram = this->PreviouslyComputedRGBHistograms[currentRegion];
+          testHSVChannelHistogram = this->PreviouslyComputedHSVHistograms[currentRegion];
         }
 
-
-        // Compare to the valid region of the source patch
-//        HistogramType testChannelHistogram =
-//            MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
-//                        imageChannelGradientMagnitudes[channel].GetPointer(), currentRegion, this->MaskImage, queryRegion, numberOfBins,
-//                        minChannelGradientMagnitudes[channel], maxChannelGradientMagnitudes[channel], allowOutside, this->MaskImage->GetValidValue());
-
-        // Compare to the hole region of the source patch
-//        HistogramType testChannelHistogram =
-//            MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
-//                        imageChannelGradientMagnitudes[channel].GetPointer(), currentRegion, this->MaskImage, queryRegion, numberOfBins,
-//                        minChannelGradientMagnitudes[channel], maxChannelGradientMagnitudes[channel], allowOutside, this->MaskImage->GetHoleValue());
-
-        // Compare to the entire source patch (by passing the source region as the mask region, which is entirely valid)
-//        HistogramType testChannelHistogram =
-//            MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
-//                        normImageAdaptor.GetPointer(), currentRegion, this->MaskImage, currentRegion, numberOfBins,
-//                        minChannelGradientMagnitudes[channel], maxChannelGradientMagnitudes[channel], allowOutside, this->MaskImage->GetValidValue());
-
-
-        testRGBHistogram.Append(testRGBChannelHistogram);
+        testHSVHistogram.Append(testHSVChannelHistogram);
       }
 
       HistogramType testDepthHistogram;
@@ -354,16 +350,16 @@ public:
       {
         std::stringstream ssEnding;
         ssEnding << "_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << Helpers::ZeroPad(currentPatch - first, 3) << ".txt";
-        testRGBHistogram.Write("TestRGBHistogram" + ssEnding.str());
+        testHSVHistogram.Write("TestHSVHistogram" + ssEnding.str());
         testDepthHistogram.Write("TestDepthHistogram" + ssEnding.str());
       }
 
       // Compute the differences in the histograms
-      float rgbHistogramDifference = HistogramDifferences::HistogramDifference(targetRGBHistogram, testRGBHistogram);
+      float hsvHistogramDifference = HistogramDifferences::HistogramDifference(targetHSVHistogram, testHSVHistogram);
       float depthHistogramDifference = HistogramDifferences::HistogramDifference(targetDepthHistogram, testDepthHistogram);
 
-      // Weight the depth histogram 3x so that it is a 1:1 weighting of RGB and depth difference
-      float histogramDifference = rgbHistogramDifference + 3.0f * depthHistogramDifference;
+      // Weight the depth histogram 3x so that it is a 1:1 weighting of HSV and depth difference
+      float histogramDifference = hsvHistogramDifference + 3.0f * depthHistogramDifference;
 
       scores[currentPatch - first] = histogramDifference;
 
@@ -379,7 +375,7 @@ public:
 
         // These are not needed - just for debugging
         bestId = currentPatch - first;
-        bestRGBHistogram = testRGBHistogram;
+        bestHSVHistogram = testHSVHistogram;
         bestDepthHistogram = testDepthHistogram;
       }
     }

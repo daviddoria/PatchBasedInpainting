@@ -44,7 +44,7 @@
 #include "NearestNeighbor/LinearSearchBest/First.hpp"
 #include "NearestNeighbor/LinearSearchBest/FirstAndWrite.hpp"
 #include "NearestNeighbor/LinearSearchBest/LidarTextureDerivatives.hpp"
-#include "NearestNeighbor/LinearSearchBest/LidarTextureGradient.hpp"
+#include "NearestNeighbor/LinearSearchBest/LidarHSVTextureGradient.hpp"
 
 // Multi-Nearest neighbors functions
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"

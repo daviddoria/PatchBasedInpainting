@@ -129,16 +129,19 @@ public:
         ITKHelpers::WriteSequentialRGBImage(this->Image, this->ImageName, this->Iteration, 3, "png");
       }
 
-      // Write the target patch that was inpainted.
-      try
+      if(this->GetDebugLevel() > 1)
       {
-        ITKHelpers::WriteRegion(this->Image, targetRegion,
-                                Helpers::GetSequentialFileName("TargetPatchAfter", this->Iteration, "png", 3));
-      }
-      catch (...)
-      {
-        ITKHelpers::WriteRegionAsRGBImage(this->Image, targetRegion,
-                                          Helpers::GetSequentialFileName("TargetPatchAfter", this->Iteration, "png", 3));
+        // Write the target patch that was inpainted.
+        try
+        {
+          ITKHelpers::WriteRegion(this->Image, targetRegion,
+                                  Helpers::GetSequentialFileName("TargetPatchAfter", this->Iteration, "png", 3));
+        }
+        catch (...)
+        {
+          ITKHelpers::WriteRegionAsRGBImage(this->Image, targetRegion,
+                                            Helpers::GetSequentialFileName("TargetPatchAfter", this->Iteration, "png", 3));
+        }
       }
     }
 

@@ -249,8 +249,11 @@ public:
 
     if(this->DebugImages)
     {
-      ITKHelpers::WriteBoolImage(this->CopiedPixelsImage, Helpers::GetSequentialFileName("CopiedPixels", this->NumberOfFinishedPatches, "png", 3));
-      ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("Mask_Before", this->NumberOfFinishedPatches, "png", 3));
+      if(this->DebugLevel > 1)
+      {
+        ITKHelpers::WriteBoolImage(this->CopiedPixelsImage, Helpers::GetSequentialFileName("CopiedPixels", this->NumberOfFinishedPatches, "png", 3));
+        ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("Mask_Before", this->NumberOfFinishedPatches, "png", 3));
+      }
     }
 
     // Mark all the pixels in this region as filled in the mask.
@@ -258,8 +261,6 @@ public:
 
     if(this->DebugImages && this->Image)
     {
-      ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("Mask_After", this->NumberOfFinishedPatches, "png", 3));
-
       typename TImage::PixelType red;
       red.Fill(0);
       red[0] = 255;
@@ -275,6 +276,11 @@ public:
       ITKHelpers::OutlineRegion(patchesCopiedImage.GetPointer(), sourceRegion, green);
 
       ITKHelpers::WriteRGBImage(patchesCopiedImage.GetPointer(), Helpers::GetSequentialFileName("PatchesCopied", this->NumberOfFinishedPatches, "png", 3));
+
+      if(this->DebugLevel > 1)
+      {
+        ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("Mask_After", this->NumberOfFinishedPatches, "png", 3));
+      }
     }
 
     // Update the priority function. This must be done AFTER the mask is filled,
