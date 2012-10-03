@@ -292,7 +292,15 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,
                       twoStepNearestNeighbor, &inpainter);
 #else
-  unsigned int searchRadius = originalImage->GetLargestPossibleRegion().GetSize()[0]/2/2; // half of the image radius
+//  unsigned int searchRadius = originalImage->GetLargestPossibleRegion().GetSize()[0]/2/2; // half of the image radius
+
+  // Search the region that is the same size as the image, but centered at the patch. For the very center patch, this will search the whole image.
+//  unsigned int searchRadius = originalImage->GetLargestPossibleRegion().GetSize()[0]/2;
+
+  // Use a region twice the size of the image, this should always include (almost) all of the image in the search region.
+  // Since only the [0] dimension is used, if the image is not square we could still miss parts of image edge when searching around patches near the edge of the image.
+  unsigned int searchRadius = originalImage->GetLargestPossibleRegion().GetSize()[0];
+
   NeighborhoodSearch<VertexDescriptorType> neighborhoodSearch(originalImage->GetLargestPossibleRegion(),
                                                               searchRadius);
 
