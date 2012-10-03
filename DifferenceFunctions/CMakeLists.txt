@@ -6,12 +6,13 @@ ImagePatchDifference.hpp
 ImagePatchVectorizedDifference.hpp
 ImagePatchVectorizedIndicesDifference.hpp
 NormPixelDifference.hpp
+PatchValidHistogramDifference.hpp
 SumAbsolutePixelDifference.hpp
 SumAbsolutePixelDifferenceN.hpp
 SumSquaredPixelDifference.hpp
 WeightedFeatureVectorDifference.hpp
+WeightedHSVSSD.hpp
 WeightedImagePatchDifference.hpp
 WeightedSumAbsolutePixelDifference.hpp
 WeightedSumSquaredPixelDifference.hpp
-PatchValidHistogramDifference.hpp
 )

@@ -66,6 +66,7 @@
 #include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
 #include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
 #include "DifferenceFunctions/WeightedSumSquaredPixelDifference.hpp"
+#include "DifferenceFunctions/WeightedHSVSSD.hpp"
 
 // Utilities
 #include "Utilities/PatchHelpers.h"
@@ -191,7 +192,7 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
 //  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(originalImage, mask,
 //                                  imagePatchDescriptorMap, patchHalfWidth); // Use the non-blurred image for the SSD comparisons
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(slightlyBlurredHSVDxDyImage, mask,
-                                  imagePatchDescriptorMap, patchHalfWidth); // Use the slightly blurred HSV image for the SSD comparisons
+                                  imagePatchDescriptorMap, patchHalfWidth); // Use the slightly blurred HSV image for the SSD comparisons. Make sure to use a *HSVSSD difference functor so the H differences are treated appropriately!
 
   typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
   AcceptanceVisitorType acceptanceVisitor;
@@ -218,7 +219,9 @@ void LidarInpaintingTextureVerification(TImage* const originalImage, Mask* const
 
 #ifdef DUseWeightedDifference
   // Use a weighted difference
-  typedef WeightedSumSquaredPixelDifference<typename TImage::PixelType> PixelDifferenceType;
+//  typedef WeightedSumSquaredPixelDifference<typename TImage::PixelType> PixelDifferenceType;
+  typedef WeightedHSVSSD<typename TImage::PixelType> PixelDifferenceType;
+
   // The absolute value of the depth derivative range is usually about [0,12], so to make
   // it comparable to to the color image channel range of [0,255], we multiply by 255/12 ~= 20.
 //  float depthDerivativeWeight = 20.0f;
