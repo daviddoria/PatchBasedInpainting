@@ -41,14 +41,12 @@ public:
 
 private:
   typedef boost::array<size_t, 2> VertexType;
-  VertexType Vertex;
+  VertexType Vertex = {{0,0}};
 
   /** Indicate if the patch is a source patch, a target patch, or invalid. */
-  StatusEnum Status;
+  StatusEnum Status = INVALID;
   
 public:
-
-  PixelDescriptor() : Status(INVALID) {}
 
   void SetVertex(VertexType& v)
   {
