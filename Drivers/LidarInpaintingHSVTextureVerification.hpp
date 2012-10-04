@@ -287,11 +287,11 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
                                 rgbImage.GetPointer());
   fullPixelSearchKNN.SetDebugImages(true);
 
-  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, First3PatchDifferenceType, RGBImageType> First3PixelKNNSearchType;
-  First3PixelKNNSearchType first3SearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
-                                first3PatchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage(),
-                                rgbImage.GetPointer());
-  first3SearchKNN.SetDebugImages(true);
+//  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, First3PatchDifferenceType, RGBImageType> First3PixelKNNSearchType;
+  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, First3PatchDifferenceType> First3PixelKNNSearchType;
+  First3PixelKNNSearchType first3SearchKNN(imagePatchDescriptorMap, numberOfKNN,
+                                first3PatchDifferenceFunctor);
+//  first3SearchKNN.SetDebugImages(true);
 
   typedef LinearSearchKNNPropertyCombine<FullPixelKNNSearchType, First3PixelKNNSearchType> KNNSearchType;
   KNNSearchType linearSearchKNN(fullPixelSearchKNN, first3SearchKNN);

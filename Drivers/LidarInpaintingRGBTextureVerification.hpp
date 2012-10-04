@@ -63,6 +63,7 @@
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/RGBSSD.hpp"
 #include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
 #include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
 #include "DifferenceFunctions/WeightedSumSquaredPixelDifference.hpp"
@@ -200,9 +201,6 @@ void LidarInpaintingRGBTextureVerification(TImage* const originalImage, Mask* co
 #define DUseWeightedDifference
 
 #ifdef DUseWeightedDifference
-  // Use a weighted difference
-  typedef WeightedSumSquaredPixelDifference<typename TImage::PixelType> PixelDifferenceType;
-
   // The absolute value of the depth derivative range is usually about [0,12], so to make
   // it comparable to to the color image channel range of [0,255], we multiply by 255/12 ~= 20.
 //  float depthDerivativeWeight = 20.0f;
@@ -234,12 +232,22 @@ void LidarInpaintingRGBTextureVerification(TImage* const originalImage, Mask* co
   float depthDerivativeWeightY = 255.0f / maxValueY;
   std::cout << "Computed depthDerivativeWeightY = " << depthDerivativeWeightY << std::endl;
 
+  // Full pixels
   std::vector<float> weights = {1.0f, 1.0f, 1.0f, depthDerivativeWeightX, depthDerivativeWeightY};
-  PixelDifferenceType pixelDifferenceFunctor(weights);
+  typedef WeightedSumSquaredPixelDifference<typename TImage::PixelType> FullPixelDifferenceType;
+  FullPixelDifferenceType fullPixelDifferenceFunctor(weights);
 
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
-      PixelDifferenceType > PatchDifferenceType;
-  PatchDifferenceType patchDifferenceFunctor(pixelDifferenceFunctor);
+      FullPixelDifferenceType > FullPatchDifferenceType;
+  FullPatchDifferenceType fullPatchDifferenceFunctor(fullPixelDifferenceFunctor);
+
+  // First 3 channels only pixels
+  typedef RGBSSD<typename TImage::PixelType> RGBPixelDifferenceType;
+  RGBPixelDifferenceType rgbPixelDifferenceFunctor;
+
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
+      RGBPixelDifferenceType > RGBPatchDifferenceType;
+  RGBPatchDifferenceType rgbPatchDifferenceFunctor(rgbPixelDifferenceFunctor);
 #else
   // Use an unweighted pixel difference
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
@@ -255,19 +263,23 @@ void LidarInpaintingRGBTextureVerification(TImage* const originalImage, Mask* co
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN, patchDifferenceFunctor);
 #else
-//  typedef LinearSearchKNNPropertyNoReuse<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
-//  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN,
-//                                patchDifferenceFunctor, inpaintingVisitor.GetUsedNodesSetPointer());
+  // Full pixel search
+  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, FullPatchDifferenceType, RGBImageType> FullKNNSearchType;
+  FullKNNSearchType fullSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
+                                  fullPatchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage(),
+                                  rgbImage.GetPointer());
+  fullSearchKNN.SetDebugImages(true);
 
-//  typedef LinearSearchKNNPropertyLimitReuse<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
-//  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
-//                                patchDifferenceFunctor, inpaintingVisitor.GetCopiedPixelsImage());
+  // RGB-only search
+  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, RGBPatchDifferenceType, RGBImageType> RGBKNNSearchType;
+  RGBKNNSearchType rgbSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
+                                  rgbPatchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage(),
+                                  rgbImage.GetPointer());
+  rgbSearchKNN.SetDebugImages(true);
 
-  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, PatchDifferenceType, RGBImageType> KNNSearchType;
-  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
-                                patchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage(),
-                                rgbImage.GetPointer());
-  linearSearchKNN.SetDebugImages(true);
+  // Combine
+  typedef LinearSearchKNNPropertyCombine<FullKNNSearchType, RGBKNNSearchType> KNNSearchType;
+  KNNSearchType linearSearchKNN(fullSearchKNN, rgbSearchKNN);
 #endif
 
   // Setup the second (1-NN) neighbor finder

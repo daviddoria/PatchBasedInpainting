@@ -41,10 +41,11 @@
   * \tparam DistanceFunctionType The functor type to compute the distance measure.
   */
 template <typename PropertyMapType,
-          typename DistanceFunctionType,
-          typename DistanceValueType = float>
+          typename DistanceFunctionType>
 class LinearSearchKNNProperty
 {
+  typedef float DistanceValueType;
+
   PropertyMapType PropertyMap;
   unsigned int K;
   DistanceFunctionType DistanceFunction;

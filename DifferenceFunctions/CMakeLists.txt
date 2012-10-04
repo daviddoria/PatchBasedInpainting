@@ -8,6 +8,7 @@ ImagePatchVectorizedDifference.hpp
 ImagePatchVectorizedIndicesDifference.hpp
 NormPixelDifference.hpp
 PatchValidHistogramDifference.hpp
+RGBSSD.hpp
 SumAbsolutePixelDifference.hpp
 SumAbsolutePixelDifferenceN.hpp
 SumSquaredPixelDifference.hpp
