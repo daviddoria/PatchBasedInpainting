@@ -29,10 +29,10 @@
 #include <ITKHelpers/ITKContainerInterface.h>
 
 /**
-  * This class is designed to compute the difference between an HSV* image. That is, the
-  * first channel is H, and there can be as many additional channels that are all to be compared
-  * in a standard SSD fashion. The H channel is compared using a cyclic difference to handle the
-  * wrapping nature of the values.
+  * This class is designed to compute the difference between an HSV image.
+  * The H channel is compared using a cyclic difference to handle the
+  * wrapping nature of the values, while the S and V channels are compared
+  * in a standard fashion.
   */
 template <typename PixelType>
 struct WeightedHSVSSD
@@ -60,7 +60,7 @@ struct WeightedHSVSSD
     pixelDifference += this->Weights[0] * HDifference(Helpers::index(a,0), Helpers::index(b,0)) *
                        HDifference(Helpers::index(a,0), Helpers::index(b,0));
 
-    for(unsigned int component = 1; component < Helpers::length(a); ++component) // start at component 1, because we have handled 0 (H) separately)
+    for(unsigned int component = 1; component < 3; ++component) // start at component 1, because we have handled 0 (H) separately)
     {
       float componentDifference = this->Weights[component] * (Helpers::index(a,component) - Helpers::index(b,component)) *
                                                              (Helpers::index(a,component) - Helpers::index(b,component));
@@ -105,7 +105,7 @@ public:
 
     sum += this->Weights[0] * HDifference(a[0], b[0]) * HDifference(a[0], b[0]);
 
-    for(unsigned int component = 1; component < N; component++) // start at component 1, because we have handled 0 (H) separately)
+    for(unsigned int component = 1; component < 3; component++) // start at component 1, because we have handled 0 (H) separately)
     {
       sum += this->Weights[component] * (a[component] - b[component]) * (a[component] - b[component]);
     }

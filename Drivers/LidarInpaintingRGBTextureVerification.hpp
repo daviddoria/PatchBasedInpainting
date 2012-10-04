@@ -92,7 +92,8 @@
 /** It is expected that this function be passed an RGBDxDy image. */
 template <typename TImage>
 void LidarInpaintingRGBTextureVerification(TImage* const originalImage, Mask* const mask,
-                                           const unsigned int patchHalfWidth, const unsigned int numberOfKNN)
+                                           const unsigned int patchHalfWidth, const unsigned int numberOfKNN,
+                                           float slightBlurVariance = 1.0f, unsigned int searchRadius = 1000)
 {
   typedef TImage RGBDxDyImageType;
 
@@ -113,8 +114,8 @@ void LidarInpaintingRGBTextureVerification(TImage* const originalImage, Mask* co
 
   // Blur the image slightly so that the SSD comparisons are not so noisy
   typename TImage::Pointer slightlyBlurredRGBDxDyImage = TImage::New();
-  float slightBlurVariance = 1.0f;
-  MaskOperations::MaskedBlur(originalImage.GetPointer(), mask, slightBlurVariance, slightlyBlurredRGBDxDyImage.GetPointer());
+
+  MaskOperations::MaskedBlur(originalImage, mask, slightBlurVariance, slightlyBlurredRGBDxDyImage.GetPointer());
 
   ITKHelpers::WriteImage(slightlyBlurredRGBDxDyImage.GetPointer(), "SlightlyBlurredRGBDxDyImage.mha");
 
@@ -304,18 +305,8 @@ void LidarInpaintingRGBTextureVerification(TImage* const originalImage, Mask* co
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,
                       twoStepNearestNeighbor, &inpainter);
 #else
-//  unsigned int searchRadius = originalImage->GetLargestPossibleRegion().GetSize()[0]/2/2; // half of the image radius
-
-  // Search the region that is the same size as the image, but centered at the patch. For the very center patch, this will search the whole image.
-//  unsigned int searchRadius = originalImage->GetLargestPossibleRegion().GetSize()[0]/2;
-
-  // Use a region twice the size of the image, this should always include (almost) all of the image in the search region.
-  // Since only the [0] dimension is used, if the image is not square we could still miss parts of image edge when searching around patches near the edge of the image.
-  unsigned int searchRadius = originalImage->GetLargestPossibleRegion().GetSize()[0];
-
   NeighborhoodSearch<VertexDescriptorType> neighborhoodSearch(originalImage->GetLargestPossibleRegion(),
                                                               searchRadius);
-
 
   // Perform the inpainting (local search)
   InpaintingAlgorithmWithLocalSearch(graph, inpaintingVisitor, &boundaryNodeQueue,

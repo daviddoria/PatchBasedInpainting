@@ -48,9 +48,8 @@
 
 // Multi-Nearest neighbors functions
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
+#include "NearestNeighbor/LinearSearchKNNPropertyCombine.hpp"
 #include "NearestNeighbor/LinearSearchKNNPropertyLimitLocalReuse.hpp"
-#include "NearestNeighbor/LinearSearchKNNPropertyLimitReuse.hpp"
-#include "NearestNeighbor/LinearSearchKNNPropertyNoReuse.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
 // Initializers
@@ -62,11 +61,13 @@
 #include "Inpainters/CompositePatchInpainter.hpp"
 
 // Difference functions
+#include "DifferenceFunctions/HSVSSD.hpp"
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
 #include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
 #include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
 #include "DifferenceFunctions/WeightedSumSquaredPixelDifference.hpp"
 #include "DifferenceFunctions/WeightedHSVSSD.hpp"
+#include "DifferenceFunctions/WeightedHSVSSDFull.hpp"
 
 // Utilities
 #include "Utilities/PatchHelpers.h"
@@ -93,7 +94,8 @@
 /** It is expected that this function be passed an RGBDxDy image. */
 template <typename TImage>
 void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* const mask,
-                                           const unsigned int patchHalfWidth, const unsigned int numberOfKNN)
+                                           const unsigned int patchHalfWidth, const unsigned int numberOfKNN,
+                                           float slightBlurVariance = 1.0f, unsigned int searchRadius = 1000)
 {
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
 
@@ -126,7 +128,6 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
 
   // Blur the image slightly so that the SSD comparisons are not so noisy
   typename HSVDxDyImageType::Pointer slightlyBlurredHSVDxDyImage = TImage::New();
-  float slightBlurVariance = 1.0f;
   MaskOperations::MaskedBlur(hsvDxDyImage.GetPointer(), mask, slightBlurVariance, slightlyBlurredHSVDxDyImage.GetPointer());
 
   ITKHelpers::WriteImage(slightlyBlurredHSVDxDyImage.GetPointer(), "SlightlyBlurredHSVDxDyImage.mha");
@@ -217,10 +218,6 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
 #define DUseWeightedDifference
 
 #ifdef DUseWeightedDifference
-  // Use a weighted difference
-//  typedef WeightedSumSquaredPixelDifference<typename TImage::PixelType> PixelDifferenceType;
-  typedef WeightedHSVSSD<typename TImage::PixelType> PixelDifferenceType;
-
   // The absolute value of the depth derivative range is usually about [0,12], so to make
   // it comparable to to the color image channel range of [0,255], we multiply by 255/12 ~= 20.
 //  float depthDerivativeWeight = 20.0f;
@@ -252,12 +249,23 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
   float depthDerivativeWeightY = 255.0f / maxValueY;
   std::cout << "Computed depthDerivativeWeightY = " << depthDerivativeWeightY << std::endl;
 
+  // Use all channels
   std::vector<float> weights = {1.0f, 1.0f, 1.0f, depthDerivativeWeightX, depthDerivativeWeightY};
-  PixelDifferenceType pixelDifferenceFunctor(weights);
+  //  typedef WeightedSumSquaredPixelDifference<typename TImage::PixelType> PixelDifferenceType;
+  typedef WeightedHSVSSDFull<typename TImage::PixelType> FullPixelDifferenceType;
+  FullPixelDifferenceType fullPixelDifferenceFunctor(weights);
 
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
-      PixelDifferenceType > PatchDifferenceType;
-  PatchDifferenceType patchDifferenceFunctor(pixelDifferenceFunctor);
+      FullPixelDifferenceType > FullPatchDifferenceType;
+  FullPatchDifferenceType fullPatchDifferenceFunctor(fullPixelDifferenceFunctor);
+
+  // Use only the first 3 channels
+  typedef HSVSSD<typename TImage::PixelType> First3PixelDifferenceType;
+  First3PixelDifferenceType first3PixelDifferenceFunctor;
+
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
+      First3PixelDifferenceType > First3PatchDifferenceType;
+  First3PatchDifferenceType first3PatchDifferenceFunctor(first3PixelDifferenceFunctor);
 #else
   // Use an unweighted pixel difference
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
@@ -273,19 +281,20 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN, patchDifferenceFunctor);
 #else
-//  typedef LinearSearchKNNPropertyNoReuse<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
-//  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN,
-//                                patchDifferenceFunctor, inpaintingVisitor.GetUsedNodesSetPointer());
-
-//  typedef LinearSearchKNNPropertyLimitReuse<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
-//  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
-//                                patchDifferenceFunctor, inpaintingVisitor.GetCopiedPixelsImage());
-
-  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, PatchDifferenceType, RGBImageType> KNNSearchType;
-  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
-                                patchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage(),
+  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, FullPatchDifferenceType, RGBImageType> FullPixelKNNSearchType;
+  FullPixelKNNSearchType fullPixelSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
+                                fullPatchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage(),
                                 rgbImage.GetPointer());
-  linearSearchKNN.SetDebugImages(true);
+  fullPixelSearchKNN.SetDebugImages(true);
+
+  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, First3PatchDifferenceType, RGBImageType> First3PixelKNNSearchType;
+  First3PixelKNNSearchType first3SearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
+                                first3PatchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage(),
+                                rgbImage.GetPointer());
+  first3SearchKNN.SetDebugImages(true);
+
+  typedef LinearSearchKNNPropertyCombine<FullPixelKNNSearchType, First3PixelKNNSearchType> KNNSearchType;
+  KNNSearchType linearSearchKNN(fullPixelSearchKNN, first3SearchKNN);
 #endif
 
   // Setup the second (1-NN) neighbor finder
@@ -323,18 +332,9 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,
                       twoStepNearestNeighbor, &inpainter);
 #else
-//  unsigned int searchRadius = originalImage->GetLargestPossibleRegion().GetSize()[0]/2/2; // half of the image radius
-
-  // Search the region that is the same size as the image, but centered at the patch. For the very center patch, this will search the whole image.
-//  unsigned int searchRadius = originalImage->GetLargestPossibleRegion().GetSize()[0]/2;
-
-  // Use a region twice the size of the image, this should always include (almost) all of the image in the search region.
-  // Since only the [0] dimension is used, if the image is not square we could still miss parts of image edge when searching around patches near the edge of the image.
-  unsigned int searchRadius = originalImage->GetLargestPossibleRegion().GetSize()[0];
 
   NeighborhoodSearch<VertexDescriptorType> neighborhoodSearch(originalImage->GetLargestPossibleRegion(),
                                                               searchRadius);
-
 
   // Perform the inpainting (local search)
   InpaintingAlgorithmWithLocalSearch(graph, inpaintingVisitor, &boundaryNodeQueue,
