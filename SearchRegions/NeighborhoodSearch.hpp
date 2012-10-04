@@ -30,7 +30,7 @@
 /**
   * This class returns a region around a pixel of a specified radius.
   */
-template <typename TVertexDescriptorType>
+template <typename TVertexDescriptorType, typename TImagePatchDescriptorMap>
 struct NeighborhoodSearch
 {
   itk::ImageRegion<2> FullRegion;
@@ -38,12 +38,14 @@ struct NeighborhoodSearch
   typedef std::vector<TVertexDescriptorType> VectorType;
 
   unsigned int Radius;
+
+  TImagePatchDescriptorMap ImagePatchDescriptorMap;
   
   /**
     * 'fullRegion' is the region of the image that is being inpainted.
     */
-  NeighborhoodSearch(const itk::ImageRegion<2>& fullRegion, const unsigned int radius) :
-    FullRegion(fullRegion), Radius(radius)
+  NeighborhoodSearch(const itk::ImageRegion<2>& fullRegion, const unsigned int radius, TImagePatchDescriptorMap imagePatchDescriptorMap) :
+    FullRegion(fullRegion), Radius(radius), ImagePatchDescriptorMap(imagePatchDescriptorMap)
   {
 
   }
@@ -61,13 +63,18 @@ struct NeighborhoodSearch
     
     std::vector<itk::Index<2> > indices = ITKHelpers::GetIndicesInRegion(region);
 
-    VectorType vertices(region.GetNumberOfPixels());
+//    VectorType vertices(region.GetNumberOfPixels());
+    VectorType vertices;
 
     for(unsigned int indexId = 0; indexId < indices.size(); ++indexId)
     {
       TVertexDescriptorType vert =
           Helpers::ConvertFrom<TVertexDescriptorType, itk::Index<2> > (indices[indexId]);
-      vertices[indexId] = vert;
+
+      if(get(this->ImagePatchDescriptorMap, vert).GetStatus() == PixelDescriptor::SOURCE_NODE)
+      {
+        vertices.push_back(vert);
+      }
     }
     return vertices;
   }
