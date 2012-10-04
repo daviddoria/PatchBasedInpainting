@@ -64,7 +64,7 @@ struct TwoStepNearestNeighbor
   {
     typedef typename TIterator::value_type VertexDescriptorType;
 
-    // Step 1 - K-NN search on first topology
+    // Step 1 - K-NN search
     std::vector<VertexDescriptorType> outputContainer(this->MultipleNeighborFinder.GetK());
     this->MultipleNeighborFinder(first, last, queryNode, outputContainer.begin());
 
@@ -79,7 +79,7 @@ struct TwoStepNearestNeighbor
     this->TopPatchWriter(outputContainer.begin(),
                          outputContainer.end(), queryNode);
 
-    // Step 2 - 1-NN search on result of first search, on second topology
+    // Step 2 - 1-NN search on result of first search
     VertexDescriptorType nearestNeighbor = this->NearestNeighborFinder(outputContainer.begin(),
                                                                        outputContainer.end(), queryNode);
     return nearestNeighbor;
