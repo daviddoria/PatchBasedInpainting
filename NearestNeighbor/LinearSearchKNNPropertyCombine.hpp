@@ -34,6 +34,9 @@ public:
   {
   }
 
+  /**
+    * Return the sum of the number of results for both searchers.
+    */
   unsigned int GetK() const
   {
     return this->KNNSearcher1.GetK() +   this->KNNSearcher2.GetK();
