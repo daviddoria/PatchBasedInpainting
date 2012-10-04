@@ -45,14 +45,14 @@
   * \tparam DistanceValueType The value-type for the distance measures.
   * \tparam DistanceFunctionType The functor type to compute the distance measure.
   */
-template <typename TPropertyMap, typename TPatchDistanceFunction,
+template <typename TPatchDescriptorPropertyMap, typename TPatchDistanceFunction,
           typename TImageToWrite>
 class LinearSearchKNNPropertyLimitLocalReuse : public Debug
 {
   typedef float DistanceValueType;
 
   /** The map of vertex descriptors. */
-  TPropertyMap PropertyMap;
+  TPatchDescriptorPropertyMap PatchDescriptorPropertyMap;
 
   /** How many top patches to return. */
   unsigned int K;
@@ -74,12 +74,18 @@ class LinearSearchKNNPropertyLimitLocalReuse : public Debug
 
   TImageToWrite* ImageToWrite;
 
+  float LocalRegionSizeMultiplier;
+
+  float MaxAllowedUsedPixelsRatio;
+
 public:
-  LinearSearchKNNPropertyLimitLocalReuse(TPropertyMap propertyMap, Mask* mask, const unsigned int k = 1000,
+  LinearSearchKNNPropertyLimitLocalReuse(TPatchDescriptorPropertyMap patchDescriptorPropertyMap, Mask* mask, const unsigned int k = 1000,
+                                         float localRegionSizeMultiplier = 3.0f, float maxAllowedUsedPixelsRatio = 0.5f,
                                          TPatchDistanceFunction patchDistanceFunction = TPatchDistanceFunction(),
                                          SourcePixelMapImageType* sourcePixelMapImage = nullptr, TImageToWrite* imageToWrite = nullptr) :
-    PropertyMap(propertyMap), K(k), PatchDistanceFunction(patchDistanceFunction),
-    SourcePixelMapImage(sourcePixelMapImage), MaskImage(mask), ImageToWrite(imageToWrite)
+    PatchDescriptorPropertyMap(patchDescriptorPropertyMap), K(k), PatchDistanceFunction(patchDistanceFunction),
+    SourcePixelMapImage(sourcePixelMapImage), MaskImage(mask), ImageToWrite(imageToWrite),
+    LocalRegionSizeMultiplier(localRegionSizeMultiplier), MaxAllowedUsedPixelsRatio(maxAllowedUsedPixelsRatio)
   {
     this->FullRegion = this->MaskImage->GetLargestPossibleRegion();
   }
@@ -114,6 +120,11 @@ public:
              typename ForwardIteratorType::value_type queryNode,
              OutputIteratorType outputFirst)
   {
+    if(this->DebugScreenOutputs)
+    {
+      std::cout << "LinearSearchKNNPropertyLimitLocalReuse searching " << last - first << " patches." << std::endl;
+    }
+
     // Nothing to do if the input range is empty
     if(first == last)
     {
@@ -129,7 +140,7 @@ public:
 //      {
 //        throw std::runtime_error("LinearSearchBestLidarTextureGradient cannot WriteTopPatches without having an ImageToWrite!");
 //      }
-//      PatchHelpers::WriteTopPatches(this->ImageToWrite, this->PropertyMap, first, last,
+//      PatchHelpers::WriteTopPatches(this->ImageToWrite, this->PatchDescriptorPropertyMap, first, last,
 //                                    "KNNPatches", this->Iteration);
 //    }
 
@@ -146,21 +157,27 @@ public:
 
     PriorityQueueType outputQueue;
 
-    typename TPropertyMap::value_type queryPatch = get(this->PropertyMap, queryNode);
+    typename TPatchDescriptorPropertyMap::value_type queryDescriptor = get(this->PatchDescriptorPropertyMap, queryNode);
 
     typedef typename ForwardIteratorType::value_type NodeType;
 
     // Create a region from the node
     itk::Index<2> queryIndex = Helpers::ConvertFrom<itk::Index<2>, NodeType>(queryNode);
 
-    itk::ImageRegion<2> queryRegion =
-        ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex,
-                                                 get(this->PropertyMap, queryNode).GetRegion().GetSize()[0]/2);
+//    itk::ImageRegion<2> queryRegion =
+//        ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex,
+//                                                 get(this->PatchDescriptorPropertyMap, queryNode).GetRegion().GetSize()[0]/2);
+
+    itk::ImageRegion<2> queryRegion = queryDescriptor.GetRegion();
+
+    // Look for pixels that have already been used
 
     // Create a bigger region
     itk::ImageRegion<2> largerTargetRegion =
         ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex,
-                                                 get(this->PropertyMap, queryNode).GetRegion().GetSize()[0] * 1.5f); // This makes a region 3 patches x 3 patches
+                                                 queryRegion.GetSize()[0]/2.0f * this->LocalRegionSizeMultiplier);
+    largerTargetRegion.Crop(this->FullRegion);
+    std::cout << "The region to search for repeated pixels is " << largerTargetRegion << std::endl;
 
     itk::ImageRegionConstIterator<SourcePixelMapImageType> sourcePixelMapIterator(this->SourcePixelMapImage,
                                                                                   largerTargetRegion);
@@ -181,21 +198,32 @@ public:
     {
       NodeType currentNode = *currentIterator;
 
-      itk::Index<2> currentIndex = Helpers::ConvertFrom<itk::Index<2>, NodeType>(currentNode);
+      typename TPatchDescriptorPropertyMap::value_type currentDescriptor = get(this->PatchDescriptorPropertyMap, currentNode);
 
-      itk::ImageRegion<2> potentialSourceRegion =
-          ITKHelpers::GetRegionInRadiusAroundPixel(currentIndex,
-                                                   get(this->PropertyMap, currentNode).GetRegion().GetSize()[0]/2);
+      if(currentDescriptor.GetStatus() != PixelDescriptor::SOURCE_NODE)
+      {
+        throw std::runtime_error("LinearSearchKNNPropertyLimitLocalReuse: Node is not a source node!");
+      }
+
+      itk::ImageRegion<2> potentialSourceRegion = currentDescriptor.GetRegion();
+
       potentialSourceRegion.Crop(this->FullRegion);
 
-      // Count the number of pixels that were already copied fromt this patch
+      if(!this->MaskImage->IsValid(potentialSourceRegion))
+      {
+        throw std::runtime_error("LinearSearchKNNPropertyLimitLocalReuse: potentialSourceRegion is not fully valid!");
+      }
+
+      // Count the number of pixels that were already copied from this patch
       unsigned int usedPixelCounter = 0;
 
+      itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType>
+          sourceRegionIterator(this->SourcePixelMapImage, potentialSourceRegion);
+
       // The image that this is iterating over is irrelevant, we just need the indices.
-      itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType> sourceRegionIterator(this->SourcePixelMapImage,
-                                                                                           potentialSourceRegion);
-      itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType> queryRegionIterator(this->SourcePixelMapImage,
-                                                                                           queryRegion);
+      itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType>
+          queryRegionIterator(this->SourcePixelMapImage, queryRegion);
+
       while(!sourceRegionIterator.IsAtEnd())
       {
         UsedIndexSetType::iterator usedIndexSetIterator;
@@ -217,11 +245,11 @@ public:
 
 //      unsigned int maxUsedPixels = potentialSourceRegion.GetNumberOfPixels() / 4;
       unsigned int numberOfHolePixels = this->MaskImage->CountHolePixels(queryRegion);
-      unsigned int maxAllowedUsedPixels = numberOfHolePixels / 2; // Arbitrary - only allow half of the hole pixels to have been used
+      unsigned int maxAllowedUsedPixels = this->MaxAllowedUsedPixelsRatio * numberOfHolePixels;
 
       if(usedPixelCounter < maxAllowedUsedPixels)
       {
-        DistanceValueType d = this->PatchDistanceFunction(get(this->PropertyMap, currentNode), queryPatch); // (source, target) (the query node is the target node)
+        DistanceValueType d = this->PatchDistanceFunction(currentDescriptor, queryDescriptor); // (source, target) (the query node is the target node)
 
         #pragma omp critical // There are weird crashes without this guard
         outputQueue.push(PairType(d, currentIterator));
@@ -237,6 +265,11 @@ public:
 //    std::cout << "There are " << outputQueue.size() << " items in the queue." << std::endl;
 
     // Keep only the best K matches
+    if(outputQueue.size() < this->K)
+    {
+      std::cerr << "Warning: LinearSearchKNNPropertyLimitLocalReuse only has " << outputQueue.size()
+                << " nodes. (" << this->K << " were requested.)" << std::endl;
+    }
     Helpers::KeepTopN(outputQueue, this->K);
 
 //    std::cout << "There are " << outputQueue.size() << " items in the queue." << std::endl;
@@ -244,7 +277,7 @@ public:
     if(outputQueue.size() < this->K)
     {
       std::stringstream ss;
-      ss << "Requested " << this->K << " items but only found " << outputQueue.size();
+      ss << "LinearSearchKNNPropertyLimitLocalReuse: Requested " << this->K << " items but only found " << outputQueue.size();
       throw std::runtime_error(ss.str());
     }
 
