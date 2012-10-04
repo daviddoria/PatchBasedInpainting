@@ -162,6 +162,10 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
   typedef PatchInpainter<HSVImageType> HSVImageInpainterType;
   HSVImageInpainterType hsvImagePatchInpainter(patchHalfWidth, hsvImage, mask);
 
+  // Create an inpainter for the RGB image.
+  typedef PatchInpainter<RGBImageType> RGBImageInpainterType;
+  RGBImageInpainterType rgbImagePatchInpainter(patchHalfWidth, rgbImage, mask);
+
   // Create an inpainter for the blurred image.
   typedef PatchInpainter<RGBImageType> BlurredImageInpainterType;
   BlurredImageInpainterType blurredRGBImagePatchInpainter(patchHalfWidth, blurredRGBImage, mask);
@@ -176,6 +180,7 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
   inpainter.AddInpainter(&hsvImagePatchInpainter);
   inpainter.AddInpainter(&blurredRGBImagePatchInpainter);
   inpainter.AddInpainter(&slightlyBlurredHSVDxDyImageImagePatchInpainter);
+  inpainter.AddInpainter(&rgbImagePatchInpainter);
 
   // Create the priority function
   typedef PriorityCriminisi<RGBImageType> PriorityType;
@@ -281,16 +286,28 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN, patchDifferenceFunctor);
 #else
+  float localRegionSizeMultiplier = 2.0f;
+//  float maxAllowedUsedPixelsRatio = 0.3f; // if this is too low, we may end up with no source patches to choose from
+  float maxAllowedUsedPixelsRatio = 0.5f;
+
   typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, FullPatchDifferenceType, RGBImageType> FullPixelKNNSearchType;
-  FullPixelKNNSearchType fullPixelSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN,
+  FullPixelKNNSearchType fullPixelSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN, localRegionSizeMultiplier, maxAllowedUsedPixelsRatio,
                                 fullPatchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage(),
                                 rgbImage.GetPointer());
   fullPixelSearchKNN.SetDebugImages(true);
+  fullPixelSearchKNN.SetDebugScreenOutputs(true);
 
-//  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, First3PatchDifferenceType, RGBImageType> First3PixelKNNSearchType;
-  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, First3PatchDifferenceType> First3PixelKNNSearchType;
-  First3PixelKNNSearchType first3SearchKNN(imagePatchDescriptorMap, numberOfKNN,
-                                first3PatchDifferenceFunctor);
+
+  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, First3PatchDifferenceType, RGBImageType> First3PixelKNNSearchType;
+  First3PixelKNNSearchType first3SearchKNN(imagePatchDescriptorMap, mask, numberOfKNN, localRegionSizeMultiplier, maxAllowedUsedPixelsRatio,
+                                           first3PatchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage(),
+                                           rgbImage.GetPointer());
+  first3SearchKNN.SetDebugScreenOutputs(true);
+
+//  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, First3PatchDifferenceType> First3PixelKNNSearchType;
+//  First3PixelKNNSearchType first3SearchKNN(imagePatchDescriptorMap, numberOfKNN,
+//                                first3PatchDifferenceFunctor);
+
 //  first3SearchKNN.SetDebugImages(true);
 
   typedef LinearSearchKNNPropertyCombine<FullPixelKNNSearchType, First3PixelKNNSearchType> KNNSearchType;
@@ -333,8 +350,8 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
                       twoStepNearestNeighbor, &inpainter);
 #else
 
-  NeighborhoodSearch<VertexDescriptorType> neighborhoodSearch(originalImage->GetLargestPossibleRegion(),
-                                                              searchRadius);
+  NeighborhoodSearch<VertexDescriptorType, ImagePatchDescriptorMapType> neighborhoodSearch(originalImage->GetLargestPossibleRegion(),
+                                                              searchRadius, imagePatchDescriptorMap);
 
   // Perform the inpainting (local search)
   InpaintingAlgorithmWithLocalSearch(graph, inpaintingVisitor, &boundaryNodeQueue,

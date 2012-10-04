@@ -317,8 +317,8 @@ void LidarInpaintingRGBTextureVerification(TImage* const originalImage, Mask* co
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,
                       twoStepNearestNeighbor, &inpainter);
 #else
-  NeighborhoodSearch<VertexDescriptorType> neighborhoodSearch(originalImage->GetLargestPossibleRegion(),
-                                                              searchRadius);
+  NeighborhoodSearch<VertexDescriptorType, ImagePatchDescriptorMapType> neighborhoodSearch(originalImage->GetLargestPossibleRegion(),
+                                                              searchRadius, imagePatchDescriptorMap);
 
   // Perform the inpainting (local search)
   InpaintingAlgorithmWithLocalSearch(graph, inpaintingVisitor, &boundaryNodeQueue,
