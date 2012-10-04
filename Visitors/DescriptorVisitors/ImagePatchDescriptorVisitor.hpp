@@ -54,7 +54,7 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
     descriptor.SetVertex(v);
     put(this->DescriptorMap, v, descriptor);
 
-    // This is done in the descriptor constructor
+    // This is done in the descriptor constructor (above)
 //     if(mask->IsValid(region))
 //       {
 //       descriptor.SetStatus(DescriptorType::SOURCE_NODE);
