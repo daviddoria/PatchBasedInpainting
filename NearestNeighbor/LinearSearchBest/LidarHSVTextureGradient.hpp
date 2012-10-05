@@ -118,8 +118,6 @@ public:
   HistogramMapType PreviouslyComputedHSVHistograms;
   HistogramMapType PreviouslyComputedDepthHistograms;
 
-  bool WritePatches = false;
-
   /**
     * \param first Start of the range in which to search.
     * \param last One element past the last element in the range in which to search.
@@ -129,7 +127,7 @@ public:
     */
   typename TIterator::value_type operator()(const TIterator first, const TIterator last, typename TIterator::value_type query)
   {
-    if(this->WritePatches)
+    if(this->DebugImages)
     {
       if(this->ImageToWrite == nullptr)
       {
@@ -393,6 +391,6 @@ public:
     return *bestPatch;
   }
 
-}; // end class LinearSearchBestHistogramDifference
+}; // end class LinearSearchBestLidarHSVTextureGradient
 
 #endif
