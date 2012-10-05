@@ -95,7 +95,8 @@
 template <typename TImage>
 void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* const mask,
                                            const unsigned int patchHalfWidth, const unsigned int numberOfKNN,
-                                           float slightBlurVariance = 1.0f, unsigned int searchRadius = 1000)
+                                           float slightBlurVariance = 1.0f, unsigned int searchRadius = 1000,
+                                           float localRegionSizeMultiplier = 3.0f, float maxAllowedUsedPixelsRatio = 0.5f)
 {
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
 
@@ -286,9 +287,6 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, PatchDifferenceType> KNNSearchType;
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN, patchDifferenceFunctor);
 #else
-  float localRegionSizeMultiplier = 2.0f;
-//  float maxAllowedUsedPixelsRatio = 0.3f; // if this is too low, we may end up with no source patches to choose from
-  float maxAllowedUsedPixelsRatio = 0.5f;
 
   typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, FullPatchDifferenceType, RGBImageType> FullPixelKNNSearchType;
   FullPixelKNNSearchType fullPixelSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN, localRegionSizeMultiplier, maxAllowedUsedPixelsRatio,
@@ -335,7 +333,7 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
    // use slightly blurred for texture sorting
   BestSearchType linearSearchBest(imagePatchDescriptorMap, slightlyBlurredHSVDxDyImage.GetPointer(),
                                   mask, rgbImage.GetPointer(), debug);
-  linearSearchBest.WritePatches = true;
+  linearSearchBest.SetDebugImages(false);
 
 
   // Setup the two step neighbor finder
