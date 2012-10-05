@@ -3,4 +3,5 @@ ClassicalImageInpainting.hpp
 InpaintingTexture.hpp
 LidarInpaintingHSVTextureVerification.hpp
 LidarInpaintingRGBTextureVerification.hpp
+WeightedSSDInpainting.hpp
 )

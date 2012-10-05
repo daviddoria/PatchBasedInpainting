@@ -21,17 +21,22 @@
    * \param inf A DistanceValue which represents infinity (i.e. the very worst value with which to initialize the search).
    * \return The iterator to the best element in the range (best is defined as the one which would compare favorably to all the elements in the range with respect to the distance metric).
    */
-template <typename ForwardIteratorType,
-          typename DistanceFunctionType,
-          typename DistanceValueType = float,
-          typename CompareFunctionType = std::less<DistanceValueType> >
+template <typename TForwardIterator,
+          typename TDistanceFunction,
+          typename TCompareFunction = std::less<DistanceValueType> >
 struct LinearSearchBest
 {
-  DistanceFunctionType DistanceFunction;
-  CompareFunctionType CompareFunction;
+  typedef float DistanceValueType;
 
-  ForwardIteratorType operator()(ForwardIteratorType first, ForwardIteratorType last,
-                                 typename ForwardIteratorType::value_type query)
+  LinearSearchBest(TDistanceFunction distanceFunction = TDistanceFunction()) :
+    DistanceFunction(distanceFunction)
+  {}
+
+  TDistanceFunction DistanceFunction;
+  TCompareFunction CompareFunction;
+
+  TForwardIterator operator()(TForwardIterator first, TForwardIterator last,
+                              typename TForwardIterator::value_type query)
   {
     if(first == last)
     {
@@ -42,15 +47,15 @@ struct LinearSearchBest
     ForwardIteratorType result = last;
     for(ForwardIteratorType current = first; current != last; ++current)
     {
-      DistanceValueType d = DistanceFunction(*current, query);
-      if(CompareFunction(d, d_best))
+      DistanceValueType d = this->DistanceFunction(*current, query);
+      if(this->CompareFunction(d, d_best))
       {
         d_best = d;
         result = current;
       }
     }
 
-    std::cout << "Best patch has difference " << d_best << std::endl;
+//    std::cout << "Best patch has difference " << d_best << std::endl;
     return result;
   }
 };
