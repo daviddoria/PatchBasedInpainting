@@ -102,6 +102,8 @@ public:
     return this->K;
   }
 
+  typedef std::set<itk::Index<2>, itk::Index<2>::LexicographicCompare> UsedIndexSetType;
+
   //   template <typename ForwardIteratorType, typename OutputContainerType>
   //   void operator()(ForwardIteratorType first, ForwardIteratorType last,
   //                   typename ForwardIteratorType::value_type queryNode, OutputContainerType& output)
@@ -114,11 +116,11 @@ public:
     * \param compare A callable object that returns true if the first element is the preferred one (less-than) of the two.
     * \param max_neighbors The maximum number of elements of smallest distance to output in the sorted list.
     */
-  template <typename ForwardIteratorType, typename OutputIteratorType>
-  inline OutputIteratorType
-  operator()(ForwardIteratorType first, ForwardIteratorType last,
-             typename ForwardIteratorType::value_type queryNode,
-             OutputIteratorType outputFirst)
+  template <typename TForwardIterator, typename TOutputIterator>
+  inline TOutputIterator
+  operator()(TForwardIterator first, TForwardIterator last,
+             typename TForwardIterator::value_type queryNode,
+             TOutputIterator outputFirst)
   {
     if(this->DebugScreenOutputs)
     {
@@ -150,23 +152,18 @@ public:
     }
 
     // Use a priority queue to keep the items sorted
-    typedef std::pair<DistanceValueType, ForwardIteratorType> PairType;
-    typedef compare_pair_first<DistanceValueType, ForwardIteratorType, std::greater<DistanceValueType> > CompareType;
+    typedef std::pair<DistanceValueType, TForwardIterator> PairType;
+    typedef compare_pair_first<DistanceValueType, TForwardIterator, std::greater<DistanceValueType> > CompareType;
     typedef std::priority_queue< PairType, std::vector<PairType>,
         CompareType> PriorityQueueType;
 
-    PriorityQueueType outputQueue;
+    typedef typename TPatchDescriptorPropertyMap::value_type DescriptorType;
+    DescriptorType queryDescriptor = get(this->PatchDescriptorPropertyMap, queryNode);
 
-    typename TPatchDescriptorPropertyMap::value_type queryDescriptor = get(this->PatchDescriptorPropertyMap, queryNode);
-
-    typedef typename ForwardIteratorType::value_type NodeType;
+    typedef typename TForwardIterator::value_type NodeType;
 
     // Create a region from the node
     itk::Index<2> queryIndex = Helpers::ConvertFrom<itk::Index<2>, NodeType>(queryNode);
-
-//    itk::ImageRegion<2> queryRegion =
-//        ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex,
-//                                                 get(this->PatchDescriptorPropertyMap, queryNode).GetRegion().GetSize()[0]/2);
 
     itk::ImageRegion<2> queryRegion = queryDescriptor.GetRegion();
 
@@ -182,7 +179,6 @@ public:
     itk::ImageRegionConstIterator<SourcePixelMapImageType> sourcePixelMapIterator(this->SourcePixelMapImage,
                                                                                   largerTargetRegion);
 
-    typedef std::set<itk::Index<2>, itk::Index<2>::LexicographicCompare> UsedIndexSetType;
     UsedIndexSetType usedIndices;
     while(!sourcePixelMapIterator.IsAtEnd())
     {
@@ -191,75 +187,14 @@ public:
       ++sourcePixelMapIterator;
     }
 
-    // The queue stores the items in descending score order.
-    #pragma omp parallel for
-//    for(ForwardIteratorType current = first; current != last; ++current) // OpenMP 3 doesn't allow != in the loop ending condition
-    for(ForwardIteratorType currentIterator = first; currentIterator < last; ++currentIterator)
+    unsigned int numberOfHolePixels = this->MaskImage->CountHolePixels(queryRegion);
+    unsigned int maxAllowedUsedPixels = this->MaxAllowedUsedPixelsRatio * numberOfHolePixels;
+
+    PriorityQueueType outputQueue;
+    while(outputQueue.size() == 0)
     {
-      NodeType currentNode = *currentIterator;
-
-      typename TPatchDescriptorPropertyMap::value_type currentDescriptor = get(this->PatchDescriptorPropertyMap, currentNode);
-
-      if(currentDescriptor.GetStatus() != PixelDescriptor::SOURCE_NODE)
-      {
-        throw std::runtime_error("LinearSearchKNNPropertyLimitLocalReuse: Node is not a source node!");
-      }
-
-      itk::ImageRegion<2> potentialSourceRegion = currentDescriptor.GetRegion();
-
-      potentialSourceRegion.Crop(this->FullRegion);
-
-      if(!this->MaskImage->IsValid(potentialSourceRegion))
-      {
-        throw std::runtime_error("LinearSearchKNNPropertyLimitLocalReuse: potentialSourceRegion is not fully valid!");
-      }
-
-      // Count the number of pixels that were already copied from this patch
-      unsigned int usedPixelCounter = 0;
-
-      itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType>
-          sourceRegionIterator(this->SourcePixelMapImage, potentialSourceRegion);
-
-      // The image that this is iterating over is irrelevant, we just need the indices.
-      itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType>
-          queryRegionIterator(this->SourcePixelMapImage, queryRegion);
-
-      while(!sourceRegionIterator.IsAtEnd())
-      {
-        UsedIndexSetType::iterator usedIndexSetIterator;
-        if(this->MaskImage->IsHole(queryRegionIterator.GetIndex()))
-        {
-          // We want to use the index value in the SourcePixelMapImage,
-          // because the value might not equal the current index in the case where new patches are allowed.
-          usedIndexSetIterator = usedIndices.find(sourceRegionIterator.Get());
-
-          if(usedIndexSetIterator != usedIndices.end()) // found
-          {
-            usedPixelCounter++;
-          }
-        }
-
-        ++sourceRegionIterator;
-        ++queryRegionIterator;
-      }
-
-//      unsigned int maxUsedPixels = potentialSourceRegion.GetNumberOfPixels() / 4;
-      unsigned int numberOfHolePixels = this->MaskImage->CountHolePixels(queryRegion);
-      unsigned int maxAllowedUsedPixels = this->MaxAllowedUsedPixelsRatio * numberOfHolePixels;
-
-      if(usedPixelCounter < maxAllowedUsedPixels)
-      {
-        DistanceValueType d = this->PatchDistanceFunction(currentDescriptor, queryDescriptor); // (source, target) (the query node is the target node)
-
-        #pragma omp critical // There are weird crashes without this guard
-        outputQueue.push(PairType(d, currentIterator));
-      }
-      else
-      {
-//        std::cout << "Prevented use because " << usedPixelCounter
-//                  << " pixels were already used (out of " << numberOfHolePixels
-//                  << " hole pixels)." << std::endl;
-      }
+      outputQueue = FindUsablePatches<PriorityQueueType, TForwardIterator, DescriptorType>(first, last, usedIndices, maxAllowedUsedPixels, queryDescriptor);
+      maxAllowedUsedPixels += 10;
     }
 
 //    std::cout << "There are " << outputQueue.size() << " items in the queue." << std::endl;
@@ -284,7 +219,7 @@ public:
     std::cout << "Best patch score is: " << outputQueue.top().first << std::endl;
 
     // Copy the best matches from the queue into the output
-    OutputIteratorType currentOutputIterator = outputFirst;
+    TOutputIterator currentOutputIterator = outputFirst;
     while( !outputQueue.empty() )
     {
       *currentOutputIterator = *(outputQueue.top().second);
@@ -331,6 +266,87 @@ public:
     };
     std::reverse(first, result);
     return result;
+  }
+
+  template <typename TPriorityQueue, typename TForwardIterator, typename TDescriptor>
+  TPriorityQueue FindUsablePatches(TForwardIterator first, TForwardIterator last,
+                                   UsedIndexSetType usedIndices, unsigned int maxAllowedUsedPixels, TDescriptor& queryDescriptor)
+  {
+    TPriorityQueue outputQueue;
+
+    typedef typename TForwardIterator::value_type NodeType;
+
+    // The queue stores the items in descending score order.
+    #pragma omp parallel for
+//    for(ForwardIteratorType current = first; current != last; ++current) // OpenMP 3 doesn't allow != in the loop ending condition
+    for(TForwardIterator currentIterator = first; currentIterator < last; ++currentIterator)
+    {
+      NodeType currentNode = *currentIterator;
+
+      itk::ImageRegion<2> queryRegion = queryDescriptor.GetRegion();
+
+      typename TPatchDescriptorPropertyMap::value_type currentDescriptor = get(this->PatchDescriptorPropertyMap, currentNode);
+
+      if(currentDescriptor.GetStatus() != PixelDescriptor::SOURCE_NODE)
+      {
+        throw std::runtime_error("LinearSearchKNNPropertyLimitLocalReuse: Node is not a source node!");
+      }
+
+      itk::ImageRegion<2> potentialSourceRegion = currentDescriptor.GetRegion();
+
+      potentialSourceRegion.Crop(this->FullRegion);
+
+      if(!this->MaskImage->IsValid(potentialSourceRegion))
+      {
+        throw std::runtime_error("LinearSearchKNNPropertyLimitLocalReuse: potentialSourceRegion is not fully valid!");
+      }
+
+      // Count the number of pixels that were already copied from this patch
+      unsigned int usedPixelCounter = 0;
+
+      itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType>
+          sourceRegionIterator(this->SourcePixelMapImage, potentialSourceRegion);
+
+      // The image that this is iterating over is irrelevant, we just need the indices.
+      itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType>
+          queryRegionIterator(this->SourcePixelMapImage, queryRegion);
+
+      while(!sourceRegionIterator.IsAtEnd())
+      {
+        UsedIndexSetType::iterator usedIndexSetIterator;
+        if(this->MaskImage->IsHole(queryRegionIterator.GetIndex()))
+        {
+          // We want to use the index value in the SourcePixelMapImage,
+          // because the value might not equal the current index in the case where new patches are allowed.
+          usedIndexSetIterator = usedIndices.find(sourceRegionIterator.Get());
+
+          if(usedIndexSetIterator != usedIndices.end()) // found
+          {
+            usedPixelCounter++;
+          }
+        }
+
+        ++sourceRegionIterator;
+        ++queryRegionIterator;
+      }
+
+      typedef std::pair<DistanceValueType, TForwardIterator> PairType;
+      if(usedPixelCounter <= maxAllowedUsedPixels)
+      {
+        DistanceValueType d = this->PatchDistanceFunction(currentDescriptor, queryDescriptor); // (source, target) (the query node is the target node)
+
+        #pragma omp critical // There are weird crashes without this guard
+        outputQueue.push(PairType(d, currentIterator));
+      }
+      else
+      {
+//        std::cout << "Prevented use because " << usedPixelCounter
+//                  << " pixels were already used (out of " << numberOfHolePixels
+//                  << " hole pixels)." << std::endl;
+      }
+    } // end loop over all patches
+
+    return outputQueue;
   }
 
 };
