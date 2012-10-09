@@ -324,16 +324,17 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
       VertexDescriptorVectorIteratorType, RGBImageType> BestSearchType; // Use the concatenated histograms of the gradient magnitudes of each channel. This HSVDxDyImageType must match the hsvDxDyImage provided below
 
 //  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvDxDyImage.GetPointer(), mask); // use non-blurred for texture sorting
-  Debug debug;
-//  debug.SetDebugOutputs(true);
-//  debug.SetDebugImages(true);
+  Debug bestSearchTypeDebug;
+//  bestSearchTypeDebug.SetDebugOutputs(true);
+//  bestSearchTypeDebug.SetDebugImages(true);
 //  linearSearchBest.SetDebugOutputs(true);
 //  linearSearchBest.SetDebugImages(true);
 
    // use slightly blurred for texture sorting
   BestSearchType linearSearchBest(imagePatchDescriptorMap, slightlyBlurredHSVDxDyImage.GetPointer(),
-                                  mask, rgbImage.GetPointer(), debug);
-  linearSearchBest.SetDebugImages(false);
+                                  mask, rgbImage.GetPointer(), bestSearchTypeDebug);
+//  linearSearchBest.SetDebugImages(false);
+  linearSearchBest.SetDebugImages(true); // This produces BestPatch* images showing the list of the top K patches that were passed to the BestSearch functor
 
 
   // Setup the two step neighbor finder
@@ -352,8 +353,9 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
                                                               searchRadius, imagePatchDescriptorMap);
 
   // Perform the inpainting (local search)
+  bool algorithmDebug = true;
   InpaintingAlgorithmWithLocalSearch(graph, inpaintingVisitor, &boundaryNodeQueue,
-                                     twoStepNearestNeighbor, &inpainter, neighborhoodSearch);
+                                     twoStepNearestNeighbor, &inpainter, neighborhoodSearch, algorithmDebug);
 #endif
 
 }

@@ -202,16 +202,6 @@ public:
     std::reverse(first, result);
     return result;
   }
-
-  /** This is a dummy function to throw a more sane error if the SFINAE function does not match. */
-  //   template <typename PairPriorityQueueType,
-  //             typename OutputIteratorType>
-  //   inline
-  //   OutputIteratorType copy_neighbors_from_queue(PairPriorityQueueType& Q, OutputIteratorType result)
-  //   {
-  //     // #error The only SFINAE overload did not match!
-  //     return OutputIteratorType();
-  //   };
   
 };
 

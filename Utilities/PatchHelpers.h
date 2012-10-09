@@ -63,9 +63,19 @@ template <typename TNodeQueue, typename TPropertyMap>
 void WriteValidQueueNodesLocationsImage(TNodeQueue nodeQueue, const TPropertyMap propertyMap,
                                        const itk::ImageRegion<2>& fullRegion, const std::string& fileName);
 
+/** Write an image of the patches in the container described by the iterators. The image has two columns -
+  * the first column is the patches, and the second column is the patchIds. This is so we can visually identify
+  * which patch number each patch is (these number are sequential). */
 template <typename TIterator, typename TImage, typename TPropertyMap>
 void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TIterator first,
                      const TIterator last, const std::string& prefix, const unsigned int iteration);
+
+/** Write an image of the patches in the container described by the iterators. The patches are laid out in a grid -
+  * left to right, top to bottom. */
+template <typename TIterator, typename TImage, typename TPropertyMap>
+void WriteTopPatchesGrid(TImage* const image, TPropertyMap propertyMap, const TIterator first,
+                         const TIterator last, const std::string& prefix, const unsigned int iteration,
+                         unsigned int gridWidth, unsigned int gridHeight);
 
 }
 

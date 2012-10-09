@@ -133,8 +133,13 @@ public:
       {
         throw std::runtime_error("LinearSearchBestLidarTextureGradient cannot WriteTopPatches without having an ImageToWrite!");
       }
-      PatchHelpers::WriteTopPatches(this->ImageToWrite, this->PropertyMap, first, last,
-                                    "BestPatches", this->Iteration);
+//      PatchHelpers::WriteTopPatches(this->ImageToWrite, this->PropertyMap, first, last,
+//                                    "BestPatches", this->Iteration);
+
+      unsigned int gridWidth = 10;
+      unsigned int gridHeight = 10;
+      PatchHelpers::WriteTopPatchesGrid(this->ImageToWrite, this->PropertyMap, first, last,
+                                        "BestPatches", this->Iteration, gridWidth, gridHeight);
     }
 
     unsigned int numberOfBins = 30;

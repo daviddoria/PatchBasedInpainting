@@ -45,7 +45,7 @@ InpaintingAlgorithmWithLocalSearch(TVertexListGraph& g, TInpaintingVisitor vis,
                                    TPriorityQueue* boundaryNodeQueue,
                                    TBestPatchFinder bestPatchFinder,
                                    TPatchInpainter* patchInpainter,
-                                   TSearchRegion& searchRegion)
+                                   TSearchRegion& searchRegion, const bool debug = false)
 {
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<TInpaintingVisitor, TVertexListGraph>));
 
@@ -57,6 +57,11 @@ InpaintingAlgorithmWithLocalSearch(TVertexListGraph& g, TInpaintingVisitor vis,
     std::cout << "Algorithm: Iteration " << iteration << std::endl;
 
     VertexDescriptorType targetNode = boundaryNodeQueue->top();
+
+    if(debug)
+    {
+      std::cout << "targetNode: " << targetNode[0] << ", " << targetNode[1] << std::endl;
+    }
 
     // Notify the visitor that we have a hole target center.
     vis.DiscoverVertex(targetNode);
