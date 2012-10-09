@@ -45,6 +45,7 @@
 #include "NearestNeighbor/LinearSearchBest/FirstAndWrite.hpp"
 #include "NearestNeighbor/LinearSearchBest/LidarTextureDerivatives.hpp"
 #include "NearestNeighbor/LinearSearchBest/LidarHSVTextureGradient.hpp"
+#include "NearestNeighbor/LinearSearchBest/LidarHSVTextureGradientWithSort.hpp"
 
 // Multi-Nearest neighbors functions
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
@@ -320,8 +321,10 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
 //      VertexDescriptorVectorIteratorType, TImage> BestSearchType; // Use the histogram of the gradient magnitudes of a scalar represetnation of the image (e.g. magnitude image)
 //  typedef LinearSearchBestLidarTextureDerivatives<ImagePatchDescriptorMapType, HSVImageType,
 //      VertexDescriptorVectorIteratorType, TImage> BestSearchType; // Use the concatenated histograms of the absolute value of the derivatives of each channel
-  typedef LinearSearchBestLidarHSVTextureGradient<ImagePatchDescriptorMapType, HSVDxDyImageType,
-      VertexDescriptorVectorIteratorType, RGBImageType> BestSearchType; // Use the concatenated histograms of the gradient magnitudes of each channel. This HSVDxDyImageType must match the hsvDxDyImage provided below
+//  typedef LinearSearchBestLidarHSVTextureGradient<ImagePatchDescriptorMapType, HSVDxDyImageType,
+//      VertexDescriptorVectorIteratorType, RGBImageType> BestSearchType; // Use the concatenated histograms of the gradient magnitudes of each channel. This HSVDxDyImageType must match the hsvDxDyImage provided below
+  typedef LinearSearchBestLidarHSVTextureGradientWithSort<ImagePatchDescriptorMapType, HSVDxDyImageType,
+      VertexDescriptorVectorIteratorType, RGBImageType> BestSearchType; // Use the concatenated histograms of the gradient magnitudes of each channel. This HSVDxDyImageType must match the hsvDxDyImage provided below. Also sort the patches for demonstrative output purposes.
 
 //  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvDxDyImage.GetPointer(), mask); // use non-blurred for texture sorting
   Debug bestSearchTypeDebug;
