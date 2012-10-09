@@ -394,14 +394,14 @@ public:
     std::cout << "BestId: " << bestId << std::endl;
     std::cout << "Best distance: " << bestDistance << std::endl;
 
-    this->Iteration++;
-
     if(this->DebugOutputFiles)
     {
       Helpers::WriteVectorToFileLines(scores, Helpers::GetSequentialFileName("Scores", this->Iteration, "txt", 3));
     }
 
-    ParallelSort<float>::IndexedVector sortedScores = ParallelSort<float>::ParallelSortAscending(scores);
+    typedef ParallelSort<float> ParallelSortType;
+
+    ParallelSortType::IndexedVector sortedScores = ParallelSortType::ParallelSortAscending(scores);
 
     if(this->DebugImages)
     {
@@ -419,13 +419,17 @@ public:
         TIterator current = first;
         std::advance(current, currentId);
 
-        sortedPatches[current - first] = *current;
+        sortedPatches[i] = *current;
+        std::cout << "Set sortedPatches " << i << " to " << currentId << std::endl;
       }
+
       unsigned int gridWidth = 10;
       unsigned int gridHeight = 10;
       PatchHelpers::WriteTopPatchesGrid(this->ImageToWrite, this->PropertyMap, sortedPatches.begin(), sortedPatches.end(),
                                         "BestPatchesSorted", this->Iteration, gridWidth, gridHeight);
     }
+
+    this->Iteration++;
 
     return *bestPatch;
   } // end operator()

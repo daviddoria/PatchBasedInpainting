@@ -289,29 +289,38 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
   KNNSearchType linearSearchKNN(imagePatchDescriptorMap, numberOfKNN, patchDifferenceFunctor);
 #else
 
-  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, FullPatchDifferenceType, RGBImageType> FullPixelKNNSearchType;
-  FullPixelKNNSearchType fullPixelSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN, localRegionSizeMultiplier, maxAllowedUsedPixelsRatio,
+  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, FullPatchDifferenceType, RGBImageType> KNNSearchType;
+  KNNSearchType linearSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN, localRegionSizeMultiplier, maxAllowedUsedPixelsRatio,
                                 fullPatchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage(),
                                 rgbImage.GetPointer());
-  fullPixelSearchKNN.SetDebugImages(true);
-  fullPixelSearchKNN.SetDebugScreenOutputs(true);
-
-
-  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, First3PatchDifferenceType, RGBImageType> First3PixelKNNSearchType;
-  First3PixelKNNSearchType first3SearchKNN(imagePatchDescriptorMap, mask, numberOfKNN, localRegionSizeMultiplier, maxAllowedUsedPixelsRatio,
-                                           first3PatchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage(),
-                                           rgbImage.GetPointer());
-  first3SearchKNN.SetDebugScreenOutputs(true);
-
-//  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, First3PatchDifferenceType> First3PixelKNNSearchType;
-//  First3PixelKNNSearchType first3SearchKNN(imagePatchDescriptorMap, numberOfKNN,
-//                                first3PatchDifferenceFunctor);
-
-//  first3SearchKNN.SetDebugImages(true);
-
-  typedef LinearSearchKNNPropertyCombine<FullPixelKNNSearchType, First3PixelKNNSearchType> KNNSearchType;
-  KNNSearchType linearSearchKNN(fullPixelSearchKNN, first3SearchKNN);
+  linearSearchKNN.SetDebugImages(true);
+  linearSearchKNN.SetDebugScreenOutputs(true);
 #endif
+//#else // This works the best, but is less useful for demonstrations
+
+//  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, FullPatchDifferenceType, RGBImageType> FullPixelKNNSearchType;
+//  FullPixelKNNSearchType fullPixelSearchKNN(imagePatchDescriptorMap, mask, numberOfKNN, localRegionSizeMultiplier, maxAllowedUsedPixelsRatio,
+//                                fullPatchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage(),
+//                                rgbImage.GetPointer());
+//  fullPixelSearchKNN.SetDebugImages(true);
+//  fullPixelSearchKNN.SetDebugScreenOutputs(true);
+
+
+//  typedef LinearSearchKNNPropertyLimitLocalReuse<ImagePatchDescriptorMapType, First3PatchDifferenceType, RGBImageType> First3PixelKNNSearchType;
+//  First3PixelKNNSearchType first3SearchKNN(imagePatchDescriptorMap, mask, numberOfKNN, localRegionSizeMultiplier, maxAllowedUsedPixelsRatio,
+//                                           first3PatchDifferenceFunctor, inpaintingVisitor.GetSourcePixelMapImage(),
+//                                           rgbImage.GetPointer());
+//  first3SearchKNN.SetDebugScreenOutputs(true);
+
+////  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, First3PatchDifferenceType> First3PixelKNNSearchType;
+////  First3PixelKNNSearchType first3SearchKNN(imagePatchDescriptorMap, numberOfKNN,
+////                                first3PatchDifferenceFunctor);
+
+////  first3SearchKNN.SetDebugImages(true);
+
+//  typedef LinearSearchKNNPropertyCombine<FullPixelKNNSearchType, First3PixelKNNSearchType> KNNSearchType;
+//  KNNSearchType linearSearchKNN(fullPixelSearchKNN, first3SearchKNN);
+//#endif
 
   // Setup the second (1-NN) neighbor finder
   typedef std::vector<VertexDescriptorType>::iterator VertexDescriptorVectorIteratorType;
@@ -328,7 +337,7 @@ void LidarInpaintingHSVTextureVerification(TImage* const originalImage, Mask* co
 
 //  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvDxDyImage.GetPointer(), mask); // use non-blurred for texture sorting
   Debug bestSearchTypeDebug;
-//  bestSearchTypeDebug.SetDebugOutputs(true);
+  bestSearchTypeDebug.SetDebugScreenOutputs(true);
 //  bestSearchTypeDebug.SetDebugImages(true);
 //  linearSearchBest.SetDebugOutputs(true);
 //  linearSearchBest.SetDebugImages(true);

@@ -405,8 +405,9 @@ void WriteTopPatchesGrid(TImage* const image, TPropertyMap propertyMap, const TI
     for(unsigned int gridColumn = 0; gridColumn < gridWidth; ++gridColumn)
     {
       // The extra + currentPatchId * padding is to skip the padding
-      itk::Index<2> topPatchesImageCorner = {{static_cast<itk::Index<2>::IndexValueType>((patchSideLength + padding) * gridRow),
-                                              static_cast<itk::Index<2>::IndexValueType>((patchSideLength + padding) * gridColumn)}};
+      int xPos = static_cast<itk::Index<2>::IndexValueType>((patchSideLength + padding) * gridColumn);
+      int yPos = static_cast<itk::Index<2>::IndexValueType>((patchSideLength + padding) * gridRow);
+      itk::Index<2> topPatchesImageCorner = {{xPos, yPos}};
       itk::ImageRegion<2> currentTopPatchesImageRegion(topPatchesImageCorner, patchSize);
 
       itk::ImageRegion<2> currentRegion = get(propertyMap, *currentPatch).GetRegion();
