@@ -31,11 +31,9 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/property_map/property_map.hpp>
 
-// Helpers
-#include "ITKHelpers/ITKHelpers.h"
-#include "BoostHelpers/BoostHelpers.h"
-
 // Submodules
+#include <ITKHelpers/ITKHelpers.h>
+#include <BoostHelpers/BoostHelpers.h>
 #include <ITKVTKHelpers/ITKVTKHelpers.h>
 #include <Utilities/Debug/Debug.h>
 

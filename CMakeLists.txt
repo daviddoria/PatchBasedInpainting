@@ -247,7 +247,7 @@ if(inpainting_InpaintingStrategySelection)
   INSTALL( TARGETS InpaintingStrategySelection RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(inpainting_InpaintingMinimizeIntroducedEnergy CACHE BOOL "Build a patch based image inpainting algorithm that uses an introduced energy sort on the top N SSD matches.")
+option(inpainting_InpaintingMinimizeIntroducedEnergy "Build a patch based image inpainting algorithm that uses an introduced energy sort on the top N SSD matches.")
 if(inpainting_InpaintingMinimizeIntroducedEnergy)
   ADD_EXECUTABLE(InpaintingMinimizeIntroducedEnergy InpaintingMinimizeIntroducedEnergy.cpp)
   TARGET_LINK_LIBRARIES(InpaintingMinimizeIntroducedEnergy ${PatchBasedInpainting_libraries})

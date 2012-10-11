@@ -34,17 +34,20 @@
    * \tparam DistanceFunctionType The functor type to compute the distance measure.
    * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
    */
-template <typename TImagePatchDescriptorMap, typename TImage>
+template <typename TImagePatchDescriptorMap, typename TImage, typename TImageToWrite = TImage>
 class LinearSearchBestIntroducedEnergy : public Debug, public LinearSearchBestParent
 {
   TImage* Image;
   Mask* MaskImage;
   TImagePatchDescriptorMap ImagePatchDescriptorMap;
+  TImageToWrite* ImageToWrite;
 
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
-  LinearSearchBestIntroducedEnergy(TImagePatchDescriptorMap imagePatchDescriptorMap, TImage* const image, Mask* const mask) :
-    Image(image), MaskImage(mask), ImagePatchDescriptorMap(imagePatchDescriptorMap)
+  LinearSearchBestIntroducedEnergy(TImagePatchDescriptorMap imagePatchDescriptorMap,
+                                   TImage* const image, Mask* const mask,
+                                   TImageToWrite* const imageToWrite = nullptr) :
+    Image(image), MaskImage(mask), ImagePatchDescriptorMap(imagePatchDescriptorMap), ImageToWrite(imageToWrite)
   {}
 
   /**
@@ -106,7 +109,7 @@ public:
       }
     }
 
-    if(this->GetDebugOutputs())
+    if(this->GetDebugScreenOutputs())
     {
       std::cout << "Patch Id with best introduced energy: " << bestId << std::endl;
       std::cout << "Best introduced energy: " << bestDistance << std::endl;

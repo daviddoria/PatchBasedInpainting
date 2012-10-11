@@ -40,7 +40,6 @@
 #include "NearestNeighbor/LinearSearchBest/DualHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchBest/AdaptiveDualHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchBest/AdaptiveDualQuadrantHistogramDifference.hpp"
-#include "NearestNeighbor/LinearSearchBest/IntroducedEnergy.hpp"
 #include "NearestNeighbor/LinearSearchBest/First.hpp"
 #include "NearestNeighbor/LinearSearchBest/FirstAndWrite.hpp"
 #include "NearestNeighbor/LinearSearchBest/Texture.hpp"
