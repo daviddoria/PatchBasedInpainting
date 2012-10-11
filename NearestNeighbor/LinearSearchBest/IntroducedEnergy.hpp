@@ -21,6 +21,8 @@
 
 #include <Utilities/IntroducedEnergy.h>
 #include <Utilities/Debug/Debug.h>
+#include <Helpers/ParallelSort.h>
+#include <Utilities/PatchHelpers.h>
 
 #include "LinearSearchBestParent.hpp"
 
@@ -67,6 +69,9 @@ public:
       return *last;
     }
 
+    // Store the scores in this container so we can sort them later
+    std::vector<float> scores(last - first);
+
     itk::ImageRegion<2> queryRegion = get(this->ImagePatchDescriptorMap, query).GetRegion();
 
     // Initialize
@@ -97,6 +102,8 @@ public:
       float introducedEnergy = introducedEnergyFunctor.ComputeIntroducedEnergyMaskBoundary(this->Image, this->MaskImage,
                                                                                  currentRegion, queryRegion);
 
+      scores[currentPatch - first] = introducedEnergy;
+
       fout << Helpers::ZeroPad(patchId, 3) << ": " << introducedEnergy << std::endl;
 
       if(introducedEnergy < bestDistance)
@@ -119,6 +126,36 @@ public:
     {
       itk::ImageRegion<2> bestRegion = get(this->ImagePatchDescriptorMap, *bestPatch).GetRegion();
       ITKHelpers::WriteRegionAsRGBImage(this->Image, bestRegion, Helpers::GetSequentialFileName("BestIntroducedEnergyRegion",this->Iteration,"png",3));
+    }
+
+    if(this->DebugImages)
+    {
+      if(this->ImageToWrite == nullptr)
+      {
+        throw std::runtime_error("LinearSearchBestHistogramDifference cannot WriteTopPatches without having an ImageToWrite!");
+      }
+
+      typedef ParallelSort<float> ParallelSortType;
+
+      ParallelSortType::IndexedVector sortedScores = ParallelSortType::ParallelSortAscending(scores);
+
+      std::vector<typename TIterator::value_type> sortedPatches(last - first);
+
+      for(unsigned int i = 0; i < sortedPatches.size(); ++i)
+      {
+        unsigned int currentId = sortedScores[i].index;
+
+        TIterator current = first;
+        std::advance(current, currentId);
+
+        sortedPatches[i] = *current;
+//        std::cout << "Set sortedPatches " << i << " to " << currentId << std::endl;
+      }
+
+      unsigned int gridWidth = 10;
+      unsigned int gridHeight = 10;
+      PatchHelpers::WriteTopPatchesGrid(this->ImageToWrite, this->ImagePatchDescriptorMap, sortedPatches.begin(), sortedPatches.end(),
+                                        "BestPatchesSorted", this->Iteration, gridWidth, gridHeight);
     }
 
     this->Iteration++;

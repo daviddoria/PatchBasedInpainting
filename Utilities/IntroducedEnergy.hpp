@@ -189,8 +189,21 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
   for(PixelContainer::const_iterator boundaryPixelIterator = boundaryPixels.begin();
       boundaryPixelIterator != boundaryPixels.end(); ++boundaryPixelIterator)
   {
-    gradientMagnitudeChange += (targetRegionGradientImage->GetPixel(*boundaryPixelIterator) -
-                                inpaintedGradientImage->GetPixel(*boundaryPixelIterator)).GetSquaredNorm();
+    GradientImageType::PixelType targetGradient = targetRegionGradientImage->GetPixel(*boundaryPixelIterator);
+    GradientImageType::PixelType inpaintedGradient = inpaintedGradientImage->GetPixel(*boundaryPixelIterator);
+
+    // Remove the orientation from both vectors (i.e. a "left" gradient is treated the same as a "right" gradient
+    if(targetGradient[0] < 0)
+    {
+      targetGradient *= -1.0f;
+    }
+
+    if(inpaintedGradient[0] < 0)
+    {
+      inpaintedGradient *= -1.0f;
+    }
+
+    gradientMagnitudeChange += (targetGradient - inpaintedGradient).GetSquaredNorm();
   }
 
 //  std::cout << "ComputeIntroducedEnergyMaskBoundary: " << gradientMagnitudeChange << std::endl;
@@ -216,9 +229,13 @@ float IntroducedEnergy<TImage>::ComputeIntroducedEnergyMaskBoundary(const TImage
     ITKHelpers::SetPixels(boundaryPixelImage.GetPointer(), boundaryPixels, 255);
     ITKHelpers::WriteImage(boundaryPixelImage.GetPointer(), std::string("MaskBoundaryEnergy_BoundaryPixels_") + ssIteration.str());
 
-//    ITKHelpers::WriteImage(targetRegionGradientImage.GetPointer(), "MaskBoundaryEnergy_TargetGradient.mha");
-//    ITKHelpers::WriteImage(inpaintedGradientImage.GetPointer(), "MaskBoundaryEnergy_InpaintedGradient.mha");
-//    ITKHelpers::WriteImage(inpaintedImage.GetPointer(), "MaskBoundaryEnergy_Inpainted.mha");
+    if(this->DebugLevel > 1)
+    {
+      ITKHelpers::WriteImage(targetRegionGradientImage.GetPointer(), "MaskBoundaryEnergy_TargetGradient.mha");
+      ITKHelpers::WriteImage(inpaintedGradientImage.GetPointer(), "MaskBoundaryEnergy_InpaintedGradient.mha");
+      ITKHelpers::WriteImage(inpaintedImage.GetPointer(), "MaskBoundaryEnergy_Inpainted.mha");
+    }
+
   }
 
   if(boundaryPixels.size() > 0)

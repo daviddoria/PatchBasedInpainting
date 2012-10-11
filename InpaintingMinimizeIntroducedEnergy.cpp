@@ -34,9 +34,9 @@
 int main(int argc, char *argv[])
 {
   // Verify arguments
-  if(argc != 7)
+  if(argc != 6)
   {
-    std::cerr << "Required arguments: image.png imageMask.mask patchHalfWidth numberOfKNN binsPerChannel output.png" << std::endl;
+    std::cerr << "Required arguments: image.png imageMask.mask patchHalfWidth numberOfKNN output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
     {

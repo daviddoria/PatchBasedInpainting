@@ -172,17 +172,16 @@ public:
       std::cout << "Best histogramDifference: " << bestDistance << std::endl;
     }
 
-
-    typedef ParallelSort<float> ParallelSortType;
-
-    ParallelSortType::IndexedVector sortedScores = ParallelSortType::ParallelSortAscending(scores);
-
     if(this->DebugImages)
     {
       if(this->ImageToWrite == nullptr)
       {
         throw std::runtime_error("LinearSearchBestHistogramDifference cannot WriteTopPatches without having an ImageToWrite!");
       }
+
+      typedef ParallelSort<float> ParallelSortType;
+
+      ParallelSortType::IndexedVector sortedScores = ParallelSortType::ParallelSortAscending(scores);
 
       std::vector<typename TIterator::value_type> sortedPatches(last - first);
 
