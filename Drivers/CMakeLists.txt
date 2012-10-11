@@ -1,5 +1,6 @@
 add_custom_target(Drivers SOURCES
 ClassicalImageInpainting.hpp
+InpaintingHistogram.hpp
 InpaintingTexture.hpp
 LidarInpaintingHSVTextureVerification.hpp
 LidarInpaintingRGBTextureVerification.hpp

@@ -59,8 +59,11 @@ public:
       return *last;
     }
 
-    PatchHelpers::WriteTopPatches(this->Image, this->PatchDescriptorPropertyMap, first, last,
-                                  "BestPatches", this->Iteration);
+//    PatchHelpers::WriteTopPatches(this->Image, this->PatchDescriptorPropertyMap, first, last,
+//                                  "BestPatches", this->Iteration);
+
+    PatchHelpers::WriteTopPatchesGrid(this->Image, this->PatchDescriptorPropertyMap, first, last,
+                                  "BestPatches", this->Iteration, 10, 10);
 
     std::ofstream fout(Helpers::GetSequentialFileName("Scores", this->Iteration, "txt", 3).c_str());
 

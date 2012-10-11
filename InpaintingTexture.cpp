@@ -47,7 +47,6 @@
 
 // Initializers
 #include "Initializers/InitializeFromMaskImage.hpp"
-#include "Initializers/InitializePriority.hpp"
 
 // Inpainters
 #include "Inpainters/PatchInpainter.hpp"

@@ -202,7 +202,7 @@ public:
 
       float histogramDifference = HistogramDifferences::HistogramDifference(targetHistogram, testHistogram);
 
-      if(this->DebugOutputs)
+      if(this->DebugScreenOutputs)
       {
         std::cout << "histogramDifference " << currentPatch - first << " : " << histogramDifference << std::endl;
       }

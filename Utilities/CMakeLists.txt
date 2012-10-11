@@ -17,8 +17,6 @@ itkCommandLineArgumentParser.h
 IndirectPriorityQueue.h
 IntroducedEnergy.h
 IntroducedEnergy.hpp
-ParallelSort.h
-ParallelSort.hxx
 PatchHelpers.h
 PatchHelpers.hpp
 RotateVectors.h

@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef InpaintingTexture_HPP
-#define InpaintingTexture_HPP
+#ifndef InpaintingHistogram_HPP
+#define InpaintingHistogram_HPP
 
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
@@ -83,7 +83,9 @@
 
 // Run with: Data/trashcan.png Data/trashcan.mask 15 filled.png
 template <typename TImage>
-void InpaintingTexture(TImage* const originalImage, Mask* const mask, const unsigned int patchHalfWidth, const unsigned int numberOfKNN)
+void InpaintingHistogram(TImage* const originalImage, Mask* const mask,
+                         const unsigned int patchHalfWidth, const unsigned int numberOfKNN,
+                         const unsigned int binsPerChannel)
 {
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
 
@@ -134,6 +136,7 @@ void InpaintingTexture(TImage* const originalImage, Mask* const mask, const unsi
   OriginalImageInpainterType originalImagePatchInpainter(patchHalfWidth, originalImage, mask);
   originalImagePatchInpainter.SetDebugImages(true);
   originalImagePatchInpainter.SetImageName("RGB");
+  originalImagePatchInpainter.SetDebugLevel(2); // To also output TargetPatchAfter* files
 
   // Create an inpainter for the HSV image.
   typedef PatchInpainter<HSVImageType> HSVImageInpainterType;
@@ -176,7 +179,8 @@ void InpaintingTexture(TImage* const originalImage, Mask* const mask, const unsi
 
   // Create the inpainting visitor. (The mask is inpainted in FinishVertex)
   typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
-      ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType, TImage>
+      ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType,
+      TImage>
       InpaintingVisitorType;
   InpaintingVisitorType inpaintingVisitor(mask, boundaryNodeQueue,
                                           imagePatchDescriptorVisitor, acceptanceVisitor,
@@ -205,12 +209,16 @@ void InpaintingTexture(TImage* const originalImage, Mask* const mask, const unsi
   typedef std::vector<VertexDescriptorType>::iterator VertexDescriptorVectorIteratorType;
 
   // This is templated on TImage because we need it to write out debug patches from this searcher (since we are not using an RGB image to compute the histograms)
-//  typedef LinearSearchBestTexture<ImagePatchDescriptorMapType, HSVImageType,
-//      VertexDescriptorVectorIteratorType, TImage> BestSearchType; // Use the histogram of the gradient magnitudes of a scalar represetnation of the image (e.g. magnitude image)
-  typedef LinearSearchBestColorTexture<ImagePatchDescriptorMapType, HSVImageType,
-      VertexDescriptorVectorIteratorType, TImage> BestSearchType; // Use the concatenated histograms of the gradient magnitudes of each channel
+  typedef LinearSearchBestHistogramDifference<ImagePatchDescriptorMapType, HSVImageType,
+      VertexDescriptorVectorIteratorType, TImage> BestSearchType;
 
-  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
+  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask, originalImage);
+  linearSearchBest.SetDebugImages(true);
+
+  linearSearchBest.SetNumberOfBinsPerDimension(binsPerChannel);
+  // The range (0,1) is used because we use the HSV image.
+  linearSearchBest.SetRangeMin(0.0f);
+  linearSearchBest.SetRangeMax(1.0f);
 
   // Setup the two step neighbor finder
 

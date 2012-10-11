@@ -23,6 +23,9 @@
 
 #include <Utilities/Histogram/HistogramHelpers.hpp>
 #include <Utilities/Histogram/HistogramDifferences.hpp>
+#include <Utilities/PatchHelpers.h>
+#include <Utilities/Debug/Debug.h>
+#include <Helpers/ParallelSort.h>
 
 /**
    * This function template is similar to std::min_element but can be used when the comparison
@@ -35,13 +38,15 @@
    * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
    */
 template <typename PropertyMapType, typename TImage, typename TIterator, typename TImageToWrite = TImage>
-class LinearSearchBestHistogramDifference : public LinearSearchBestHistogramParent<PropertyMapType, TImage, TIterator, TImageToWrite>
+class LinearSearchBestHistogramDifference : public LinearSearchBestHistogramParent<PropertyMapType, TImage, TIterator, TImageToWrite>,
+    public Debug
 {
 
+  TImageToWrite* ImageToWrite;
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
-  LinearSearchBestHistogramDifference(PropertyMapType propertyMap, TImage* const image, Mask* const mask) :
-    LinearSearchBestHistogramParent<PropertyMapType, TImage, TIterator, TImageToWrite>(propertyMap, image, mask)
+  LinearSearchBestHistogramDifference(PropertyMapType propertyMap, TImage* const image, Mask* const mask, TImageToWrite* const imageToWrite = nullptr) :
+    LinearSearchBestHistogramParent<PropertyMapType, TImage, TIterator, TImageToWrite>(propertyMap, image, mask), ImageToWrite(imageToWrite)
   {}
 
   /**
@@ -73,6 +78,9 @@ public:
       }
     }
 
+    // Store the scores in this container so we can sort them later
+    std::vector<float> scores(last - first);
+
     typedef int BinValueType;
     typedef MaskedHistogramGenerator<BinValueType> MaskedHistogramGeneratorType;
     typedef HistogramGenerator<BinValueType>::HistogramType HistogramType;
@@ -101,7 +109,8 @@ public:
       MaskOperations::WriteMaskedRegionPNG(this->ImageToWrite, this->MaskImage, queryRegion,
                                            Helpers::GetSequentialFileName("MaskedQueryRegion",this->Iteration,"png",3), holeColor);
 
-      this->WriteTopPatches(first, last);
+      PatchHelpers::WriteTopPatchesGrid(this->ImageToWrite, this->PropertyMap, first, last,
+                                        "HistogramTopPatches", this->Iteration, 10, 10); // 10x10 grid
 
       // Compute the histogram of the best SSD region using the queryRegion mask
       HistogramType bestSSDHistogram =
@@ -141,6 +150,8 @@ public:
 //      float histogramDifference = HistogramDifferences::WeightedHistogramDifference(targetHistogram, testHistogram);
 //      float histogramDifference = HistogramDifferences::HistogramCoherence(targetHistogram, testHistogram);
 
+      scores[currentPatch - first] = histogramDifference;
+
       if(histogramDifference < bestDistance)
       {
         bestDistance = histogramDifference;
@@ -159,6 +170,37 @@ public:
       HistogramHelpers::WriteHistogram(bestHistogram, Helpers::GetSequentialFileName("BestHistogram",this->Iteration,"txt",3));
       std::cout << "Best histogram id: " << bestId << std::endl;
       std::cout << "Best histogramDifference: " << bestDistance << std::endl;
+    }
+
+
+    typedef ParallelSort<float> ParallelSortType;
+
+    ParallelSortType::IndexedVector sortedScores = ParallelSortType::ParallelSortAscending(scores);
+
+    if(this->DebugImages)
+    {
+      if(this->ImageToWrite == nullptr)
+      {
+        throw std::runtime_error("LinearSearchBestHistogramDifference cannot WriteTopPatches without having an ImageToWrite!");
+      }
+
+      std::vector<typename TIterator::value_type> sortedPatches(last - first);
+
+      for(unsigned int i = 0; i < sortedPatches.size(); ++i)
+      {
+        unsigned int currentId = sortedScores[i].index;
+
+        TIterator current = first;
+        std::advance(current, currentId);
+
+        sortedPatches[i] = *current;
+//        std::cout << "Set sortedPatches " << i << " to " << currentId << std::endl;
+      }
+
+      unsigned int gridWidth = 10;
+      unsigned int gridHeight = 10;
+      PatchHelpers::WriteTopPatchesGrid(this->ImageToWrite, this->PropertyMap, sortedPatches.begin(), sortedPatches.end(),
+                                        "BestPatchesSorted", this->Iteration, gridWidth, gridHeight);
     }
 
     this->Iteration++;

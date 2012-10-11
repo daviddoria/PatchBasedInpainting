@@ -420,7 +420,7 @@ public:
         std::advance(current, currentId);
 
         sortedPatches[i] = *current;
-        std::cout << "Set sortedPatches " << i << " to " << currentId << std::endl;
+//        std::cout << "Set sortedPatches " << i << " to " << currentId << std::endl;
       }
 
       unsigned int gridWidth = 10;
