@@ -16,10 +16,9 @@
  *
  *=========================================================================*/
 
-// Custom
-
-#include "Helpers/Helpers.h"
-#include "ImageProcessing/Mask.h"
+// Submodules
+#include <Helpers/Helpers.h>
+#include <Mask/Mask.h>
 
 // ITK
 #include "itkBinaryThresholdImageFilter.h"
@@ -61,6 +60,7 @@ int main(int argc, char *argv[])
   FloatVectorImageType::Pointer image = imageSource->GetOutput();
 */
   // Generate a random image
+  typedef itk::VectorImage<float, 2> FloatVectorImageType;
   FloatVectorImageType::Pointer image = FloatVectorImageType::New();
   image->SetRegions(region);
   image->SetNumberOfComponentsPerPixel(3);
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
   itk::ImageRegionIterator<FloatVectorImageType> imageIterator(image, image->GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
-    {
+  {
     FloatVectorImageType::PixelType pixel;
     pixel.SetSize(3);
     pixel[0] = drand48();
@@ -78,10 +78,11 @@ int main(int argc, char *argv[])
     pixel[2] = drand48();
     imageIterator.Set(pixel);
     ++imageIterator;
-    }
+  }
   }
 
   // Generate a random membership image
+  typedef itk::Image<int, 2> IntImageType;
   IntImageType::Pointer membershipImage = IntImageType::New();
   membershipImage->SetRegions(region);
   membershipImage->Allocate();
@@ -91,12 +92,12 @@ int main(int argc, char *argv[])
   itk::ImageRegionIterator<IntImageType> membershipImageIterator(membershipImage, membershipImage->GetLargestPossibleRegion());
 
   while(!membershipImageIterator.IsAtEnd())
-    {
+  {
     IntImageType::PixelType pixel;
     pixel = rand() / 1000;
     membershipImageIterator.Set(pixel);
     ++membershipImageIterator;
-    }
+  }
   }
 
   // Write the image
@@ -135,19 +136,19 @@ int main(int argc, char *argv[])
   itk::ImageRegionIterator<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
 
   while(!maskIterator.IsAtEnd())
-    {
+  {
     int randomNumber = rand()%10;
     //std::cout << "randomNumber: " << randomNumber << std::endl;
     if(randomNumber > 5)
-      {
+    {
       maskIterator.Set(mask->GetHoleValue());
-      }
-    else
-      {
-      maskIterator.Set(mask->GetValidValue());
-      }
-    ++maskIterator;
     }
+    else
+    {
+      maskIterator.Set(mask->GetValidValue());
+    }
+    ++maskIterator;
+  }
   }
   std::cout << "Writing mask..." << std::endl;
   // Write the mask

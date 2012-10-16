@@ -16,9 +16,8 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "Helpers/Helpers.h"
-#include "Helpers/OutputHelpers.h"
+// Submodules
+#include <ITKHelpers/ITKHelpers.h>
 
 // ITK
 #include "itkGradientImageFilter.h"
@@ -40,6 +39,9 @@ int main(int argc, char *argv[])
     }
 
   std::string maskFilename = argv[1];
+
+  typedef itk::Image<unsigned int, 2> UnsignedCharScalarImageType;
+  typedef itk::Image<float, 2> FloatScalarImageType;
 
   std::cout << "Reading image: " << maskFilename << std::endl;
   typedef itk::ImageFileReader<UnsignedCharScalarImageType> ReaderType;
@@ -73,7 +75,7 @@ int main(int argc, char *argv[])
   gradientMagnitudeFilter->SetInput(gaussianFilter->GetOutput());
   gradientMagnitudeFilter->Update();
 
-  OutputHelpers::WriteImage<UnsignedCharScalarImageType>(gradientMagnitudeFilter->GetOutput(), "BoundaryGradient.png");
+  ITKHelpers::WriteImage(gradientMagnitudeFilter->GetOutput(), "BoundaryGradient.png");
 
   // Only keep the normals at the boundary
   typedef itk::MaskImageFilter< UnsignedCharScalarImageType, UnsignedCharScalarImageType, UnsignedCharScalarImageType > MaskFilterType;
@@ -82,7 +84,7 @@ int main(int argc, char *argv[])
   maskFilter->SetMaskImage(binaryContourFilter->GetOutput());
   maskFilter->Update();
 
-  OutputHelpers::WriteImage<UnsignedCharScalarImageType>(maskFilter->GetOutput(), "MaskedBoundaryGradient.png");
+  ITKHelpers::WriteImage(maskFilter->GetOutput(), "MaskedBoundaryGradient.png");
 
   return EXIT_SUCCESS;
 }

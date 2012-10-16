@@ -16,10 +16,10 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "ImageProcessing/MaskOperations.h"
-#include "ImageProcessing/Mask.h"
-#include "Helpers/OutputHelpers.h"
+// Submodules
+#include <Mask/MaskOperations.h>
+#include <Mask/Mask.h>
+#include <ITKHelpers/ITKHelpers.h>
 
 // ITK
 #include "itkImageFileReader.h"
@@ -27,10 +27,10 @@
 int main(int argc, char*argv[])
 {
   if(argc != 4)
-    {
+  {
     std::cerr << "Required arguments: image mask output" << std::endl;
     return EXIT_FAILURE;
-    }
+  }
   std::string imageFilename = argv[1];
   std::string maskFilename = argv[2];
   std::string outputFilename = argv[3];
@@ -53,7 +53,7 @@ int main(int argc, char*argv[])
   LaplacianImageType::Pointer output = LaplacianImageType::New();
   MaskOperations::MaskedLaplacian(imageReader->GetOutput(), mask.GetPointer(), output.GetPointer());
 
-  OutputHelpers::WriteImage(output.GetPointer(), outputFilename);
+  ITKHelpers::WriteImage(output.GetPointer(), outputFilename);
 
   return EXIT_SUCCESS;
 }

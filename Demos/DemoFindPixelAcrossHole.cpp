@@ -16,9 +16,9 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "Helpers/OutputHelpers.h"
-#include "ImageProcessing/Mask.h"
+// Submodules
+#include <ITKHelpers/ITKHelpers.h>
+#include <Mask/Mask.h>
 
 // ITK
 #include "itkImageFileReader.h"
@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
   queryPixel[0] = 5;
   queryPixel[1] = 5;
 
+  typedef itk::CovariantVector<float, 2> FloatVector2Type;
   FloatVector2Type direction;
   direction[0] = 1;
   direction[1] = 1;
@@ -69,13 +70,13 @@ static void CreateMask(Mask::Pointer mask)
   itk::ImageRegionIterator<Mask> iterator(mask, mask->GetLargestPossibleRegion());
 
   while(!iterator.IsAtEnd())
-    {
+  {
     if(iterator.GetIndex()[0] > 5 && iterator.GetIndex()[0] < 15 &&
        iterator.GetIndex()[1] > 5 && iterator.GetIndex()[1] < 15)
-      {
+    {
       mask->SetPixel(iterator.GetIndex(), mask->GetHoleValue());
-      }
+    }
 
     ++iterator;
-    }
+  }
 }

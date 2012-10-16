@@ -16,15 +16,15 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "Helpers/Helpers.h"
-#include "Helpers/OutputHelpers.h"
+// Submodules
+#include <Helpers/Helpers.h>
+#include <ITKHelpers/ITKHelpers.h>
 
 // ITK
 #include "itkBinaryDilateImageFilter.h"
 #include "itkBinaryContourImageFilter.h"
 #include "itkBinaryThresholdImageFilter.h"
-#include "itkCompose3DCovariantVectorImageFilter.h"
+#include "itkComposeImageFilter.h"
 #include "itkDiscreteGaussianImageFilter.h"
 #include "itkFlatStructuringElement.h"
 #include "itkGradientImageFilter.h"
@@ -39,16 +39,17 @@
 int main(int argc, char *argv[])
 {
   if(argc != 2)
-    {
+  {
     std::cerr << "Required arguments: filename" << std::endl;
     return EXIT_FAILURE;
-    }
+  }
 
   std::string filename = argv[1];
 
   std::cout << "Reading image: " << filename << std::endl;
 
   // Read the image
+  typedef itk::Image<unsigned char, 2> UnsignedCharScalarImageType;
   typedef itk::ImageFileReader<UnsignedCharScalarImageType> ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName(filename);
@@ -66,7 +67,7 @@ int main(int argc, char *argv[])
   thresholdFilter->SetOutsideValue(0);
   thresholdFilter->Update();
 
-  OutputHelpers::WriteImage(thresholdFilter->GetOutput(), "Binary.png");
+  ITKHelpers::WriteImage(thresholdFilter->GetOutput(), "Binary.png");
 
   // Find the outer boundary
   typedef itk::BinaryContourImageFilter <UnsignedCharScalarImageType, UnsignedCharScalarImageType >
@@ -86,7 +87,7 @@ int main(int argc, char *argv[])
   invertIntensityFilter->SetInput(outerBoundaryFilter->GetOutput());
   invertIntensityFilter->Update();
 
-  OutputHelpers::WriteImage(invertIntensityFilter->GetOutput(), "OuterBoundary.png");
+  ITKHelpers::WriteImage(invertIntensityFilter->GetOutput(), "OuterBoundary.png");
 
   // Find the inner boundary
   binaryContourImageFilterType::Pointer innerBoundaryFilter = binaryContourImageFilterType::New ();
@@ -95,18 +96,19 @@ int main(int argc, char *argv[])
   innerBoundaryFilter->SetBackgroundValue(0);
   innerBoundaryFilter->Update();
 
-  OutputHelpers::WriteImage(innerBoundaryFilter->GetOutput(), "InnerBoundary.png");
+  ITKHelpers::WriteImage(innerBoundaryFilter->GetOutput(), "InnerBoundary.png");
 
-  typedef itk::Compose3DCovariantVectorImageFilter<UnsignedCharScalarImageType,
-                              UnsignedCharVectorImageType> ComposeCovariantVectorImageFilterType;
+  typedef itk::VectorImage<unsigned char, 2> UnsignedCharVectorImageType;
+  typedef itk::ComposeImageFilter<UnsignedCharScalarImageType,
+                              UnsignedCharVectorImageType> ComposeImageFilterType;
 
-  ComposeCovariantVectorImageFilterType::Pointer composeFilter = ComposeCovariantVectorImageFilterType::New();
-  composeFilter->SetInput1(thresholdFilter->GetOutput());
-  composeFilter->SetInput2(thresholdFilter->GetOutput());
-  composeFilter->SetInput3(thresholdFilter->GetOutput());
+  ComposeImageFilterType::Pointer composeFilter = ComposeImageFilterType::New();
+  composeFilter->SetInput(0, thresholdFilter->GetOutput());
+  composeFilter->SetInput(1, thresholdFilter->GetOutput());
+  composeFilter->SetInput(2, thresholdFilter->GetOutput());
   composeFilter->Update();
 
-  OutputHelpers::WriteImage(composeFilter->GetOutput(), "Composed.png");
+  ITKHelpers::WriteImage(composeFilter->GetOutput(), "Composed.png");
 
   /*
   typedef itk::ImageDuplicator< ImageType > DuplicatorType;
@@ -130,25 +132,26 @@ int main(int argc, char *argv[])
   green[0] = 0;
   green[1] = 255;
   green[2] = 0;
+
   while(!outputIterator.IsAtEnd())
-    {
+  {
     //std::cout << (int)innerBoundaryIterator.Get() << std::endl;
     if(innerBoundaryIterator.Get() > 0)
-      {
+    {
       outputIterator.Set(red);
-      }
+    }
 
     if(outerBoundaryIterator.Get() > 0)
-      {
+    {
       outputIterator.Set(green);
-      }
+    }
 
     ++innerBoundaryIterator;
     ++outerBoundaryIterator;
     ++outputIterator;
-    }
+  }
 
-  OutputHelpers::WriteImage(composeFilter->GetOutput(), "BothBoundaries.png");
+  ITKHelpers::WriteImage(composeFilter->GetOutput(), "BothBoundaries.png");
 
   return EXIT_SUCCESS;
 }

@@ -16,11 +16,11 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "Helpers/Helpers.h"
-#include "Helpers/OutputHelpers.h"
-#include "ImageProcessing/Mask.h"
-#include "ImageProcessing/MaskOperations.h"
+// Submodules
+#include <Helpers/Helpers.h>
+#include <ITKHelpers/ITKHelpers.h>
+#include <Mask/Mask.h>
+#include <Mask/MaskOperations.h>
 
 // ITK
 #include "itkImageFileReader.h"
@@ -29,15 +29,16 @@
 int main(int argc, char *argv[])
 {
   if(argc != 3)
-    {
+  {
     std::cerr << "Required arguments: image mask" << std::endl;
     return EXIT_FAILURE;
-    }
+  }
   std::string imageFilename = argv[1];
   std::string maskFilename = argv[2];
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
 
+  typedef itk::VectorImage<float, 2> FloatVectorImageType;
   typedef itk::ImageFileReader<FloatVectorImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
   imageReader->SetFileName(imageFilename.c_str());
@@ -53,12 +54,14 @@ int main(int argc, char *argv[])
   std::cout << "Read mask " << maskReader->GetOutput()->GetLargestPossibleRegion() << std::endl;
 
   // Prepare image
+  typedef itk::Image<itk::RGBPixel<unsigned char>, 2> RGBImageType;
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   // TODO: update this to the new API
   //Helpers::VectorImageToRGBImage(imageReader->GetOutput(), rgbImage);
 
-  OutputHelpers::WriteImage(rgbImage.GetPointer(), "Test/TestIsophotes.rgb.mha");
+  ITKHelpers::WriteImage(rgbImage.GetPointer(), "Test/TestIsophotes.rgb.mha");
 
+  typedef itk::Image<float, 2> FloatScalarImageType;
   typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
   LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
   luminanceFilter->SetInput(rgbImage);
@@ -70,7 +73,7 @@ int main(int argc, char *argv[])
   MaskOperations::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), maskReader->GetOutput(), kernelRadius,
                                             blurredLuminance);
 
-  OutputHelpers::WriteImage<FloatScalarImageType>(blurredLuminance, "Test/TestIsophotes.blurred.mha");
+  ITKHelpers::WriteImage(blurredLuminance.GetPointer(), "Test/TestIsophotes.blurred.mha");
 
   //inpainting.ComputeMaskedIsophotes(blurredLuminance, maskReader->GetOutput());
 

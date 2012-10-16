@@ -16,9 +16,9 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "Helpers/OutputHelpers.h"
-#include "ImageProcessing/Mask.h"
+// Submodules
+#include <ITKHelpers/ITKHelpers.h>
+#include <Mask/Mask.h>
 
 // ITK
 #include "itkImageFileReader.h"
@@ -29,15 +29,16 @@
 int main(int argc, char *argv[])
 {
   if(argc != 3)
-    {
+  {
     std::cerr << "Required arguments: image mask" << std::endl;
     return EXIT_FAILURE;
-    }
+  }
   std::string imageFilename = argv[1];
   std::string maskFilename = argv[2];
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
 
+  typedef itk::VectorImage<float, 2> FloatVectorImageType;
   typedef itk::ImageFileReader<FloatVectorImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
   imageReader->SetFileName(imageFilename.c_str());

@@ -16,12 +16,15 @@
  *
  *=========================================================================*/
 
+// Submodules
+#include <Helpers/Helpers.h>
+#include <ITKHelpers/ITKHelpers.h>
+#include <VTKHelpers/VTKHelpers.h>
+#include <Mask/Mask.h>
+#include <Mask/MaskOperations.h>
+
 // Custom
 #include "ImageProcessing/Derivatives.h"
-#include "Helpers/Helpers.h"
-#include "Helpers/OutputHelpers.h"
-#include "ImageProcessing/Mask.h"
-#include "ImageProcessing/MaskOperations.h"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -38,10 +41,10 @@
 int main(int argc, char *argv[])
 {
   if(argc != 3)
-    {
+  {
     std::cerr << "Required arguments: image mask" << std::endl;
     return EXIT_FAILURE;
-    }
+  }
   std::string imageFilename = argv[1];
   std::string maskFilename = argv[2];
   std::cout << "Reading image: " << imageFilename << std::endl;
@@ -66,14 +69,14 @@ int main(int argc, char *argv[])
   // Helpers::VectorImageToRGBImage(imageReader->GetOutput(), rgbImage);
   // TODO: Update this call to new API
   //maskReader->GetOutput()->ApplyToImage(rgbImage.GetPointer(), Qt::black);
-  OutputHelpers::WriteImage<RGBImageType>(rgbImage, "Test/TestIsophotes.rgb.mha");
+  ITKHelpers::WriteImage(rgbImage.GetPointer(), "Test/TestIsophotes.rgb.mha");
 
   typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
   LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
   luminanceFilter->SetInput(rgbImage);
   luminanceFilter->Update();
 
-  OutputHelpers::WriteImage<FloatScalarImageType>(luminanceFilter->GetOutput(), "Test/Luminance.mha");
+  ITKHelpers::WriteImage(luminanceFilter->GetOutput(), "Test/Luminance.mha");
 
 //   PatchBasedInpainting inpainting;
 //   inpainting.SetDebugImages(true);
@@ -84,7 +87,7 @@ int main(int argc, char *argv[])
 
   // After blurVariance == 4, you cannot tell the difference in the output.
   for(unsigned int blurVariance = 0; blurVariance < 5; ++blurVariance)
-    {
+  {
     std::string fileNumber = Helpers::ZeroPad(blurVariance, 2);
 
     FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
@@ -94,7 +97,7 @@ int main(int argc, char *argv[])
                                blurVariance, blurredLuminance.GetPointer());
     std::stringstream ssBlurredLuminance;
     ssBlurredLuminance << "Test/BlurredLuminance_" << fileNumber << ".mha";
-    OutputHelpers::WriteImage(blurredLuminance.GetPointer(), ssBlurredLuminance.str());
+    ITKHelpers::WriteImage(blurredLuminance.GetPointer(), ssBlurredLuminance.str());
 
     //Helpers::WriteImage<FloatScalarImageType>(blurredLuminance, "Test/TestIsophotes.blurred.mha");
     FloatVector2ImageType::Pointer gradient = FloatVector2ImageType::New();
@@ -112,8 +115,8 @@ int main(int argc, char *argv[])
     //Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), boundaryGradient);
     std::stringstream ssPolyData;
     ssPolyData << "Test/BoundaryGradient_" << fileNumber << ".vtp";
-    OutputHelpers::WritePolyData(boundaryGradient, ssPolyData.str());
-    }
+    VTKHelpers::WritePolyData(boundaryGradient, ssPolyData.str());
+  }
 
   return EXIT_SUCCESS;
 }

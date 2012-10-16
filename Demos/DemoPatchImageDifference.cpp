@@ -16,10 +16,9 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "Helpers/Helpers.h"
-#include "Helpers/ITKHelpers.h"
-#include "Helpers/OutputHelpers.h"
+// Submodules
+#include <Helpers/Helpers.h>
+#include <ITKHelpers/ITKHelpers.h>
 
 // ITK
 #include "itkImage.h"
@@ -29,10 +28,11 @@
 int main(int argc, char*argv[])
 {
   if(argc != 4)
-    {
+  {
     std::cerr << "Required arguments: image mask output" << std::endl;
     return EXIT_FAILURE;
-    }
+  }
+
   std::string imageFilename = argv[1];
   std::string maskFilename = argv[2];
   std::string outputFilename = argv[3];
@@ -64,10 +64,11 @@ int main(int argc, char*argv[])
   extractImageFilter->SetInput(imageReader->GetOutput());
   extractImageFilter->Update();
 
+  typedef itk::Image<float, 2> FloatScalarImageType;
   FloatScalarImageType::Pointer differenceImage = FloatScalarImageType::New();
   //PatchImageDifference(imageReader->GetOutput(), maskReader->GetOutput(), extractImageFilter->GetOutput(), differenceImage);
 
-  OutputHelpers::WriteImage(differenceImage.GetPointer(), outputFilename);
+  ITKHelpers::WriteImage(differenceImage.GetPointer(), outputFilename);
 
   return EXIT_SUCCESS;
 }

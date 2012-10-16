@@ -16,10 +16,11 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "Helpers/Helpers.h"
-#include "Helpers/OutputHelpers.h"
-#include "ImageProcessing/Mask.h"
+// Submodules
+#include <Helpers/Helpers.h>
+#include <ITKHelpers/ITKHelpers.h>
+#include <VTKHelpers/VTKHelpers.h>
+#include <Mask/Mask.h>
 
 // ITK
 #include "itkImageFileReader.h"
@@ -42,6 +43,11 @@ int main(int argc, char *argv[])
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
 
+  typedef itk::VectorImage<float, 2> FloatVectorImageType;
+  typedef itk::Image<float, 2> FloatScalarImageType;
+
+  typedef itk::Image<itk::RGBPixel<unsigned char>, 2> RGBImageType;
+
   typedef itk::ImageFileReader<FloatVectorImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
   imageReader->SetFileName(imageFilename.c_str());
@@ -60,7 +66,7 @@ int main(int argc, char *argv[])
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   // Helpers::VectorImageToRGBImage(imageReader->GetOutput(), rgbImage);
 
-  OutputHelpers::WriteImage<RGBImageType>(rgbImage, "Test/TestIsophotes.rgb.mha");
+  ITKHelpers::WriteImage(rgbImage.GetPointer(), "Test/TestIsophotes.rgb.mha");
 
   typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
   LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
@@ -74,8 +80,7 @@ int main(int argc, char *argv[])
 //   Helpers::MaskedBlur<FloatScalarImageType>(luminanceFilter->GetOutput(), maskReader->GetOutput(),
 //                                             kernelRadius, blurredLuminance);
 
-  OutputHelpers::WriteImage<FloatScalarImageType>(blurredLuminance, "Test/TestIsophotes.blurred.mha");
-
+  ITKHelpers::WriteImage(blurredLuminance.GetPointer(), "Test/TestIsophotes.blurred.mha");
 
   // PatchBasedInpainting inpainting(NULL, maskReader->GetOutput());
   //inpainting.SetMask(maskReader->GetOutput());
@@ -84,12 +89,15 @@ int main(int argc, char *argv[])
   //inpainting.FindBoundary();
 
   for(unsigned int blurVariance = 0; blurVariance < 10; ++blurVariance)
-    {
+  {
     //inpainting.ComputeBoundaryNormals(blurVariance);
 
     std::stringstream ss;
     ss << "Test/BoundaryNormals_" << blurVariance << ".mha";
     //HelpersOutput::Write2DVectorImage(inpainting.GetBoundaryNormalsImage(), ss.str());
+
+    typedef itk::Image<itk::CovariantVector<float, 2>, 2> FloatVector2ImageType;
+    typedef itk::Image<unsigned char, 2> UnsignedCharScalarImageType;
 
     typedef itk::MaskImageFilter< FloatVector2ImageType, UnsignedCharScalarImageType, FloatVector2ImageType > MaskFilterType;
     MaskFilterType::Pointer maskFilter = MaskFilterType::New();
@@ -102,8 +110,8 @@ int main(int argc, char *argv[])
     // Helpers::ConvertNonZeroPixelsToVectors(maskFilter->GetOutput(), boundaryNormals);
     std::stringstream ssPolyData;
     ssPolyData << "Test/BoundaryNormals_" << blurVariance << ".vtp";
-    OutputHelpers::WritePolyData(boundaryNormals, ssPolyData.str());
-    }
+    VTKHelpers::WritePolyData(boundaryNormals, ssPolyData.str());
+  }
 
   return EXIT_SUCCESS;
 }

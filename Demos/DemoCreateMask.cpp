@@ -16,10 +16,10 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "Helpers/Helpers.h"
-#include "Helpers/OutputHelpers.h"
-#include "ImageProcessing/Mask.h"
+// Submodules
+#include <Helpers/Helpers.h>
+#include <ITKHelpers/ITKHelpers.h>
+#include <Mask/Mask.h>
 
 #include "Clustering/ClusterColorsUniform.h"
 #include "Clustering/ClusterColorsAdaptive.h"
@@ -30,6 +30,12 @@
 
 int main(int argc, char *argv[])
 {
+  if(argc != 3)
+  {
+    std::cerr << "Required arguments: inputFileName outputFileName" << std::endl;
+    return EXIT_FAILURE;
+  }
+
   std::string inputFileName = argv[1];
   std::string outputFileName = argv[2];
 
@@ -51,7 +57,7 @@ int main(int argc, char *argv[])
 
   mask->CreateFromImage<FloatVectorImageType>(reader->GetOutput(), green);
 
-  HelpersOutput::WriteImage<Mask>(mask, outputFileName);
+  ITKHelpers::WriteImage(mask.GetPointer(), outputFileName);
 
   return EXIT_SUCCESS;
 }

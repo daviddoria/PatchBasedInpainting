@@ -16,10 +16,10 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "Helpers/Helpers.h"
-#include "Helpers/OutputHelpers.h"
-#include "ImageProcessing/Mask.h"
+// Submodules
+#include <Helpers/Helpers.h>
+#include <ITKHelpers/ITKHelpers.h>
+#include <Mask/Mask.h>
 
 #include "Clustering/ClusterColorsUniform.h"
 #include "Clustering/ClusterColorsAdaptive.h"
@@ -45,6 +45,11 @@ static void WriteClusteredPixelsInRGBSpace(const FloatVectorImageType::Pointer i
 
 int main(int argc, char *argv[])
 {
+  if(argc < 3)
+  {
+    throw std::runtime_error("Required arguments: inputFileName outputPrefix");
+  }
+
   std::string inputFileName = argv[1];
   std::string outputPrefix = argv[2];
 
@@ -56,7 +61,7 @@ int main(int argc, char *argv[])
   reader->SetFileName(inputFileName);
   reader->Update();
 
-  OutputHelpers::WriteVectorImageAsRGB(reader->GetOutput(), outputPrefix + "/Image.mha");
+  ITKHelpers::WriteVectorImageAsRGB(reader->GetOutput(), outputPrefix + "/Image.mha");
 
   WriteImagePixelsToRGBSpace(reader->GetOutput(), outputPrefix + "/ImageColors.vtp");
 
@@ -70,7 +75,7 @@ int main(int argc, char *argv[])
   // TODO: Update this call to the new API
   //Helpers::AnisotropicBlurAllChannels<FloatVectorImageType>(reader->GetOutput(), blurred, blurVariance);
 
-  OutputHelpers::WriteVectorImageAsRGB(blurred, outputPrefix + "/BlurredImage.mha");
+  ITKHelpers::WriteVectorImageAsRGB(blurred.GetPointer(), outputPrefix + "/BlurredImage.mha");
 
   WriteImagePixelsToRGBSpace(blurred, outputPrefix + "/BlurredImageColors.vtp");
 
@@ -123,7 +128,7 @@ void WriteClusteredPixelsInRGBSpace(const FloatVectorImageType::Pointer image, c
   polyData->GetPointData()->AddArray(ids);
 
   vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-  glyphFilter->SetInputConnection(polyData->GetProducerPort());
+  glyphFilter->SetInputData(polyData);
   glyphFilter->Update();
 
   vtkSmartPointer<vtkXMLPolyDataWriter> writer = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
@@ -158,7 +163,7 @@ void WriteImagePixelsToRGBSpace(const FloatVectorImageType::Pointer image, const
   polyData->GetPointData()->SetScalars(colors);
 
   vtkSmartPointer<vtkVertexGlyphFilter> glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-  glyphFilter->SetInputConnection(polyData->GetProducerPort());
+  glyphFilter->SetInputData(polyData);
   glyphFilter->Update();
 
   vtkSmartPointer<vtkXMLPolyDataWriter> writer = vtkSmartPointer<vtkXMLPolyDataWriter>::New();

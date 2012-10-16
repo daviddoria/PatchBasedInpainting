@@ -33,13 +33,6 @@
 #include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
 
 // Nearest neighbors functions
-#include "NearestNeighbor/LinearSearchBest/HistogramCorrelation.hpp"
-#include "NearestNeighbor/LinearSearchBest/HistogramDifference.hpp"
-#include "NearestNeighbor/LinearSearchBest/HoleHistogramDifference.hpp"
-#include "NearestNeighbor/LinearSearchBest/HistogramNewColors.hpp"
-#include "NearestNeighbor/LinearSearchBest/DualHistogramDifference.hpp"
-#include "NearestNeighbor/LinearSearchBest/AdaptiveDualHistogramDifference.hpp"
-#include "NearestNeighbor/LinearSearchBest/AdaptiveDualQuadrantHistogramDifference.hpp"
 #include "NearestNeighbor/LinearSearchBest/First.hpp"
 #include "NearestNeighbor/LinearSearchBest/FirstAndWrite.hpp"
 #include "NearestNeighbor/LinearSearchBest/Texture.hpp"
@@ -209,7 +202,9 @@ void InpaintingTexture(TImage* const originalImage, Mask* const mask, const unsi
   typedef LinearSearchBestColorTexture<ImagePatchDescriptorMapType, HSVImageType,
       VertexDescriptorVectorIteratorType, TImage> BestSearchType; // Use the concatenated histograms of the gradient magnitudes of each channel
 
-  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask);
+  BestSearchType linearSearchBest(imagePatchDescriptorMap, hsvImage.GetPointer(), mask, originalImage);
+  linearSearchBest.SetDebugImages(true);
+  linearSearchBest.SetDebugOutputFiles(true);
 
   // Setup the two step neighbor finder
 

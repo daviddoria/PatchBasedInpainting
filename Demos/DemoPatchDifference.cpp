@@ -16,29 +16,36 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "ImageProcessing/Mask.h"
+// Submodules
+#include <Mask/Mask.h>
 
 // ITK
 #include "itkImageFileReader.h"
 
-bool TestSamePatch(const RGBImageType::Pointer image, Mask::Pointer mask);
-bool TestDifferentPatch(const RGBImageType::Pointer image, Mask::Pointer mask);
-bool TestOutsideImage(const RGBImageType::Pointer image, Mask::Pointer mask);
+template <typename TRGBImage>
+bool TestSamePatch(const TRGBImage* const image, Mask::Pointer mask);
+
+template <typename TRGBImage>
+bool TestDifferentPatch(const TRGBImage* const image, Mask::Pointer mask);
+
+template <typename TRGBImage>
+bool TestOutsideImage(const TRGBImage* const image, Mask::Pointer mask);
 
 int main(int argc, char *argv[])
 {
   if(argc != 3)
-    {
+  {
     std::cerr << "Only gave " << argc << " arguments!" << std::endl;
     std::cerr << "Required arguments: image mask" << std::endl;
     return EXIT_FAILURE;
-    }
+  }
+
   std::string imageFilename = argv[1];
   std::string maskFilename = argv[2];
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
 
+  typedef itk::Image<itk::RGBPixel<unsigned char>, 2> RGBImageType;
   typedef itk::ImageFileReader<RGBImageType> RGBReaderType;
   RGBReaderType::Pointer imageReader = RGBReaderType::New();
   imageReader->SetFileName(imageFilename);
@@ -56,7 +63,8 @@ int main(int argc, char *argv[])
   return EXIT_SUCCESS;
 }
 
-bool TestSamePatch(const RGBImageType::Pointer image, const Mask::Pointer mask)
+template <typename TRGBImage>
+bool TestSamePatch(const TRGBImage* image, const Mask::Pointer mask)
 {
   itk::Index<2> queryPixel;
   queryPixel[0] = 10;
@@ -79,7 +87,8 @@ bool TestSamePatch(const RGBImageType::Pointer image, const Mask::Pointer mask)
   return true;
 }
 
-bool TestDifferentPatch(const RGBImageType::Pointer image, const Mask::Pointer mask)
+template <typename TRGBImage>
+bool TestDifferentPatch(const TRGBImage* const image, const Mask::Pointer mask)
 {
   itk::Index<2> queryPixel;
   queryPixel[0] = 11;
@@ -103,7 +112,8 @@ bool TestDifferentPatch(const RGBImageType::Pointer image, const Mask::Pointer m
   return true;
 }
 
-bool TestOutsideImage(const RGBImageType::Pointer image, const Mask::Pointer mask)
+template <typename TRGBImage>
+bool TestOutsideImage(const TRGBImage* const image, const Mask::Pointer mask)
 {
   itk::Index<2> queryPixel;
   queryPixel[0] = 10;

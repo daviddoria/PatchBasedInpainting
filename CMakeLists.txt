@@ -32,7 +32,7 @@ if( "${VTK_MAJOR_VERSION}" LESS 6 )
 endif( "${VTK_MAJOR_VERSION}" LESS 6 )
 
 # ITK
-FIND_PACKAGE(ITK REQUIRED ITKCommon ITKIOImageBase ITKIOPNG ITKIOMeta
+FIND_PACKAGE(ITK REQUIRED ITKCommon ITKIOImageBase ITKIOPNG ITKIOMeta ITKTestKernel
 ITKImageIntensity ITKImageFeature ITKMathematicalMorphology ITKBinaryMathematicalMorphology ITKDistanceMap)
 INCLUDE(${ITK_USE_FILE})
 set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${ITK_LIBRARIES})

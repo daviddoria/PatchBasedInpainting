@@ -42,11 +42,13 @@ class LinearSearchBestColorTexture : public Debug
   PropertyMapType PropertyMap;
   TImage* Image;
   Mask* MaskImage;
+  TImageToWrite* ImageToWrite;
+  unsigned int Iteration = 0;
 
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
-  LinearSearchBestColorTexture(PropertyMapType propertyMap, TImage* const image, Mask* const mask) :
-    Debug(), PropertyMap(propertyMap), Image(image), MaskImage(mask)
+  LinearSearchBestColorTexture(PropertyMapType propertyMap, TImage* const image, Mask* const mask, TImageToWrite* const imageToWrite) :
+    Debug(), PropertyMap(propertyMap), Image(image), MaskImage(mask), ImageToWrite(imageToWrite)
   {}
 
   /**
@@ -154,12 +156,21 @@ public:
 
     targetHistogram.Normalize();
 
+    if(this->DebugOutputFiles)
+    {
+      targetHistogram.Write(Helpers::GetSequentialFileName("TargetHistogram", this->Iteration, "txt", 3));
+    }
+
     // Initialize
     float bestDistance = std::numeric_limits<float>::max();
     TIterator bestPatch = last;
 
     unsigned int bestId = 0; // Keep track of which of the top SSD patches is the best by histogram score (just for information sake)
     HistogramType bestHistogram;
+
+
+    // Store the scores in this container so we can sort them later
+    std::vector<float> scores(last - first);
 
     // Iterate through all of the input elements
     for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
@@ -200,7 +211,17 @@ public:
 
       testHistogram.Normalize();
 
+      if(this->DebugOutputFiles)
+      {
+        unsigned int patchId = currentPatch - first;
+        std::stringstream ss;
+        ss << "TestHistogram_" << Helpers::ZeroPad(this->Iteration, 3) << "_" << Helpers::ZeroPad(patchId, 3) << ".txt";
+        testHistogram.Write(ss.str());
+      }
+
       float histogramDifference = HistogramDifferences::HistogramDifference(targetHistogram, testHistogram);
+
+      scores[currentPatch - first] = histogramDifference;
 
       if(this->DebugScreenOutputs)
       {
@@ -221,7 +242,37 @@ public:
     std::cout << "BestId: " << bestId << std::endl;
     std::cout << "Best distance: " << bestDistance << std::endl;
 
-//    this->Iteration++;
+    if(this->DebugImages)
+    {
+      if(this->ImageToWrite == nullptr)
+      {
+        throw std::runtime_error("LinearSearchBestHistogramDifference cannot WriteTopPatches without having an ImageToWrite!");
+      }
+
+      typedef ParallelSort<float> ParallelSortType;
+
+      ParallelSortType::IndexedVector sortedScores = ParallelSortType::ParallelSortAscending(scores);
+
+      std::vector<typename TIterator::value_type> sortedPatches(last - first);
+
+      for(unsigned int i = 0; i < sortedPatches.size(); ++i)
+      {
+        unsigned int currentId = sortedScores[i].index;
+
+        TIterator current = first;
+        std::advance(current, currentId);
+
+        sortedPatches[i] = *current;
+//        std::cout << "Set sortedPatches " << i << " to " << currentId << std::endl;
+      }
+
+      unsigned int gridWidth = 10;
+      unsigned int gridHeight = 10;
+      PatchHelpers::WriteTopPatchesGrid(this->ImageToWrite, this->PropertyMap, sortedPatches.begin(), sortedPatches.end(),
+                                        "BestPatchesSorted", this->Iteration, gridWidth, gridHeight);
+    }
+
+    this->Iteration++;
 
     return *bestPatch;
   }

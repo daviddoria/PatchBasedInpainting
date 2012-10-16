@@ -19,8 +19,11 @@
 #ifndef ClusterColors_H
 #define ClusterColors_H
 
-// Custom
+// Submodules
 class Mask;
+
+// Custom
+#include "ImageProcessing/ImageTypes.h"
 
 // STL
 #include <vector>
@@ -38,6 +41,7 @@ public:
 
   ClusterColors();
 
+//  typedef itk::VectorImage<float, 2> FloatVectorImageType;
   void ConstructFromImage(const FloatVectorImageType* image);
   void ConstructFromMaskedImage(const FloatVectorImageType* image, const Mask* mask);
 
