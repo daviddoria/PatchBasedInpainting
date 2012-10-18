@@ -82,6 +82,27 @@ private:
 /**
   * This specialization handles pixels of type CovariantVector<T,N>.
   */
+template<typename T, unsigned int N, int i >
+class SquaredChannelDifference
+{
+  public:
+    static inline float EXEC(const itk::CovariantVector<T, N>& a, const itk::CovariantVector<T, N>& b)
+    {
+      return (a[i] - b[i]) * (a[i] - b[i]) + SquaredChannelDifference<T, N, i-1 >::EXEC(a,b);
+    }
+};
+
+template<typename T, unsigned int N>
+class SquaredChannelDifference<T, N, 0>
+{
+  public:
+    static inline float EXEC(const itk::CovariantVector<T, N>& a, const itk::CovariantVector<T, N>& b)
+    {
+      return (a[0] - b[0]) * (a[0] - b[0]);
+    }
+};
+
+// Unrolled version
 template <>
 template <typename T, unsigned int N>
 class SumSquaredPixelDifference <itk::CovariantVector<T, N> >
@@ -112,5 +133,37 @@ public:
 
 
 };
+
+// Non-unrolled version
+//template <>
+//template <typename T, unsigned int N>
+//class SumSquaredPixelDifference <itk::CovariantVector<T, N> >
+//{
+//public:
+//  typedef itk::CovariantVector<T, N> PixelType;
+
+//  // Using ITK function. This function uses casts to double internally, so it is not ideal for integer types
+//  // with values that you know will not cause overflow (unnecessarily slow)
+////  float operator()(const PixelType& a, const PixelType& b) const
+////  {
+//////    std::cout << "SumSquaredPixelDifference <itk::CovariantVector<T, N> >::operator()" << std::endl;
+////    return (a-b).GetSquaredNorm();
+////  }
+
+//  // Manual
+//  float operator()(const PixelType& a, const PixelType& b) const
+//  {
+////    std::cout << "SumSquaredPixelDifference <itk::CovariantVector<T, N> >::operator()" << std::endl;
+//    T sum = 0;
+
+//    for( unsigned int i = 0; i < N; i++)
+//    {
+//      sum += (a[i] - b[i]) * (a[i] - b[i]);
+//    }
+//    return sum;
+//  }
+
+
+//};
 
 #endif
