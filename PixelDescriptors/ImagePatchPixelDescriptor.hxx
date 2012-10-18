@@ -52,6 +52,18 @@ ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor(TImage* const image
 }
 
 template <typename TImage>
+void ImagePatchPixelDescriptor<TImage>::SetFullyValid(const bool fullyValid)
+{
+  this->FullyValid = fullyValid;
+}
+
+template <typename TImage>
+void ImagePatchPixelDescriptor<TImage>::SetInsideImage(const bool insideImage)
+{
+  this->InsideImage = insideImage;
+}
+
+template <typename TImage>
 bool ImagePatchPixelDescriptor<TImage>::IsFullyValid() const
 {
   return this->FullyValid;

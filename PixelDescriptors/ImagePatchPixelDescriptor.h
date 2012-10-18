@@ -67,6 +67,10 @@ public:
   /** Determine if this patch is valid. A valid patch must be InsideImage, but also has had a valid descriptor attached to it. */
   bool IsFullyValid() const;
 
+  void SetFullyValid(const bool fullyValid);
+
+  void SetInsideImage(const bool insideImage);
+
   /** Determine if this patch is entirely within the image. */
   bool IsInsideImage() const;
 

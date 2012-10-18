@@ -21,6 +21,7 @@
 
 // ITK
 #include "itkImageFileReader.h"
+#include "itkTimeProbe.h"
 
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
@@ -37,6 +38,9 @@ int main(int argc, char *argv[])
     std::cerr << "Required arguments: image" << std::endl;
     return EXIT_FAILURE;
   }
+  itk::TimeProbe clock;
+
+  clock.Start();
 
   std::string imageFilename = argv[1];
   std::cout << "Reading image: " << imageFilename << std::endl;
@@ -65,8 +69,8 @@ int main(int argc, char *argv[])
   typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
 
   // Intialize all nodes
-  itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(mask,
-                                                             fullRegion);
+  itk::ImageRegionConstIteratorWithIndex<Mask>
+      imageIterator(mask, fullRegion);
 
   unsigned int patchRadius = 10;
 
@@ -75,21 +79,43 @@ int main(int argc, char *argv[])
 
   while(!imageIterator.IsAtEnd())
   {
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(imageIterator.GetIndex(), patchRadius);
-    if(image->GetLargestPossibleRegion().IsInside(region))
+    itk::ImageRegion<2> region =
+        ITKHelpers::GetRegionInRadiusAroundPixel(imageIterator.GetIndex(),
+                                                 patchRadius);
+    if(fullRegion.IsInside(region))
     {
       ImagePatchPixelDescriptorType descriptor(image, mask, region);
+      descriptor.SetStatus(ImagePatchPixelDescriptorType::SOURCE_NODE);
+      descriptor.SetFullyValid(true);
+      descriptor.SetInsideImage(true);
+
       patches.push_back(descriptor);
     }
     ++imageIterator;
   }
+
+  clock.Stop();
+  std::cout << "Created " << patches.size() << " patches in: " << clock.GetTotal() << std::endl;
+  clock.Start();
 
   // SSD (takes about the same time as SAD)
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
       SumSquaredPixelDifference<typename ImageType::PixelType> > PatchDifferenceType;
   PatchDifferenceType patchDifferenceFunctor;
 
-  ImagePatchPixelDescriptorType queryPatch = patches[0];
+  ImagePatchPixelDescriptorType queryPatch = patches[20];
+  itk::ImageRegionConstIteratorWithIndex<Mask>
+      patchIterator(mask, queryPatch.GetRegion());
+
+  std::vector<itk::Offset<2> > offsets;
+  while(!patchIterator.IsAtEnd())
+  {
+    offsets.push_back(ITKHelpers::IndexToOffset(patchIterator.GetIndex()));
+    ++patchIterator;
+  }
+
+  queryPatch.SetValidOffsets(offsets);
+
   ImagePatchPixelDescriptorType result;
 
   // Iterate through all of the input elements
@@ -98,6 +124,7 @@ int main(int argc, char *argv[])
   for(PatchContainerType::const_iterator current = patches.begin();
       current != patches.end(); ++current)
   {
+//    std::cout << current - patches.begin() << " ";
     float d = patchDifferenceFunctor(*current, queryPatch);
 
     if(d < d_best)
@@ -106,7 +133,11 @@ int main(int argc, char *argv[])
       result = *current;
     }
   }
+
   std::cout << "Found source: " << result.GetRegion() << std::endl;
+
+  clock.Stop();
+  std::cout << "Found source in: " << clock.GetTotal() << std::endl;
 
   return EXIT_SUCCESS;
 }
