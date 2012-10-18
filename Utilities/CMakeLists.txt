@@ -24,8 +24,8 @@ Utilities.hpp
 )
 
 if(inpainting_BuildTests)
-    message("Building Utilities/Tests")
+  #message("Building Utilities/Tests")
   add_subdirectory(Tests)
 else()
-  message("Not building Utilities/Tests")
+  #message("Not building Utilities/Tests")
 endif()

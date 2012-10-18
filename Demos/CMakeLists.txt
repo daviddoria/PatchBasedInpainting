@@ -22,12 +22,6 @@ target_link_libraries(DemoBoundaryNormals2 PatchBasedInpainting ${VTK_LIBRARIES}
 #add_executable(DemoColorImageByScore DemoColorImageByScore.cpp)
 #target_link_libraries(DemoColorImageByScore PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES})
 
-add_executable(DemoCreateImage DemoCreateImage.cpp)
-target_link_libraries(DemoCreateImage PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-
-add_executable(DemoCreateMask DemoCreateMask.cpp)
-target_link_libraries(DemoCreateMask PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} Mask)
-
 add_executable(DemoDerivatives DemoDerivatives.cpp)
 target_link_libraries(DemoDerivatives PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES})
 
@@ -50,8 +44,9 @@ target_link_libraries(DemoInnerOuterBoundary PatchBasedInpainting ${VTK_LIBRARIE
 add_executable(DemoIsophotes DemoIsophotes.cpp)
 target_link_libraries(DemoIsophotes PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Mask VTKHelpers)
 
-add_executable(DemoPatchDifference DemoPatchDifference.cpp)
-target_link_libraries(DemoPatchDifference PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} Mask)
+# PatchDifference function no longer exists
+#add_executable(DemoPatchDifference DemoPatchDifference.cpp)
+#target_link_libraries(DemoPatchDifference PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} Mask)
 
 add_executable(DemoPatchImageDifference DemoPatchImageDifference.cpp)
 target_link_libraries(DemoPatchImageDifference PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ITKHelpers)

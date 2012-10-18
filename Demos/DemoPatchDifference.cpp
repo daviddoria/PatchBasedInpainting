@@ -22,20 +22,20 @@
 // ITK
 #include "itkImageFileReader.h"
 
-template <typename TRGBImage>
-bool TestSamePatch(const TRGBImage* const image, Mask::Pointer mask);
+/** This function ensures that the difference between a patch and itself is zero.*/
+template <typename TImage>
+bool TestSamePatch(const TImage* const image, const Mask* const mask);
 
-template <typename TRGBImage>
-bool TestDifferentPatch(const TRGBImage* const image, Mask::Pointer mask);
+template <typename TImage>
+bool TestDifferentPatch(const TImage* const image, const Mask* const mask);
 
-template <typename TRGBImage>
-bool TestOutsideImage(const TRGBImage* const image, Mask::Pointer mask);
+template <typename TImage>
+bool TestOutsideImage(const TImage* const image, const Mask* const mask);
 
 int main(int argc, char *argv[])
 {
   if(argc != 3)
   {
-    std::cerr << "Only gave " << argc << " arguments!" << std::endl;
     std::cerr << "Required arguments: image mask" << std::endl;
     return EXIT_FAILURE;
   }
@@ -45,9 +45,9 @@ int main(int argc, char *argv[])
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
 
-  typedef itk::Image<itk::RGBPixel<unsigned char>, 2> RGBImageType;
-  typedef itk::ImageFileReader<RGBImageType> RGBReaderType;
-  RGBReaderType::Pointer imageReader = RGBReaderType::New();
+  typedef itk::Image<itk::CovariantVector<float, 3>, 2> ImageType;
+  typedef itk::ImageFileReader<ImageType> ImageReaderType;
+  ImageReaderType::Pointer imageReader = ImageReaderType::New();
   imageReader->SetFileName(imageFilename);
   imageReader->Update();
 
@@ -56,83 +56,75 @@ int main(int argc, char *argv[])
   maskReader->SetFileName(maskFilename);
   maskReader->Update();
 
-//   bool result1 = TestSamePatch(imageReader->GetOutput(), maskReader->GetOutput());
-//   bool result2 = TestDifferentPatch(imageReader->GetOutput(), maskReader->GetOutput());
-//   bool result3 = TestOutsideImage(imageReader->GetOutput(), maskReader->GetOutput());
+  bool resultSamePatch = TestSamePatch(imageReader->GetOutput(), maskReader->GetOutput());
+  bool resultDifferentPatch = TestDifferentPatch(imageReader->GetOutput(), maskReader->GetOutput());
+  bool resultOutsideImage = TestOutsideImage(imageReader->GetOutput(), maskReader->GetOutput());
 
+  if(!resultSamePatch || !resultDifferentPatch || !resultOutsideImage)
+  {
+    return EXIT_FAILURE;
+  }
   return EXIT_SUCCESS;
 }
 
-template <typename TRGBImage>
-bool TestSamePatch(const TRGBImage* image, const Mask::Pointer mask)
+template <typename TImage>
+bool TestSamePatch(const TImage* const image, const Mask* const mask)
 {
-  itk::Index<2> queryPixel;
-  queryPixel[0] = 10;
-  queryPixel[1] = 10;
+  itk::Index<2> queryPixel = {{10,10}};
 
-  itk::Index<2> fixedPixel;
-  fixedPixel[0] = 10;
-  fixedPixel[1] = 10;
+  itk::Index<2> fixedPixel = {{10,10}};
 
-  // unsigned int patchRadius = 5;
+  unsigned int patchRadius = 5;
 
-//   float difference = PatchDifference(image.GetPointer(), mask.GetPointer(), queryPixel, fixedPixel, patchRadius);
-//   std::cerr << "Difference: " << difference << std::endl;
-//
-//   if(difference != 0)
-//     {
-//     std::cerr << "Error: the difference between the same pixel should be zero!" << std::endl;
-//     return false;
-//     }
+  float difference = PatchDifference(image, mask, queryPixel, fixedPixel, patchRadius);
+  std::cerr << "Difference: " << difference << std::endl;
+
+  if(difference != 0)
+  {
+    std::cerr << "Error: the difference between the same pixel should be zero!" << std::endl;
+    return false;
+  }
   return true;
 }
 
-template <typename TRGBImage>
-bool TestDifferentPatch(const TRGBImage* const image, const Mask::Pointer mask)
+template <typename TImage>
+bool TestDifferentPatch(const TImage* const image, const Mask* const mask)
 {
-  itk::Index<2> queryPixel;
-  queryPixel[0] = 11;
-  queryPixel[1] = 10;
+  itk::Index<2> queryPixel = {{11,10}};
 
-  itk::Index<2> fixedPixel;
-  fixedPixel[0] = 10;
-  fixedPixel[1] = 10;
+  itk::Index<2> fixedPixel = {{10,10}};
 
-  // unsigned int patchRadius = 5;
+  unsigned int patchRadius = 5;
 
-//   float difference = PatchDifference(image.GetPointer(), mask.GetPointer(), queryPixel, fixedPixel, patchRadius);
-//   std::cerr << "Difference: " << difference << std::endl;
-//
-//   if(difference == 0)
-//     {
-//     std::cerr << "Error: the difference between non-exact patches should not be zero!" << std::endl;
-//     return false;
-//     }
+  float difference = PatchDifference(image, mask, queryPixel, fixedPixel, patchRadius);
+  std::cerr << "Difference: " << difference << std::endl;
+
+  if(difference == 0)
+  {
+    std::cerr << "Error: the difference between non-exact patches should not be zero!" << std::endl;
+    return false;
+  }
 
   return true;
 }
 
-template <typename TRGBImage>
-bool TestOutsideImage(const TRGBImage* const image, const Mask::Pointer mask)
+template <typename TImage>
+bool TestOutsideImage(const TImage* const image, const Mask* const mask)
 {
-  itk::Index<2> queryPixel;
-  queryPixel[0] = 10;
-  queryPixel[1] = 10;
+  itk::Index<2> queryPixel = {{10,10}};
 
-  itk::Index<2> fixedPixel;
-  fixedPixel[0] = 0;
-  fixedPixel[1] = 0;
+  itk::Index<2> fixedPixel = {{0,0}};
 
-  // unsigned int patchRadius = 5;
+  unsigned int patchRadius = 5;
 
-//   float difference = PatchDifference(image.GetPointer(), mask.GetPointer(), queryPixel, fixedPixel, patchRadius);
-//   std::cerr << "Difference: " << difference << std::endl;
-//
-//   if(difference == 0)
-//     {
-//     std::cerr << "Error: the difference between non-exact patches should not be zero!" << std::endl;
-//     return false;
-//     }
+  float difference = PatchDifference(image, mask, queryPixel, fixedPixel, patchRadius);
+  std::cerr << "Difference: " << difference << std::endl;
+
+  if(difference == 0)
+  {
+    std::cerr << "Error: the difference between non-exact patches should not be zero!" << std::endl;
+    return false;
+  }
 
   return true;
 }
