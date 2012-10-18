@@ -32,16 +32,14 @@
 
 int main(int argc, char *argv[])
 {
-  if(argc != 3)
+  if(argc != 2)
   {
-    std::cerr << "Required arguments: image mask" << std::endl;
+    std::cerr << "Required arguments: image" << std::endl;
     return EXIT_FAILURE;
   }
 
   std::string imageFilename = argv[1];
-  std::string maskFilename = argv[2];
   std::cout << "Reading image: " << imageFilename << std::endl;
-  std::cout << "Reading mask: " << maskFilename << std::endl;
 
 //  typedef itk::VectorImage<float, 2> ImageType;
   typedef itk::Image<itk::CovariantVector<float, 3>, 2> ImageType;
@@ -53,15 +51,6 @@ int main(int argc, char *argv[])
   ImageType* image = imageReader->GetOutput();
 
   std::cout << "Read image " << imageReader->GetOutput()->GetLargestPossibleRegion() << std::endl;
-
-//  typedef itk::ImageFileReader<Mask> MaskReaderType;
-//  MaskReaderType::Pointer maskReader = MaskReaderType::New();
-//  maskReader->SetFileName(maskFilename.c_str());
-//  maskReader->Update();
-
-//  Mask* mask = maskReader->GetOutput();
-
-//  std::cout << "Read mask " << maskReader->GetOutput()->GetLargestPossibleRegion() << std::endl;
 
   // Create a fully valid mask
   Mask::Pointer maskData = Mask::New();
@@ -121,3 +110,4 @@ int main(int argc, char *argv[])
 
   return EXIT_SUCCESS;
 }
+

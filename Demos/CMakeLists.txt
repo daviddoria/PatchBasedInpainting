@@ -54,6 +54,9 @@ target_link_libraries(DemoPatchImageDifference PatchBasedInpainting ${VTK_LIBRAR
 add_executable(DemoPatchSearchFunction DemoPatchSearchFunction.cpp)
 target_link_libraries(DemoPatchSearchFunction PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} Mask)
 
+add_executable(DemoPatchSearchValidMask DemoPatchSearchValidMask.cpp)
+target_link_libraries(DemoPatchSearchValidMask Mask)
+
 add_executable(DemoSelfPatchCompare DemoSelfPatchCompare.cpp)
 target_link_libraries(DemoSelfPatchCompare PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} Mask)
 
