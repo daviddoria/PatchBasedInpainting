@@ -110,28 +110,10 @@ class SumSquaredPixelDifference <itk::CovariantVector<T, N> >
 public:
   typedef itk::CovariantVector<T, N> PixelType;
 
-  // Using ITK function. This function uses casts to double internally, so it is not ideal for integer types
-  // with values that you know will not cause overflow (unnecessarily slow)
-//  float operator()(const PixelType& a, const PixelType& b) const
-//  {
-////    std::cout << "SumSquaredPixelDifference <itk::CovariantVector<T, N> >::operator()" << std::endl;
-//    return (a-b).GetSquaredNorm();
-//  }
-
-  // Manual
   float operator()(const PixelType& a, const PixelType& b) const
   {
-//    std::cout << "SumSquaredPixelDifference <itk::CovariantVector<T, N> >::operator()" << std::endl;
-    T sum = 0;
-
-    for( unsigned int i = 0; i < N; i++)
-    {
-      sum += (a[i] - b[i]) * (a[i] - b[i]);
-    }
-    return sum;
+    return SquaredChannelDifference<T, N, N>::EXEC(a,b);
   }
-
-
 };
 
 // Non-unrolled version
