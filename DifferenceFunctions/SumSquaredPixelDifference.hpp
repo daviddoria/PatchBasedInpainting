@@ -112,7 +112,7 @@ public:
 
   float operator()(const PixelType& a, const PixelType& b) const
   {
-    return SquaredChannelDifference<T, N, N>::EXEC(a,b);
+    return SquaredChannelDifference<T, N, N-1>::EXEC(a,b); // Call with i=N-1, because for example we want to start on element 2 (zero indexed) if the vector is dimension 3
   }
 };
 
@@ -144,8 +144,6 @@ public:
 //    }
 //    return sum;
 //  }
-
-
 //};
 
 #endif

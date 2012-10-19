@@ -44,6 +44,9 @@ target_link_libraries(DemoInnerOuterBoundary PatchBasedInpainting ${VTK_LIBRARIE
 add_executable(DemoIsophotes DemoIsophotes.cpp)
 target_link_libraries(DemoIsophotes PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} ${QT_LIBRARIES} Mask VTKHelpers)
 
+add_executable(DemoPixelDifference DemoPixelDifference.cpp)
+target_link_libraries(DemoPixelDifference ${ITK_LIBRARIES})
+
 # PatchDifference function no longer exists
 #add_executable(DemoPatchDifference DemoPatchDifference.cpp)
 #target_link_libraries(DemoPatchDifference PatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} Mask)
