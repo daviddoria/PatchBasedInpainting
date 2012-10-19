@@ -59,7 +59,7 @@ target_link_libraries(DemoPatchSearchFunction PatchBasedInpainting ${ITK_LIBRARI
 
 add_executable(DemoPatchSearchValidMask DemoPatchSearchValidMask.cpp)
 target_link_libraries(DemoPatchSearchValidMask Mask)
-#set_target_properties(DemoPatchSearchValidMask PROPERTIES COMPILE_FLAGS "-S")
+set_target_properties(DemoPatchSearchValidMask PROPERTIES COMPILE_FLAGS "-fverbose-asm")
 
 add_executable(DemoSelfPatchCompare DemoSelfPatchCompare.cpp)
 target_link_libraries(DemoSelfPatchCompare PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} Mask)

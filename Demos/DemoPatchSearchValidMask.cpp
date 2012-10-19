@@ -121,11 +121,14 @@ int main(int argc, char *argv[])
   // Iterate through all of the input elements
   float d_best = std::numeric_limits<float>::max();
 
+  int a;
   for(PatchContainerType::const_iterator current = patches.begin();
       current != patches.end(); ++current)
   {
 //    std::cout << current - patches.begin() << " ";
+    a = 0x01;
     float d = patchDifferenceFunctor(*current, queryPatch);
+    a = a + 0x02;
 
     if(d < d_best)
     {
@@ -133,7 +136,7 @@ int main(int argc, char *argv[])
       result = *current;
     }
   }
-
+  std::cout << a << std::endl; // Prevent 'a' from being optimized out
   std::cout << "Found source: " << result.GetRegion() << std::endl;
 
   clock.Stop();
