@@ -31,6 +31,15 @@
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
 #include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
 
+template <typename TPatchContainer, typename TPatch>
+TPatch Naive(const TPatchContainer& patches, const TPatch& queryPatch);
+
+template <typename TPatchContainer, typename TPatch>
+TPatch Prefetch(const TPatchContainer& patches, const TPatch& queryPatch);
+
+template <typename TPatchContainer, typename TPatch>
+TPatch PreExtract(const TPatchContainer& patches, const TPatch& queryPatch);
+
 int main(int argc, char *argv[])
 {
   if(argc != 2)
@@ -98,11 +107,7 @@ int main(int argc, char *argv[])
   std::cout << "Created " << patches.size() << " patches in: " << clock.GetTotal() << std::endl;
   clock.Start();
 
-  // SSD (takes about the same time as SAD)
-  typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
-      SumSquaredPixelDifference<typename ImageType::PixelType> > PatchDifferenceType;
-  PatchDifferenceType patchDifferenceFunctor;
-
+  // Get one of the patches to use as the query (20 is arbitrary)
   ImagePatchPixelDescriptorType queryPatch = patches[20];
   itk::ImageRegionConstIteratorWithIndex<Mask>
       patchIterator(mask, queryPatch.GetRegion());
@@ -116,27 +121,12 @@ int main(int argc, char *argv[])
 
   queryPatch.SetValidOffsets(offsets);
 
-  ImagePatchPixelDescriptorType result;
+//  ImagePatchPixelDescriptorType result = Naive(patches, queryPatch);
 
-  // Iterate through all of the input elements
-  float d_best = std::numeric_limits<float>::max();
+//  ImagePatchPixelDescriptorType result = Prefetch(patches, queryPatch);
 
-  int a,b;
-  for(PatchContainerType::const_iterator current = patches.begin();
-      current != patches.end(); ++current)
-  {
-//    std::cout << current - patches.begin() << " ";
-    b = 3;
-    float d = patchDifferenceFunctor(*current, queryPatch);
-    a = 3;
+  ImagePatchPixelDescriptorType result = PreExtract(patches, queryPatch);
 
-    if(d < d_best)
-    {
-      d_best = d;
-      result = *current;
-    }
-  }
-  std::cout << a << b << std::endl; // Prevent 'a' from being optimized out
   std::cout << "Found source: " << result.GetRegion() << std::endl;
 
   clock.Stop();
@@ -145,3 +135,128 @@ int main(int argc, char *argv[])
   return EXIT_SUCCESS;
 }
 
+template <typename TPatchContainer, typename TPatch>
+TPatch Naive(const TPatchContainer& patches, const TPatch& queryPatch)
+{
+  typedef ImagePatchDifference<TPatch,
+      SumSquaredPixelDifference<typename TPatch::ImageType::PixelType> > PatchDifferenceType;
+  PatchDifferenceType patchDifferenceFunctor;
+
+  TPatch result;
+
+  // Iterate through all of the input elements
+  float d_best = std::numeric_limits<float>::max();
+
+  for(typename TPatchContainer::const_iterator current = patches.begin();
+      current != patches.end(); ++current)
+  {
+//    std::cout << current - patches.begin() << " ";
+
+    float d = patchDifferenceFunctor(*current, queryPatch);
+
+    if(d < d_best)
+    {
+      d_best = d;
+      result = *current;
+    }
+  }
+
+  return result;
+}
+
+template <typename TPatchContainer, typename TPatch>
+TPatch Prefetch(const TPatchContainer& patches, const TPatch& queryPatch)
+{
+  typedef ImagePatchDifference<TPatch,
+      SumSquaredPixelDifference<typename TPatch::ImageType::PixelType> > PatchDifferenceType;
+  PatchDifferenceType patchDifferenceFunctor;
+
+  TPatch result;
+
+  // Iterate through all of the input elements
+  float d_best = std::numeric_limits<float>::max();
+
+  typename TPatch::ImageType::SizeValueType height = queryPatch.GetRegion().GetSize()[1];
+
+  typename TPatch::ImageType* image = queryPatch.GetImage();
+
+  // Prefetch the first pixel of each row in the query patch
+  for(unsigned int row = queryPatch.GetRegion().GetIndex()[0]; row < height; ++row)
+  {
+    itk::Index<2> firstPixelInRow = {{static_cast<itk::Index<2>::IndexValueType>(queryPatch.GetRegion().GetIndex()[0]),
+                                      static_cast<itk::Index<2>::IndexValueType>(queryPatch.GetRegion().GetIndex()[1] + row)}};
+    __builtin_prefetch (&image->GetPixel(firstPixelInRow));
+  }
+
+  for(typename TPatchContainer::const_iterator current = patches.begin();
+      current != patches.end(); ++current)
+  {
+//    std::cout << current - patches.begin() << " ";
+
+    // Prefetch the first pixel of each row in the current patch
+    for(unsigned int row = current->GetRegion().GetIndex()[0]; row < height; ++row)
+    {
+      itk::Index<2> firstPixelInRow = {{static_cast<itk::Index<2>::IndexValueType>(current->GetRegion().GetIndex()[0]),
+                                        static_cast<itk::Index<2>::IndexValueType>(current->GetRegion().GetIndex()[1] + row)}};
+      __builtin_prefetch (&image->GetPixel(firstPixelInRow));
+    }
+
+    float d = patchDifferenceFunctor(*current, queryPatch);
+
+    if(d < d_best)
+    {
+      d_best = d;
+      result = *current;
+    }
+  }
+
+  return result;
+}
+
+template <typename TPatchContainer, typename TPatch>
+TPatch PreExtract(const TPatchContainer& patches, const TPatch& queryPatch)
+{
+  typedef ImagePatchDifference<TPatch,
+      SumSquaredPixelDifference<typename TPatch::ImageType::PixelType> > PatchDifferenceType;
+  PatchDifferenceType patchDifferenceFunctor;
+
+  // Extract the pixel values of the target patch, since these will be used in every patch comparison
+  typename TPatch::ImageType* image = queryPatch.GetImage();
+
+  typedef std::vector<itk::Offset<2> > OffsetVectorType;
+  const OffsetVectorType* validOffsets = queryPatch.GetValidOffsetsAddress();
+
+  typedef std::vector<typename TPatch::ImageType::PixelType> PixelVector;
+
+  PixelVector targetPixels(validOffsets->size());
+
+  for(OffsetVectorType::const_iterator offsetIterator = validOffsets->begin();
+      offsetIterator < validOffsets->end(); ++offsetIterator)
+  {
+    itk::Offset<2> currentOffset = *offsetIterator;
+
+    targetPixels[offsetIterator - validOffsets->begin()] = image->GetPixel(queryPatch.GetCorner() + currentOffset);
+  }
+
+  // Perform the differences
+  TPatch result;
+
+  // Iterate through all of the input elements
+  float d_best = std::numeric_limits<float>::max();
+
+  for(typename TPatchContainer::const_iterator current = patches.begin();
+      current != patches.end(); ++current)
+  {
+//    std::cout << current - patches.begin() << " ";
+
+    float d = patchDifferenceFunctor(*current, queryPatch, targetPixels);
+
+    if(d < d_best)
+    {
+      d_best = d;
+      result = *current;
+    }
+  }
+
+  return result;
+}

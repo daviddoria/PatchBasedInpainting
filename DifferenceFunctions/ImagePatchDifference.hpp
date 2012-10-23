@@ -72,7 +72,8 @@ struct ImagePatchDifference
 
     assert(validOffsets->size() > 0);
 
-    for(OffsetVectorType::const_iterator offsetIterator = validOffsets->begin(); offsetIterator < validOffsets->end(); ++offsetIterator)
+    for(OffsetVectorType::const_iterator offsetIterator = validOffsets->begin();
+        offsetIterator < validOffsets->end(); ++offsetIterator)
     {
       itk::Offset<2> currentOffset = *offsetIterator;
       itk::Index<2> currentTargetIndex = targetPatch.GetCorner() + currentOffset;
@@ -83,7 +84,7 @@ struct ImagePatchDifference
           image->GetPixel(sourcePatch.GetCorner() + currentOffset);
 
       float difference = this->PixelDifferenceFunctor(sourcePixel,
-                                                     targetPixel);
+                                                      targetPixel);
       totalDifference += difference;
     }
 
@@ -91,6 +92,91 @@ struct ImagePatchDifference
     //std::cout << "Difference: " << totalDifference << std::endl;
     return totalDifference;
   }
+
+  // Check version (does not assume that all input patches should be compared)
+//  float operator()(const ImagePatchType& sourcePatch, const ImagePatchType& targetPatch,
+//                   const std::vector<typename ImagePatchType::ImageType::PixelType>& targetPixels) const
+//  {
+//    assert(targetPixels.size() == targetPatch.GetValidOffsetsAddress()->size());
+
+//    if(sourcePatch.GetStatus() != ImagePatchType::SOURCE_NODE)
+//    {
+////      return std::numeric_limits<float>::infinity();
+//      return std::numeric_limits<float>::max();
+//    }
+
+//    typename ImagePatchType::ImageType* image = targetPatch.GetImage();
+
+//    float totalDifference = 0.0f;
+
+//    typedef std::vector<itk::Offset<2> > OffsetVectorType;
+//    const OffsetVectorType* validOffsets = targetPatch.GetValidOffsetsAddress();
+
+//    assert(validOffsets->size() > 0);
+
+//    for(OffsetVectorType::const_iterator offsetIterator = validOffsets->begin();
+//        offsetIterator < validOffsets->end(); ++offsetIterator)
+//    {
+//      itk::Offset<2> currentOffset = *offsetIterator;
+
+//      // Get the source pixel from the image
+//      itk::Index<2> currentSourceIndex = sourcePatch.GetCorner() + currentOffset;
+//      typename ImagePatchType::ImageType::PixelType sourcePixel =
+//          image->GetPixel(currentSourceIndex);
+
+//      // Get the target pixel from the pre-extracted contiguous memory
+//      typename ImagePatchType::ImageType::PixelType targetPixel =
+//          targetPixels[offsetIterator - validOffsets->begin()];
+
+//      float difference = this->PixelDifferenceFunctor(sourcePixel,
+//                                                      targetPixel);
+//      totalDifference += difference;
+//    }
+
+//    totalDifference = totalDifference / static_cast<float>(validOffsets->size());
+//    //std::cout << "Difference: " << totalDifference << std::endl;
+//    return totalDifference;
+//  }
+
+  // No check version (assumes all input patches should be compared)
+  float operator()(const ImagePatchType& sourcePatch, const ImagePatchType& targetPatch,
+                   const std::vector<typename ImagePatchType::ImageType::PixelType>& targetPixels) const
+  {
+    assert(targetPixels.size() == targetPatch.GetValidOffsetsAddress()->size());
+
+    typename ImagePatchType::ImageType* image = targetPatch.GetImage();
+
+    float totalDifference = 0.0f;
+
+    typedef std::vector<itk::Offset<2> > OffsetVectorType;
+    const OffsetVectorType* validOffsets = targetPatch.GetValidOffsetsAddress();
+
+    assert(validOffsets->size() > 0);
+
+    for(OffsetVectorType::const_iterator offsetIterator = validOffsets->begin();
+        offsetIterator < validOffsets->end(); ++offsetIterator)
+    {
+      itk::Offset<2> currentOffset = *offsetIterator;
+
+      // Get the source pixel from the image
+      itk::Index<2> currentSourceIndex = sourcePatch.GetCorner() + currentOffset;
+      typename ImagePatchType::ImageType::PixelType sourcePixel =
+          image->GetPixel(currentSourceIndex);
+
+      // Get the target pixel from the pre-extracted contiguous memory
+      typename ImagePatchType::ImageType::PixelType targetPixel =
+          targetPixels[offsetIterator - validOffsets->begin()];
+
+      float difference = this->PixelDifferenceFunctor(sourcePixel,
+                                                      targetPixel);
+      totalDifference += difference;
+    }
+
+    totalDifference = totalDifference / static_cast<float>(validOffsets->size());
+    //std::cout << "Difference: " << totalDifference << std::endl;
+    return totalDifference;
+  }
+
 };
 
 #endif

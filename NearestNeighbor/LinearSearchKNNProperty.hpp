@@ -105,12 +105,26 @@ public:
 
     typename PropertyMapType::value_type queryPatch = get(this->PropertyMap, queryNode);
 
+    typedef std::vector<typename PropertyMapType::value_type::ImageType::PixelType> PixelVector;
+
+    typedef std::vector<itk::Offset<2> > OffsetVectorType;
+    const OffsetVectorType* validOffsets = queryPatch.GetValidOffsetsAddress();
+    PixelVector targetPixels(validOffsets->size());
+
+    for(OffsetVectorType::const_iterator offsetIterator = validOffsets->begin();
+        offsetIterator < validOffsets->end(); ++offsetIterator)
+    {
+      itk::Offset<2> currentOffset = *offsetIterator;
+
+      targetPixels[offsetIterator - validOffsets->begin()] = queryPatch.GetImage()->GetPixel(queryPatch.GetCorner() + currentOffset);
+    }
+
     // The queue stores the items in descending score order.
     #pragma omp parallel for
 //    for(ForwardIteratorType current = first; current != last; ++current) // OpenMP 3 doesn't allow != in the loop ending condition
     for(ForwardIteratorType current = first; current < last; ++current)
     {
-      DistanceValueType d = this->DistanceFunction(get(this->PropertyMap, *current), queryPatch); // (source, target) (the query node is the target node)
+      DistanceValueType d = this->DistanceFunction(get(this->PropertyMap, *current), queryPatch, targetPixels); // (source, target) (the query node is the target node)
 
       #pragma omp critical // There are weird crashes without this guard
       outputQueue.push(PairType(d, current));

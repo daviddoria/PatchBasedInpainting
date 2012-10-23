@@ -63,31 +63,81 @@ struct LinearSearchBestProperty : public Debug
 
     // Initialize
     float d_best = std::numeric_limits<float>::infinity();
-    TIterator result = last;
 
-    typename PropertyMapType::value_type queryPatch = get(this->PropertyMap, query);
+    typedef typename PropertyMapType::value_type PatchType;
 
-    // Iterate through all of the input elements
-    #pragma omp parallel for
-//    for(TIterator current = first; current != last; ++current)
+    PatchType queryPatch = get(this->PropertyMap, query);
+
+    typedef std::vector<typename PatchType::ImageType::PixelType> PixelVector;
+
+    typedef std::vector<itk::Offset<2> > OffsetVectorType;
+    const OffsetVectorType* validOffsets = queryPatch.GetValidOffsetsAddress();
+    PixelVector targetPixels(validOffsets->size());
+
+    for(OffsetVectorType::const_iterator offsetIterator = validOffsets->begin();
+        offsetIterator < validOffsets->end(); ++offsetIterator)
+    {
+      itk::Offset<2> currentOffset = *offsetIterator;
+
+      targetPixels[offsetIterator - validOffsets->begin()] =
+          queryPatch.GetImage()->GetPixel(queryPatch.GetCorner() + currentOffset);
+    }
+
+    typedef std::vector<PatchType> PatchContainer;
+    typedef std::vector<typename TIterator::value_type> IteratorContainer;
+    IteratorContainer validSourceIterators;
+
+    PatchContainer validSourcePatches;
     for(TIterator current = first; current < last; ++current)
     {
+      PatchType currentPatch = get(this->PropertyMap, *current);
+      if(currentPatch.GetStatus() == PatchType::SOURCE_NODE)
+      {
+        validSourceIterators.push_back(*current);
+        validSourcePatches.push_back(currentPatch);
+      }
+    }
+
+    // Iterate through all of the input elements
+    std::cout << "Start search..." << std::endl;
+    typename TIterator::value_type result = *last; // initialize to prevent "possibly used uninitialized" warning
+
+    #pragma omp parallel for
+//    for(TIterator current = first; current != last; ++current)
+    for(typename PatchContainer::const_iterator current = validSourcePatches.begin();
+        current < validSourcePatches.end(); ++current)
+    {
       //DistanceValueType d = DistanceFunction(*first, query);
-      float d = this->DistanceFunction(get(this->PropertyMap, *current), queryPatch);
+      float d = this->DistanceFunction(*current, queryPatch, targetPixels);
 
       #pragma omp critical // There are weird crashes without this guard
       if(d < d_best)
       {
         d_best = d;
-        result = current;
+        result = validSourceIterators[current - validSourcePatches.begin()];
       }
     }
 
-    std::cout << "Iteration: " << this->DebugIteration << " BestId: " << result - first << " score: " << d_best << std::endl;
+    // No check
+//    // Iterate through all of the input elements
+//    #pragma omp parallel for
+////    for(TIterator current = first; current != last; ++current)
+//    for(TIterator current = first; current < last; ++current)
+//    {
+//      //DistanceValueType d = DistanceFunction(*first, query);
+//      float d = this->DistanceFunction(get(this->PropertyMap, *current), queryPatch, targetPixels);
+
+//      #pragma omp critical // There are weird crashes without this guard
+//      if(d < d_best)
+//      {
+//        d_best = d;
+//        result = current;
+//      }
+//    }
 
     this->DebugIteration++;
 
-    return *result;
+    return result;
   }
 };
 

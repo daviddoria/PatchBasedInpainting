@@ -36,7 +36,7 @@ template <typename PixelType>
 class SumSquaredPixelDifference
 {
 public:
-  float operator()(const PixelType& a, const PixelType& b) const
+  inline float operator()(const PixelType& a, const PixelType& b) const
   {
     std::cout << "SumSquaredPixelDifference[Generic]::operator()" << std::endl;
     assert(Helpers::length(a) == Helpers::length(b));
@@ -64,7 +64,7 @@ public:
   typedef itk::CovariantVector<unsigned char, N> PixelType;
 
 //  float operator()(const PixelType& a, const PixelType& b)// const // This cannot be 'const' because of the method we are using to store the float pixels (unless we use mutable (see member variable declarations)
-  float operator()(const PixelType& a, const PixelType& b) const
+  inline float operator()(const PixelType& a, const PixelType& b) const
   {
     std::cout << "SumSquaredPixelDifference <itk::CovariantVector<unsigned char, N> >::operator()" << std::endl;
     this->A = a;
@@ -110,7 +110,7 @@ class SumSquaredPixelDifference <itk::CovariantVector<T, N> >
 public:
   typedef itk::CovariantVector<T, N> PixelType;
 
-  float operator()(const PixelType& a, const PixelType& b) const
+  inline float operator()(const PixelType& a, const PixelType& b) const
   {
     return SquaredChannelDifference<T, N, N-1>::EXEC(a,b); // Call with i=N-1, because for example we want to start on element 2 (zero indexed) if the vector is dimension 3
   }
