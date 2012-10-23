@@ -47,6 +47,7 @@ public:
   template <typename TNode>
   void Update(const TNode& sourceNode, const TNode& targetNode, const unsigned int patchNumber = 0);
 
+
 protected:
 
   typedef itk::Image<float, 2> ConfidenceImageType;
@@ -70,6 +71,7 @@ protected:
 
   /** The radius of the patch. */
   const unsigned int PatchRadius;
+
 };
 
 #include "PriorityConfidence.hpp"

@@ -36,14 +36,14 @@
    * \tparam DistanceFunctionType The functor type to compute the distance measure.
    * \tparam CompareFunctionType The functor type that can compare two distance measures (strict weak-ordering).
    */
-template <typename PropertyMapType, typename DistanceFunctionType>
+template <typename PropertyMapType, typename PatchDistanceFunctionType>
 struct LinearSearchBestProperty : public Debug
 {
   PropertyMapType PropertyMap;
-  DistanceFunctionType DistanceFunction;
+  PatchDistanceFunctionType PatchDistanceFunction;
 
-  LinearSearchBestProperty(PropertyMapType propertyMap, DistanceFunctionType distanceFunction = DistanceFunctionType()) :
-  PropertyMap(propertyMap), DistanceFunction(distanceFunction){}
+  LinearSearchBestProperty(PropertyMapType propertyMap, PatchDistanceFunctionType patchDistanceFunction = PatchDistanceFunctionType()) :
+  PropertyMap(propertyMap), PatchDistanceFunction(patchDistanceFunction){}
 
   /**
     * \param first Start of the range in which to search.
@@ -83,6 +83,7 @@ struct LinearSearchBestProperty : public Debug
           queryPatch.GetImage()->GetPixel(queryPatch.GetCorner() + currentOffset);
     }
 
+    // Extract the valid patches so this check does not have to be done inside the DistanceFunction call in the main loop below.
     typedef std::vector<PatchType> PatchContainer;
     typedef std::vector<typename TIterator::value_type> IteratorContainer;
     IteratorContainer validSourceIterators;
@@ -103,12 +104,12 @@ struct LinearSearchBestProperty : public Debug
     typename TIterator::value_type result = *last; // initialize to prevent "possibly used uninitialized" warning
 
     #pragma omp parallel for
-//    for(TIterator current = first; current != last; ++current)
+//    for(TIterator current = first; current != last; ++current) // OpenMP 3 doesn't allow != in a parallelized loop
     for(typename PatchContainer::const_iterator current = validSourcePatches.begin();
         current < validSourcePatches.end(); ++current)
     {
       //DistanceValueType d = DistanceFunction(*first, query);
-      float d = this->DistanceFunction(*current, queryPatch, targetPixels);
+      float d = this->PatchDistanceFunction(*current, queryPatch, targetPixels);
 
       #pragma omp critical // There are weird crashes without this guard
       if(d < d_best)
@@ -134,6 +135,8 @@ struct LinearSearchBestProperty : public Debug
 //        result = current;
 //      }
 //    }
+
+    std::cout << "Iteration " << this->DebugIteration << " search complete." << std::endl;
 
     this->DebugIteration++;
 

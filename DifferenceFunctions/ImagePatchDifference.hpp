@@ -169,6 +169,7 @@ struct ImagePatchDifference
 
       float difference = this->PixelDifferenceFunctor(sourcePixel,
                                                       targetPixel);
+
       totalDifference += difference;
     }
 

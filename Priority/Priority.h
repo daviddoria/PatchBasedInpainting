@@ -53,6 +53,9 @@ public:
   {
     throw std::runtime_error("Should not call Priority::Update()!");
   }
+
+  mutable unsigned int ComputePriorityCallCount = 0;
+
 };
 
 #endif

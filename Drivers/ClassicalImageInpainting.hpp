@@ -59,6 +59,8 @@
 
 // Priority
 #include "Priority/PriorityCriminisi.h"
+#include "Priority/PriorityRandom.h"
+#include "Priority/PriorityConfidence.h"
 
 // Boost
 #include <boost/graph/grid_graph.hpp>
@@ -99,8 +101,9 @@ void ClassicalImageInpainting(TImage* const originalImage, Mask* const mask, con
   // Create the patch inpainter.
   typedef PatchInpainter<TImage> OriginalImageInpainterType;
   OriginalImageInpainterType originalImagePatchInpainter(patchHalfWidth, originalImage, mask);
-  originalImagePatchInpainter.SetDebugImages(true);
-  originalImagePatchInpainter.SetImageName("RGB");
+  // Show the inpainted image at each iteration
+//  originalImagePatchInpainter.SetDebugImages(true);
+//  originalImagePatchInpainter.SetImageName("RGB");
 
   // Create an inpainter for the blurred image.
   typedef PatchInpainter<BlurredImageType> BlurredImageInpainterType;
@@ -112,8 +115,14 @@ void ClassicalImageInpainting(TImage* const originalImage, Mask* const mask, con
   inpainter.AddInpainter(&blurredImagePatchInpainter);
 
   // Create the priority function
-  typedef PriorityCriminisi<BlurredImageType> PriorityType;
-  PriorityType priorityFunction(blurredImage, mask, patchHalfWidth);
+//  typedef PriorityCriminisi<BlurredImageType> PriorityType;
+//  PriorityType priorityFunction(blurredImage, mask, patchHalfWidth);
+
+//  typedef PriorityRandom PriorityType;
+//  PriorityType priorityFunction(false);
+
+  typedef PriorityConfidence PriorityType;
+  PriorityType priorityFunction(mask, patchHalfWidth);
 
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, TImage, ImagePatchDescriptorMapType>
@@ -131,7 +140,7 @@ void ClassicalImageInpainting(TImage* const originalImage, Mask* const mask, con
                                           imagePatchDescriptorVisitor, acceptanceVisitor,
                                           &priorityFunction, patchHalfWidth, "InpaintingVisitor", originalImage);
   inpaintingVisitor.SetAllowNewPatches(false);
-  inpaintingVisitor.SetDebugImages(true);
+//  inpaintingVisitor.SetDebugImages(true); // Write PatchesCopied images that show the source and target patch at each iteration
 
   InitializePriority(mask, boundaryNodeQueue, &priorityFunction);
 
@@ -141,11 +150,6 @@ void ClassicalImageInpainting(TImage* const originalImage, Mask* const mask, con
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finder
-  // SAD
-//  typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
-//      SumAbsolutePixelDifference<typename TImage::PixelType> > PatchDifferenceType;
-
-  // SSD (takes about the same time as SAD)
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
       SumSquaredPixelDifference<typename TImage::PixelType> > PatchDifferenceType;
 
@@ -156,6 +160,8 @@ void ClassicalImageInpainting(TImage* const originalImage, Mask* const mask, con
   // Perform the inpainting
   InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,
                       linearSearchBest, &inpainter);
+
+  std::cout << "ComputePriority calls: " << priorityFunction.ComputePriorityCallCount << std::endl;
 }
 
 #endif

@@ -131,6 +131,7 @@ public:
 
       if(this->GetDebugLevel() > 1)
       {
+        std::cout << "PatchInpainter debug level: " << this->GetDebugLevel() << std::endl;
         // Write the target patch that was inpainted.
         try
         {

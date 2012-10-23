@@ -308,14 +308,35 @@ public:
 
     typedef typename TBoundaryNodeQueue::HandleType HandleType;
 
+    // Naive, unparallelizable way
+//    while(!imageIterator.IsAtEnd())
+//    {
+//      VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(imageIterator.GetIndex());
+
+//      if(this->MaskImage->HasHoleNeighbor(imageIterator.GetIndex()))
+//      {
+//        float priority = this->PriorityFunction->ComputePriority(imageIterator.GetIndex());
+//        this->BoundaryNodeQueue.push_or_update(v, priority);
+//      }
+//      else
+//      {
+//        this->BoundaryNodeQueue.mark_as_invalid(v);
+//      }
+
+//      ++imageIterator;
+//    }
+
+    // Parallelizable way - collect the pixels that need their priority computed
+    typedef std::vector<itk::Index<2> > IndexVectorType;
+    IndexVectorType pixelsToCompute;
     while(!imageIterator.IsAtEnd())
     {
       VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(imageIterator.GetIndex());
 
-      if(this->MaskImage->HasHoleNeighbor(imageIterator.GetIndex()))
+      if(this->MaskImage->GetPixel(imageIterator.GetIndex()) == this->MaskImage->GetValidValue() &&
+         this->MaskImage->HasHoleNeighbor(imageIterator.GetIndex()))
       {
-        float priority = this->PriorityFunction->ComputePriority(imageIterator.GetIndex());
-        this->BoundaryNodeQueue.push_or_update(v, priority);
+        pixelsToCompute.push_back(imageIterator.GetIndex());
       }
       else
       {
@@ -323,6 +344,15 @@ public:
       }
 
       ++imageIterator;
+    }
+
+//    #pragma omp parallel for
+    for(IndexVectorType::const_iterator pixelIterator = pixelsToCompute.begin();
+        pixelIterator < pixelsToCompute.end(); ++pixelIterator)
+    {
+      VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(*pixelIterator);
+      float priority = this->PriorityFunction->ComputePriority(*pixelIterator);
+      this->BoundaryNodeQueue.push_or_update(v, priority);
     }
 
     // std::cout << "FinishVertex after traversing finishing region there are "
