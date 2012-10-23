@@ -38,6 +38,13 @@ public:
   template <typename TNormalsImage>
   void ComputeBoundaryNormals(TNormalsImage* const boundaryNormals, const float maskBlurVariance = 2.0f);
 
+  /** Comput the boundary normals. 'TNormalsImage' should be a type that has an
+    * operator[] for two components (a 2-vector). 'maskBlurVariance' indicates how much
+    * to blur the mask boundary before computing the gradients. */
+  template <typename TNormalsImage>
+  void ComputeBoundaryNormals(TNormalsImage* const boundaryNormals, const float maskBlurVariance,
+                              const itk::ImageRegion<2>& region);
+
 private:
 
   const Mask* MaskImage;

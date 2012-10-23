@@ -346,12 +346,13 @@ public:
       ++imageIterator;
     }
 
-//    #pragma omp parallel for
+    #pragma omp parallel for
     for(IndexVectorType::const_iterator pixelIterator = pixelsToCompute.begin();
         pixelIterator < pixelsToCompute.end(); ++pixelIterator)
     {
       VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(*pixelIterator);
       float priority = this->PriorityFunction->ComputePriority(*pixelIterator);
+      #pragma omp critical // There are weird crashes without this guard
       this->BoundaryNodeQueue.push_or_update(v, priority);
     }
 

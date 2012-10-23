@@ -115,14 +115,14 @@ void ClassicalImageInpainting(TImage* const originalImage, Mask* const mask, con
   inpainter.AddInpainter(&blurredImagePatchInpainter);
 
   // Create the priority function
-//  typedef PriorityCriminisi<BlurredImageType> PriorityType;
-//  PriorityType priorityFunction(blurredImage, mask, patchHalfWidth);
+  typedef PriorityCriminisi<BlurredImageType> PriorityType;
+  PriorityType priorityFunction(blurredImage, mask, patchHalfWidth);
 
 //  typedef PriorityRandom PriorityType;
 //  PriorityType priorityFunction(false);
 
-  typedef PriorityConfidence PriorityType;
-  PriorityType priorityFunction(mask, patchHalfWidth);
+//  typedef PriorityConfidence PriorityType;
+//  PriorityType priorityFunction(mask, patchHalfWidth);
 
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, TImage, ImagePatchDescriptorMapType>

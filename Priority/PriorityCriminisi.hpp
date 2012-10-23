@@ -43,7 +43,9 @@ PriorityCriminisi<TImage>::PriorityCriminisi(const TImage* const image, const Ma
   this->BoundaryNormalsImage = Vector2ImageType::New();
   ITKHelpers::InitializeImage(this->BoundaryNormalsImage.GetPointer(), image->GetLargestPossibleRegion());
 
-  ComputeBoundaryNormals();
+  BoundaryNormals boundaryNormals(this->MaskImage);
+  boundaryNormals.SetDebugImages(true);
+  boundaryNormals.ComputeBoundaryNormals(this->BoundaryNormalsImage.GetPointer());
 
   this->IsophoteImage = Vector2ImageType::New();
   ITKHelpers::InitializeImage(this->IsophoteImage.GetPointer(), image->GetLargestPossibleRegion());
@@ -70,9 +72,12 @@ void PriorityCriminisi<TImage>::Update(const TNode& sourceNode, const TNode& tar
 //  Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage,
 //                                           this->Image->GetLargestPossibleRegion(), this->IsophoteImage.GetPointer());
 
-  ComputeBoundaryNormals();
+  BoundaryNormals boundaryNormals(this->MaskImage);
+  float maskBlurVariance = 2.0f;
+  boundaryNormals.SetDebugImages(true);
+  boundaryNormals.ComputeBoundaryNormals(this->BoundaryNormalsImage.GetPointer(), maskBlurVariance, dilatedRegion);
 
-  if(this->IsDebugOn())
+  if(this->GetDebugImages())
   {
     ITKHelpers::WriteSequentialImage(this->BoundaryNormalsImage.GetPointer(), "BoundaryNormals", patchNumber, 3, "mha");
     ITKHelpers::WriteSequentialImage(this->IsophoteImage.GetPointer(), "IsophoteImage", patchNumber, 3, "mha");
@@ -114,15 +119,6 @@ float PriorityCriminisi<TImage>::ComputeDataTerm(const itk::Index<2>& queryPixel
   float dataTerm = dot/alpha;
 
   return dataTerm;
-}
-
-template <typename TImage>
-void PriorityCriminisi<TImage>::ComputeBoundaryNormals()
-{
-  BoundaryNormals boundaryNormals(this->MaskImage);
-//  boundaryNormals.SetDebugLevel(1);
-
-  boundaryNormals.ComputeBoundaryNormals(this->BoundaryNormalsImage.GetPointer());
 }
 
 template <typename TImage>

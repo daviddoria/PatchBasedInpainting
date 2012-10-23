@@ -59,9 +59,6 @@ protected:
   /** Compute the Data at a pixel. */
   float ComputeDataTerm(const itk::Index<2>& queryPixel) const;
 
-  /** Compute the normals of the hole boundary. */
-  void ComputeBoundaryNormals();
-
   typedef itk::CovariantVector<float, 2> Vector2Type;
   typedef itk::Image<Vector2Type, 2> Vector2ImageType;
 
