@@ -27,8 +27,3 @@
 // ITK
 #include "itkRGBToLuminanceImageFilter.h"
 
-namespace Isophotes
-{
-
-
-} // end namespace
