@@ -145,7 +145,6 @@ add_library(PatchBasedInpainting
 ImageProcessing/Derivatives.cpp
 Utilities/itkCommandLineArgumentParser.cxx
 Utilities/PatchHelpers.cpp
-ImageProcessing/Isophotes.cpp
 Priority/Priority.cpp
 Priority/PriorityDepth.cpp
 Priority/PriorityManual.cpp

@@ -22,18 +22,23 @@
 #include "Mask/Mask.h"
 #include "ImageTypes.h"
 
-namespace Isophotes
+class Isophotes
 {
 
+public:
+  /** This is a helper function that is called by ComputeColorIsophotesInRegion. */
 template <typename TVectorImageType, typename TIsophoteImageType>
-void ComputeColorIsophotesInRegion(const TVectorImageType* image, const Mask* const mask,
-                                   const itk::ImageRegion<2>& region , TIsophoteImageType* const isophotes);
+static void ComputeColorIsophotesInRegion(const TVectorImageType* image, const Mask* const mask,
+                                          const itk::ImageRegion<2>& region , TIsophoteImageType* const isophotes);
 
-template <typename TVectorImageType, typename TIsophoteImageType>
-void ComputeMaskedIsophotesInRegion(const TVectorImageType* const image, const Mask* const mask, const itk::ImageRegion<2>& region,
-                                    TIsophoteImageType* const outputIsophotes);
+private:
+  /** This is a helper function that is called by ComputeColorIsophotesInRegion. */
+  template <typename TScalarImageType, typename TIsophoteImageType>
+  static void ComputeMaskedIsophotesInRegion(const TScalarImageType* const image, const Mask* const mask,
+                                             const itk::ImageRegion<2>& region,
+                                             TIsophoteImageType* const outputIsophotes);
 
-}
+};
 
 #include "Isophotes.hpp"
 

@@ -59,6 +59,7 @@ template <typename TNode>
 void PriorityCriminisi<TImage>::Update(const TNode& sourceNode, const TNode& targetNode,
                                        const unsigned int patchNumber)
 {
+  // This is called once per inpainting iteration.
   Superclass::Update(sourceNode, targetNode, patchNumber);
 
   // Compute the isophotes we will need
@@ -86,13 +87,13 @@ void PriorityCriminisi<TImage>::Update(const TNode& sourceNode, const TNode& tar
     WriteBoundaryImage(patchNumber);
     WritePriorityImage(patchNumber);
   }
-
 }
 
 template <typename TImage>
 template <typename TNode>
 float PriorityCriminisi<TImage>::ComputePriority(const TNode& queryPixel) const
 {
+  // This is called ~50x per inpainting iteration (for 21x21 patches).
   //std::cout << "PriorityCriminisi::ComputePriority()" << std::endl;
   float confidenceTerm = Superclass::ComputeConfidenceTerm(queryPixel);
   float dataTerm = ComputeDataTerm(queryPixel);
@@ -102,21 +103,21 @@ float PriorityCriminisi<TImage>::ComputePriority(const TNode& queryPixel) const
   return priority;
 }
 
-
 template <typename TImage>
 float PriorityCriminisi<TImage>::ComputeDataTerm(const itk::Index<2>& queryPixel) const
 {
+  // This is called ~50x per inpainting iteration (for 21x21 patches).
   // D(p) = |dot(isophote at p, normalized normal of the front at p)|/alpha
 
   Vector2Type isophote = this->IsophoteImage->GetPixel(queryPixel);
   Vector2Type boundaryNormal = this->BoundaryNormalsImage->GetPixel(queryPixel);
 
-  float dot = std::abs(isophote * boundaryNormal); // operator*() is the dot product
+  float isophoteDotNormal = std::abs(isophote * boundaryNormal); // operator*() is the dot product
 
   // This doesn't actually contribue anything, since the argmax of the priority is all that is used,
   // and alpha ends up just being a scaling factor since the proiority is purely multiplicative.
   float alpha = 255;
-  float dataTerm = dot/alpha;
+  float dataTerm = isophoteDotNormal/alpha;
 
   return dataTerm;
 }

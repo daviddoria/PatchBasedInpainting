@@ -30,26 +30,26 @@
 // ITK
 #include "itkRGBToLuminanceImageFilter.h"
 
-namespace Isophotes
-{
-
 template <typename TVectorImageType, typename TIsophoteImageType>
-void ComputeColorIsophotesInRegion(const TVectorImageType* const image, const Mask* const mask,
+void Isophotes::ComputeColorIsophotesInRegion(const TVectorImageType* const image, const Mask* const mask,
                                    const itk::ImageRegion<2>& region , TIsophoteImageType* const isophotes)
 {
   /*
    * 'isophotes' must already be initialized to the right size and allocated.
    */
+  assert(isophotes);
+  assert(isophotes->GetLargestPossibleRegion() == image->GetLargestPossibleRegion());
   
   //EnterFunction("ComputeIsophotes()");
   RGBImageType::Pointer rgbImage = RGBImageType::New();
-  ITKHelpers::VectorImageToRGBImage(image, rgbImage);
+  ITKHelpers::VectorImageToRGBImageInRegion(image, rgbImage, region);
 
   //HelpersOutput::WriteImageConditional<RGBImageType>(rgbImage, "Debug/Initialize.rgb.mha", this->DebugImages);
 
   typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
   LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
   luminanceFilter->SetInput(rgbImage);
+  luminanceFilter->GetOutput()->SetRequestedRegion(region);
   luminanceFilter->Update();
 
   FloatScalarImageType::Pointer luminanceImage = FloatScalarImageType::New();
@@ -70,20 +70,20 @@ void ComputeColorIsophotesInRegion(const TVectorImageType* const image, const Ma
 
 //   if(this->DebugImages)
 //     {
-//     HelpersOutput::Write2DVectorImage(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha");
+//     ITKHelpers::Write2DVectorImage(this->IsophoteImage, "Debug/Initialize.IsophoteImage.mha");
 //     }
   //LeaveFunction("ComputeIsophotes()");
 }
 
 template <typename TVectorImageType, typename TIsophoteImageType>
-void ComputeMaskedIsophotesInRegion(const TVectorImageType* const image, const Mask* const mask,
+void Isophotes::ComputeMaskedIsophotesInRegion(const TVectorImageType* const image, const Mask* const mask,
                                     const itk::ImageRegion<2>& region, TIsophoteImageType* const outputIsophotes)
 {
   //Helpers::WriteImageConditional<FloatScalarImageType>(image, "Debug/ComputeMaskedIsophotes.luminance.mha",
 //                                                      this->DebugImages);
 
   typename TIsophoteImageType::Pointer gradient = TIsophoteImageType::New();
-  ITKHelpers::InitializeImage(gradient.GetPointer(), image->GetLargestPossibleRegion());
+  ITKHelpers::InitializeImage(gradient.GetPointer(), region);
   Derivatives::MaskedGradientInRegion(image, mask, region, gradient.GetPointer());
 
   //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient,
@@ -97,6 +97,7 @@ void ComputeMaskedIsophotesInRegion(const TVectorImageType* const image, const M
 
   typename FilterType::Pointer rotateFilter = FilterType::New();
   rotateFilter->SetInput(gradient);
+  rotateFilter->GetOutput()->SetRequestedRegion(region);
   rotateFilter->Update();
 
   //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(rotateFilter->GetOutput(),
@@ -105,7 +106,5 @@ void ComputeMaskedIsophotesInRegion(const TVectorImageType* const image, const M
 
   ITKHelpers::CopyRegion(rotateFilter->GetOutput(), outputIsophotes, region, region);
 }
-
-} // end namespace
 
 #endif
