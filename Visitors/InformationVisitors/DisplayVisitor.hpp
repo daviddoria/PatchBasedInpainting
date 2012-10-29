@@ -1,3 +1,21 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef DisplayVisitor_HPP
 #define DisplayVisitor_HPP
 
@@ -5,9 +23,10 @@
 
 // Custom
 #include "Visitors/InpaintingVisitorParent.h"
-#include "Mask/Mask.h"
-#include "ITKHelpers/ITKHelpers.h"
-#include "Node.h"
+
+// Submodules
+#include <Mask/Mask.h>
+#include <ITKHelpers/ITKHelpers.h>
 
 // ITK
 #include "itkImage.h"
@@ -60,18 +79,21 @@ public:
 
   }
 
-  void PaintPatch(VertexDescriptorType target, VertexDescriptorType source) const {}
+  void PaintPatch(VertexDescriptorType target, VertexDescriptorType source) const
+  {
+
+  }
   
   void InitializeVertex(VertexDescriptorType v) const
   { 
 
-  };
+  }
 
   void DiscoverVertex(VertexDescriptorType v) const
   {
     // std::cout << "DisplayVisitor::DiscoverVertex" << std::endl;
     emit signal_RefreshImage();
-  };
+  }
 
   void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
@@ -86,17 +108,17 @@ public:
     // std::cout << "DisplayVisitor::PotentialMatchMade source " << sourceIndex << std::endl;
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, this->HalfWidth);
     emit signal_RefreshSource(sourceRegion, targetRegion);
-  };
+  }
 
   void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
   {
     // Do nothing
-  };
+  }
 
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
     return true;
-  };
+  }
 
   void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode)
   {
@@ -108,7 +130,7 @@ public:
 
     emit signal_RefreshResult(sourceRegion, targetRegion);
     emit signal_RefreshImage();
-  };
+  }
 
   void InpaintingComplete() const
   {

@@ -16,9 +16,6 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "Helpers/OutputHelpers.h"
-
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
@@ -33,20 +30,23 @@
 #include "Visitors/CompositeInpaintingVisitor.hpp"
 
 // Nearest neighbors
-#include "NearestNeighbor/LinearSearchBestProperty.hpp"
+#include "NearestNeighbor/LinearSearchBest/Property.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/TwoStepNearestNeighbor.hpp"
 
+// Visitors
 #include "Visitors/NearestNeighborsDisplayVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
 
 // Initializers
 #include "Initializers/InitializeFromMaskImage.hpp"
 #include "Initializers/InitializePriority.hpp"
 
 // Inpainters
-#include "Inpainters/MaskedGridPatchInpainter.hpp"
+#include "Inpainters/PatchInpainter.hpp"
 
 // Difference functions
+#include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
 
 // Inpainting
@@ -61,10 +61,9 @@
 // Boost
 #include <boost/graph/grid_graph.hpp>
 #include <boost/property_map/property_map.hpp>
-#include <boost/graph/detail/d_ary_heap.hpp>
 
-// Debug
-#include "Helpers/OutputHelpers.h"
+// Custom
+#include "Utilities/IndirectPriorityQueue.h"
 
 // Qt
 #include <QApplication>
@@ -109,7 +108,7 @@ int main(int argc, char *argv[])
   std::cout << "Patch half width: " << patchHalfWidth << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
-  typedef FloatVectorImageType ImageType;
+  typedef itk::VectorImage<float, 2> ImageType;
 
   typedef  itk::ImageFileReader<ImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
@@ -134,57 +133,38 @@ int main(int argc, char *argv[])
   VertexListGraphType graph(graphSideLengths);
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
 
-  // Get the index map
-  typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
-  IndexMapType indexMap(get(boost::vertex_index, graph));
-
-  // Create the priority map
-  typedef boost::vector_property_map<float, IndexMapType> PriorityMapType;
-  PriorityMapType priorityMap(num_vertices(graph), indexMap);
-
-  // Create the node fill status map. Each pixel is either filled (true) or not filled (false).
-  typedef boost::vector_property_map<bool, IndexMapType> FillStatusMapType;
-  FillStatusMapType fillStatusMap(num_vertices(graph), indexMap);
-
-  // Create the boundary status map. A node is on the current boundary if this property is true.
-  // This property helps the boundaryNodeQueue because we can mark here if a node has become no longer
-  // part of the boundary, so when the queue is popped we can check this property to see if it should
-  // actually be processed.
-  typedef boost::vector_property_map<bool, IndexMapType> BoundaryStatusMapType;
-  BoundaryStatusMapType boundaryStatusMap(num_vertices(graph), indexMap);
+  // Queue
+  typedef IndirectPriorityQueue<VertexListGraphType> BoundaryNodeQueueType;
+  BoundaryNodeQueueType boundaryNodeQueue(graph);
 
   // Create the descriptor map. This is where the data for each pixel is stored.
-  typedef boost::vector_property_map<ImagePatchPixelDescriptorType, IndexMapType> ImagePatchDescriptorMapType;
-  ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
+  typedef boost::vector_property_map<ImagePatchPixelDescriptorType, BoundaryNodeQueueType::IndexMapType>
+      ImagePatchDescriptorMapType;
+  ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), boundaryNodeQueue.IndexMap);
 
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
-  typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
-  InpainterType patchInpainter(patchHalfWidth, fillStatusMap);
+  typedef PatchInpainter<ImageType> InpainterType;
+  InpainterType patchInpainter(patchHalfWidth, image.GetPointer(), mask);
 
   // Create the priority function
   typedef PriorityRandom PriorityType;
   PriorityType priorityFunction;
 
-  // Create the boundary node queue. The priority of each node is used to order the queue.
-  typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;
-  IndexInHeapMap index_in_heap(indexMap);
-
-  // Create the priority compare functor
-  typedef std::less<float> PriorityCompareType;
-  PriorityCompareType lessThanFunctor;
-
-  typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType> BoundaryNodeQueueType;
-  BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
-
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType> ImagePatchDescriptorVisitorType;
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
+  // Setup acceptance visitor
+  typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
+  AcceptanceVisitorType acceptanceVisitor;
+
   // Create the inpainting visitor
-  typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType, FillStatusMapType,
-                            ImagePatchDescriptorVisitorType, PriorityType, PriorityMapType, BoundaryStatusMapType> InpaintingVisitorType;
-  InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue, fillStatusMap,
-                                          imagePatchDescriptorVisitor, priorityMap, &priorityFunction, patchHalfWidth, boundaryStatusMap);
+  typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
+                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType, ImageType>
+                            InpaintingVisitorType;
+  InpaintingVisitorType inpaintingVisitor(mask, boundaryNodeQueue,
+                                          imagePatchDescriptorVisitor, acceptanceVisitor,
+                                          &priorityFunction, patchHalfWidth, "InpaintingVisitor", image.GetPointer());
 
   typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
   DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
@@ -194,23 +174,26 @@ int main(int argc, char *argv[])
   compositeVisitor.AddVisitor(&inpaintingVisitor);
   compositeVisitor.AddVisitor(&displayVisitor);
 
-  InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
+  InitializePriority(mask, boundaryNodeQueue, &priorityFunction);
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage(mask, &compositeVisitor, graph, fillStatusMap);
+  InitializeFromMaskImage<InpaintingVisitorType, VertexDescriptorType>(mask, &inpaintingVisitor);
   std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finders
-  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
+  typedef SumSquaredPixelDifference<ImageType::PixelType> PixelDifferenceType;
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, PixelDifferenceType> PatchDifferenceType;
+  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
+                                  PatchDifferenceType > KNNSearchType;
   KNNSearchType knnSearch(imagePatchDescriptorMap, 1000);
 
-  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, ImagePatchDifference<ImagePatchPixelDescriptorType> > BestSearchType;
+  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType, PatchDifferenceType > BestSearchType;
   BestSearchType linearSearchBest(imagePatchDescriptorMap);
 
   NearestNeighborsDisplayVisitor nearestNeighborsDisplayVisitor;
   typedef TwoStepNearestNeighbor<KNNSearchType, BestSearchType, NearestNeighborsDisplayVisitor> TwoStepSearchType;
-  TwoStepSearchType twoStepSearch(knnSearch, linearSearchBest, nearestNeighborsDisplayVisitor);
+  TwoStepSearchType twoStepSearch(knnSearch, linearSearchBest, &nearestNeighborsDisplayVisitor);
 
   // Setup the GUI
   QApplication app( argc, argv );
@@ -233,10 +216,14 @@ int main(int argc, char *argv[])
   typedef ManualSelectionDefaultVisitor<VertexDescriptorType> ManualSelectionVisitorType;
   ManualSelectionVisitorType manualSelectionDefaultVisitor;
 
-  QtConcurrent::run(boost::bind(inpainting_loop<VertexListGraphType, CompositeVisitorType, BoundaryStatusMapType,
-                                BoundaryNodeQueueType, TwoStepSearchType, InpainterType, ManualSelectionVisitorType>,
-                              graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepSearch, patchInpainter,
-                              manualSelectionDefaultVisitor));
+//  QtConcurrent::run(boost::bind(InpaintingAlgorithm<VertexListGraphType, CompositeVisitorType,
+//                                BoundaryNodeQueueType, TwoStepSearchType, InpainterType, ManualSelectionVisitorType>,
+//                                graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepSearch, patchInpainter,
+//                                manualSelectionDefaultVisitor));
 
+  QtConcurrent::run(boost::bind(InpaintingAlgorithm<VertexListGraphType, CompositeVisitorType,
+                                BoundaryNodeQueueType, TwoStepSearchType, InpainterType>,
+                                graph, compositeVisitor, &boundaryNodeQueue,
+                                twoStepSearch, &patchInpainter));
   return app.exec();
 }

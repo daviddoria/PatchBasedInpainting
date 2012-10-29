@@ -24,6 +24,7 @@ ThreeStepNearestNeighbor.hpp
 topological_search.hpp
 TwoStepNearestNeighbor.hpp
 VisualSelectionBest.hpp
-weak_metric_space_concept.hpp)
+weak_metric_space_concept.hpp
+DummyWriter.hpp)
 
 add_subdirectory(LinearSearchBest)

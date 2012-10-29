@@ -31,7 +31,7 @@ signals:
 
 public:
 
-  // NearestNeighborsDisplayVisitor(){}
+//   NearestNeighborsDisplayVisitor(){}
 
   template <typename TContainer>
   void FoundNeighbors(const TContainer& container)

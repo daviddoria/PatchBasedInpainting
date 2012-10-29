@@ -9,6 +9,23 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 set(Interactive_includes ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} PARENT_SCOPE)
 
+add_custom_target(InteractiveSources SOURCES
+BasicViewerWidget.h
+BasicViewerWidget.hpp
+ColorPalette.h
+DisplayPriority.h
+DisplayState.h
+DisplayStyle.h
+FileSelector.h
+FullInspectionWidget.h
+ImageCamera.h
+ImageInput.h
+InpaintingComputationObject.h
+InpaintingDisplaySettings.h
+InpaintingIterationRecord.h
+# more here
+)
+
 QT4_WRAP_UI(InpaintingGUI_UISrcs
             BasicViewerWidget.ui
             ManualPatchSelectionDialog.ui

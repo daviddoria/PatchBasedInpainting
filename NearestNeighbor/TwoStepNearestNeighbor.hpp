@@ -34,29 +34,34 @@
   * \tparam NeighborFinderBest The functor that can find the best neighbor.
   */
 template <typename TMultipleNeighborFinder, typename TNearestNeighborFinder,
-          typename TTopPatchWriter = DummyWriter,
-          typename TVisitor = NearestNeighborsDefaultVisitor>
+          typename TVisitor = NearestNeighborsDefaultVisitor,
+          typename TTopPatchWriter = DummyWriter
+          >
 struct TwoStepNearestNeighbor
 {
-  TMultipleNeighborFinder MultipleNeighborFinder;
+  /** The first functor to apply - finds a list of the best nodes.
+    * This must be a reference because this finder could potentially be a QObject (which cannot be copied). */
+  TMultipleNeighborFinder& MultipleNeighborFinder;
 
   /** The second functor to apply - finds the best node from the candidates that MultipleNeighborFinder provides.
-    * This must be a reference because this finder could potentially be a QObject (which cannot be copied) */
+    * This must be a reference because this finder could potentially be a QObject (which cannot be copied). */
   TNearestNeighborFinder& NearestNeighborFinder;
 
-  TTopPatchWriter& TopPatchWriter;
+  TVisitor* Visitor;
 
-  TVisitor& Visitor;
+  TTopPatchWriter* TopPatchWriter;
 
   /**
     * Constructor.
     * \param NeighborFinderKNN The functor to do the K-NN first step of the search.
     * \param NeighborFinderBest The functor to do the 1-NN second step of the search.
     */
-  TwoStepNearestNeighbor(TMultipleNeighborFinder multipleNeighborFinder, TNearestNeighborFinder& nearestNeighborFinder,
-                         TTopPatchWriter topPatchWriter = DummyWriter(),
-                         TVisitor visitor = TVisitor()) :
-    MultipleNeighborFinder(multipleNeighborFinder), NearestNeighborFinder(nearestNeighborFinder), TopPatchWriter(topPatchWriter), Visitor(visitor)
+  TwoStepNearestNeighbor(TMultipleNeighborFinder& multipleNeighborFinder,
+                         TNearestNeighborFinder& nearestNeighborFinder,
+                         TVisitor* visitor = new TVisitor,
+                         TTopPatchWriter* topPatchWriter = new TTopPatchWriter) :
+    MultipleNeighborFinder(multipleNeighborFinder), NearestNeighborFinder(nearestNeighborFinder),
+    Visitor(visitor), TopPatchWriter(topPatchWriter)
   { }
 
   template <typename TIterator>
@@ -74,9 +79,9 @@ struct TwoStepNearestNeighbor
       throw std::runtime_error("MultipleNeighborFinder did not find any neighbors!");
     }
 
-    Visitor.FoundNeighbors(outputContainer);
+    this->Visitor->FoundNeighbors(outputContainer);
 
-    this->TopPatchWriter(outputContainer.begin(),
+    (*this->TopPatchWriter)(outputContainer.begin(),
                          outputContainer.end(), queryNode);
 
     // Step 2 - 1-NN search on result of first search

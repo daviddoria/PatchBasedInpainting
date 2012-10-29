@@ -60,7 +60,6 @@ struct IndirectPriorityQueue
 
   QueueType Queue;
 
-
   /** Create the boundary status map. A node is on the current boundary if this property is true.
     * This property helps the boundaryNodeQueue because we can mark here if a node has become no longer
     * part of the boundary, so when the queue is popped we can check this property to see if it should
@@ -77,11 +76,6 @@ struct IndirectPriorityQueue
     Queue(IndirectComparison),
     BoundaryStatusMap(num_vertices(Graph), IndexMap)
   {
-//    this->IndexMap = IndexMapType(get(boost::vertex_index, graph));
-//    this->HandleMap = HandleMapType(indexMap);
-//    this->IndirectComparison = IndirectComparisonType(priorityMap);
-//    this->Queue = QueueType(indirectComparison);
-
     // Initialize the handle map
     HandleType invalidHandle(0); // An invalid node handle (a node_pointer of NULL)
     VertexIteratorType vertexIterator, vertexIteratorEnd;
@@ -112,6 +106,24 @@ struct IndirectPriorityQueue
   HandleType push(ValueType v)
   {
     return this->Queue.push(v);
+  }
+
+  size_t size()
+  {
+    // We need to check if the queue contains any valid items
+//    return this->Queue.size();
+
+    size_t numberOfValidItems = 0;
+    for (typename QueueType::iterator it = this->Queue.begin();
+         it != this->Queue.end(); ++it)
+    {
+      bool valid = get(this->BoundaryStatusMap, *it);
+      if(valid)
+      {
+        numberOfValidItems++;
+      }
+    }
+    return numberOfValidItems;
   }
 
   bool empty()
