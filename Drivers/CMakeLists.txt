@@ -4,6 +4,7 @@ InpaintingHistogram.hpp
 InpaintingIntroducedEnergy.hpp
 InpaintingTexture.hpp
 InpaintingWithVerification.hpp
+InteractiveInpaintingWithVerification.hpp
 LidarInpaintingHSVTextureVerification.hpp
 LidarInpaintingRGBTextureVerification.hpp
 WeightedSSDInpainting.hpp

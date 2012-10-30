@@ -335,13 +335,11 @@ void InpaintingWithVerification(TImage* const originalImage, Mask* const mask, c
                                    ImagePatchDifferenceType > BestSearchType;
   BestSearchType bestSearch(imagePatchDescriptorMap);
 
-//   typedef DefaultSearchBest BestSearchType;
-//   BestSearchType bestSearch;
-
 //  TopPatchesDialog<TImage> topPatchesDialog(image, mask, patchHalfWidth);
 //  typedef VisualSelectionBest<TImage> ManualSearchType;
 //  ManualSearchType manualSearchBest(image, mask, patchHalfWidth, &topPatchesDialog);
 
+  // By using this, essentially what we are saying is "if the acceptance tests fail, just use the first node".
   typedef FirstValidDescriptor<ImagePatchDescriptorMapType> ManualSearchType;
   ManualSearchType manualSearchBest(imagePatchDescriptorMap);
 

@@ -1,9 +1,11 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.6) # Required for AutoMOC (http://blogs.kde.org/2011/11/01/cool-new-stuff-cmake-286-automoc)
 
 PROJECT(PatchBasedInpainting)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 SET(ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+set(CMAKE_AUTOMOC TRUE)
 
 # A function to get all user defined variables with a specified prefix
 function (getListOfVarsStartingWith _prefix _varResult)
@@ -169,83 +171,83 @@ set_property(GLOBAL PROPERTY PatchBasedInpaintingLibs ${PatchBasedInpainting_lib
 ############ Executables ###########
 
 # Interactive
-SET(BuildInteractive CACHE BOOL "Build the interactive version.")
+option(BuildInteractive "Build the interactive version.")
 if(BuildInteractive)
     message("Building the interactive components.")
   add_subdirectory(Interactive)
 endif()
 
-SET(BuildViewer CACHE BOOL "Build the viewer.")
+option(BuildViewer "Build the viewer.")
 if(BuildViewer)
   message("Building the viewer.")
   add_subdirectory(Interactive)
 endif()
 
-SET(inpainting_InpaintingWithLocalSearch CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+option(inpainting_InpaintingWithLocalSearch "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
 if(inpainting_InpaintingWithLocalSearch)
   include(InpaintingWithLocalSearch.cmake)
 endif()
 
-SET(inpainting_InpaintingRGBD CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+option(inpainting_InpaintingRGBD "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
 if(inpainting_InpaintingRGBD)
   include(InpaintingRGBD.cmake)
 endif()
 
-SET(inpainting_InpaintingAutomatic CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+option(inpainting_InpaintingAutomatic "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
 if(inpainting_InpaintingAutomatic)
   include(InpaintingAutomatic.cmake)
 endif()
 
-SET(inpainting_InpaintingCIELab CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+option(inpainting_InpaintingCIELab "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
 if(inpainting_InpaintingCIELab)
   include(InpaintingCIELab.cmake)
 endif()
 
-SET(inpainting_InpaintingWithVerification CACHE BOOL "Build an inpainting program that displays a list of the top patches for the user to select if the best patch does not pass some acceptance tests.")
+option(inpainting_InpaintingWithVerification "Build an inpainting program that displays a list of the top patches for the user to select if the best patch does not pass some acceptance tests.")
 if(inpainting_InpaintingWithVerification)
   include(InpaintingWithVerification.cmake)
 endif()
 
-SET(inpainting_InpaintingVectorized CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+option(inpainting_InpaintingVectorized "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
 if(inpainting_InpaintingVectorized)
   include(InpaintingVectorized.cmake)
 endif()
 
-SET(inpainting_PrecomputedInpainting CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
+option(inpainting_PrecomputedInpainting "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
 if(inpainting_PrecomputedInpainting)
   include(PrecomputedInpainting.cmake)
 endif()
 
-SET(inpainting_InpaintingWithManualSelection CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for manual selection.")
+option(inpainting_InpaintingWithManualSelection "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for manual selection.")
 if(inpainting_InpaintingWithManualSelection)
   include(InpaintingWithManualSelection.cmake)
 endif()
 
-SET(inpainting_InpaintingWithTopPatchDisplay CACHE BOOL "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for passive inspection.")
+option(inpainting_InpaintingWithTopPatchDisplay "Build a traditional patch comparison image inpainting that displays a list of the top patches at every iteration for passive inspection.")
 if(inpainting_InpaintingWithTopPatchDisplay)
   include(InpaintingWithTopPatchDisplay.cmake)
 endif()
 
-SET(inpainting_ClassicalImageInpaintingWithVisualOutput CACHE BOOL "Build a traditional patch comparison image inpainting that displays the image at every iteration.")
+option(inpainting_ClassicalImageInpaintingWithVisualOutput "Build a traditional patch comparison image inpainting that displays the image at every iteration.")
 if(inpainting_ClassicalImageInpaintingWithVisualOutput)
   include(ClassicalImageInpaintingWithVisualOutput.cmake)
 endif()
 
-SET(inpainting_InpaintingTexture CACHE BOOL "Build a patch based image inpainting algorithm that uses a gradient magnitude histogram difference sort on the top N SSD matches (to determine if texture is similar).")
+option(inpainting_InpaintingTexture "Build a patch based image inpainting algorithm that uses a gradient magnitude histogram difference sort on the top N SSD matches (to determine if texture is similar).")
 if(inpainting_InpaintingTexture)
   ADD_EXECUTABLE(InpaintingTexture InpaintingTexture.cpp)
   TARGET_LINK_LIBRARIES(InpaintingTexture ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS InpaintingTexture RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(inpainting_InpaintingHistogramSort CACHE BOOL "Build a patch based image inpainting algorithm that uses a histogram difference sort on the top N SSD matches.")
+option(inpainting_InpaintingHistogramSort "Build a patch based image inpainting algorithm that uses a histogram difference sort on the top N SSD matches.")
 if(inpainting_InpaintingHistogramSort)
   ADD_EXECUTABLE(InpaintingHistogramSort InpaintingHistogramSort.cpp)
   TARGET_LINK_LIBRARIES(InpaintingHistogramSort ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS InpaintingHistogramSort RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(inpainting_InpaintingStrategySelection CACHE BOOL "Build a patch based image inpainting algorithm that selects a strategy to sort the top N SSD matches of each target patch based on properties of the target patch.")
+option(inpainting_InpaintingStrategySelection "Build a patch based image inpainting algorithm that selects a strategy to sort the top N SSD matches of each target patch based on properties of the target patch.")
 if(inpainting_InpaintingStrategySelection)
   ADD_EXECUTABLE(InpaintingStrategySelection InpaintingStrategySelection.cpp)
   TARGET_LINK_LIBRARIES(InpaintingStrategySelection ${PatchBasedInpainting_libraries})
@@ -259,70 +261,84 @@ if(inpainting_InpaintingMinimizeIntroducedEnergy)
   INSTALL( TARGETS InpaintingMinimizeIntroducedEnergy RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(inpainting_InpaintingTwoStep CACHE BOOL "Build a patch based image inpainting program that uses a two step (knn + best) search strategy.")
+option(inpainting_InpaintingTwoStep "Build a patch based image inpainting program that uses a two step (knn + best) search strategy.")
 if(inpainting_InpaintingTwoStep)
   ADD_EXECUTABLE(InpaintingTwoStep InpaintingTwoStep.cpp)
   TARGET_LINK_LIBRARIES(InpaintingTwoStep ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS InpaintingTwoStep RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(inpainting_InpaintingBlurredSSD CACHE BOOL "Build a traditional patch comparison image inpainting using SSD on the blurred image.")
+option(inpainting_InpaintingBlurredSSD "Build a traditional patch comparison image inpainting using SSD on the blurred image.")
 if(inpainting_InpaintingBlurredSSD)
   ADD_EXECUTABLE(InpaintingBlurredSSD InpaintingBlurredSSD.cpp)
   TARGET_LINK_LIBRARIES(InpaintingBlurredSSD ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS InpaintingBlurredSSD RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(inpainting_ClassicalImageInpainting CACHE BOOL "Build a traditional patch comparison image inpainting.")
+option(inpainting_ClassicalImageInpainting "Build a traditional patch comparison image inpainting.")
 if(inpainting_ClassicalImageInpainting)
   ADD_EXECUTABLE(ClassicalImageInpainting ClassicalImageInpainting.cpp)
   TARGET_LINK_LIBRARIES(ClassicalImageInpainting ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS ClassicalImageInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(inpainting_ClassicalImageInpaintingDebug CACHE BOOL "Build a traditional patch comparison image inpainting with lots of debugging output.")
+option(inpainting_ClassicalImageInpaintingDebug "Build a traditional patch comparison image inpainting with lots of debugging output.")
 if(inpainting_ClassicalImageInpaintingDebug)
   ADD_EXECUTABLE(ClassicalImageInpaintingDebug ClassicalImageInpaintingDebug.cpp)
   TARGET_LINK_LIBRARIES(ClassicalImageInpaintingDebug ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS ClassicalImageInpaintingDebug RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(inpainting_LocalOptimizationImageInpainting CACHE BOOL "Build a inpainting algorithm that uses locally (spatially and temporally) optimal choices instead of purely greedy choices.")
+option(inpainting_LocalOptimizationImageInpainting "Build a inpainting algorithm that uses locally (spatially and temporally) optimal choices instead of purely greedy choices.")
 if(inpainting_LocalOptimizationImageInpainting)
   ADD_EXECUTABLE(LocalOptimizationImageInpainting LocalOptimizationImageInpainting.cpp)
   TARGET_LINK_LIBRARIES(LocalOptimizationImageInpainting ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS LocalOptimizationImageInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(inpainting_ClassicalImageInpaintingWithTextOutput CACHE BOOL "Build a traditional patch comparison image inpainting.")
+option(inpainting_ClassicalImageInpaintingWithTextOutput "Build a traditional patch comparison image inpainting.")
 if(inpainting_ClassicalImageInpaintingWithTextOutput)
   ADD_EXECUTABLE(ClassicalImageInpaintingWithTextOutput ClassicalImageInpaintingWithTextOutput.cpp)
   TARGET_LINK_LIBRARIES(ClassicalImageInpaintingWithTextOutput ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS ClassicalImageInpaintingWithTextOutput RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(inpainting_SmallPatchBigPatchInpainting CACHE BOOL "Build a two step (compare small patches, then compare big patches at the best of the small patches) image inpainting.")
+option(inpainting_SmallPatchBigPatchInpainting "Build a two step (compare small patches, then compare big patches at the best of the small patches) image inpainting.")
 if(inpainting_SmallPatchBigPatchInpainting)
   ADD_EXECUTABLE(SmallPatchBigPatchInpainting SmallPatchBigPatchInpainting.cpp)
   TARGET_LINK_LIBRARIES(SmallPatchBigPatchInpainting ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS SmallPatchBigPatchInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(inpainting_NarrowSearchByFeaturesInpainting CACHE BOOL "Build a two step (features, then patch comparison) image inpainting.")
+option(inpainting_NarrowSearchByFeaturesInpainting "Build a two step (features, then patch comparison) image inpainting.")
 if(inpainting_NarrowSearchByFeaturesInpainting)
   ADD_EXECUTABLE(NarrowSearchByFeaturesInpainting NarrowSearchByFeaturesInpainting.cpp PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
   TARGET_LINK_LIBRARIES(NarrowSearchByFeaturesInpainting ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS NarrowSearchByFeaturesInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(inpainting_NarrowSearchByNormalsInpainting CACHE BOOL "Build a two step (normals, then patch comparison) image inpainting.")
+option(inpainting_NarrowSearchByNormalsInpainting "Build a two step (normals, then patch comparison) image inpainting.")
 if(inpainting_NarrowSearchByNormalsInpainting)
   ADD_EXECUTABLE(NarrowSearchByNormalsInpainting NarrowSearchByNormalsInpainting.cpp PixelDescriptors/FeatureVectorPixelDescriptor.cpp)
   TARGET_LINK_LIBRARIES(NarrowSearchByNormalsInpainting ${PatchBasedInpainting_libraries})
   INSTALL( TARGETS NarrowSearchByNormalsInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-SET(BuildInpaintingTests CACHE BOOL "Build tests.")
+option(inpainting_InteractiveInpaintingWithVerification "An inpainting executable that runs acceptance tests and asks the user to choose a patch if they fail.")
+if(inpainting_InteractiveInpaintingWithVerification)
+    ADD_EXECUTABLE(InteractiveInpaintingWithVerification InteractiveInpaintingWithVerification.cpp
+                   Interactive/Layer.cpp
+                   Interactive/Delegates/PixmapDelegate.cpp
+                   Interactive/MovablePatch.cpp
+                   Interactive/PatchHighlighter.cpp
+                   Interactive/InteractorStyleImageWithDrag.cpp
+                   Interactive/ImageCamera.cpp
+                   ${InpaintingWithVerificationUISrcs} ${InpaintingWithVerificationMOCSrcs})
+    TARGET_LINK_LIBRARIES(InteractiveInpaintingWithVerification ${PatchBasedInpainting_libraries})
+    INSTALL( TARGETS InteractiveInpaintingWithVerification RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
+option(BuildInpaintingTests "Build tests.")
 if(BuildInpaintingTests)
   ENABLE_TESTING()
   add_subdirectory(Testing)
@@ -336,13 +352,13 @@ if(BuildInpaintingTests)
 endif()
 
 ############################
-SET(BuildInteractiveInpaintingTests CACHE BOOL "Build interactive tests.")
+option(BuildInteractiveInpaintingTests "Build interactive tests.")
 if(BuildInteractiveInpaintingTests)
   ENABLE_TESTING()
   add_subdirectory(Interactive/Tests)
 ENDIF()
 
-SET(BuildInpaintingDemos CACHE BOOL "Build demos.")
+option(BuildInpaintingDemos "Build demos.")
 if(BuildInpaintingDemos)
   add_subdirectory(Demos)
 endif()
