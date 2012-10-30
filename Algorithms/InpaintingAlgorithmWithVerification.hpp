@@ -43,7 +43,7 @@ inline
 void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor vis,
                      TPriorityQueue* boundaryNodeQueue,
                      TKNNFinder knnFinder, TBestNeighborFinder& bestNeighborFinder,
-                     TManualNeighborFinder& manualNeighborFinder, TPatchInpainter* patchInpainter)
+                     TManualNeighborFinder* manualNeighborFinder, TPatchInpainter* patchInpainter)
 {
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<TInpaintingVisitor, TVertexListGraph>));
 
@@ -78,7 +78,7 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
       numberOfManualVerifications++;
       std::cout << "So far there have been " << numberOfManualVerifications << " manual verifications." << std::endl;
       std::cout << "Automatic match not accepted!" << std::endl;
-      sourceNode = manualNeighborFinder(outputContainer.begin(), outputContainer.end(), targetNode);
+      sourceNode = (*manualNeighborFinder)(outputContainer.begin(), outputContainer.end(), targetNode);
     }
 
     // Do the in-painting of the target patch from the source patch.

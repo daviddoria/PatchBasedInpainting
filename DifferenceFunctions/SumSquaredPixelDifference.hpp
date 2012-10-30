@@ -36,9 +36,13 @@ template <typename PixelType>
 class SumSquaredPixelDifference
 {
 public:
-  inline float operator()(const PixelType& a, const PixelType& b) const
+  void PrintName()
   {
     std::cout << "SumSquaredPixelDifference[Generic]::operator()" << std::endl;
+  }
+
+  inline float operator()(const PixelType& a, const PixelType& b) const
+  {
     assert(Helpers::length(a) == Helpers::length(b));
 
     float pixelDifference = 0.0f;
@@ -63,10 +67,14 @@ class SumSquaredPixelDifference <itk::CovariantVector<unsigned char, N> >
 public:
   typedef itk::CovariantVector<unsigned char, N> PixelType;
 
+  void PrintName()
+  {
+    std::cout << "SumSquaredPixelDifference itk::CovariantVector<unsigned char, N>" << std::endl;
+  }
+
 //  float operator()(const PixelType& a, const PixelType& b)// const // This cannot be 'const' because of the method we are using to store the float pixels (unless we use mutable (see member variable declarations)
   inline float operator()(const PixelType& a, const PixelType& b) const
   {
-    std::cout << "SumSquaredPixelDifference <itk::CovariantVector<unsigned char, N> >::operator()" << std::endl;
     this->A = a;
     this->B = b;
     return (this->A - this->B).GetSquaredNorm();
@@ -80,7 +88,7 @@ private:
 };
 
 /**
-  * This specialization handles pixels of type CovariantVector<T,N>.
+  * Manual loop unrolling pixels of type CovariantVector<T,N>.
   */
 template<typename T, unsigned int N, int i >
 class SquaredChannelDifference
@@ -102,13 +110,17 @@ class SquaredChannelDifference<T, N, 0>
     }
 };
 
-// Unrolled version
 template <>
 template <typename T, unsigned int N>
 class SumSquaredPixelDifference <itk::CovariantVector<T, N> >
 {
 public:
   typedef itk::CovariantVector<T, N> PixelType;
+
+  void PrintName()
+  {
+    std::cout << "SumSquaredPixelDifference Loop unrolled itk::CovariantVector<T, N>" << std::endl;
+  }
 
   inline float operator()(const PixelType& a, const PixelType& b) const
   {

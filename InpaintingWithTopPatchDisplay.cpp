@@ -81,15 +81,15 @@ int main(int argc, char *argv[])
 {
   // Verify arguments
   if(argc != 5)
-    {
+  {
     std::cerr << "Required arguments: image.mha imageMask.mha patch_half_width output.mha" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
-      {
+    {
       std::cerr << argv[i] << " ";
-      }
-    return EXIT_FAILURE;
     }
+    return EXIT_FAILURE;
+  }
 
   // Parse arguments
   std::string imageFilename = argv[1];
@@ -212,14 +212,6 @@ int main(int argc, char *argv[])
   TopPatchesWidget<ImageType> topPatchesWidget(image, patchHalfWidth);
   topPatchesWidget.show();
   QObject::connect(&nearestNeighborsDisplayVisitor, SIGNAL(signal_Refresh(const std::vector<Node>&)), &topPatchesWidget, SLOT(SetNodes(const std::vector<Node>&)));
-
-  typedef ManualSelectionDefaultVisitor<VertexDescriptorType> ManualSelectionVisitorType;
-  ManualSelectionVisitorType manualSelectionDefaultVisitor;
-
-//  QtConcurrent::run(boost::bind(InpaintingAlgorithm<VertexListGraphType, CompositeVisitorType,
-//                                BoundaryNodeQueueType, TwoStepSearchType, InpainterType, ManualSelectionVisitorType>,
-//                                graph, compositeVisitor, boundaryStatusMap, boundaryNodeQueue, twoStepSearch, patchInpainter,
-//                                manualSelectionDefaultVisitor));
 
   QtConcurrent::run(boost::bind(InpaintingAlgorithm<VertexListGraphType, CompositeVisitorType,
                                 BoundaryNodeQueueType, TwoStepSearchType, InpainterType>,

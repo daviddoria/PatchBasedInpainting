@@ -3,6 +3,7 @@ ClassicalImageInpainting.hpp
 InpaintingHistogram.hpp
 InpaintingIntroducedEnergy.hpp
 InpaintingTexture.hpp
+InpaintingWithVerification.hpp
 LidarInpaintingHSVTextureVerification.hpp
 LidarInpaintingRGBTextureVerification.hpp
 WeightedSSDInpainting.hpp

@@ -16,100 +16,18 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "Utilities/IndirectPriorityQueue.h"
-
-// Pixel descriptors
-#include "PixelDescriptors/ImagePatchPixelDescriptor.h"
-#include "PixelDescriptors/ImagePatchVectorized.h"
-#include "PixelDescriptors/ImagePatchVectorizedIndices.h"
-
-// Acceptance visitors
-#include "Visitors/AcceptanceVisitors/AverageDifferenceAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/CompositeAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/ANDAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/DilatedSourceHoleTargetValidAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/DilatedSourceValidTargetValidAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/SourceHoleTargetValidCompare.hpp"
-#include "Visitors/AcceptanceVisitors/SourceValidTargetValidCompare.hpp"
-#include "Visitors/AcceptanceVisitors/HoleSizeAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/VarianceFunctor.hpp"
-#include "Visitors/AcceptanceVisitors/AverageFunctor.hpp"
-#include "Visitors/AcceptanceVisitors/ScoreThresholdAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/CorrelationAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/PatchDistanceAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/HistogramDifferenceAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/HoleHistogramDifferenceAcceptanceVisitor.hpp"
-// #include "Visitors/AcceptanceVisitors/QuadrantHistogramCompareAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/AllQuadrantHistogramCompareAcceptanceVisitor.hpp"
-
-//#include "Visitors/AcceptanceVisitors/IntraSourcePatchAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/NeverAccept.hpp"
-
-// Descriptor visitors
-#include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
-#include "Visitors/DescriptorVisitors/CompositeDescriptorVisitor.hpp"
-
-// Information visitors
-#include "Visitors/InformationVisitors/DisplayVisitor.hpp"
-
-// Inpainting visitors
-#include "Visitors/InpaintingVisitor.hpp"
-#include "Visitors/ReplayVisitor.hpp"
-#include "Visitors/InformationVisitors/LoggerVisitor.hpp"
-#include "Visitors/CompositeInpaintingVisitor.hpp"
-#include "Visitors/InformationVisitors/DebugVisitor.hpp"
-
-// Nearest neighbors
-#include "NearestNeighbor/LinearSearchKNNProperty.hpp"
-#include "NearestNeighbor/DefaultSearchBest.hpp"
-#include "NearestNeighbor/LinearSearchBest/Property.hpp"
-#include "NearestNeighbor/VisualSelectionBest.hpp"
-#include "NearestNeighbor/FirstValidDescriptor.hpp"
-
-// Nearest neighbors visitor
-#include "Visitors/NearestNeighborsDisplayVisitor.hpp"
-
-// Initializers
-#include "Initializers/InitializeFromMaskImage.hpp"
-#include "Initializers/InitializePriority.hpp"
-
-// Inpainters
-#include "Inpainters/CompositePatchInpainter.hpp"
-#include "Inpainters/PatchInpainter.hpp"
-
-// Difference functions
-#include "DifferenceFunctions/ImagePatchDifference.hpp"
-#include "DifferenceFunctions/ImagePatchVectorizedDifference.hpp"
-#include "DifferenceFunctions/ImagePatchVectorizedIndicesDifference.hpp"
-#include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
-
-// Inpainting algorithm
-#include "Algorithms/InpaintingAlgorithm.hpp"
-#include "Algorithms/InpaintingAlgorithmWithVerification.hpp"
-
-// Priority
-#include "Priority/PriorityCriminisi.h"
-
 // ITK
 #include "itkImageFileReader.h"
 
-// Boost
-#include <boost/graph/grid_graph.hpp>
-#include <boost/property_map/property_map.hpp>
-
-// Utilities
-#include "Utilities/PatchHelpers.h"
+// Submodules
+#include <ITKHelpers/ITKHelpers.h>
+#include <Mask/Mask.h>
 
 // Qt
 #include <QApplication>
-#include <QtConcurrentRun>
 
-// GUI
-#include "Interactive/BasicViewerWidget.h"
-#include "Interactive/TopPatchesWidget.h"
-#include "Interactive/TopPatchesDialog.h"
-#include "Interactive/PriorityViewerWidget.h"
+// Driver
+#include "Drivers/InpaintingWithVerification.hpp"
 
 // Run with: image.png image.mask 15 filled.png
 int main(int argc, char *argv[])
@@ -146,8 +64,8 @@ int main(int argc, char *argv[])
   std::cout << "Patch half width: " << patchHalfWidth << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
-  //typedef FloatVectorImageType ImageType;
-  typedef itk::VectorImage<float, 2> ImageType;
+  typedef itk::Image<itk::CovariantVector<float, 3>, 2> ImageType;
+//  typedef itk::VectorImage<float, 2> ImageType;
 
   typedef  itk::ImageFileReader<ImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
@@ -160,232 +78,17 @@ int main(int argc, char *argv[])
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
 
-  bool compatibleMask = PatchHelpers::CheckSurroundingRegionsOfAllHolePixels(mask, patchHalfWidth);
-  if(!compatibleMask)
-  {
-    throw std::runtime_error("The mask is not compatible!");
-  }
+//  bool compatibleMask = PatchHelpers::CheckSurroundingRegionsOfAllHolePixels(mask, patchHalfWidth);
+//  if(!compatibleMask)
+//  {
+//    throw std::runtime_error("The mask is not compatible!");
+//  }
 
   std::cout << "Mask size: " << mask->GetLargestPossibleRegion().GetSize() << std::endl;
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
 
-  typedef ImagePatchPixelDescriptor<ImageType> ImagePatchPixelDescriptorType;
-
-  // Create the graph
-  typedef boost::grid_graph<2> VertexListGraphType;
-  boost::array<std::size_t, 2> graphSideLengths = { { imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0],
-                                                      imageReader->GetOutput()->GetLargestPossibleRegion().GetSize()[1] } };
-  VertexListGraphType graph(graphSideLengths);
-  typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
-
-  // Get the index map
-  typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
-  IndexMapType indexMap(get(boost::vertex_index, graph));
-
-  // Create the priority map
-  typedef boost::vector_property_map<float, IndexMapType> PriorityMapType;
-  PriorityMapType priorityMap(num_vertices(graph), indexMap);
-
-  // Create the boundary status map. A node is on the current boundary if this property is true.
-  // This property helps the boundaryNodeQueue because we can mark here if a node has become no longer
-  // part of the boundary, so when the queue is popped we can check this property to see if it should
-  // actually be processed.
-  typedef boost::vector_property_map<bool, IndexMapType> BoundaryStatusMapType;
-  BoundaryStatusMapType boundaryStatusMap(num_vertices(graph), indexMap);
-
-  // Create the descriptor map. This is where the data for each pixel is stored.
-  typedef boost::vector_property_map<ImagePatchPixelDescriptorType, IndexMapType> ImagePatchDescriptorMapType;
-  ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
-
-  //ImagePatchDescriptorMapType smallImagePatchDescriptorMap(num_vertices(graph), indexMap);
-
-  // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
-//   typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
-//   InpainterType patchInpainter(patchHalfWidth, fillStatusMap);
-  typedef PatchInpainter<ImageType> InpainterType;
-  InpainterType patchInpainter(patchHalfWidth, image, mask);
-
-  // Create the priority function
-//   typedef PriorityRandom PriorityType;
-//   PriorityType priorityFunction;
-  typedef PriorityCriminisi<ImageType> PriorityType;
-  PriorityType priorityFunction(image, mask, patchHalfWidth);
-
-  // Queue
-  typedef IndirectPriorityQueue<VertexListGraphType> BoundaryNodeQueueType;
-  BoundaryNodeQueueType boundaryNodeQueue(graph);
-
-  // Create the descriptor visitor
-  typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
-          ImagePatchDescriptorVisitorType;
-
-  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
-
-  typedef SumSquaredPixelDifference<ImageType::PixelType> PixelDifferenceType;
-  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, PixelDifferenceType >
-            ImagePatchDifferenceType;
-
-  typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
-  CompositeDescriptorVisitorType compositeDescriptorVisitor;
-  compositeDescriptorVisitor.AddVisitor(&imagePatchDescriptorVisitor);
-
-  typedef CompositeAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
-  CompositeAcceptanceVisitorType compositeAcceptanceVisitor;
-
-//   typedef ANDAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
-//   CompositeAcceptanceVisitorType compositeAcceptanceVisitor;
-
-  // Source region to source region comparisons
-//   SourceValidTargetValidCompare<VertexListGraphType, ImageType, AverageFunctor>
-//         validRegionAverageAcceptance(image, mask, patchHalfWidth,
-//         AverageFunctor(), 100, "validRegionAverageAcceptance");
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&validRegionAverageAcceptance);
-
-  // We don't want to do this - the variation over the patch makes this no good. 
-  // Prefer the DilatedRegionAcceptanceVisitor with a VarianceFunctor instead.
-//   SourceValidTargetValidCompare<VertexListGraphType, ImageType, VarianceFunctor>
-//           validRegionVarianceAcceptance(image, mask, patchHalfWidth,
-//           VarianceFunctor(), 1000, "validRegionVarianceAcceptance");
-//   compositeAcceptanceVisitor.AddVisitor(&validRegionVarianceAcceptance);
-
-  // If the hole is less than 15% of the patch, always accept the initial best match
-  HoleSizeAcceptanceVisitor<VertexListGraphType> holeSizeAcceptanceVisitor(mask, patchHalfWidth, .15);
-  compositeAcceptanceVisitor.AddOverrideVisitor(&holeSizeAcceptanceVisitor);
-
-//   HistogramDifferenceAcceptanceVisitor<VertexListGraphType, ImageType>
-//            histogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&histogramDifferenceAcceptanceVisitor);
-// 
-//   HoleHistogramDifferenceAcceptanceVisitor<VertexListGraphType, ImageType>
-//          holeHistogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&holeHistogramDifferenceAcceptanceVisitor);
-
-//   QuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType>
-//           quadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&quadrantHistogramCompareAcceptanceVisitor);
-
-  // AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType>
-  //          allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 8.0f); // 8 (2 for each quadrant) is reasonable
-//   AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, ImageType>
-//                allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 1.0f); // Crazy low
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&allQuadrantHistogramCompareAcceptanceVisitor);
-
-//   ScoreThresholdAcceptanceVisitor<VertexListGraphType, ImagePatchDescriptorMapType,
-//                                   ImagePatchDifferenceType> scoreThresholdAcceptanceVisitor(mask, patchHalfWidth,
-//                                                             imagePatchDescriptorMap, 10);
-//   compositeAcceptanceVisitor.AddOverrideVisitor(&scoreThresholdAcceptanceVisitor);
-
-  // Source region to hole region comparisons
-//   SourceHoleTargetValidCompare<VertexListGraphType, ImageType, AverageFunctor>
-//                    holeRegionAverageAcceptance(image, mask, patchHalfWidth,
-//                                              AverageFunctor(), 100, "holeRegionAverageAcceptance");
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&holeRegionAverageAcceptance);
-
-//   SourceHoleTargetValidCompare<VertexListGraphType, ImageType, VarianceFunctor>
-//             holeRegionVarianceAcceptance(image, mask, patchHalfWidth,
-//                                          VarianceFunctor(), 1000, "holeRegionVarianceAcceptance");
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&holeRegionVarianceAcceptance);
-
-  // Compare the source region variance in the target patch to the source region variance in the source patch
-//   DilatedSourceValidTargetValidAcceptanceVisitor<VertexListGraphType, ImageType, VarianceFunctor>
-//              dilatedValidValidVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth,
-//                                                                 VarianceFunctor(), 1000,
-//                                                                   "dilatedVarianceDifferenceAcceptanceVisitor");
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&dilatedValidValidVarianceDifferenceAcceptanceVisitor);
-
-  // Compare the hole variance to the source region variance
-//   DilatedSourceHoleTargetValidAcceptanceVisitor<VertexListGraphType, ImageType, VarianceFunctor>
-//            dilatedHoleValidVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth,
-//                                                       VarianceFunctor(), 1000,
-//                                                       "dilatedHoleValidVarianceDifferenceAcceptanceVisitor");
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&dilatedHoleValidVarianceDifferenceAcceptanceVisitor);
-
-//   PatchDistanceAcceptanceVisitor<VertexListGraphType> patchDistanceAcceptanceVisitor(100);
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&patchDistanceAcceptanceVisitor);
-  
-//   CorrelationAcceptanceVisitor<VertexListGraphType, ImageType> correlationAcceptanceVisitor(image, mask, patchHalfWidth, 100);
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&correlationAcceptanceVisitor);
-
-//   IntraSourcePatchAcceptanceVisitor<VertexListGraphType, ImageType>
-//           intraSourcePatchAcceptanceVisitor(image, mask, patchHalfWidth, 100);
-//   compositeAcceptanceVisitor.AddVisitor(&intraSourcePatchAcceptanceVisitor);
-
-  // Create the inpainting visitor
-//   typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
-//                             ImagePatchDescriptorVisitorType, AcceptanceVisitorType,
-//                             PriorityType, PriorityMapType, BoundaryStatusMapType>
-//                             InpaintingVisitorType;
-//   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
-//                                           imagePatchDescriptorVisitor, compositeAcceptanceVisitor,
-//                                           priorityMap, &priorityFunction, patchHalfWidth,
-//                                           boundaryStatusMap);
-
-  typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
-                            CompositeDescriptorVisitorType, CompositeAcceptanceVisitorType, PriorityType,
-                            ImageType>
-                            InpaintingVisitorType;
-  InpaintingVisitorType inpaintingVisitor(mask, boundaryNodeQueue,
-                                          compositeDescriptorVisitor, compositeAcceptanceVisitor,
-                                          &priorityFunction, patchHalfWidth,
-                                          "InpaintingVisitor", image);
-
-//  typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
-//  DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
-
-//  typedef DebugVisitor<VertexListGraphType, ImageType, BoundaryStatusMapType, BoundaryNodeQueueType> DebugVisitorType;
-//  DebugVisitorType debugVisitor(image, mask, patchHalfWidth, boundaryStatusMap, boundaryNodeQueue);
-
-  LoggerVisitor<VertexListGraphType> loggerVisitor("log.txt");
-
-  typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
-  CompositeInpaintingVisitorType compositeInpaintingVisitor;
-  compositeInpaintingVisitor.AddVisitor(&inpaintingVisitor);
-//  compositeInpaintingVisitor.AddVisitor(&displayVisitor);
-//  compositeInpaintingVisitor.AddVisitor(&debugVisitor);
-  compositeInpaintingVisitor.AddVisitor(&loggerVisitor);
-
-  InitializePriority(mask, boundaryNodeQueue, &priorityFunction);
-
-  // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage<CompositeInpaintingVisitorType, VertexDescriptorType>(mask, &compositeInpaintingVisitor);
-  std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
-            << " nodes in the boundaryNodeQueue" << std::endl;
-
-  // Create the nearest neighbor finders
-  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
-                                  ImagePatchDifferenceType > KNNSearchType;
-  KNNSearchType knnSearch(imagePatchDescriptorMap, 100000);
-
-//   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
-//                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
-//   KNNSearchType knnSearch(smallImagePatchDescriptorMap, 1000);
-
-  // For debugging we use LinearSearchBestProperty instead of DefaultSearchBest because it can output the difference value.
-  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
-                                   ImagePatchDifferenceType > BestSearchType;
-  BestSearchType bestSearch(imagePatchDescriptorMap);
-
-//   typedef DefaultSearchBest BestSearchType;
-//   BestSearchType bestSearch;
-
-//  TopPatchesDialog<ImageType> topPatchesDialog(image, mask, patchHalfWidth);
-//  typedef VisualSelectionBest<ImageType> ManualSearchType;
-//  ManualSearchType manualSearchBest(image, mask, patchHalfWidth, &topPatchesDialog);
-
-  typedef FirstValidDescriptor<ImagePatchDescriptorMapType> ManualSearchType;
-  ManualSearchType manualSearchBest(imagePatchDescriptorMap);
-
-//  // Run the remaining inpainting with interaction
-//  QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
-//                                VertexListGraphType, CompositeInpaintingVisitorType, BoundaryStatusMapType,
-//                                BoundaryNodeQueueType, KNNSearchType, BestSearchType, ManualSearchType, InpainterType>,
-//                                graph, compositeInpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, knnSearch,
-//                                bestSearch, boost::ref(manualSearchBest), patchInpainter));
-
-  // Run the remaining inpainting without interaction
-  InpaintingAlgorithmWithVerification(graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
-          bestSearch, manualSearchBest, &patchInpainter);
+  InpaintingWithVerification(imageReader->GetOutput(), mask, patchHalfWidth);
 
   return app.exec();
 }
