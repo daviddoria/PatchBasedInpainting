@@ -105,8 +105,14 @@ struct QuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorParen
         sourceValues[pixelId] = validPixelsSourceRegion[pixelId][component];
       }
 
-      std::vector<float> targetHistogram = Histogram<int>::ScalarHistogram(targetValues, 20, this->Mins[component], this->Maxs[component]);
-      std::vector<float> sourceHistogram = Histogram<int>::ScalarHistogram(sourceValues, 20, this->Mins[component], this->Maxs[component]);
+      typedef HistogramGenerator<float> HistogramGeneratorType;
+      typedef HistogramGeneratorType::HistogramType HistogramType;
+      unsigned int numberOfBins = 20;
+
+      HistogramType targetHistogram = HistogramGeneratorType::ScalarHistogram(targetValues, numberOfBins,
+                                                                              this->Mins[component], this->Maxs[component]);
+      HistogramType sourceHistogram = HistogramGeneratorType::ScalarHistogram(sourceValues, numberOfBins,
+                                                                              this->Mins[component], this->Maxs[component]);
 
 //       std::cout << "targetHistogram size " << targetHistogram.size() << std::endl;
 //       std::cout << "sourceHistogram size " << sourceHistogram.size() << std::endl;
@@ -136,7 +142,7 @@ struct QuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorParen
                 << this->DifferenceThreshold << ")" << std::endl;
       return false;
       }
-  };
+  }
 
 };
 

@@ -87,7 +87,6 @@ InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
 
   std::cout << "Inpainting complete." << std::endl;
   vis.InpaintingComplete();
-
 }
 
 #endif

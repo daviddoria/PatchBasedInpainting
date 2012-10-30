@@ -16,7 +16,8 @@
  *
  *=========================================================================*/
 
-// Helpers
+// Custom
+#include "Utilities/IndirectPriorityQueue.h"
 
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
@@ -62,7 +63,7 @@
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/DefaultSearchBest.hpp"
-#include "NearestNeighbor/LinearSearchBestProperty.hpp"
+#include "NearestNeighbor/LinearSearchBest/Property.hpp"
 #include "NearestNeighbor/VisualSelectionBest.hpp"
 #include "NearestNeighbor/FirstValidDescriptor.hpp"
 
@@ -74,22 +75,21 @@
 #include "Initializers/InitializePriority.hpp"
 
 // Inpainters
-//#include "Inpainters/MaskedGridPatchInpainter.hpp"
-#include "Inpainters/MaskImagePatchInpainter.hpp"
+#include "Inpainters/CompositePatchInpainter.hpp"
+#include "Inpainters/PatchInpainter.hpp"
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
 #include "DifferenceFunctions/ImagePatchVectorizedDifference.hpp"
 #include "DifferenceFunctions/ImagePatchVectorizedIndicesDifference.hpp"
-#include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
+#include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
 
 // Inpainting algorithm
 #include "Algorithms/InpaintingAlgorithm.hpp"
 #include "Algorithms/InpaintingAlgorithmWithVerification.hpp"
 
 // Priority
-#include "Priority/PriorityRandom.h"
-#include "Priority/PriorityOnionPeel.h"
+#include "Priority/PriorityCriminisi.h"
 
 // ITK
 #include "itkImageFileReader.h"
@@ -97,7 +97,6 @@
 // Boost
 #include <boost/graph/grid_graph.hpp>
 #include <boost/property_map/property_map.hpp>
-#include <boost/graph/detail/d_ary_heap.hpp>
 
 // Utilities
 #include "Utilities/PatchHelpers.h"
@@ -204,27 +203,18 @@ int main(int argc, char *argv[])
   // Create the patch inpainter. The inpainter needs to know the status of each pixel to determine if they should be inpainted.
 //   typedef MaskedGridPatchInpainter<FillStatusMapType> InpainterType;
 //   InpainterType patchInpainter(patchHalfWidth, fillStatusMap);
-  typedef MaskImagePatchInpainter InpainterType;
-  MaskImagePatchInpainter patchInpainter(patchHalfWidth, mask);
+  typedef PatchInpainter<ImageType> InpainterType;
+  InpainterType patchInpainter(patchHalfWidth, image, mask);
 
   // Create the priority function
 //   typedef PriorityRandom PriorityType;
 //   PriorityType priorityFunction;
-  typedef PriorityOnionPeel PriorityType;
-  PriorityType priorityFunction(mask, patchHalfWidth);
+  typedef PriorityCriminisi<ImageType> PriorityType;
+  PriorityType priorityFunction(image, mask, patchHalfWidth);
 
-  // Create the boundary node queue. The priority of each node is used to order the queue.
-  typedef boost::vector_property_map<std::size_t, IndexMapType> IndexInHeapMap;
-  IndexInHeapMap index_in_heap(indexMap);
-
-  // Create the priority compare functor
-  //typedef std::less<float> PriorityCompareType;
-  typedef std::greater<float> PriorityCompareType;
-  PriorityCompareType lessThanFunctor;
-
-  typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType>
-                                    BoundaryNodeQueueType;
-  BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
+  // Queue
+  typedef IndirectPriorityQueue<VertexListGraphType> BoundaryNodeQueueType;
+  BoundaryNodeQueueType boundaryNodeQueue(graph);
 
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, ImageType, ImagePatchDescriptorMapType>
@@ -232,12 +222,9 @@ int main(int argc, char *argv[])
 
   ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(image, mask, imagePatchDescriptorMap, patchHalfWidth);
 
-  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, SumAbsolutePixelDifference<ImageType::PixelType> >
+  typedef SumSquaredPixelDifference<ImageType::PixelType> PixelDifferenceType;
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, PixelDifferenceType >
             ImagePatchDifferenceType;
-//   typedef ImagePatchVectorizedDifference<ImagePatchPixelDescriptorType,
-//                                          SumAbsolutePixelDifference<ImageType::PixelType> > ImagePatchDifferenceType;
-//   typedef ImagePatchVectorizedIndicesDifference<ImagePatchPixelDescriptorType,
-//                                          SumAbsolutePixelDifference<ImageType::PixelType> > ImagePatchDifferenceType;
 
   typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
   CompositeDescriptorVisitorType compositeDescriptorVisitor;
@@ -334,14 +321,14 @@ int main(int argc, char *argv[])
 //                                           priorityMap, &priorityFunction, patchHalfWidth,
 //                                           boundaryStatusMap);
 
-  typedef InpaintingVisitor<VertexListGraphType, ImageType, BoundaryNodeQueueType,
+  typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
                             CompositeDescriptorVisitorType, CompositeAcceptanceVisitorType, PriorityType,
-                            PriorityMapType, BoundaryStatusMapType>
+                            ImageType>
                             InpaintingVisitorType;
-  InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
-                                          compositeDescriptorVisitor, compositeAcceptanceVisitor, priorityMap,
+  InpaintingVisitorType inpaintingVisitor(mask, boundaryNodeQueue,
+                                          compositeDescriptorVisitor, compositeAcceptanceVisitor,
                                           &priorityFunction, patchHalfWidth,
-                                          boundaryStatusMap, outputFilename);
+                                          "InpaintingVisitor", image);
 
 //  typedef DisplayVisitor<VertexListGraphType, ImageType> DisplayVisitorType;
 //  DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
@@ -358,7 +345,7 @@ int main(int argc, char *argv[])
 //  compositeInpaintingVisitor.AddVisitor(&debugVisitor);
   compositeInpaintingVisitor.AddVisitor(&loggerVisitor);
 
-  InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
+  InitializePriority(mask, boundaryNodeQueue, &priorityFunction);
 
   // Initialize the boundary node queue from the user provided mask image.
   InitializeFromMaskImage<CompositeInpaintingVisitorType, VertexDescriptorType>(mask, &compositeInpaintingVisitor);
@@ -397,11 +384,8 @@ int main(int argc, char *argv[])
 //                                bestSearch, boost::ref(manualSearchBest), patchInpainter));
 
   // Run the remaining inpainting without interaction
-  InpaintingAlgorithmWithVerification<VertexListGraphType, CompositeInpaintingVisitorType,
-                                      BoundaryStatusMapType, BoundaryNodeQueueType, KNNSearchType,
-                                      BestSearchType, ManualSearchType, InpainterType>
-         (graph, compositeInpaintingVisitor, &boundaryStatusMap, &boundaryNodeQueue, knnSearch,
-          bestSearch, manualSearchBest, patchInpainter);
+  InpaintingAlgorithmWithVerification(graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
+          bestSearch, manualSearchBest, &patchInpainter);
 
   return app.exec();
 }

@@ -88,10 +88,16 @@ set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${ITK
 get_property(ITKVTKHelpersLibs GLOBAL PROPERTY ITKVTKHelpersLibs)
 set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${ITKVTKHelpersLibs})
 
-if(NOT TARGET QtHelpers)
+# QtHelpers
+get_property(FoundQtHelpers GLOBAL PROPERTY QtHelpersIncludeDirs SET)
+if(NOT FoundQtHelpers)
   add_subdirectory(QtHelpers)
-  include_directories(${QtHelpers_includes})
 endif()
+
+get_property(QtHelpersIncludeDirs GLOBAL PROPERTY QtHelpersIncludeDirs)
+set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${QtHelpersIncludeDirs})
+get_property(QtHelpersLibs GLOBAL PROPERTY QtHelpersLibs)
+set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${QtHelpersLibs})
 
 # ITKQtHelpers
 get_property(FoundITKQtHelpers GLOBAL PROPERTY ITKQtHelpersIncludeDirs SET)

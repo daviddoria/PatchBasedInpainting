@@ -65,7 +65,9 @@ struct DilatedSourceHoleTargetValidAcceptanceVisitor : public AcceptanceVisitorP
     ITKHelpers::XORRegions(originalHole.GetPointer(), originalHole->GetLargestPossibleRegion(),
                            shrunkHole.GetPointer(), shrunkHole->GetLargestPossibleRegion(), holeRindImage.GetPointer());
 
-    std::vector<itk::Index<2> > holeRindPixels = ITKHelpers::GetPixelsWithValue(holeRindImage.GetPointer(), holeRindImage->GetLargestPossibleRegion(), true);
+    std::vector<itk::Index<2> > holeRindPixels =
+        ITKHelpers::GetPixelsWithValueInRegion(holeRindImage.GetPointer(),
+                                               holeRindImage->GetLargestPossibleRegion(), true);
 
     itk::Index<2> zeroIndex = {{0,0}};
     std::vector<itk::Offset<2> > holeRindOffsets = ITKHelpers::IndicesToOffsets(holeRindPixels, zeroIndex);
@@ -90,7 +92,9 @@ struct DilatedSourceHoleTargetValidAcceptanceVisitor : public AcceptanceVisitorP
     ITKHelpers::XORRegions(originalHole.GetPointer(), originalHole->GetLargestPossibleRegion(),
                            expandedHole.GetPointer(), expandedHole->GetLargestPossibleRegion(), validRindImage.GetPointer());
 
-    std::vector<itk::Index<2> > validRindPixels = ITKHelpers::GetPixelsWithValue(validRindImage.GetPointer(), validRindImage->GetLargestPossibleRegion(), true);
+    std::vector<itk::Index<2> > validRindPixels =
+        ITKHelpers::GetPixelsWithValueInRegion(validRindImage.GetPointer(),
+                                               validRindImage->GetLargestPossibleRegion(), true);
 
     itk::Index<2> zeroIndex = {{0,0}};
     std::vector<itk::Offset<2> > validRindOffsets = ITKHelpers::IndicesToOffsets(validRindPixels, zeroIndex);
@@ -114,7 +118,7 @@ struct DilatedSourceHoleTargetValidAcceptanceVisitor : public AcceptanceVisitorP
       std::cout << this->VisitorName << ": Match rejected (" << computedEnergy << " is greater than " << DifferenceThreshold << ")" << std::endl << std::endl;
       return false;
       }
-  };
+  }
 
 };
 

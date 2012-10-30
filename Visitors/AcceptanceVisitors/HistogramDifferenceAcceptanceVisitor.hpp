@@ -7,7 +7,7 @@
 #include "Visitors/AcceptanceVisitors/AcceptanceVisitorParent.h"
 
 // Custom
-#include "Utilities/Histogram/Histogram.h"
+#include "Utilities/Histogram/HistogramGenerator.h"
 
 // Submodules
 #include <Mask/Mask.h>
@@ -88,10 +88,13 @@ struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGr
         sourceValues[pixelId] = validPixelsSourceRegion[pixelId][component];
       }
 
-      std::vector<float> targetHistogram = Histogram<int>::ScalarHistogram(targetValues, 20,
-                                                                      Mins[component], Maxs[component]);
-      std::vector<float> sourceHistogram = Histogram<int>::ScalarHistogram(sourceValues, 20,
-                                                                      Mins[component], Maxs[component]);
+      typedef HistogramGenerator<float> HistogramGeneratorType;
+      typedef HistogramGeneratorType::HistogramType HistogramType;
+      unsigned int numberOfBins = 20;
+      HistogramType targetHistogram = HistogramGeneratorType::ScalarHistogram(targetValues, numberOfBins,
+                                                                      this->Mins[component], this->Maxs[component]);
+      HistogramType sourceHistogram = HistogramGeneratorType::ScalarHistogram(sourceValues, numberOfBins,
+                                                                      this->Mins[component], this->Maxs[component]);
 
       // We normalize the histograms because the magnitude of the histogram difference should not
       // change based on the number of pixels that were in the valid region of the patches.
@@ -118,7 +121,7 @@ struct HistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGr
                 << ")" << std::endl;
       return false;
       }
-  };
+  }
 
 };
 

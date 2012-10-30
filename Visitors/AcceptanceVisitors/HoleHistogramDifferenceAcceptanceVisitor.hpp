@@ -83,8 +83,14 @@ struct HoleHistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent
         sourceValues[pixelId] = sourceRegionPixels[pixelId][component];
       }
 
-      std::vector<float> targetHistogram = Histogram<int>::ScalarHistogram(targetValues, 20, Mins[component], Maxs[component]);
-      std::vector<float> sourceHistogram = Histogram<int>::ScalarHistogram(sourceValues, 20, Mins[component], Maxs[component]);
+      typedef HistogramGenerator<float> HistogramGeneratorType;
+      typedef HistogramGeneratorType::HistogramType HistogramType;
+      unsigned int numberOfBins = 20;
+
+      HistogramType targetHistogram = HistogramGeneratorType::ScalarHistogram(targetValues, numberOfBins,
+                                                                              Mins[component], Maxs[component]);
+      HistogramType sourceHistogram = HistogramGeneratorType::ScalarHistogram(sourceValues, numberOfBins,
+                                                                              Mins[component], Maxs[component]);
 
       // We normalize the histograms because the magnitude of the histogram difference should not change based on the number of pixels that were in the valid region of the patches.
       Helpers::NormalizeVector(targetHistogram);
@@ -108,7 +114,7 @@ struct HoleHistogramDifferenceAcceptanceVisitor : public AcceptanceVisitorParent
       std::cout << "HoleHistogramDifferenceAcceptanceVisitor: Match rejected (greater than " << DifferenceThreshold << ")" << std::endl;
       return false;
       }
-  };
+  }
 
 };
 

@@ -61,7 +61,9 @@ struct DilatedSourceValidTargetValidAcceptanceVisitor : public AcceptanceVisitor
     ITKHelpers::XORRegions(targetRegionMask.GetPointer(), targetRegionMask->GetLargestPossibleRegion(),
                            dilatedTargetRegionMask.GetPointer(), dilatedTargetRegionMask->GetLargestPossibleRegion(), rindImage.GetPointer());
 
-    std::vector<itk::Index<2> > rindPixels = ITKHelpers::GetPixelsWithValue(rindImage.GetPointer(), rindImage->GetLargestPossibleRegion(), true);
+    std::vector<itk::Index<2> > rindPixels =
+        ITKHelpers::GetPixelsWithValueInRegion(rindImage.GetPointer(),
+                                               rindImage->GetLargestPossibleRegion(), true);
 
     itk::Index<2> zeroIndex = {{0,0}};
     std::vector<itk::Offset<2> > rindOffsets = ITKHelpers::IndicesToOffsets(rindPixels, zeroIndex);
@@ -88,7 +90,7 @@ struct DilatedSourceValidTargetValidAcceptanceVisitor : public AcceptanceVisitor
       std::cout << this->VisitorName << ": Match rejected (" << computedEnergy << " is greater than " << DifferenceThreshold << ")" << std::endl << std::endl;
       return false;
       }
-  };
+  }
 
 };
 
