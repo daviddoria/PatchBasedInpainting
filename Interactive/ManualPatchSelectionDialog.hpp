@@ -1,6 +1,23 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef ManualPatchSelectionDialog_HPP
 #define ManualPatchSelectionDialog_HPP
-
 
 #include "ManualPatchSelectionDialog.h" // Appease syntax parser
 
@@ -173,7 +190,7 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateSource(const itk::ImageRegio
   //ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
   unsigned char green[3] = {0, 255, 0};
 
-  MaskOperations::ITKImageToVTKImageMasked(tempImage, this->MaskImage,
+  MaskOperations::ITKImageToVTKImageMasked(tempImage.GetPointer(), this->MaskImage,
                                           this->ImageLayer.ImageData, green);
 
   // Outline the source patch
@@ -228,10 +245,12 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
   {
     typename TImage::Pointer tempImage = TImage::New();
     ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
+
+    // If the original image was not 3 channels, it was not RGB and we probably want to scale it
     if(this->Image->GetNumberOfComponentsPerPixel() != 3)
-      {
+    {
       ITKHelpers::ScaleAllChannelsTo255(tempImage.GetPointer());
-      }
+    }
 
     itk::ImageRegionIterator<TImage> sourceIterator(tempImage, sourceRegion);
     itk::ImageRegionIterator<TImage> targetIterator(tempImage, targetRegion);
@@ -245,17 +264,17 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
     resultPatch->Allocate();
 
     while(!maskIterator.IsAtEnd())
-      {
-      ITKHelpers::FloatVectorImageType::PixelType pixel;
+    {
+      typename TImage::PixelType pixel;
 
       if(MaskImage->IsHole(maskIterator.GetIndex()))
-        {
+      {
         pixel = sourceIterator.Get();
-        }
+      }
       else
-        {
+      {
         pixel = targetIterator.Get();
-        }
+      }
 
       itk::Offset<2> offset = sourceIterator.GetIndex() - sourceRegion.GetIndex();
       itk::Index<2> offsetIndex;
@@ -266,7 +285,7 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
       ++sourceIterator;
       ++targetIterator;
       ++maskIterator;
-      } // end iterator loop
+    } // end iterator loop
 
     qimage = ITKQtHelpers::GetQImageColor(resultPatch.GetPointer(), resultPatch->GetLargestPossibleRegion());
   } // end else

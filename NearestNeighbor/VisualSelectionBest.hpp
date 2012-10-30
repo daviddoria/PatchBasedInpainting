@@ -19,8 +19,10 @@
 #ifndef VisualSelectionBest_HPP
 #define VisualSelectionBest_HPP
 
+// Submodules
+#include <Mask/Mask.h>
+
 // Custom
-#include "Mask/Mask.h"
 #include "Node.h"
 #include "Interactive/TopPatchesDialog.h"
 
@@ -44,7 +46,8 @@ private:
 
 public:
 
-  VisualSelectionBest(TImage* const image, Mask* const mask, const unsigned int patchHalfWidth, TopPatchesDialog<TImage>* dialog) :
+  VisualSelectionBest(TImage* const image, Mask* const mask,
+                      const unsigned int patchHalfWidth, TopPatchesDialog<TImage>* dialog) :
   Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth), Dialog(dialog)
   {
 

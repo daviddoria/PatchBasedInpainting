@@ -19,9 +19,11 @@ SET(INSTALL_DIR ${CMAKE_INSTALL_PREFIX} )
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) #fix the dynamic linking error (RPATH) that would occur without this
 
 # This is needed for shared_ptr and the trick using enable_if and if_fundamental to allow scalars to be treated as the 0th component of a vector.
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
+if(UNIX)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
+endif(UNIX)
 
-# Setup include directories for Qt
+# Let Qt find it's MOCed headers in the build directory.
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 # VTK
@@ -43,21 +45,27 @@ set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${ITK_LIBRA
 FIND_PACKAGE(Boost 1.51 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
-# Check for Qt4. If it is available, build the PatchBasedInpainting library using it so that SelfPatchCompare can use QtConcurrent.
-# FIND_PACKAGE(Qt4)
-# if(QT4_FOUND)
-#   message ( "QT4 found successfully." )
-#   INCLUDE(${QT_USE_FILE})
-#   list(APPEND compileflags "USE_QT_PARALLEL")
-# else ( QT4_FOUND )
-#   message ( "QT4 NOT found successfully." )
-# endif ( QT4_FOUND )
-
+# Check for Qt4. If it is available, build the PatchBasedInpainting library
+# using it so that SelfPatchCompare can use QtConcurrent. We must do this
+# AFTER including the submodules, as the Interactive directory
 FIND_PACKAGE(Qt4)
-INCLUDE(${QT_USE_FILE})
-list(APPEND compileflags "USE_QT_PARALLEL")
+if(QT4_FOUND)
+  message ( "QT4 found successfully." )
+  INCLUDE(${QT_USE_FILE})
+  set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${QT_LIBRARIES})
+
+  list(APPEND compileflags "USE_QT_PARALLEL")
+
+else(QT4_FOUND)
+  message("QT4 NOT found successfully.")
+endif(QT4_FOUND)
+
+#FIND_PACKAGE(Qt4)
+#INCLUDE(${QT_USE_FILE})
+#list(APPEND compileflags "USE_QT_PARALLEL")
 
 # Submodules
+# Mask
 get_property(FoundMask GLOBAL PROPERTY MaskIncludeDirs SET)
 if(NOT FoundMask)
   add_subdirectory(Mask)
@@ -129,6 +137,11 @@ endif()
 
 # Give the compiler all of the required include directories
 include_directories(${PatchBasedInpainting_include_dirs})
+
+# We must do this AFTER including the submodules, as the Interactive directory
+if(QT4_FOUND)
+  add_subdirectory(Interactive)
+endif(QT4_FOUND)
 
 add_subdirectory(Algorithms)
 add_subdirectory(Concepts)
@@ -326,15 +339,19 @@ endif()
 
 option(inpainting_InteractiveInpaintingWithVerification "An inpainting executable that runs acceptance tests and asks the user to choose a patch if they fail.")
 if(inpainting_InteractiveInpaintingWithVerification)
+    QT4_WRAP_UI(InteractiveInpaintingWithVerificationUISrcs
+                Interactive/BasicViewerWidget.ui
+                Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
+                Interactive/PriorityViewerWidget.ui
+                Interactive/ManualPatchSelectionDialog.ui)
     ADD_EXECUTABLE(InteractiveInpaintingWithVerification InteractiveInpaintingWithVerification.cpp
-                   Interactive/Layer.cpp
-                   Interactive/Delegates/PixmapDelegate.cpp
-                   Interactive/MovablePatch.cpp
-                   Interactive/PatchHighlighter.cpp
-                   Interactive/InteractorStyleImageWithDrag.cpp
-                   Interactive/ImageCamera.cpp
-                   ${InpaintingWithVerificationUISrcs} ${InpaintingWithVerificationMOCSrcs})
-    TARGET_LINK_LIBRARIES(InteractiveInpaintingWithVerification ${PatchBasedInpainting_libraries})
+                   Drivers/InteractiveInpaintingWithVerification.hpp
+                   Interactive/TopPatchesDialog.h
+                   NearestNeighbor/VisualSelectionBest.hpp
+                   Interactive/ManualPatchSelectionDialog.h
+                   Interactive/ManualPatchSelectionDialogParent.h
+                   ${InteractiveInpaintingWithVerificationUISrcs})
+    TARGET_LINK_LIBRARIES(InteractiveInpaintingWithVerification ${PatchBasedInpainting_libraries} InpaintingGUI)
     INSTALL( TARGETS InteractiveInpaintingWithVerification RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 

@@ -2,7 +2,8 @@
 #   add_subdirectory(Tests)
 # endif(BuildTests)
 
-add_custom_target(NearestNeighbor SOURCES DefaultSearchBest.hpp
+add_custom_target(NearestNeighbor SOURCES
+DefaultSearchBest.hpp
 FirstValidDescriptor.hpp
 LinearSearchAlgorithm.hpp
 LinearSearchBest.hpp

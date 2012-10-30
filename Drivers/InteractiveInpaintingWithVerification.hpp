@@ -335,25 +335,18 @@ void InteractiveInpaintingWithVerification(TImage* const originalImage, Mask* co
                                    ImagePatchDifferenceType > BestSearchType;
   BestSearchType bestSearch(imagePatchDescriptorMap);
 
-//  TopPatchesDialog<TImage> topPatchesDialog(image, mask, patchHalfWidth);
-//  typedef VisualSelectionBest<TImage> ManualSearchType;
-//  ManualSearchType manualSearchBest(image, mask, patchHalfWidth, &topPatchesDialog);
+  // If the acceptance tests fail, prompt the user to select a patch.
+  TopPatchesDialog<TImage> topPatchesDialog(originalImage, mask, patchHalfWidth);
+  typedef VisualSelectionBest<TImage> ManualSearchType;
+  ManualSearchType manualSearchBest(originalImage, mask, patchHalfWidth, &topPatchesDialog);
 
-  // By using this, essentially what we are saying is "if the acceptance tests fail, just use the first node".
-  typedef FirstValidDescriptor<ImagePatchDescriptorMapType> ManualSearchType;
-  ManualSearchType manualSearchBest(imagePatchDescriptorMap);
-
-//  // Run the remaining inpainting with interaction
+  // Run the remaining inpainting with interaction
   QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
                                 VertexListGraphType, CompositeInpaintingVisitorType,
                                 BoundaryNodeQueueType, KNNSearchType, BestSearchType,
                                 ManualSearchType, CompositePatchInpainter>,
                                 graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
                                 bestSearch, &manualSearchBest, &inpainter));
-
-  // Run the remaining inpainting without interaction
-//  InpaintingAlgorithmWithVerification(graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
-//          bestSearch, &manualSearchBest, &patchInpainter);
 
 }
 

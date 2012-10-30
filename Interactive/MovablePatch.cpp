@@ -11,12 +11,14 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 
+// Submodules
+#include <Helpers/Helpers.h>
+#include <ITKHelpers/ITKHelpers.h>
+#include <VTKHelpers/VTKHelpers.h>
+#include <ITKVTKHelpers/ITKVTKHelpers.h>
+#include <QtHelpers/QtHelpers.h>
+
 // Custom
-#include "Helpers/Helpers.h"
-#include "ITKHelpers/ITKHelpers.h"
-#include "VTKHelpers/VTKHelpers.h"
-#include "ITKVTKHelpers/ITKVTKHelpers.h"
-#include "QtHelpers/QtHelpers.h"
 #include "InteractorStyleImageWithDrag.h"
 
 // STL

@@ -19,7 +19,7 @@
 #ifndef ManualPatchSelectionDialog_H
 #define ManualPatchSelectionDialog_H
 
-#include "ui_ManualPatchSelectionDialog.h"
+#include "ManualPatchSelectionDialogParent.h"
 
 // VTK
 #include <vtkSmartPointer.h>
@@ -28,33 +28,17 @@
 #include "itkImage.h"
 
 // Qt
-#include <QDialog>
 #include <QThread>
 
-// Custom
-// #include "ImageCamera.h"
+// Submodules
 #include "Mask/Mask.h"
+
+// Custom
 #include "Node.h"
 #include "Interactive/Layer.h"
 #include "Interactive/MovablePatch.h"
 
 class InteractorStyleImageWithDrag;
-
-class ManualPatchSelectionDialogParent : public QDialog, public Ui::ManualPatchSelectionDialog
-{
-Q_OBJECT
-
-public slots:
-
-  //virtual void slot_UpdateImage() = 0;
-  virtual void slot_UpdateSource(const itk::ImageRegion<2>& region, const itk::ImageRegion<2>& targetregion) = 0;
-  virtual void slot_UpdateTarget(const itk::ImageRegion<2>& region) = 0;
-  virtual void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion) = 0;
-  virtual void on_btnAccept_clicked() = 0;
-
-  virtual void slot_PatchMoved() = 0;
-
-};
 
 template <typename TImage>
 class ManualPatchSelectionDialog : public ManualPatchSelectionDialogParent
