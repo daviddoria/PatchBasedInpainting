@@ -318,7 +318,7 @@ void InteractiveInpaintingWithVerification(TImage* const originalImage, Mask* co
 
   // Initialize the boundary node queue from the user provided mask image.
   InitializeFromMaskImage<CompositeInpaintingVisitorType, VertexDescriptorType>(mask, &compositeInpaintingVisitor);
-  std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.size()
+  std::cout << "InteractiveInpaintingWithVerification: There are " << boundaryNodeQueue.size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finders
@@ -341,13 +341,18 @@ void InteractiveInpaintingWithVerification(TImage* const originalImage, Mask* co
   ManualSearchType manualSearchBest(originalImage, mask, patchHalfWidth, &topPatchesDialog);
 
   // Run the remaining inpainting with interaction
-  QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
+  std::cout << "Running inpainting..." << std::endl;
+  QFuture<void> future = QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
                                 VertexListGraphType, CompositeInpaintingVisitorType,
                                 BoundaryNodeQueueType, KNNSearchType, BestSearchType,
                                 ManualSearchType, CompositePatchInpainter>,
                                 graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
                                 bestSearch, &manualSearchBest, &inpainter));
 
+  while(future.isRunning())
+  {
+    // wait for the thread to finish
+  }
 }
 
 #endif

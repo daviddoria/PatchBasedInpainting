@@ -47,6 +47,8 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
 {
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<TInpaintingVisitor, TVertexListGraph>));
 
+  std::cout << "Enter InpaintingAlgorithmWithVerification..." << std::endl;
+
   typedef typename boost::graph_traits<TVertexListGraph>::vertex_descriptor VertexDescriptorType;
 
   unsigned int numberOfManualVerifications = 0;
@@ -58,6 +60,7 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
 
   while(!boundaryNodeQueue->empty())
   {
+    std::cout << "Starting iteration..." << std::endl;
     VertexDescriptorType targetNode = boundaryNodeQueue->top(); // This also pops the node
 
     // Notify the visitor that we have a hole target center.

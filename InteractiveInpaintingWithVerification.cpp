@@ -34,15 +34,15 @@ int main(int argc, char *argv[])
 {
   // Verify arguments
   if(argc != 5)
-    {
+  {
     std::cerr << "Required arguments: image.png image.mask patchHalfWidth output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
-      {
+    {
       std::cerr << argv[i] << " ";
-      }
-    return EXIT_FAILURE;
     }
+    return EXIT_FAILURE;
+  }
 
   // Setup the GUI system
   QApplication app( argc, argv );
