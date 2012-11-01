@@ -396,7 +396,7 @@ void PriorityConfidence::UpdateConfidences(const TNode& targetNode, const float 
 //  return confidence;
 //}
 
-#include <xmmintrin.h>
+//#include <xmmintrin.h>
 
 // Manual loop with prefetching, assuming (correctly) that the confidence values are zero inside the masked region. This is only marginally faster than the single iterator method with the mask check (~5s total in 300 iterations)
 template <typename TNode>

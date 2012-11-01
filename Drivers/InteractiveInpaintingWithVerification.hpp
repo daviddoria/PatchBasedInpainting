@@ -206,10 +206,10 @@ void InteractiveInpaintingWithVerification(TImage* const originalImage, Mask* co
 //   CompositeAcceptanceVisitorType compositeAcceptanceVisitor;
 
   // Source region to source region comparisons
-//   SourceValidTargetValidCompare<VertexListGraphType, TImage, AverageFunctor>
-//         validRegionAverageAcceptance(image, mask, patchHalfWidth,
-//         AverageFunctor(), 100, "validRegionAverageAcceptance");
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&validRegionAverageAcceptance);
+   SourceValidTargetValidCompare<VertexListGraphType, TImage, AverageFunctor>
+         validRegionAverageAcceptance(originalImage, mask, patchHalfWidth,
+         AverageFunctor(), 10, "validRegionAverageAcceptance");
+   compositeAcceptanceVisitor.AddRequiredPassVisitor(&validRegionAverageAcceptance);
 
   // We don't want to do this - the variation over the patch makes this no good.
   // Prefer the DilatedRegionAcceptanceVisitor with a VarianceFunctor instead.
@@ -281,15 +281,6 @@ void InteractiveInpaintingWithVerification(TImage* const originalImage, Mask* co
 //   compositeAcceptanceVisitor.AddVisitor(&intraSourcePatchAcceptanceVisitor);
 
   // Create the inpainting visitor
-//   typedef InpaintingVisitor<VertexListGraphType, TImage, BoundaryNodeQueueType,
-//                             ImagePatchDescriptorVisitorType, AcceptanceVisitorType,
-//                             PriorityType, PriorityMapType, BoundaryStatusMapType>
-//                             InpaintingVisitorType;
-//   InpaintingVisitorType inpaintingVisitor(image, mask, boundaryNodeQueue,
-//                                           imagePatchDescriptorVisitor, compositeAcceptanceVisitor,
-//                                           priorityMap, &priorityFunction, patchHalfWidth,
-//                                           boundaryStatusMap);
-
   typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
                             CompositeDescriptorVisitorType, CompositeAcceptanceVisitorType, PriorityType,
                             TImage>
@@ -324,7 +315,7 @@ void InteractiveInpaintingWithVerification(TImage* const originalImage, Mask* co
   // Create the nearest neighbor finders
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
                                   ImagePatchDifferenceType > KNNSearchType;
-  KNNSearchType knnSearch(imagePatchDescriptorMap, 100000);
+  KNNSearchType knnSearch(imagePatchDescriptorMap, 100);
 
 //   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
 //                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
@@ -336,9 +327,8 @@ void InteractiveInpaintingWithVerification(TImage* const originalImage, Mask* co
   BestSearchType bestSearch(imagePatchDescriptorMap);
 
   // If the acceptance tests fail, prompt the user to select a patch.
-  TopPatchesDialog<TImage> topPatchesDialog(originalImage, mask, patchHalfWidth);
   typedef VisualSelectionBest<TImage> ManualSearchType;
-  ManualSearchType manualSearchBest(originalImage, mask, patchHalfWidth, &topPatchesDialog);
+  ManualSearchType manualSearchBest(originalImage, mask, patchHalfWidth);
 
   // Run the remaining inpainting with interaction
   std::cout << "Running inpainting..." << std::endl;
@@ -351,7 +341,11 @@ void InteractiveInpaintingWithVerification(TImage* const originalImage, Mask* co
 
   while(future.isRunning())
   {
-    // wait for the thread to finish
+    // Wait for the thread to finish.
+    // We have to do this if we don't allocate all of the objects that get passed to run() on the heap.
+    // Otherwise, the variables on the stack will go out of scope here (and hence get destroyed) and become invalid
+    // in run().
+//    std::cout << "Waiting..." << std::endl;
   }
 }
 

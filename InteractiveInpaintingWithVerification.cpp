@@ -44,9 +44,6 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
-  // Setup the GUI system
-  QApplication app( argc, argv );
-
   // Parse arguments
   std::string imageFilename = argv[1];
   std::string maskFilename = argv[2];
@@ -87,6 +84,9 @@ int main(int argc, char *argv[])
   std::cout << "Mask size: " << mask->GetLargestPossibleRegion().GetSize() << std::endl;
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
+
+  // Setup the GUI system
+  QApplication app( argc, argv );
 
   InteractiveInpaintingWithVerification(imageReader->GetOutput(), mask, patchHalfWidth);
 
