@@ -45,12 +45,12 @@ public slots:
 public:
   DialogHandlerParent()
   {
-    connect( this, SIGNAL( MySignal(Node*) ), this, SLOT( MySlot(Node*) ), Qt::BlockingQueuedConnection);
+    connect(this, SIGNAL( MySignal(Node*) ), this, SLOT( MySlot(Node*) ),
+            Qt::BlockingQueuedConnection);
   }
 
   void EmitSignal(Node* selectedNode)
   {
-    std::cout << "DialogHandlerParent::EmitSignal" << std::endl;
     emit MySignal(selectedNode);
   }
 
@@ -66,18 +66,25 @@ class DialogHandler : public DialogHandlerParent
   Node QueryNode;
 
 public:
-  DialogHandler(TImage* image, Mask* mask, const unsigned int patchHalfWidth,
-                std::vector<Node> sourceNodes, Node queryNode) :
+  DialogHandler(TImage* image, Mask* mask, const unsigned int patchHalfWidth) :
     DialogHandlerParent(),
-    Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth),
-    SourceNodes(sourceNodes), QueryNode(queryNode)
+    Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
   {
-    std::cout << "DialogHandler::DialogHandler()" << std::endl;
+
+  }
+
+  void SetQueryNode(Node queryNode)
+  {
+    this->QueryNode = queryNode;
+  }
+
+  void SetSourceNodes(std::vector<Node> sourceNodes)
+  {
+    this->SourceNodes = sourceNodes;
   }
 
   void MySlot(Node* selectedNode)
   {
-    std::cout << "DialogHandler::MySlot()" << std::endl;
     TopPatchesDialog<TImage>* topPatchesDialog =
         new TopPatchesDialog<TImage>(this->Image, this->MaskImage, this->PatchHalfWidth);
     topPatchesDialog->SetQueryNode(this->QueryNode);
@@ -106,13 +113,20 @@ private:
   Mask* MaskImage;
   unsigned int PatchHalfWidth;
 
+  DialogHandler<TImage>* TopPatchesDialogHandler;
 public:
 
   VisualSelectionBest(TImage* const image, Mask* const mask,
                       const unsigned int patchHalfWidth) :
   Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
   {
+    this->TopPatchesDialogHandler = new DialogHandler<TImage>(this->Image, this->MaskImage, this->PatchHalfWidth);
+    this->TopPatchesDialogHandler->moveToThread(QCoreApplication::instance()->thread());
+  }
 
+  ~VisualSelectionBest()
+  {
+    delete this->TopPatchesDialogHandler;
   }
 
   /** Return the best source node for a specified target node. */
@@ -121,7 +135,8 @@ public:
                                const TVertexDescriptor& queryVertex)
   {
 //    std::cout << "VisualSelectionBest::operator()" << std::endl;
-    std::cout << "There are " << possibleNodesEnd - possibleNodesBegin << " nodes." << std::endl;
+//    std::cout << "There are " << possibleNodesEnd - possibleNodesBegin << " nodes." << std::endl;
+
     std::vector<Node> sourceNodes;
     for(TForwardIterator iter = possibleNodesBegin; iter != possibleNodesEnd; ++iter)
     {
@@ -130,17 +145,15 @@ public:
       sourceNodes.push_back(node);
     }
 
-    std::cout << "About to create dialogHandler" << std::endl;
+    this->TopPatchesDialogHandler->SetSourceNodes(sourceNodes);
+
     Node queryNode(queryVertex);
-    DialogHandler<TImage>* dialogHandler = new DialogHandler<TImage>(this->Image, this->MaskImage, this->PatchHalfWidth,
-                                                     sourceNodes, queryNode);
-    dialogHandler->moveToThread(QCoreApplication::instance()->thread());
+    this->TopPatchesDialogHandler->SetQueryNode(queryNode);
 
-    Node selectedNode;
-    dialogHandler->EmitSignal(&selectedNode);
+    Node selectedNode; // We will get the return value via this variable.
+    this->TopPatchesDialogHandler->EmitSignal(&selectedNode);
 
-    delete dialogHandler;
-
+    std::cout << "Returning selected node..." << std::endl;
     return Helpers::ConvertFrom<TVertexDescriptor, Node>(selectedNode);
   }
 

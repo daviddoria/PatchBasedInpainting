@@ -87,6 +87,9 @@ int main(int argc, char *argv[])
 
   // Setup the GUI system
   QApplication app( argc, argv );
+  // Without this, after we close the first dialog
+  // (after the first iteration that is not accepted automatically), the event loop quits.
+  app.setQuitOnLastWindowClosed(false);
 
 //  InteractiveInpaintingWithVerification(imageReader->GetOutput(), mask, patchHalfWidth);
   QtConcurrent::run(boost::bind(InteractiveInpaintingWithVerification<ImageType>,
