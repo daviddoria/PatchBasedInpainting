@@ -183,19 +183,6 @@ set_property(GLOBAL PROPERTY PatchBasedInpaintingLibs ${PatchBasedInpainting_lib
 
 ############ Executables ###########
 
-# Interactive
-option(BuildInteractive "Build the interactive version.")
-if(BuildInteractive)
-    message("Building the interactive components.")
-  add_subdirectory(Interactive)
-endif()
-
-option(BuildViewer "Build the viewer.")
-if(BuildViewer)
-  message("Building the viewer.")
-  add_subdirectory(Interactive)
-endif()
-
 option(inpainting_InpaintingWithLocalSearch "Build a traditional patch comparison image inpainting that displays a list of the top patches for the user to select if the best automatically found patch is decided not to be very good.")
 if(inpainting_InpaintingWithLocalSearch)
   include(InpaintingWithLocalSearch.cmake)
@@ -337,11 +324,12 @@ if(inpainting_NarrowSearchByNormalsInpainting)
   INSTALL( TARGETS NarrowSearchByNormalsInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
+################## Interactive versions ################
 option(inpainting_InteractiveInpaintingWithVerification "An inpainting executable that runs acceptance tests and asks the user to choose a patch if they fail.")
 if(inpainting_InteractiveInpaintingWithVerification)
     QT4_WRAP_UI(InteractiveInpaintingWithVerificationUISrcs
                 Interactive/BasicViewerWidget.ui
-                Interactive/TopPatchesWidget.ui Interactive/TopPatchesDialog.ui
+                Interactive/TopPatchesDialog.ui
                 Interactive/PriorityViewerWidget.ui
                 Interactive/ManualPatchSelectionDialog.ui)
     ADD_EXECUTABLE(InteractiveInpaintingWithVerification InteractiveInpaintingWithVerification.cpp
@@ -353,6 +341,24 @@ if(inpainting_InteractiveInpaintingWithVerification)
                    ${InteractiveInpaintingWithVerificationUISrcs})
     TARGET_LINK_LIBRARIES(InteractiveInpaintingWithVerification ${PatchBasedInpainting_libraries} InpaintingGUI)
     INSTALL( TARGETS InteractiveInpaintingWithVerification RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
+option(inpainting_InteractiveInpaintingGMH "An inpainting executable that uses a sort by
+                 Gradient Magnitude Histogram score and asks the user to choose a patch if
+                 the score is above a threshold.")
+if(inpainting_InteractiveInpaintingGMH)
+    QT4_WRAP_UI(InteractiveInpaintingGMHUISrcs
+                Interactive/BasicViewerWidget.ui
+                Interactive/TopPatchesDialog.ui
+                Interactive/ManualPatchSelectionDialog.ui)
+    ADD_EXECUTABLE(InteractiveInpaintingGMH InteractiveInpaintingGMH.cpp
+                   Drivers/InteractiveInpaintingGMH.hpp
+                   Interactive/TopPatchesDialog.h
+                   NearestNeighbor/VisualSelectionBest.hpp
+                   Interactive/ManualPatchSelectionDialogParent.h
+                   ${InteractiveInpaintingGMHUISrcs})
+    TARGET_LINK_LIBRARIES(InteractiveInpaintingGMH ${PatchBasedInpainting_libraries} InpaintingGUI)
+    INSTALL( TARGETS InteractiveInpaintingGMH RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
 option(BuildInpaintingTests "Build tests.")

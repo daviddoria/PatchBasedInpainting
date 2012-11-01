@@ -62,12 +62,12 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
   void InitializeVertex(VertexDescriptorType v) const
   {
 
-  };
+  }
 
   void DiscoverVertex(VertexDescriptorType v) const
   {
 
-  };
+  }
 
   void PotentialMatchMade(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)
   {
@@ -112,7 +112,7 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
   void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
   {
 
-  };
+  }
 
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {

@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef InteractiveInpaintingWithVerification_HPP
-#define InteractiveInpaintingWithVerification_HPP
+#ifndef InteractiveInpaintingGMH_HPP
+#define InteractiveInpaintingGMH_HPP
 
 // Custom
 #include "Utilities/IndirectPriorityQueue.h"
@@ -120,7 +120,7 @@
 #include "Interactive/PriorityViewerWidget.h"
 
 template <typename TImage>
-void InteractiveInpaintingWithVerification(TImage* const originalImage, Mask* const mask, const unsigned int patchHalfWidth)
+void InteractiveInpaintingGMH(TImage* const originalImage, Mask* const mask, const unsigned int patchHalfWidth)
 {
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
 

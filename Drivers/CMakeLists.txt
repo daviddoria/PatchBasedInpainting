@@ -4,8 +4,12 @@ InpaintingHistogram.hpp
 InpaintingIntroducedEnergy.hpp
 InpaintingTexture.hpp
 InpaintingWithVerification.hpp
-InteractiveInpaintingWithVerification.hpp
 LidarInpaintingHSVTextureVerification.hpp
 LidarInpaintingRGBTextureVerification.hpp
 WeightedSSDInpainting.hpp
+)
+
+add_custom_target(InteractiveDrivers SOURCES
+InteractiveInpaintingWithVerification.hpp
+InteractiveInpaintingGMH.hpp # Gradient Magnitude Histogram test
 )
