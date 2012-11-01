@@ -132,7 +132,6 @@ void InteractiveInpaintingWithVerification(TImage* const originalImage, Mask* co
 
   ITKHelpers::WriteRGBImage(blurredImage.GetPointer(), "BlurredImage.png");
 
-
   typedef ImagePatchPixelDescriptor<TImage> ImagePatchPixelDescriptorType;
 
   // Create the graph
@@ -332,21 +331,16 @@ void InteractiveInpaintingWithVerification(TImage* const originalImage, Mask* co
 
   // Run the remaining inpainting with interaction
   std::cout << "Running inpainting..." << std::endl;
-  QFuture<void> future = QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
-                                VertexListGraphType, CompositeInpaintingVisitorType,
-                                BoundaryNodeQueueType, KNNSearchType, BestSearchType,
-                                ManualSearchType, CompositePatchInpainter>,
-                                graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
-                                bestSearch, &manualSearchBest, &inpainter));
+//    QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
+//                                  VertexListGraphType, CompositeInpaintingVisitorType,
+//                                  BoundaryNodeQueueType, KNNSearchType, BestSearchType,
+//                                  ManualSearchType, CompositePatchInpainter>,
+//                                  graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
+//                                  bestSearch, &manualSearchBest, &inpainter));
 
-  while(future.isRunning())
-  {
-    // Wait for the thread to finish.
-    // We have to do this if we don't allocate all of the objects that get passed to run() on the heap.
-    // Otherwise, the variables on the stack will go out of scope here (and hence get destroyed) and become invalid
-    // in run().
-//    std::cout << "Waiting..." << std::endl;
-  }
+  InpaintingAlgorithmWithVerification(graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
+                                      bestSearch, &manualSearchBest, &inpainter);
+
 }
 
 #endif

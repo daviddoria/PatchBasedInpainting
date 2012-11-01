@@ -88,7 +88,9 @@ int main(int argc, char *argv[])
   // Setup the GUI system
   QApplication app( argc, argv );
 
-  InteractiveInpaintingWithVerification(imageReader->GetOutput(), mask, patchHalfWidth);
+//  InteractiveInpaintingWithVerification(imageReader->GetOutput(), mask, patchHalfWidth);
+  QtConcurrent::run(boost::bind(InteractiveInpaintingWithVerification<ImageType>,
+                    imageReader->GetOutput(), mask, patchHalfWidth));
 
   return app.exec();
 }

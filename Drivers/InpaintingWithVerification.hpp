@@ -22,9 +22,6 @@
 // Custom
 #include "Utilities/IndirectPriorityQueue.h"
 
-// Qt
-#include <QtConcurrentRun>
-
 // Submodules
 #include <Helpers/Helpers.h>
 
@@ -343,17 +340,9 @@ void InpaintingWithVerification(TImage* const originalImage, Mask* const mask, c
   typedef FirstValidDescriptor<ImagePatchDescriptorMapType> ManualSearchType;
   ManualSearchType manualSearchBest(imagePatchDescriptorMap);
 
-//  // Run the remaining inpainting with interaction
-  QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
-                                VertexListGraphType, CompositeInpaintingVisitorType,
-                                BoundaryNodeQueueType, KNNSearchType, BestSearchType,
-                                ManualSearchType, CompositePatchInpainter>,
-                                graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
-                                bestSearch, &manualSearchBest, &inpainter));
-
   // Run the remaining inpainting without interaction
-//  InpaintingAlgorithmWithVerification(graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
-//          bestSearch, &manualSearchBest, &patchInpainter);
+  InpaintingAlgorithmWithVerification(graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
+          bestSearch, &manualSearchBest, &patchInpainter);
 
 }
 
