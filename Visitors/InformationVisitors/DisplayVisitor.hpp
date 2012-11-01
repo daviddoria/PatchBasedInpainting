@@ -37,10 +37,12 @@
 
 // Qt
 #include <QObject>
+
 /**
-
+  Class templates cannot have signals/slots, but using a parent class like this,
+  we can derive the class template from this class to enable them to effectively
+  have signals and slots.
  */
-
 class SignalParent : public QObject
 {
 Q_OBJECT
@@ -49,7 +51,8 @@ signals:
   // This signal is emitted to start the progress bar
   void signal_RefreshImage() const;
 
-  // We need the target region as well while updating the source region because we may want to mask the source patch with the target patch's mask.
+  // We need the target region as well while updating the source region because
+  // we may want to mask the source patch with the target patch's mask.
   void signal_RefreshSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
   
   void signal_RefreshTarget(const itk::ImageRegion<2>);

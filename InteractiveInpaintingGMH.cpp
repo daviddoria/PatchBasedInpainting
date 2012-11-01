@@ -75,12 +75,6 @@ int main(int argc, char *argv[])
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
 
-//  bool compatibleMask = PatchHelpers::CheckSurroundingRegionsOfAllHolePixels(mask, patchHalfWidth);
-//  if(!compatibleMask)
-//  {
-//    throw std::runtime_error("The mask is not compatible!");
-//  }
-
   std::cout << "Mask size: " << mask->GetLargestPossibleRegion().GetSize() << std::endl;
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;

@@ -6,6 +6,7 @@ SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 SET(ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(CMAKE_AUTOMOC TRUE)
+set(CMAKE_AUTOMOC_MOC_OPTIONS "-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED") # Fixes Parse error at "BOOST_JOIN" error (https://bugreports.qt-project.org/browse/QTBUG-22829)
 
 # A function to get all user defined variables with a specified prefix
 function (getListOfVarsStartingWith _prefix _varResult)
@@ -343,6 +344,7 @@ if(inpainting_InteractiveInpaintingWithVerification)
     INSTALL( TARGETS InteractiveInpaintingWithVerification RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
+# InteractiveInpaintingGMH
 option(inpainting_InteractiveInpaintingGMH "An inpainting executable that uses a sort by
                  Gradient Magnitude Histogram score and asks the user to choose a patch if
                  the score is above a threshold.")
@@ -356,7 +358,9 @@ if(inpainting_InteractiveInpaintingGMH)
                    Interactive/TopPatchesDialog.h
                    NearestNeighbor/VisualSelectionBest.hpp
                    Interactive/ManualPatchSelectionDialogParent.h
+                   Visitors/InformationVisitors/DisplayVisitor.hpp
                    ${InteractiveInpaintingGMHUISrcs})
+
     TARGET_LINK_LIBRARIES(InteractiveInpaintingGMH ${PatchBasedInpainting_libraries} InpaintingGUI)
     INSTALL( TARGETS InteractiveInpaintingGMH RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()

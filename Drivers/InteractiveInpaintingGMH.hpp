@@ -198,74 +198,9 @@ void InteractiveInpaintingGMH(TImage* const originalImage, Mask* const mask, con
          AverageFunctor(), 10, "validRegionAverageAcceptance");
    compositeAcceptanceVisitor.AddRequiredPassVisitor(&validRegionAverageAcceptance);
 
-  // We don't want to do this - the variation over the patch makes this no good.
-  // Prefer the DilatedRegionAcceptanceVisitor with a VarianceFunctor instead.
-//   SourceValidTargetValidCompare<VertexListGraphType, TImage, VarianceFunctor>
-//           validRegionVarianceAcceptance(image, mask, patchHalfWidth,
-//           VarianceFunctor(), 1000, "validRegionVarianceAcceptance");
-//   compositeAcceptanceVisitor.AddVisitor(&validRegionVarianceAcceptance);
-
   // If the hole is less than 15% of the patch, always accept the initial best match
   HoleSizeAcceptanceVisitor<VertexListGraphType> holeSizeAcceptanceVisitor(mask, patchHalfWidth, .15);
   compositeAcceptanceVisitor.AddOverrideVisitor(&holeSizeAcceptanceVisitor);
-
-//   HistogramDifferenceAcceptanceVisitor<VertexListGraphType, TImage>
-//            histogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&histogramDifferenceAcceptanceVisitor);
-//
-//   HoleHistogramDifferenceAcceptanceVisitor<VertexListGraphType, TImage>
-//          holeHistogramDifferenceAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&holeHistogramDifferenceAcceptanceVisitor);
-
-//   QuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, TImage>
-//           quadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 2.0f);
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&quadrantHistogramCompareAcceptanceVisitor);
-
-  // AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, TImage>
-  //          allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 8.0f); // 8 (2 for each quadrant) is reasonable
-//   AllQuadrantHistogramCompareAcceptanceVisitor<VertexListGraphType, TImage>
-//                allQuadrantHistogramCompareAcceptanceVisitor(image, mask, patchHalfWidth, 1.0f); // Crazy low
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&allQuadrantHistogramCompareAcceptanceVisitor);
-
-//   ScoreThresholdAcceptanceVisitor<VertexListGraphType, ImagePatchDescriptorMapType,
-//                                   ImagePatchDifferenceType> scoreThresholdAcceptanceVisitor(mask, patchHalfWidth,
-//                                                             imagePatchDescriptorMap, 10);
-//   compositeAcceptanceVisitor.AddOverrideVisitor(&scoreThresholdAcceptanceVisitor);
-
-  // Source region to hole region comparisons
-//   SourceHoleTargetValidCompare<VertexListGraphType, TImage, AverageFunctor>
-//                    holeRegionAverageAcceptance(image, mask, patchHalfWidth,
-//                                              AverageFunctor(), 100, "holeRegionAverageAcceptance");
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&holeRegionAverageAcceptance);
-
-//   SourceHoleTargetValidCompare<VertexListGraphType, TImage, VarianceFunctor>
-//             holeRegionVarianceAcceptance(image, mask, patchHalfWidth,
-//                                          VarianceFunctor(), 1000, "holeRegionVarianceAcceptance");
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&holeRegionVarianceAcceptance);
-
-  // Compare the source region variance in the target patch to the source region variance in the source patch
-//   DilatedSourceValidTargetValidAcceptanceVisitor<VertexListGraphType, TImage, VarianceFunctor>
-//              dilatedValidValidVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth,
-//                                                                 VarianceFunctor(), 1000,
-//                                                                   "dilatedVarianceDifferenceAcceptanceVisitor");
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&dilatedValidValidVarianceDifferenceAcceptanceVisitor);
-
-  // Compare the hole variance to the source region variance
-//   DilatedSourceHoleTargetValidAcceptanceVisitor<VertexListGraphType, TImage, VarianceFunctor>
-//            dilatedHoleValidVarianceDifferenceAcceptanceVisitor(image, mask, patchHalfWidth,
-//                                                       VarianceFunctor(), 1000,
-//                                                       "dilatedHoleValidVarianceDifferenceAcceptanceVisitor");
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&dilatedHoleValidVarianceDifferenceAcceptanceVisitor);
-
-//   PatchDistanceAcceptanceVisitor<VertexListGraphType> patchDistanceAcceptanceVisitor(100);
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&patchDistanceAcceptanceVisitor);
-
-//   CorrelationAcceptanceVisitor<VertexListGraphType, TImage> correlationAcceptanceVisitor(image, mask, patchHalfWidth, 100);
-//   compositeAcceptanceVisitor.AddRequiredPassVisitor(&correlationAcceptanceVisitor);
-
-//   IntraSourcePatchAcceptanceVisitor<VertexListGraphType, TImage>
-//           intraSourcePatchAcceptanceVisitor(image, mask, patchHalfWidth, 100);
-//   compositeAcceptanceVisitor.AddVisitor(&intraSourcePatchAcceptanceVisitor);
 
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
@@ -277,20 +212,13 @@ void InteractiveInpaintingGMH(TImage* const originalImage, Mask* const mask, con
                                           &priorityFunction, patchHalfWidth,
                                           "InpaintingVisitor", originalImage);
 
-//  typedef DisplayVisitor<VertexListGraphType, TImage> DisplayVisitorType;
-//  DisplayVisitorType displayVisitor(image, mask, patchHalfWidth);
-
-//  typedef DebugVisitor<VertexListGraphType, TImage, BoundaryStatusMapType, BoundaryNodeQueueType> DebugVisitorType;
-//  DebugVisitorType debugVisitor(image, mask, patchHalfWidth, boundaryStatusMap, boundaryNodeQueue);
-
-  LoggerVisitor<VertexListGraphType> loggerVisitor("log.txt");
+  typedef DisplayVisitor<VertexListGraphType, TImage> DisplayVisitorType;
+  DisplayVisitorType displayVisitor(originalImage, mask, patchHalfWidth);
 
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
   CompositeInpaintingVisitorType compositeInpaintingVisitor;
   compositeInpaintingVisitor.AddVisitor(&inpaintingVisitor);
-//  compositeInpaintingVisitor.AddVisitor(&displayVisitor);
-//  compositeInpaintingVisitor.AddVisitor(&debugVisitor);
-  compositeInpaintingVisitor.AddVisitor(&loggerVisitor);
+  compositeInpaintingVisitor.AddVisitor(&displayVisitor);
 
   InitializePriority(mask, boundaryNodeQueue, &priorityFunction);
 
@@ -303,10 +231,6 @@ void InteractiveInpaintingGMH(TImage* const originalImage, Mask* const mask, con
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
                                   ImagePatchDifferenceType > KNNSearchType;
   KNNSearchType knnSearch(imagePatchDescriptorMap, 100);
-
-//   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
-//                                   ImagePatchDifference<ImagePatchPixelDescriptorType> > KNNSearchType;
-//   KNNSearchType knnSearch(smallImagePatchDescriptorMap, 1000);
 
   // For debugging we use LinearSearchBestProperty instead of DefaultSearchBest because it can output the difference value.
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
