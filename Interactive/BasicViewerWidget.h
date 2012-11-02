@@ -40,6 +40,9 @@
 
 class InteractorStyleImageWithDrag;
 
+/** Class templates cannot have slots directly, so this class effectively lets BasicViewerWidget
+  * have slots.
+  */
 class BasicViewerWidgetParent : public QMainWindow, public Ui::BasicViewerWidget
 {
 Q_OBJECT
@@ -47,9 +50,11 @@ Q_OBJECT
 public slots:
 
   virtual void slot_UpdateImage() = 0;
-  virtual void slot_UpdateSource(const itk::ImageRegion<2>& region, const itk::ImageRegion<2>& targetregion) = 0;
+  virtual void slot_UpdateSource(const itk::ImageRegion<2>& region,
+                                 const itk::ImageRegion<2>& targetregion) = 0;
   virtual void slot_UpdateTarget(const itk::ImageRegion<2>& region) = 0;
-  virtual void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion) = 0;
+  virtual void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
+                                 const itk::ImageRegion<2>& targetRegion) = 0;
 
 };
 
@@ -110,6 +115,87 @@ private:
 
   PatchHighlighter* SourceHighlighter;
   PatchHighlighter* TargetHighlighter;
+};
+
+/** BasicViewerWidgetWrapper is a class template and therefore cannot have slots directly.
+  * We need this parent that is a QObject to provide the slots. These slots should be identical to
+  * those in BasicViewerWidgetParent as we will be forwarding them.
+  */
+class BasicViewerWidgetWrapperParent : public QObject
+{
+Q_OBJECT
+
+public slots:
+  void slot_UpdateImage()
+  {
+    signal_UpdateImage();
+  }
+
+  // We need the target region as well while updating the source region because we may want to mask the source patch with the target patch's mask.
+  void slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
+  {
+    signal_UpdateSource(sourceRegion, targetRegion);
+  }
+
+  void slot_UpdateTarget(const itk::ImageRegion<2>& region)
+  {
+    signal_UpdateTarget(region);
+  }
+
+  void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion)
+  {
+    signal_UpdateResult(sourceRegion, targetRegion);
+  }
+
+signals:
+  // We mirror the slots with the same signals. We will use these to do the forwarding.
+
+  void signal_UpdateImage();
+
+  // We need the target region as well while updating the source region because we may want to mask the source patch with the target patch's mask.
+  void signal_UpdateSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
+
+  void signal_UpdateTarget(const itk::ImageRegion<2>& region);
+  void signal_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
+
+};
+
+/** QWidget subclasses cannot be created from threads other than the main GUI thread (and also cannot be created there and moved to the GUI thread).
+  * To allow us to do this, we need this wrapper, which we can create, move to the GUI thread, and then forward signals that it receives to the internal BasicViewerWidget.
+  * Additionally, this class template cannot have slots directly, so we need a parent that is a QObject.
+  */
+template <typename TImage>
+class BasicViewerWidgetWrapper : public BasicViewerWidgetWrapperParent
+{
+public:
+  BasicViewerWidgetWrapper(TImage* const image, Mask* const mask)
+  {
+    this->InternalBasicViewerWidget = new BasicViewerWidget<TImage>(image, mask);
+
+    QObject::connect(this, SIGNAL(signal_UpdateImage()), InternalBasicViewerWidget, SLOT(slot_UpdateImage()),
+                     Qt::BlockingQueuedConnection);
+
+    QObject::connect(this, SIGNAL(signal_UpdateSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
+                     InternalBasicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
+                     Qt::BlockingQueuedConnection);
+
+    QObject::connect(this, SIGNAL(signal_UpdateTarget(const itk::ImageRegion<2>&)),
+                     InternalBasicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)),
+                     Qt::BlockingQueuedConnection);
+
+    QObject::connect(this, SIGNAL(signal_UpdateResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
+                     InternalBasicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&, const itk::ImageRegion<2>&)),
+                     Qt::BlockingQueuedConnection);
+  }
+
+  void show()
+  {
+    InternalBasicViewerWidget->show();
+  }
+
+private:
+  BasicViewerWidget<TImage>* InternalBasicViewerWidget;
+
 };
 
 #include "BasicViewerWidget.hpp"

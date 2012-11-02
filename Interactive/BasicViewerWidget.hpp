@@ -228,9 +228,9 @@ void BasicViewerWidget<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sou
 
   while(!maskIterator.IsAtEnd())
     {
-    ITKHelpers::FloatVectorImageType::PixelType pixel;
+    typename TImage::PixelType pixel;
 
-    if(MaskImage->IsHole(maskIterator.GetIndex()))
+    if(this->MaskImage->IsHole(maskIterator.GetIndex()))
       {
       pixel = sourceIterator.Get();
       }

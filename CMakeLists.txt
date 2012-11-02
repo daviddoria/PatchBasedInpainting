@@ -356,8 +356,9 @@ if(inpainting_InteractiveInpaintingGMH)
     ADD_EXECUTABLE(InteractiveInpaintingGMH InteractiveInpaintingGMH.cpp
                    Drivers/InteractiveInpaintingGMH.hpp
                    Interactive/TopPatchesDialog.h
-                   NearestNeighbor/VisualSelectionBest.hpp
+                   Interactive/BasicViewerWidget.h
                    Interactive/ManualPatchSelectionDialogParent.h
+                   NearestNeighbor/VisualSelectionBest.hpp
                    Visitors/InformationVisitors/DisplayVisitor.hpp
                    ${InteractiveInpaintingGMHUISrcs})
 

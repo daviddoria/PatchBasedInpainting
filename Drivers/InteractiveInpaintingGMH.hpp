@@ -214,6 +214,7 @@ void InteractiveInpaintingGMH(TImage* const originalImage, Mask* const mask, con
 
   typedef DisplayVisitor<VertexListGraphType, TImage> DisplayVisitorType;
   DisplayVisitorType displayVisitor(originalImage, mask, patchHalfWidth);
+  displayVisitor.moveToThread(QCoreApplication::instance()->thread());
 
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
   CompositeInpaintingVisitorType compositeInpaintingVisitor;
@@ -241,18 +242,45 @@ void InteractiveInpaintingGMH(TImage* const originalImage, Mask* const mask, con
   typedef VisualSelectionBest<TImage> ManualSearchType;
   ManualSearchType manualSearchBest(originalImage, mask, patchHalfWidth);
 
+
+
+//  BasicViewerWidget<TImage> basicViewerWidget(originalImage, mask);
+//  basicViewerWidget.moveToThread(QCoreApplication::instance()->thread());
+//  basicViewerWidget.show();
+
+  BasicViewerWidgetWrapper<TImage> basicViewerWidgetWrapper(originalImage, mask);
+  basicViewerWidgetWrapper.moveToThread(QCoreApplication::instance()->thread());
+  basicViewerWidgetWrapper.show();
+
+//  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()),
+//                   Qt::BlockingQueuedConnection);
+//  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&,
+//                                                                const itk::ImageRegion<2>&)),
+//                   &basicViewerWidget, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&,
+//                                                              const itk::ImageRegion<2>&)),
+//                   Qt::BlockingQueuedConnection);
+//  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)),
+//                   &basicViewerWidget, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)),
+//                   Qt::BlockingQueuedConnection);
+//  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshResult(const itk::ImageRegion<2>&,
+//                                                                const itk::ImageRegion<2>&)),
+//                   &basicViewerWidget, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&,
+//                                                              const itk::ImageRegion<2>&)),
+//                   Qt::BlockingQueuedConnection);
+
+
   // Run the remaining inpainting with interaction
   std::cout << "Running inpainting..." << std::endl;
+
+  InpaintingAlgorithmWithVerification(graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
+                                      bestSearch, &manualSearchBest, &inpainter);
+
 //    QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
 //                                  VertexListGraphType, CompositeInpaintingVisitorType,
 //                                  BoundaryNodeQueueType, KNNSearchType, BestSearchType,
 //                                  ManualSearchType, CompositePatchInpainter>,
 //                                  graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
 //                                  bestSearch, &manualSearchBest, &inpainter));
-
-  InpaintingAlgorithmWithVerification(graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
-                                      bestSearch, &manualSearchBest, &inpainter);
-
 }
 
 #endif
