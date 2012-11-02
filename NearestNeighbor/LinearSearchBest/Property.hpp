@@ -42,7 +42,8 @@ struct LinearSearchBestProperty : public Debug
   PropertyMapType PropertyMap;
   PatchDistanceFunctionType PatchDistanceFunction;
 
-  LinearSearchBestProperty(PropertyMapType propertyMap, PatchDistanceFunctionType patchDistanceFunction = PatchDistanceFunctionType()) :
+  LinearSearchBestProperty(PropertyMapType propertyMap,
+                           PatchDistanceFunctionType patchDistanceFunction = PatchDistanceFunctionType()) :
   PropertyMap(propertyMap), PatchDistanceFunction(patchDistanceFunction){}
 
   /**

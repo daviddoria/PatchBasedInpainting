@@ -26,6 +26,7 @@
 #include <boost/graph/properties.hpp>
 
 // STL
+#include <memory>
 #include <stdexcept>
 
 /** This function is different from InpaintingAlgorithm() in that it handles the case where
@@ -40,10 +41,13 @@ template <typename TVertexListGraph, typename TInpaintingVisitor,
           typename TPriorityQueue, typename TKNNFinder, typename TBestNeighborFinder,
           typename TManualNeighborFinder, typename TPatchInpainter>
 inline
-void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor vis,
-                     TPriorityQueue* boundaryNodeQueue,
-                     TKNNFinder knnFinder, TBestNeighborFinder& bestNeighborFinder,
-                     TManualNeighborFinder* manualNeighborFinder, TPatchInpainter* patchInpainter)
+void InpaintingAlgorithmWithVerification(std::shared_ptr<TVertexListGraph> graph,
+                                         std::shared_ptr<TInpaintingVisitor> visitor,
+                                         std::shared_ptr<TPriorityQueue> boundaryNodeQueue,
+                                         std::shared_ptr<TKNNFinder> knnFinder,
+                                         std::shared_ptr<TBestNeighborFinder> bestNeighborFinder,
+                                         std::shared_ptr<TManualNeighborFinder> manualNeighborFinder,
+                                         std::shared_ptr<TPatchInpainter> patchInpainter)
 {
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<TInpaintingVisitor, TVertexListGraph>));
 
@@ -64,22 +68,26 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
     VertexDescriptorType targetNode = boundaryNodeQueue->top(); // This also pops the node
 
     // Notify the visitor that we have a hole target center.
-    vis.DiscoverVertex(targetNode);
+    visitor->DiscoverVertex(targetNode);
 
     // Find the source node that matches best to the target node
-    typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
-    tie(vi,vi_end) = vertices(g);
+    typedef typename boost::graph_traits<TVertexListGraph>::vertex_iterator VertexIterator;
+    VertexIterator graphBegin;
+    VertexIterator graphEnd;
+    tie(graphBegin, graphEnd) = vertices(*graph);
 
-    std::vector<VertexDescriptorType> outputContainer(knnFinder.GetK());
-    knnFinder(vi, vi_end, targetNode, outputContainer.begin());
+    std::vector<VertexDescriptorType> outputContainer(knnFinder->GetK());
+    (*knnFinder)(graphBegin, graphEnd, targetNode, outputContainer.begin());
 
-    VertexDescriptorType sourceNode = bestNeighborFinder(outputContainer.begin(), outputContainer.end(), targetNode);
-    vis.PotentialMatchMade(targetNode, sourceNode);
+    VertexDescriptorType sourceNode = (*bestNeighborFinder)(outputContainer.begin(),
+                                                            outputContainer.end(), targetNode);
+    visitor->PotentialMatchMade(targetNode, sourceNode);
 
-    if(!vis.AcceptMatch(targetNode, sourceNode))
+    if(!visitor->AcceptMatch(targetNode, sourceNode))
     {
       numberOfManualVerifications++;
-      std::cout << "So far there have been " << numberOfManualVerifications << " manual verifications." << std::endl;
+      std::cout << "So far there have been "
+                << numberOfManualVerifications << " manual verifications." << std::endl;
       std::cout << "Automatic match not accepted!" << std::endl;
       sourceNode = (*manualNeighborFinder)(outputContainer.begin(), outputContainer.end(), targetNode);
     }
@@ -92,11 +100,12 @@ void InpaintingAlgorithmWithVerification(TVertexListGraph& g, TInpaintingVisitor
 
     patchInpainter->PaintPatch(targetIndex, sourceIndex);
 
-    vis.FinishVertex(targetNode, sourceNode);
+    visitor->FinishVertex(targetNode, sourceNode);
   }
 
-  std::cout << "Inpainting complete. There were " << numberOfManualVerifications << " manual verifications required." << std::endl;
-  vis.InpaintingComplete();
+  std::cout << "Inpainting complete. There were "
+            << numberOfManualVerifications << " manual verifications required." << std::endl;
+  visitor->InpaintingComplete();
 }
 
 #endif

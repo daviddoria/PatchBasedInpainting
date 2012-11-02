@@ -14,29 +14,31 @@ struct CompositeDescriptorVisitor
 {
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
   
+  typedef DescriptorVisitorParent<TGraph> DescriptorVisitorParentType;
+
   void InitializeVertex(VertexDescriptorType v) const
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
       {
       Visitors[visitorId]->InitializeVertex(v);
       }
-  };
+  }
 
   void DiscoverVertex(VertexDescriptorType v) const
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
-      {
+    {
       Visitors[visitorId]->DiscoverVertex(v);
-      }
-  };
+    }
+  }
 
-  void AddVisitor(DescriptorVisitorParent<TGraph>* vis)
+  void AddVisitor(DescriptorVisitorParentType* vis)
   {
-    this->Visitors.push_back(vis);
+    this->Visitors.push_back(std::shared_ptr<DescriptorVisitorParentType>(vis));
   }
 
 private:
-  std::vector<DescriptorVisitorParent<TGraph>*> Visitors;
+  std::vector<std::shared_ptr<DescriptorVisitorParentType> > Visitors;
 };
 
 #endif

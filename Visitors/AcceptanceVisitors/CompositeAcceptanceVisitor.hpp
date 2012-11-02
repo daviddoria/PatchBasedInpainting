@@ -14,17 +14,19 @@ struct CompositeAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
 {
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
+  typedef AcceptanceVisitorParent<TGraph> AcceptanceVisitorParentType;
+
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& energy) const
   {
     bool acceptOverride = false;
 
     // If any of these visitors passes, automatically accept the pair.
     for(unsigned int visitorId = 0; visitorId < OverrideVisitors.size(); ++visitorId)
-      {
+    {
       std::cout << "Running override visitor " << OverrideVisitors[visitorId]->VisitorName << " AcceptMatch()" << std::endl;
       float energy;
       acceptOverride |= OverrideVisitors[visitorId]->AcceptMatch(target, source, energy);
-      }
+    }
 
     if(acceptOverride)
     {
@@ -36,29 +38,29 @@ struct CompositeAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
     // (we compute them all instead of returning immediate if one fails so we can inspect the outputs)
     bool acceptAll = true;
     for(unsigned int visitorId = 0; visitorId < RequiredPassVisitors.size(); ++visitorId)
-      {
+    {
       std::cout << "Running required pass visitor " << RequiredPassVisitors[visitorId]->VisitorName
                 << " AcceptMatch()" << std::endl;
       float energy;
       bool accept = RequiredPassVisitors[visitorId]->AcceptMatch(target, source, energy);
       acceptAll = acceptAll && accept;
-      }
+    }
     return acceptAll;
-  };
-
-  void AddOverrideVisitor(AcceptanceVisitorParent<TGraph>* vis)
-  {
-    this->OverrideVisitors.push_back(vis);
   }
 
-  void AddRequiredPassVisitor(AcceptanceVisitorParent<TGraph>* vis)
+  void AddOverrideVisitor(AcceptanceVisitorParentType* vis)
   {
-    this->RequiredPassVisitors.push_back(vis);
+    this->OverrideVisitors.push_back(std::shared_ptr<AcceptanceVisitorParentType>(vis));
+  }
+
+  void AddRequiredPassVisitor(AcceptanceVisitorParentType* vis)
+  {
+    this->RequiredPassVisitors.push_back(std::shared_ptr<AcceptanceVisitorParentType>(vis));
   }
 
 private:
-  std::vector<AcceptanceVisitorParent<TGraph>*> RequiredPassVisitors;
-  std::vector<AcceptanceVisitorParent<TGraph>*> OverrideVisitors;
+  std::vector<std::shared_ptr<AcceptanceVisitorParentType> > RequiredPassVisitors;
+  std::vector<std::shared_ptr<AcceptanceVisitorParentType> > OverrideVisitors;
 };
 
 #endif

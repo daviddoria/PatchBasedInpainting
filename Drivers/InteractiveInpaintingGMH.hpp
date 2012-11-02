@@ -119,37 +119,64 @@
 #include "Interactive/TopPatchesDialog.h"
 #include "Interactive/PriorityViewerWidget.h"
 
-template <typename TImage>
-void InteractiveInpaintingGMH(TImage* const originalImage, Mask* const mask, const unsigned int patchHalfWidth)
+//template <typename TVertexListGraph, typename TInpaintingVisitor,
+//          typename TPriorityQueue, typename TKNNFinder, typename TBestNeighborFinder,
+//          typename TManualNeighborFinder, typename TPatchInpainter>
+//inline
+//void TestFunction(std::shared_ptr<TVertexListGraph> graph,
+//                  std::shared_ptr<TInpaintingVisitor> visitor,
+//                  std::shared_ptr<TPriorityQueue> boundaryNodeQueue,
+//                  std::shared_ptr<TKNNFinder> knnFinder,
+//                  std::shared_ptr<TBestNeighborFinder> bestNeighborFinder,
+//                  std::shared_ptr<TManualNeighborFinder> manualNeighborFinder,
+//                  std::shared_ptr<TPatchInpainter> patchInpainter)
+
+template <typename TVertexListGraph>
+void TestFunction(std::shared_ptr<TVertexListGraph> graph)
 {
+  typedef typename boost::graph_traits<TVertexListGraph>::vertex_iterator VertexIterator;
+  VertexIterator graphBegin;
+  VertexIterator graphEnd;
+  tie(graphBegin, graphEnd) = vertices(*graph);
+}
+
+template <typename TImage>
+void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage, Mask::Pointer mask, const unsigned int patchHalfWidth)
+{
+  /** Store the viewer here so that it is created in the GUI thread and persists. */
+  typedef BasicViewerWidget<TImage> BasicViewerWidgetType;
+  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(originalImage, mask));
+  basicViewer->show();
+
+  typedef boost::grid_graph<2> VertexListGraphType;
+  typedef DisplayVisitor<VertexListGraphType, TImage> DisplayVisitorType;
+  std::shared_ptr<DisplayVisitorType> displayVisitor(
+        new DisplayVisitorType(originalImage, mask, patchHalfWidth));
+
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
 
   // Blur the image
   typedef TImage BlurredImageType; // Usually the blurred image is the same type as the original image.
   typename BlurredImageType::Pointer blurredImage = BlurredImageType::New();
   float blurVariance = 2.0f;
-  MaskOperations::MaskedBlur(originalImage, mask, blurVariance, blurredImage.GetPointer());
-
-  ITKHelpers::WriteRGBImage(blurredImage.GetPointer(), "BlurredImage.png");
+  MaskOperations::MaskedBlur(originalImage.GetPointer(), mask, blurVariance, blurredImage.GetPointer());
 
   typedef ImagePatchPixelDescriptor<TImage> ImagePatchPixelDescriptorType;
 
   // Create the graph
-  typedef boost::grid_graph<2> VertexListGraphType;
   boost::array<std::size_t, 2> graphSideLengths = { { fullRegion.GetSize()[0],
                                                       fullRegion.GetSize()[1] } };
-  VertexListGraphType graph(graphSideLengths);
+  std::shared_ptr<VertexListGraphType> graph(new VertexListGraphType(graphSideLengths));
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
 
   // Get the index map
   typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
-  IndexMapType indexMap(get(boost::vertex_index, graph));
+  std::shared_ptr<IndexMapType> indexMap(new IndexMapType(get(boost::vertex_index, *graph)));
 
   // Create the descriptor map. This is where the data for each pixel is stored.
   typedef boost::vector_property_map<ImagePatchPixelDescriptorType, IndexMapType> ImagePatchDescriptorMapType;
-  ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), indexMap);
-
-  //ImagePatchDescriptorMapType smallImagePatchDescriptorMap(num_vertices(graph), indexMap);
+  std::shared_ptr<ImagePatchDescriptorMapType> imagePatchDescriptorMap(
+        new ImagePatchDescriptorMapType(num_vertices(*graph), *indexMap));
 
   // Create the patch inpainter.
   typedef PatchInpainter<TImage> OriginalImageInpainterType;
@@ -159,98 +186,92 @@ void InteractiveInpaintingGMH(TImage* const originalImage, Mask* const mask, con
   BlurredImageInpainterType blurredImageInpainter(patchHalfWidth, originalImage, mask);
 
   // Create a composite inpainter.
-  CompositePatchInpainter inpainter;
-  inpainter.AddInpainter(&originalImageInpainter);
-  inpainter.AddInpainter(&blurredImageInpainter);
+  /** We only have to store the composite inpainter in the class, as it stores shared_ptrs
+    * to all of the individual inpainters. If the composite inpainter says in scope, the
+    * individual inpainters do as well.
+    */
+  std::shared_ptr<CompositePatchInpainter> compositeInpainter(new CompositePatchInpainter);
+  compositeInpainter->AddInpainter(&originalImageInpainter);
+  compositeInpainter->AddInpainter(&blurredImageInpainter);
 
   // Create the priority function
   typedef PriorityCriminisi<TImage> PriorityType;
-  PriorityType priorityFunction(blurredImage, mask, patchHalfWidth);
+  std::shared_ptr<PriorityType> priorityFunction(
+        new PriorityType(blurredImage, mask, patchHalfWidth));
 
   // Queue
   typedef IndirectPriorityQueue<VertexListGraphType> BoundaryNodeQueueType;
-  BoundaryNodeQueueType boundaryNodeQueue(graph);
+  std::shared_ptr<BoundaryNodeQueueType> boundaryNodeQueue(new BoundaryNodeQueueType(*graph));
 
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, TImage, ImagePatchDescriptorMapType>
           ImagePatchDescriptorVisitorType;
 
-  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(originalImage, mask,
-                                                              imagePatchDescriptorMap, patchHalfWidth);
+  std::shared_ptr<ImagePatchDescriptorVisitorType> imagePatchDescriptorVisitor(
+        new ImagePatchDescriptorVisitorType(originalImage, mask,
+                                            *imagePatchDescriptorMap, patchHalfWidth));
 
   typedef SumSquaredPixelDifference<typename TImage::PixelType> PixelDifferenceType;
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, PixelDifferenceType >
             ImagePatchDifferenceType;
 
   typedef CompositeDescriptorVisitor<VertexListGraphType> CompositeDescriptorVisitorType;
-  CompositeDescriptorVisitorType compositeDescriptorVisitor;
-  compositeDescriptorVisitor.AddVisitor(&imagePatchDescriptorVisitor);
+  std::shared_ptr<CompositeDescriptorVisitorType> compositeDescriptorVisitor(new CompositeDescriptorVisitorType);
+  compositeDescriptorVisitor->AddVisitor(imagePatchDescriptorVisitor.get());
 
-  typedef CompositeAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
-  CompositeAcceptanceVisitorType compositeAcceptanceVisitor;
-
-//   typedef ANDAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
-//   CompositeAcceptanceVisitorType compositeAcceptanceVisitor;
 
   // Source region to source region comparisons
    SourceValidTargetValidCompare<VertexListGraphType, TImage, AverageFunctor>
          validRegionAverageAcceptance(originalImage, mask, patchHalfWidth,
          AverageFunctor(), 10, "validRegionAverageAcceptance");
-   compositeAcceptanceVisitor.AddRequiredPassVisitor(&validRegionAverageAcceptance);
 
   // If the hole is less than 15% of the patch, always accept the initial best match
   HoleSizeAcceptanceVisitor<VertexListGraphType> holeSizeAcceptanceVisitor(mask, patchHalfWidth, .15);
-  compositeAcceptanceVisitor.AddOverrideVisitor(&holeSizeAcceptanceVisitor);
+
+  typedef CompositeAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
+  std::shared_ptr<CompositeAcceptanceVisitorType> compositeAcceptanceVisitor(new CompositeAcceptanceVisitorType);
+  compositeAcceptanceVisitor->AddRequiredPassVisitor(&validRegionAverageAcceptance);
+  compositeAcceptanceVisitor->AddOverrideVisitor(&holeSizeAcceptanceVisitor);
 
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
                             CompositeDescriptorVisitorType, CompositeAcceptanceVisitorType, PriorityType,
                             TImage>
                             InpaintingVisitorType;
-  InpaintingVisitorType inpaintingVisitor(mask, boundaryNodeQueue,
-                                          compositeDescriptorVisitor, compositeAcceptanceVisitor,
-                                          &priorityFunction, patchHalfWidth,
-                                          "InpaintingVisitor", originalImage);
-
-  typedef DisplayVisitor<VertexListGraphType, TImage> DisplayVisitorType;
-  DisplayVisitorType displayVisitor(originalImage, mask, patchHalfWidth);
-  displayVisitor.moveToThread(QCoreApplication::instance()->thread());
+  std::shared_ptr<InpaintingVisitorType> inpaintingVisitor(
+        new InpaintingVisitorType(mask, *boundaryNodeQueue,
+                                  *compositeDescriptorVisitor, *compositeAcceptanceVisitor,
+                                  priorityFunction.get(), patchHalfWidth,
+                                  "InpaintingVisitor", originalImage.GetPointer()));
 
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
-  CompositeInpaintingVisitorType compositeInpaintingVisitor;
-  compositeInpaintingVisitor.AddVisitor(&inpaintingVisitor);
-  compositeInpaintingVisitor.AddVisitor(&displayVisitor);
+  std::shared_ptr<CompositeInpaintingVisitorType> compositeInpaintingVisitor(new CompositeInpaintingVisitorType);
+  compositeInpaintingVisitor->AddVisitor(inpaintingVisitor.get());
+  compositeInpaintingVisitor->AddVisitor(displayVisitor.get());
 
-  InitializePriority(mask, boundaryNodeQueue, &priorityFunction);
+  InitializePriority(mask, *boundaryNodeQueue, priorityFunction.get());
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage<CompositeInpaintingVisitorType, VertexDescriptorType>(mask, &compositeInpaintingVisitor);
-  std::cout << "InteractiveInpaintingWithVerification: There are " << boundaryNodeQueue.size()
+  InitializeFromMaskImage<CompositeInpaintingVisitorType, VertexDescriptorType>(
+        mask, compositeInpaintingVisitor.get());
+  std::cout << "InteractiveInpaintingWithVerification: There are " << boundaryNodeQueue->size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
   // Create the nearest neighbor finders
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
                                   ImagePatchDifferenceType > KNNSearchType;
-  KNNSearchType knnSearch(imagePatchDescriptorMap, 100);
+  unsigned int numberOfKNN = 100;
+  std::shared_ptr<KNNSearchType> knnSearch(new KNNSearchType(*imagePatchDescriptorMap, numberOfKNN));
 
   // For debugging we use LinearSearchBestProperty instead of DefaultSearchBest because it can output the difference value.
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
                                    ImagePatchDifferenceType > BestSearchType;
-  BestSearchType bestSearch(imagePatchDescriptorMap);
+  std::shared_ptr<BestSearchType> bestSearch(new BestSearchType(*imagePatchDescriptorMap));
 
   // If the acceptance tests fail, prompt the user to select a patch.
   typedef VisualSelectionBest<TImage> ManualSearchType;
-  ManualSearchType manualSearchBest(originalImage, mask, patchHalfWidth);
+  std::shared_ptr<ManualSearchType> manualSearchBest(new ManualSearchType(originalImage, mask, patchHalfWidth));
 
-
-
-//  BasicViewerWidget<TImage> basicViewerWidget(originalImage, mask);
-//  basicViewerWidget.moveToThread(QCoreApplication::instance()->thread());
-//  basicViewerWidget.show();
-
-  BasicViewerWidgetWrapper<TImage> basicViewerWidgetWrapper(originalImage, mask);
-  basicViewerWidgetWrapper.moveToThread(QCoreApplication::instance()->thread());
-  basicViewerWidgetWrapper.show();
 
 //  QObject::connect(&displayVisitor, SIGNAL(signal_RefreshImage()), &basicViewerWidget, SLOT(slot_UpdateImage()),
 //                   Qt::BlockingQueuedConnection);
@@ -272,15 +293,17 @@ void InteractiveInpaintingGMH(TImage* const originalImage, Mask* const mask, con
   // Run the remaining inpainting with interaction
   std::cout << "Running inpainting..." << std::endl;
 
-  InpaintingAlgorithmWithVerification(graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
-                                      bestSearch, &manualSearchBest, &inpainter);
+//    InpaintingAlgorithmWithVerification(graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
+//                                        bestSearch, &manualSearchBest, &inpainter);
 
 //    QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
 //                                  VertexListGraphType, CompositeInpaintingVisitorType,
 //                                  BoundaryNodeQueueType, KNNSearchType, BestSearchType,
 //                                  ManualSearchType, CompositePatchInpainter>,
-//                                  graph, compositeInpaintingVisitor, &boundaryNodeQueue, knnSearch,
-//                                  bestSearch, &manualSearchBest, &inpainter));
+//                                  graph, compositeInpaintingVisitor, boundaryNodeQueue, knnSearch,
+//                                  bestSearch, manualSearchBest, compositeInpainter));
+
+  QtConcurrent::run(boost::bind(TestFunction<VertexListGraphType>, graph));
 }
 
 #endif

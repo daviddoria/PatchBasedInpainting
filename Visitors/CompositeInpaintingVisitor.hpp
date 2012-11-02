@@ -24,6 +24,9 @@
 // Boost
 #include <boost/graph/graph_traits.hpp>
 
+// STL
+#include <memory>
+
 /**
  * This is a composite visitor type that complies with the InpaintingVisitorConcept and forwards
  * all calls to all of its internal visitors.
@@ -32,6 +35,8 @@ template <typename TGraph>
 struct CompositeInpaintingVisitor 
 {
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
+
+  typedef InpaintingVisitorParent<TGraph> InpaintingVisitorParentType;
 
   void InitializeVertex(VertexDescriptorType v) const
   {
@@ -90,14 +95,15 @@ struct CompositeInpaintingVisitor
     }
   }
 
-  void AddVisitor(InpaintingVisitorParent<TGraph>* vis)
+  void AddVisitor(InpaintingVisitorParentType* vis)
   {
     // std::cout << "Adding " << vis->VisitorName << std::endl;
-    this->Visitors.push_back(vis);
+    this->Visitors.push_back(std::shared_ptr<InpaintingVisitorParentType>(vis));
   }
 
 private:
-  std::vector<InpaintingVisitorParent<TGraph>*> Visitors;
+  std::vector<std::shared_ptr<InpaintingVisitorParentType> > Visitors;
+
 };
 
 #endif

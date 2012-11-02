@@ -26,6 +26,14 @@
 template <typename TImage>
 class PatchInpainter : public PatchInpainterParent, public Debug
 {
+  virtual PatchInpainter* DeepCopy() override
+  {
+    PatchInpainter* copiedPatchInpainter = new PatchInpainter(PatchHalfWidth, Image, MaskImage);
+    copiedPatchInpainter->ImageName = ImageName;
+    copiedPatchInpainter->Iteration = Iteration;
+    return copiedPatchInpainter;
+  }
+
   /** The image to inpaint. */
   TImage* Image;
 

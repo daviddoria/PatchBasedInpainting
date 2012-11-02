@@ -85,14 +85,7 @@ int main(int argc, char *argv[])
   // (after the first iteration that is not accepted automatically), the event loop quits.
   app.setQuitOnLastWindowClosed(false);
 
-  InteractiveInpaintingWithVerification(imageReader->GetOutput(), mask, patchHalfWidth);
-
-  // The idea of doing this here is so we don't have the problem of the variables in
-  // InteractiveInpaintingGMH going out of scope when we would call QtConcurrent::run on the Algorithm.
-  // Unfortunately it does not work though, because inside InteractiveInpaintingGMH we need to create
-  // QWidget's, which must be created in the GUI thread.
-//  QtConcurrent::run(boost::bind(InteractiveInpaintingGMH<ImageType>,
-//                    imageReader->GetOutput(), mask, patchHalfWidth));
+  InteractiveInpaintingGMH(image, mask, patchHalfWidth);
 
   return app.exec();
 }
