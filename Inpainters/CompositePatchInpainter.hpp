@@ -27,7 +27,12 @@
 struct CompositePatchInpainter
 {
 public:
-  void AddInpainter(PatchInpainterParent* const inpainter)
+  void AddInpainter(std::shared_ptr<PatchInpainterParent> inpainter)
+  {
+    this->Inpainters.push_back(inpainter);
+  }
+
+  void AddInpainter(PatchInpainterParent* inpainter)
   {
     this->Inpainters.push_back(std::shared_ptr<PatchInpainterParent>(inpainter));
   }

@@ -37,6 +37,11 @@ struct CompositeDescriptorVisitor
     this->Visitors.push_back(std::shared_ptr<DescriptorVisitorParentType>(vis));
   }
 
+  void AddVisitor(std::shared_ptr<DescriptorVisitorParentType> vis)
+  {
+    this->Visitors.push_back(vis);
+  }
+
 private:
   std::vector<std::shared_ptr<DescriptorVisitorParentType> > Visitors;
 };

@@ -101,6 +101,18 @@ struct CompositeInpaintingVisitor
     this->Visitors.push_back(std::shared_ptr<InpaintingVisitorParentType>(vis));
   }
 
+  void AddVisitor(std::shared_ptr<InpaintingVisitorParentType> vis)
+  {
+    // std::cout << "Adding " << vis->VisitorName << std::endl;
+    this->Visitors.push_back(vis);
+    std::cout << "There are now " << this->Visitors.size() << " visitors." << std::endl;
+  }
+
+  size_t GetNumberOfVisitors()
+  {
+    return this->Visitors.size();
+  }
+
 private:
   std::vector<std::shared_ptr<InpaintingVisitorParentType> > Visitors;
 

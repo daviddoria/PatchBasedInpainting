@@ -21,6 +21,9 @@
 
 #include "Visitors/InpaintingVisitorParent.h"
 
+// STL
+#include <memory>
+
 // Concepts
 #include "Concepts/DescriptorVisitorConcept.hpp"
 
@@ -63,16 +66,16 @@ class InpaintingVisitor : public InpaintingVisitorParent<TGraph>, public Debug
   Mask* MaskImage;
 
   /** A queue to use to determine which patch to inpaint next. */
-  TBoundaryNodeQueue& BoundaryNodeQueue;
+  std::shared_ptr<TBoundaryNodeQueue> BoundaryNodeQueue;
 
   /** A function to determine the priority of each target patch. */
-  TPriority* PriorityFunction;
+  std::shared_ptr<TPriority> PriorityFunction;
 
   /** A visitor to do patch descriptor specific operations. */
-  TDescriptorVisitor& DescriptorVisitor;
+  std::shared_ptr<TDescriptorVisitor> DescriptorVisitor;
 
   /** A visitor to perform specified actions when a match is accepted. */
-  TAcceptanceVisitor& AcceptanceVisitor;
+  std::shared_ptr<TAcceptanceVisitor> AcceptanceVisitor;
 
   /** The radius of the patches to use to inpaint the image. */
   const unsigned int PatchHalfWidth;
@@ -122,11 +125,13 @@ public:
 
   /** Constructor. Everything must be specified in this constructor. (There is no default constructor). */
   InpaintingVisitor(Mask* const mask,
-                    TBoundaryNodeQueue& boundaryNodeQueue,
-                    TDescriptorVisitor& descriptorVisitor, TAcceptanceVisitor& acceptanceVisitor,
-                    TPriority* const priorityFunction,
+                    std::shared_ptr<TBoundaryNodeQueue> boundaryNodeQueue,
+                    std::shared_ptr<TDescriptorVisitor> descriptorVisitor,
+                    std::shared_ptr<TAcceptanceVisitor> acceptanceVisitor,
+                    std::shared_ptr<TPriority> const priorityFunction,
                     const unsigned int patchHalfWidth,
-                    const std::string& visitorName = "InpaintingVisitor", TImage* const image = nullptr) :
+                    const std::string& visitorName = "InpaintingVisitor",
+                    TImage* const image = nullptr) :
     InpaintingVisitorParent<TGraph>(visitorName),
     Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
     DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
@@ -162,12 +167,12 @@ public:
 
   void InitializeVertex(VertexDescriptorType v) const
   {
-    this->DescriptorVisitor.InitializeVertex(v);
+    this->DescriptorVisitor->InitializeVertex(v);
   }
 
   void DiscoverVertex(VertexDescriptorType v) const
   {
-    this->DescriptorVisitor.DiscoverVertex(v);
+    this->DescriptorVisitor->DiscoverVertex(v);
   }
 
   void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
@@ -194,7 +199,7 @@ public:
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
     float energy = 0.0f;
-    return AcceptanceVisitor.AcceptMatch(target, source, energy);
+    return AcceptanceVisitor->AcceptMatch(target, source, energy);
   }
 
   /** The mask is inpainted with ValidValue in this function. */
@@ -249,8 +254,12 @@ public:
     {
       if(this->DebugLevel > 1)
       {
-        ITKHelpers::WriteBoolImage(this->CopiedPixelsImage, Helpers::GetSequentialFileName("CopiedPixels", this->NumberOfFinishedPatches, "png", 3));
-        ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("Mask_Before", this->NumberOfFinishedPatches, "png", 3));
+        ITKHelpers::WriteBoolImage(this->CopiedPixelsImage,
+                                   Helpers::GetSequentialFileName("CopiedPixels",
+                                                                  this->NumberOfFinishedPatches, "png", 3));
+        ITKHelpers::WriteImage(this->MaskImage,
+                               Helpers::GetSequentialFileName("Mask_Before",
+                                                              this->NumberOfFinishedPatches, "png", 3));
       }
     }
 
@@ -340,7 +349,7 @@ public:
       }
       else
       {
-        this->BoundaryNodeQueue.mark_as_invalid(v);
+        this->BoundaryNodeQueue->mark_as_invalid(v);
       }
 
       ++imageIterator;
@@ -353,7 +362,7 @@ public:
       VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(*pixelIterator);
       float priority = this->PriorityFunction->ComputePriority(*pixelIterator);
       #pragma omp critical // There are weird crashes without this guard
-      this->BoundaryNodeQueue.push_or_update(v, priority);
+      this->BoundaryNodeQueue->push_or_update(v, priority);
     }
 
     // std::cout << "FinishVertex after traversing finishing region there are "
@@ -389,18 +398,21 @@ public:
      */
 
     // Expand the region
-    itk::ImageRegion<2> expandedRegion = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, PatchHalfWidth + 1);
+    itk::ImageRegion<2> expandedRegion =
+        ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, PatchHalfWidth + 1);
     // Make sure the region is entirely inside the image (to allow for target regions near the image boundary)
     expandedRegion.Crop(this->FullRegion);
-    std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetBoundaryPixels(expandedRegion);
+    std::vector<itk::Index<2> > boundaryPixels =
+        ITKHelpers::GetBoundaryPixels(expandedRegion);
     for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
     {
       // the region (the entire image) can be omitted, as this function automatically checks if the pixels are inside the image
       if(!this->MaskImage->HasHoleNeighbor(boundaryPixels[i]))
       {
-        VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(boundaryPixels[i]);
+        VertexDescriptorType v =
+            Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(boundaryPixels[i]);
 
-        put(this->BoundaryNodeQueue.BoundaryStatusMap, v, false);
+        put(this->BoundaryNodeQueue->BoundaryStatusMap, v, false);
       }
     }
 
