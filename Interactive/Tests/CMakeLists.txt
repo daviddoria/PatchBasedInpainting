@@ -1,7 +1,11 @@
-# include_directories(../) # The Interactive directory
-# include_directories(../../) # The main PatchBasedInpainting}directory
-# include_directories(../../Testing)
-# 
+include_directories(../) # The Interactive directory
+include_directories(../../) # The main PatchBasedInpainting}directory
+include_directories(../../Testing)
+
+add_executable(TestBasicViewer TestBasicViewer.cpp ../BasicViewerWidget.h)
+target_link_libraries(TestBasicViewer ${PatchBasedInpainting_libraries} InpaintingGUI)
+add_test(TestBasicViewer TestBasicViewer)
+
 # add_executable(TestInpaintingIterationRecordViewer TestInpaintingIterationRecordViewer.cpp)
 # target_link_libraries(TestInpaintingIterationRecordViewer)
 # add_test(TestInpaintingIterationRecordViewer TestInpaintingIterationRecordViewer)

@@ -332,20 +332,20 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   // Run the remaining inpainting with interaction
   std::cout << "Running inpainting..." << std::endl;
 
-//  QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
-//                                VertexListGraphType, CompositeInpaintingVisitorType,
-//                                BoundaryNodeQueueType, KNNSearchType, BestSearchType,
-//                                ManualSearchType, CompositePatchInpainter>,
-//                                graph, compositeInpaintingVisitor, boundaryNodeQueue, knnSearch,
-//                                bestSearch, manualSearchBest, compositeInpainter));
-
-
-  QtConcurrent::run(boost::bind(TestFunction<
+  QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
                                 VertexListGraphType, CompositeInpaintingVisitorType,
                                 BoundaryNodeQueueType, KNNSearchType, BestSearchType,
                                 ManualSearchType, CompositePatchInpainter>,
                                 graph, compositeInpaintingVisitor, boundaryNodeQueue, knnSearch,
                                 bestSearch, manualSearchBest, compositeInpainter));
+
+
+//  QtConcurrent::run(boost::bind(TestFunction<
+//                                VertexListGraphType, CompositeInpaintingVisitorType,
+//                                BoundaryNodeQueueType, KNNSearchType, BestSearchType,
+//                                ManualSearchType, CompositePatchInpainter>,
+//                                graph, compositeInpaintingVisitor, boundaryNodeQueue, knnSearch,
+//                                bestSearch, manualSearchBest, compositeInpainter));
 
 //  QtConcurrent::run(boost::bind(TestFunction<
 //                                  VertexListGraphType, CompositeInpaintingVisitorType,
