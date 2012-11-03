@@ -28,6 +28,7 @@
 
 // Driver
 #include "Drivers/InteractiveInpaintingGMH.hpp"
+#include "Drivers/TestDriver.hpp"
 
 // Run with: image.png image.mask 15 filled.png
 int main(int argc, char *argv[])
@@ -86,6 +87,7 @@ int main(int argc, char *argv[])
   app.setQuitOnLastWindowClosed(false);
 
   InteractiveInpaintingGMH(image, mask, patchHalfWidth);
+//  TestDriver(image, mask, patchHalfWidth);
 
   return app.exec();
 }

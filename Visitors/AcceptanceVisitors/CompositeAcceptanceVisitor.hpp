@@ -53,9 +53,19 @@ struct CompositeAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
     this->OverrideVisitors.push_back(std::shared_ptr<AcceptanceVisitorParentType>(vis));
   }
 
+  void AddOverrideVisitor(std::shared_ptr<AcceptanceVisitorParentType> vis)
+  {
+    this->OverrideVisitors.push_back(vis);
+  }
+
   void AddRequiredPassVisitor(AcceptanceVisitorParentType* vis)
   {
     this->RequiredPassVisitors.push_back(std::shared_ptr<AcceptanceVisitorParentType>(vis));
+  }
+
+  void AddRequiredPassVisitor(std::shared_ptr<AcceptanceVisitorParentType> vis)
+  {
+    this->RequiredPassVisitors.push_back(vis);
   }
 
 private:

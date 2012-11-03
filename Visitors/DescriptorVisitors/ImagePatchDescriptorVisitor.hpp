@@ -15,6 +15,9 @@
 // Helpers
 #include "ITKHelpers/ITKHelpers.h"
 
+// STL
+#include <memory>
+
 /**
  * This is a visitor that complies with the InpaintingVisitorConcept. It creates
  * and differences ImagePatchPixelDescriptor objects at each pixel.
@@ -29,12 +32,12 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
 
   TImage* Image;
   Mask* MaskImage;
-  TDescriptorMap& DescriptorMap;
+  std::shared_ptr<TDescriptorMap> DescriptorMap;
 
   unsigned int HalfWidth;
 
   ImagePatchDescriptorVisitor(TImage* const in_image, Mask* const in_mask,
-                              TDescriptorMap& in_descriptorMap, const unsigned int in_half_width) :
+                              std::shared_ptr<TDescriptorMap> in_descriptorMap, const unsigned int in_half_width) :
   Image(in_image), MaskImage(in_mask), DescriptorMap(in_descriptorMap), HalfWidth(in_half_width)
   {
   }
@@ -52,7 +55,7 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
 
     DescriptorType descriptor(this->Image, this->MaskImage, region);
     descriptor.SetVertex(v);
-    put(this->DescriptorMap, v, descriptor);
+    put(*(this->DescriptorMap), v, descriptor);
 
     // This is done in the descriptor constructor (above)
 //     if(mask->IsValid(region))
@@ -90,7 +93,7 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
     }
 
     // std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
-    DescriptorType& descriptor = get(this->DescriptorMap, v);
+    DescriptorType& descriptor = get(*(this->DescriptorMap), v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
     descriptor.SetValidOffsets(validOffsets);
   }

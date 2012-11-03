@@ -10,7 +10,7 @@
 #include "ITKHelpers/ITKHelpers.h"
 
 template <typename TBoundaryNodeQueue, typename TPriority>
-inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& boundaryNodeQueue,
+inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue* boundaryNodeQueue,
                                TPriority* const priorityFunction)
 {
   std::cout << "InitializePriority" << std::endl;
@@ -40,16 +40,16 @@ inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue& bounda
 
       float priority = priorityFunction->ComputePriority(index);
 
-      boundaryNodeQueue.push_or_update(node, priority);
+      boundaryNodeQueue->push_or_update(node, priority);
     }
     else
     {
-      boundaryNodeQueue.mark_as_invalid(node);
+      boundaryNodeQueue->mark_as_invalid(node);
     }
     ++boundaryImageIterator;
   }
 
-  std::cout << "InitializePriority: There are " << boundaryNodeQueue.CountValidNodes()
+  std::cout << "InitializePriority: There are " << boundaryNodeQueue->CountValidNodes()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
 }

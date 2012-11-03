@@ -46,12 +46,12 @@ class LinearSearchKNNProperty
 {
   typedef float DistanceValueType;
 
-  PropertyMapType PropertyMap;
+  std::shared_ptr<PropertyMapType> PropertyMap;
   unsigned int K;
   DistanceFunctionType DistanceFunction;
 
 public:
-  LinearSearchKNNProperty(PropertyMapType propertyMap, const unsigned int k = 1000,
+  LinearSearchKNNProperty(std::shared_ptr<PropertyMapType> propertyMap, const unsigned int k = 1000,
                           DistanceFunctionType distanceFunction = DistanceFunctionType()) :
     PropertyMap(propertyMap), K(k), DistanceFunction(distanceFunction)
   {
@@ -103,7 +103,7 @@ public:
 
     PriorityQueueType outputQueue;
 
-    typename PropertyMapType::value_type queryPatch = get(this->PropertyMap, queryNode);
+    typename PropertyMapType::value_type queryPatch = get(*(this->PropertyMap), queryNode);
 
     typedef std::vector<typename PropertyMapType::value_type::ImageType::PixelType> PixelVector;
 
@@ -124,7 +124,7 @@ public:
 //    for(ForwardIteratorType current = first; current != last; ++current) // OpenMP 3 doesn't allow != in the loop ending condition
     for(ForwardIteratorType current = first; current < last; ++current)
     {
-      DistanceValueType d = this->DistanceFunction(get(this->PropertyMap, *current), queryPatch, targetPixels); // (source, target) (the query node is the target node)
+      DistanceValueType d = this->DistanceFunction(get(*(this->PropertyMap), *current), queryPatch, targetPixels); // (source, target) (the query node is the target node)
 
       #pragma omp critical // There are weird crashes without this guard
       outputQueue.push(PairType(d, current));
