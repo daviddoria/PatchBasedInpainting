@@ -200,11 +200,6 @@ template <typename TImage>
 void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
                               Mask::Pointer mask, const unsigned int patchHalfWidth)
 {
-  /** Store the viewer here so that it is created in the GUI thread and persists. */
-  typedef BasicViewerWidget<TImage> BasicViewerWidgetType;
-  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(originalImage, mask));
-  basicViewer->show();
-
   typedef boost::grid_graph<2> VertexListGraphType;
 
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
@@ -305,6 +300,11 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   std::shared_ptr<CompositeInpaintingVisitorType> compositeInpaintingVisitor(new CompositeInpaintingVisitorType);
   compositeInpaintingVisitor->AddVisitor(inpaintingVisitor);
   compositeInpaintingVisitor->AddVisitor(displayVisitor);
+
+  typedef BasicViewerWidget<TImage> BasicViewerWidgetType;
+  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(originalImage, mask));
+  basicViewer->ConnectVisitor(displayVisitor.get());
+  basicViewer->show();
 
   InitializePriority(mask, boundaryNodeQueue.get(), priorityFunction.get());
 

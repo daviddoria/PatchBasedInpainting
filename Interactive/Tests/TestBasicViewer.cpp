@@ -55,7 +55,8 @@ void Scalar()
   mask->Allocate();
 
   typedef BasicViewerWidget<ImageType> BasicViewerWidgetType;
-  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(image.GetPointer(), mask));
+//  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(image.GetPointer(), mask));
+  BasicViewerWidgetType* basicViewer = new BasicViewerWidgetType(image.GetPointer(), mask);
   basicViewer->show();
 }
 
@@ -75,7 +76,8 @@ void CovariantVector()
   mask->Allocate();
 
   typedef BasicViewerWidget<ImageType> BasicViewerWidgetType;
-  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(image.GetPointer(), mask));
+//  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(image.GetPointer(), mask));
+  BasicViewerWidgetType* basicViewer = new BasicViewerWidgetType(image.GetPointer(), mask);
   basicViewer->show();
 }
 
@@ -96,6 +98,7 @@ void Vector()
   mask->Allocate();
 
   typedef BasicViewerWidget<ImageType> BasicViewerWidgetType;
-  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(image.GetPointer(), mask));
+//  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(image.GetPointer(), mask));
+  BasicViewerWidgetType* basicViewer = new BasicViewerWidgetType(image.GetPointer(), mask);
   basicViewer->show();
 }
