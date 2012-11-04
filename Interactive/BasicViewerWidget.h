@@ -123,6 +123,10 @@ public:
   template <typename TVisitor>
   void ConnectVisitor(TVisitor* visitor);
 
+  /** Make all of the necessary connection for a widget to drive this viewer.*/
+  template <typename TPatchesWidget>
+  void ConnectWidget(TPatchesWidget* widget);
+
 private:
 
   void SetupScenes();

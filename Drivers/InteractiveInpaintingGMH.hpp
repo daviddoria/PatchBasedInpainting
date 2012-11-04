@@ -222,12 +222,6 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   compositeInpaintingVisitor->AddVisitor(inpaintingVisitor);
   compositeInpaintingVisitor->AddVisitor(displayVisitor);
 
-  typedef BasicViewerWidget<TImage> BasicViewerWidgetType;
-//  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(originalImage, mask)); // This shared_ptr will go out of scope when this function ends, so the window will immediately close
-  BasicViewerWidgetType* basicViewer = new BasicViewerWidgetType(originalImage, mask);
-  basicViewer->ConnectVisitor(displayVisitor.get());
-  basicViewer->show();
-
   InitializePriority(mask, boundaryNodeQueue.get(), priorityFunction.get());
 
   // Initialize the boundary node queue from the user provided mask image.
@@ -250,6 +244,13 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   // If the acceptance tests fail, prompt the user to select a patch.
   typedef VisualSelectionBest<TImage> ManualSearchType;
   std::shared_ptr<ManualSearchType> manualSearchBest(new ManualSearchType(originalImage, mask, patchHalfWidth));
+
+  typedef BasicViewerWidget<TImage> BasicViewerWidgetType;
+//  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(originalImage, mask)); // This shared_ptr will go out of scope when this function ends, so the window will immediately close
+  BasicViewerWidgetType* basicViewer = new BasicViewerWidgetType(originalImage, mask);
+  basicViewer->ConnectVisitor(displayVisitor.get());
+  basicViewer->ConnectWidget(manualSearchBest->GetTopPatchesDialog());
+  basicViewer->show();
 
   // Run the remaining inpainting with interaction
   std::cout << "Running inpainting..." << std::endl;

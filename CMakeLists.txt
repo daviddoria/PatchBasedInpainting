@@ -369,6 +369,7 @@ if(inpainting_InteractiveInpaintingGMH)
     ADD_EXECUTABLE(InteractiveInpaintingGMH InteractiveInpaintingGMH.cpp
                    Drivers/InteractiveInpaintingGMH.hpp
                    Interactive/TopPatchesDialog.h
+                   Interactive/DialogHandler.h
                    Interactive/BasicViewerWidget.h
                    Interactive/ManualPatchSelectionDialogParent.h
                    NearestNeighbor/VisualSelectionBest.hpp

@@ -308,6 +308,8 @@ template <typename TImage>
 template <typename TVisitor>
 void BasicViewerWidget<TImage>::ConnectVisitor(TVisitor* visitor)
 {
+  // These are all BlockingQueuedConnection because the 'visitor' is not in the GUI thread.
+
   QObject::connect(visitor, SIGNAL(signal_RefreshImage()),
                    this, SLOT(slot_UpdateImage()),
                    Qt::BlockingQueuedConnection);
@@ -327,11 +329,16 @@ void BasicViewerWidget<TImage>::ConnectVisitor(TVisitor* visitor)
                    this, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&,
                                                 const itk::ImageRegion<2>&)),
                    Qt::BlockingQueuedConnection);
+}
 
-  QObject::connect(visitor, SIGNAL(signal_SelectedRegion(const itk::ImageRegion<2>&)),
+template <typename TImage>
+template <typename TPatchesWidget>
+void BasicViewerWidget<TImage>::ConnectWidget(TPatchesWidget* widget)
+{
+  // This is a direct connection because the 'widget' must already be in the GUI thread.
+  QObject::connect(widget, SIGNAL(signal_SelectedRegion(const itk::ImageRegion<2>&)),
                    this, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&)),
-                   Qt::BlockingQueuedConnection);
-
+                   Qt::DirectConnection);
 }
 
 #endif

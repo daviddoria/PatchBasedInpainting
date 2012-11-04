@@ -25,7 +25,6 @@
 // Custom
 #include "Node.h"
 #include "Interactive/TopPatchesDialog.h"
-#include "Interactive/DialogHandler.h"
 
 // STL
 #include <iostream>
@@ -34,11 +33,10 @@
 #include <QGraphicsScene>
 
 /**
-  Display a list of patches and let the user select the one to use.
-  This class will be called from a non-GUI thread, so we cannot exec() the
-  TopPatchesDialog directly. To rememdy this, we create a wrapper class that
-  sends signals to the TopPatchesDialog that it puts in the GUI thread.
- */
+  * Display a list of patches and let the user select the one to use.
+  * This version (versus VisualSelectionBest.hpp) must be called from the GUI
+  * thread.
+  */
 template <typename TImage>
 class VisualSelectionBest : public QObject
 {
@@ -47,7 +45,8 @@ private:
   Mask* MaskImage;
   unsigned int PatchHalfWidth;
 
-  DialogHandler<TImage>* TopPatchesDialogHandler;
+//  DialogHandler<TImage>* TopPatchesDialogHandler;
+  TopPatchesDialog<TImage>* TopPatchesChooser;
 
 public:
 
@@ -55,18 +54,13 @@ public:
                       const unsigned int patchHalfWidth) :
   Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
   {
-    this->TopPatchesDialogHandler = new DialogHandler<TImage>(this->Image, this->MaskImage, this->PatchHalfWidth);
-    this->TopPatchesDialogHandler->moveToThread(QCoreApplication::instance()->thread());
-  }
-
-  TopPatchesDialog<TImage>* GetTopPatchesDialog()
-  {
-    return this->TopPatchesDialogHandler->GetTopPatchesChooser();
+    this->TopPatchesChooser =
+        new TopPatchesDialog<TImage>(this->Image, this->MaskImage, this->PatchHalfWidth);
   }
 
   ~VisualSelectionBest()
   {
-    delete this->TopPatchesDialogHandler;
+    delete this->TopPatchesChooser;
   }
 
   /** Return the best source node for a specified target node. */
@@ -85,14 +79,19 @@ public:
       sourceNodes.push_back(node);
     }
 
-    this->TopPatchesDialogHandler->SetSourceNodes(sourceNodes);
+    this->TopPatchesChooser->SetSourceNodes(sourceNodes);
 
     Node queryNode(queryVertex);
-    this->TopPatchesDialogHandler->SetQueryNode(queryNode);
+    this->TopPatchesChooser->SetQueryNode(queryNode);
 
-    // Signal the TopPatchesDialog and get the return value via this variable.
-    Node selectedNode;
-    this->TopPatchesDialogHandler->EmitSignal(&selectedNode);
+    this->TopPatchesChooser->exec();
+
+    if(!TopPatchesChooser->IsSelectionValid())
+    {
+      throw std::runtime_error("An invalid selection was made (IsSelectionValid returned false)!");
+    }
+
+    Node selectedNode = this->TopPatchesChooser->GetSelectedNode();;
 
     std::cout << "Returning selected node..." << std::endl;
     return Helpers::ConvertFrom<TVertexDescriptor, Node>(selectedNode);

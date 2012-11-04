@@ -56,10 +56,13 @@ signals:
   void signal_RefreshSource(const itk::ImageRegion<2>& sourceRegion,
                             const itk::ImageRegion<2>& targetRegion);
 
+  /** Indicate that the source region should be updated. */
   void signal_RefreshSource(const itk::ImageRegion<2>& sourceRegion);
   
+  /** Indicate that the target region should be updated. */
   void signal_RefreshTarget(const itk::ImageRegion<2>);
 
+  /** Indicate that the resulting patch updated. */
   void signal_RefreshResult(const itk::ImageRegion<2> sourceRegion,
                             const itk::ImageRegion<2> targetRegion);
 
