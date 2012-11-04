@@ -16,11 +16,6 @@
  *
  *=========================================================================*/
 
-/* This widget configures the options of a PatchBasedInpainting object
- * and visualizes the output at each iteration. The PatchBasedInpainting
- * is not created until the Initialize button is clicked.
-*/
-
 #ifndef ImageCamera_H
 #define ImageCamera_H
 

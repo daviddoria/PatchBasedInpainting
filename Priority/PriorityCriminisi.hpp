@@ -36,7 +36,10 @@
 #include "itkInvertIntensityImageFilter.h"
 
 template <typename TImage>
-PriorityCriminisi<TImage>::PriorityCriminisi(const TImage* const image, const Mask* const maskImage,
+//PriorityCriminisi<TImage>::PriorityCriminisi(const TImage* const image, const Mask* const maskImage,
+//                                             const unsigned int patchRadius) :
+PriorityCriminisi<TImage>::PriorityCriminisi(const typename TImage::Pointer image,
+                                             const Mask* const maskImage,
                                              const unsigned int patchRadius) :
   PriorityConfidence(maskImage, patchRadius), Image(image)
 {
@@ -49,7 +52,7 @@ PriorityCriminisi<TImage>::PriorityCriminisi(const TImage* const image, const Ma
 
   this->IsophoteImage = Vector2ImageType::New();
   ITKHelpers::InitializeImage(this->IsophoteImage.GetPointer(), image->GetLargestPossibleRegion());
-  Isophotes::ComputeColorIsophotesInRegion(image, maskImage, image->GetLargestPossibleRegion(),
+  Isophotes::ComputeColorIsophotesInRegion(image.GetPointer(), maskImage, image->GetLargestPossibleRegion(),
                                            this->IsophoteImage.GetPointer());
 
 }
@@ -67,7 +70,7 @@ void PriorityCriminisi<TImage>::Update(const TNode& sourceNode, const TNode& tar
   itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->PatchRadius);
   itk::ImageRegion<2> dilatedRegion = ITKHelpers::DilateRegion(region, this->PatchRadius);
   dilatedRegion.Crop(this->IsophoteImage->GetLargestPossibleRegion());
-  Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage, dilatedRegion, this->IsophoteImage.GetPointer());
+  Isophotes::ComputeColorIsophotesInRegion(this->Image.GetPointer(), this->MaskImage, dilatedRegion, this->IsophoteImage.GetPointer());
 
   // For debugging, we want to do this over the whole image
 //  Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage,

@@ -37,9 +37,11 @@ class PriorityCriminisi : public PriorityConfidence //, public Debug (this has t
 {
 public:
 
-  PriorityCriminisi(const TImage* const image, const Mask* const maskImage,
-                    const unsigned int patchRadius);
+//  PriorityCriminisi(const TImage* const image, const Mask* const maskImage,
+//                    const unsigned int patchRadius);
 
+  PriorityCriminisi(const typename TImage::Pointer image, const Mask* const maskImage,
+                    const unsigned int patchRadius);
   /////////////////////////////////////////////////
   // Functions to satisfy the Priority interface //
   /////////////////////////////////////////////////
@@ -69,7 +71,8 @@ protected:
   Vector2ImageType::Pointer BoundaryNormalsImage;
 
   /** A pointer to the image we are inpainting */
-  const TImage* Image;
+//  const TImage* Image;
+  const typename TImage::Pointer Image;
 
   /** Write the current data image. */
   void WriteDataImage(const unsigned int patchNumber);

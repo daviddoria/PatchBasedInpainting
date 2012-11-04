@@ -34,9 +34,11 @@ Q_OBJECT
 public slots:
 
   //virtual void slot_UpdateImage() = 0;
-  virtual void slot_UpdateSource(const itk::ImageRegion<2>& region, const itk::ImageRegion<2>& targetregion) = 0;
+  virtual void slot_UpdateSource(const itk::ImageRegion<2>& region,
+                                 const itk::ImageRegion<2>& targetregion) = 0;
   virtual void slot_UpdateTarget(const itk::ImageRegion<2>& region) = 0;
-  virtual void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion) = 0;
+  virtual void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
+                                 const itk::ImageRegion<2>& targetRegion) = 0;
   virtual void on_btnAccept_clicked() = 0;
 
   virtual void slot_PatchMoved() = 0;

@@ -302,7 +302,8 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   compositeInpaintingVisitor->AddVisitor(displayVisitor);
 
   typedef BasicViewerWidget<TImage> BasicViewerWidgetType;
-  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(originalImage, mask));
+//  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(originalImage, mask)); // This shared_ptr will go out of scope when this function ends, so the window will immediately close
+  BasicViewerWidgetType* basicViewer = new BasicViewerWidgetType(originalImage, mask);
   basicViewer->ConnectVisitor(displayVisitor.get());
   basicViewer->show();
 

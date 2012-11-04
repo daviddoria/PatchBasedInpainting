@@ -62,11 +62,14 @@ template <typename TImage>
 class BasicViewerWidget : public BasicViewerWidgetParent
 {
 private:
-  /** The image that will be displayed, and the from which the patches will be extracted before being displayed. */
-  TImage* Image;
+  /** The image that will be displayed, and the from which the patches will
+    * be extracted before being displayed. */
+//  TImage* Image;
+  typename TImage::Pointer Image;
 
   /** The mask that will be used to mask the patches that are displayed. */
-  Mask* MaskImage;
+//  Mask* MaskImage;
+  Mask::Pointer MaskImage;
 
   /** This variable is used to track whether or not the image size changed between this refresh and the last refresh.
    * Typically it is simply used to determine if ResetCamera should be called before rendering. We typically do not
@@ -79,7 +82,8 @@ private:
 
 public:
   // Constructor
-  BasicViewerWidget(TImage* const image, Mask* const mask);
+//  BasicViewerWidget(TImage* const image, Mask* const mask);
+  BasicViewerWidget(typename TImage::Pointer image, Mask::Pointer mask);
 
   void slot_UpdateImage();
 

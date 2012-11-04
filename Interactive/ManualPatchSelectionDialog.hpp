@@ -46,15 +46,17 @@
 #include <QVTKWidget.h>
 
 // Submodules
-#include "Helpers/Helpers.h"
-#include "ITKHelpers/ITKHelpers.h"
-#include "ITKVTKHelpers/ITKVTKHelpers.h"
-#include "VTKHelpers/VTKHelpers.h"
-#include "QtHelpers/QtHelpers.h"
-#include "ITKQtHelpers/ITKQtHelpers.h"
+#include <Helpers/Helpers.h>
+#include <ITKHelpers/ITKHelpers.h>
+#include <ITKVTKHelpers/ITKVTKHelpers.h>
+#include <VTKHelpers/VTKHelpers.h>
+#include <QtHelpers/QtHelpers.h>
+#include <ITKQtHelpers/ITKQtHelpers.h>
+#include <Mask/Mask.h>
+#include <Mask/MaskOperations.h>
+
+// Custom
 #include "InteractorStyleImageWithDrag.h"
-#include "Mask/Mask.h"
-#include "Mask/MaskOperations.h"
 
 template <typename TImage>
 ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const image, Mask* const mask,
@@ -72,7 +74,8 @@ ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const ima
   typename TImage::Pointer tempImage = TImage::New();
   ITKHelpers::DeepCopy(image, tempImage.GetPointer());
   typename TImage::PixelType zeroPixel(tempImage->GetNumberOfComponentsPerPixel());
-  zeroPixel.Fill(0);
+//  zeroPixel.Fill(0);
+  zeroPixel = itk::NumericTraits<typename TImage::PixelType>::ZeroValue(zeroPixel);
   mask->ApplyToImage(tempImage.GetPointer(), zeroPixel);
   ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(tempImage.GetPointer(), this->ImageLayer.ImageData);
 
@@ -293,27 +296,29 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
   this->ResultPatchScene->clear();
   QGraphicsPixmapItem* item = this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
   gfxResult->fitInView(item);
-
 }
 
 template <typename TImage>
 void ManualPatchSelectionDialog<TImage>::on_btnAccept_clicked()
 {
-  itk::Index<2> patchCenter = ITKHelpers::GetRegionCenter(PatchSelector->GetRegion());
-  SelectedNode = Helpers::ConvertFrom<Node, itk::Index<2> >(patchCenter);
+  // Store the result so it can be accessed from the caller who opened the dialog
+  itk::Index<2> patchCenter = ITKHelpers::GetRegionCenter(this->PatchSelector->GetRegion());
+  this->SelectedNode = Helpers::ConvertFrom<Node, itk::Index<2> >(patchCenter);
+
+  // Return from the dialog
   accept();
 }
 
 template <typename TImage>
 void ManualPatchSelectionDialog<TImage>::showEvent(QShowEvent* event)
 {
-  slot_UpdateTarget(TargetRegion);
+  slot_UpdateTarget(this->TargetRegion);
 }
 
 template <typename TImage>
 Node ManualPatchSelectionDialog<TImage>::GetSelectedNode()
 {
-  return SelectedNode;
+  return this->SelectedNode;
 }
 
 #endif

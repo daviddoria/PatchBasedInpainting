@@ -150,7 +150,8 @@ public:
     Node queryNode(queryVertex);
     this->TopPatchesDialogHandler->SetQueryNode(queryNode);
 
-    Node selectedNode; // We will get the return value via this variable.
+    // Signal the TopPatchesDialog and get the return value via this variable.
+    Node selectedNode;
     this->TopPatchesDialogHandler->EmitSignal(&selectedNode);
 
     std::cout << "Returning selected node..." << std::endl;

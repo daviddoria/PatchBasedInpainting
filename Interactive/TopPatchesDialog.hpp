@@ -24,8 +24,10 @@
 #include "Utilities/PatchHelpers.h"
 
 template <typename TImage>
-TopPatchesDialog<TImage>::TopPatchesDialog(TImage* const image, Mask* const mask, const unsigned int patchHalfWidth, QWidget* parent) :
-TopPatchesDialogParent(parent), Image(image), MaskImage(mask), ValidSelection(false), PatchHalfWidth(patchHalfWidth)
+TopPatchesDialog<TImage>::TopPatchesDialog(TImage* const image, Mask* const mask,
+                                           const unsigned int patchHalfWidth, QWidget* parent) :
+TopPatchesDialogParent(parent), Image(image), MaskImage(mask),
+  ValidSelection(false), PatchHalfWidth(patchHalfWidth)
 {
   this->setupUi(this);
 
@@ -38,16 +40,17 @@ TopPatchesDialogParent(parent), Image(image), MaskImage(mask), ValidSelection(fa
 //     // assume the image is RGB, and use it directly
 //     ITKHelpers::DeepCopy(image, this->Image);
 //   }
-  MaskedQueryPatchItem = new QGraphicsPixmapItem;
+  this->MaskedQueryPatchItem = new QGraphicsPixmapItem;
   this->QueryPatchScene = new QGraphicsScene();
-  this->gfxQueryPatch->setScene(QueryPatchScene);
+  this->gfxQueryPatch->setScene(this->QueryPatchScene);
 
-  ProposedPatchItem = new QGraphicsPixmapItem;
+  this->ProposedPatchItem = new QGraphicsPixmapItem;
   this->ProposedPatchScene = new QGraphicsScene();
-  this->gfxProposedPatch->setScene(ProposedPatchScene);
+  this->gfxProposedPatch->setScene(this->ProposedPatchScene);
 
-  PatchesModel = new ListModelPatches<TImage>(image, patchHalfWidth);
-  this->listView->setModel(PatchesModel);
+  this->PatchesModel = new ListModelPatches<TImage>(image, patchHalfWidth);
+  // listView is a GUI object
+  this->listView->setModel(this->PatchesModel);
 
   PixmapDelegate* pixmapDelegate = new PixmapDelegate;
 
@@ -61,7 +64,7 @@ TopPatchesDialogParent(parent), Image(image), MaskImage(mask), ValidSelection(fa
 template <typename TImage>
 void TopPatchesDialog<TImage>::SetSourceNodes(const std::vector<Node>& nodes)
 {
-  Nodes = nodes;
+  this->Nodes = nodes;
 
   this->PatchesModel->SetNodes(nodes);
 }
@@ -72,10 +75,10 @@ void TopPatchesDialog<TImage>::SetSourceNodes(const std::vector<TNode>& sourceNo
 {
   std::vector<Node> nodes;
   for(unsigned int i = 0; i < sourceNodes.size(); ++i)
-    {
+  {
     Node node = Helpers::ConvertFrom<Node, TNode>(sourceNodes[i]);
     nodes.push_back(node);
-    }
+  }
 
   SetSourceNodes(nodes);
 }
@@ -105,24 +108,30 @@ void TopPatchesDialog<TImage>::SetQueryNode(const Node& queryNode)
 template <typename TImage>
 void TopPatchesDialog<TImage>::slot_DoubleClicked(const QModelIndex& selected)
 {
-  SelectedNode = Nodes[selected.row()];
-  ValidSelection = true;
+  this->SelectedNode = this->Nodes[selected.row()];
+  this->ValidSelection = true;
   //std::cout << "Selected " << selected.row() << std::endl;
+  std::cout << "SelectedNode : " << this->SelectedNode[0] << " "
+            << this->SelectedNode[1] << std::endl;
   accept();
 }
 
 template <typename TImage>
 void TopPatchesDialog<TImage>::slot_SingleClicked(const QModelIndex& selected)
 {
-  itk::Index<2> queryIndex = ITKHelpers::CreateIndex(QueryNode);
-  itk::ImageRegion<2> queryRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, PatchHalfWidth);
+  itk::Index<2> queryIndex = ITKHelpers::CreateIndex(this->QueryNode);
 
-  itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(Nodes[selected.row()]);
-  itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, PatchHalfWidth);
+  itk::ImageRegion<2> queryRegion =
+      ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, this->PatchHalfWidth);
+
+  itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(this->Nodes[selected.row()]);
+
+  itk::ImageRegion<2> sourceRegion =
+      ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, this->PatchHalfWidth);
   
-  QImage proposedPatch = PatchHelpers::GetQImageCombinedPatch(Image, sourceRegion, queryRegion, MaskImage);
-  ProposedPatchItem = this->ProposedPatchScene->addPixmap(QPixmap::fromImage(proposedPatch));
-  gfxProposedPatch->fitInView(ProposedPatchItem);
+  QImage proposedPatch = PatchHelpers::GetQImageCombinedPatch(this->Image, sourceRegion, queryRegion, this->MaskImage);
+  this->ProposedPatchItem = this->ProposedPatchScene->addPixmap(QPixmap::fromImage(proposedPatch));
+  gfxProposedPatch->fitInView(this->ProposedPatchItem);
 
   this->SelectedIndex = selected;
 }
@@ -130,7 +139,7 @@ void TopPatchesDialog<TImage>::slot_SingleClicked(const QModelIndex& selected)
 template <typename TImage>
 Node TopPatchesDialog<TImage>::GetSelectedNode()
 {
-  return SelectedNode;
+  return this->SelectedNode;
 }
 
 template <typename TImage>
@@ -153,9 +162,10 @@ void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
 template <typename TImage>
 void TopPatchesDialog<TImage>::on_btnSelectManually_clicked()
 {
-  itk::Index<2> queryIndex = ITKHelpers::CreateIndex(QueryNode);
-  itk::ImageRegion<2> queryRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, PatchHalfWidth);
-  ManualPatchSelectionDialog<TImage> manualPatchSelectionDialog(Image, MaskImage, queryRegion);
+  itk::Index<2> queryIndex = ITKHelpers::CreateIndex(this->QueryNode);
+  itk::ImageRegion<2> queryRegion =
+      ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, this->PatchHalfWidth);
+  ManualPatchSelectionDialog<TImage> manualPatchSelectionDialog(this->Image, this->MaskImage, queryRegion);
   manualPatchSelectionDialog.exec();
 
   if(manualPatchSelectionDialog.result() == QDialog::Rejected)
@@ -165,9 +175,12 @@ void TopPatchesDialog<TImage>::on_btnSelectManually_clicked()
   else if(manualPatchSelectionDialog.result() == QDialog::Accepted)
   {
     std::cout << "Chose patch manually." << std::endl;
-    SelectedNode = manualPatchSelectionDialog.GetSelectedNode();
-    ValidSelection = true;
-    std::cout << "SelectedNode : " << SelectedNode[0] << " " << SelectedNode[1] << std::endl;
+    this->SelectedNode = manualPatchSelectionDialog.GetSelectedNode();
+    this->ValidSelection = true;
+    std::cout << "SelectedNode : " << this->SelectedNode[0] << " "
+              << this->SelectedNode[1] << std::endl;
+
+    // Close the dialog
     accept();
   }
 }
@@ -175,7 +188,7 @@ void TopPatchesDialog<TImage>::on_btnSelectManually_clicked()
 template <typename TImage>
 bool TopPatchesDialog<TImage>::IsSelectionValid() const
 {
-  return ValidSelection;
+  return this->ValidSelection;
 }
 
 template <typename TImage>

@@ -56,6 +56,7 @@ signals:
   void signal_RefreshSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
   
   void signal_RefreshTarget(const itk::ImageRegion<2>);
+
   void signal_RefreshResult(const itk::ImageRegion<2> sourceRegion, const itk::ImageRegion<2> targetRegion);
 
 };
