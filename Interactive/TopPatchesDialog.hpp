@@ -89,19 +89,33 @@ void TopPatchesDialog<TImage>::SetQueryNode(const Node& queryNode)
   this->QueryNode = queryNode;
 
   itk::Index<2> queryIndex = ITKHelpers::CreateIndex(queryNode);
-  itk::ImageRegion<2> queryRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, PatchHalfWidth);
+  itk::ImageRegion<2> queryRegion =
+      ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, PatchHalfWidth);
 
-  typename TImage::Pointer tempImage = TImage::New();
-  ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
+  typename TImage::Pointer regionImage = TImage::New();
+  ITKHelpers::ExtractRegion(this->Image, queryRegion,
+                            regionImage.GetPointer());
+
+  Mask::Pointer regionMask = Mask::New();
+  ITKHelpers::ExtractRegion(this->MaskImage, queryRegion,
+                            regionMask.GetPointer());
+  regionMask->CopyInformationFrom(this->MaskImage);
+  std::cout << "There are " << regionMask->CountHolePixels() << " hole pixels." << std::endl;
 
   typename TImage::PixelType zeroPixel(3);
-  zeroPixel.Fill(0);
-  this->MaskImage->ApplyToImage(tempImage.GetPointer(), zeroPixel);
+  zeroPixel = itk::NumericTraits<typename TImage::PixelType>::ZeroValue(zeroPixel);
+//  regionMask->ApplyToImage(regionImage.GetPointer(), zeroPixel);
 
-  QImage maskedQueryPatch = ITKQtHelpers::GetQImageColor(tempImage.GetPointer(), queryRegion);
-  MaskedQueryPatchItem = this->QueryPatchScene->addPixmap(QPixmap::fromImage(maskedQueryPatch));
+  // We must now refer to the regionImage as a new, standalone image
+  // (use it's LargestPossibleRegion instead of queryRegion)
+  QImage maskedQueryPatch =
+//      ITKQtHelpers::GetQImageColor(regionImage.GetPointer(), queryRegion);
+      ITKQtHelpers::GetQImageColor(regionImage.GetPointer(), regionImage->GetLargestPossibleRegion());
+  this->MaskedQueryPatchItem =
+      this->QueryPatchScene->addPixmap(QPixmap::fromImage(maskedQueryPatch));
 
-  // We do this here because we could potentially call SetQueryNode after the widget is constructed as well.
+  // We do this here because we could potentially call SetQueryNode after
+  // the widget is constructed as well.
   gfxQueryPatch->fitInView(MaskedQueryPatchItem);
 }
 
@@ -128,9 +142,23 @@ void TopPatchesDialog<TImage>::slot_SingleClicked(const QModelIndex& selected)
 
   itk::ImageRegion<2> sourceRegion =
       ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, this->PatchHalfWidth);
-  
-  QImage proposedPatch = PatchHelpers::GetQImageCombinedPatch(this->Image, sourceRegion, queryRegion, this->MaskImage);
-  this->ProposedPatchItem = this->ProposedPatchScene->addPixmap(QPixmap::fromImage(proposedPatch));
+
+  emit signal_SelectedRegion(sourceRegion);
+
+  {
+  Mask::Pointer regionMask = Mask::New();
+  ITKHelpers::ExtractRegion(this->MaskImage, sourceRegion,
+                            regionMask.GetPointer());
+  regionMask->CopyInformationFrom(this->MaskImage);
+  std::cout << "There are " << regionMask->CountHolePixels() << " hole pixels in the source region." << std::endl;
+  }
+
+  QImage proposedPatch =
+      PatchHelpers::GetQImageCombinedPatch(this->Image, sourceRegion, queryRegion, this->MaskImage);
+
+  this->ProposedPatchItem =
+      this->ProposedPatchScene->addPixmap(QPixmap::fromImage(proposedPatch));
+
   gfxProposedPatch->fitInView(this->ProposedPatchItem);
 
   this->SelectedIndex = selected;

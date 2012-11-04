@@ -124,7 +124,8 @@ void WritePriorityQueue(TPriorityQueue q, const std::string& fileName)
 }
 
 template <typename TImage>
-QImage GetQImageCombinedPatch(const TImage* const image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion, const Mask* const mask)
+QImage GetQImageCombinedPatch(const TImage* const image, const itk::ImageRegion<2>& sourceRegion,
+                              const itk::ImageRegion<2>& targetRegion, const Mask* const mask)
 {
   assert(sourceRegion.GetSize() == targetRegion.GetSize());
 
@@ -132,18 +133,21 @@ QImage GetQImageCombinedPatch(const TImage* const image, const itk::ImageRegion<
 
   typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
 
-  typename RegionOfInterestImageFilterType::Pointer sourcePatchExtractor = RegionOfInterestImageFilterType::New();
+  typename RegionOfInterestImageFilterType::Pointer sourcePatchExtractor =
+      RegionOfInterestImageFilterType::New();
   sourcePatchExtractor->SetRegionOfInterest(sourceRegion);
   sourcePatchExtractor->SetInput(image);
   sourcePatchExtractor->Update();
 
-  typename RegionOfInterestImageFilterType::Pointer targetPatchExtractor = RegionOfInterestImageFilterType::New();
+  typename RegionOfInterestImageFilterType::Pointer targetPatchExtractor =
+      RegionOfInterestImageFilterType::New();
   targetPatchExtractor->SetRegionOfInterest(targetRegion);
   targetPatchExtractor->SetInput(image);
   targetPatchExtractor->Update();
 
   typedef itk::RegionOfInterestImageFilter<Mask, Mask> RegionOfInterestMaskFilterType;
-  typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter = RegionOfInterestMaskFilterType::New();
+  typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter =
+      RegionOfInterestMaskFilterType::New();
   regionOfInterestMaskFilter->SetRegionOfInterest(targetRegion);
   regionOfInterestMaskFilter->SetInput(mask);
   regionOfInterestMaskFilter->Update();
@@ -155,30 +159,29 @@ QImage GetQImageCombinedPatch(const TImage* const image, const itk::ImageRegion<
                                                        targetPatchExtractor->GetOutput()->GetLargestPossibleRegion());
 
   while(!sourcePatchIterator.IsAtEnd())
-    {
+  {
     itk::Index<2> index = targetPatchIterator.GetIndex();
 
     typename TImage::PixelType pixel;
     if(regionOfInterestMaskFilter->GetOutput()->IsHole(index))
-      {
+    {
       pixel = sourcePatchIterator.Get();
-      }
+    }
     else
-      {
+    {
       pixel = targetPatchIterator.Get();
-      }
+    }
 
     QColor pixelColor(static_cast<int>(pixel[0]), static_cast<int>(pixel[1]), static_cast<int>(pixel[2]));
     qimage.setPixel(index[0], index[1], pixelColor.rgb());
 
     ++targetPatchIterator;
     ++sourcePatchIterator;
-    }
+  }
 
   // std::cout << "There were " << numberOfHolePixels << " hole pixels." << std::endl;
 
-  //return qimage; // The actual image region
-  return qimage.mirrored(false, true); // The flipped image region
+  return qimage;
 }
 
 template <class TImage>

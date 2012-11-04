@@ -26,9 +26,11 @@
 #include <QObject>
 
 // Custom
-#include "Mask/Mask.h"
 #include "Node.h"
 #include "Interactive/ModelView/ListModelPatches.h"
+
+// Submodules
+#include <Mask/Mask.h>
 
 /** This class is necessary because a class template cannot have the Q_OBJECT macro directly. */
 class TopPatchesDialogParent : public QDialog, public Ui::TopPatchesDialog
@@ -38,6 +40,9 @@ Q_OBJECT
 public:
   /** Constructor. */
   TopPatchesDialogParent(QWidget* parent = NULL) : QDialog(parent) {}
+
+signals:
+  virtual void signal_SelectedRegion(const itk::ImageRegion<2>&) const;
 
 public slots:
 

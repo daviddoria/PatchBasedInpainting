@@ -202,6 +202,21 @@ void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sou
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
+
+template <typename TImage>
+void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion)
+{
+  std::cout << "BasicViewerWidget::slot_UpdateSource " << sourceRegion << std::endl;
+
+  if(!SourceHighlighter)
+  {
+    SourceHighlighter = new PatchHighlighter(sourceRegion.GetSize()[0]/2, this->Renderer, Qt::green);
+  }
+  SourceHighlighter->SetRegion(sourceRegion);
+
+  this->qvtkWidget->GetRenderWindow()->Render();
+}
+
 template <typename TImage>
 void BasicViewerWidget<TImage>::slot_UpdateTarget(const itk::ImageRegion<2>& targetRegion)
 {
@@ -312,6 +327,11 @@ void BasicViewerWidget<TImage>::ConnectVisitor(TVisitor* visitor)
                    this, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&,
                                                 const itk::ImageRegion<2>&)),
                    Qt::BlockingQueuedConnection);
+
+  QObject::connect(visitor, SIGNAL(signal_SelectedRegion(const itk::ImageRegion<2>&)),
+                   this, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&)),
+                   Qt::BlockingQueuedConnection);
+
 }
 
 #endif

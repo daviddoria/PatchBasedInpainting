@@ -48,11 +48,11 @@ void ListModelPatches<TImage>::SetNodes(const std::vector<Node>& nodes)
   // std::cout << "ListModelPatches::SetNodes called with " << nodes.size() << " nodes." << std::endl;
   this->Regions.clear();
   for(std::vector<Node>::const_iterator iter = nodes.begin(); iter != nodes.end(); ++iter)
-    {
+  {
     itk::Index<2> index = ITKHelpers::CreateIndex(*iter);
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, this->PatchHalfWidth);
     this->Regions.push_back(region);
-    }
+  }
   // std::cout << "SetNodes Refresh()" << std::endl;
   Refresh();
 }
@@ -62,7 +62,7 @@ QVariant ListModelPatches<TImage>::data(const QModelIndex& index, int role) cons
 {
   QVariant returnValue;
   if(role == Qt::DisplayRole && index.row() >= 0 && index.row() < static_cast<int>(this->Regions.size()))
-    {
+  {
     //std::cout << "ListModelPatches::data requesting index " << index.row() << std::endl;
     //std::cout << "ListModelPatches::data requesting region " << this->Regions[index.row()] << std::endl;
     QImage patchImage;
@@ -80,18 +80,18 @@ QVariant ListModelPatches<TImage>::data(const QModelIndex& index, int role) cons
     }
     catch (...)
     {
-      std::cout << "ListModelPatches::data something is wrong with region " << this->Regions[index.row()] << std::endl;
+      std::cout << "ListModelPatches::data() : something is wrong with region " << this->Regions[index.row()] << std::endl;
     }
     // patchImage = patchImage.scaledToHeight(this->PatchDisplaySize);
 
     returnValue = QPixmap::fromImage(patchImage);
-    } // end if DisplayRole
+  } // end if DisplayRole
   else if(role == Qt::SizeHintRole) // This sets the row height in the QListView
-    {
+  {
     QSize size;
     size.setHeight(RowHeight);
     return size;
-    }
+  }
 
   return returnValue;
 }
@@ -101,15 +101,15 @@ QVariant ListModelPatches<TImage>::headerData(int section, Qt::Orientation orien
 {
   QVariant returnValue;
   if(role == Qt::DisplayRole)
-    {
+  {
     if(orientation == Qt::Horizontal)
-      {
+    {
       if(section == 0)
-        {
-          returnValue = "Patch";
-        }
-      }// end Horizontal orientation
-    } // end DisplayRole
+      {
+        returnValue = "Patch";
+      }
+    }// end Horizontal orientation
+  } // end DisplayRole
 
   return returnValue;
 }

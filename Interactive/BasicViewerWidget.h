@@ -52,10 +52,22 @@ Q_OBJECT
 
 public slots:
 
+  /** Update the image that is displayed. */
   virtual void slot_UpdateImage() = 0;
+
+  /** Update the source patch that is outlined.
+    * This function needs the targetRegion because this is the region
+    * of the Mask that is used to mask the source patch.
+    */
   virtual void slot_UpdateSource(const itk::ImageRegion<2>& region,
                                  const itk::ImageRegion<2>& targetregion) = 0;
+
+  virtual void slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion) = 0;
+
+  /** Update the target patch that is outlined. */
   virtual void slot_UpdateTarget(const itk::ImageRegion<2>& region) = 0;
+
+  /** Update the result. */
   virtual void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
                                  const itk::ImageRegion<2>& targetRegion) = 0;
 
@@ -90,12 +102,24 @@ public:
 
   void slot_UpdateImage();
 
-  // We need the target region as well while updating the source region because we may want to mask the source patch with the target patch's mask.
-  void slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
+  /** Update the source region outline, and display the proposed source patch.
+    * We need the target region as well while updating the
+    * source region because we may want to mask the source patch with the target patch's mask.
+    */
+  void slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion,
+                         const itk::ImageRegion<2>& targetRegion);
 
+  /** Update the source region outline.*/
+  void slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion);
+
+  /** Update the target region outline and display the target patch.*/
   void slot_UpdateTarget(const itk::ImageRegion<2>& region);
-  void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
+
+  /** Update the source and target region outlines and display the source and target patches.*/
+  void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
+                         const itk::ImageRegion<2>& targetRegion);
   
+  /** Make all of the necessary connection for a visitor to drive this viewer.*/
   template <typename TVisitor>
   void ConnectVisitor(TVisitor* visitor);
 

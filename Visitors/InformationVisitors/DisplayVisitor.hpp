@@ -51,13 +51,17 @@ signals:
   // This signal is emitted to start the progress bar
   void signal_RefreshImage() const;
 
-  // We need the target region as well while updating the source region because
-  // we may want to mask the source patch with the target patch's mask.
-  void signal_RefreshSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
+  /** We need the target region as well while updating the source region because
+    * we may want to mask the source patch with the target patch's mask.*/
+  void signal_RefreshSource(const itk::ImageRegion<2>& sourceRegion,
+                            const itk::ImageRegion<2>& targetRegion);
+
+  void signal_RefreshSource(const itk::ImageRegion<2>& sourceRegion);
   
   void signal_RefreshTarget(const itk::ImageRegion<2>);
 
-  void signal_RefreshResult(const itk::ImageRegion<2> sourceRegion, const itk::ImageRegion<2> targetRegion);
+  void signal_RefreshResult(const itk::ImageRegion<2> sourceRegion,
+                            const itk::ImageRegion<2> targetRegion);
 
 };
 
@@ -112,6 +116,7 @@ public:
     // std::cout << "DisplayVisitor::PotentialMatchMade source " << sourceIndex << std::endl;
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, this->HalfWidth);
     emit signal_RefreshSource(sourceRegion, targetRegion);
+    emit signal_RefreshSource(sourceRegion);
   }
 
   void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
