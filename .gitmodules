@@ -22,3 +22,6 @@
 [submodule "Utilities/Debug"]
 	path = Utilities/Debug
 	url = ../Debug.git
+[submodule "ITKVTKCamera"]
+	path = ITKVTKCamera
+	url = https://github.com/daviddoria/ITKVTKCamera.git

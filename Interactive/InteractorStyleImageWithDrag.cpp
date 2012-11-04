@@ -10,12 +10,10 @@ InteractorStyleImageWithDrag::InteractorStyleImageWithDrag()
   this->ImageStyle = vtkSmartPointer<CustomImageStyle>::New();
 
   this->TrackballStyle = vtkSmartPointer<CustomTrackballStyle>::New();
-
 }
 
 void InteractorStyleImageWithDrag::Init()
 {
-
   this->ImageStyle->SetOtherStyle(this->TrackballStyle);
   this->TrackballStyle->SetOtherStyle(this->ImageStyle);
 

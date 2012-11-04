@@ -121,6 +121,17 @@ set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${ITK
 get_property(ITKQtHelpersLibs GLOBAL PROPERTY ITKQtHelpersLibs)
 set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${ITKQtHelpersLibs})
 
+# ITKVTKCamera
+get_property(FoundITKVTKCamera GLOBAL PROPERTY ITKVTKCameraIncludeDirs SET)
+if(NOT FoundITKVTKCamera)
+  add_subdirectory(ITKVTKCamera)
+  include_directories(${ITKVTKCamera_includes})
+endif()
+get_property(ITKVTKCameraIncludeDirs GLOBAL PROPERTY ITKVTKCameraIncludeDirs)
+set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${ITKVTKCameraIncludeDirs})
+get_property(ITKVTKCameraLibs GLOBAL PROPERTY ITKVTKCameraLibs)
+set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${ITKVTKCameraLibs})
+
 # BoostHelpers
 if(NOT TARGET BoostHelpers)
   add_subdirectory(BoostHelpers)
@@ -129,7 +140,9 @@ endif()
 
 if( (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Mask/.git") OR
 (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VTKHelpers/.git") OR
+(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKVTKCamera/.git") OR
 (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKVTKHelpers/.git") OR
+(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKQtHelpers/.git") OR
 (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/QtHelpers/.git") OR
 (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/BoostHelpers/.git") )
   message( SEND_ERROR "At least one of the git submodules is not available.

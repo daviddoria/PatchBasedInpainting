@@ -23,10 +23,13 @@
 #include <vtkInteractorStyleTrackballActor.h>
 #include <vtkSmartPointer.h>
 
-// To use this, you must do, in this order:
-//  this->InteractorStyle->SetCurrentRenderer(this->Renderer);
-//  this->Interactor->SetInteractorStyle(this->InteractorStyle);
-//  this->InteractorStyle->Init();
+/** This interactor to allow us to zoom and pan the image while
+  * still moving images with Pickable=true
+  * To use this, you must do, in this order:
+  * this->InteractorStyle->SetCurrentRenderer(this->Renderer);
+  * this->Interactor->SetInteractorStyle(this->InteractorStyle);
+  * this->InteractorStyle->Init();
+  */
 
 class CustomTrackballStyle;
 class CustomImageStyle;
@@ -50,7 +53,6 @@ class InteractorStyleImageWithDrag : public vtkInteractorStyleTrackballActor
     vtkSmartPointer<CustomTrackballStyle> TrackballStyle;
 };
 
-
 ////////////////////////////////
 ///// CustomImageStyle /////////
 ////////////////////////////////
@@ -70,7 +72,6 @@ class CustomImageStyle : public vtkInteractorStyleImage
     void OnLeftButtonDown();
 
     void SetOtherStyle(CustomTrackballStyle* const style);
-
 
 private:
   CustomTrackballStyle* OtherStyle;
@@ -106,6 +107,5 @@ private:
   CustomImageStyle* OtherStyle;
 
 };
-
 
 #endif

@@ -88,7 +88,8 @@ BasicViewerWidget<TImage>::BasicViewerWidget(typename TImage::Pointer image, Mas
 
   SetupScenes();
 
-  this->InteractorStyle = vtkSmartPointer<InteractorStyleImageWithDrag>::New();
+//  this->InteractorStyle = vtkSmartPointer<InteractorStyleImageWithDrag>::New();
+  this->InteractorStyle = vtkSmartPointer<vtkInteractorStyleImage>::New();
 
   this->Renderer = vtkSmartPointer<vtkRenderer>::New();
   this->qvtkWidget->GetRenderWindow()->AddRenderer(this->Renderer);
@@ -97,9 +98,12 @@ BasicViewerWidget<TImage>::BasicViewerWidget(typename TImage::Pointer image, Mas
 
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
-  this->InteractorStyle->Init();
+//  this->InteractorStyle->Init();
 
-  this->Camera = new ImageCamera(this->Renderer);
+//  this->Camera = new ImageCamera(this->Renderer);
+  this->ItkVtkCamera = new ITKVTKCamera(this->InteractorStyle, this->Renderer,
+                                        this->qvtkWidget->GetRenderWindow());
+  this->ItkVtkCamera->SetCameraPositionPNG();
 }
 
 template <typename TImage>

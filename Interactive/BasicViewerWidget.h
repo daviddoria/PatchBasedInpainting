@@ -23,6 +23,7 @@
 
 // VTK
 #include <vtkSmartPointer.h>
+#include <vtkInteractorStyleImage.h>
 
 // ITK
 #include "itkImage.h"
@@ -31,9 +32,11 @@
 #include <QMainWindow>
 #include <QThread>
 
+// Submodules
+#include <ITKVTKCamera/ITKVTKCamera.h>
+#include <Mask/Mask.h>
+
 // Custom
-#include "ImageCamera.h"
-#include "Mask/Mask.h"
 #include "Node.h"
 #include "Interactive/Layer.h"
 #include "Interactive/PatchHighlighter.h"
@@ -101,7 +104,8 @@ private:
   void SetupScenes();
 
   // The interactor to allow us to zoom and pan the image while still moving images with Pickable=true
-  vtkSmartPointer<InteractorStyleImageWithDrag> InteractorStyle;
+//  vtkSmartPointer<InteractorStyleImageWithDrag> InteractorStyle;
+  vtkSmartPointer<vtkInteractorStyleImage> InteractorStyle;
 
   // The only renderer
   vtkSmartPointer<vtkRenderer> Renderer;
@@ -118,7 +122,9 @@ private:
   // Connect all signals and slots.
   void SetupConnections();
 
-  ImageCamera* Camera;
+//  ImageCamera* Camera;
+
+  ITKVTKCamera* ItkVtkCamera;
 
   PatchHighlighter* SourceHighlighter;
   PatchHighlighter* TargetHighlighter;
