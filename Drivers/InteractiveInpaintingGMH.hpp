@@ -183,10 +183,6 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
         new ImagePatchDescriptorVisitorType(originalImage, mask,
                                             imagePatchDescriptorMap, patchHalfWidth));
 
-  typedef SumSquaredPixelDifference<typename TImage::PixelType> PixelDifferenceType;
-  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, PixelDifferenceType >
-            ImagePatchDifferenceType;
-
   // Source region to source region comparisons
   typedef SourceValidTargetValidCompare<VertexListGraphType, TImage, AverageFunctor> SourceValidTargetValidCompareType;
   std::shared_ptr<SourceValidTargetValidCompareType> validRegionAverageAcceptance(
@@ -230,13 +226,16 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   std::cout << "InteractiveInpaintingWithVerification: There are " << boundaryNodeQueue->size()
             << " nodes in the boundaryNodeQueue" << std::endl;
 
+  typedef SumSquaredPixelDifference<typename TImage::PixelType> PixelDifferenceType;
+  typedef ImagePatchDifference<ImagePatchPixelDescriptorType, PixelDifferenceType >
+            ImagePatchDifferenceType;
+
   // Create the nearest neighbor finders
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
                                   ImagePatchDifferenceType > KNNSearchType;
   unsigned int numberOfKNN = 100;
   std::shared_ptr<KNNSearchType> knnSearch(new KNNSearchType(imagePatchDescriptorMap, numberOfKNN));
 
-  // For debugging we use LinearSearchBestProperty instead of DefaultSearchBest because it can output the difference value.
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
                                    ImagePatchDifferenceType > BestSearchType;
   std::shared_ptr<BestSearchType> bestSearch(new BestSearchType(*imagePatchDescriptorMap));

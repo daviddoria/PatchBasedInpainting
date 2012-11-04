@@ -21,8 +21,10 @@
 
 #include "ImagePatchPixelDescriptor.h" // Appease syntax parser
 
-#include "Mask/Mask.h"
+// Submodules
+#include <Mask/Mask.h>
 
+// ITK
 #include "itkImageRegionConstIteratorWithIndex.h"
 #include "itkImageRegionConstIterator.h"
 

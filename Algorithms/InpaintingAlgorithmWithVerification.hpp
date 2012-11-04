@@ -57,11 +57,6 @@ void InpaintingAlgorithmWithVerification(std::shared_ptr<TVertexListGraph> graph
 
   unsigned int numberOfManualVerifications = 0;
 
-  // Find the next target to in-paint. Some of the nodes in the priority queue
-  // can be already filled (they get "covered up" when a patch is filled around
-  // a target node). So we do not just process the node at the front of the queue,
-  // we also check that it has not been filled by looking at its value in the boundaryStatusMap
-
   while(!boundaryNodeQueue->empty())
   {
     std::cout << "Starting iteration..." << std::endl;
@@ -76,20 +71,27 @@ void InpaintingAlgorithmWithVerification(std::shared_ptr<TVertexListGraph> graph
     VertexIterator graphEnd;
     tie(graphBegin, graphEnd) = vertices(*graph);
 
-    std::vector<VertexDescriptorType> outputContainer(knnFinder->GetK());
-    (*knnFinder)(graphBegin, graphEnd, targetNode, outputContainer.begin());
+    // Allocate the container of K nearest neighbors
+    std::vector<VertexDescriptorType> knnContainer(knnFinder->GetK());
 
-    VertexDescriptorType sourceNode = (*bestNeighborFinder)(outputContainer.begin(),
-                                                            outputContainer.end(), targetNode);
+    // Find the K nearest neighbors
+    (*knnFinder)(graphBegin, graphEnd, targetNode, knnContainer.begin());
+
+    // Find the best neighbor out of the top K (probably using a different criterion)
+    VertexDescriptorType sourceNode = (*bestNeighborFinder)(knnContainer.begin(),
+                                                            knnContainer.end(), targetNode);
+
+    // Broadcast that we have found a potential match
     visitor->PotentialMatchMade(targetNode, sourceNode);
 
+    // If the acceptance tests do not pass, ask the user for a better patch
     if(!visitor->AcceptMatch(targetNode, sourceNode))
     {
       numberOfManualVerifications++;
       std::cout << "So far there have been "
                 << numberOfManualVerifications << " manual verifications." << std::endl;
       std::cout << "Automatic match not accepted!" << std::endl;
-      sourceNode = (*manualNeighborFinder)(outputContainer.begin(), outputContainer.end(), targetNode);
+      sourceNode = (*manualNeighborFinder)(knnContainer.begin(), knnContainer.end(), targetNode);
     }
 
     // Do the in-painting of the target patch from the source patch.
@@ -98,8 +100,10 @@ void InpaintingAlgorithmWithVerification(std::shared_ptr<TVertexListGraph> graph
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(targetNode);
     itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(sourceNode);
 
+    // Inpaint the target patch
     patchInpainter->PaintPatch(targetIndex, sourceIndex);
 
+    // Broadcast that we are done with this iteration
     visitor->FinishVertex(targetNode, sourceNode);
   }
 

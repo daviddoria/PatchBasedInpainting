@@ -28,7 +28,7 @@
  *  This is an average and not a sum because we want to be able to compare "match quality" values between
  *  different pairs of patches, in which the source region will not be the same size.
  *
- *  In this class, the 3 argument version of operator() does not assume that all input patches should be compared.
+ *  In this class, the 3 argument version of operator() assumes all input patches should be compared.
  */
 template <typename ImagePatchType, typename PixelDifferenceFunctorType>
 struct ImagePatchDifference
@@ -103,12 +103,6 @@ struct ImagePatchDifference
   {
     assert(targetPixels.size() == targetPatch.GetValidOffsetsAddress()->size());
 
-    if(sourcePatch.GetStatus() != ImagePatchType::SOURCE_NODE)
-    {
-//      return std::numeric_limits<float>::infinity();
-      return std::numeric_limits<float>::max();
-    }
-
     typename ImagePatchType::ImageType* image = targetPatch.GetImage();
 
     float totalDifference = 0.0f;
@@ -134,6 +128,7 @@ struct ImagePatchDifference
 
       float difference = this->PixelDifferenceFunctor(sourcePixel,
                                                       targetPixel);
+
       totalDifference += difference;
     }
 
@@ -141,7 +136,6 @@ struct ImagePatchDifference
     //std::cout << "Difference: " << totalDifference << std::endl;
     return totalDifference;
   }
-
 
 };
 

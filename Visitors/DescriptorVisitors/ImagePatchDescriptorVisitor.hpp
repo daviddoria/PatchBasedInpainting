@@ -37,8 +37,10 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
   unsigned int HalfWidth;
 
   ImagePatchDescriptorVisitor(TImage* const in_image, Mask* const in_mask,
-                              std::shared_ptr<TDescriptorMap> in_descriptorMap, const unsigned int in_half_width) :
-  Image(in_image), MaskImage(in_mask), DescriptorMap(in_descriptorMap), HalfWidth(in_half_width)
+                              std::shared_ptr<TDescriptorMap> in_descriptorMap,
+                              const unsigned int in_half_width) :
+    Image(in_image), MaskImage(in_mask), DescriptorMap(in_descriptorMap),
+    HalfWidth(in_half_width)
   {
   }
 
@@ -57,7 +59,7 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
     descriptor.SetVertex(v);
     put(*(this->DescriptorMap), v, descriptor);
 
-    // This is done in the descriptor constructor (above)
+    // This is done in the descriptor constructor ("DescriptorType descriptor" above)
 //     if(mask->IsValid(region))
 //       {
 //       descriptor.SetStatus(DescriptorType::SOURCE_NODE);

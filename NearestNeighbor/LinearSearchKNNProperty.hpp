@@ -31,14 +31,11 @@
 #include "Utilities/Utilities.hpp"
 
 /**
-  * This function template is similar to std::min_element but can be used when the comparison
-  * involves computing a derived quantity (a.k.a. distance). This algorithm will search for the
-  * the elements in the range [first,last) with the "smallest" distances (of course, both the
-  * distance metric and comparison can be overriden to perform something other than the canonical
-  * Euclidean distance and less-than comparison, which would yield the element with minimum distance).
-  * This function will fill the output container with a number of nearest-neighbors.
-  * \tparam DistanceValueType The value-type for the distance measures.
-  * \tparam DistanceFunctionType The functor type to compute the distance measure.
+  * This class searches a container for the K nearest neighbors of a query item.
+  * The search is done by comparing the values in a property map associated with
+  * each item in the container.
+  * \tparam PropertyMapType The type of the property map containing the values to compare.
+  * \tparam DistanceFunctionType The functor type to compute the distance measure between two items in the PropertyMap.
   */
 template <typename PropertyMapType,
           typename DistanceFunctionType>
@@ -69,24 +66,20 @@ public:
     return this->K;
   }
 
-  //   template <typename ForwardIteratorType, typename OutputContainerType>
-  //   void operator()(ForwardIteratorType first, ForwardIteratorType last,
-  //                   typename ForwardIteratorType::value_type queryNode, OutputContainerType& output)
   /**
-    * \tparam ForwardIterator The forward-iterator type.
-    * \tparam OutputContainer The container type which can contain the list of nearest-neighbors (STL like container, with iterators, insert, size, and pop_back).
+    * \tparam TForwardIterator The forward-iterator type.
+    * \tparam TOutputIterator The iterator type of the output container.
     * \param first Start of the range in which to search.
     * \param last One element past the last element in the range in which to search (usually container.end() ).
-    * \param output The container that will have the sorted list of elements with the smallest distance.
-    * \param compare A callable object that returns true if the first element is the preferred one (less-than) of the two.
-    * \param max_neighbors The maximum number of elements of smallest distance to output in the sorted list.
+    * \param queryNode The item to compare the items in the container against.
+    * \param outputFirst An iterator to the beginning of the output container that will store the K nearest neighbors.
     */
-  template <typename ForwardIteratorType, typename OutputIteratorType>
+  template <typename TForwardIteratorType, typename TOutputIterator>
   inline
-  OutputIteratorType operator()(ForwardIteratorType first,
-                                ForwardIteratorType last,
-                                typename ForwardIteratorType::value_type queryNode,
-                                OutputIteratorType outputFirst)
+  TOutputIterator operator()(TForwardIteratorType first,
+                             TForwardIteratorType last,
+                             typename TForwardIteratorType::value_type queryNode,
+                             TOutputIterator outputFirst)
   {
     // Nothing to do if the input range is empty
     if(first == last)
@@ -94,23 +87,29 @@ public:
       return outputFirst;
     }
 
-    // Use a priority queue to keep the items sorted
+    // Create a type to associate a distance with its iterator
+    typedef std::pair<DistanceValueType, TForwardIteratorType> PairType;
 
-    typedef std::pair<DistanceValueType, ForwardIteratorType> PairType;
+    // Use a priority queue to keep the items (pairs of distances and their corresponding iterators) sorted
     typedef std::priority_queue< PairType,
         std::vector<PairType>,
-        compare_pair_first<DistanceValueType, ForwardIteratorType, std::greater<DistanceValueType> > > PriorityQueueType;
+        compare_pair_first<DistanceValueType, TForwardIteratorType,
+        std::greater<DistanceValueType> > > PriorityQueueType;
 
     PriorityQueueType outputQueue;
 
+    // Get the query object
     typename PropertyMapType::value_type queryPatch = get(*(this->PropertyMap), queryNode);
 
-    typedef std::vector<typename PropertyMapType::value_type::ImageType::PixelType> PixelVector;
-
+    // Get the offsets to compare
     typedef std::vector<itk::Offset<2> > OffsetVectorType;
     const OffsetVectorType* validOffsets = queryPatch.GetValidOffsetsAddress();
+
+    // Create a container to store the pixels that we will compare
+    typedef std::vector<typename PropertyMapType::value_type::ImageType::PixelType> PixelVector;
     PixelVector targetPixels(validOffsets->size());
 
+    // Extract the pixel values that we want to compare
     for(OffsetVectorType::const_iterator offsetIterator = validOffsets->begin();
         offsetIterator < validOffsets->end(); ++offsetIterator)
     {
@@ -122,11 +121,13 @@ public:
     // The queue stores the items in descending score order.
     #pragma omp parallel for
 //    for(ForwardIteratorType current = first; current != last; ++current) // OpenMP 3 doesn't allow != in the loop ending condition
-    for(ForwardIteratorType current = first; current < last; ++current)
+    for(TForwardIteratorType current = first; current < last; ++current)
     {
-      DistanceValueType d = this->DistanceFunction(get(*(this->PropertyMap), *current), queryPatch, targetPixels); // (source, target) (the query node is the target node)
+      typename PropertyMapType::value_type currentPatch = get(*(this->PropertyMap), *current);
+      // Argument order is (source, target) ("query node" is the same as "target node")
+      DistanceValueType d = this->DistanceFunction(currentPatch, queryPatch, targetPixels);
 
-      #pragma omp critical // There are weird crashes without this guard
+      #pragma omp critical // There are weird crashes without this guard (concurrent access?)
       outputQueue.push(PairType(d, current));
     }
 
@@ -137,28 +138,31 @@ public:
 
 //    std::cout << "There are " << outputQueue.size() << " items in the queue." << std::endl;
 
-    // Check if any of the matches are infinity (indicating they were invalid for some reason)
-//    auto hasInfinity = [] (PriorityQueueType q)
-//      {
-//        while(!q.empty())
-//        {
-//          if(q.top().first == std::numeric_limits<float>::infinity())
-//          {
-//            return true;
-//          }
-//          q.pop();
-//        }
+    // Check if any of the top K matches are infinity (indicating they were invalid for some reason)
+    {
+      auto hasInvalidValue = [] (PriorityQueueType q)
+      {
+        while(!q.empty())
+        {
+          if(q.top().first == std::numeric_limits<float>::infinity() ||
+             q.top().first == std::numeric_limits<float>::max())
+          {
+            return true;
+          }
+          q.pop();
+        }
 
-//        return false;
-//      };
+        return false;
+      };
 
-//    assert(!hasInfinity(outputQueue));
-//    if(hasInfinity(outputQueue))
-//    {
-//      std::stringstream ss;
-//      ss << "LinearSearchKNNProperty::operator(): One of the matches had a score of infinity!";
-//      throw std::runtime_error(ss.str());
-//    }
+      assert(!hasInvalidValue(outputQueue));
+      if(hasInvalidValue(outputQueue))
+      {
+        std::stringstream ss;
+        ss << "LinearSearchKNNProperty::operator(): One of the matches had an invalid score!";
+        throw std::runtime_error(ss.str());
+      }
+    }
 
     if(outputQueue.size() < this->K)
     {
@@ -170,7 +174,7 @@ public:
     std::cout << "Best patch score is: " << outputQueue.top().first << std::endl;
 
     // Copy the best matches from the queue into the output
-    OutputIteratorType currentOutputIterator = outputFirst;
+    TOutputIterator currentOutputIterator = outputFirst;
     while( !outputQueue.empty() )
     {
       *currentOutputIterator = *(outputQueue.top().second);
