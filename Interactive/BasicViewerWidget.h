@@ -89,6 +89,9 @@ public:
   void slot_UpdateTarget(const itk::ImageRegion<2>& region);
   void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
   
+  template <typename TVisitor>
+  void ConnectVisitor(TVisitor* visitor);
+
 private:
 
   void SetupScenes();

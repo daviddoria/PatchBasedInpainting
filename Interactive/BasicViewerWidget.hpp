@@ -282,4 +282,29 @@ void BasicViewerWidget<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sou
 
 }
 
+template <typename TImage>
+template <typename TVisitor>
+void BasicViewerWidget<TImage>::ConnectVisitor(TVisitor* visitor)
+{
+  QObject::connect(visitor, SIGNAL(signal_RefreshImage()),
+                   this, SLOT(slot_UpdateImage()),
+                   Qt::BlockingQueuedConnection);
+
+  QObject::connect(visitor, SIGNAL(signal_RefreshSource(const itk::ImageRegion<2>&,
+                                                        const itk::ImageRegion<2>&)),
+                   this, SLOT(slot_UpdateSource(const itk::ImageRegion<2>&,
+                                                const itk::ImageRegion<2>&)),
+                   Qt::BlockingQueuedConnection);
+
+  QObject::connect(visitor, SIGNAL(signal_RefreshTarget(const itk::ImageRegion<2>&)),
+                   this, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)),
+                   Qt::BlockingQueuedConnection);
+
+  QObject::connect(visitor, SIGNAL(signal_RefreshResult(const itk::ImageRegion<2>&,
+                                                        const itk::ImageRegion<2>&)),
+                   this, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&,
+                                                const itk::ImageRegion<2>&)),
+                   Qt::BlockingQueuedConnection);
+}
+
 #endif
