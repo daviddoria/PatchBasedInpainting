@@ -74,10 +74,11 @@ ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const ima
   typename TImage::Pointer tempImage = TImage::New();
   ITKHelpers::DeepCopy(image, tempImage.GetPointer());
   typename TImage::PixelType zeroPixel(tempImage->GetNumberOfComponentsPerPixel());
-//  zeroPixel.Fill(0);
+
   zeroPixel = itk::NumericTraits<typename TImage::PixelType>::ZeroValue(zeroPixel);
   mask->ApplyToImage(tempImage.GetPointer(), zeroPixel);
-  ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(tempImage.GetPointer(), this->ImageLayer.ImageData);
+  ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(tempImage.GetPointer(),
+                                                       this->ImageLayer.ImageData);
 
   SetupScenes();
 
@@ -86,16 +87,15 @@ ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const ima
 
   this->qvtkWidget->GetRenderWindow()->AddRenderer(this->Renderer);
 
-  this->Renderer->AddViewProp(ImageLayer.ImageSlice);
+  this->Renderer->AddViewProp(this->ImageLayer.ImageSlice);
 
   // Per the comment in InteractorStyleImageWithDrag, the next 3 lines must be in this order
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
   this->InteractorStyle->Init();
 
-  this->PatchSelector = new MovablePatch(this->TargetRegion.GetSize()[0]/2, this->InteractorStyle, this->gfxSource);
-
-  // slot_UpdateImage();
+  this->PatchSelector = new MovablePatch(this->TargetRegion.GetSize()[0]/2,
+                                         this->InteractorStyle, this->gfxSource);
 
   this->Renderer->ResetCamera();
   this->qvtkWidget->GetRenderWindow()->Render();
@@ -112,50 +112,33 @@ ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const ima
 template <typename TImage>
 void ManualPatchSelectionDialog<TImage>::slot_PatchMoved()
 {
-  slot_UpdateSource(PatchSelector->GetRegion(), TargetRegion);
-  slot_UpdateResult(PatchSelector->GetRegion(), TargetRegion);
+  slot_UpdateSource(this->PatchSelector->GetRegion(), this->TargetRegion);
+  slot_UpdateResult(this->PatchSelector->GetRegion(), this->TargetRegion);
 
   // This will refresh the scene so that the old patch positions are erased
   //this->InteractorStyle->GetCurrentRenderer()->GetRenderWindow()->Render(); // (this doesn't work...)
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
-// template <typename TImage>
-// void ManualPatchSelectionDialog<TImage>::slot_UpdateImage()
-// {
-//   std::cout << "Update image." << std::endl;
-//   //ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
-//   unsigned char green[3] = {0, 255, 0};
-//   ITKVTKHelpers::ITKImageToVTKImageMasked(this->Image, this->MaskImage,
-//                                           this->ImageLayer.ImageData, green);
-//   int dims[3];
-//   this->ImageLayer.ImageData->GetDimensions(dims);
-//   if(dims[0] != ImageDimension[0] || dims[1] != ImageDimension[1] || dims[2] != ImageDimension[2])
-//     {
-//     this->Renderer->ResetCamera();
-//     ImageDimension[0] = dims[0];
-//     ImageDimension[1] = dims[1];
-//     ImageDimension[2] = dims[2];
-//     }
-// 
-//   this->qvtkWidget->GetRenderWindow()->Render();
-// }
-
 template <typename TImage>
 void ManualPatchSelectionDialog<TImage>::SetupScenes()
 {
+  // Set the color of the background of the target/source/result scenes
   QBrush brush;
   brush.setStyle(Qt::SolidPattern);
   brush.setColor(this->SceneBackground);
 
+  // Setup the target scene
   this->TargetPatchScene = new QGraphicsScene();
   this->TargetPatchScene->setBackgroundBrush(brush);
   this->gfxTarget->setScene(TargetPatchScene);
 
+  // Setup the source scene
   this->SourcePatchScene = new QGraphicsScene();
   this->SourcePatchScene->setBackgroundBrush(brush);
   this->gfxSource->setScene(SourcePatchScene);
 
+  // Setup the result scene
   this->ResultPatchScene = new QGraphicsScene();
   this->ResultPatchScene->setBackgroundBrush(brush);
   this->gfxResult->setScene(ResultPatchScene);
@@ -174,25 +157,26 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateSource(const itk::ImageRegio
     return;
   }
   
-  if(MaskImage->CountHolePixels(sourceRegion) > 0)
+  if(this->MaskImage->CountHolePixels(sourceRegion) > 0)
   {
     std::cerr << "The source patch must not have any hole pixels!" << std::endl;
-    btnAccept->setVisible(false);
+    this->btnAccept->setVisible(false);
   }
   else
   {
-    btnAccept->setVisible(true);
+    this->btnAccept->setVisible(true);
   }
 
   typename TImage::Pointer tempImage = TImage::New();
   ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
 
   typename TImage::PixelType zeroPixel(3);
-  zeroPixel.Fill(0);
+  zeroPixel = itk::NumericTraits<typename TImage::PixelType>::ZeroValue(zeroPixel);
+
   this->MaskImage->ApplyToImage(tempImage.GetPointer(), zeroPixel);
   QImage maskedSourceImage = ITKQtHelpers::GetQImageColor(tempImage.GetPointer(), sourceRegion);
   QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(maskedSourceImage));
-  gfxSource->fitInView(item);
+  this->gfxSource->fitInView(item);
 
   // Refresh the image
   //ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
@@ -222,11 +206,12 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateTarget(const itk::ImageRegio
   typename TImage::Pointer tempImage = TImage::New();
   ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
   typename TImage::PixelType zeroPixel(3);
-  zeroPixel.Fill(0);
+  zeroPixel = itk::NumericTraits<typename TImage::PixelType>::ZeroValue(zeroPixel);
+
   this->MaskImage->ApplyToImage(tempImage.GetPointer(), zeroPixel);
   QImage maskedTargetImage = ITKQtHelpers::GetQImageColor(tempImage.GetPointer(), region);
   QGraphicsPixmapItem* maskedItem = this->TargetPatchScene->addPixmap(QPixmap::fromImage(maskedTargetImage));
-  gfxTarget->fitInView(maskedItem);
+  this->gfxTarget->fitInView(maskedItem);
 }
 
 template <typename TImage>
@@ -275,7 +260,7 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
     {
       typename TImage::PixelType pixel;
 
-      if(MaskImage->IsHole(maskIterator.GetIndex()))
+      if(this->MaskImage->IsHole(maskIterator.GetIndex()))
       {
         pixel = sourceIterator.Get();
       }
@@ -285,9 +270,7 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
       }
 
       itk::Offset<2> offset = sourceIterator.GetIndex() - sourceRegion.GetIndex();
-      itk::Index<2> offsetIndex;
-      offsetIndex[0] = offset[0];
-      offsetIndex[1] = offset[1];
+      itk::Index<2> offsetIndex = {{offset[0], offset[1]}};
       resultPatch->SetPixel(offsetIndex, pixel);
 
       ++sourceIterator;
@@ -300,7 +283,7 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
 
   this->ResultPatchScene->clear();
   QGraphicsPixmapItem* item = this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
-  gfxResult->fitInView(item);
+  this->gfxResult->fitInView(item);
 }
 
 template <typename TImage>

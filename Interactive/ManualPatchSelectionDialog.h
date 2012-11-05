@@ -27,9 +27,6 @@
 // ITK
 #include "itkImage.h"
 
-// Qt
-#include <QThread>
-
 // Submodules
 #include <Mask/Mask.h>
 #include <ITKVTKCamera/ITKVTKCamera.h>
@@ -41,6 +38,10 @@
 
 class InteractorStyleImageWithDrag;
 
+/** When all else fails (acceptance tests failed and TopPatchesDialog doesn't contain an acceptable patch
+  * for the user to select), we can use this class to allow the user to manually position a box on the image
+  * indicating the patch they would like to use to fill the target patch.
+  */
 template <typename TImage>
 class ManualPatchSelectionDialog : public ManualPatchSelectionDialogParent
 {
@@ -49,11 +50,8 @@ public:
   /** Constructor */
   ManualPatchSelectionDialog(TImage* const image, Mask* const mask, const itk::ImageRegion<2>& targetRegion);
 
-  //void slot_UpdateImage();
-
   /** We need the target region as well while updating the source region because we may want to mask
-   * the source patch with the target patch's mask.
-   */
+   * the source patch with the target patch's mask. */
   void slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
 
   /** Update the target patch image. */
@@ -62,10 +60,13 @@ public:
   /** Update the result patch image. */
   void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
 
+  /** When the user clicks Accept, store the selected node for retrieval. */
   void on_btnAccept_clicked();
 
+  /** When the patch is moved by the user, we need to update the zoomed-in displays of the patches. */
   void slot_PatchMoved();
 
+  /** The caller will use this function to get the selected node. */
   Node GetSelectedNode();
   
 private:
@@ -79,6 +80,7 @@ private:
   /** The mask that will be used to mask the patches that are displayed. */
   Mask* MaskImage;
   
+  /** Setup the QGraphicScene objects. */
   void SetupScenes();
 
   /** The interactor to allow us to zoom and pan the image while still moving images with Pickable=true */
@@ -87,6 +89,7 @@ private:
   /** The only renderer */
   vtkSmartPointer<vtkRenderer> Renderer;
 
+  /** The QGraphicScene objects for the source, target, and result patches. */
   QGraphicsScene* SourcePatchScene;
   QGraphicsScene* TargetPatchScene;
   QGraphicsScene* ResultPatchScene;
@@ -119,7 +122,7 @@ private:
   /** The node that was selected by the user. We have to store it here because it has to be retrieved by the caller. */
   Node SelectedNode;
 
-  /** An object that sets up the viewing orientation of the image. */
+  /** A helper object that sets up the viewing orientation of the image. */
   ITKVTKCamera* ItkVtkCamera;
 };
 

@@ -1,6 +1,6 @@
 /*=========================================================================
  *
- *  Copyright David Doria 2011 daviddoria@gmail.com
+ *  Copyright David Doria 2012 daviddoria@gmail.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
  *  limitations under the License.
  *
  *=========================================================================*/
-
-/*
-*/
 
 #ifndef MovablePatch_H
 #define MovablePatch_H
@@ -39,6 +36,9 @@ class QGraphicsView;
 class vtkRenderer;
 #include <vtkImageSlice.h>
 
+/** This class gives us a little square that the user can drag around to select a region/patch in
+  * an image. It also lets the patch be displayed in a QGraphicsView.
+  */
 class MovablePatch : public QObject
 {
 Q_OBJECT
@@ -48,11 +48,10 @@ signals:
 
 public:
   /** This constructor is provided so that we can store a MovablePatch as a member,
-   * but not initialize it until after the renderers/interactors are setup and configured.*/
-  MovablePatch();
+    * but not initialize it until after the renderers/interactors are setup and configured.*/
+//  MovablePatch();
 
   /** This constructor is provided if everything is known when we create the object.*/
-  //MovablePatch(const unsigned int radius, vtkRenderer* const renderer,
   MovablePatch(const unsigned int radius, InteractorStyleImageWithDrag* const interactorStyle,
                QGraphicsView* const view = NULL, const QColor color = QColor());
 
@@ -65,21 +64,34 @@ public:
   /** Set a GraphicsView in which to display the patch. */
   void SetGraphicsView(QGraphicsView* const view);
 
+  /** Display the selected patch in the QGraphcisView. */
   void Display();
 
 private:
+  /** We need an ImageData/Slice/SliceMapper to display the square. */
   Layer PatchLayer;
-  //Layer* PatchLayer;
 
+  /** This function is used as a callback from VTK's interactor style.
+    * Once the mouse is released, we update some things and then emit our own
+    * signal indicating that the patch was moved. */
   void PatchMoved();
 
-  unsigned int Radius;
-  InteractorStyleImageWithDrag* InteractorStyle;
-  QGraphicsView* View;
+  /** The radius of the patch. */
+  unsigned int Radius = 0;
+
+  /** The interactor style in which the patch is displayed. */
+  InteractorStyleImageWithDrag* InteractorStyle = nullptr;
+
+  /** The QGraphicsView in which to display the patch. */
+  QGraphicsView* View = nullptr;
+
+  /** The color of the patch outline. */
   QColor Color;
 
-  QSharedPointer<QGraphicsScene> PatchScene;
+  /** The scene to draw into and then display in the QGraphicsView. */
+  QSharedPointer<QGraphicsScene> PatchScene = QSharedPointer<QGraphicsScene>(new QGraphicsScene);
 
+  /** The image to draw in the scene that is displayed in the QGraphicsView. */
   QImage PatchImage;
 };
 
