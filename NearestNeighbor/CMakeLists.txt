@@ -20,6 +20,7 @@ metric_space_search.hpp
 PassThrough.hpp
 PrecomputedNeighbors.hpp
 SearchFunctor.hpp
+SortByRGBTextureGradient.hpp
 StorageAndSearchFunctor.hpp
 ThreeStepNearestNeighbor.hpp
 topological_search.hpp

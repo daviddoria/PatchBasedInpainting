@@ -42,8 +42,11 @@
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/DefaultSearchBest.hpp"
 #include "NearestNeighbor/LinearSearchBest/Property.hpp"
+#include "NearestNeighbor/LinearSearchBest/First.hpp"
 #include "NearestNeighbor/VisualSelectionBest.hpp"
 #include "NearestNeighbor/FirstValidDescriptor.hpp"
+#include "NearestNeighbor/SortByRGBTextureGradient.hpp"
+#include "NearestNeighbor/KNNSearchAndSort.hpp"
 
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
@@ -236,9 +239,16 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   unsigned int numberOfKNN = 100;
   std::shared_ptr<KNNSearchType> knnSearch(new KNNSearchType(imagePatchDescriptorMap, numberOfKNN));
 
-  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
-                                   ImagePatchDifferenceType > BestSearchType;
-  std::shared_ptr<BestSearchType> bestSearch(new BestSearchType(*imagePatchDescriptorMap));
+  // Since we are using a KNNSearchAndSort, we just have to return the top patch after the sort, so we use this trival Best searcher.
+  typedef LinearSearchBestFirst BestSearchType;
+  std::shared_ptr<BestSearchType> bestSearch;
+
+  typedef SortByRGBTextureGradient<ImagePatchDescriptorMapType,
+                                   TImage > NeighborSortType;
+  std::shared_ptr<NeighborSortType> neighborSortType(new NeighborSortType(*imagePatchDescriptorMap, originalImage, mask));
+
+  typedef KNNSearchAndSort<KNNSearchType, NeighborSortType> SearchAndSortType;
+  SearchAndSortType searchAndSort(knnSearch, neighborSortType);
 
   // If the acceptance tests fail, prompt the user to select a patch.
   typedef VisualSelectionBest<TImage> ManualSearchType;
@@ -256,9 +266,9 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
 
   QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
                                 VertexListGraphType, CompositeInpaintingVisitorType,
-                                BoundaryNodeQueueType, KNNSearchType, BestSearchType,
+                                BoundaryNodeQueueType, SearchAndSortType, BestSearchType,
                                 ManualSearchType, CompositePatchInpainter>,
-                                graph, compositeInpaintingVisitor, boundaryNodeQueue, knnSearch,
+                                graph, compositeInpaintingVisitor, boundaryNodeQueue, searchAndSort,
                                 bestSearch, manualSearchBest, compositeInpainter));
 
 
