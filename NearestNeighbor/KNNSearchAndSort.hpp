@@ -19,9 +19,8 @@
 #ifndef KNNSearchAndSort_HPP
 #define KNNSearchAndSort_HPP
 
-// Boost
-#include <boost/utility.hpp> // for enable_if()
-#include <boost/type_traits.hpp> // for is_same()
+// STL
+#include <memory>
 
 /**
   * This class searches a container for the K nearest neighbors of a query item.
@@ -30,15 +29,15 @@
   * \tparam PropertyMapType The type of the property map containing the values to compare.
   * \tparam DistanceFunctionType The functor type to compute the distance measure between two items in the PropertyMap.
   */
-template <typename SearchType,
-          typename SortType>
+template <typename SearchType, typename SortType>
 class KNNSearchAndSort
 {
-  SearchType Searcher;
-  SortType Sorter;
+private:
+  std::shared_ptr<SearchType> Searcher;
+  std::shared_ptr<SortType> Sorter;
 
 public:
-  KNNSearchAndSort(SearchType searcher, SortType sorter) :
+  KNNSearchAndSort(std::shared_ptr<SearchType> searcher, std::shared_ptr<SortType> sorter) :
     Searcher(searcher), Sorter(sorter)
   {
   }
@@ -51,15 +50,27 @@ public:
     * \param queryNode The item to compare the items in the container against.
     * \param outputFirst An iterator to the beginning of the output container that will store the K nearest neighbors.
     */
-  template <typename TForwardIteratorType, typename TOutputIterator>
+  template <typename TIterator, typename TOutputIterator>
   inline
-  TOutputIterator operator()(TForwardIteratorType first,
-                             TForwardIteratorType last,
-                             typename TForwardIteratorType::value_type queryNode,
+  TOutputIterator operator()(const TIterator first,
+                             const TIterator last,
+                             typename TIterator::value_type queryNode,
                              TOutputIterator outputFirst)
   {
-    this->Searcher(first, last, queryNode, outputFirst);
-    return this->Sorter(first, last, queryNode, outputFirst);
+    // Allocate a vector to get the results of the KNN search
+    std::vector<typename TIterator::value_type> knnContainer(this->Searcher->GetK());
+
+    // Perform the KNN search
+    (*this->Searcher)(first, last, queryNode, knnContainer.begin());
+
+    // Sort the KNNs
+    return (*this->Sorter)(knnContainer.begin(), knnContainer.end(), queryNode, outputFirst);
+  }
+
+  /** Get the number of elements that will be returned. */
+  size_t GetK()
+  {
+    return this->Searcher->GetK();
   }
   
 };

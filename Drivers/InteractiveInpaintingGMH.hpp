@@ -248,7 +248,7 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   std::shared_ptr<NeighborSortType> neighborSortType(new NeighborSortType(*imagePatchDescriptorMap, originalImage, mask));
 
   typedef KNNSearchAndSort<KNNSearchType, NeighborSortType> SearchAndSortType;
-  SearchAndSortType searchAndSort(knnSearch, neighborSortType);
+  std::shared_ptr<SearchAndSortType> searchAndSort(new SearchAndSortType(knnSearch, neighborSortType));
 
   // If the acceptance tests fail, prompt the user to select a patch.
   typedef VisualSelectionBest<TImage> ManualSearchType;
@@ -271,29 +271,6 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
                                 graph, compositeInpaintingVisitor, boundaryNodeQueue, searchAndSort,
                                 bestSearch, manualSearchBest, compositeInpainter));
 
-
-//  QtConcurrent::run(boost::bind(TestFunction<
-//                                VertexListGraphType, CompositeInpaintingVisitorType,
-//                                BoundaryNodeQueueType, KNNSearchType, BestSearchType,
-//                                ManualSearchType, CompositePatchInpainter>,
-//                                graph, compositeInpaintingVisitor, boundaryNodeQueue, knnSearch,
-//                                bestSearch, manualSearchBest, compositeInpainter));
-
-//  QtConcurrent::run(boost::bind(TestFunction<
-//                                  VertexListGraphType, CompositeInpaintingVisitorType,
-//                                  BoundaryNodeQueueType, KNNSearchType>,
-//                                  graph, compositeInpaintingVisitor, boundaryNodeQueue, knnSearch));
-
-//  QtConcurrent::run(boost::bind(TestFunction<
-//                                VertexListGraphType, CompositeInpaintingVisitorType,
-//                                BoundaryNodeQueueType>,
-//                                graph, compositeInpaintingVisitor, boundaryNodeQueue));
-
-//  QtConcurrent::run(boost::bind(TestFunction<
-//                                VertexListGraphType, CompositeInpaintingVisitorType>,
-//                                graph, compositeInpaintingVisitor));
-
-//  QtConcurrent::run(boost::bind(TestFunction<VertexListGraphType>, graph));
 }
 
 #endif

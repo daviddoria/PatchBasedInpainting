@@ -126,6 +126,8 @@ public:
   HistogramMapType PreviouslyComputedDepthHistograms;
 
   /**
+    * \tparam TIterator The forward-iterator type.
+    * \tparam TOutputIterator The iterator type of the output container.
     * \param first Start of the range in which to search.
     * \param last One element past the last element in the range in which to search.
     * \param query The element to compare to.
@@ -134,9 +136,9 @@ public:
     *         the elements in the range with respect to the distance metric).
     */
   template <typename TIterator, typename TOutputIterator>
-  typename TIterator::value_type operator()(const TIterator first, const TIterator last,
-                                            typename TIterator::value_type query,
-                                            TOutputIterator outputFirst)
+  TOutputIterator operator()(const TIterator first, const TIterator last,
+                             typename TIterator::value_type query,
+                             TOutputIterator outputFirst)
   {
     if(this->DebugImages)
     {
@@ -159,7 +161,7 @@ public:
     if(first == last)
     {
       std::cerr << "LinearSearchBestHistogram: Nothing to do..." << std::endl;
-      return *last;
+      return outputFirst;
     }
 
     // Get the region to process
@@ -435,7 +437,7 @@ public:
 
     this->Iteration++;
 
-    return *bestPatch;
+    return outputFirst;
   } // end operator()
 
 }; // end class SortByRGBTextureGradient

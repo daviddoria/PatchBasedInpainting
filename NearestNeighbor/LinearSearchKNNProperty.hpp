@@ -67,18 +67,20 @@ public:
   }
 
   /**
-    * \tparam TForwardIterator The forward-iterator type.
+    * \tparam TIterator The forward-iterator type.
     * \tparam TOutputIterator The iterator type of the output container.
     * \param first Start of the range in which to search.
     * \param last One element past the last element in the range in which to search (usually container.end() ).
     * \param queryNode The item to compare the items in the container against.
     * \param outputFirst An iterator to the beginning of the output container that will store the K nearest neighbors.
+    * \return The iterator to the best element in the range (best is defined as the one which would compare favorably to all
+    *         the elements in the range with respect to the distance metric).
     */
-  template <typename TForwardIteratorType, typename TOutputIterator>
+  template <typename TIterator, typename TOutputIterator>
   inline
-  TOutputIterator operator()(TForwardIteratorType first,
-                             TForwardIteratorType last,
-                             typename TForwardIteratorType::value_type queryNode,
+  TOutputIterator operator()(TIterator first,
+                             TIterator last,
+                             typename TIterator::value_type queryNode,
                              TOutputIterator outputFirst)
   {
     // Nothing to do if the input range is empty
@@ -88,12 +90,12 @@ public:
     }
 
     // Create a type to associate a distance with its iterator
-    typedef std::pair<DistanceValueType, TForwardIteratorType> PairType;
+    typedef std::pair<DistanceValueType, TIterator> PairType;
 
     // Use a priority queue to keep the items (pairs of distances and their corresponding iterators) sorted
     typedef std::priority_queue< PairType,
         std::vector<PairType>,
-        compare_pair_first<DistanceValueType, TForwardIteratorType,
+        compare_pair_first<DistanceValueType, TIterator,
         std::greater<DistanceValueType> > > PriorityQueueType;
 
     PriorityQueueType outputQueue;
@@ -121,7 +123,7 @@ public:
     // The queue stores the items in descending score order.
     #pragma omp parallel for
 //    for(ForwardIteratorType current = first; current != last; ++current) // OpenMP 3 doesn't allow != in the loop ending condition
-    for(TForwardIteratorType current = first; current < last; ++current)
+    for(TIterator current = first; current < last; ++current)
     {
       typename PropertyMapType::value_type currentPatch = get(*(this->PropertyMap), *current);
       // Argument order is (source, target) ("query node" is the same as "target node")
