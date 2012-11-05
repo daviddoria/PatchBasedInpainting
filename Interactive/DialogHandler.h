@@ -62,12 +62,12 @@ class DialogHandler : public DialogHandlerParent
   TopPatchesDialog<TImage>* TopPatchesChooser;
 
 public:
-  DialogHandler(TImage* image, Mask* mask, const unsigned int patchHalfWidth) :
+  DialogHandler(TImage* image, Mask* mask, const unsigned int patchHalfWidth, QWidget* parent = nullptr) :
     DialogHandlerParent(),
     Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
   {
     this->TopPatchesChooser =
-        new TopPatchesDialog<TImage>(this->Image, this->MaskImage, this->PatchHalfWidth);
+        new TopPatchesDialog<TImage>(this->Image, this->MaskImage, this->PatchHalfWidth, parent);
   }
 
   TopPatchesDialog<TImage>* GetTopPatchesChooser()
@@ -98,6 +98,7 @@ public:
   {
     this->TopPatchesChooser->SetQueryNode(this->QueryNode);
     this->TopPatchesChooser->SetSourceNodes(this->SourceNodes);
+    TopPatchesChooser->PositionNextToParent();
     this->TopPatchesChooser->exec();
 
     if(!this->TopPatchesChooser->IsSelectionValid())

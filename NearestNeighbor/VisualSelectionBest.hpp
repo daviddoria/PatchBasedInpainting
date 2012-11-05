@@ -52,10 +52,12 @@ private:
 public:
 
   VisualSelectionBest(TImage* const image, Mask* const mask,
-                      const unsigned int patchHalfWidth) :
+                      const unsigned int patchHalfWidth, QWidget* parent = nullptr) :
   Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
   {
-    this->TopPatchesDialogHandler = new DialogHandler<TImage>(this->Image, this->MaskImage, this->PatchHalfWidth);
+    std::cout << "VisualSelectionBest parent pos " << parent->pos().x() << " " << parent->pos().y() << std::endl;
+    this->TopPatchesDialogHandler =
+        new DialogHandler<TImage>(this->Image, this->MaskImage, this->PatchHalfWidth, parent);
     this->TopPatchesDialogHandler->moveToThread(QCoreApplication::instance()->thread());
   }
 

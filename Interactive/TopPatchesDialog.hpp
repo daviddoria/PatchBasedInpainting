@@ -26,15 +26,11 @@
 template <typename TImage>
 TopPatchesDialog<TImage>::TopPatchesDialog(TImage* const image, Mask* const mask,
                                            const unsigned int patchHalfWidth, QWidget* parent) :
-TopPatchesDialogParent(parent), Image(image), MaskImage(mask),
+  TopPatchesDialogParent(parent), Image(image), MaskImage(mask),
   ValidSelection(false), PatchHalfWidth(patchHalfWidth)
 {
   this->setupUi(this);
 
-  if(parent)
-  {
-    this->setGeometry(QRect(parent->pos().x() + parent->width(), parent->pos().y(), this->width(), this->height()));
-  }
 //   if(image->GetNumberOfComponentsPerPixel() == 3)
 //   {
 //     // assume the image is RGB, and use it directly
@@ -233,6 +229,16 @@ void TopPatchesDialog<TImage>::on_btnSavePair_clicked()
   itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(Nodes[this->SelectedIndex.row()]);
   itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, PatchHalfWidth);
   ITKHelpers::WriteRegionAsRGBImage(this->Image, sourceRegion, "source.png");
+}
+
+template <typename TImage>
+void TopPatchesDialog<TImage>::PositionNextToParent()
+{
+  if(this->parentWidget())
+  {
+    this->move(this->parentWidget()->pos().x() + this->parentWidget()->width(),
+               this->parentWidget()->pos().y());
+  }
 }
 
 #endif

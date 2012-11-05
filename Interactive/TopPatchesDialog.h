@@ -39,7 +39,7 @@ Q_OBJECT
 
 public:
   /** Constructor. */
-  TopPatchesDialogParent(QWidget* parent = NULL) : QDialog(parent) {}
+  TopPatchesDialogParent(QWidget* parent = nullptr) : QDialog(parent) {}
 
 signals:
   virtual void signal_SelectedRegion(const itk::ImageRegion<2>&) const;
@@ -108,7 +108,8 @@ private:
 
 public:
   /** Constructor */
-  TopPatchesDialog(TImage* const image, Mask* const mask, const unsigned int patchHalfWidth, QWidget* parent = NULL);
+  TopPatchesDialog(TImage* const image, Mask* const mask,
+                   const unsigned int patchHalfWidth, QWidget* parent = nullptr);
 
   /** Set the source nodes from which the user can choose. */
   void SetSourceNodes(const std::vector<Node>& nodes);
@@ -144,6 +145,8 @@ public:
 
   /** After the listView has been clicked, this variable contains which item is selected. */
   QModelIndex SelectedIndex;
+
+  void PositionNextToParent();
 };
 
 #include "TopPatchesDialog.hpp"
