@@ -271,6 +271,13 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
                                 graph, compositeInpaintingVisitor, boundaryNodeQueue, searchAndSort,
                                 bestSearch, manualSearchBest, compositeInpainter));
 
+//  QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
+//                                VertexListGraphType, CompositeInpaintingVisitorType,
+//                                BoundaryNodeQueueType, KNNSearchType, BestSearchType,
+//                                ManualSearchType, CompositePatchInpainter>,
+//                                graph, compositeInpaintingVisitor, boundaryNodeQueue, knnSearch,
+//                                bestSearch, manualSearchBest, compositeInpainter));
+
 }
 
 #endif

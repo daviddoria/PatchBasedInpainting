@@ -5,6 +5,7 @@
 add_custom_target(NearestNeighbor SOURCES
 DefaultSearchBest.hpp
 FirstValidDescriptor.hpp
+KNNSearchAndSort.hpp
 LinearSearchAlgorithm.hpp
 LinearSearchBest.hpp
 LinearSearchCriteriaProperty.hpp
