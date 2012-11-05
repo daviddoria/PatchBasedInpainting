@@ -36,21 +36,25 @@ class CustomImageStyle;
 
 class InteractorStyleImageWithDrag : public vtkInteractorStyleTrackballActor
 {
-  public:
+public:
 
-    static InteractorStyleImageWithDrag* New();
-    vtkTypeMacro(InteractorStyleImageWithDrag,vtkInteractorStyleTrackballActor);
+  static InteractorStyleImageWithDrag* New();
+  vtkTypeMacro(InteractorStyleImageWithDrag,vtkInteractorStyleTrackballActor);
 
-    InteractorStyleImageWithDrag();
+  InteractorStyleImageWithDrag();
 
-    void Init();
+  void Init();
 
-    void SetCurrentRenderer(vtkRenderer* const renderer);
+  void SetCurrentRenderer(vtkRenderer* const renderer);
 
-    void SetImageOrientation(const double* const, const double* const );
+  void SetImageOrientation(const double* const, const double* const );
 
-    vtkSmartPointer<CustomImageStyle> ImageStyle;
-    vtkSmartPointer<CustomTrackballStyle> TrackballStyle;
+  CustomImageStyle* GetImageStyle();
+  CustomTrackballStyle* GetTrackballStyle();
+
+private:
+  vtkSmartPointer<CustomImageStyle> ImageStyle;
+  vtkSmartPointer<CustomTrackballStyle> TrackballStyle;
 };
 
 ////////////////////////////////

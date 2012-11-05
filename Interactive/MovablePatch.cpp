@@ -67,7 +67,7 @@ MovablePatch::MovablePatch(const unsigned int radius, InteractorStyleImageWithDr
 
   this->PatchLayer.ImageSlice->SetPosition(position);
   
-  InteractorStyle->TrackballStyle->AddObserver(CustomTrackballStyle::PatchesMovedEvent, this, &MovablePatch::PatchMoved);
+  this->InteractorStyle->GetTrackballStyle()->AddObserver(CustomTrackballStyle::PatchesMovedEvent, this, &MovablePatch::PatchMoved);
 
   //this->PatchScene->setBackgroundBrush(brush);
   //this->View->setScene(this->PatchScene.data());

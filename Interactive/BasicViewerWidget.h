@@ -131,11 +131,11 @@ private:
 
   void SetupScenes();
 
-  // The interactor to allow us to zoom and pan the image while still moving images with Pickable=true
+  /** The interactor to allow us to zoom and pan the image while still moving images with Pickable=true */
 //  vtkSmartPointer<InteractorStyleImageWithDrag> InteractorStyle;
   vtkSmartPointer<vtkInteractorStyleImage> InteractorStyle;
 
-  // The only renderer
+  /** The renderer */
   vtkSmartPointer<vtkRenderer> Renderer;
 
   QGraphicsScene* SourcePatchScene;
@@ -144,14 +144,13 @@ private:
   QGraphicsScene* MaskedSourcePatchScene;
   QGraphicsScene* MaskedTargetPatchScene;
 
-  // The color to use as the background of the QGraphicsScenes
+  /** The color to use as the background of the QGraphicsScenes */
   QColor SceneBackground;
 
-  // Connect all signals and slots.
+  /** Connect all signals and slots. */
   void SetupConnections();
 
-//  ImageCamera* Camera;
-
+  /** An object that sets up the viewing orientation of the image. */
   ITKVTKCamera* ItkVtkCamera;
 
   PatchHighlighter* SourceHighlighter;

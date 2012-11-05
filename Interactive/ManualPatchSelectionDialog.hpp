@@ -101,6 +101,11 @@ ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const ima
   this->qvtkWidget->GetRenderWindow()->Render();
   // this->Camera = new ImageCamera(this->Renderer);
 
+  // Setup the viewing orientation
+  this->ItkVtkCamera = new ITKVTKCamera(this->InteractorStyle->GetImageStyle(), this->Renderer,
+                                        this->qvtkWidget->GetRenderWindow());
+  this->ItkVtkCamera->SetCameraPositionPNG();
+
   connect(this->PatchSelector, SIGNAL(signal_PatchMoved()), this, SLOT(slot_PatchMoved()));
 }
 

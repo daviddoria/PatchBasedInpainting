@@ -32,6 +32,17 @@ void InteractorStyleImageWithDrag::SetImageOrientation(const double* const leftT
   this->ImageStyle->SetImageOrientation(leftToRight, bottomToTop);
 }
 
+
+CustomImageStyle* InteractorStyleImageWithDrag::GetImageStyle()
+{
+  return this->ImageStyle;
+}
+
+CustomTrackballStyle* InteractorStyleImageWithDrag::GetTrackballStyle()
+{
+  return this->TrackballStyle;
+}
+
 ////////////////////////////////
 ///// CustomTrackballStyle /////
 ////////////////////////////////

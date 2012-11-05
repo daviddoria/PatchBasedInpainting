@@ -31,7 +31,8 @@
 #include <QThread>
 
 // Submodules
-#include "Mask/Mask.h"
+#include <Mask/Mask.h>
+#include <ITKVTKCamera/ITKVTKCamera.h>
 
 // Custom
 #include "Node.h"
@@ -115,7 +116,11 @@ private:
   /** The patch region that we are trying to pick a match for. */
   itk::ImageRegion<2> TargetRegion;
 
+  /** The node that was selected by the user. We have to store it here because it has to be retrieved by the caller. */
   Node SelectedNode;
+
+  /** An object that sets up the viewing orientation of the image. */
+  ITKVTKCamera* ItkVtkCamera;
 };
 
 #include "ManualPatchSelectionDialog.hpp"
