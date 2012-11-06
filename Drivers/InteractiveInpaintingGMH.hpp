@@ -54,26 +54,7 @@
 #include "PixelDescriptors/ImagePatchVectorizedIndices.h"
 
 // Acceptance visitors
-#include "Visitors/AcceptanceVisitors/AverageDifferenceAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/CompositeAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/ANDAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/DilatedSourceHoleTargetValidAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/DilatedSourceValidTargetValidAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/SourceHoleTargetValidCompare.hpp"
-#include "Visitors/AcceptanceVisitors/SourceValidTargetValidCompare.hpp"
-#include "Visitors/AcceptanceVisitors/HoleSizeAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/VarianceFunctor.hpp"
-#include "Visitors/AcceptanceVisitors/AverageFunctor.hpp"
-#include "Visitors/AcceptanceVisitors/ScoreThresholdAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/CorrelationAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/PatchDistanceAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/HistogramDifferenceAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/HoleHistogramDifferenceAcceptanceVisitor.hpp"
-// #include "Visitors/AcceptanceVisitors/QuadrantHistogramCompareAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/AllQuadrantHistogramCompareAcceptanceVisitor.hpp"
-
-//#include "Visitors/AcceptanceVisitors/IntraSourcePatchAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/NeverAccept.hpp"
+#include "Visitors/AcceptanceVisitors/GMHAcceptanceVisitor.hpp"
 
 // Information visitors
 #include "Visitors/InformationVisitors/DisplayVisitor.hpp"
@@ -186,29 +167,41 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
         new ImagePatchDescriptorVisitorType(originalImage, mask,
                                             imagePatchDescriptorMap, patchHalfWidth));
 
-  // Source region to source region comparisons
-  typedef SourceValidTargetValidCompare<VertexListGraphType, TImage, AverageFunctor> SourceValidTargetValidCompareType;
-  std::shared_ptr<SourceValidTargetValidCompareType> validRegionAverageAcceptance(
-      new SourceValidTargetValidCompareType(originalImage, mask, patchHalfWidth,
-         AverageFunctor(), 10, "validRegionAverageAcceptance"));
+  // Acceptance visitor
+  unsigned int numberOfBinsPerChannel = 30;
+  float maxAllowedDifference = 10.0f;
+  typedef GMHAcceptanceVisitor<VertexListGraphType, TImage> GMHAcceptanceVisitorType;
+  std::shared_ptr<GMHAcceptanceVisitorType> gmhAcceptanceVisitor(
+      new GMHAcceptanceVisitorType(originalImage, mask, patchHalfWidth,
+                                   maxAllowedDifference, numberOfBinsPerChannel));
 
-  // If the hole is less than 15% of the patch, always accept the initial best match
-  typedef HoleSizeAcceptanceVisitor<VertexListGraphType> HoleSizeAcceptanceVisitorType;
-  std::shared_ptr<HoleSizeAcceptanceVisitorType> holeSizeAcceptanceVisitor(new HoleSizeAcceptanceVisitorType(mask, patchHalfWidth, .15));
+//  // If the hole is less than 15% of the patch, always accept the initial best match
+//  typedef HoleSizeAcceptanceVisitor<VertexListGraphType> HoleSizeAcceptanceVisitorType;
+//  std::shared_ptr<HoleSizeAcceptanceVisitorType> holeSizeAcceptanceVisitor(new HoleSizeAcceptanceVisitorType(mask, patchHalfWidth, .15));
 
-  typedef CompositeAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
-  std::shared_ptr<CompositeAcceptanceVisitorType> compositeAcceptanceVisitor(new CompositeAcceptanceVisitorType);
-  compositeAcceptanceVisitor->AddRequiredPassVisitor(validRegionAverageAcceptance);
-  compositeAcceptanceVisitor->AddOverrideVisitor(holeSizeAcceptanceVisitor);
+//  typedef CompositeAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
+//  std::shared_ptr<CompositeAcceptanceVisitorType> compositeAcceptanceVisitor(new CompositeAcceptanceVisitorType);
+//  compositeAcceptanceVisitor->AddRequiredPassVisitor(validRegionAverageAcceptance);
+//  compositeAcceptanceVisitor->AddOverrideVisitor(holeSizeAcceptanceVisitor);
 
   // Create the inpainting visitor
+//  typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
+//                            ImagePatchDescriptorVisitorType, CompositeAcceptanceVisitorType,
+//                            PriorityType, TImage>
+//                            InpaintingVisitorType;
+//  std::shared_ptr<InpaintingVisitorType> inpaintingVisitor(
+//        new InpaintingVisitorType(mask, boundaryNodeQueue,
+//                                  imagePatchDescriptorVisitor, compositeAcceptanceVisitor,
+//                                  priorityFunction, patchHalfWidth,
+//                                  "InpaintingVisitor", originalImage.GetPointer()));
+
   typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
-                            ImagePatchDescriptorVisitorType, CompositeAcceptanceVisitorType,
+                            ImagePatchDescriptorVisitorType, GMHAcceptanceVisitorType,
                             PriorityType, TImage>
                             InpaintingVisitorType;
   std::shared_ptr<InpaintingVisitorType> inpaintingVisitor(
         new InpaintingVisitorType(mask, boundaryNodeQueue,
-                                  imagePatchDescriptorVisitor, compositeAcceptanceVisitor,
+                                  imagePatchDescriptorVisitor, gmhAcceptanceVisitor,
                                   priorityFunction, patchHalfWidth,
                                   "InpaintingVisitor", originalImage.GetPointer()));
 
@@ -276,13 +269,6 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
                                 ManualSearchType, CompositePatchInpainter>,
                                 graph, compositeInpaintingVisitor, boundaryNodeQueue, searchAndSort,
                                 bestSearch, manualSearchBest, compositeInpainter));
-
-//  QtConcurrent::run(boost::bind(InpaintingAlgorithmWithVerification<
-//                                VertexListGraphType, CompositeInpaintingVisitorType,
-//                                BoundaryNodeQueueType, KNNSearchType, BestSearchType,
-//                                ManualSearchType, CompositePatchInpainter>,
-//                                graph, compositeInpaintingVisitor, boundaryNodeQueue, knnSearch,
-//                                bestSearch, manualSearchBest, compositeInpainter));
 
 }
 

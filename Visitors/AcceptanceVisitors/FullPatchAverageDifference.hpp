@@ -6,8 +6,8 @@
 // Parent class
 #include "Visitors/AcceptanceVisitors/AcceptanceVisitorParent.h"
 
-// Custom
-#include "Helpers/ITKHelpers.h"
+// Submodules
+#include <ITKHelpers/ITKHelpers.h>
 
 // ITK
 #include "itkImageRegion.h"
@@ -18,10 +18,6 @@
 template <typename TGraph, typename TImage>
 struct FullPatchAverageDifference : public AcceptanceVisitorParent<TGraph>
 {
-  TImage* Image;
-
-  const unsigned int HalfWidth;
-
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
   FullPatchAverageDifference(TImage* const image, const unsigned int halfWidth) :
@@ -44,8 +40,12 @@ struct FullPatchAverageDifference : public AcceptanceVisitorParent<TGraph>
     computedEnergy = (targetRegionAverage - sourceRegionAverage).GetNorm();
     std::cout << "FullPatchAverageDifference Energy: " << computedEnergy << std::endl;
     return true;
-  };
+  }
 
+private:
+  TImage* Image;
+
+  const unsigned int HalfWidth;
 };
 
 #endif

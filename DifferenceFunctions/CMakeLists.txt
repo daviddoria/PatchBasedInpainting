@@ -2,6 +2,7 @@ add_custom_target(DifferenceFunctions SOURCES
 FeatureVectorAngleDifference.hpp
 FeatureVectorDifference.hpp
 FullImagePatchDifference.hpp
+GMHDifference.hpp
 HSVSSD.hpp
 ImagePatchDifference.hpp
 ImagePatchVectorizedDifference.hpp

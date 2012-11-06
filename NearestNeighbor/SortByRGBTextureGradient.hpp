@@ -41,6 +41,11 @@
  * by their Gradient Magnitude Histogram difference.
  *
  * This class expects an RGB image to be passed.
+ *
+ * Much of this code is duplicated in DifferenceFunctions/GMHDifference.hpp. We have to do this
+ * separately here for efficiency because we only want to compute things for the target patch once
+ * and we only want to compute derivatives once, and we can do that here by computing the derivative
+ * of the entire image and then using it for all source patches.
  */
 template <typename PropertyMapType, typename TImage, typename TImageToWrite = TImage>
 class SortByRGBTextureGradient : public Debug
