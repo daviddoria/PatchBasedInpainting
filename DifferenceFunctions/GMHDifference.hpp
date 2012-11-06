@@ -80,6 +80,7 @@ struct GMHDifference
     typename ImageChannelAdaptorType::Pointer sourceImageChannelAdaptor = ImageChannelAdaptorType::New();
     sourceImageChannelAdaptor->SetImage(sourceRegionImage);
 
+    // Initialize the final histograms. The channel histograms will be concatenated to form these final histograms.
     HistogramType targetHistogram;
     HistogramType sourceHistogram;
 

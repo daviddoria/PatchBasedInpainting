@@ -169,7 +169,7 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
 
   // Acceptance visitor
   unsigned int numberOfBinsPerChannel = 30;
-  float maxAllowedDifference = 10.0f;
+  float maxAllowedDifference = 5.0f;
   typedef GMHAcceptanceVisitor<VertexListGraphType, TImage> GMHAcceptanceVisitorType;
   std::shared_ptr<GMHAcceptanceVisitorType> gmhAcceptanceVisitor(
       new GMHAcceptanceVisitorType(originalImage, mask, patchHalfWidth,

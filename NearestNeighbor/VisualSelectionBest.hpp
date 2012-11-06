@@ -49,8 +49,12 @@ private:
 
   DialogHandler<TImage>* TopPatchesDialogHandler;
 
+  /** This variable tracks how many times the patch was selected by choosing it from the TopPatchesDialog. */
+  unsigned int NumberOfUses = 0;
+
 public:
 
+  /** Contructor. */
   VisualSelectionBest(TImage* const image, Mask* const mask,
                       const unsigned int patchHalfWidth, QWidget* parent = nullptr) :
   Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
@@ -61,14 +65,19 @@ public:
     this->TopPatchesDialogHandler->moveToThread(QCoreApplication::instance()->thread());
   }
 
+  /** Destructor. */
+  ~VisualSelectionBest()
+  {
+    std::cout << "VisualSelectionBest was used " << this->NumberOfUses
+              << " times." << std::endl;
+
+    delete this->TopPatchesDialogHandler;
+  }
+
+  /** Get the dialog object. */
   TopPatchesDialog<TImage>* GetTopPatchesDialog()
   {
     return this->TopPatchesDialogHandler->GetTopPatchesChooser();
-  }
-
-  ~VisualSelectionBest()
-  {
-    delete this->TopPatchesDialogHandler;
   }
 
   /** Return the best source node for a specified target node. */
@@ -96,8 +105,18 @@ public:
     Node selectedNode;
     this->TopPatchesDialogHandler->EmitSignal(&selectedNode);
 
+    // Track how many times we used this class
+    std::cout << "ManualPatchSelectionDialog has been used " << this->NumberOfUses << " times." << std::endl;
+    this->NumberOfUses++;
+
     std::cout << "Returning selected node..." << std::endl;
     return Helpers::ConvertFrom<TVertexDescriptor, Node>(selectedNode);
+  }
+
+  /** Get the number of times this class has been used. */
+  void GetNumberOfUses()
+  {
+    return this->NumberOfUses;
   }
 
 }; // VisualSelectionBest

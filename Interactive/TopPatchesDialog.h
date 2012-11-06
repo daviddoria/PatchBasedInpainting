@@ -111,6 +111,9 @@ public:
   TopPatchesDialog(TImage* const image, Mask* const mask,
                    const unsigned int patchHalfWidth, QWidget* parent = nullptr);
 
+//  /** Destructor. */
+//  ~TopPatchesDialog();
+
   /** Set the source nodes from which the user can choose. */
   void SetSourceNodes(const std::vector<Node>& nodes);
 

@@ -57,6 +57,12 @@ TopPatchesDialog<TImage>::TopPatchesDialog(TImage* const image, Mask* const mask
   connect(this->listView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(slot_DoubleClicked(const QModelIndex&)));
 }
 
+//template <typename TImage>
+//TopPatchesDialog<TImage>::~TopPatchesDialog()
+//{
+//  std::cout << "TopPatchesDialog was used " << this->NumberOfUses << " times." << std::endl;
+//}
+
 template <typename TImage>
 void TopPatchesDialog<TImage>::SetSourceNodes(const std::vector<Node>& nodes)
 {

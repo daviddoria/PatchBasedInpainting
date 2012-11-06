@@ -115,6 +115,12 @@ ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const ima
 }
 
 template <typename TImage>
+ManualPatchSelectionDialog<TImage>::~ManualPatchSelectionDialog()
+{
+  std::cout << "ManualPatchSelectionDialog was used " << this->NumberOfUses++ << " times." << std::endl;
+}
+
+template <typename TImage>
 void ManualPatchSelectionDialog<TImage>::slot_PatchMoved()
 {
   slot_UpdateSource(this->SourcePatchSelector->GetRegion(), this->TargetRegion);
@@ -288,11 +294,21 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
 }
 
 template <typename TImage>
+void ManualPatchSelectionDialog<TImage>::GetNumberOfUses()
+{
+  return this->NumberOfUses;
+}
+
+template <typename TImage>
 void ManualPatchSelectionDialog<TImage>::on_btnAccept_clicked()
 {
   // Store the result so it can be accessed from the caller who opened the dialog
   itk::Index<2> patchCenter = ITKHelpers::GetRegionCenter(this->SourcePatchSelector->GetRegion());
   this->SelectedNode = Helpers::ConvertFrom<Node, itk::Index<2> >(patchCenter);
+
+  // Track how many times this dialog was used.
+  std::cout << "ManualPatchSelectionDialog has been used " << this->NumberOfUses << " times." << std::endl;
+  this->NumberOfUses++;
 
   // Return from the dialog
   accept();

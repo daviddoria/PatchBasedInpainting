@@ -50,6 +50,9 @@ public:
   /** Constructor */
   ManualPatchSelectionDialog(TImage* const image, Mask* const mask, const itk::ImageRegion<2>& targetRegion);
 
+  /** Destructor */
+  ~ManualPatchSelectionDialog();
+
   /** We need the target region as well while updating the source region because we may want to mask
    * the source patch with the target patch's mask. */
   void slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion);
@@ -69,7 +72,13 @@ public:
   /** The caller will use this function to get the selected node. */
   Node GetSelectedNode();
   
+  /** Get the number of times this class has been used. */
+  void GetNumberOfUses();
+
 private:
+
+  /** This variable tracks how many times the patch was selected by choosing it from the TopPatchesDialog. */
+  unsigned int NumberOfUses = 0;
 
   /** Do some things after the widget is displayed. */
   void showEvent(QShowEvent* event);

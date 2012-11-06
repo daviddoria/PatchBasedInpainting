@@ -48,7 +48,7 @@ class SignalParent : public QObject
 Q_OBJECT
 
 signals:
-  // This signal is emitted to start the progress bar
+  /** This signal is emitted to start the progress bar. */
   void signal_RefreshImage() const;
 
   /** We need the target region as well while updating the source region because
@@ -68,24 +68,34 @@ signals:
 
 };
 
+/**
+  This visitor emits signals to trigger GUI updates.
+ */
 template <typename TGraph, typename TImage>
 class DisplayVisitor : public InpaintingVisitorParent<TGraph>, public SignalParent
 {
-
 private:
+  /** The image. */
   const TImage* Image;
+
+  /** The mask. */
   const Mask* MaskImage;
 
+  /** The radius of the patches. */
   const unsigned int HalfWidth;
-  unsigned int NumberOfFinishedVertices;
 
+  /** The number of vertices that have been filled. */
+  unsigned int NumberOfFinishedVertices = 0;
+
+  /** The type of the nodes in the graph. */
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
   
 public:
+  /** Constructor. */
   DisplayVisitor(const TImage* const image, const Mask* const mask, const unsigned int halfWidth,
                  const std::string& visitorName = "DisplayVisitor") :
   InpaintingVisitorParent<TGraph>(visitorName),
-  Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0)
+  Image(image), MaskImage(mask), HalfWidth(halfWidth)
   {
 
   }
@@ -100,12 +110,14 @@ public:
 
   }
 
+  /** When a vertex has been selected from the queue to be searched for, display it as the target patch. */
   void DiscoverVertex(VertexDescriptorType v) const
   {
     // std::cout << "DisplayVisitor::DiscoverVertex" << std::endl;
     emit signal_RefreshImage();
   }
 
+  /** When a tentative match has been made (possibly pending verification), treat it as the source patch. */
   void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
     // std::cout << "DisplayVisitor::PotentialMatchMade" << std::endl;
@@ -122,16 +134,19 @@ public:
     emit signal_RefreshSource(sourceRegion);
   }
 
+  /** This visitor should not be involved with the logic of filling patches. */
   void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
   {
     // Do nothing
   }
 
+  /** This visitor should not be involved with the logic of accepting patches. */
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
     return true;
   }
 
+  /** Once a patch has been selected and approved, show the filled image. */
   void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode)
   {
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(v);
