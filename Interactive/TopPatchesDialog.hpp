@@ -186,7 +186,13 @@ void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
   // Setup the proposed patch (if the best patch were to be selected)
   slot_SingleClicked(index);
   gfxProposedPatch->fitInView(ProposedPatchItem);
+}
 
+template <typename TImage>
+void TopPatchesDialog<TImage>::closeEvent(QCloseEvent*)
+{
+  std::cout << "There is no recourse if you do not select a patch!" << std::endl;
+  QApplication::quit();
 }
 
 template <typename TImage>

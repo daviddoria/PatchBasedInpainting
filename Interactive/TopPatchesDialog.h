@@ -106,6 +106,9 @@ private:
   /** These actions are performed when the widget is displayed. */
   void showEvent(QShowEvent* event);
 
+  /** Gracefully quit if the user closes the dialog. */
+  void closeEvent(QCloseEvent* event);
+
 public:
   /** Constructor */
   TopPatchesDialog(TImage* const image, Mask* const mask,

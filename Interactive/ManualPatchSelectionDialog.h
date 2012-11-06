@@ -83,6 +83,9 @@ private:
   /** Do some things after the widget is displayed. */
   void showEvent(QShowEvent* event);
   
+  /** Gracefully quit if the user closes the dialog. */
+  void closeEvent(QCloseEvent*);
+
   /** The image that will be displayed, and from which the patches will be extracted before being displayed. */
   TImage* Image;
 
