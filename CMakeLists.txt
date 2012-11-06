@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 2.8.6) # Required for AutoMOC (http://blogs.kde.org/2011/11/01/cool-new-stuff-cmake-286-automoc)
 
+# Suggested build flags are -fopenmp -msse3
+
+# To use CMake's Automoc, headers (.h files, or .hpp if the class is declared directly in the .hpp)
+# must be added to the add_executable list.
+
 PROJECT(PatchBasedInpainting)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -372,6 +377,7 @@ if(inpainting_InteractiveInpaintingGMH)
                    Interactive/DialogHandler.h
                    Interactive/BasicViewerWidget.h
                    Interactive/ManualPatchSelectionDialogParent.h
+                   Interactive/MovablePatch.h
                    NearestNeighbor/VisualSelectionBest.hpp
                    Visitors/InformationVisitors/DisplayVisitor.hpp
                    ${InteractiveInpaintingGMHUISrcs})

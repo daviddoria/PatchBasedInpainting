@@ -33,6 +33,7 @@ ManualPatchSelectionDialog.h
 ManualPatchSelectionDialog.hpp
 ManualPatchSelectionDialogParent.h
 MovablePatch.h
+MovablePatch.hpp
 NamedITKImageCollection.h
 NamedITKImage.h
 NamedVTKImage.h

@@ -101,6 +101,7 @@ ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const ima
   QColor targetPatchColor(255,0,0); // red
   this->TargetPatchDisplayer = new MovablePatch<InteractorStyleImageWithDrag>(this->TargetRegion.GetSize()[0]/2,
                                                 this->InteractorStyle, this->gfxTarget, targetPatchColor);
+  this->TargetPatchDisplayer->Lock();
 
   this->Renderer->ResetCamera();
   this->qvtkWidget->GetRenderWindow()->Render();

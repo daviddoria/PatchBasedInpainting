@@ -175,4 +175,18 @@ void MovablePatch<TInteractorStyle>::SetRegion(const itk::ImageRegion<2>& region
   this->PatchLayer.ImageSlice->SetPosition(position);
 }
 
+template <typename TInteractorStyle>
+void MovablePatch<TInteractorStyle>::Lock()
+{
+  this->PatchLayer.ImageSlice->SetPickable(false);
+  this->PatchLayer.ImageSlice->SetDragable(false);
+}
+
+template <typename TInteractorStyle>
+void MovablePatch<TInteractorStyle>::Unlock()
+{
+  this->PatchLayer.ImageSlice->SetPickable(true);
+  this->PatchLayer.ImageSlice->SetDragable(true);
+}
+
 #endif

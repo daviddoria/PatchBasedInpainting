@@ -75,7 +75,14 @@ public:
   /** Display the selected patch in the QGraphcisView. */
   void Display();
 
+  /** Set the region that is indicated by this object. */
   void SetRegion(const itk::ImageRegion<2>& region);
+
+  /** Do not allow the patch to be selected or moved. */
+  void Lock();
+
+  /** Allow the patch to be selected or moved. */
+  void Unlock();
 
 private:
   /** We need an ImageData/Slice/SliceMapper to display the square. */
@@ -108,6 +115,6 @@ private:
   QImage PatchImage;
 };
 
-#include <MovablePatch.hpp>
+#include "MovablePatch.hpp"
 
 #endif
