@@ -154,7 +154,7 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateSource(const itk::ImageRegio
   // This function has nothing to do with the MovablePatch object that displays the location of the
   // source patch, but rather it just displays a zoomed-in version of the patch in a QGraphicsView.
 
-  // std::cout << "Update source." << std::endl;
+  std::cout << "ManualPatchSelectionDialog<TImage>::slot_UpdateSource." << std::endl;
 
   // Do nothing if the selected patch is not inside the image
   if(!this->Image->GetLargestPossibleRegion().IsInside(sourceRegion))

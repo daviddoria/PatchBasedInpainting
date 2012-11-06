@@ -1,3 +1,21 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #include "InteractorStyleImageWithDrag.h"
 
 #include <vtkObjectFactory.h>
@@ -10,6 +28,14 @@ InteractorStyleImageWithDrag::InteractorStyleImageWithDrag()
   this->ImageStyle = vtkSmartPointer<CustomImageStyle>::New();
 
   this->TrackballStyle = vtkSmartPointer<CustomTrackballStyle>::New();
+
+  this->TrackballStyle->AddObserver(CustomTrackballStyle::PatchesMovedEvent,
+                        this, &InteractorStyleImageWithDrag::PatchMoved);
+}
+
+void InteractorStyleImageWithDrag::PatchMoved()
+{
+  this->InvokeEvent(CustomTrackballStyle::PatchesMovedEvent, NULL);
 }
 
 void InteractorStyleImageWithDrag::Init()
@@ -27,7 +53,8 @@ void InteractorStyleImageWithDrag::SetCurrentRenderer(vtkRenderer* const rendere
   vtkInteractorStyleTrackballActor::SetCurrentRenderer(renderer);
 }
 
-void InteractorStyleImageWithDrag::SetImageOrientation(const double* const leftToRight, const double* const bottomToTop)
+void InteractorStyleImageWithDrag::SetImageOrientation(const double* const leftToRight,
+                                                       const double* const bottomToTop)
 {
   this->ImageStyle->SetImageOrientation(leftToRight, bottomToTop);
 }

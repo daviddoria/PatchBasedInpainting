@@ -1,6 +1,6 @@
 /*=========================================================================
  *
- *  Copyright David Doria 2011 daviddoria@gmail.com
+ *  Copyright David Doria 2012 daviddoria@gmail.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -52,6 +52,8 @@ public:
   CustomImageStyle* GetImageStyle();
   CustomTrackballStyle* GetTrackballStyle();
 
+  void PatchMoved();
+
 private:
   vtkSmartPointer<CustomImageStyle> ImageStyle;
   vtkSmartPointer<CustomTrackballStyle> TrackballStyle;
@@ -69,13 +71,13 @@ class CustomTrackballStyle;
 // Define interaction style
 class CustomImageStyle : public vtkInteractorStyleImage
 {
-  public:
-    static CustomImageStyle* New();
-    vtkTypeMacro(CustomImageStyle,vtkInteractorStyleImage);
+public:
+  static CustomImageStyle* New();
+  vtkTypeMacro(CustomImageStyle,vtkInteractorStyleImage);
 
-    void OnLeftButtonDown();
+  void OnLeftButtonDown();
 
-    void SetOtherStyle(CustomTrackballStyle* const style);
+  void SetOtherStyle(CustomTrackballStyle* const style);
 
 private:
   CustomTrackballStyle* OtherStyle;
@@ -91,21 +93,21 @@ class CustomImageStyle;
 // Define interaction style
 class CustomTrackballStyle : public vtkInteractorStyleTrackballActor
 {
-  public:
-    const static unsigned int PatchesMovedEvent = vtkCommand::UserEvent + 1;
+public:
+  const static unsigned int PatchesMovedEvent = vtkCommand::UserEvent + 1;
 
-    static CustomTrackballStyle* New();
-    vtkTypeMacro(CustomTrackballStyle,vtkInteractorStyleTrackballActor);
+  static CustomTrackballStyle* New();
+  vtkTypeMacro(CustomTrackballStyle,vtkInteractorStyleTrackballActor);
 
-    void OnLeftButtonDown();
+  void OnLeftButtonDown();
 
-    void OnLeftButtonUp();
+  void OnLeftButtonUp();
 
-    void OnMiddleButtonDown();
+  void OnMiddleButtonDown();
 
-    void OnRightButtonDown();
+  void OnRightButtonDown();
 
-    void SetOtherStyle(CustomImageStyle* const style);
+  void SetOtherStyle(CustomImageStyle* const style);
 
 private:
   CustomImageStyle* OtherStyle;
