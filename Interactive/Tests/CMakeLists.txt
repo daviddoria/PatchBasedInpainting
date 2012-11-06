@@ -2,6 +2,10 @@ include_directories(../) # The Interactive directory
 include_directories(../../) # The main PatchBasedInpainting}directory
 include_directories(../../Testing)
 
+# Allow Qt to find it's MOCed files
+#include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR}../)
+
 add_executable(TestBasicViewer TestBasicViewer.cpp ../BasicViewerWidget.h)
 target_link_libraries(TestBasicViewer ${PatchBasedInpainting_libraries} InpaintingGUI)
 add_test(TestBasicViewer TestBasicViewer)
@@ -22,7 +26,8 @@ add_test(TestBasicViewer TestBasicViewer)
 # target_link_libraries(TestColorPalette)
 # add_test(TestColorPalette TestColorPalette)
 # 
-# add_executable(TestNamedITKImageCollection TestNamedITKImageCollection.cpp ../NamedITKImageCollection.cpp ../MaskOperations.cpp ../Mask.cpp)
+# add_executable(TestNamedITKImageCollection TestNamedITKImageCollection.cpp
+#                ../NamedITKImageCollection.cpp)
 # target_link_libraries(TestNamedITKImageCollection ${ITK_LIBRARIES} libHelpers)
 # add_test(TestNamedITKImageCollection TestNamedITKImageCollection)
 # 
@@ -33,10 +38,6 @@ add_test(TestBasicViewer TestBasicViewer)
 # add_executable(TestDisplayStyle TestDisplayStyle.cpp)
 # target_link_libraries(TestDisplayStyle)
 # add_test(TestDisplayStyle TestDisplayStyle)
-# 
-# add_executable(TestHelpersQt TestHelpersQt.cpp ../HelpersQt.cpp)
-# target_link_libraries(TestHelpersQt ${ITK_LIBRARIES} ${QT_LIBRARIES} libTesting)
-# add_test(TestHelpersQt TestHelpersQt)
 # 
 # add_executable(TestImageCamera TestImageCamera.cpp)
 # target_link_libraries(TestImageCamera)
@@ -66,51 +67,39 @@ add_test(TestBasicViewer TestBasicViewer)
  target_link_libraries(TestMovablePatch ${PatchBasedInpainting_libraries} InpaintingGUI)
  add_test(TestMovablePatch TestMovablePatch)
 
-# include_directories(${CMAKE_CURRENT_BINARY_DIR})
 # QT4_WRAP_UI(TopPatchesWidgetUISrcs ../TopPatchesWidget.ui)
-# QT4_WRAP_CPP(TopPatchesWidgetMOCSrcs ../TopPatchesWidget.h ../Delegates/PixmapDelegate.h)
-# add_executable(TestTopPatchesWidget TestTopPatchesWidget.cpp ../Delegates/PixmapDelegate.cpp ../HelpersQt.cpp ${TopPatchesWidgetUISrcs} ${TopPatchesWidgetMOCSrcs})
-# target_link_libraries(TestTopPatchesWidget ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
+# add_executable(TestTopPatchesWidget TestTopPatchesWidget.cpp
+#                 ../TopPatchesWidget.h ../Delegates/PixmapDelegate.h
+#                 ../Delegates/PixmapDelegate.cpp ../HelpersQt.cpp ${TopPatchesWidgetUISrcs})
+# target_link_libraries(TestTopPatchesWidget ${PatchBasedInpainting_libraries} InpaintingGUI)
 # add_test(TestTopPatchesWidget TestTopPatchesWidget)
 
 
 # Ideally we would like to not duplicate TopPatchesDialog and TopPatchesWidget, but rather derive one from the other.
-# include_directories(${CMAKE_CURRENT_BINARY_DIR})
 # QT4_WRAP_UI(TopPatchesWidgetUISrcs ../TopPatchesWidget.ui)
-# QT4_WRAP_CPP(TopPatchesWidgetMOCSrcs ../TopPatchesWidget.h ../TopPatchesDialog.h ../Delegates/PixmapDelegate.h)
-# add_executable(TestTopPatchesDialog TestTopPatchesDialog.cpp ../Delegates/PixmapDelegate.cpp ../HelpersQt.cpp
-#                ${TopPatchesWidgetUISrcs} ${TopPatchesWidgetMOCSrcs})
-# target_link_libraries(TestTopPatchesDialog ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
+# add_executable(TestTopPatchesDialog TestTopPatchesDialog.cpp ../Delegates/PixmapDelegate.cpp
+#                ${TopPatchesWidgetUISrcs} ../TopPatchesWidget.h ../TopPatchesDialog.h ../Delegates/PixmapDelegate.h)
+# target_link_libraries(TestTopPatchesDialog ${PatchBasedInpainting_libraries} InpaintingGUI)
 # add_test(TestTopPatchesDialog TestTopPatchesDialog)
 
-# 
-# include_directories(${CMAKE_CURRENT_BINARY_DIR})
-# include_directories(${CMAKE_CURRENT_BINARY_DIR}../)
 # QT4_WRAP_UI(TopPatchesDialogUISrcs ../TopPatchesDialog.ui)
-# QT4_WRAP_CPP(TopPatchesDialogMOCSrcs ../TopPatchesDialog.h ../Delegates/PixmapDelegate.h)
-# add_executable(TestTopPatchesDialog TestTopPatchesDialog.cpp ../Delegates/PixmapDelegate.cpp ../HelpersQt.cpp
-#                ../../ImageProcessing/Mask.cpp
+# add_executable(TestTopPatchesDialog TestTopPatchesDialog.cpp ../Delegates/PixmapDelegate.cpp
+# ../TopPatchesDialog.h ../Delegates/PixmapDelegate.h
 #                ${TopPatchesDialogUISrcs} ${TopPatchesDialogMOCSrcs})
-# target_link_libraries(TestTopPatchesDialog ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
+# target_link_libraries(TestTopPatchesDialog ${PatchBasedInpainting_libraries} InpaintingGUI)
 # add_test(TestTopPatchesDialog TestTopPatchesDialog)
 
 
-# include_directories(${CMAKE_CURRENT_BINARY_DIR})
-# include_directories(${CMAKE_CURRENT_BINARY_DIR}../)
 # QT4_WRAP_UI(TestPriorityViewerWidgetUISrcs ../PriorityViewerWidget.ui)
-# QT4_WRAP_CPP(TestPriorityViewerWidgetMOCSrcs ../PriorityViewerWidget.h)
 # add_executable(TestPriorityViewerWidget TestPriorityViewerWidget.cpp # ../PriorityViewerWidget.cpp
-#                ${TestPriorityViewerWidgetUISrcs} ${TestPriorityViewerWidgetMOCSrcs})
-# target_link_libraries(TestPriorityViewerWidget ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libGUI)
+#                ${TestPriorityViewerWidgetUISrcs} ../PriorityViewerWidget.h)
+# target_link_libraries(TestPriorityViewerWidget ${PatchBasedInpainting_libraries} InpaintingGUI)
 # add_test(TestPriorityViewerWidget TestPriorityViewerWidget)
 
-#include_directories(${CMAKE_CURRENT_BINARY_DIR})
-#include_directories(${CMAKE_CURRENT_BINARY_DIR}../)
-#QT4_WRAP_UI(TestManualPatchSelectionDialogUISrcs ../ManualPatchSelectionDialog.ui)
-#QT4_WRAP_CPP(TestManualPatchSelectionDialogMOCSrcs ../ManualPatchSelectionDialog.h ../MovablePatch.h)
-#add_executable(TestManualPatchSelectionDialog TestManualPatchSelectionDialog.cpp
-#               ../MovablePatch.cpp
-#../../ImageProcessing/Mask.cpp
-#               ${TestManualPatchSelectionDialogUISrcs} ${TestManualPatchSelectionDialogMOCSrcs})
-#target_link_libraries(TestManualPatchSelectionDialog ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libGUI)
-#add_test(TestManualPatchSelectionDialog TestManualPatchSelectionDialog)
+QT4_WRAP_UI(TestManualPatchSelectionDialogUISrcs ../ManualPatchSelectionDialog.ui)
+QT4_WRAP_CPP(TestManualPatchSelectionDialogMOCSrcs )
+add_executable(TestManualPatchSelectionDialog TestManualPatchSelectionDialog.cpp
+               ../ManualPatchSelectionDialogParent.h ../MovablePatch.h
+               ${TestManualPatchSelectionDialogUISrcs})
+target_link_libraries(TestManualPatchSelectionDialog ${PatchBasedInpainting_libraries} InpaintingGUI)
+add_test(TestManualPatchSelectionDialog TestManualPatchSelectionDialog)

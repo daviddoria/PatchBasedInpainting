@@ -113,11 +113,11 @@ private:
    *  because the constructor registers 'this' as a VTK observer, and if it is done from a temporary
    *  (i.e. PatchSelector = MovablePatch(...)), 'this' changes when the assignment operator copies the
    *  resulting object into PatchSelector. */
-  MovablePatch* SourcePatchSelector;
+  MovablePatch<InteractorStyleImageWithDrag>* SourcePatchSelector;
 
   /** This is used to display the target patch on top of the image. Though it is a MovablePatch, we disable
     * the movability (it is fixed in place). */
-  MovablePatch* TargetPatchDisplayer;
+  MovablePatch<InteractorStyleImageWithDrag>* TargetPatchDisplayer;
 
   /** The patch region that we are trying to pick a match for. */
   itk::ImageRegion<2> TargetRegion;

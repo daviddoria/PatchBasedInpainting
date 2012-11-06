@@ -95,11 +95,11 @@ ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const ima
   this->InteractorStyle->Init();
 
   QColor sourcePatchColor(0,255,0); // green
-  this->SourcePatchSelector = new MovablePatch(this->TargetRegion.GetSize()[0]/2,
+  this->SourcePatchSelector = new MovablePatch<InteractorStyleImageWithDrag>(this->TargetRegion.GetSize()[0]/2,
                                                this->InteractorStyle, this->gfxSource, sourcePatchColor);
 
   QColor targetPatchColor(255,0,0); // red
-  this->TargetPatchDisplayer = new MovablePatch(this->TargetRegion.GetSize()[0]/2,
+  this->TargetPatchDisplayer = new MovablePatch<InteractorStyleImageWithDrag>(this->TargetRegion.GetSize()[0]/2,
                                                 this->InteractorStyle, this->gfxTarget, targetPatchColor);
 
   this->Renderer->ResetCamera();
@@ -218,7 +218,9 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateTarget(const itk::ImageRegio
   zeroPixel = itk::NumericTraits<typename TImage::PixelType>::ZeroValue(zeroPixel);
   targetRegionMask->ApplyToImage(targetRegionImage.GetPointer(), zeroPixel);
 
-  QImage maskedTargetImage = ITKQtHelpers::GetQImageColor(targetRegionImage.GetPointer(), region);
+  // We use the full region because the ExtractRegion function above produces an image where the Index is set to (0,0)
+  QImage maskedTargetImage = ITKQtHelpers::GetQImageColor(targetRegionImage.GetPointer(),
+                                                          targetRegionImage->GetLargestPossibleRegion());
   QGraphicsPixmapItem* maskedItem = this->TargetPatchScene->addPixmap(QPixmap::fromImage(maskedTargetImage));
   this->gfxTarget->fitInView(maskedItem);
 
