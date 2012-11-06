@@ -55,8 +55,11 @@ public slots:
   /** The slot to handle when the btnSavePair button is clicked. */
   virtual void on_btnSavePair_clicked() = 0;
 
-  /** The click events. */
+  /** When the user clicks a patch in the list, how the proposed completed patch and emit
+    * a signal so viewers can update their views. */
   virtual void slot_SingleClicked(const QModelIndex & index) = 0;
+
+  /** When the user double clicks a patch in the list, close the dialog and return that patch as the one to use. */
   virtual void slot_DoubleClicked(const QModelIndex & index) = 0;
 
   /** The slot to handle when the btnSelectManually button is clicked. */
@@ -74,27 +77,28 @@ private:
   /** The mask to use. */
   Mask* MaskImage;
 
+  /** The query node. */
   Node QueryNode;
 
-  /** Store the row() of the selected index. This is signed because we set it to -1 to check if a valid selection was made
-   * since Qt 4.7 cannot return a value from a function called with invokeMethod with BlockingQueuedConnection.
-   */
+  /** Store the selected node. */
   Node SelectedNode;
 
-  /** Store the row() of the selected index. This is signed because we set it to -1 to check if a valid selection was made
-   * since Qt 4.7 cannot return a value from a function called with invokeMethod with BlockingQueuedConnection.
-   */
+  /** Indicates if the selection was valid. */
   bool ValidSelection;
 
   /** The half-width of the patch. */
   unsigned int PatchHalfWidth;
 
-  /** The scene and item for the query patch.*/
+  /** The scene for the query patch.*/
   QGraphicsScene* QueryPatchScene;
+
+  /** The item for the query patch.*/
   QGraphicsPixmapItem* MaskedQueryPatchItem;
 
-  /** The scene and item for the proposed patch.*/
+  /** The scene for the proposed patch.*/
   QGraphicsScene* ProposedPatchScene;
+
+  /** The item for the proposed patch.*/
   QGraphicsPixmapItem* ProposedPatchItem;
 
   /** The color to use as the background of the QGraphicsScenes */

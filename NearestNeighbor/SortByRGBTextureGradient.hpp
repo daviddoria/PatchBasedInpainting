@@ -277,11 +277,13 @@ public:
 
     ParallelSortType::IndexedVector sortedScores = ParallelSortType::ParallelSortAscending(scores);
 
+    // c++ doesn't allow a second counter to be declared inside for()
+    TOutputIterator currentOutputIterator = outputFirst;
 
-    TOutputIterator currentOutputIterator = outputFirst; // c++ doesn't allow a second counter to be declared inside for()
     for(unsigned int i = 0; i < sortedScores.size(); ++i, ++currentOutputIterator)
     {
       unsigned int currentId = sortedScores[i].index;
+      std::cout << "Best patch " << i << " has score " << sortedScores[i].value << std::endl;
 
       TIterator current = first;
       std::advance(current, currentId);

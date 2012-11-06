@@ -29,6 +29,8 @@
 #include <Mask/Mask.h>
 #include <Utilities/Histogram/HistogramGenerator.hpp>
 #include <Utilities/Histogram/MaskedHistogramGenerator.hpp>
+#include <Utilities/Histogram/HistogramDifferences.hpp>
+#include <ITKHelpers/itkNormImageAdaptor.h>
 
 // ITK
 #include "itkNthElementImageAdaptor.h"

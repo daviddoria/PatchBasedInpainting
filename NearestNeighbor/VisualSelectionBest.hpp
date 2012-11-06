@@ -59,7 +59,6 @@ public:
                       const unsigned int patchHalfWidth, QWidget* parent = nullptr) :
   Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
   {
-    std::cout << "VisualSelectionBest parent pos " << parent->pos().x() << " " << parent->pos().y() << std::endl;
     this->TopPatchesDialogHandler =
         new DialogHandler<TImage>(this->Image, this->MaskImage, this->PatchHalfWidth, parent);
     this->TopPatchesDialogHandler->moveToThread(QCoreApplication::instance()->thread());

@@ -406,6 +406,12 @@ if(BuildInteractiveInpaintingTests)
   add_subdirectory(Interactive/Tests)
 ENDIF()
 
+option(BuildDifferenceFunctionsTests "Build difference functions tests.")
+if(BuildDifferenceFunctionsTests)
+  ENABLE_TESTING()
+  add_subdirectory(DifferenceFunctions/Tests)
+ENDIF()
+
 option(BuildInpaintingDemos "Build demos.")
 if(BuildInpaintingDemos)
   add_subdirectory(Demos)
