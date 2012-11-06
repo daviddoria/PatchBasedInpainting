@@ -94,30 +94,30 @@ ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const ima
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
   this->InteractorStyle->Init();
 
-  this->PatchSelector = new MovablePatch(this->TargetRegion.GetSize()[0]/2,
-                                         this->InteractorStyle, this->gfxSource);
+  QColor sourcePatchColor(0,255,0); // green
+  this->SourcePatchSelector = new MovablePatch(this->TargetRegion.GetSize()[0]/2,
+                                               this->InteractorStyle, this->gfxSource, sourcePatchColor);
+
+  QColor targetPatchColor(255,0,0); // red
+  this->TargetPatchDisplayer = new MovablePatch(this->TargetRegion.GetSize()[0]/2,
+                                                this->InteractorStyle, this->gfxTarget, targetPatchColor);
 
   this->Renderer->ResetCamera();
   this->qvtkWidget->GetRenderWindow()->Render();
-  // this->Camera = new ImageCamera(this->Renderer);
 
   // Setup the viewing orientation
   this->ItkVtkCamera = new ITKVTKCamera(this->InteractorStyle->GetImageStyle(), this->Renderer,
                                         this->qvtkWidget->GetRenderWindow());
   this->ItkVtkCamera->SetCameraPositionPNG();
 
-  connect(this->PatchSelector, SIGNAL(signal_PatchMoved()), this, SLOT(slot_PatchMoved()));
+  connect(this->SourcePatchSelector, SIGNAL(signal_PatchMoved()), this, SLOT(slot_PatchMoved()));
 }
 
 template <typename TImage>
 void ManualPatchSelectionDialog<TImage>::slot_PatchMoved()
 {
-  slot_UpdateSource(this->PatchSelector->GetRegion(), this->TargetRegion);
-  slot_UpdateResult(this->PatchSelector->GetRegion(), this->TargetRegion);
-
-  // This will refresh the scene so that the old patch positions are erased
-  //this->InteractorStyle->GetCurrentRenderer()->GetRenderWindow()->Render(); // (this doesn't work...)
-  this->qvtkWidget->GetRenderWindow()->Render();
+  slot_UpdateSource(this->SourcePatchSelector->GetRegion(), this->TargetRegion);
+  slot_UpdateResult(this->SourcePatchSelector->GetRegion(), this->TargetRegion);
 }
 
 template <typename TImage>
@@ -148,15 +148,21 @@ template <typename TImage>
 void ManualPatchSelectionDialog<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion,
                                                            const itk::ImageRegion<2>& targetRegion)
 {
-  // This function needs the targetRegion because this is the region of the Mask that is used to mask the source patch.
+  // This function needs the targetRegion because this is the region of the Mask that is
+  // used to mask the source patch.
+  // This function has nothing to do with the MovablePatch object that displays the location of the
+  // source patch, but rather it just displays a zoomed-in version of the patch in a QGraphicsView.
+
   // std::cout << "Update source." << std::endl;
 
+  // Do nothing if the selected patch is not inside the image
   if(!this->Image->GetLargestPossibleRegion().IsInside(sourceRegion))
   {
     std::cerr << "Source region is outside the image!" << std::endl;
     return;
   }
   
+  // Don't allow the user to click Accept unless the source patch that is selected is valid.
   if(this->MaskImage->CountHolePixels(sourceRegion) > 0)
   {
     std::cerr << "The source patch must not have any hole pixels!" << std::endl;
@@ -167,6 +173,7 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateSource(const itk::ImageRegio
     this->btnAccept->setVisible(true);
   }
 
+  // Create the small image of the patch that will be displayed.
   typename TImage::Pointer tempImage = TImage::New();
   ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
 
@@ -197,21 +204,25 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateTarget(const itk::ImageRegio
 {
   // std::cout << "Update target." << std::endl;
 
-  unsigned char red[3] = {255, 0, 0};
-  ITKVTKHelpers::OutlineRegion(this->ImageLayer.ImageData, region, red);
+  // Extract the relevant portion of the image
+  typename TImage::Pointer targetRegionImage = TImage::New();
+  ITKHelpers::ExtractRegion(this->Image, this->TargetRegion, targetRegionImage.GetPointer());
 
-  this->qvtkWidget->GetRenderWindow()->Render();
+  // Extract the relevant portion of the mask
+  Mask::Pointer targetRegionMask = Mask::New();
+  ITKHelpers::ExtractRegion(this->MaskImage, this->TargetRegion, targetRegionMask.GetPointer());
+  targetRegionMask->CopyInformationFrom(this->MaskImage);
 
-  // Masked target patch
-  typename TImage::Pointer tempImage = TImage::New();
-  ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
+  // Mask the image of the target region with the target region mask
   typename TImage::PixelType zeroPixel(3);
   zeroPixel = itk::NumericTraits<typename TImage::PixelType>::ZeroValue(zeroPixel);
+  targetRegionMask->ApplyToImage(targetRegionImage.GetPointer(), zeroPixel);
 
-  this->MaskImage->ApplyToImage(tempImage.GetPointer(), zeroPixel);
-  QImage maskedTargetImage = ITKQtHelpers::GetQImageColor(tempImage.GetPointer(), region);
+  QImage maskedTargetImage = ITKQtHelpers::GetQImageColor(targetRegionImage.GetPointer(), region);
   QGraphicsPixmapItem* maskedItem = this->TargetPatchScene->addPixmap(QPixmap::fromImage(maskedTargetImage));
   this->gfxTarget->fitInView(maskedItem);
+
+  this->TargetPatchDisplayer->SetRegion(region);
 }
 
 template <typename TImage>
@@ -290,7 +301,7 @@ template <typename TImage>
 void ManualPatchSelectionDialog<TImage>::on_btnAccept_clicked()
 {
   // Store the result so it can be accessed from the caller who opened the dialog
-  itk::Index<2> patchCenter = ITKHelpers::GetRegionCenter(this->PatchSelector->GetRegion());
+  itk::Index<2> patchCenter = ITKHelpers::GetRegionCenter(this->SourcePatchSelector->GetRegion());
   this->SelectedNode = Helpers::ConvertFrom<Node, itk::Index<2> >(patchCenter);
 
   // Return from the dialog

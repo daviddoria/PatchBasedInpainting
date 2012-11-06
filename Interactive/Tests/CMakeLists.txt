@@ -62,9 +62,9 @@ add_test(TestBasicViewer TestBasicViewer)
 # target_link_libraries(TestVectorLayer)
 # add_test(TestVectorLayer TestVectorLayer)
 # 
-# add_executable(TestMovablePatch TestMovablePatch.cpp ../MovablePatch.cpp ../Layer.cpp ../HelpersQt.cpp)
-# target_link_libraries(TestMovablePatch ${QT_LIBRARIES} ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
-# add_test(TestMovablePatch TestMovablePatch)
+ add_executable(TestMovablePatch TestMovablePatch.cpp ../MovablePatch.h)
+ target_link_libraries(TestMovablePatch ${PatchBasedInpainting_libraries} InpaintingGUI)
+ add_test(TestMovablePatch TestMovablePatch)
 
 # include_directories(${CMAKE_CURRENT_BINARY_DIR})
 # QT4_WRAP_UI(TopPatchesWidgetUISrcs ../TopPatchesWidget.ui)

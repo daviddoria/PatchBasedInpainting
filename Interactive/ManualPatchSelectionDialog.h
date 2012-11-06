@@ -74,7 +74,7 @@ private:
   /** Do some things after the widget is displayed. */
   void showEvent(QShowEvent* event);
   
-  /** The image that will be displayed, and the from which the patches will be extracted before being displayed. */
+  /** The image that will be displayed, and from which the patches will be extracted before being displayed. */
   TImage* Image;
 
   /** The mask that will be used to mask the patches that are displayed. */
@@ -86,7 +86,7 @@ private:
   /** The interactor to allow us to zoom and pan the image while still moving images with Pickable=true */
   vtkSmartPointer<InteractorStyleImageWithDrag> InteractorStyle;
 
-  /** The only renderer */
+  /** The renderer. */
   vtkSmartPointer<vtkRenderer> Renderer;
 
   /** The QGraphicScene objects for the source, target, and result patches. */
@@ -106,15 +106,18 @@ private:
    * size has changed (typically this only when the image is changed, or setup for the first time). */
   int ImageDimension[3];
 
-  /** A wrapper that creates and holds the image, the mapper, and the actor. */
+  /** A wrapper that creates and holds the image, the mapper, and the actor for the main image. */
   Layer ImageLayer;
 
-  /** The half-width of the patch that will be moved around by the user. This MUST be a pointer,
+  /** The patch that will be moved around by the user. This MUST be a pointer,
    *  because the constructor registers 'this' as a VTK observer, and if it is done from a temporary
    *  (i.e. PatchSelector = MovablePatch(...)), 'this' changes when the assignment operator copies the
-   *  resulting object into PatchSelector.
-   */
-  MovablePatch* PatchSelector;
+   *  resulting object into PatchSelector. */
+  MovablePatch* SourcePatchSelector;
+
+  /** This is used to display the target patch on top of the image. Though it is a MovablePatch, we disable
+    * the movability (it is fixed in place). */
+  MovablePatch* TargetPatchDisplayer;
 
   /** The patch region that we are trying to pick a match for. */
   itk::ImageRegion<2> TargetRegion;

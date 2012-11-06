@@ -48,7 +48,7 @@ VectorLayer.h
 )
 
 add_library(InpaintingGUI Layer.cpp InteractorStyleImageWithDrag.cpp
-            ImageCamera.cpp MovablePatch.cpp PatchHighlighter.cpp
+            ImageCamera.cpp PatchHighlighter.cpp
             Delegates/PixmapDelegate.cpp)
 target_link_libraries(InpaintingGUI ${PatchBasedInpainting_libraries})
 

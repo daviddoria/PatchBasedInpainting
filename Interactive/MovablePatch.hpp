@@ -16,6 +16,9 @@
  *
  *=========================================================================*/
 
+#ifndef MovablePatch_HPP
+#define MovablePatch_HPP
+
 #include "MovablePatch.h"
 
 // Qt
@@ -42,10 +45,18 @@
 // STL
 #include <stdexcept>
 
-MovablePatch::MovablePatch(const unsigned int radius, InteractorStyleImageWithDrag* const interactorStyle,
-                           QGraphicsView* const view, const QColor color) :
-                           Radius(radius), InteractorStyle(interactorStyle), View(view), Color(color)
+template <typename TInteractorStyle>
+MovablePatch<TInteractorStyle>::MovablePatch
+(const unsigned int radius,
+ TInteractorStyle* const interactorStyle,
+ QGraphicsView* const view, const QColor color) :
+ Radius(radius), InteractorStyle(interactorStyle), View(view), Color(color)
 {
+  if(!this->PatchScene)
+  {
+    this->PatchScene = new QGraphicsScene;
+  }
+
   this->PatchLayer.ImageSlice->SetPickable(true);
   this->PatchLayer.ImageSlice->SetDragable(true);
 
@@ -79,21 +90,24 @@ MovablePatch::MovablePatch(const unsigned int radius, InteractorStyleImageWithDr
 
   this->PatchLayer.ImageSlice->SetPosition(position);
   
-  this->InteractorStyle->GetTrackballStyle()->AddObserver(CustomTrackballStyle::PatchesMovedEvent,
-                                                          this, &MovablePatch::PatchMoved);
+  this->InteractorStyle->AddObserver(CustomTrackballStyle::PatchesMovedEvent,
+                                     this, &MovablePatch::PatchMoved);
 }
 
-void MovablePatch::SetVisibility(const bool visibility)
+template <typename TInteractorStyle>
+void MovablePatch<TInteractorStyle>::SetVisibility(const bool visibility)
 {
   this->PatchLayer.ImageSlice->SetVisibility(visibility);
 }
 
-bool MovablePatch::GetVisibility()
+template <typename TInteractorStyle>
+bool MovablePatch<TInteractorStyle>::GetVisibility()
 {
   return this->PatchLayer.ImageSlice->GetVisibility();
 }
 
-itk::ImageRegion<2> MovablePatch::GetRegion()
+template <typename TInteractorStyle>
+itk::ImageRegion<2> MovablePatch<TInteractorStyle>::GetRegion()
 {
   double position[3];
   this->PatchLayer.ImageSlice->GetPosition(position);
@@ -109,13 +123,18 @@ itk::ImageRegion<2> MovablePatch::GetRegion()
   return region;
 }
 
-void MovablePatch::Display()
+template <typename TInteractorStyle>
+void MovablePatch<TInteractorStyle>::Display()
 {
-  QGraphicsPixmapItem* item = this->PatchScene->addPixmap(QPixmap::fromImage(this->PatchImage));
-  this->View->fitInView(item);
+  if(this->View)
+  {
+    QGraphicsPixmapItem* item = this->PatchScene->addPixmap(QPixmap::fromImage(this->PatchImage));
+    this->View->fitInView(item);
+  }
 }
 
-void MovablePatch::PatchMoved()
+template <typename TInteractorStyle>
+void MovablePatch<TInteractorStyle>::PatchMoved()
 {
   // Snap user patch to integer pixels
   double position[3];
@@ -135,7 +154,25 @@ void MovablePatch::PatchMoved()
   emit signal_PatchMoved();
 }
 
-void MovablePatch::SetGraphicsView(QGraphicsView* const view)
+template <typename TInteractorStyle>
+void MovablePatch<TInteractorStyle>::SetGraphicsView(QGraphicsView* const view)
 {
   this->View = view;
+  if(!this->PatchScene)
+  {
+    this->PatchScene = new QGraphicsScene;
+  }
 }
+
+template <typename TInteractorStyle>
+void MovablePatch<TInteractorStyle>::SetRegion(const itk::ImageRegion<2>& region)
+{
+  // VTK requires us to set the position of the slice using it's corner, so we just have to get
+  // the Index of the region.
+
+  double position[3] = {static_cast<double>(region.GetIndex()[0]),
+                        static_cast<double>(region.GetIndex()[1]), 0};
+  this->PatchLayer.ImageSlice->SetPosition(position);
+}
+
+#endif

@@ -21,7 +21,6 @@
 
 // Custom
 #include "Layer.h"
-class InteractorStyleImageWithDrag;
 
 // ITK
 #include "itkImageRegion.h"
@@ -36,15 +35,24 @@ class QGraphicsView;
 class vtkRenderer;
 #include <vtkImageSlice.h>
 
-/** This class gives us a little square that the user can drag around to select a region/patch in
-  * an image. It also lets the patch be displayed in a QGraphicsView.
-  */
-class MovablePatch : public QObject
+/** Since Qt doesn't allow class templates to have signals, this does the trick. */
+class MovablePatchParent : public QObject
 {
 Q_OBJECT
 
 signals:
   void signal_PatchMoved();
+};
+
+/** This class gives us a little square that the user can drag around to select a region/patch in
+  * an image. It also lets the patch be displayed in a QGraphicsView.
+  * Note that you have to call:
+  * style->SetCurrentRenderer(renderer);
+  * before passing the style to the MovablePatch constructor.
+  */
+template <typename TInteractorStyle>
+class MovablePatch : public MovablePatchParent
+{
 
 public:
   /** This constructor is provided so that we can store a MovablePatch as a member,
@@ -52,8 +60,8 @@ public:
 //  MovablePatch();
 
   /** This constructor is provided if everything is known when we create the object.*/
-  MovablePatch(const unsigned int radius, InteractorStyleImageWithDrag* const interactorStyle,
-               QGraphicsView* const view = NULL, const QColor color = QColor());
+  MovablePatch(const unsigned int radius, TInteractorStyle* const interactorStyle,
+               QGraphicsView* const view = nullptr, const QColor color = QColor());
 
   void SetVisibility(const bool);
   bool GetVisibility();
@@ -66,6 +74,8 @@ public:
 
   /** Display the selected patch in the QGraphcisView. */
   void Display();
+
+  void SetRegion(const itk::ImageRegion<2>& region);
 
 private:
   /** We need an ImageData/Slice/SliceMapper to display the square. */
@@ -80,7 +90,7 @@ private:
   unsigned int Radius = 0;
 
   /** The interactor style in which the patch is displayed. */
-  InteractorStyleImageWithDrag* InteractorStyle = nullptr;
+  TInteractorStyle* InteractorStyle = nullptr;
 
   /** The QGraphicsView in which to display the patch. */
   QGraphicsView* View = nullptr;
@@ -88,11 +98,16 @@ private:
   /** The color of the patch outline. */
   QColor Color;
 
-  /** The scene to draw into and then display in the QGraphicsView. */
-  QSharedPointer<QGraphicsScene> PatchScene = QSharedPointer<QGraphicsScene>(new QGraphicsScene);
+  /** The scene to draw into and then display in the QGraphicsView.
+    * We don't instantiate this here or even in the constructor because this class can be used
+    * without the QGraphicsScene, and if it IS used with a QGraphicsScene then it must not
+    * be without a QApplication. */
+  QGraphicsScene* PatchScene = nullptr;
 
   /** The image to draw in the scene that is displayed in the QGraphicsView. */
   QImage PatchImage;
 };
+
+#include <MovablePatch.hpp>
 
 #endif
