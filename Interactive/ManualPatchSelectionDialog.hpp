@@ -185,19 +185,6 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateSource(const itk::ImageRegio
   QImage maskedSourceImage = ITKQtHelpers::GetQImageColor(tempImage.GetPointer(), sourceRegion);
   QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(maskedSourceImage));
   this->gfxSource->fitInView(item);
-
-  // Refresh the image
-  //ITKVTKHelpers::ITKImageToVTKRGBImage(this->Image, this->ImageLayer.ImageData);
-  unsigned char green[3] = {0, 255, 0};
-
-  MaskOperations::ITKImageToVTKImageMasked(tempImage.GetPointer(), this->MaskImage,
-                                          this->ImageLayer.ImageData, green);
-
-  // Outline the source patch
-  unsigned char blue[3] = {0, 0, 255};
-  ITKVTKHelpers::OutlineRegion(this->ImageLayer.ImageData, sourceRegion, blue);
-
-  this->qvtkWidget->GetRenderWindow()->Render();
 }
 
 template <typename TImage>
