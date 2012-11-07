@@ -128,6 +128,7 @@ public:
 
 private:
 
+  /** Setup the QGraphicsScenes. */
   void SetupScenes();
 
   /** The interactor to allow us to zoom and pan the image while still moving images with Pickable=true */
@@ -151,7 +152,10 @@ private:
   /** An object that sets up the viewing orientation of the image. */
   ITKVTKCamera* ItkVtkCamera;
 
+  /** The object that indicates where the source patch is located. */
   PatchHighlighter* SourceHighlighter;
+
+  /** The object that indicates where the target patch is located. */
   PatchHighlighter* TargetHighlighter;
 };
 

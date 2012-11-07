@@ -23,43 +23,49 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkSmartPointer.h>
 
+// Submodules
+#include <Helpers/Helpers.h>
+#include <ITKHelpers/ITKHelpers.h>
+#include <ITKVTKHelpers/ITKVTKHelpers.h>
+#include <VTKHelpers/VTKHelpers.h>
+#include <QtHelpers/QtHelpers.h>
+
 // Custom
-#include "Helpers/Helpers.h"
-#include "ITKHelpers/ITKHelpers.h"
-#include "ITKVTKHelpers/ITKVTKHelpers.h"
-#include "VTKHelpers/VTKHelpers.h"
-#include "QtHelpers/QtHelpers.h"
 #include "InteractorStyleImageWithDrag.h"
 
 template <typename TPriority, typename TBoundaryStatusMapType>
-PriorityViewerWidget<TPriority, TBoundaryStatusMapType>::PriorityViewerWidget(TPriority* const priorityFunction, const itk::Size<2>& imageSize, TBoundaryStatusMapType boundaryStatusMap) :
-PriorityFunction(priorityFunction), ImageSize(imageSize), PreviouslyDisplayed(false), BoundaryStatusMap(boundaryStatusMap)
+PriorityViewerWidget<TPriority, TBoundaryStatusMapType>::PriorityViewerWidget(TPriority* const priorityFunction,
+                                                                              const itk::Size<2>& imageSize,
+                                                                              TBoundaryStatusMapType* boundaryStatusMap) :
+  PriorityFunction(priorityFunction), ImageSize(imageSize), PreviouslyDisplayed(false),
+  BoundaryStatusMap(boundaryStatusMap)
 {
   this->setupUi(this);
 
-  PriorityImage = PriorityImageType::New();
-  itk::ImageRegion<2> fullRegion(ITKHelpers::CornerRegion(ImageSize));
-  PriorityImage->SetRegions(fullRegion);
-  PriorityImage->Allocate();
-
-//   int dims[3] = {imageSize[0], imageSize[1], 1};
-//   this->ImageLayer.ImageData->SetDimensions(dims);
-//   this->ImageLayer.ImageData->SetNumberOfScalarComponents(1);
-//   this->ImageLayer.ImageData->SetScalarTypeToUnsignedChar();
-//   this->AllocateScalars();
+  this->PriorityImage = PriorityImageType::New();
+  itk::ImageRegion<2> fullRegion(ITKHelpers::CornerRegion(this->ImageSize));
+  this->PriorityImage->SetRegions(fullRegion);
+  this->PriorityImage->Allocate();
 
   this->InteractorStyle = vtkSmartPointer<InteractorStyleImageWithDrag>::New();
 
   this->Renderer = vtkSmartPointer<vtkRenderer>::New();
   this->qvtkWidget->GetRenderWindow()->AddRenderer(this->Renderer);
 
-  this->Renderer->AddViewProp(ImageLayer.ImageSlice);
+  this->Renderer->AddViewProp(this->ImageLayer.ImageSlice);
+
+  // Without this here (and then setting it to true later after it is populated),
+  // you will get "This data object does not contain the requested extent
+  this->ImageLayer.ImageSlice->VisibilityOff();
 
   this->InteractorStyle->SetCurrentRenderer(this->Renderer);
   this->qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(this->InteractorStyle);
   this->InteractorStyle->Init();
 
-  this->Camera = new ImageCamera(this->Renderer);
+  // Setup control of the viewing orientation
+  this->ItkVtkCamera = new ITKVTKCamera(this->InteractorStyle->GetImageStyle(), this->Renderer,
+                                        this->qvtkWidget->GetRenderWindow());
+  this->ItkVtkCamera->SetCameraPositionPNG();
 }
 
 template <typename TPriority, typename TBoundaryStatusMapType>
@@ -67,36 +73,31 @@ void PriorityViewerWidget<TPriority, TBoundaryStatusMapType>::slot_UpdateImage()
 {
   // std::cout << "PriorityViewerWidget::slot_UpdateImage." << std::endl;
 
-  ITKHelpers::SetImageToConstant(PriorityImage.GetPointer(), 0);
+  ITKHelpers::SetImageToConstant(this->PriorityImage.GetPointer(), 0);
   // Compute the priority at every boundary pixel
-  itk::ImageRegionIterator<PriorityImageType> imageIterator(PriorityImage, PriorityImage->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<PriorityImageType> imageIterator(this->PriorityImage,
+                                                            this->PriorityImage->GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
-    {
+  {
     typename TBoundaryStatusMapType::key_type node = Helpers::ConvertFrom<typename TBoundaryStatusMapType::key_type, itk::Index<2> >(imageIterator.GetIndex());
-    if(get(BoundaryStatusMap, node))
-      {
-      imageIterator.Set(PriorityFunction->ComputePriority(imageIterator.GetIndex()));
-      }
+    if(get(*(this->BoundaryStatusMap), node))
+    {
+      imageIterator.Set(this->PriorityFunction->ComputePriority(imageIterator.GetIndex()));
+    }
 
     ++imageIterator;
-    }
+  }
 
-//   // Rescale the priorities to be displayed as a grayscale image
-//   typedef itk::RescaleIntensityImageFilter<PriorityImageType, PriorityImageType> RescaleFilterType;
-//   RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
-//   rescaleFilter->SetInput(PriorityImage);
-//   rescaleFilter->SetOutputMinimum(0);
-//   rescaleFilter->SetOutputMaximum(255);
-//   rescaleFilter->Update();
+  // Rescale the priorities to be displayed as a grayscale image
+  ITKVTKHelpers::ITKScalarImageToScaledVTKImage(this->PriorityImage.GetPointer(), this->ImageLayer.ImageData);
+  this->ImageLayer.ImageSlice->VisibilityOn();
 
-  ITKVTKHelpers::ITKScalarImageToScaledVTKImage(PriorityImage.GetPointer(), this->ImageLayer.ImageData);
-
-  if(!PreviouslyDisplayed)
-    {
+  if(!this->PreviouslyDisplayed)
+  {
     this->Renderer->ResetCamera();
-    PreviouslyDisplayed = true;
-    }
+    this->PreviouslyDisplayed = true;
+  }
 
   this->qvtkWidget->GetRenderWindow()->Render();
 }

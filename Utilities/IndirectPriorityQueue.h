@@ -86,6 +86,11 @@ struct IndirectPriorityQueue
     }
   }
 
+  BoundaryStatusMapType* GetBoundaryStatusMap()
+  {
+    return &(this->BoundaryStatusMap);
+  }
+
   size_t CountValidNodes()
   {
     size_t numberOfValidNodes = 0;

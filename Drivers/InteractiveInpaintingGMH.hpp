@@ -100,6 +100,7 @@
 
 // GUI
 #include "Interactive/BasicViewerWidget.h"
+#include "Interactive/PriorityViewerWidget.h"
 
 template <typename TImage>
 void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
@@ -263,6 +264,14 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   // Connect the viewer to the top patches selection widget
   basicViewer->ConnectWidget(manualSearchBest->GetTopPatchesDialog());
   basicViewer->show();
+
+  typedef PriorityViewerWidget<PriorityType, BoundaryNodeQueueType::BoundaryStatusMapType> PriorityViewerType;
+  PriorityViewerType* priorityViewer = new PriorityViewerType(priorityFunction.get(), originalImage->GetLargestPossibleRegion().GetSize(),
+                                                              boundaryNodeQueue->GetBoundaryStatusMap());
+  QObject::connect(displayVisitor.get(), SIGNAL(signal_RefreshImage()),
+                   priorityViewer, SLOT(slot_UpdateImage()),
+                   Qt::BlockingQueuedConnection);
+  priorityViewer->show();
 
   // Run the remaining inpainting with interaction
   std::cout << "Running inpainting..." << std::endl;

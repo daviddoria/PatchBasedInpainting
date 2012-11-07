@@ -194,7 +194,6 @@ public:
     float bestDistance = std::numeric_limits<float>::max();
     TIterator bestPatch = last;
 
-    unsigned int bestId = 0; // Keep track of which of the top SSD patches is the best by histogram score (just for information sake)
     HistogramType bestHistogram;
 
     // Store the scores in this container so we can sort them later
@@ -265,7 +264,6 @@ public:
         bestPatch = currentPatch;
 
         // These are not needed - just for debugging
-        bestId = currentPatch - first;
         bestHistogram = testHistogram;
       }
     } // end loop over source patches

@@ -31,9 +31,12 @@
 #include <QMainWindow>
 #include <QThread>
 
+// Submodules
+#include <ITKVTKCamera/ITKVTKCamera.h>
+#include <Mask/Mask.h>
+
 // Custom
 #include "ImageCamera.h"
-#include "Mask/Mask.h"
 #include "Node.h"
 #include "Interactive/Layer.h"
 #include "Priority/Priority.h"
@@ -46,6 +49,7 @@ Q_OBJECT
 
 public slots:
 
+  /** Update the image with the current hole boundary and priority values. */
   virtual void slot_UpdateImage() = 0;
 
 };
@@ -56,11 +60,14 @@ class PriorityViewerWidget : public PriorityViewerWidgetParent
 {
 private:
 
+  /** The image whose pixels indicate the priority of each pixel. */
   typedef itk::Image<float, 2> PriorityImageType;
   PriorityImageType::Pointer PriorityImage;
   
+  /** The function to use to compute the priority of a pixel. */
   TPriority* PriorityFunction;
 
+  /** The size of the image. */
   itk::Size<2> ImageSize;
 
   /** This variable is simply to determine whether or not to ResetCamera. */
@@ -75,22 +82,27 @@ private:
   /** A wrapper that creates and holds the image, the mapper, and the actor. */
   Layer ImageLayer;
 
-  TBoundaryStatusMapType BoundaryStatusMap;
+  /** A data structure that indicates if each pixel is on the boundary. */
+  TBoundaryStatusMapType* BoundaryStatusMap;
+
 public:
-  // Constructor
-  PriorityViewerWidget(TPriority* const priorityFunction, const itk::Size<2>& imageSize, TBoundaryStatusMapType boundaryStatusMap);
+  /** Constructor. */
+  PriorityViewerWidget(TPriority* const priorityFunction, const itk::Size<2>& imageSize,
+                       TBoundaryStatusMapType* const boundaryStatusMap);
 
   void slot_UpdateImage();
 
 private:
 
-  // The interactor to allow us to zoom and pan the image while still moving images with Pickable=true
+  /** The interactor to allow us to zoom and pan the image while still moving images with Pickable=true. */
   vtkSmartPointer<InteractorStyleImageWithDrag> InteractorStyle;
 
-  // The only renderer
+  /** The renderer. */
   vtkSmartPointer<vtkRenderer> Renderer;
 
-  ImageCamera* Camera;
+  /** An object that sets up the viewing orientation of the image. */
+  ITKVTKCamera* ItkVtkCamera;
+
 };
 
 #include "PriorityViewerWidget.hpp"

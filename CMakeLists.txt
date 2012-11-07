@@ -371,7 +371,8 @@ if(inpainting_InteractiveInpaintingGMH)
     QT4_WRAP_UI(InteractiveInpaintingGMHUISrcs
                 Interactive/BasicViewerWidget.ui
                 Interactive/TopPatchesDialog.ui
-                Interactive/ManualPatchSelectionDialog.ui)
+                Interactive/ManualPatchSelectionDialog.ui
+                Interactive/PriorityViewerWidget.ui)
     ADD_EXECUTABLE(InteractiveInpaintingGMH InteractiveInpaintingGMH.cpp
                    Drivers/InteractiveInpaintingGMH.hpp
                    Interactive/TopPatchesDialog.h
@@ -379,6 +380,7 @@ if(inpainting_InteractiveInpaintingGMH)
                    Interactive/BasicViewerWidget.h
                    Interactive/ManualPatchSelectionDialogParent.h
                    Interactive/MovablePatch.h
+                   Interactive/PriorityViewerWidget.h
                    NearestNeighbor/VisualSelectionBest.hpp
                    Visitors/InformationVisitors/DisplayVisitor.hpp
                    ${InteractiveInpaintingGMHUISrcs})
