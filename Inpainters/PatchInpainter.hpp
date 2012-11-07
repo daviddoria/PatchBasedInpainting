@@ -35,7 +35,7 @@ class PatchInpainter : public PatchInpainterParent, public Debug
   }
 
   /** The image to inpaint. */
-  TImage* Image;
+  typename TImage::Pointer Image;
 
   /** The mask to use to determine which pixels are holes (which pixels to inpaint). */
   const Mask* MaskImage;
@@ -65,7 +65,7 @@ public:
   }
 
   /** Inpaint a patch only in the masked pixels. */
-  PatchInpainter(std::size_t patchHalfWidth, TImage* const image, const Mask* const mask) :
+  PatchInpainter(std::size_t patchHalfWidth, typename TImage::Pointer image, const Mask* const mask) :
     Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth), Iteration(0), ImageName("Unnamed")
   {
 //    std::cout << "PatchInpainter: size: " << this->Image->GetLargestPossibleRegion().GetSize() << std::endl;
@@ -93,18 +93,18 @@ public:
       // Write the target patch that was inpainted.
       try
       {
-        ITKHelpers::WriteRegion(this->Image, targetRegion,
+        ITKHelpers::WriteRegion(this->Image.GetPointer(), targetRegion,
                                 Helpers::GetSequentialFileName("TargetPatchBefore", this->Iteration, "png", 3));
       }
       catch (...)
       {
-        ITKHelpers::WriteRegionAsRGBImage(this->Image, targetRegion,
+        ITKHelpers::WriteRegionAsRGBImage(this->Image.GetPointer(), targetRegion,
                                           Helpers::GetSequentialFileName("TargetPatchBefore", this->Iteration, "png", 3));
       }
     }
 
     // Iterate over all pixels in the target patch (we must iterate over the target patch, because it may be smaller than the source patch)
-    itk::ImageRegionConstIteratorWithIndex<TImage> targetIterator(this->Image, targetRegion);
+    itk::ImageRegionConstIteratorWithIndex<TImage> targetIterator(this->Image.GetPointer(), targetRegion);
 
     while(!targetIterator.IsAtEnd())
     {
@@ -130,11 +130,11 @@ public:
       // Write the inpainted image after this iteration. If the writer fails to write the image directly as a png (it would be an unsupported pixel type), then convert it to a supported type before writing.
       try
       {
-        ITKHelpers::WriteSequentialImage(this->Image, this->ImageName, this->Iteration, 3, "png");
+        ITKHelpers::WriteSequentialImage(this->Image.GetPointer(), this->ImageName, this->Iteration, 3, "png");
       }
       catch (...)
       {
-        ITKHelpers::WriteSequentialRGBImage(this->Image, this->ImageName, this->Iteration, 3, "png");
+        ITKHelpers::WriteSequentialRGBImage(this->Image.GetPointer(), this->ImageName, this->Iteration, 3, "png");
       }
 
       if(this->GetDebugLevel() > 1)
@@ -143,12 +143,12 @@ public:
         // Write the target patch that was inpainted.
         try
         {
-          ITKHelpers::WriteRegion(this->Image, targetRegion,
+          ITKHelpers::WriteRegion(this->Image.GetPointer(), targetRegion,
                                   Helpers::GetSequentialFileName("TargetPatchAfter", this->Iteration, "png", 3));
         }
         catch (...)
         {
-          ITKHelpers::WriteRegionAsRGBImage(this->Image, targetRegion,
+          ITKHelpers::WriteRegionAsRGBImage(this->Image.GetPointer(), targetRegion,
                                             Helpers::GetSequentialFileName("TargetPatchAfter", this->Iteration, "png", 3));
         }
       }

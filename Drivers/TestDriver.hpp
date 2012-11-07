@@ -253,13 +253,13 @@ void TestDriver(typename itk::SmartPointer<TImage> originalImage,
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
                             ImagePatchDescriptorVisitorType, HoleSizeAcceptanceVisitorType,
-                            PriorityType, TImage>
+                            PriorityType>
                             InpaintingVisitorType;
   std::shared_ptr<InpaintingVisitorType> inpaintingVisitor(
         new InpaintingVisitorType(mask, boundaryNodeQueue,
                                   imagePatchDescriptorVisitor, holeSizeAcceptanceVisitor,
                                   priorityFunction, patchHalfWidth,
-                                  "InpaintingVisitor", originalImage.GetPointer()));
+                                  "InpaintingVisitor"));
 
   typedef SumSquaredPixelDifference<typename TImage::PixelType> PixelDifferenceType;
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType, PixelDifferenceType >

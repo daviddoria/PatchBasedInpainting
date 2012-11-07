@@ -51,16 +51,12 @@
  * the value is not required to be specified (because we don't have an image to operate on anyway).
  */
 template <typename TGraph, typename TBoundaryNodeQueue,
-          typename TDescriptorVisitor, typename TAcceptanceVisitor, typename TPriority,
-          typename TImage = itk::Image<unsigned char, 2> >
+          typename TDescriptorVisitor, typename TAcceptanceVisitor, typename TPriority>
 class InpaintingVisitor : public InpaintingVisitorParent<TGraph>, public Debug
 {
   BOOST_CONCEPT_ASSERT((DescriptorVisitorConcept<TDescriptorVisitor, TGraph>));
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
-
-  /** The image to inpaint. */
-  TImage* Image;
 
   /** The mask indicating the region to inpaint. */
   Mask* MaskImage;
@@ -130,10 +126,9 @@ public:
                     std::shared_ptr<TAcceptanceVisitor> acceptanceVisitor,
                     std::shared_ptr<TPriority> const priorityFunction,
                     const unsigned int patchHalfWidth,
-                    const std::string& visitorName = "InpaintingVisitor",
-                    TImage* const image = nullptr) :
+                    const std::string& visitorName = "InpaintingVisitor") :
     InpaintingVisitorParent<TGraph>(visitorName),
-    Image(image), MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
+    MaskImage(mask), BoundaryNodeQueue(boundaryNodeQueue), PriorityFunction(priorityFunction),
     DescriptorVisitor(descriptorVisitor), AcceptanceVisitor(acceptanceVisitor),
     PatchHalfWidth(patchHalfWidth), NumberOfFinishedPatches(0), AllowNewPatches(false)
   {
@@ -229,7 +224,7 @@ public:
     itk::Index<2> sourceRegionCenter = ITKHelpers::CreateIndex(sourceNode);
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceRegionCenter, this->PatchHalfWidth);
 
-    sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->Image->GetLargestPossibleRegion(), regionToFinishFull);
+    sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->MaskImage->GetLargestPossibleRegion(), regionToFinishFull);
 
     // Mark all pixels that were copied (in the hole region of the source patch) as having been used.
     itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType> sourcePatchIterator(this->SourcePixelMapImage, sourceRegion);
@@ -266,29 +261,30 @@ public:
     // Mark all the pixels in this region as filled in the mask.
     ITKHelpers::SetRegionToConstant(this->MaskImage, regionToFinish, this->MaskImage->GetValidValue());
 
-    if(this->DebugImages && this->Image)
-    {
-      typename TImage::PixelType red;
-      red.Fill(0);
-      red[0] = 255;
+    // Write an image of where the source and target patch were in this iteration.
+//    if(this->DebugImages && this->Image)
+//    {
+//      typename TImage::PixelType red;
+//      red.Fill(0);
+//      red[0] = 255;
 
-      typename TImage::PixelType green;
-      green.Fill(0);
-      green[1] = 255;
+//      typename TImage::PixelType green;
+//      green.Fill(0);
+//      green[1] = 255;
 
-      typename TImage::Pointer patchesCopiedImage = TImage::New();
-      ITKHelpers::DeepCopy(this->Image, patchesCopiedImage.GetPointer());
-      ITKHelpers::OutlineRegion(patchesCopiedImage.GetPointer(), regionToFinish, red);
+//      typename TImage::Pointer patchesCopiedImage = TImage::New();
+//      ITKHelpers::DeepCopy(this->Image, patchesCopiedImage.GetPointer());
+//      ITKHelpers::OutlineRegion(patchesCopiedImage.GetPointer(), regionToFinish, red);
 
-      ITKHelpers::OutlineRegion(patchesCopiedImage.GetPointer(), sourceRegion, green);
+//      ITKHelpers::OutlineRegion(patchesCopiedImage.GetPointer(), sourceRegion, green);
 
-      ITKHelpers::WriteRGBImage(patchesCopiedImage.GetPointer(), Helpers::GetSequentialFileName("PatchesCopied", this->NumberOfFinishedPatches, "png", 3));
+//      ITKHelpers::WriteRGBImage(patchesCopiedImage.GetPointer(), Helpers::GetSequentialFileName("PatchesCopied", this->NumberOfFinishedPatches, "png", 3));
 
-      if(this->DebugLevel > 1)
-      {
-        ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("Mask_After", this->NumberOfFinishedPatches, "png", 3));
-      }
-    }
+//      if(this->DebugLevel > 1)
+//      {
+//        ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("Mask_After", this->NumberOfFinishedPatches, "png", 3));
+//      }
+//    }
 
     // Update the priority function. This must be done AFTER the mask is filled,
     // as some of the Priority functors only compute things on the hole boundary, or only
