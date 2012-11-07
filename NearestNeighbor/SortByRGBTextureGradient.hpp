@@ -270,8 +270,8 @@ public:
       }
     } // end loop over source patches
 
-    std::cout << "BestId: " << bestId << std::endl;
-    std::cout << "Best distance: " << bestDistance << std::endl;
+//    std::cout << "BestId: " << bestId << std::endl;
+//    std::cout << "Best distance: " << bestDistance << std::endl;
 
     if(this->DebugOutputFiles)
     {
@@ -282,13 +282,20 @@ public:
 
     ParallelSortType::IndexedVector sortedScores = ParallelSortType::ParallelSortAscending(scores);
 
+    std::cout << "Best patch has score " << sortedScores[0].value << std::endl;
+
+    // Output all top N patch scores
+//    for(unsigned int i = 0; i < sortedScores.size(); ++i)
+//    {
+//      std::cout << "Best patch " << i << " has score " << sortedScores[i].value << std::endl;
+//    }
+
+    // Store all sorted patches in the output
     // c++ doesn't allow a second counter to be declared inside for()
     TOutputIterator currentOutputIterator = outputFirst;
-
     for(unsigned int i = 0; i < sortedScores.size(); ++i, ++currentOutputIterator)
     {
       unsigned int currentId = sortedScores[i].index;
-      std::cout << "Best patch " << i << " has score " << sortedScores[i].value << std::endl;
 
       TIterator current = first;
       std::advance(current, currentId);

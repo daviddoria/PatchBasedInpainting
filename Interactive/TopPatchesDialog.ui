@@ -52,12 +52,12 @@
       </font>
      </property>
      <property name="text">
-      <string>Proposed source patch</string>
+      <string>Source patch</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QGraphicsView" name="gfxProposedPatch">
+    <widget class="QGraphicsView" name="gfxSourcePatch">
      <property name="maximumSize">
       <size>
        <width>100</width>
@@ -69,6 +69,29 @@
      </property>
      <property name="horizontalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_4">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Proposed patch</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGraphicsView" name="gfxProposedPatch">
+     <property name="maximumSize">
+      <size>
+       <width>100</width>
+       <height>100</height>
+      </size>
      </property>
     </widget>
    </item>

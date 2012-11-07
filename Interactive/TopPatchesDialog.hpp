@@ -44,6 +44,10 @@ TopPatchesDialog<TImage>::TopPatchesDialog(TImage* const image, Mask* const mask
   this->ProposedPatchScene = new QGraphicsScene();
   this->gfxProposedPatch->setScene(this->ProposedPatchScene);
 
+  this->SourcePatchItem = new QGraphicsPixmapItem;
+  this->SourcePatchScene = new QGraphicsScene();
+  this->gfxSourcePatch->setScene(this->SourcePatchScene);
+
   this->PatchesModel = new ListModelPatches<TImage>(image, patchHalfWidth);
   // listView is a GUI object
   this->listView->setModel(this->PatchesModel);
@@ -147,21 +151,24 @@ void TopPatchesDialog<TImage>::slot_SingleClicked(const QModelIndex& selected)
 
   emit signal_SelectedRegion(sourceRegion);
 
-  {
-  Mask::Pointer regionMask = Mask::New();
-  ITKHelpers::ExtractRegion(this->MaskImage, sourceRegion,
-                            regionMask.GetPointer());
-  regionMask->CopyInformationFrom(this->MaskImage);
-  std::cout << "There are " << regionMask->CountHolePixels() << " hole pixels in the source region." << std::endl;
-  }
+  // Double check that there are no hole pixels in the source patch
+//  {
+//  Mask::Pointer regionMask = Mask::New();
+//  ITKHelpers::ExtractRegion(this->MaskImage, sourceRegion,
+//                            regionMask.GetPointer());
+//  regionMask->CopyInformationFrom(this->MaskImage);
+//  std::cout << "There are " << regionMask->CountHolePixels() << " hole pixels in the source region." << std::endl;
+//  }
 
-  QImage proposedPatch =
+  QImage sourcePatch =
       PatchHelpers::GetQImageCombinedPatch(this->Image, sourceRegion, queryRegion, this->MaskImage);
 
-  this->ProposedPatchItem =
-      this->ProposedPatchScene->addPixmap(QPixmap::fromImage(proposedPatch));
+  this->SourcePatchItem =
+      this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourcePatch));
 
-  gfxProposedPatch->fitInView(this->ProposedPatchItem);
+  gfxSourcePatch->fitInView(this->SourcePatchItem);
+
+  slot_UpdateResult(sourceRegion, queryRegion);
 
   this->SelectedIndex = selected;
 }
@@ -175,9 +182,9 @@ Node TopPatchesDialog<TImage>::GetSelectedNode()
 template <typename TImage>
 void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
 {
-  ValidSelection = false;
+  this->ValidSelection = false;
   // We do this here because we will usually call SetQueryNode before the widget is constructed (i.e. before exec() is called).
-  gfxQueryPatch->fitInView(MaskedQueryPatchItem);
+  gfxQueryPatch->fitInView(this->MaskedQueryPatchItem);
 
   // Make sure the list is scrolled to the top
   QModelIndex index = this->PatchesModel->index(0,0);
@@ -185,7 +192,7 @@ void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
 
   // Setup the proposed patch (if the best patch were to be selected)
   slot_SingleClicked(index);
-  gfxProposedPatch->fitInView(ProposedPatchItem);
+  gfxProposedPatch->fitInView(this->ProposedPatchItem);
 }
 
 template <typename TImage>
@@ -251,6 +258,58 @@ void TopPatchesDialog<TImage>::PositionNextToParent()
     this->move(this->parentWidget()->pos().x() + this->parentWidget()->width(),
                this->parentWidget()->pos().y());
   }
+}
+
+template <typename TImage>
+void TopPatchesDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
+                                                 const itk::ImageRegion<2>& targetRegion)
+{
+//  std::cout << "TopPatchesDialog::slot_UpdateResult" << std::endl;
+  assert(sourceRegion.GetSize() == targetRegion.GetSize());
+
+  QImage qimage(sourceRegion.GetSize()[0], sourceRegion.GetSize()[1], QImage::Format_RGB888);
+
+  itk::ImageRegionIterator<TImage> sourceIterator(this->Image, sourceRegion);
+  itk::ImageRegionIterator<TImage> targetIterator(this->Image, targetRegion);
+  itk::ImageRegionIterator<Mask> maskIterator(this->MaskImage, targetRegion);
+
+  typename TImage::Pointer resultPatch = TImage::New();
+  resultPatch->SetNumberOfComponentsPerPixel(Image->GetNumberOfComponentsPerPixel());
+  itk::ImageRegion<2> resultPatchRegion;
+  resultPatchRegion.SetSize(sourceRegion.GetSize());
+  resultPatch->SetRegions(resultPatchRegion);
+  resultPatch->Allocate();
+
+  while(!maskIterator.IsAtEnd())
+  {
+    typename TImage::PixelType pixel;
+
+    if(this->MaskImage->IsHole(maskIterator.GetIndex()))
+    {
+      pixel = sourceIterator.Get();
+    }
+    else
+    {
+      pixel = targetIterator.Get();
+    }
+
+    itk::Offset<2> offset = sourceIterator.GetIndex() - sourceRegion.GetIndex();
+    itk::Index<2> offsetIndex;
+    offsetIndex[0] = offset[0];
+    offsetIndex[1] = offset[1];
+    resultPatch->SetPixel(offsetIndex, pixel);
+
+    ++sourceIterator;
+    ++targetIterator;
+    ++maskIterator;
+  }
+
+  qimage = ITKQtHelpers::GetQImageColor(resultPatch.GetPointer(), resultPatch->GetLargestPossibleRegion());
+
+  this->ProposedPatchScene->clear();
+  QGraphicsPixmapItem* item = this->ProposedPatchScene->addPixmap(QPixmap::fromImage(qimage));
+  gfxProposedPatch->fitInView(item);
+
 }
 
 #endif

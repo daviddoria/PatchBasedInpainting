@@ -169,6 +169,7 @@ struct IndirectPriorityQueue
 
       if(validNodeFound)
       {
+        std::cout << "Processing node with priority " << get(this->PriorityMap, topNode) << std::endl;
         break;
       }
     }

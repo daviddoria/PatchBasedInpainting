@@ -59,7 +59,7 @@ void InpaintingAlgorithmWithVerification(std::shared_ptr<TVertexListGraph> graph
 
   while(!boundaryNodeQueue->empty())
   {
-    std::cout << "Starting iteration..." << std::endl;
+//    std::cout << "Starting iteration..." << std::endl;
     VertexDescriptorType targetNode = boundaryNodeQueue->top(); // This also pops the node
 
     // Notify the visitor that we have a hole target center.

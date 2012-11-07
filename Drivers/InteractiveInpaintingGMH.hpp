@@ -92,6 +92,7 @@
 
 // Priority
 #include "Priority/PriorityCriminisi.h"
+#include "Priority/PriorityConfidence.h"
 
 // Boost
 #include <boost/graph/grid_graph.hpp>
@@ -99,7 +100,6 @@
 
 // GUI
 #include "Interactive/BasicViewerWidget.h"
-#include "Interactive/PriorityViewerWidget.h"
 
 template <typename TImage>
 void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
@@ -151,9 +151,12 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   compositeInpainter->AddInpainter(blurredImageInpainter);
 
   // Create the priority function
-  typedef PriorityCriminisi<TImage> PriorityType;
+//  typedef PriorityCriminisi<TImage> PriorityType;
+//  std::shared_ptr<PriorityType> priorityFunction(
+//        new PriorityType(blurredImage, mask, patchHalfWidth));
+  typedef PriorityConfidence PriorityType;
   std::shared_ptr<PriorityType> priorityFunction(
-        new PriorityType(blurredImage, mask, patchHalfWidth));
+        new PriorityType(mask, patchHalfWidth));
 
   // Queue
   typedef IndirectPriorityQueue<VertexListGraphType> BoundaryNodeQueueType;

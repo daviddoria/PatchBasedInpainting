@@ -50,6 +50,12 @@ struct GMHDifference
 
   float Difference(const RegionType& targetRegion, const RegionType& sourceRegion) const
   {
+//    std::cout << "GMHDifference targetRegion: " << targetRegion << std::endl;
+//    std::cout << "GMHDifference sourceRegion: " << sourceRegion << std::endl;
+    assert(this->Image->GetLargestPossibleRegion() == this->MaskImage->GetLargestPossibleRegion());
+    assert(this->Image->GetLargestPossibleRegion().IsInside(targetRegion));
+    assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
+
     // Define some types
     typedef float BinValueType; // bins must be float if we are going to normalize
     typedef MaskedHistogramGenerator<BinValueType> MaskedHistogramGeneratorType;

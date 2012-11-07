@@ -121,10 +121,6 @@ void BasicViewerWidget<TImage>::SetupScenes()
   this->SourcePatchScene->setBackgroundBrush(brush);
   this->gfxSource->setScene(SourcePatchScene);
 
-  this->ResultPatchScene = new QGraphicsScene();
-  this->ResultPatchScene->setBackgroundBrush(brush);
-  this->gfxResult->setScene(ResultPatchScene);
-
   this->MaskedSourcePatchScene = new QGraphicsScene();
   this->MaskedSourcePatchScene->setBackgroundBrush(brush);
   this->gfxMaskedSource->setScene(MaskedSourcePatchScene);
@@ -137,7 +133,7 @@ void BasicViewerWidget<TImage>::SetupScenes()
 template <typename TImage>
 void BasicViewerWidget<TImage>::slot_UpdateImage()
 {
-  std::cout << "BasicViewerWidget::slot_UpdateImage()" << std::endl;
+//  std::cout << "BasicViewerWidget::slot_UpdateImage()" << std::endl;
 
   typename TImage::Pointer tempImage = TImage::New();
   ITKHelpers::DeepCopy(this->Image.GetPointer(), tempImage.GetPointer());
@@ -172,13 +168,13 @@ void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sou
                                                   const itk::ImageRegion<2>& targetRegion)
 {
   // This function needs the targetRegion because this is the region of the Mask that is used to mask the source patch.
-  std::cout << "BasicViewerWidget::slot_UpdateSource " << sourceRegion << std::endl;
+//  std::cout << "BasicViewerWidget::slot_UpdateSource " << sourceRegion << std::endl;
 
-  if(!SourceHighlighter)
+  if(!this->SourceHighlighter)
   {
-    SourceHighlighter = new PatchHighlighter(sourceRegion.GetSize()[0]/2, this->Renderer, Qt::green);
+    this->SourceHighlighter = new PatchHighlighter(sourceRegion.GetSize()[0]/2, this->Renderer, Qt::green);
   }
-  SourceHighlighter->SetRegion(sourceRegion);
+  this->SourceHighlighter->SetRegion(sourceRegion);
   
   QImage sourceImage = ITKQtHelpers::GetQImageColor(this->Image.GetPointer(), sourceRegion);
   QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
@@ -206,13 +202,13 @@ void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sou
 template <typename TImage>
 void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion)
 {
-  std::cout << "BasicViewerWidget::slot_UpdateSource " << sourceRegion << std::endl;
+//  std::cout << "BasicViewerWidget::slot_UpdateSource " << sourceRegion << std::endl;
 
-  if(!SourceHighlighter)
+  if(!this->SourceHighlighter)
   {
-    SourceHighlighter = new PatchHighlighter(sourceRegion.GetSize()[0]/2, this->Renderer, Qt::green);
+    this->SourceHighlighter = new PatchHighlighter(sourceRegion.GetSize()[0]/2, this->Renderer, Qt::green);
   }
-  SourceHighlighter->SetRegion(sourceRegion);
+  this->SourceHighlighter->SetRegion(sourceRegion);
 
   this->qvtkWidget->GetRenderWindow()->Render();
 }
@@ -220,7 +216,7 @@ void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sou
 template <typename TImage>
 void BasicViewerWidget<TImage>::slot_UpdateTarget(const itk::ImageRegion<2>& targetRegion)
 {
-  std::cout << "BasicViewerWidget:slot_UpdateTarget " << targetRegion << std::endl;
+//  std::cout << "BasicViewerWidget:slot_UpdateTarget " << targetRegion << std::endl;
 
   if(!this->TargetHighlighter)
   {
@@ -253,58 +249,6 @@ void BasicViewerWidget<TImage>::slot_UpdateTarget(const itk::ImageRegion<2>& tar
 }
 
 template <typename TImage>
-void BasicViewerWidget<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
-                                                  const itk::ImageRegion<2>& targetRegion)
-{
-  std::cout << "BasicViewerWidget::slot_UpdateResult" << std::endl;
-  assert(sourceRegion.GetSize() == targetRegion.GetSize());
-
-  QImage qimage(sourceRegion.GetSize()[0], sourceRegion.GetSize()[1], QImage::Format_RGB888);
-
-  itk::ImageRegionIterator<TImage> sourceIterator(this->Image, sourceRegion);
-  itk::ImageRegionIterator<TImage> targetIterator(this->Image, targetRegion);
-  itk::ImageRegionIterator<Mask> maskIterator(this->MaskImage, targetRegion);
-
-  typename TImage::Pointer resultPatch = TImage::New();
-  resultPatch->SetNumberOfComponentsPerPixel(Image->GetNumberOfComponentsPerPixel());
-  itk::ImageRegion<2> resultPatchRegion;
-  resultPatchRegion.SetSize(sourceRegion.GetSize());
-  resultPatch->SetRegions(resultPatchRegion);
-  resultPatch->Allocate();
-
-  while(!maskIterator.IsAtEnd())
-  {
-    typename TImage::PixelType pixel;
-
-    if(this->MaskImage->IsHole(maskIterator.GetIndex()))
-    {
-      pixel = sourceIterator.Get();
-    }
-    else
-    {
-      pixel = targetIterator.Get();
-    }
-
-    itk::Offset<2> offset = sourceIterator.GetIndex() - sourceRegion.GetIndex();
-    itk::Index<2> offsetIndex;
-    offsetIndex[0] = offset[0];
-    offsetIndex[1] = offset[1];
-    resultPatch->SetPixel(offsetIndex, pixel);
-
-    ++sourceIterator;
-    ++targetIterator;
-    ++maskIterator;
-  }
-
-  qimage = ITKQtHelpers::GetQImageColor(resultPatch.GetPointer(), resultPatch->GetLargestPossibleRegion());
-
-  this->ResultPatchScene->clear();
-  QGraphicsPixmapItem* item = this->ResultPatchScene->addPixmap(QPixmap::fromImage(qimage));
-  gfxResult->fitInView(item);
-
-}
-
-template <typename TImage>
 template <typename TVisitor>
 void BasicViewerWidget<TImage>::ConnectVisitor(TVisitor* visitor)
 {
@@ -324,11 +268,6 @@ void BasicViewerWidget<TImage>::ConnectVisitor(TVisitor* visitor)
                    this, SLOT(slot_UpdateTarget(const itk::ImageRegion<2>&)),
                    Qt::BlockingQueuedConnection);
 
-  QObject::connect(visitor, SIGNAL(signal_RefreshResult(const itk::ImageRegion<2>&,
-                                                        const itk::ImageRegion<2>&)),
-                   this, SLOT(slot_UpdateResult(const itk::ImageRegion<2>&,
-                                                const itk::ImageRegion<2>&)),
-                   Qt::BlockingQueuedConnection);
 }
 
 template <typename TImage>

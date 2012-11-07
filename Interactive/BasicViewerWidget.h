@@ -67,10 +67,6 @@ public slots:
   /** Update the target patch that is outlined. */
   virtual void slot_UpdateTarget(const itk::ImageRegion<2>& region) = 0;
 
-  /** Update the result. */
-  virtual void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
-                                 const itk::ImageRegion<2>& targetRegion) = 0;
-
 };
 
 template <typename TImage>
@@ -115,10 +111,6 @@ public:
   /** Update the target region outline and display the target patch.*/
   void slot_UpdateTarget(const itk::ImageRegion<2>& region);
 
-  /** Update the source and target region outlines and display the source and target patches.*/
-  void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
-                         const itk::ImageRegion<2>& targetRegion);
-  
   /** Make all of the necessary connection for a visitor to drive this viewer.*/
   template <typename TVisitor>
   void ConnectVisitor(TVisitor* visitor);
@@ -140,7 +132,6 @@ private:
 
   QGraphicsScene* SourcePatchScene;
   QGraphicsScene* TargetPatchScene;
-  QGraphicsScene* ResultPatchScene;
   QGraphicsScene* MaskedSourcePatchScene;
   QGraphicsScene* MaskedTargetPatchScene;
 

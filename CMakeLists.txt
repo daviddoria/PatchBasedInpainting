@@ -357,6 +357,7 @@ if(inpainting_InteractiveInpaintingWithVerification)
                    NearestNeighbor/VisualSelectionBest.hpp
                    Interactive/ManualPatchSelectionDialog.h
                    Interactive/ManualPatchSelectionDialogParent.h
+                   Interactive/PriorityViewerWidget.h
                    ${InteractiveInpaintingWithVerificationUISrcs})
     TARGET_LINK_LIBRARIES(InteractiveInpaintingWithVerification ${PatchBasedInpainting_libraries} InpaintingGUI)
     INSTALL( TARGETS InteractiveInpaintingWithVerification RUNTIME DESTINATION ${INSTALL_DIR} )

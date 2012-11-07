@@ -62,6 +62,10 @@ public slots:
   /** When the user double clicks a patch in the list, close the dialog and return that patch as the one to use. */
   virtual void slot_DoubleClicked(const QModelIndex & index) = 0;
 
+  /** Update the source and target region outlines and display the source and target patches.*/
+  virtual void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
+                                 const itk::ImageRegion<2>& targetRegion) = 0;
+
   /** The slot to handle when the btnSelectManually button is clicked. */
   virtual void on_btnSelectManually_clicked() = 0;
 };
@@ -94,6 +98,12 @@ private:
 
   /** The item for the query patch.*/
   QGraphicsPixmapItem* MaskedQueryPatchItem;
+
+  /** The scene for the proposed patch.*/
+  QGraphicsScene* SourcePatchScene;
+
+  /** The item for the proposed patch.*/
+  QGraphicsPixmapItem* SourcePatchItem;
 
   /** The scene for the proposed patch.*/
   QGraphicsScene* ProposedPatchScene;
@@ -139,6 +149,10 @@ public:
 
   /** The slot to handle when the btnSavePair button is clicked. */
   void on_btnSavePair_clicked();
+
+  /** Update the source and target region outlines and display the source and target patches.*/
+  void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
+                         const itk::ImageRegion<2>& targetRegion);
 
   /** The slot to handle when the btnSelectManually button is clicked. */
   void on_btnSelectManually_clicked();

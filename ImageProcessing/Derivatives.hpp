@@ -451,6 +451,9 @@ void MaskedGradientInRegion(const TImage* const image, const Mask* const mask,
 {
   static_assert(std::is_pod<typename TImage::PixelType>::value, "In MaskedGradientInRegion, T must be a POD");
 
+  assert(image->GetLargestPossibleRegion() == mask->GetLargestPossibleRegion());
+  assert(image->GetLargestPossibleRegion().IsInside(region));
+
   // Compute the derivatives
   // X derivative
   FloatScalarImageType::Pointer xDerivative = FloatScalarImageType::New();

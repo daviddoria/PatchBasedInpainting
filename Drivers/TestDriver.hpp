@@ -115,9 +115,7 @@
 
 // GUI
 #include "Interactive/BasicViewerWidget.h"
-#include "Interactive/TopPatchesWidget.h"
 #include "Interactive/TopPatchesDialog.h"
-#include "Interactive/PriorityViewerWidget.h"
 
 //template <typename TVertexListGraph, typename TInpaintingVisitor,
 //          typename TPriorityQueue, typename TKNNFinder, typename TBestNeighborFinder,
