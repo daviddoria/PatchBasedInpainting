@@ -24,6 +24,7 @@
  * but it does not actually do anything - it simply returns the first item in the container.
  * This is often used when the container is already known to be sorted by the same criterion
  * that we would have searched for.
+ * If the descriptors are not all valid, you may want to use FirstValidDescriptor instead.
  */
 struct DefaultSearchBest
 {

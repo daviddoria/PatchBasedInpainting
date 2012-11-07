@@ -1,8 +1,20 @@
 include_directories(../) # so we can access the headers normally (e.g. #include "Patch.h") from the tests
-include_directories(../Testing ../Helpers)
+include_directories(../Testing)
 
 #####################
 
+# Build an inpainting algorithm that uses the GUI objects but goes very fast by simply choosing the first patch.
+QT4_WRAP_UI(DummyPatchesInpaintingUISrcs
+            ../Interactive/BasicViewerWidget.ui)
+ADD_EXECUTABLE(DummyPatchesInpainting DummyPatchesInpainting.cpp
+               DummyPatchesDriver.hpp
+               ../Interactive/BasicViewerWidget.h
+               ../Interactive/MovablePatch.h
+               ../Visitors/InformationVisitors/DisplayVisitor.hpp
+               ${DummyPatchesInpaintingUISrcs})
+
+TARGET_LINK_LIBRARIES(DummyPatchesInpainting ${PatchBasedInpainting_libraries} InpaintingGUI)
+INSTALL( TARGETS DummyPatchesInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 
 # add_executable(TestValidPixelIterator TestValidPixelIterator.cpp ../ValidPixelIterator.cpp)
 # target_link_libraries(TestValidPixelIterator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
@@ -17,9 +29,9 @@ include_directories(../Testing ../Helpers)
 # target_link_libraries(TestPixelWiseDifferencePatchPairVisitor ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting libHelpers)
 # add_test(TestPixelWiseDifferencePatchPairVisitor TestPixelWiseDifferencePatchPairVisitor)
 
-add_executable(TestImagePatchPixelDescriptor TestImagePatchPixelDescriptor.cpp)
-target_link_libraries(TestImagePatchPixelDescriptor ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-add_test(TestImagePatchPixelDescriptor TestImagePatchPixelDescriptor)
+#add_executable(TestImagePatchPixelDescriptor TestImagePatchPixelDescriptor.cpp)
+#target_link_libraries(TestImagePatchPixelDescriptor ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+#add_test(TestImagePatchPixelDescriptor TestImagePatchPixelDescriptor)
 
 # add_executable(TestItemDifferenceVisitor TestItemDifferenceVisitor.cpp ../PatchPairDifferences.cpp)
 # target_link_libraries(TestItemDifferenceVisitor ${VTK_LIBRARIES} ${ITK_LIBRARIES})
@@ -29,9 +41,9 @@ add_test(TestImagePatchPixelDescriptor TestImagePatchPixelDescriptor)
 # target_link_libraries(TestPointCloudDescriptorCreator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
 # add_test(TestPointCloudDescriptorCreator TestPointCloudDescriptorCreator)
 
-add_executable(TestPixelCollection TestPixelCollection.cpp ../PixelCollection.cpp)
-target_link_libraries(TestPixelCollection ${ITK_LIBRARIES})
-add_test(TestPixelCollection TestPixelCollection)
+#add_executable(TestPixelCollection TestPixelCollection.cpp ../PixelCollection.cpp)
+#target_link_libraries(TestPixelCollection ${ITK_LIBRARIES})
+#add_test(TestPixelCollection TestPixelCollection)
 
 # add_executable(TestPixelSumAccumulator TestPixelSumAccumulator.cpp ../ImagePatchItem.cpp ../ImageProcessing/Mask.cpp)
 # target_link_libraries(TestPixelSumAccumulator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
@@ -45,9 +57,9 @@ add_test(TestPixelCollection TestPixelCollection)
 # target_link_libraries(TestImagePatchCreator ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers)
 # add_test(TestImagePatchCreator TestImagePatchCreator)
 
-add_executable(TestPatchPairDifferences TestPatchPairDifferences.cpp ../PatchPairDifferences.cpp)
-target_link_libraries(TestPatchPairDifferences ${VTK_LIBRARIES} ${ITK_LIBRARIES})
-add_test(TestPatchPairDifferences TestPatchPairDifferences)
+#add_executable(TestPatchPairDifferences TestPatchPairDifferences.cpp ../PatchPairDifferences.cpp)
+#target_link_libraries(TestPatchPairDifferences ${VTK_LIBRARIES} ${ITK_LIBRARIES})
+#add_test(TestPatchPairDifferences TestPatchPairDifferences)
 
 # TODO: Fix this test.
 # add_executable(TestCandidatePairs TestCandidatePairs.cpp ../CandidatePairs.cpp
@@ -64,9 +76,9 @@ add_test(TestPatchPairDifferences TestPatchPairDifferences)
 # target_link_libraries(TestDifferenceSumPixelPairVisitor ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
 # add_test(TestDifferenceSumPixelPairVisitor TestDifferenceSumPixelPairVisitor)
 
-add_executable(TestPixelDifferences TestPixelDifferences.cpp)
-target_link_libraries(TestPixelDifferences ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
-add_test(TestPixelDifferences TestPixelDifferences)
+#add_executable(TestPixelDifferences TestPixelDifferences.cpp)
+#target_link_libraries(TestPixelDifferences ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
+#add_test(TestPixelDifferences TestPixelDifferences)
 
 # add_executable(TestPatchDifference TestPatchDifference.cpp ../ImagePatchItem.cpp ../PatchPair.cpp ../PatchPairDifferences.cpp)
 # target_link_libraries(TestPatchDifference ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)

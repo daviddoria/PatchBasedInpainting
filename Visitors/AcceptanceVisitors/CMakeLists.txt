@@ -1,6 +1,7 @@
 add_custom_target(AcceptanceVisitorsSources SOURCES
 AcceptanceVisitorParent.h
 AllQuadrantHistogramCompareAcceptanceVisitor.hpp
+AlwaysAccept.hpp
 ANDAcceptanceVisitor.hpp
 AverageDifferenceAcceptanceVisitor.hpp
 AverageFunctor.hpp

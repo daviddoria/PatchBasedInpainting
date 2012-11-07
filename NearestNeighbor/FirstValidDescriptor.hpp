@@ -21,18 +21,22 @@
 
 #include "PixelDescriptors/PixelDescriptor.h"
 
+// Boost
 #include <boost/property_map/property_map.hpp>
 
+// STL
+#include <memory>
+
 /** This class is passed a range of nodes and a query node (the query node is not used, it is just there
-  * to conform to the API of other nearest neighbor searchers. It simply returns the first source node
+  * to conform to the API of other nearest neighbor searchers. It simply returns the first valid source node
   * in the range.
   */
 template <typename DescriptorMapType>
 struct FirstValidDescriptor
 {
-  DescriptorMapType DescriptorMap;
+  std::shared_ptr<DescriptorMapType> DescriptorMap;
 
-  FirstValidDescriptor(DescriptorMapType descriptorMap) : DescriptorMap(descriptorMap)
+  FirstValidDescriptor(std::shared_ptr<DescriptorMapType> descriptorMap) : DescriptorMap(descriptorMap)
   {
   }
 
@@ -42,11 +46,11 @@ struct FirstValidDescriptor
   {
     for(TForwardIterator iter = first; iter != last; ++iter)
     {
-      if(get(DescriptorMap, *iter).GetStatus() == PixelDescriptor::SOURCE_NODE)
+      if(get(*(this->DescriptorMap), *iter).GetStatus() == PixelDescriptor::SOURCE_NODE)
       {
         return *iter;
       }
-    };
+    }
     throw std::runtime_error("FirstValidDescriptor: There were no valid descriptors!");
   }
 };

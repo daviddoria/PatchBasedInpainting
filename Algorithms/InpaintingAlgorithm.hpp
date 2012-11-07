@@ -27,6 +27,7 @@
 
 // STL
 #include <stdexcept>
+#include <memory>
 
 // Custom
 #include <BoostHelpers/BoostHelpers.h>
@@ -41,10 +42,11 @@ template <typename TVertexListGraph, typename TInpaintingVisitor,
           typename TPriorityQueue, typename TBestPatchFinder,
           typename TPatchInpainter>
 inline void
-InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
-                    TPriorityQueue* boundaryNodeQueue,
-                    TBestPatchFinder bestPatchFinder,
-                    TPatchInpainter* patchInpainter)
+InpaintingAlgorithm(std::shared_ptr<TVertexListGraph> graph,
+                    std::shared_ptr<TInpaintingVisitor> visitor,
+                    std::shared_ptr<TPriorityQueue> boundaryNodeQueue,
+                    std::shared_ptr<TBestPatchFinder> bestPatchFinder,
+                    std::shared_ptr<TPatchInpainter> patchInpainter)
 {
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<TInpaintingVisitor, TVertexListGraph>));
 
@@ -61,15 +63,15 @@ InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
     VertexDescriptorType targetNode = boundaryNodeQueue->top(); // This also pops the node
 
     // Notify the visitor that we have a hole target center.
-    vis.DiscoverVertex(targetNode);
+    visitor->DiscoverVertex(targetNode);
 
     // Create a list of the source patches to search (all of them)
     typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
-    tie(vi,vi_end) = vertices(g);
+    tie(vi,vi_end) = vertices(*graph);
 
     // Find the source node that matches best to the target node
-    VertexDescriptorType sourceNode = bestPatchFinder(vi, vi_end, targetNode);
-    vis.PotentialMatchMade(targetNode, sourceNode);
+    VertexDescriptorType sourceNode = (*bestPatchFinder)(vi, vi_end, targetNode);
+    visitor->PotentialMatchMade(targetNode, sourceNode);
 
     // Inpaint the target patch from the source patch.
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(targetNode);
@@ -80,13 +82,13 @@ InpaintingAlgorithm(TVertexListGraph& g, TInpaintingVisitor vis,
     // cannot be a template because it is virtual (c++ rules say so)
     // patchInpainter->PaintPatch(targetNode, sourceNode);
 
-    vis.FinishVertex(targetNode, sourceNode);
+    visitor->FinishVertex(targetNode, sourceNode);
 
     iteration++;
   } // end main iteration loop
 
   std::cout << "Inpainting complete." << std::endl;
-  vis.InpaintingComplete();
+  visitor->InpaintingComplete();
 }
 
 #endif
