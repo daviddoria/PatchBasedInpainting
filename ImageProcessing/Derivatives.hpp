@@ -319,9 +319,9 @@ void MaskedDerivativeGaussianInRegion(const TImage* const image, const Mask* con
   static_assert(std::is_pod<typename TImage::PixelType>::value, "In MaskedDerivativeGaussianInRegion, T must be a POD");
 
   if(direction > 1)
-    {
+  {
     throw std::runtime_error("This function can only compute derivatives of 2D images!");
-    }
+  }
 
   // Create a Gaussian kernel
   typedef itk::GaussianOperator<float, 1> GaussianOperatorType;
@@ -343,36 +343,36 @@ void MaskedDerivativeGaussianInRegion(const TImage* const image, const Mask* con
   // If we are taking x derivatives, we want to use 3 columns. If we are taking y derivatives, we want to use 3 rows.
   unsigned int shiftIndex;
   if(direction == 0)
-    {
+  {
     shiftIndex = 1;
-    }
+  }
   else
-    {
+  {
     shiftIndex = 0;
-    }
+  }
 
   while(!imageIterator.IsAtEnd())
-    {
+  {
     // We should not compute derivatives for pixels in the hole.
     if(mask->IsHole(imageIterator.GetIndex()))
-      {
+    {
       ++imageIterator;
       continue;
-      }
+    }
 
     float totalDifference = 0.0f;
     float totalWeight = 0.0f;
     for(unsigned int shiftId = 0; shiftId < gaussianOperator.Size(); shiftId++) // this shift is either rows or columns, depending on the derivative direction
-      {
+    {
       int shift = gaussianOperator.GetOffset(shiftId)[0];
 
       itk::Index<2> centerIndex;
       centerIndex[direction] = imageIterator.GetIndex()[direction];
       centerIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
       if(!(image->GetLargestPossibleRegion().IsInside(centerIndex) && mask->IsValid(centerIndex)))
-        {
+      {
         continue;
-        }
+      }
 
       float difference = 0.0f;
 
@@ -382,9 +382,9 @@ void MaskedDerivativeGaussianInRegion(const TImage* const image, const Mask* con
       backwardIndex[direction] = imageIterator.GetIndex()[direction] - 1;
       backwardIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
       if(image->GetLargestPossibleRegion().IsInside(backwardIndex) && mask->IsValid(backwardIndex))
-        {
+      {
         backwardValid = true;
-        }
+      }
 
       bool forwardValid = false;
       itk::Index<2> forwardIndex;
@@ -392,48 +392,48 @@ void MaskedDerivativeGaussianInRegion(const TImage* const image, const Mask* con
       forwardIndex[shiftIndex] = imageIterator.GetIndex()[shiftIndex] + shift;
 
       if(image->GetLargestPossibleRegion().IsInside(forwardIndex) && mask->IsValid(forwardIndex))
-        {
+      {
         forwardValid = true;
-        }
+      }
 
       float weight = gaussianOperator.GetElement(shiftId);
 
       if(backwardValid && !forwardValid) // Use backwards half difference
-        {
+      {
         difference = image->GetPixel(centerIndex) - image->GetPixel(backwardIndex);
         totalWeight += weight;
-        }
+      }
       else if(!backwardValid && forwardValid) // Use forwards half difference
-        {
+      {
         difference = image->GetPixel(forwardIndex) - image->GetPixel(centerIndex);
         totalWeight += weight;
-        }
+      }
       else if(backwardValid && forwardValid) // Use full difference
-        {
-//        difference = (image->GetPixel(forwardIndex) - image->GetPixel(backwardIndex))/2.0f; // standard operator-()
+      {
+        //        difference = (image->GetPixel(forwardIndex) - image->GetPixel(backwardIndex))/2.0f; // standard operator-()
         difference = differenceFunction(image->GetPixel(forwardIndex), image->GetPixel(backwardIndex))/2.0f;
 
         totalWeight += weight;
-        }
+      }
       else// if(!backwardValid && !forwardValid) // No valid neighbors in this direction
-        {
+      {
         difference = 0.0f; // There is nothing we can do here, so set the derivative to zero.
-        }
+      }
 
       difference *= weight;
       totalDifference += difference;
       totalWeight += weight;
-      } // end shift loop
+    } // end shift loop
 
     if(totalWeight > 0.0f)
-      {
+    {
       totalDifference /= totalWeight;
-      }
+    }
 
     derivativeImage->SetPixel(imageIterator.GetIndex(), totalDifference);
 
     ++imageIterator;
-    }
+  }
 }
 
 template <typename TImage, typename TDerivativeImage, typename TDifferenceFunction = std::minus<typename TImage::PixelType> >
@@ -451,6 +451,8 @@ void MaskedGradientInRegion(const TImage* const image, const Mask* const mask,
 {
   static_assert(std::is_pod<typename TImage::PixelType>::value, "In MaskedGradientInRegion, T must be a POD");
 
+//  std::cout << "image region: " << image->GetLargestPossibleRegion()
+//            << " mask region: " << mask->GetLargestPossibleRegion() << std::endl;
   assert(image->GetLargestPossibleRegion() == mask->GetLargestPossibleRegion());
   assert(image->GetLargestPossibleRegion().IsInside(region));
 

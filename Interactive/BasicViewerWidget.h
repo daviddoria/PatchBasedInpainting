@@ -50,6 +50,11 @@ class BasicViewerWidgetParent : public QMainWindow, public Ui::BasicViewerWidget
 {
 Q_OBJECT
 
+private:
+protected:
+  /** Gracefully quit if the user closes the dialog. */
+  virtual void closeEvent(QCloseEvent* event) = 0;
+
 public slots:
 
   /** Update the image that is displayed. */
@@ -73,6 +78,8 @@ template <typename TImage>
 class BasicViewerWidget : public BasicViewerWidgetParent
 {
 private:
+  void closeEvent(QCloseEvent*);
+
   /** The image that will be displayed, and the from which the patches will
     * be extracted before being displayed. */
 //  TImage* Image;
@@ -198,6 +205,7 @@ signals:
 template <typename TImage>
 class BasicViewerWidgetWrapper : public BasicViewerWidgetWrapperParent
 {
+
 public:
   BasicViewerWidgetWrapper(TImage* const image, Mask* const mask)
   {

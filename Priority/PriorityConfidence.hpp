@@ -132,47 +132,47 @@ void PriorityConfidence::UpdateConfidences(const TNode& targetNode, const float 
 //}
 
 // Single iterator, this is only marginally faster than the two iterator method above (~5s total in 300 iterations)
-//template <typename TNode>
-//float PriorityConfidence::ComputeConfidenceTerm(const TNode& queryNode) const
-//{
-//  // Sum the confidence map values in the valid region
-//  // This is called ~50x per inpainting iteration (for 21x21 patches).
-//  itk::Index<2> queryPixel = ITKHelpers::CreateIndex(queryNode);
+template <typename TNode>
+float PriorityConfidence::ComputeConfidenceTerm(const TNode& queryNode) const
+{
+  // Sum the confidence map values in the valid region
+  // This is called ~50x per inpainting iteration (for 21x21 patches).
+  itk::Index<2> queryPixel = ITKHelpers::CreateIndex(queryNode);
 
-//  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius);
+  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius);
 
-//  // Ensure that the patch to use to compute the confidence is entirely inside the image
-//  region.Crop(this->MaskImage->GetLargestPossibleRegion());
+  // Ensure that the patch to use to compute the confidence is entirely inside the image
+  region.Crop(this->MaskImage->GetLargestPossibleRegion());
 
-//  itk::ImageRegionConstIteratorWithIndex<ConfidenceImageType> confidenceImageIterator(this->ConfidenceMapImage, region);
+  itk::ImageRegionConstIteratorWithIndex<ConfidenceImageType> confidenceImageIterator(this->ConfidenceMapImage, region);
 
-//  // The confidence is computed as the sum of the confidences of patch pixels
-//  // in the source region / area of the patch
+  // The confidence is computed as the sum of the confidences of patch pixels
+  // in the source region / area of the patch
 
-//  float sum = 0.0f;
+  float sum = 0.0f;
 
-//  while(!confidenceImageIterator.IsAtEnd())
+  while(!confidenceImageIterator.IsAtEnd())
+  {
+    if(this->MaskImage->GetPixel(confidenceImageIterator.GetIndex()) == this->MaskImage->GetValidValue())
+    {
+      sum += confidenceImageIterator.Get();
+    }
+    ++confidenceImageIterator;
+  }
+
+//  if(sum == 0.0f)
 //  {
-//    if(this->MaskImage->GetPixel(confidenceImageIterator.GetIndex()) == this->MaskImage->GetValidValue())
-//    {
-//      sum += confidenceImageIterator.Get();
-//    }
-//    ++confidenceImageIterator;
+//    throw std::runtime_error("Confidence is zero!");
 //  }
+  assert(sum > 0.0f);
 
-////  if(sum == 0.0f)
-////  {
-////    throw std::runtime_error("Confidence is zero!");
-////  }
-//  assert(sum > 0.0f);
+  unsigned int numberOfPixels = region.GetNumberOfPixels();
+  float areaOfPatch = static_cast<float>(numberOfPixels);
 
-//  unsigned int numberOfPixels = region.GetNumberOfPixels();
-//  float areaOfPatch = static_cast<float>(numberOfPixels);
+  float confidence = sum/areaOfPatch;
 
-//  float confidence = sum/areaOfPatch;
-
-//  return confidence;
-//}
+  return confidence;
+}
 
 // Assume (correctly) that the confidence values are zero inside the masked region. This is only marginally faster than the single iterator method with the mask check (~5s total in 300 iterations)
 //template <typename TNode>
@@ -399,72 +399,73 @@ void PriorityConfidence::UpdateConfidences(const TNode& targetNode, const float 
 //#include <xmmintrin.h>
 
 // Manual loop with prefetching, assuming (correctly) that the confidence values are zero inside the masked region. This is only marginally faster than the single iterator method with the mask check (~5s total in 300 iterations)
-template <typename TNode>
-float PriorityConfidence::ComputeConfidenceTerm(const TNode& queryNode) const
-{
-  // Sum the confidence map values in the valid region
-  // This is called ~50x per inpainting iteration (for 21x21 patches).
-  itk::Index<2> queryPixel = ITKHelpers::CreateIndex(queryNode);
+//template <typename TNode>
+//float PriorityConfidence::ComputeConfidenceTerm(const TNode& queryNode) const
+//{
+//  throw std::runtime_error("PriorityConfidence::ComputeConfidenceTerm: THIS VERSION OF THE FUNCTION SEEMS TO MAKE THE PRIORITY VALUES OF ALL PIXELS 1!");
+//  // Sum the confidence map values in the valid region
+//  // This is called ~50x per inpainting iteration (for 21x21 patches).
+//  itk::Index<2> queryPixel = ITKHelpers::CreateIndex(queryNode);
 
-  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius);
+//  itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(queryPixel, this->PatchRadius);
 
-  // Ensure that the patch to use to compute the confidence is entirely inside the image
-  itk::ImageRegion<2> fullRegion = this->ConfidenceMapImage->GetLargestPossibleRegion();
-  region.Crop(fullRegion);
+//  // Ensure that the patch to use to compute the confidence is entirely inside the image
+//  itk::ImageRegion<2> fullRegion = this->ConfidenceMapImage->GetLargestPossibleRegion();
+//  region.Crop(fullRegion);
 
-  ConfidenceImageType::PixelType* buffer = this->ConfidenceMapImage->GetBufferPointer();
+//  ConfidenceImageType::PixelType* buffer = this->ConfidenceMapImage->GetBufferPointer();
 
-  // The confidence is computed as the sum of the confidences of patch pixels
-  // in the source region / area of the patch
+//  // The confidence is computed as the sum of the confidences of patch pixels
+//  // in the source region / area of the patch
 
-  float sum = 0.0f;
+//  float sum = 0.0f;
 
-  int width = fullRegion.GetSize()[0];
-//  int height = fullRegion.GetSize()[1];
+//  int width = fullRegion.GetSize()[0];
+////  int height = fullRegion.GetSize()[1];
 
-  // Move the pointer to the corner of the region
-  buffer += region.GetIndex()[1] * width + region.GetIndex()[0];
+//  // Move the pointer to the corner of the region
+//  buffer += region.GetIndex()[1] * width + region.GetIndex()[0];
 
-//  #pragma omp parallel for
+////  #pragma omp parallel for
+////  for(unsigned int rowId = 0; rowId < region.GetSize()[1]; ++rowId)
+////  {
+////    _mm_prefetch(buffer, _MM_HINT_T0);
+////    _mm_prefetch(buffer + 5, _MM_HINT_T0);
+////    _mm_prefetch(buffer + 20, _MM_HINT_T0);
+
+//////    __builtin_prefetch(buffer);
+//////    __builtin_prefetch(buffer + 16); // There are probably 64 bytes in a cache line, and the prefetch instruction caches a cacheline. This is not enough to get us all the way across the row, so we prefetch the first half of the row, and then also the rest of the row.
+////    buffer += width;
+////  }
+
+//  // Move the pointer to the corner of the region
+//  buffer = this->ConfidenceMapImage->GetBufferPointer() + region.GetIndex()[1] * width + region.GetIndex()[0];
+
+////  #pragma omp parallel for
 //  for(unsigned int rowId = 0; rowId < region.GetSize()[1]; ++rowId)
 //  {
-//    _mm_prefetch(buffer, _MM_HINT_T0);
-//    _mm_prefetch(buffer + 5, _MM_HINT_T0);
-//    _mm_prefetch(buffer + 20, _MM_HINT_T0);
-
-////    __builtin_prefetch(buffer);
-////    __builtin_prefetch(buffer + 16); // There are probably 64 bytes in a cache line, and the prefetch instruction caches a cacheline. This is not enough to get us all the way across the row, so we prefetch the first half of the row, and then also the rest of the row.
 //    buffer += width;
-//  }
-
-  // Move the pointer to the corner of the region
-  buffer = this->ConfidenceMapImage->GetBufferPointer() + region.GetIndex()[1] * width + region.GetIndex()[0];
-
-//  #pragma omp parallel for
-  for(unsigned int rowId = 0; rowId < region.GetSize()[1]; ++rowId)
-  {
-    buffer += width;
-    for(unsigned int colId = 0; colId < region.GetSize()[0]; ++colId)
-    {
-      sum += *buffer;
-      ++buffer;
-    }
-  }
-
-//  for(unsigned int rowId = 0; rowId < region.GetSize()[1]; ++rowId, buffer += width)
-//  {
-//    for(unsigned int colId = 0; colId < region.GetSize()[0]; ++colId, ++buffer)
+//    for(unsigned int colId = 0; colId < region.GetSize()[0]; ++colId)
 //    {
 //      sum += *buffer;
+//      ++buffer;
 //    }
 //  }
 
-  assert(sum > 0.0f);
+////  for(unsigned int rowId = 0; rowId < region.GetSize()[1]; ++rowId, buffer += width)
+////  {
+////    for(unsigned int colId = 0; colId < region.GetSize()[0]; ++colId, ++buffer)
+////    {
+////      sum += *buffer;
+////    }
+////  }
 
-  unsigned int numberOfPixels = region.GetNumberOfPixels();
-  float areaOfPatch = static_cast<float>(numberOfPixels);
+//  assert(sum > 0.0f);
 
-  float confidence = sum/areaOfPatch;
+//  unsigned int numberOfPixels = region.GetNumberOfPixels();
+//  float areaOfPatch = static_cast<float>(numberOfPixels);
 
-  return confidence;
-}
+//  float confidence = sum/areaOfPatch;
+
+//  return confidence;
+//}

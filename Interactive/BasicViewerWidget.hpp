@@ -280,4 +280,11 @@ void BasicViewerWidget<TImage>::ConnectWidget(TPatchesWidget* widget)
                    Qt::DirectConnection);
 }
 
+template <typename TImage>
+void BasicViewerWidget<TImage>::closeEvent(QCloseEvent*)
+{
+  std::cout << "Quitting..." << std::endl;
+  QApplication::quit();
+}
+
 #endif

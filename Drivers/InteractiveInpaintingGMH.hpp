@@ -151,12 +151,12 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   compositeInpainter->AddInpainter(blurredImageInpainter);
 
   // Create the priority function
-//  typedef PriorityCriminisi<TImage> PriorityType;
-//  std::shared_ptr<PriorityType> priorityFunction(
-//        new PriorityType(blurredImage, mask, patchHalfWidth));
-  typedef PriorityConfidence PriorityType;
+  typedef PriorityCriminisi<TImage> PriorityType;
   std::shared_ptr<PriorityType> priorityFunction(
-        new PriorityType(mask, patchHalfWidth));
+        new PriorityType(blurredImage, mask, patchHalfWidth));
+//  typedef PriorityConfidence PriorityType;
+//  std::shared_ptr<PriorityType> priorityFunction(
+//        new PriorityType(mask, patchHalfWidth));
 
   // Queue
   typedef IndirectPriorityQueue<VertexListGraphType> BoundaryNodeQueueType;

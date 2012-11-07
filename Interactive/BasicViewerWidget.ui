@@ -234,12 +234,17 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen"/>
-    <addaction name="actionFlipImageVertically"/>
-    <addaction name="actionFlipImageHorizontally"/>
     <addaction name="actionQuit"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionFlipImageVertically"/>
+    <addaction name="actionFlipImageHorizontally"/>
+   </widget>
    <addaction name="menuLeft_Pane"/>
+   <addaction name="menuView"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">

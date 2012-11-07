@@ -40,9 +40,16 @@ void Isophotes::ComputeColorIsophotesInRegion(const TVectorImageType* const imag
   assert(isophotes);
   assert(isophotes->GetLargestPossibleRegion() == image->GetLargestPossibleRegion());
   
+//  std::cout << "image region: " << image->GetLargestPossibleRegion()
+//            << " mask region: " << mask->GetLargestPossibleRegion() << std::endl;
+  assert(image->GetLargestPossibleRegion() == mask->GetLargestPossibleRegion());
+  assert(image->GetLargestPossibleRegion().IsInside(region));
+
   //EnterFunction("ComputeIsophotes()");
   RGBImageType::Pointer rgbImage = RGBImageType::New();
   ITKHelpers::VectorImageToRGBImageInRegion(image, rgbImage, region);
+
+  assert(image->GetLargestPossibleRegion() == rgbImage->GetLargestPossibleRegion());
 
   //HelpersOutput::WriteImageConditional<RGBImageType>(rgbImage, "Debug/Initialize.rgb.mha", this->DebugImages);
 
@@ -52,14 +59,11 @@ void Isophotes::ComputeColorIsophotesInRegion(const TVectorImageType* const imag
   luminanceFilter->GetOutput()->SetRequestedRegion(region);
   luminanceFilter->Update();
 
-  FloatScalarImageType::Pointer luminanceImage = FloatScalarImageType::New();
-  ITKHelpers::DeepCopy(luminanceFilter->GetOutput(), luminanceImage.GetPointer());
-
   FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
   // Blur with a Gaussian kernel. From TestIsophotes.cpp, it actually seems like not blurring,
   // but using a masked sobel operator produces the most reliable isophotes.
   unsigned int kernelRadius = 0;
-  MaskOperations::MaskedBlur(luminanceFilter->GetOutput(), mask,
+  MaskOperations::MaskedBlurInRegion(luminanceFilter->GetOutput(), mask, region,
                              kernelRadius, blurredLuminance.GetPointer());
 
   //HelpersOutput::WriteImageConditional(blurredLuminance,
