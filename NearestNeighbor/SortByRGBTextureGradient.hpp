@@ -54,6 +54,8 @@ class SortByRGBTextureGradient : public Debug
   TImage* Image;
   Mask* MaskImage;
   unsigned int Iteration = 0;
+  unsigned int NumberOfBins;
+
   TImageToWrite* ImageToWrite = nullptr;
 
   typedef itk::Image<itk::CovariantVector<float, 2>, 2> GradientImageType;
@@ -62,8 +64,10 @@ class SortByRGBTextureGradient : public Debug
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
   SortByRGBTextureGradient(PropertyMapType propertyMap, TImage* const image, Mask* const mask,
+                           unsigned int numberOfBins,
                            TImageToWrite* imageToWrite = nullptr, const Debug& debug = Debug()) :
-    Debug(debug), PropertyMap(propertyMap), Image(image), MaskImage(mask), ImageToWrite(imageToWrite)
+    Debug(debug), PropertyMap(propertyMap), Image(image), MaskImage(mask),
+    NumberOfBins(numberOfBins), ImageToWrite(imageToWrite)
   {
     // Compute the gradients in all source patches
     typedef itk::NthElementImageAdaptor<TImage, float> ImageChannelAdaptorType;
@@ -126,8 +130,6 @@ public:
                              typename TIterator::value_type query,
                              TOutputIterator outputFirst)
   {
-    unsigned int numberOfBins = 30;
-
     // If the input element range is empty, there is nothing to do.
     if(first == last)
     {
@@ -179,7 +181,7 @@ public:
       bool allowOutside = false;
       HistogramType targetChannelHistogram =
         MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
-            normImageAdaptor.GetPointer(), queryRegion, this->MaskImage, queryRegion, numberOfBins,
+            normImageAdaptor.GetPointer(), queryRegion, this->MaskImage, queryRegion, this->NumberOfBins,
             minChannelGradientMagnitudes[channel], maxChannelGradientMagnitudes[channel],
             allowOutside, this->MaskImage->GetValidValue());
 
@@ -203,9 +205,12 @@ public:
     {
       itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
 
+      // GDB can't handle this for a condition for a breakpoint: currentRegion.GetIndex()[0]==341 && currentRegion.GetIndex()[1]==300
+//      int x=currentRegion.GetIndex()[0]; int y=currentRegion.GetIndex()[1];
+
       // Determine if the gradient and histogram have already been computed
       typename HistogramMapType::iterator histogramMapIterator;
-      histogramMapIterator = this->PreviouslyComputedHistograms.find(currentRegion);
+      histogramMapIterator = this->PreviouslyComputedHistograms.find(currentRegion); // ConditionalBreakpoint: x == 341 && y == 300
 
       bool alreadyComputed;
 
@@ -233,7 +238,7 @@ public:
           // We don't need a masked histogram since we are using the full source patch
           testChannelHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
                           normImageAdaptor.GetPointer(), currentRegion,
-                          numberOfBins,
+                          this->NumberOfBins,
                           minChannelGradientMagnitudes[channel],
                           maxChannelGradientMagnitudes[channel], allowOutside);
 
@@ -263,7 +268,7 @@ public:
         bestId = currentPatch - first;
         bestHistogram = testHistogram;
       }
-    }
+    } // end loop over source patches
 
     std::cout << "BestId: " << bestId << std::endl;
     std::cout << "Best distance: " << bestDistance << std::endl;

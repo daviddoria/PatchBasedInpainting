@@ -17,6 +17,7 @@
  *=========================================================================*/
 
 #include "GMHDifference.hpp"
+#include "GMHDifferenceFast.hpp"
 
 #include "Testing.h"
 
@@ -66,10 +67,12 @@ int main(int argc, char*argv[])
 
   const unsigned int numberOfBinsPerChannel = 30;
   GMHDifference<ImageType> gmhDifference(imageReader->GetOutput(), mask, numberOfBinsPerChannel);
+//  GMHDifferenceFast<ImageType> gmhDifference(imageReader->GetOutput(), mask, numberOfBinsPerChannel); // This produces 5.87 but it should produce 0.932
 
   float difference = gmhDifference.Difference(targetRegion, sourceRegion);
 
   std::cout << "GMHDifference: " << difference << std::endl;
+
 
   return EXIT_SUCCESS;
 }

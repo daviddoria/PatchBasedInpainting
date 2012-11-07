@@ -169,7 +169,7 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
 
   // Acceptance visitor
   unsigned int numberOfBinsPerChannel = 30;
-  float maxAllowedDifference = 5.0f;
+  float maxAllowedDifference = 2.0f;
   typedef GMHAcceptanceVisitor<VertexListGraphType, TImage> GMHAcceptanceVisitorType;
   std::shared_ptr<GMHAcceptanceVisitorType> gmhAcceptanceVisitor(
       new GMHAcceptanceVisitorType(originalImage, mask, patchHalfWidth,
@@ -239,7 +239,8 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
 
   typedef SortByRGBTextureGradient<ImagePatchDescriptorMapType,
                                    TImage > NeighborSortType;
-  std::shared_ptr<NeighborSortType> neighborSortType(new NeighborSortType(*imagePatchDescriptorMap, originalImage, mask));
+  std::shared_ptr<NeighborSortType> neighborSortType(
+        new NeighborSortType(*imagePatchDescriptorMap, originalImage, mask, numberOfBinsPerChannel));
 
   typedef KNNSearchAndSort<KNNSearchType, NeighborSortType> SearchAndSortType;
   std::shared_ptr<SearchAndSortType> searchAndSort(new SearchAndSortType(knnSearch, neighborSortType));

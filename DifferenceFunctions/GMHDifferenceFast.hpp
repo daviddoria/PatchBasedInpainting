@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef GMHDifference_hpp
-#define GMHDifference_hpp
+#ifndef GMHDifferenceFast_hpp
+#define GMHDifferenceFast_hpp
 
 // STL
 #include <stdexcept>
@@ -38,12 +38,11 @@
 /** Compute the difference in Gradient Magnitude Histograms of two patches.
  */
 template <typename TImage>
-struct GMHDifference
+struct GMHDifferenceFast
 {
   typedef itk::ImageRegion<2> RegionType;
 
-  /** 'image' can't be const because NthElementImageAdaptor won't allow it. */
-  GMHDifference(TImage* const image, Mask* const mask,
+  GMHDifferenceFast(const TImage* const image, const Mask* const mask,
                 const unsigned int numberOfBinsPerChannel) :
     Image(image), MaskImage(mask), NumberOfBinsPerChannel(numberOfBinsPerChannel)
   {}
@@ -59,46 +58,72 @@ struct GMHDifference
     // Setup storage of the gradients
     typedef itk::Image<itk::CovariantVector<float, 2>, 2> GradientImageType;
 
+    // Extract the regions.
+    typename TImage::Pointer targetRegionImage = TImage::New();
+    ITKHelpers::ExtractRegion(this->Image, targetRegion, targetRegionImage.GetPointer());
+
+    typename TImage::Pointer sourceRegionImage = TImage::New();
+    ITKHelpers::ExtractRegion(this->Image, sourceRegion, sourceRegionImage.GetPointer());
+
+    Mask::Pointer targetRegionMask = Mask::New();
+    ITKHelpers::ExtractRegion(this->MaskImage, targetRegion, targetRegionMask.GetPointer());
+    targetRegionMask->CopyInformationFrom(this->MaskImage);
+
+    // The sourceRegion mask is always fully valid, but we extract it for symmetry in the following algorithm.
+    Mask::Pointer sourceRegionMask = Mask::New();
+    ITKHelpers::ExtractRegion(this->MaskImage, sourceRegion, sourceRegionMask.GetPointer());
+    targetRegionMask->CopyInformationFrom(this->MaskImage);
+
     // Extract the channels and compute their derivatives
     typedef GradientImageType::PixelType::RealValueType ScalarType;
+    // We use this filter to compute the magnitude of the gradient images
 
     typedef itk::NthElementImageAdaptor<TImage, ScalarType> ImageChannelAdaptorType;
-    typename ImageChannelAdaptorType::Pointer imageChannelAdaptor = ImageChannelAdaptorType::New();
-    imageChannelAdaptor->SetImage(this->Image);
+    typename ImageChannelAdaptorType::Pointer targetImageChannelAdaptor = ImageChannelAdaptorType::New();
+    targetImageChannelAdaptor->SetImage(targetRegionImage);
+
+    typename ImageChannelAdaptorType::Pointer sourceImageChannelAdaptor = ImageChannelAdaptorType::New();
+    sourceImageChannelAdaptor->SetImage(sourceRegionImage);
 
     // Initialize the final histograms. The channel histograms will be concatenated to form these final histograms.
     HistogramType targetHistogram;
     HistogramType sourceHistogram;
 
     // These are reused in the loop to store the gradients of a single channel at a time
-    GradientImageType::Pointer channelGradients = GradientImageType::New();
+    GradientImageType::Pointer sourceChannelGradients = GradientImageType::New();
+    GradientImageType::Pointer targetChannelGradients = GradientImageType::New();
 
-    // Connect the gradients to their Norm adaptors. We use this filter to compute the magnitude of the gradient images
+    // Connect the gradients to their Norm adaptors
     typedef itk::NormImageAdaptor<GradientImageType, ScalarType>
         NormImageAdaptorType;
-    typename NormImageAdaptorType::Pointer normImageAdaptor = NormImageAdaptorType::New();
+    typename NormImageAdaptorType::Pointer sourceNormImageAdaptor = NormImageAdaptorType::New();
+//    sourceNormImageAdaptor->SetImage(sourceChannelGradients.GetPointer()); // Why is this not good enough to do here?
 
+    typename NormImageAdaptorType::Pointer targetNormImageAdaptor = NormImageAdaptorType::New();
+//    targetNormImageAdaptor->SetImage(targetChannelGradients.GetPointer()); // Why is this not good enough to do here?
 
     // Compute the gradient of each channel
     for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of RGB channels
     {
-      imageChannelAdaptor->SelectNthElement(channel);
-      Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
-                                          imageChannelAdaptor->GetLargestPossibleRegion(),
-                                          channelGradients.GetPointer());
+      sourceImageChannelAdaptor->SelectNthElement(channel);
+      Derivatives::MaskedGradientInRegion(sourceImageChannelAdaptor.GetPointer(), sourceRegionMask,
+                                          sourceRegionMask->GetLargestPossibleRegion(),
+                                          sourceChannelGradients.GetPointer());
+      sourceNormImageAdaptor->SetImage(sourceChannelGradients.GetPointer());
 
-      // This has to be set here after channelGradients has been set to the correct size in the gradient function.
-      // I don't understand why this has to be the case... the TestChangeImage() in ITKHelpers/Tests/TestNormImageAdaptor.cpp
-      // indicates that the adaptors size is updated automatically when the image size changes.
-      normImageAdaptor->SetImage(channelGradients.GetPointer());
+      targetImageChannelAdaptor->SelectNthElement(channel);
+      Derivatives::MaskedGradientInRegion(targetImageChannelAdaptor.GetPointer(), targetRegionMask,
+                                          targetRegionMask->GetLargestPossibleRegion(),
+                                          targetChannelGradients.GetPointer());
+      targetNormImageAdaptor->SetImage(targetChannelGradients.GetPointer());
 
       std::vector<itk::Index<2> > validPixels =
-          ITKHelpers::GetPixelsWithValueInRegion(this->MaskImage, targetRegion,
-                                                 this->MaskImage->GetValidValue());
+          ITKHelpers::GetPixelsWithValueInRegion(targetRegionMask.GetPointer(), targetRegionMask->GetLargestPossibleRegion(),
+                                                 targetRegionMask->GetValidValue());
 
       // Get the valid pixels
       std::vector<ScalarType> targetGradientMagnitudeValues =
-          ITKHelpers::GetPixelValues(normImageAdaptor.GetPointer(), validPixels);
+          ITKHelpers::GetPixelValues(targetNormImageAdaptor.GetPointer(), validPixels);
 
       // Get the range of the valid pixels
       ScalarType minTargetGradientMagnitude = Helpers::Min(targetGradientMagnitudeValues);
@@ -108,10 +133,10 @@ struct GMHDifference
       bool allowOutside = false; // The histogram range should be fixed at the target range.
       HistogramType targetChannelHistogram =
         MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
-            normImageAdaptor.GetPointer(), targetRegion,
-            this->MaskImage, targetRegion, this->NumberOfBinsPerChannel,
+            targetNormImageAdaptor.GetPointer(), targetNormImageAdaptor->GetLargestPossibleRegion(),
+            targetRegionMask, targetRegionMask->GetLargestPossibleRegion(), this->NumberOfBinsPerChannel,
             minTargetGradientMagnitude, maxTargetGradientMagnitude,
-            allowOutside, this->MaskImage->GetValidValue());
+            allowOutside, targetRegionMask->GetValidValue());
 
       targetChannelHistogram.Normalize();
 
@@ -129,7 +154,7 @@ struct GMHDifference
       // We don't need a masked histogram since we are using the full source patch.
       // Use the target histogram range.
       sourceChannelHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
-            normImageAdaptor.GetPointer(), sourceRegion,
+            sourceNormImageAdaptor.GetPointer(), sourceNormImageAdaptor->GetLargestPossibleRegion(),
             this->NumberOfBinsPerChannel,
             minTargetGradientMagnitude,
             maxTargetGradientMagnitude, allowOutside);
@@ -147,9 +172,9 @@ struct GMHDifference
   }
 
 private:
-  TImage* Image;
+  const TImage* Image;
 
-  Mask* MaskImage;
+  const Mask* MaskImage;
 
   unsigned int NumberOfBinsPerChannel;
 };
