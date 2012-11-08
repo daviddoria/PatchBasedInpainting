@@ -49,8 +49,14 @@ public:
   /** Set the region which this patch indicates.*/
   void SetRegion(const itk::ImageRegion<2>& region);
 
+  /** Set the region which this patch oringially indicated before cropping.*/
+  void SetOriginalRegion(const itk::ImageRegion<2>& region);
+
   /** Get the region described by the patch.*/
   itk::ImageRegion<2> GetRegion() const;
+
+  /** Get the region described by the patch before it was potentially cropped.*/
+  itk::ImageRegion<2> GetOriginalRegion() const;
 
   /** Get the corner of the patch.*/
   itk::Index<2> GetCorner() const;
@@ -86,6 +92,9 @@ public:
 private:
   /** The region in the image defining the location of the patch. */
   itk::ImageRegion<2> Region;
+
+  /** The region in the image defining the location of the patch that is partially outside the image. */
+  itk::ImageRegion<2> OriginalRegion;
 
   /** The image that the patch points to. */
   TImage* Image = nullptr;

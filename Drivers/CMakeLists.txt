@@ -1,5 +1,6 @@
 add_custom_target(Drivers SOURCES
 ClassicalImageInpainting.hpp
+InpaintingGMH.hpp
 InpaintingHistogram.hpp
 InpaintingIntroducedEnergy.hpp
 InpaintingTexture.hpp

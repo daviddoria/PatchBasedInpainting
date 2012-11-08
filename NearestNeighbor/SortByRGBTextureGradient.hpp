@@ -130,15 +130,17 @@ public:
                              typename TIterator::value_type query,
                              TOutputIterator outputFirst)
   {
+    std::cout << "Start SortByRGBTextureGradient::operator()" << std::endl;
     // If the input element range is empty, there is nothing to do.
     if(first == last)
     {
-      std::cerr << "LinearSearchBestHistogram: Nothing to do..." << std::endl;
+      std::cerr << "SortByRGBTextureGradient: Nothing to do..." << std::endl;
       return outputFirst;
     }
 
     // Get the region to process
     itk::ImageRegion<2> queryRegion = get(this->PropertyMap, query).GetRegion();
+    itk::ImageRegion<2> fullQueryRegion = get(this->PropertyMap, query).GetOriginalRegion();
 
     // Target patches are allowed to be partially outside the image, but we can't process anything there
     queryRegion.Crop(this->MaskImage->GetLargestPossibleRegion());
@@ -208,14 +210,11 @@ public:
       itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
 
       // Crop the proposed region to look like the potentially cropped query region
-      currentRegion = ITKHelpers::CropRegionAtPosition(currentRegion, this->MaskImage->GetLargestPossibleRegion(), queryRegion);
-
-      // GDB can't handle this for a condition for a breakpoint: currentRegion.GetIndex()[0]==341 && currentRegion.GetIndex()[1]==300
-//      int x=currentRegion.GetIndex()[0]; int y=currentRegion.GetIndex()[1];
+      currentRegion = ITKHelpers::CropRegionAtPosition(currentRegion, this->MaskImage->GetLargestPossibleRegion(), fullQueryRegion);
 
       // Determine if the gradient and histogram have already been computed
-      typename HistogramMapType::iterator histogramMapIterator;
-      histogramMapIterator = this->PreviouslyComputedHistograms.find(currentRegion); // ConditionalBreakpoint: x == 341 && y == 300
+      typename HistogramMapType::iterator histogramMapIterator =
+          this->PreviouslyComputedHistograms.find(currentRegion);
 
       bool alreadyComputed;
 
@@ -308,6 +307,8 @@ public:
     }
 
     this->Iteration++;
+
+    std::cout << "End SortByRGBTextureGradient::operator()" << std::endl;
 
     return outputFirst;
   } // end operator()

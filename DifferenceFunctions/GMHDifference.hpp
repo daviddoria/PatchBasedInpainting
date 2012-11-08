@@ -48,8 +48,13 @@ struct GMHDifference
     Image(image), MaskImage(mask), NumberOfBinsPerChannel(numberOfBinsPerChannel)
   {}
 
-  float Difference(const RegionType& targetRegion, const RegionType& sourceRegion) const
+  float Difference(RegionType targetRegion, RegionType sourceRegion) const
   {
+    // Crop the source region to look like the potentially cropped query region. We must do this before we crop the target region.
+    sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->MaskImage->GetLargestPossibleRegion(), targetRegion);
+
+    targetRegion.Crop(this->MaskImage->GetLargestPossibleRegion());
+
 //    std::cout << "GMHDifference targetRegion: " << targetRegion << std::endl;
 //    std::cout << "GMHDifference sourceRegion: " << sourceRegion << std::endl;
     assert(this->Image->GetLargestPossibleRegion() == this->MaskImage->GetLargestPossibleRegion());

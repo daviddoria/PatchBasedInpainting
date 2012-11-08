@@ -24,9 +24,9 @@ class LinearSearchBestFirst
 {
 public:
 
-  template <typename ForwardIteratorType>
-  typename ForwardIteratorType::value_type operator()(ForwardIteratorType first, ForwardIteratorType last,
-                  typename ForwardIteratorType::value_type )
+  template <typename TIterator>
+  typename TIterator::value_type operator()(TIterator first, TIterator last,
+                  typename TIterator::value_type )
   {
     return *first;
   }

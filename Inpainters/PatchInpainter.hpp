@@ -82,7 +82,7 @@ public:
     itk::ImageRegion<2> sourceRegion =
         ITKHelpers::GetRegionInRadiusAroundPixel(sourceCenter, this->PatchHalfWidth);
 
-    // Ensure that the source patch will match the target patch after it is cropped
+    // Ensure that the source patch will match the target patch after it is cropped (this must be done before cropping the target region)
     sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->Image->GetLargestPossibleRegion(), targetRegion);
 
     // Ensure that the target patch is inside the image.

@@ -121,17 +121,23 @@ public:
   void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
   {
     // std::cout << "DisplayVisitor::PotentialMatchMade" << std::endl;
+
     // Target node
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(target);
     itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->HalfWidth);
-    emit signal_RefreshTarget(targetRegion);
 
     // Source node
     itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(source);
     // std::cout << "DisplayVisitor::PotentialMatchMade source " << sourceIndex << std::endl;
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, this->HalfWidth);
+    sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->MaskImage->GetLargestPossibleRegion(), targetRegion);
+
+    // Crop target node now that we have already used the original position to crop the source node
+    targetRegion.Crop(this->MaskImage->GetLargestPossibleRegion());
+
     emit signal_RefreshSource(sourceRegion, targetRegion);
     emit signal_RefreshSource(sourceRegion);
+    emit signal_RefreshTarget(targetRegion);
   }
 
   /** This visitor should not be involved with the logic of filling patches. */

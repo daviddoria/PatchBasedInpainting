@@ -343,6 +343,13 @@ if(inpainting_NarrowSearchByNormalsInpainting)
   INSTALL( TARGETS NarrowSearchByNormalsInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
+option(inpainting_InpaintingGMH "Build an automatic inpainting algorithm that sorts top patches by their Gradient Magnitude Histogram differences." OFF)
+if(inpainting_InpaintingGMH)
+  ADD_EXECUTABLE(InpaintingGMH InpaintingGMH.cpp)
+  TARGET_LINK_LIBRARIES(InpaintingGMH ${PatchBasedInpainting_libraries})
+  INSTALL( TARGETS InpaintingGMH RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
 ################## Interactive versions ################
 option(inpainting_InteractiveInpaintingWithVerification "An inpainting executable that runs acceptance tests and asks the user to choose a patch if they fail.")
 if(inpainting_InteractiveInpaintingWithVerification)

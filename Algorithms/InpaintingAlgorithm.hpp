@@ -66,11 +66,12 @@ InpaintingAlgorithm(std::shared_ptr<TVertexListGraph> graph,
     visitor->DiscoverVertex(targetNode);
 
     // Create a list of the source patches to search (all of them)
-    typename boost::graph_traits<TVertexListGraph>::vertex_iterator vi,vi_end;
-    tie(vi,vi_end) = vertices(*graph);
+    typename boost::graph_traits<TVertexListGraph>::vertex_iterator graphBeginIterator;
+    typename boost::graph_traits<TVertexListGraph>::vertex_iterator graphEndIterator;
+    tie(graphBeginIterator, graphEndIterator) = vertices(*graph);
 
     // Find the source node that matches best to the target node
-    VertexDescriptorType sourceNode = (*bestPatchFinder)(vi, vi_end, targetNode);
+    VertexDescriptorType sourceNode = (*bestPatchFinder)(graphBeginIterator, graphEndIterator, targetNode);
     visitor->PotentialMatchMade(targetNode, sourceNode);
 
     // Inpaint the target patch from the source patch.

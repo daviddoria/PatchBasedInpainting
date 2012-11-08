@@ -37,7 +37,7 @@ ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor()
 template <typename TImage>
 ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor(TImage* const image,
                                                              Mask* const maskImage, const itk::ImageRegion<2>& region) :
-  PixelDescriptor(), Region(region), Image(image), MaskImage(maskImage)
+  PixelDescriptor(), Region(region), OriginalRegion(region), Image(image), MaskImage(maskImage)
 {
   if(image->GetLargestPossibleRegion().IsInside(region))
   {
@@ -89,6 +89,12 @@ void ImagePatchPixelDescriptor<TImage>::SetRegion(const itk::ImageRegion<2>& reg
 }
 
 template <typename TImage>
+void ImagePatchPixelDescriptor<TImage>::SetOriginalRegion(const itk::ImageRegion<2>& originalRegion)
+{
+  this->OriginalRegion = originalRegion;
+}
+
+template <typename TImage>
 TImage* ImagePatchPixelDescriptor<TImage>::GetImage() const
 {
   return this->Image;
@@ -104,6 +110,12 @@ template <typename TImage>
 itk::ImageRegion<2> ImagePatchPixelDescriptor<TImage>::GetRegion() const
 {
   return this->Region;
+}
+
+template <typename TImage>
+itk::ImageRegion<2> ImagePatchPixelDescriptor<TImage>::GetOriginalRegion() const
+{
+  return this->OriginalRegion;
 }
 
 template <typename TImage>

@@ -27,7 +27,7 @@
 #include <QApplication>
 
 // Driver
-#include "Drivers/InpaintingGMH.hpp"
+#include "Drivers/InteractiveInpaintingGMH.hpp"
 #include "Drivers/TestDriver.hpp"
 
 // Run with: image.png image.mask 15 filled.png
@@ -85,7 +85,8 @@ int main(int argc, char *argv[])
   // (after the first iteration that is not accepted automatically), the event loop quits.
   app.setQuitOnLastWindowClosed(false);
 
-  InpaintingGMH(image, mask, patchHalfWidth);
+  InteractiveInpaintingGMH(image, mask, patchHalfWidth);
+//  TestDriver(image, mask, patchHalfWidth);
 
   return app.exec();
 }

@@ -50,13 +50,12 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
     // Create the patch object and associate with the node
     itk::Index<2> index = ITKHelpers::CreateIndex(v);
 
-    // It is ok if this region is partially outside the image - we do the cropping in later functions.
-    // We cannot crop here because then we lose the relative position of the remaining piece of the target
-    // patch relative to full valid patches.
+    // It is ok if this region is partially outside the image, this is taken care of in the DescriptorType constructor.
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, this->HalfWidth);
 
     DescriptorType descriptor(this->Image, this->MaskImage, region);
     descriptor.SetVertex(v);
+    descriptor.SetOriginalRegion(region);
     put(*(this->DescriptorMap), v, descriptor);
 
     // This is done in the descriptor constructor ("DescriptorType descriptor" above)
@@ -68,21 +67,13 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
 
   void DiscoverVertex(VertexDescriptorType v) const
   {
-    itk::Index<2> center = ITKHelpers::CreateIndex(v);
-//    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(center, this->HalfWidth);
     itk::ImageRegion<2> region = get(*(this->DescriptorMap), v).GetRegion();
-
-    // Allow target patches to be not entirely inside the image.
-    // This occurs when the hole boundary is near the image boundary.
-
-    // This cropping must be done everywhere else, so that the source patches can be cropped
-    // the same as the target patch (this one).
 
     itk::ImageRegion<2> croppedRegion = region;
     croppedRegion.Crop(this->MaskImage->GetLargestPossibleRegion());
 
     // Create the list of valid pixels
-    std::vector<itk::Index<2> > validPixels = this->MaskImage->GetValidPixelsInRegion(croppedRegion);
+    std::vector<itk::Index<2> > validPixels = this->MaskImage->GetValidPixelsInRegion(region);
 
     // Create the list of offsets relative to the original region (before cropping)
     std::vector<itk::Offset<2> > validOffsets;
@@ -98,6 +89,7 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
     // std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
     DescriptorType& descriptor = get(*(this->DescriptorMap), v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
+    descriptor.SetRegion(croppedRegion);
     descriptor.SetValidOffsets(validOffsets);
   }
 

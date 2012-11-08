@@ -15,6 +15,7 @@ DilatedSourceValidTargetValidAcceptanceVisitor.hpp
 DilatedVarianceDifferenceAcceptanceVisitor.hpp
 FullPatchAverageDifference.hpp
 FullPatchVarianceDifference.hpp
+GMHAcceptanceVisitor.hpp
 HistogramDifferenceAcceptanceVisitor.hpp
 HoleHistogramDifferenceAcceptanceVisitor.hpp
 HoleSizeAcceptanceVisitor.hpp
