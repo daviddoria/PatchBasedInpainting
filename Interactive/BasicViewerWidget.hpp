@@ -30,6 +30,7 @@
 
 // Qt
 #include <QGraphicsPixmapItem>
+#include <QFileDialog>
 
 // VTK
 #include <vtkActor.h>
@@ -285,6 +286,23 @@ void BasicViewerWidget<TImage>::closeEvent(QCloseEvent*)
 {
   std::cout << "Quitting..." << std::endl;
   QApplication::quit();
+}
+
+template <typename TImage>
+void BasicViewerWidget<TImage>::on_actionSave_triggered()
+{
+  QString fileName = QFileDialog::getSaveFileName(this,
+     "Save Image", ".", "Image Files (*.png)");
+
+//  ITKHelpers::WriteImage(this->Image.GetPointer(), fileName.toStdString());
+  ITKHelpers::WriteRGBImage(this->Image.GetPointer(), fileName.toStdString());
+  std::cout << "Wrote image " << fileName.toStdString() << std::endl;
+}
+
+template <typename TImage>
+void BasicViewerWidget<TImage>::on_actionQuit_triggered()
+{
+  std::cout << "Quit." << std::endl;
 }
 
 #endif

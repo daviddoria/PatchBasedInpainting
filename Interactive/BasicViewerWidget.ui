@@ -230,10 +230,11 @@
      <height>28</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuLeft_Pane">
+   <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionSave"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -243,7 +244,7 @@
     <addaction name="actionFlipImageVertically"/>
     <addaction name="actionFlipImageHorizontally"/>
    </widget>
-   <addaction name="menuLeft_Pane"/>
+   <addaction name="menuFile"/>
    <addaction name="menuView"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -336,6 +337,11 @@
   <action name="actionFlipImageHorizontally">
    <property name="text">
     <string>Flip Image Horizontally</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
    </property>
   </action>
  </widget>

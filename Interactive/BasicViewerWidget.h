@@ -50,12 +50,17 @@ class BasicViewerWidgetParent : public QMainWindow, public Ui::BasicViewerWidget
 {
 Q_OBJECT
 
-private:
 protected:
   /** Gracefully quit if the user closes the dialog. */
   virtual void closeEvent(QCloseEvent* event) = 0;
 
 public slots:
+
+  /** Save the current image. */
+  virtual void on_actionSave_triggered() = 0;
+
+  /** Quit. */
+  virtual void on_actionQuit_triggered() = 0;
 
   /** Update the image that is displayed. */
   virtual void slot_UpdateImage() = 0;
@@ -78,6 +83,11 @@ template <typename TImage>
 class BasicViewerWidget : public BasicViewerWidgetParent
 {
 private:
+
+  void on_actionSave_triggered() override;
+
+  void on_actionQuit_triggered() override;
+
   void closeEvent(QCloseEvent*);
 
   /** The image that will be displayed, and the from which the patches will
@@ -103,20 +113,20 @@ public:
 //  BasicViewerWidget(TImage* const image, Mask* const mask);
   BasicViewerWidget(typename TImage::Pointer image, Mask::Pointer mask);
 
-  void slot_UpdateImage();
+  void slot_UpdateImage() override;
 
   /** Update the source region outline, and display the proposed source patch.
     * We need the target region as well while updating the
     * source region because we may want to mask the source patch with the target patch's mask.
     */
   void slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion,
-                         const itk::ImageRegion<2>& targetRegion);
+                         const itk::ImageRegion<2>& targetRegion) override;
 
   /** Update the source region outline.*/
-  void slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion);
+  void slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion) override;
 
   /** Update the target region outline and display the target patch.*/
-  void slot_UpdateTarget(const itk::ImageRegion<2>& region);
+  void slot_UpdateTarget(const itk::ImageRegion<2>& region) override;
 
   /** Make all of the necessary connection for a visitor to drive this viewer.*/
   template <typename TVisitor>

@@ -62,7 +62,6 @@ int main(int argc, char *argv[])
   std::cout << "Output: " << outputFilename << std::endl;
 
   typedef itk::Image<itk::CovariantVector<float, 3>, 2> ImageType;
-//  typedef itk::VectorImage<float, 2> ImageType;
 
   typedef  itk::ImageFileReader<ImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
