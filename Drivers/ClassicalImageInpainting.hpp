@@ -22,6 +22,9 @@
 // Custom
 #include "Utilities/IndirectPriorityQueue.h"
 
+// STL
+#include <memory>
+
 // Submodules
 #include <Helpers/Helpers.h>
 
@@ -67,7 +70,8 @@
 #include <boost/property_map/property_map.hpp>
 
 template <typename TImage>
-void ClassicalImageInpainting(TImage* const originalImage, Mask* const mask, const unsigned int patchHalfWidth)
+void ClassicalImageInpainting(typename itk::SmartPointer<TImage> originalImage, Mask* const mask,
+                              const unsigned int patchHalfWidth)
 {
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
 
@@ -75,7 +79,7 @@ void ClassicalImageInpainting(TImage* const originalImage, Mask* const mask, con
   typedef TImage BlurredImageType; // Usually the blurred image is the same type as the original image.
   typename BlurredImageType::Pointer blurredImage = BlurredImageType::New();
   float blurVariance = 2.0f;
-  MaskOperations::MaskedBlur(originalImage, mask, blurVariance, blurredImage.GetPointer());
+  MaskOperations::MaskedBlur(originalImage.GetPointer(), mask, blurVariance, blurredImage.GetPointer());
 
   ITKHelpers::WriteRGBImage(blurredImage.GetPointer(), "BlurredImage.png");
 
@@ -85,38 +89,41 @@ void ClassicalImageInpainting(TImage* const originalImage, Mask* const mask, con
   typedef boost::grid_graph<2> VertexListGraphType;
   boost::array<std::size_t, 2> graphSideLengths = { { fullRegion.GetSize()[0],
                                                       fullRegion.GetSize()[1] } };
-  VertexListGraphType graph(graphSideLengths);
+  std::shared_ptr<VertexListGraphType> graph(new VertexListGraphType(graphSideLengths));
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
   typedef boost::graph_traits<VertexListGraphType>::vertex_iterator VertexIteratorType;
 
   // Queue
   typedef IndirectPriorityQueue<VertexListGraphType> BoundaryNodeQueueType;
-  BoundaryNodeQueueType boundaryNodeQueue(graph);
+  std::shared_ptr<BoundaryNodeQueueType> boundaryNodeQueue(new BoundaryNodeQueueType(*graph));
 
   // Create the descriptor map. This is where the data for each pixel is stored.
   typedef boost::vector_property_map<ImagePatchPixelDescriptorType,
       BoundaryNodeQueueType::IndexMapType> ImagePatchDescriptorMapType;
-  ImagePatchDescriptorMapType imagePatchDescriptorMap(num_vertices(graph), boundaryNodeQueue.IndexMap);
+  std::shared_ptr<ImagePatchDescriptorMapType> imagePatchDescriptorMap(new
+      ImagePatchDescriptorMapType(num_vertices(*graph), *(boundaryNodeQueue->GetIndexMap())));
 
   // Create the patch inpainter.
   typedef PatchInpainter<TImage> OriginalImageInpainterType;
-  OriginalImageInpainterType originalImagePatchInpainter(patchHalfWidth, originalImage, mask);
+  std::shared_ptr<OriginalImageInpainterType> originalImagePatchInpainter(new
+      OriginalImageInpainterType(patchHalfWidth, originalImage, mask));
   // Show the inpainted image at each iteration
 //  originalImagePatchInpainter.SetDebugImages(true);
 //  originalImagePatchInpainter.SetImageName("RGB");
 
   // Create an inpainter for the blurred image.
   typedef PatchInpainter<BlurredImageType> BlurredImageInpainterType;
-  BlurredImageInpainterType blurredImagePatchInpainter(patchHalfWidth, blurredImage, mask);
+  std::shared_ptr<BlurredImageInpainterType> blurredImagePatchInpainter(new
+     BlurredImageInpainterType(patchHalfWidth, blurredImage, mask));
 
   // Create a composite inpainter.
-  CompositePatchInpainter inpainter;
-  inpainter.AddInpainter(&originalImagePatchInpainter);
-  inpainter.AddInpainter(&blurredImagePatchInpainter);
+  std::shared_ptr<CompositePatchInpainter> inpainter(new CompositePatchInpainter);
+  inpainter->AddInpainter(originalImagePatchInpainter);
+  inpainter->AddInpainter(blurredImagePatchInpainter);
 
   // Create the priority function
   typedef PriorityCriminisi<BlurredImageType> PriorityType;
-  PriorityType priorityFunction(blurredImage, mask, patchHalfWidth);
+  std::shared_ptr<PriorityType> priorityFunction(new PriorityType(blurredImage, mask, patchHalfWidth));
 
 //  typedef PriorityRandom PriorityType;
 //  PriorityType priorityFunction(false);
@@ -127,28 +134,27 @@ void ClassicalImageInpainting(TImage* const originalImage, Mask* const mask, con
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, TImage, ImagePatchDescriptorMapType>
       ImagePatchDescriptorVisitorType;
-  ImagePatchDescriptorVisitorType imagePatchDescriptorVisitor(originalImage, mask, imagePatchDescriptorMap,
-                                                              patchHalfWidth);
+  std::shared_ptr<ImagePatchDescriptorVisitorType> imagePatchDescriptorVisitor(new
+      ImagePatchDescriptorVisitorType(originalImage.GetPointer(), mask,
+                                      imagePatchDescriptorMap, patchHalfWidth));
 
   typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;
-  AcceptanceVisitorType acceptanceVisitor;
+  std::shared_ptr<AcceptanceVisitorType> acceptanceVisitor(new AcceptanceVisitorType);
 
   // Create the inpainting visitor
   typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
-                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType, TImage>
+                            ImagePatchDescriptorVisitorType, AcceptanceVisitorType, PriorityType>
                             InpaintingVisitorType;
-  InpaintingVisitorType inpaintingVisitor(mask, boundaryNodeQueue,
+  std::shared_ptr<InpaintingVisitorType> inpaintingVisitor(new InpaintingVisitorType(mask, boundaryNodeQueue,
                                           imagePatchDescriptorVisitor, acceptanceVisitor,
-                                          &priorityFunction, patchHalfWidth, "InpaintingVisitor", originalImage);
-  inpaintingVisitor.SetAllowNewPatches(false);
+                                          priorityFunction, patchHalfWidth, "InpaintingVisitor"));
+  inpaintingVisitor->SetAllowNewPatches(false);
 //  inpaintingVisitor.SetDebugImages(true); // Write PatchesCopied images that show the source and target patch at each iteration
 
-  InitializePriority(mask, boundaryNodeQueue, &priorityFunction);
+  InitializePriority(mask, boundaryNodeQueue.get(), priorityFunction.get());
 
   // Initialize the boundary node queue from the user provided mask image.
-  InitializeFromMaskImage<InpaintingVisitorType, VertexDescriptorType>(mask, &inpaintingVisitor);
-  std::cout << "PatchBasedInpaintingNonInteractive: There are " << boundaryNodeQueue.CountValidNodes()
-            << " nodes in the boundaryNodeQueue" << std::endl;
+  InitializeFromMaskImage<InpaintingVisitorType, VertexDescriptorType>(mask, inpaintingVisitor.get());
 
   // Create the nearest neighbor finder
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
@@ -156,13 +162,17 @@ void ClassicalImageInpainting(TImage* const originalImage, Mask* const mask, con
 
   typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
                                    PatchDifferenceType> BestSearchType;
-  BestSearchType linearSearchBest(imagePatchDescriptorMap);
+  std::shared_ptr<BestSearchType> linearSearchBest(new BestSearchType(*imagePatchDescriptorMap));
 
   // Perform the inpainting
-  InpaintingAlgorithm(graph, inpaintingVisitor, &boundaryNodeQueue,
-                      linearSearchBest, &inpainter);
+//  InpaintingAlgorithm(graph, inpaintingVisitor, boundaryNodeQueue,
+//                      linearSearchBest, inpainter);
 
-  std::cout << "ComputePriority calls: " << priorityFunction.ComputePriorityCallCount << std::endl;
+  InpaintingAlgorithm<VertexListGraphType, InpaintingVisitorType,
+                      BoundaryNodeQueueType, BestSearchType,
+                      CompositePatchInpainter>(graph, inpaintingVisitor, boundaryNodeQueue,
+                      linearSearchBest, inpainter);
+
 }
 
 #endif

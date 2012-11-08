@@ -454,6 +454,12 @@ void MaskedGradientInRegion(const TImage* const image, const Mask* const mask,
 //  std::cout << "image region: " << image->GetLargestPossibleRegion()
 //            << " mask region: " << mask->GetLargestPossibleRegion() << std::endl;
   assert(image->GetLargestPossibleRegion() == mask->GetLargestPossibleRegion());
+
+  if(!image->GetLargestPossibleRegion().IsInside(region))
+  {
+    std::cout << "image region: " << image->GetLargestPossibleRegion()
+              << " region: " << region << std::endl;
+  }
   assert(image->GetLargestPossibleRegion().IsInside(region));
 
   // Compute the derivatives

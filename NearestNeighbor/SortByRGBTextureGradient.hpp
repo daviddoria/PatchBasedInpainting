@@ -140,6 +140,9 @@ public:
     // Get the region to process
     itk::ImageRegion<2> queryRegion = get(this->PropertyMap, query).GetRegion();
 
+    // Target patches are allowed to be partially outside the image, but we can't process anything there
+    queryRegion.Crop(this->MaskImage->GetLargestPossibleRegion());
+
     typedef itk::NthElementImageAdaptor<TImage, float> ImageChannelAdaptorType;
     typename ImageChannelAdaptorType::Pointer imageChannelAdaptor = ImageChannelAdaptorType::New();
     imageChannelAdaptor->SetImage(this->Image);
@@ -203,6 +206,9 @@ public:
     for(TIterator currentPatch = first; currentPatch != last; ++currentPatch)
     {
       itk::ImageRegion<2> currentRegion = get(this->PropertyMap, *currentPatch).GetRegion();
+
+      // Crop the proposed region to look like the potentially cropped query region
+      currentRegion = ITKHelpers::CropRegionAtPosition(currentRegion, this->MaskImage->GetLargestPossibleRegion(), queryRegion);
 
       // GDB can't handle this for a condition for a breakpoint: currentRegion.GetIndex()[0]==341 && currentRegion.GetIndex()[1]==300
 //      int x=currentRegion.GetIndex()[0]; int y=currentRegion.GetIndex()[1];

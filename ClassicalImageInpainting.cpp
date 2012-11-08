@@ -105,7 +105,10 @@ int main(int argc, char *argv[])
   imageReader->SetFileName(imageFilename);
   imageReader->Update();
 
-  OriginalImageType* originalImage = imageReader->GetOutput();
+//  OriginalImageType* originalImage = imageReader->GetOutput();
+
+  OriginalImageType::Pointer originalImage = OriginalImageType::New();
+  ITKHelpers::DeepCopy(imageReader->GetOutput(), originalImage.GetPointer());
 
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
@@ -116,11 +119,11 @@ int main(int argc, char *argv[])
   // casted to unsigned char. Otherwise, write the file directly.
   if(Helpers::GetFileExtension(outputFileName) == "png")
   {
-    ITKHelpers::WriteRGBImage(originalImage, outputFileName);
+    ITKHelpers::WriteRGBImage(originalImage.GetPointer(), outputFileName);
   }
   else
   {
-    ITKHelpers::WriteImage(originalImage, outputFileName);
+    ITKHelpers::WriteImage(originalImage.GetPointer(), outputFileName);
   }
 
   return EXIT_SUCCESS;

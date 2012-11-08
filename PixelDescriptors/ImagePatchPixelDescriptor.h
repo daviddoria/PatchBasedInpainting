@@ -88,16 +88,16 @@ private:
   itk::ImageRegion<2> Region;
 
   /** The image that the patch points to. */
-  TImage* Image;
+  TImage* Image = nullptr;
 
   /** The Mask that describes the valid pixels in the patch. */
-  Mask* MaskImage;
+  Mask* MaskImage = nullptr;
 
   /** Indicate if every pixel in this image patch is valid or not. */
-  bool FullyValid;
+  bool FullyValid = false;
 
   /** Indicate if the patch region is entirely inside the image region. */
-  bool InsideImage;
+  bool InsideImage = false;
 
   /** A list of offsets from the patch corner that contain valid pixels.
       This is only used during the comparison to another patch if this patch has status TARGET_PATCH.*/

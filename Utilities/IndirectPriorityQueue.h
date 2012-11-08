@@ -19,6 +19,9 @@
 #ifndef INDIRECTPRIORITYQUEUE_H
 #define INDIRECTPRIORITYQUEUE_H
 
+// STL
+#include <iostream>
+
 // Boost
 #include <boost/heap/binomial_heap.hpp>
 #include <boost/pending/indirect_cmp.hpp>
@@ -89,6 +92,11 @@ struct IndirectPriorityQueue
   BoundaryStatusMapType* GetBoundaryStatusMap()
   {
     return &(this->BoundaryStatusMap);
+  }
+
+  IndexMapType* GetIndexMap()
+  {
+    return &(this->IndexMap);
   }
 
   size_t CountValidNodes()

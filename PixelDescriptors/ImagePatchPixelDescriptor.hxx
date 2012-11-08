@@ -29,8 +29,7 @@
 #include "itkImageRegionConstIterator.h"
 
 template <typename TImage>
-ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor() :
-  Image(NULL), MaskImage(NULL), FullyValid(false), InsideImage(false)
+ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor()
 {
 
 }
@@ -38,7 +37,7 @@ ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor() :
 template <typename TImage>
 ImagePatchPixelDescriptor<TImage>::ImagePatchPixelDescriptor(TImage* const image,
                                                              Mask* const maskImage, const itk::ImageRegion<2>& region) :
-  PixelDescriptor(), Region(region), Image(image), MaskImage(maskImage), FullyValid(false), InsideImage(false)
+  PixelDescriptor(), Region(region), Image(image), MaskImage(maskImage)
 {
   if(image->GetLargestPossibleRegion().IsInside(region))
   {

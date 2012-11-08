@@ -130,14 +130,15 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   std::shared_ptr<VertexListGraphType> graph(new VertexListGraphType(graphSideLengths));
   typedef boost::graph_traits<VertexListGraphType>::vertex_descriptor VertexDescriptorType;
 
-  // Get the index map
-  typedef boost::property_map<VertexListGraphType, boost::vertex_index_t>::const_type IndexMapType;
-  std::shared_ptr<IndexMapType> indexMap(new IndexMapType(get(boost::vertex_index, *graph)));
+  // Queue
+  typedef IndirectPriorityQueue<VertexListGraphType> BoundaryNodeQueueType;
+  std::shared_ptr<BoundaryNodeQueueType> boundaryNodeQueue(new BoundaryNodeQueueType(*graph));
 
   // Create the descriptor map. This is where the data for each pixel is stored.
-  typedef boost::vector_property_map<ImagePatchPixelDescriptorType, IndexMapType> ImagePatchDescriptorMapType;
+  typedef boost::vector_property_map<ImagePatchPixelDescriptorType,
+      BoundaryNodeQueueType::IndexMapType> ImagePatchDescriptorMapType;
   std::shared_ptr<ImagePatchDescriptorMapType> imagePatchDescriptorMap(
-        new ImagePatchDescriptorMapType(num_vertices(*graph), *indexMap));
+        new ImagePatchDescriptorMapType(num_vertices(*graph), *(boundaryNodeQueue->GetIndexMap())));
 
   // Create the patch inpainters.
   typedef PatchInpainter<TImage> OriginalImageInpainterType;
@@ -169,9 +170,6 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
 //  std::shared_ptr<PriorityType> priorityFunction(
 //        new PriorityType(mask, patchHalfWidth));
 
-  // Queue
-  typedef IndirectPriorityQueue<VertexListGraphType> BoundaryNodeQueueType;
-  std::shared_ptr<BoundaryNodeQueueType> boundaryNodeQueue(new BoundaryNodeQueueType(*graph));
 
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, TImage, ImagePatchDescriptorMapType>

@@ -69,7 +69,8 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
   void DiscoverVertex(VertexDescriptorType v) const
   {
     itk::Index<2> center = ITKHelpers::CreateIndex(v);
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(center, this->HalfWidth);
+//    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(center, this->HalfWidth);
+    itk::ImageRegion<2> region = get(*(this->DescriptorMap), v).GetRegion();
 
     // Allow target patches to be not entirely inside the image.
     // This occurs when the hole boundary is near the image boundary.
