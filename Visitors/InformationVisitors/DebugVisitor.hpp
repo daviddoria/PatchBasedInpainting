@@ -101,11 +101,11 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
   void FinishVertex(VertexDescriptorType target, VertexDescriptorType sourceNode) override
   {
     //OutputHelpers::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask", this->NumberOfFinishedVertices, "png"));
-    ITKHelpers::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask",
-                                                                        this->NumberOfFinishedVertices, "mha"));
+    ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("mask",
+                                                                           this->NumberOfFinishedVertices, "mha"));
     //OutputHelpers::WriteVectorImageAsRGB(Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
     ITKHelpers::WriteImage(Image, Helpers::GetSequentialFileName("output",
-                                                                    this->NumberOfFinishedVertices, "mha"));
+                                                                 this->NumberOfFinishedVertices, "mha"));
 
     ITKHelpers::WriteRGBImage(Image, Helpers::GetSequentialFileName("output",
                                                                     this->NumberOfFinishedVertices, "png"));
@@ -116,7 +116,7 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
     holeColor[1] = 0;
     holeColor[2] = 0;
 
-    MaskOperations::WriteMaskedRegionPNG(Image, this->MaskImage, Image->GetLargestPossibleRegion(),
+    MaskOperations::WriteMaskedRegionPNG(this->Image, this->MaskImage, this->Image->GetLargestPossibleRegion(),
                                          Helpers::GetSequentialFileName("maskedOutput", this->NumberOfFinishedVertices, "png"),
                                          holeColor);
 
@@ -124,14 +124,14 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
     typedef itk::Image<unsigned char, 2> IndicatorImageType;
 
     IndicatorImageType::Pointer boundaryStatusMapImage = IndicatorImageType::New();
-    boundaryStatusMapImage->SetRegions(Image->GetLargestPossibleRegion());
+    boundaryStatusMapImage->SetRegions(this->Image->GetLargestPossibleRegion());
     boundaryStatusMapImage->Allocate();
 //     BoostHelpers::WritePropertyMapAsImage(BoundaryStatusMap, boundaryStatusMapImage.GetPointer(),
 //                                           Helpers::GetSequentialFileName("boundaryStatusMap",
 //                                           this->NumberOfFinishedVertices, "png"));
 
     IndicatorImageType::Pointer validBoundaryNodeImage = IndicatorImageType::New();
-    validBoundaryNodeImage->SetRegions(Image->GetLargestPossibleRegion());
+    validBoundaryNodeImage->SetRegions(this->Image->GetLargestPossibleRegion());
     validBoundaryNodeImage->Allocate();
 //     BoostHelpers::WriteValidQueueNodesAsImage(BoundaryNodeQueue, BoundaryStatusMap,
 //                                                 validBoundaryNodeImage.GetPointer(),
@@ -139,7 +139,7 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 //                                                this->NumberOfFinishedVertices, "png"));
 
     IndicatorImageType::Pointer allBoundaryNodeImage = IndicatorImageType::New();
-    allBoundaryNodeImage->SetRegions(Image->GetLargestPossibleRegion());
+    allBoundaryNodeImage->SetRegions(this->Image->GetLargestPossibleRegion());
     allBoundaryNodeImage->Allocate();
 //     BoostHelpers::WriteAllQueueNodesAsImage(BoundaryNodeQueue, allBoundaryNodeImage.GetPointer(),
 //                                           Helpers::GetSequentialFileName("boundaryQueueAllNodes",

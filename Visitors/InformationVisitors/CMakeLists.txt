@@ -1,6 +1,7 @@
 add_custom_target(InformationVisitors SOURCES
 DebugVisitor.hpp
 DisplayVisitor.hpp
+PatchIndicatorVisitor.hpp
 FillOrderLoggerVisitor.hpp
 IterationWriterVisitor.hpp
 LoggerVisitor.hpp)

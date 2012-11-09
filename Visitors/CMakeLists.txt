@@ -4,7 +4,6 @@ add_subdirectory(InformationVisitors)
 add_subdirectory(SimpleVisitors)
 
 add_custom_target(VisitorsSources SOURCES CompositeInpaintingVisitor.hpp
-DefaultInpaintingVisitor.hpp
 FeatureVectorInpaintingVisitor.hpp
 ImagePatchCreatorVisitor.hpp
 ImagePatchInpaintingVisitor.hpp
