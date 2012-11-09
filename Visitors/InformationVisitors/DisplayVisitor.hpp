@@ -100,25 +100,15 @@ public:
 
   }
 
-  void PaintPatch(VertexDescriptorType target, VertexDescriptorType source) const
-  {
-
-  }
-  
-  void InitializeVertex(VertexDescriptorType v) const
-  { 
-
-  }
-
   /** When a vertex has been selected from the queue to be searched for, display it as the target patch. */
-  void DiscoverVertex(VertexDescriptorType v) const
+  void DiscoverVertex(VertexDescriptorType v) const override
   {
     // std::cout << "DisplayVisitor::DiscoverVertex" << std::endl;
     emit signal_RefreshImage();
   }
 
   /** When a tentative match has been made (possibly pending verification), treat it as the source patch. */
-  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
+  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source) override
   {
     // std::cout << "DisplayVisitor::PotentialMatchMade" << std::endl;
 
@@ -140,20 +130,14 @@ public:
     emit signal_RefreshTarget(targetRegion);
   }
 
-  /** This visitor should not be involved with the logic of filling patches. */
-  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
-  {
-    // Do nothing
-  }
-
   /** This visitor should not be involved with the logic of accepting patches. */
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const override
   {
     return true;
   }
 
   /** Once a patch has been selected and approved, show the filled image. */
-  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode)
+  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode) override
   {
     std::cout << "DisplayVisitor::FinishVertex()" << std::endl;
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(v);
@@ -171,10 +155,6 @@ public:
     emit signal_RefreshResult(sourceRegion, targetRegion);
     emit signal_RefreshImage();
     std::cout << "After signals DisplayVisitor::FinishVertex()" << std::endl;
-  }
-
-  void InpaintingComplete() const
-  {
   }
 
 };

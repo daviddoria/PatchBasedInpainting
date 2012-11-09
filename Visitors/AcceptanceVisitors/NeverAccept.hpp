@@ -31,7 +31,7 @@ struct NeverAccept : public AcceptanceVisitorParent<TGraph>
 {
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& energy) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& energy) const override
   {
     return false;
   }

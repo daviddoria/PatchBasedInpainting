@@ -43,14 +43,15 @@ struct BoundaryEnergyAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
   Mask* MaskImage;
 
   const unsigned int HalfWidth;
-  unsigned int NumberOfFinishedVertices;
+  unsigned int NumberOfFinishedVertices = 0;
 
   TBoundaryStatusMap& BoundaryStatusMap;
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  DebugVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, TBoundaryStatusMap& in_boundaryStatusMap) :
-  Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0), BoundaryStatusMap(in_boundaryStatusMap)
+  DebugVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth,
+               TBoundaryStatusMap& in_boundaryStatusMap) :
+  Image(image), MaskImage(mask), HalfWidth(halfWidth), BoundaryStatusMap(in_boundaryStatusMap)
   {
 
   }
@@ -80,7 +81,7 @@ struct BoundaryEnergyAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
       std::cout << "Match rejected." << std::endl;
       return false;
       }
-  };
+  }
 
 };
 

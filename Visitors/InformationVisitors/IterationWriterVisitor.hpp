@@ -16,17 +16,18 @@
  *
  *=========================================================================*/
 
-#ifndef DebugVisitor_HPP
-#define DebugVisitor_HPP
+#ifndef IterationWriterVisitor_HPP
+#define IterationWriterVisitor_HPP
 
+// Boost
 #include <boost/graph/graph_traits.hpp>
 
 // Custom
-#include "Visitors/SimpleVisitors/VisitorSuperclass.hpp"
-#include "ImageProcessing/Mask.h"
-#include "Helpers/OutputHelpers.h"
-#include "Helpers/ITKHelpers.h"
-#include "Helpers/BoostHelpers.h"
+#include "Visitors/InpaintingVisitorParent.h"
+
+// Submodules
+#include <Mask/Mask.h>
+#include <ITKHelpers/ITKHelpers.h>
 
 // ITK
 #include "itkImage.h"
@@ -35,32 +36,42 @@
 /**
   * This visitor writes out information and images at each iteration.
  */
-template <typename TVertexDescriptor, typename TImage>
-struct IterationWriterVisitor : public VisitorSuperclass<TVertexDescriptor>
+template <typename TGraph, typename TImage>
+struct IterationWriterVisitor : public InpaintingVisitorParent<TGraph>
 {
-  TImage* Image;
-  Mask* MaskImage;
+  /** The image to write at every iteration. */
+  const TImage* Image;
 
-  unsigned int NumberOfFinishedVertices;
-  IterationWriterVisitor(TImage* const image, Mask* const mask,
+  /** The mask to write at every iteration. */
+  const Mask* MaskImage;
+
+  /** A counter used to name output files. */
+  unsigned int NumberOfFinishedVertices = 0;
+
+  IterationWriterVisitor(const TImage* const image, const Mask* const mask,
                          const std::string& visitorName = "IterationWriterVisitor") :
-  Image(image), MaskImage(mask), NumberOfFinishedVertices(0)
+    InpaintingVisitorParent<TGraph>(visitorName),
+    Image(image), MaskImage(mask)
   {
 
   }
 
+  void DiscoverVertex(VertexDescriptorType v) const {}
   void PaintPatch(TVertexDescriptor target, TVertexDescriptor source) const {}
 
   void FinishVertex(TVertexDescriptor target, TVertexDescriptor sourceNode)
   {
-    OutputHelpers::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask",
-                                                                        this->NumberOfFinishedVertices, "mha"));
-    OutputHelpers::WriteImage(Image, Helpers::GetSequentialFileName("output",
-                                                                    this->NumberOfFinishedVertices, "mha"));
+    ITKHelpers::WriteImage(this->MaskImage,
+                           Helpers::GetSequentialFileName("mask",
+                                                          this->NumberOfFinishedVertices, "png"));
+//                                                        this->NumberOfFinishedVertices, "mha"));
+    ITKHelpers::WriteImage(this->Image,
+                           Helpers::GetSequentialFileName("output",
+                                                          this->NumberOfFinishedVertices, "png"));
+//                                                          this->NumberOfFinishedVertices, "mha"));
 
     this->NumberOfFinishedVertices++;
-
-  };
+  }
 
   void InpaintingComplete() const  {  }
 };

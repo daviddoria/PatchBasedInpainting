@@ -99,12 +99,6 @@ void ClassicalImageInpaintingBasicViewer(typename itk::SmartPointer<TImage> orig
   float blurVariance = 3.0f;
   MaskOperations::MaskedBlur(originalImage.GetPointer(), mask, blurVariance, blurredImage.GetPointer());
 
-  // Blur the image a little bit so that the SSD comparisons are less wild.
-  typedef TImage BlurredImageType; // Usually the blurred image is the same type as the original image.
-  typename BlurredImageType::Pointer slightlyBlurredImage = BlurredImageType::New();
-  float slightBlurVariance = 1.0f;
-  MaskOperations::MaskedBlur(originalImage.GetPointer(), mask, slightBlurVariance, slightlyBlurredImage.GetPointer());
-
   typedef ImagePatchPixelDescriptor<TImage> ImagePatchPixelDescriptorType;
 
   // Create the graph
@@ -133,9 +127,6 @@ void ClassicalImageInpaintingBasicViewer(typename itk::SmartPointer<TImage> orig
   std::shared_ptr<BlurredImageInpainterType> blurredImageInpainter(
       new BlurredImageInpainterType(patchHalfWidth, blurredImage, mask));
 
-  std::shared_ptr<BlurredImageInpainterType> slightlyBlurredImageInpainter(
-      new BlurredImageInpainterType(patchHalfWidth, slightlyBlurredImage, mask));
-
   // Create a composite inpainter.
   /** We only have to store the composite inpainter in the class, as it stores shared_ptrs
     * to all of the individual inpainters. If the composite inpainter says in scope, the
@@ -144,12 +135,12 @@ void ClassicalImageInpaintingBasicViewer(typename itk::SmartPointer<TImage> orig
   std::shared_ptr<CompositePatchInpainter> compositeInpainter(new CompositePatchInpainter);
   compositeInpainter->AddInpainter(originalImageInpainter);
   compositeInpainter->AddInpainter(blurredImageInpainter);
-  compositeInpainter->AddInpainter(slightlyBlurredImageInpainter);
 
   // Create the priority function
   typedef PriorityCriminisi<TImage> PriorityType;
   std::shared_ptr<PriorityType> priorityFunction(
-        new PriorityType(blurredImage, mask, patchHalfWidth));
+//        new PriorityType(blurredImage, mask, patchHalfWidth));
+        new PriorityType(originalImage, mask, patchHalfWidth));
 
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, TImage, ImagePatchDescriptorMapType>
@@ -161,7 +152,7 @@ void ClassicalImageInpaintingBasicViewer(typename itk::SmartPointer<TImage> orig
   // Use the slightly blurred image here, as this is where the patch objects get created, and later these patch objects
   // are passed to the SSD function.
   std::shared_ptr<ImagePatchDescriptorVisitorType> imagePatchDescriptorVisitor(
-        new ImagePatchDescriptorVisitorType(slightlyBlurredImage.GetPointer(), mask,
+        new ImagePatchDescriptorVisitorType(originalImage.GetPointer(), mask,
                                             imagePatchDescriptorMap, patchHalfWidth));
 
   typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
@@ -204,7 +195,6 @@ void ClassicalImageInpaintingBasicViewer(typename itk::SmartPointer<TImage> orig
 
 
   typedef BasicViewerWidget<TImage> BasicViewerWidgetType;
-//  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(originalImage, mask)); // This shared_ptr will go out of scope when this function ends, so the window will immediately close
   BasicViewerWidgetType* basicViewer = new BasicViewerWidgetType(originalImage, mask);
   std::cout << "basicViewer pointer: " << basicViewer << std::endl;
   basicViewer->ConnectVisitor(displayVisitor.get());

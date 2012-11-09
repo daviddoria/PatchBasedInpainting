@@ -29,7 +29,8 @@ struct AverageDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGrap
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  AverageDifferenceAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, const float differenceThreshold = 100) :
+  AverageDifferenceAcceptanceVisitor(TImage* const image, Mask* const mask,
+                                     const unsigned int halfWidth, const float differenceThreshold = 100) :
   Image(image), MaskImage(mask), HalfWidth(halfWidth), DifferenceThreshold(differenceThreshold)
   {
 
@@ -41,7 +42,7 @@ struct AverageDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGrap
     return AcceptMatch(target, source, computedEnergy);
   }
   
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& computedEnergy) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& computedEnergy) const override
   {
     itk::Index<2> targetPixel = ITKHelpers::CreateIndex(target);
     itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, HalfWidth);
@@ -72,7 +73,7 @@ struct AverageDifferenceAcceptanceVisitor : public AcceptanceVisitorParent<TGrap
       std::cout << "AverageDifferenceAcceptanceVisitor: Match rejected (greater than " << DifferenceThreshold << ")" << std::endl;
       return false;
       }
-  };
+  }
 
 };
 

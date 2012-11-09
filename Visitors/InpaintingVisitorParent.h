@@ -35,19 +35,36 @@ struct InpaintingVisitorParent
   
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
+  // There is no need to make these functions pure virtual - having empty implementations makes sense, and then
+  // children can choose which functions to reimplement.
+//  // Const functions
+//  virtual void InitializeVertex(VertexDescriptorType v) const = 0;
+
+//  virtual void DiscoverVertex(VertexDescriptorType v) const = 0;
+
+//  virtual bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const = 0;
+
+//  virtual void InpaintingComplete() const = 0;
+
+//  // Non-const functions
+//  virtual void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source) = 0;
+
+//  virtual void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode) = 0;
+
+
   // Const functions
-  virtual void InitializeVertex(VertexDescriptorType v) const = 0;
+  virtual void InitializeVertex(VertexDescriptorType v) const{}
 
-  virtual void DiscoverVertex(VertexDescriptorType v) const = 0;
+  virtual void DiscoverVertex(VertexDescriptorType v) const{}
 
-  virtual bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const = 0;
+  virtual bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const{return true;}
 
-  virtual void InpaintingComplete() const = 0;
+  virtual void InpaintingComplete() const{}
 
   // Non-const functions
-  virtual void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source) = 0;
+  virtual void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source){}
 
-  virtual void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode) = 0;
+  virtual void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode){}
 
   std::string VisitorName;
 }; // InpaintingVisitorParent

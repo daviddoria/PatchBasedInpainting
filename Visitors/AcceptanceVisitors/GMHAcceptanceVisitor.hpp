@@ -52,7 +52,7 @@ struct GMHAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
   }
   
   /** This version allows the caller to get the output value. */
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& computedEnergy = 0.0f) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& computedEnergy = 0.0f) const override
   {
     itk::Index<2> targetPixel = ITKHelpers::CreateIndex(target);
     itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, this->HalfWidth);

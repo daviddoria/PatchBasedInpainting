@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
   unsigned int patchHalfWidth = 0;
   ssPatchRadius >> patchHalfWidth;
 
-  std::string outputFilename = argv[5];
+  std::string outputFilename = argv[4];
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;

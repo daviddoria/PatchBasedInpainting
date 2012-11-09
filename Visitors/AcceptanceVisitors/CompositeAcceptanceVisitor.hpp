@@ -16,14 +16,15 @@ struct CompositeAcceptanceVisitor : public AcceptanceVisitorParent<TGraph>
 
   typedef AcceptanceVisitorParent<TGraph> AcceptanceVisitorParentType;
 
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& energy) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& energy) const override
   {
     bool acceptOverride = false;
 
     // If any of these visitors passes, automatically accept the pair.
     for(unsigned int visitorId = 0; visitorId < OverrideVisitors.size(); ++visitorId)
     {
-      std::cout << "Running override visitor " << OverrideVisitors[visitorId]->VisitorName << " AcceptMatch()" << std::endl;
+      std::cout << "Running override visitor " << OverrideVisitors[visitorId]->VisitorName
+                << " AcceptMatch()" << std::endl;
       float energy;
       acceptOverride |= OverrideVisitors[visitorId]->AcceptMatch(target, source, energy);
     }

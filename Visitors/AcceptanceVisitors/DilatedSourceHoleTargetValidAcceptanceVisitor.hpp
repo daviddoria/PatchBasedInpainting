@@ -1,3 +1,21 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef DilatedSourceHoleTargetValidAcceptanceVisitor_HPP
 #define DilatedSourceHoleTargetValidAcceptanceVisitor_HPP
 
@@ -25,7 +43,7 @@ struct DilatedSourceHoleTargetValidAcceptanceVisitor : public AcceptanceVisitorP
   Mask* MaskImage;
 
   const unsigned int HalfWidth;
-  unsigned int NumberOfFinishedVertices;
+  unsigned int NumberOfFinishedVertices = 0;
 
   TFunctor Functor;
 
@@ -33,14 +51,16 @@ struct DilatedSourceHoleTargetValidAcceptanceVisitor : public AcceptanceVisitorP
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  DilatedSourceHoleTargetValidAcceptanceVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, TFunctor functor = TFunctor(), const float differenceThreshold = 100,
+  DilatedSourceHoleTargetValidAcceptanceVisitor(TImage* const image, Mask* const mask,
+                                                const unsigned int halfWidth,
+                                                TFunctor functor = TFunctor(), const float differenceThreshold = 100,
     const std::string& visitorName = "DilatedSourceHoleTargetValidAcceptanceVisitor") :
   AcceptanceVisitorParent<TGraph>(visitorName),
-  Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0), Functor(functor), DifferenceThreshold(differenceThreshold)
+  Image(image), MaskImage(mask), HalfWidth(halfWidth), Functor(functor), DifferenceThreshold(differenceThreshold)
   {
   }
 
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& computedEnergy) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& computedEnergy) const override
   {
     //std::cout << "DilatedVarianceDifferenceAcceptanceVisitor::AcceptMatch" << std::endl;
 

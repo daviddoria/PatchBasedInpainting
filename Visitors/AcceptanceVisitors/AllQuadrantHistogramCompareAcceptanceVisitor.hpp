@@ -57,7 +57,7 @@ struct AllQuadrantHistogramCompareAcceptanceVisitor : public AcceptanceVisitorPa
     return AcceptMatch(target, source, energy);
   }
   
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& energy) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& energy) const override
   {
     bool acceptAll = true;
     energy = 0.0f;

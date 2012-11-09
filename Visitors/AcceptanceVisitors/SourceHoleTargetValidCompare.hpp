@@ -1,3 +1,21 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef SourceHoleTargetValidCompare_HPP
 #define SourceHoleTargetValidCompare_HPP
 
@@ -25,7 +43,7 @@ struct SourceHoleTargetValidCompare : public AcceptanceVisitorParent<TGraph>
   Mask* MaskImage;
 
   const unsigned int HalfWidth;
-  unsigned int NumberOfFinishedVertices;
+  unsigned int NumberOfFinishedVertices = 0;
 
   TFunctor Functor;
 
@@ -38,22 +56,22 @@ struct SourceHoleTargetValidCompare : public AcceptanceVisitorParent<TGraph>
     const std::string& visitorName = "SourceHoleTargetValidCompare") :
   AcceptanceVisitorParent<TGraph>(visitorName),
   Image(image), MaskImage(mask), HalfWidth(halfWidth),
-  NumberOfFinishedVertices(0), Functor(functor), DifferenceThreshold(differenceThreshold)
+  Functor(functor), DifferenceThreshold(differenceThreshold)
   {
   }
 
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& computedEnergy) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source, float& computedEnergy) const override
   {
     //std::cout << "DilatedVarianceDifferenceAcceptanceVisitor::AcceptMatch" << std::endl;
 
     itk::Index<2> targetPixel = ITKHelpers::CreateIndex(target);
-    itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, HalfWidth);
+    itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, this->HalfWidth);
 
     itk::Index<2> sourcePixel = ITKHelpers::CreateIndex(source);
-    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, HalfWidth);
+    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, this->HalfWidth);
 
-    std::vector<itk::Offset<2> > validOffsets = MaskImage->GetValidOffsetsInRegion(targetRegion);
-    std::vector<itk::Offset<2> > holeOffsets = MaskImage->GetHoleOffsetsInRegion(targetRegion);
+    std::vector<itk::Offset<2> > validOffsets = this->MaskImage->GetValidOffsetsInRegion(targetRegion);
+    std::vector<itk::Offset<2> > holeOffsets =this-> MaskImage->GetHoleOffsetsInRegion(targetRegion);
 
     std::vector<itk::Index<2> > validPixelsIndicesTargetRegion =
            ITKHelpers::OffsetsToIndices(validOffsets, targetRegion.GetIndex());
@@ -76,19 +94,19 @@ struct SourceHoleTargetValidCompare : public AcceptanceVisitorParent<TGraph>
     computedEnergy = ITKHelpers::SumOfComponentMagnitudes(difference);
     //std::cout << this->VisitorName << ": Energy: " << computedEnergy << std::endl;
 
-    if(computedEnergy < DifferenceThreshold)
-      {
+    if(computedEnergy < this->DifferenceThreshold)
+    {
       std::cout << this->VisitorName << ": Match accepted (" << computedEnergy << " is less than "
-                << DifferenceThreshold << ")" << std::endl << std::endl;
+                << this->DifferenceThreshold << ")" << std::endl << std::endl;
       return true;
-      }
+    }
     else
-      {
+    {
       std::cout << this->VisitorName << ": Match rejected (" << computedEnergy << " is greater than "
-                << DifferenceThreshold << ")" << std::endl << std::endl;
+                << this->DifferenceThreshold << ")" << std::endl << std::endl;
       return false;
-      }
-  };
+    }
+  }
 
 };
 
