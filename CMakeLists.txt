@@ -396,6 +396,24 @@ if(inpainting_InteractiveInpaintingGMH)
     INSTALL( TARGETS InteractiveInpaintingGMH RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
+# ClassicalImageInpaintingBasicViewer
+option(inpainting_ClassicalImageInpaintingBasicViewer "An inpainting executable that uses a traditional greedy SSD method and shows you the result at every iteration.")
+if(inpainting_ClassicalImageInpaintingBasicViewer)
+    QT4_WRAP_UI(ClassicalImageInpaintingBasicViewerUISrcs
+                Interactive/BasicViewerWidget.ui
+                Interactive/TopPatchesDialog.ui
+                Interactive/ManualPatchSelectionDialog.ui
+                Interactive/PriorityViewerWidget.ui)
+    ADD_EXECUTABLE(ClassicalImageInpaintingBasicViewer ClassicalImageInpaintingBasicViewer.cpp
+                   Drivers/ClassicalImageInpaintingBasicViewer.hpp
+                   Interactive/BasicViewerWidget.h
+                   Visitors/InformationVisitors/DisplayVisitor.hpp
+                   ${ClassicalImageInpaintingBasicViewerUISrcs})
+
+    TARGET_LINK_LIBRARIES(ClassicalImageInpaintingBasicViewer ${PatchBasedInpainting_libraries} InpaintingGUI)
+    INSTALL( TARGETS ClassicalImageInpaintingBasicViewer RUNTIME DESTINATION ${INSTALL_DIR} )
+endif()
+
 option(BuildInpaintingTests "Build inpainting tests.")
 if(BuildInpaintingTests)
   ENABLE_TESTING()
