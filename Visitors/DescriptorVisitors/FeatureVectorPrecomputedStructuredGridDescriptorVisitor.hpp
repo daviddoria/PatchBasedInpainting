@@ -1,3 +1,21 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef FeatureVectorPrecomputedStructuredGridDescriptorVisitor_HPP
 #define FeatureVectorPrecomputedStructuredGridDescriptorVisitor_HPP
 
@@ -40,30 +58,31 @@ struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor : public Descript
 
   vtkFloatArray* FeatureArray;
 
-  FeatureVectorPrecomputedStructuredGridDescriptorVisitor(TDescriptorMap& in_descriptorMap, vtkStructuredGrid* const featureStructuredGrid, const std::string& featureName) :
+  FeatureVectorPrecomputedStructuredGridDescriptorVisitor(TDescriptorMap& in_descriptorMap,
+                                                          vtkStructuredGrid* const featureStructuredGrid, const std::string& featureName) :
   DescriptorMap(in_descriptorMap), FeatureStructuredGrid(featureStructuredGrid), FeatureName(featureName)
   {
     FeatureArray = vtkFloatArray::SafeDownCast(FeatureStructuredGrid->GetPointData()->GetArray(featureName.c_str()));
     if(!FeatureArray)
-      {
+    {
       std::stringstream ss;
       ss << "Structured grid does not have an array named \"" << featureName << "\"!";
       throw std::runtime_error(ss.str());
-      }
+    }
     std::cout << "Feature " << featureName << " has " << FeatureArray->GetNumberOfComponents() << " components." << std::endl;
   }
 
-  void initialize_vertex(VertexDescriptorType v, TGraph& g) const
+  void InitializeVertex(VertexDescriptorType v, TGraph& g) const override
   {
     //std::cout << "Initializing " << v[0] << " " << v[1] << std::endl;
     unsigned int numberOfMissingPoints = 0;
 
     int queryPoint[3] = {v[0], v[1], 0};
     int dimensions[3];
-    FeatureStructuredGrid->GetDimensions(dimensions);
+    this->FeatureStructuredGrid->GetDimensions(dimensions);
     vtkIdType pointId = vtkStructuredData::ComputePointId(dimensions, queryPoint);
-    if(FeatureStructuredGrid->IsPointVisible (pointId))
-      {
+    if(this->FeatureStructuredGrid->IsPointVisible (pointId))
+    {
       float descriptorValues[this->FeatureArray->GetNumberOfComponents()];
       this->FeatureArray->GetTupleValue(pointId, descriptorValues);
 
@@ -72,10 +91,10 @@ struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor : public Descript
       DescriptorType descriptor(featureVector);
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::SOURCE_NODE);
-      put(DescriptorMap, v, descriptor);
-      }
+      put(this->DescriptorMap, v, descriptor);
+    }
     else
-      {
+    {
       //std::cout << index << " not found in the map!" << std::endl;
       numberOfMissingPoints++;
 
@@ -84,18 +103,18 @@ struct FeatureVectorPrecomputedStructuredGridDescriptorVisitor : public Descript
       DescriptorType descriptor(featureVector);
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::INVALID);
-      put(DescriptorMap, v, descriptor);
-      }
+      put(this->DescriptorMap, v, descriptor);
+    }
 
     //std::cout << "There were " << numberOfMissingPoints << " missing points when computing the descriptor for node " << index << std::endl;
-  };
+  }
 
-  void discover_vertex(VertexDescriptorType v, TGraph& g) const
+  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const override
   {
     // std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
-    DescriptorType& descriptor = get(DescriptorMap, v);
+    DescriptorType& descriptor = get(this->DescriptorMap, v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
-  };
+  }
 
 }; // FeatureVectorPrecomputedPolyDataDescriptorVisitor
 

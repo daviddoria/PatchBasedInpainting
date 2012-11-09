@@ -1,3 +1,21 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef ImagePatchVectorizedIndicesVisitor_HPP
 #define ImagePatchVectorizedIndicesVisitor_HPP
 
@@ -39,53 +57,53 @@ struct ImagePatchVectorizedIndicesVisitor : public DescriptorVisitorParent<TGrap
   {
   }
 
-  void InitializeVertex(VertexDescriptorType v) const
+  void InitializeVertex(VertexDescriptorType v) const override
   {
     //std::cout << "Initializing " << v[0] << " " << v[1] << std::endl;
     // Create the patch object and associate with the node
     itk::Index<2> index = ITKHelpers::CreateIndex(v);
 
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, HalfWidth);
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, this->HalfWidth);
 
     DescriptorType descriptor(this->Image, this->MaskImage, region);
     descriptor.SetVertex(v);
-    put(DescriptorMap, v, descriptor);
+    put(this->DescriptorMap, v, descriptor);
 
     // This is done in the descriptor constructor
 //     if(mask->IsValid(region))
 //       {
 //       descriptor.SetStatus(DescriptorType::SOURCE_NODE);
 //       }
-  };
+  }
 
-  void DiscoverVertex(VertexDescriptorType v) const
+  void DiscoverVertex(VertexDescriptorType v) const override
   {
     itk::Index<2> index = {{v[0], v[1]}};
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, HalfWidth);
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, this->HalfWidth);
 
     // Create the list of valid pixels
 
     std::vector<unsigned int> validOffsets;
 
-    itk::ImageRegionConstIteratorWithIndex<Mask> iterator(MaskImage, region);
+    itk::ImageRegionConstIteratorWithIndex<Mask> iterator(this->MaskImage, region);
 
     unsigned int linearCounter = 0;
     while(!iterator.IsAtEnd())
+    {
+      if(this->MaskImage->IsValid(iterator.GetIndex()))
       {
-      if(MaskImage->IsValid(iterator.GetIndex()))
-        {
         validOffsets.push_back(linearCounter);
-        }
+      }
       linearCounter++;
       ++iterator;
-      }
+    }
 
     // std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
-    DescriptorType& descriptor = get(DescriptorMap, v);
+    DescriptorType& descriptor = get(this->DescriptorMap, v);
     descriptor.CreateIndexVector();
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
     descriptor.SetValidOffsets(validOffsets);
-  };
+  }
 
 }; // ImagePatchVectorizedVisitor
 

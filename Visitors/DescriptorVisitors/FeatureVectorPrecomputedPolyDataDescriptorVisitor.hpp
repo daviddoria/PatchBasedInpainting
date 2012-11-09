@@ -1,3 +1,22 @@
+
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef FeatureVectorPrecomputedPolyDataDescriptorVisitor_HPP
 #define FeatureVectorPrecomputedPolyDataDescriptorVisitor_HPP
 
@@ -5,7 +24,9 @@
 #include "PixelDescriptors/FeatureVectorPixelDescriptor.h"
 #include "Concepts/DescriptorConcept.hpp"
 #include "DescriptorVisitorParent.h"
-#include "Helpers/VTKHelpers.h"
+
+// Submodules
+#include <VTKHelpers/VTKHelpers.h>
 
 // Boost
 #include <boost/graph/graph_traits.hpp>
@@ -36,19 +57,21 @@ struct FeatureVectorPrecomputedPolyDataDescriptorVisitor : public DescriptorVisi
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  TDescriptorMap& descriptorMap;
+  TDescriptorMap& DescriptorMap;
 
   vtkPolyData* FeaturePolyData;
 
   std::string FeatureName;
 
-  vtkFloatArray* FeatureArray;
+  vtkFloatArray* FeatureArray = nullptr;
 
   typedef std::map<itk::Index<2>, unsigned int, itk::Index<2>::LexicographicCompare> CoordinateMapType;
   CoordinateMapType CoordinateMap;
 
-  FeatureVectorPrecomputedPolyDataDescriptorVisitor(TDescriptorMap& in_descriptorMap, vtkPolyData* const featurePolyData, const std::string& featureName) :
-  descriptorMap(in_descriptorMap), FeaturePolyData(featurePolyData), FeatureName(featureName), FeatureArray(NULL)
+  FeatureVectorPrecomputedPolyDataDescriptorVisitor(TDescriptorMap& DescriptorMap,
+                                                    vtkPolyData* const featurePolyData,
+                                                    const std::string& featureName) :
+  DescriptorMap(DescriptorMap), FeaturePolyData(featurePolyData), FeatureName(featureName)
   {
     CreateIndexMap();
   }
@@ -59,22 +82,22 @@ struct FeatureVectorPrecomputedPolyDataDescriptorVisitor : public DescriptorVisi
 
     this->FeatureArray = vtkFloatArray::SafeDownCast(this->FeaturePolyData->GetPointData()->GetArray(this->FeatureName.c_str()));
     if(!this->FeatureArray)
-      {
+    {
       std::stringstream ss;
       ss << "\"" << FeatureName << "\" array must exist in the PolyData's PointData!";
       VTKHelpers::OutputAllArrayNames(this->FeaturePolyData);
       throw std::runtime_error(ss.str());
-      }
+    }
 
-    // Add a map from all of the pixels to their corresponding point id. 
+    // Add a map from all of the pixels to their corresponding point id.
     vtkIntArray* indexArray = vtkIntArray::SafeDownCast(this->FeaturePolyData->GetPointData()->GetArray("OriginalPixel"));
     if(!indexArray)
-      {
+    {
       throw std::runtime_error("\"OriginalPixel\" array must exist in the PolyData's PointData!");
-      }
+    }
 
     for(vtkIdType pointId = 0; pointId < this->FeaturePolyData->GetNumberOfPoints(); ++pointId)
-      {
+    {
       //int* pixelIndexArray;
       int pixelIndexArray[2];
       indexArray->GetTupleValue(pointId, pixelIndexArray);
@@ -83,11 +106,11 @@ struct FeatureVectorPrecomputedPolyDataDescriptorVisitor : public DescriptorVisi
       pixelIndex[0] = pixelIndexArray[0];
       pixelIndex[1] = pixelIndexArray[1];
       this->CoordinateMap[pixelIndex] = pointId;
-      }
+    }
     std::cout << "Finished creating index map." << std::endl;
   }
 
-  void initialize_vertex(VertexDescriptorType v, TGraph& g) const
+  void InitializeVertex(VertexDescriptorType v, TGraph& g) const override
   {
     //std::cout << "Initializing " << v[0] << " " << v[1] << std::endl;
     // Create the patch object and associate with the node
@@ -100,7 +123,7 @@ struct FeatureVectorPrecomputedPolyDataDescriptorVisitor : public DescriptorVisi
     // Look for 'index' in the map
     CoordinateMapType::const_iterator iter = this->CoordinateMap.find(index);
     if(iter != this->CoordinateMap.end())
-      {
+    {
       pointId = iter->second;
 
       float descriptorValues[this->FeatureArray->GetNumberOfComponents()];
@@ -113,9 +136,9 @@ struct FeatureVectorPrecomputedPolyDataDescriptorVisitor : public DescriptorVisi
       descriptor.SetStatus(PixelDescriptor::SOURCE_NODE);
       put(descriptorMap, v, descriptor);
 
-      }
+    }
     else
-      {
+    {
       //std::cout << index << " not found in the map!" << std::endl;
       numberOfMissingPoints++;
 
@@ -126,17 +149,17 @@ struct FeatureVectorPrecomputedPolyDataDescriptorVisitor : public DescriptorVisi
       descriptor.SetStatus(PixelDescriptor::INVALID);
       put(descriptorMap, v, descriptor);
 
-      }
+    }
 
     //std::cout << "There were " << numberOfMissingPoints << " missing points when computing the descriptor for node " << index << std::endl;
-  };
+  }
 
-  void discover_vertex(VertexDescriptorType v, TGraph& g) const
+  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const override
   {
     // std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
     DescriptorType& descriptor = get(descriptorMap, v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
-  };
+  }
 
 }; // FeatureVectorPrecomputedPolyDataDescriptorVisitor
 

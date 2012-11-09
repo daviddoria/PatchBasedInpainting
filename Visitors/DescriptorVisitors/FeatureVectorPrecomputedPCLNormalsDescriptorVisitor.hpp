@@ -1,3 +1,21 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef FeatureVectorPrecomputedPCLNormalsDescriptorVisitor_HPP
 #define FeatureVectorPrecomputedPCLNormalsDescriptorVisitor_HPP
 
@@ -30,22 +48,23 @@ struct FeatureVectorPrecomputedPCLNormalsDescriptorVisitor : public DescriptorVi
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  TDescriptorMap& descriptorMap;
+  TDescriptorMap& DescriptorMap;
 
   NormalCloudType Normals;
 
-  FeatureVectorPrecomputedPCLNormalsDescriptorVisitor(TDescriptorMap& in_descriptorMap, NormalCloudType& normals) :
-  descriptorMap(in_descriptorMap), Normals(normals)
+  FeatureVectorPrecomputedPCLNormalsDescriptorVisitor(TDescriptorMap& descriptorMap,
+                                                      NormalCloudType& normals) :
+  DescriptorMap(descriptorMap), Normals(normals)
   {
     
   }
 
-  void initialize_vertex(VertexDescriptorType v, TGraph& g) const
+  void InitializeVertex(VertexDescriptorType v, TGraph& g) const override
   {
     //std::cout << "Initializing " << v[0] << " " << v[1] << std::endl;
-    pcl::Normal n = Normals(v[0], v[1]);
+    pcl::Normal n = this->Normals(v[0], v[1]);
     if(pcl::isFinite(n))
-      {
+    {
       //std::vector<float> featureVector(descriptorValues, descriptorValues + sizeof(descriptorValues) / sizeof(float) );
       std::vector<float> featureVector(n.normal, n.normal + sizeof(n.normal) / sizeof(float) );
       // std::cout << "Normal has length: " << featureVector.size() << std::endl; // To test if the above worked correctly
@@ -54,10 +73,10 @@ struct FeatureVectorPrecomputedPCLNormalsDescriptorVisitor : public DescriptorVi
       DescriptorType descriptor(featureVector);
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::SOURCE_NODE);
-      put(descriptorMap, v, descriptor);
-      }
+      put(this->DescriptorMap, v, descriptor);
+    }
     else
-      {
+    {
       std::cout << "Not finite! " << n.normal_x << " " << n.normal_y << " " << n.normal_z << std::endl;
 
       std::vector<float> featureVector(3, 0);
@@ -65,18 +84,18 @@ struct FeatureVectorPrecomputedPCLNormalsDescriptorVisitor : public DescriptorVi
       DescriptorType descriptor(featureVector);
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::INVALID);
-      put(descriptorMap, v, descriptor);
-      }
+      put(this->DescriptorMap, v, descriptor);
+    }
 
     //std::cout << "There were " << numberOfMissingPoints << " missing points when computing the descriptor for node " << index << std::endl;
-  };
+  }
 
-  void discover_vertex(VertexDescriptorType v, TGraph& g) const
+  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const override
   {
     std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
-    DescriptorType& descriptor = get(descriptorMap, v);
+    DescriptorType& descriptor = get(this->DescriptorMap, v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
-  };
+  }
 
 }; // FeatureVectorPrecomputedPolyDataDescriptorVisitor
 

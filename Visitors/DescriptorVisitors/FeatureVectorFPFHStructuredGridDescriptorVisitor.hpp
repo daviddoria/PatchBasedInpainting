@@ -42,32 +42,33 @@ struct FeatureVectorFPFHDescriptorVisitor : public DescriptorVisitorParent<TGrap
   vtkStructuredGrid* StructuredGrid;
   Mask* MaskImage;
 
-  FeatureVectorFPFHDescriptorVisitor(TDescriptorMap& in_descriptorMap, vtkStructuredGrid* const structuredGrid, Mask* const mask) :
+  FeatureVectorFPFHDescriptorVisitor(TDescriptorMap& in_descriptorMap, vtkStructuredGrid* const structuredGrid,
+                                     Mask* const mask) :
   DescriptorMap(in_descriptorMap), StructuredGrid(structuredGrid), MaskImage(mask)
   {
     
   }
 
-  void initialize_vertex(VertexDescriptorType v, TGraph& g) const
+  void InitializeVertex(VertexDescriptorType v, TGraph& g) const override
   {
     //std::cout << "Initializing " << v[0] << " " << v[1] << std::endl;
     itk::Index<2> index = {{v[0], v[1]}};
-    if(MaskImage->IsHole(index))
-      {
+    if(this->MaskImage->IsHole(index))
+    {
       std::vector<float> featureVector(33, 0);
 
       DescriptorType descriptor(featureVector);
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::INVALID);
-      put(DescriptorMap, v, descriptor);
-      }
+      put(this->DescriptorMap, v, descriptor);
+    }
 
     typedef pcl::PointCloud<pcl::PointNormal> InputCloudType;
     typedef pcl::PointCloud<pcl::FPFHSignature33> OutputCloudType;
 
     // Initalize 'output'
     OutputCloudType::Ptr output(new OutputCloudType);
-    output->resize(StructuredGrid->GetNumberOfPoints());
+    output->resize(this->StructuredGrid->GetNumberOfPoints());
 
     // Create a tree
     typedef pcl::search::KdTree<InputCloudType::PointType> TreeType;
@@ -85,10 +86,10 @@ struct FeatureVectorFPFHDescriptorVisitor : public DescriptorVisitorParent<TGrap
     itk::ImageRegion<2> patchRegion = Helpers::GetRegionInRadiusAroundPixel(imageIterator.GetIndex(), patch_half_width);
     //std::cout << "patchRegion: " << patchRegion << std::endl;
     if(!fullRegion.IsInside(patchRegion))
-      {
+    {
       ++imageIterator;
       continue;
-      }
+    }
 
     // Get a list of the pointIds in the region
     //std::vector<unsigned int> pointIds;
@@ -96,22 +97,22 @@ struct FeatureVectorFPFHDescriptorVisitor : public DescriptorVisitorParent<TGrap
 
     itk::ImageRegionConstIteratorWithIndex<MaskImageType> patchIterator(mask, patchRegion);
     while(!patchIterator.IsAtEnd())
-      {
+    {
       if(!patchIterator.Get())
-        {
+      {
         pointIds.push_back(coordinateMap[patchIterator.GetIndex()]);
-        }
-      ++patchIterator;
       }
+      ++patchIterator;
+    }
 
     if(pointIds.size() < 2)
-      {
+    {
       unsigned int currentPointId = coordinateMap[imageIterator.GetIndex()];
 
       output->points[currentPointId] = emptyPoint;
       ++imageIterator;
       continue;
-      }
+    }
     //std::cout << "There are " << pointIds.size() << " points in this patch." << std::endl;
 
     pcl::FPFHEstimation<pcl::PointNormal, pcl::PointNormal, pcl::FPFHSignature33> fpfhEstimation;
@@ -139,7 +140,7 @@ struct FeatureVectorFPFHDescriptorVisitor : public DescriptorVisitorParent<TGrap
     output->points[currentPointId] = vfhFeature->points[0];
 
     if(pcl::isFinite(n))
-      {
+    {
       //std::vector<float> featureVector(descriptorValues, descriptorValues + sizeof(descriptorValues) / sizeof(float) );
       std::vector<float> featureVector(n.normal, n.normal + sizeof(n.normal) / sizeof(float) );
       // std::cout << "Normal has length: " << featureVector.size() << std::endl; // To test if the above worked correctly
@@ -148,19 +149,19 @@ struct FeatureVectorFPFHDescriptorVisitor : public DescriptorVisitorParent<TGrap
       DescriptorType descriptor(featureVector);
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::SOURCE_NODE);
-      put(DescriptorMap, v, descriptor);
-      }
+      put(this->DescriptorMap, v, descriptor);
+    }
 
 
     //std::cout << "There were " << numberOfMissingPoints << " missing points when computing the descriptor for node " << index << std::endl;
-  };
+  }
 
-  void discover_vertex(VertexDescriptorType v, TGraph& g) const
+  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const override
   {
     std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
-    DescriptorType& descriptor = get(DescriptorMap, v);
+    DescriptorType& descriptor = get(this->DescriptorMap, v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
-  };
+  }
 
 }; // FeatureVectorFPFHDescriptorVisitor
 

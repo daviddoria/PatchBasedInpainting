@@ -1,3 +1,21 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitor_HPP
 #define FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitor_HPP
 
@@ -32,39 +50,39 @@ struct FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitor : public D
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
 
-  TDescriptorMap& descriptorMap;
+  TDescriptorMap& DescriptorMap;
 
   vtkStructuredGrid* FeatureStructuredGrid;
 
   vtkFloatArray* NormalsArray;
 
-  FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitor(TDescriptorMap& in_descriptorMap, vtkStructuredGrid* const featureStructuredGrid) :
-  descriptorMap(in_descriptorMap), FeatureStructuredGrid(featureStructuredGrid)
+  FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitor(TDescriptorMap& descriptorMap, vtkStructuredGrid* const featureStructuredGrid) :
+  DescriptorMap(descriptorMap), FeatureStructuredGrid(featureStructuredGrid)
   {
-    NormalsArray = vtkFloatArray::SafeDownCast(FeatureStructuredGrid->GetPointData()->GetNormals());
-    if(!NormalsArray)
-      {
+    this->NormalsArray = vtkFloatArray::SafeDownCast(this->FeatureStructuredGrid->GetPointData()->GetNormals());
+    if(!this->NormalsArray)
+    {
       std::stringstream ss;
       ss << "Structured grid does not have a float normals array!";
       throw std::runtime_error(ss.str());
-      }
-    if(NormalsArray->GetNumberOfComponents() != 3)
-      {
+    }
+    if(this->NormalsArray->GetNumberOfComponents() != 3)
+    {
       throw std::runtime_error("Normals array should have 3 components!");
-      }
+    }
   }
 
-  void initialize_vertex(VertexDescriptorType v, TGraph& g) const
+  void initialize_vertex(VertexDescriptorType v, TGraph& g) const override
   {
     //std::cout << "Initializing " << v[0] << " " << v[1] << std::endl;
     unsigned int numberOfMissingPoints = 0;
 
     int queryPoint[3] = {v[0], v[1], 0};
     int dimensions[3];
-    FeatureStructuredGrid->GetDimensions(dimensions);
+    this->FeatureStructuredGrid->GetDimensions(dimensions);
     vtkIdType pointId = vtkStructuredData::ComputePointId(dimensions, queryPoint);
-    if(FeatureStructuredGrid->IsPointVisible (pointId))
-      {
+    if(this->FeatureStructuredGrid->IsPointVisible (pointId))
+    {
       float descriptorValues[this->NormalsArray->GetNumberOfComponents()];
       this->NormalsArray->GetTupleValue(pointId, descriptorValues);
 
@@ -73,10 +91,10 @@ struct FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitor : public D
       DescriptorType descriptor(featureVector);
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::SOURCE_NODE);
-      put(descriptorMap, v, descriptor);
-      }
+      put(this->DescriptorMap, v, descriptor);
+    }
     else
-      {
+    {
       //std::cout << index << " not found in the map!" << std::endl;
       numberOfMissingPoints++;
 
@@ -85,18 +103,18 @@ struct FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitor : public D
       DescriptorType descriptor(featureVector);
       descriptor.SetVertex(v);
       descriptor.SetStatus(PixelDescriptor::INVALID);
-      put(descriptorMap, v, descriptor);
-      }
+      put(this->DescriptorMap, v, descriptor);
+    }
 
     //std::cout << "There were " << numberOfMissingPoints << " missing points when computing the descriptor for node " << index << std::endl;
-  };
+  }
 
-  void discover_vertex(VertexDescriptorType v, TGraph& g) const
+  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const override
   {
     // std::cout << "Discovered " << v[0] << " " << v[1] << std::endl;
-    DescriptorType& descriptor = get(descriptorMap, v);
+    DescriptorType& descriptor = get(this->DescriptorMap, v);
     descriptor.SetStatus(DescriptorType::TARGET_NODE);
-  };
+  }
 
 }; // FeatureVectorPrecomputedStructuredGridNormalsDescriptorVisitor
 
