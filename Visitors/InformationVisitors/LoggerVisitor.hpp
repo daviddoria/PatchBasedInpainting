@@ -51,46 +51,16 @@ struct LoggerVisitor : public InpaintingVisitorParent<TGraph>
 
   ~LoggerVisitor()
   {
-  OutputStream.close();
+    this->OutputStream.close();
   }
 
-  void PaintPatch(VertexDescriptorType target, VertexDescriptorType source) const {}
-  
-  void InitializeVertex(VertexDescriptorType v) const
-  {
-
-  };
-
-  void DiscoverVertex(VertexDescriptorType v) const
-  {
-
-  };
-
-  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
-  {
-
-  };
-
-  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
-  {
-
-  };
-
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
-  {
-    return true;
-  };
-
-  void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)
+  void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode) override
   {
     //OutputStream << sourceNode << " : " << targetNode << std::endl;
-     OutputStream << sourceNode[0] << " " << sourceNode[1] << " : "
-                  << targetNode[0] << " " << targetNode[1] << std::endl;
-  };
-
-  void InpaintingComplete() const
-  {
+     this->OutputStream << sourceNode[0] << " " << sourceNode[1] << " : "
+                        << targetNode[0] << " " << targetNode[1] << std::endl;
   }
+
 };
 
 #endif

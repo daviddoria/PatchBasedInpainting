@@ -56,10 +56,7 @@ struct IterationWriterVisitor : public InpaintingVisitorParent<TGraph>
 
   }
 
-  void DiscoverVertex(VertexDescriptorType v) const {}
-  void PaintPatch(TVertexDescriptor target, TVertexDescriptor source) const {}
-
-  void FinishVertex(TVertexDescriptor target, TVertexDescriptor sourceNode)
+  void FinishVertex(TVertexDescriptor target, TVertexDescriptor sourceNode) override
   {
     ITKHelpers::WriteImage(this->MaskImage,
                            Helpers::GetSequentialFileName("mask",
@@ -73,7 +70,6 @@ struct IterationWriterVisitor : public InpaintingVisitorParent<TGraph>
     this->NumberOfFinishedVertices++;
   }
 
-  void InpaintingComplete() const  {  }
 };
 
 #endif

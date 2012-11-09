@@ -41,39 +41,28 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
   Mask* MaskImage;
 
   const unsigned int HalfWidth;
-  unsigned int NumberOfFinishedVertices;
+  unsigned int NumberOfFinishedVertices = 0;
 
   TBoundaryStatusMap& BoundaryStatusMap;
   TBoundaryNodeQueue& BoundaryNodeQueue;
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
   
-  DebugVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth, TBoundaryStatusMap& boundaryStatusMap,
+  DebugVisitor(TImage* const image, Mask* const mask, const unsigned int halfWidth,
+               TBoundaryStatusMap& boundaryStatusMap,
                TBoundaryNodeQueue& boundaryNodeQueue, const std::string& visitorName = "DebugVisitor") :
   InpaintingVisitorParent<TGraph>(visitorName),
-  Image(image), MaskImage(mask), HalfWidth(halfWidth), NumberOfFinishedVertices(0),
+  Image(image), MaskImage(mask), HalfWidth(halfWidth),
   BoundaryStatusMap(boundaryStatusMap), BoundaryNodeQueue(boundaryNodeQueue)
   {
 
   }
 
-  void PaintPatch(VertexDescriptorType target, VertexDescriptorType source) const {}
-  
-  void InitializeVertex(VertexDescriptorType v) const
-  {
-
-  }
-
-  void DiscoverVertex(VertexDescriptorType v) const
-  {
-
-  }
-
-  void PotentialMatchMade(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)
+  void PotentialMatchMade(VertexDescriptorType targetNode, VertexDescriptorType sourceNode) override
   {
     std::cout << "Match made: target: " << targetNode[0] << " " << targetNode[1]
               << " with source: " << sourceNode[0] << " " << sourceNode[1] << std::endl;
-  std::cout << "Writing pair " << NumberOfFinishedVertices << std::endl;
+    std::cout << "Writing pair " << this->NumberOfFinishedVertices << std::endl;
   
     {
     itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(sourceNode);
@@ -109,17 +98,7 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
     }
   }
 
-  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
-  {
-
-  }
-
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
-  {
-    return true;
-  }
-
-  void FinishVertex(VertexDescriptorType target, VertexDescriptorType sourceNode)
+  void FinishVertex(VertexDescriptorType target, VertexDescriptorType sourceNode) override
   {
     //OutputHelpers::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask", this->NumberOfFinishedVertices, "png"));
     ITKHelpers::WriteImage(MaskImage, Helpers::GetSequentialFileName("mask",
@@ -137,8 +116,9 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
     holeColor[1] = 0;
     holeColor[2] = 0;
 
-    MaskOperations::WriteMaskedRegionPNG(Image, MaskImage, Image->GetLargestPossibleRegion(), Helpers::GetSequentialFileName("maskedOutput", this->NumberOfFinishedVertices, "png"),
-                       holeColor);
+    MaskOperations::WriteMaskedRegionPNG(Image, this->MaskImage, Image->GetLargestPossibleRegion(),
+                                         Helpers::GetSequentialFileName("maskedOutput", this->NumberOfFinishedVertices, "png"),
+                                         holeColor);
 
 
     typedef itk::Image<unsigned char, 2> IndicatorImageType;
@@ -171,9 +151,6 @@ struct DebugVisitor : public InpaintingVisitorParent<TGraph>
 
   }
 
-  void InpaintingComplete() const
-  {
-  }
 };
 
 #endif
