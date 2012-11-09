@@ -41,7 +41,8 @@ struct ImagePatchCreatorVisitor
   TDescriptorMap& descriptorMap;
   unsigned int half_width;
 
-  ImagePatchCreatorVisitor(TImage* const in_image, Mask* const in_mask, TDescriptorMap& in_descriptorMap, const unsigned int in_half_width) :
+  ImagePatchCreatorVisitor(TImage* const in_image, Mask* const in_mask, TDescriptorMap& in_descriptorMap,
+                           const unsigned int in_half_width) :
   image(in_image), mask(in_mask), descriptorMap(in_descriptorMap),
   half_width(in_half_width)
   {
@@ -49,7 +50,7 @@ struct ImagePatchCreatorVisitor
   }
 
   template <typename VertexType, typename Graph>
-  void initialize_vertex(VertexType v, Graph& g) const
+  void InitializeVertex(VertexType v, Graph& g) const override
   { 
     //std::cout << "Initializing " << v[0] << " " << v[1] << std::endl;
     // Create the patch object and associate with the node
@@ -63,22 +64,8 @@ struct ImagePatchCreatorVisitor
 
     DescriptorType descriptor(this->image, mask, region);
     put(descriptorMap, v, descriptor);
-  };
+  }
 
-  template <typename VertexType, typename Graph>
-  void discover_vertex(VertexType, Graph&) const { };
-
-  template <typename VertexType, typename Graph>
-  void vertex_match_made(VertexType, VertexType, Graph&) const { };
-
-  template <typename VertexType, typename Graph>
-  void paint_vertex(VertexType, VertexType, Graph&) const { };
-
-  template <typename VertexType, typename Graph>
-  bool accept_painted_vertex(VertexType, Graph&) const { return true; };
-
-  template <typename VertexType, typename Graph>
-  void finish_vertex(VertexType, Graph&) const { };
 };
 
 #endif

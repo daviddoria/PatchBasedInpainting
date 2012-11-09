@@ -60,19 +60,20 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
   TBoundaryStatusMap& BoundaryStatusMap;
 
   unsigned int HalfWidth;
-  unsigned int NumberOfFinishedVertices;
+  unsigned int NumberOfFinishedVertices = 0;
 
   ImagePatchInpaintingVisitor(TImage* const in_image, Mask* const in_mask,
                               TBoundaryNodeQueue& in_boundaryNodeQueue, TFillStatusMap& in_fillStatusMap,
                               TDescriptorMap& in_descriptorMap, TPriorityMap& in_priorityMap,
                               TPriority* const in_priorityFunction,
                               const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
-    Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue), PriorityFunction(in_priorityFunction), FillStatusMap(in_fillStatusMap), DescriptorMap(in_descriptorMap),
-    PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap), HalfWidth(in_half_width), NumberOfFinishedVertices(0)
+    Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue),
+    PriorityFunction(in_priorityFunction), FillStatusMap(in_fillStatusMap), DescriptorMap(in_descriptorMap),
+    PriorityMap(in_priorityMap), BoundaryStatusMap(in_boundaryStatusMap), HalfWidth(in_half_width)
   {
   }
 
-  void initialize_vertex(VertexDescriptorType v, TGraph& g) const
+  void InitializeVertex(VertexDescriptorType v, TGraph& g) const override
   {
     //std::cout << "Initializing " << v[0] << " " << v[1] << std::endl;
     // Create the patch object and associate with the node
@@ -80,15 +81,15 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
     index[0] = v[0];
     index[1] = v[1];
 
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, HalfWidth);
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, this->HalfWidth);
 
     DescriptorType descriptor(this->image, this->mask, region);
     descriptor.SetVertex(v);
-    put(DescriptorMap, v, descriptor);
+    put(this->DescriptorMap, v, descriptor);
 
   }
 
-  void discover_vertex(VertexDescriptorType v, TGraph& g) const
+  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const override
   {
     itk::Index<2> index = {{v[0], v[1]}};
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, this->HalfWidth);
@@ -113,8 +114,8 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
   {
     std::cout << "Match made: target: " << target[0] << " " << target[1]
               << " with source: " << source[0] << " " << source[1] << std::endl;
-    assert(get(FillStatusMap, source));
-    assert(get(DescriptorMap, source).IsFullyValid());
+    assert(get(this->FillStatusMap, source));
+    assert(get(this->DescriptorMap, source).IsFullyValid());
   }
 
   void paint_vertex(VertexDescriptorType target, VertexDescriptorType source, TGraph& g) const
@@ -160,8 +161,8 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
       VertexDescriptorType v;
       v[0] = gridIterator.GetIndex()[0];
       v[1] = gridIterator.GetIndex()[1];
-      put(FillStatusMap, v, true);
-      MaskImage->SetPixel(gridIterator.GetIndex(), MaskImage->GetValidValue());
+      put(this->FillStatusMap, v, true);
+      this->MaskImage->SetPixel(gridIterator.GetIndex(), this->MaskImage->GetValidValue());
       ++gridIterator;
     }
 
@@ -179,7 +180,7 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
     this->priorityFunction->Update(indexToFinish);
 
     // Add pixels that are on the new boundary to the queue, and mark other pixels as not in the queue.
-    itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(MaskImage, region);
+    itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(this->MaskImage, region);
 
     while(!imageIterator.IsAtEnd())
     {
@@ -189,9 +190,9 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
       // Mark all nodes in the patch around this node as filled (in the FillStatusMap).
       // This makes them ignored if they are still in the boundaryNodeQueue.
-      if(ITKHelpers::HasNeighborWithValue(imageIterator.GetIndex(), MaskImage, MaskImage->GetHoleValue()))
+      if(ITKHelpers::HasNeighborWithValue(imageIterator.GetIndex(), this->MaskImage, this->MaskImage->GetHoleValue()))
       {
-        put(BoundaryStatusMap, v, true);
+        put(this->BoundaryStatusMap, v, true);
 
         // Note: the priority must be set before the node is pushed into the queue.
         float priority = this->priorityFunction->ComputePriority(imageIterator.GetIndex());
@@ -201,7 +202,7 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
       }
       else
       {
-        put(BoundaryStatusMap, v, false);
+        put(this->BoundaryStatusMap, v, false);
       }
 
       ++imageIterator;
@@ -209,8 +210,10 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
     {
       // Debug only - write the mask to a file
-      ITKHelpers::WriteImage(this->MaskImage, Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
-      ITKHelpers::WriteVectorImageAsRGB(this->Image, Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
+      ITKHelpers::WriteImage(this->MaskImage,
+                             Helpers::GetSequentialFileName("debugMask", this->NumberOfFinishedVertices, "png"));
+      ITKHelpers::WriteVectorImageAsRGB(this->Image,
+                                        Helpers::GetSequentialFileName("output", this->NumberOfFinishedVertices, "png"));
       this->NumberOfFinishedVertices++;
     }
   } // finish_vertex

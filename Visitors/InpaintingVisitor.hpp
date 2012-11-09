@@ -111,7 +111,7 @@ public:
 
   UsedNodesSetType* GetUsedNodesSetPointer()
   {
-    return &UsedNodesSet;
+    return &this->UsedNodesSet;
   }
 
   void SetAllowNewPatches(const bool allowNewPatches)

@@ -40,25 +40,25 @@ struct CompositeInpaintingVisitor
 
   void InitializeVertex(VertexDescriptorType v) const
   {
-    for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
+    for(unsigned int visitorId = 0; visitorId < this->Visitors.size(); ++visitorId)
     {
       // std::cout << Visitors[visitorId]->VisitorName << " InitializeVertex()" << std::endl;
-      Visitors[visitorId]->InitializeVertex(v);
+      this->Visitors[visitorId]->InitializeVertex(v);
     }
   }
 
   void DiscoverVertex(VertexDescriptorType v) const
   {
-    for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
+    for(unsigned int visitorId = 0; visitorId < this->Visitors.size(); ++visitorId)
     {
       // std::cout << Visitors[visitorId]->VisitorName << " DiscoverVertex()" << std::endl;
-      Visitors[visitorId]->DiscoverVertex(v);
+      this->Visitors[visitorId]->DiscoverVertex(v);
     }
   }
 
   void PotentialMatchMade(VertexDescriptorType a, VertexDescriptorType b) const
   {
-    for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
+    for(unsigned int visitorId = 0; visitorId < this->Visitors.size(); ++visitorId)
     {
       // std::cout << Visitors[visitorId]->VisitorName << " PotentialMatchMade()" << std::endl;
       Visitors[visitorId]->PotentialMatchMade(a, b);
@@ -68,10 +68,10 @@ struct CompositeInpaintingVisitor
   bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
   {
     bool acceptAll = true;
-    for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
+    for(unsigned int visitorId = 0; visitorId < this->Visitors.size(); ++visitorId)
     {
       // std::cout << Visitors[visitorId]->VisitorName << " AcceptMatch()" << std::endl;
-      bool accept = Visitors[visitorId]->AcceptMatch(target, source);
+      bool accept = this->Visitors[visitorId]->AcceptMatch(target, source);
       acceptAll = acceptAll && accept;
     }
     return acceptAll;
@@ -79,19 +79,19 @@ struct CompositeInpaintingVisitor
 
   void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode) const
   {
-    for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
+    for(unsigned int visitorId = 0; visitorId < this->Visitors.size(); ++visitorId)
     {
       // std::cout << Visitors[visitorId]->VisitorName << " FinishVertex()" << std::endl;
-      Visitors[visitorId]->FinishVertex(v, sourceNode);
+      this->Visitors[visitorId]->FinishVertex(v, sourceNode);
     }
   }
 
   void InpaintingComplete() const
   {
-    for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
+    for(unsigned int visitorId = 0; visitorId < this->Visitors.size(); ++visitorId)
     {
       // std::cout << Visitors[visitorId]->VisitorName << " InpaintingComplete()" << std::endl;
-      Visitors[visitorId]->InpaintingComplete();
+      this->Visitors[visitorId]->InpaintingComplete();
     }
   }
 

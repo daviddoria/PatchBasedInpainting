@@ -1,3 +1,21 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 #ifndef ReplayVisitor_HPP
 #define ReplayVisitor_HPP
 
@@ -39,28 +57,13 @@ struct ReplayVisitor : public InpaintingVisitorParent<TGraph>
   ReplayVisitor(TImage* const in_image, Mask* const in_mask,
                 TBoundaryNodeQueue& in_boundaryNodeQueue, TFillStatusMap& in_fillStatusMap,
                 const unsigned int in_half_width, TBoundaryStatusMap& in_boundaryStatusMap) :
-  Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue), 
-  FillStatusMap(in_fillStatusMap), BoundaryStatusMap(in_boundaryStatusMap),
-  HalfWidth(in_half_width)
+    Image(in_image), MaskImage(in_mask), BoundaryNodeQueue(in_boundaryNodeQueue),
+    FillStatusMap(in_fillStatusMap), BoundaryStatusMap(in_boundaryStatusMap),
+    HalfWidth(in_half_width)
   {
   }
 
-  void InitializeVertex(VertexDescriptorType v) const
-  {
-    
-  };
-
-  void DiscoverVertex(VertexDescriptorType v) const
-  {
-    
-  };
-
-  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
-  {
-    
-  };
-
-  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const
+  void PaintVertex(VertexDescriptorType target, VertexDescriptorType source) const override
   {
     itk::Index<2> target_index = ITKHelpers::CreateIndex(target);
 
@@ -70,14 +73,9 @@ struct ReplayVisitor : public InpaintingVisitorParent<TGraph>
     assert(Image->GetLargestPossibleRegion().IsInside(target_index));
 
     Image->SetPixel(target_index, Image->GetPixel(source_index));
-  };
+  }
 
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
-  {
-    return true;
-  };
-
-  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode)
+  void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode) override
   {
     // Mark this pixel as filled, the area around it as filled, and the mask in this region as filled.
     // Determine the new boundary, and setup the nodes in the boundary queue.
@@ -95,51 +93,51 @@ struct ReplayVisitor : public InpaintingVisitorParent<TGraph>
     itk::ImageRegionConstIteratorWithIndex<TImage> gridIterator(Image, regionToFinish);
 
     while(!gridIterator.IsAtEnd())
-      {
+    {
       VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(gridIterator.GetIndex());
 
       put(FillStatusMap, v, true);
       MaskImage->SetPixel(gridIterator.GetIndex(), MaskImage->GetValidValue());
       ++gridIterator;
-      }
+    }
 
     // Initialize the newly filled vertices because they may now be valid source nodes.
     // You may not want to do this in some cases (i.e. if the descriptors needed cannot be
     // computed on newly filled regions)
     gridIterator.GoToBegin();
     while(!gridIterator.IsAtEnd())
-      {
+    {
       VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(gridIterator.GetIndex());
 
       InitializeVertex(v);
       ++gridIterator;
-      }
+    }
 
     // Add pixels that are on the new boundary to the queue, and mark other pixels as not in the queue.
     itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(MaskImage, regionToFinish);
 
     while(!imageIterator.IsAtEnd())
-      {
+    {
       VertexDescriptorType v = Helpers::ConvertFrom<VertexDescriptorType, itk::Index<2> >(imageIterator.GetIndex());
 
       // Mark all nodes in the patch around this node as filled (in the FillStatusMap).
       // This makes them ignored if they are still in the boundaryNodeQueue.
       if(ITKHelpers::HasNeighborWithValue(imageIterator.GetIndex(), MaskImage, MaskImage->GetHoleValue()))
-        {
+      {
         put(BoundaryStatusMap, v, true);
         this->BoundaryNodeQueue.push(v);
-        }
+      }
       else
-        {
+      {
         put(BoundaryStatusMap, v, false);
-        }
-
-      ++imageIterator;
       }
 
-  }; // finish_vertex
+      ++imageIterator;
+    }
 
-  void InpaintingComplete() const
+  } // finish_vertex
+
+  void InpaintingComplete() const override
   {
     ITKHelpers::WriteImage(Image, "output.mha");
   }
