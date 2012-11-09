@@ -96,7 +96,10 @@ void TopPatchesDialog<TImage>::SetQueryNode(const Node& queryNode)
 
   itk::Index<2> queryIndex = ITKHelpers::CreateIndex(queryNode);
   itk::ImageRegion<2> queryRegion =
-      ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, PatchHalfWidth);
+      ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, this->PatchHalfWidth);
+
+  // Make sure the query is inside the image
+  queryRegion.Crop(this->Image->GetLargestPossibleRegion());
 
   typename TImage::Pointer regionImage = TImage::New();
   ITKHelpers::ExtractRegion(this->Image, queryRegion,
@@ -139,38 +142,7 @@ void TopPatchesDialog<TImage>::slot_DoubleClicked(const QModelIndex& selected)
 template <typename TImage>
 void TopPatchesDialog<TImage>::slot_SingleClicked(const QModelIndex& selected)
 {
-  itk::Index<2> queryIndex = ITKHelpers::CreateIndex(this->QueryNode);
-
-  itk::ImageRegion<2> queryRegion =
-      ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, this->PatchHalfWidth);
-
-  itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(this->Nodes[selected.row()]);
-
-  itk::ImageRegion<2> sourceRegion =
-      ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, this->PatchHalfWidth);
-
-  emit signal_SelectedRegion(sourceRegion);
-
-  // Double check that there are no hole pixels in the source patch
-//  {
-//  Mask::Pointer regionMask = Mask::New();
-//  ITKHelpers::ExtractRegion(this->MaskImage, sourceRegion,
-//                            regionMask.GetPointer());
-//  regionMask->CopyInformationFrom(this->MaskImage);
-//  std::cout << "There are " << regionMask->CountHolePixels() << " hole pixels in the source region." << std::endl;
-//  }
-
-  QImage sourcePatch =
-      PatchHelpers::GetQImageCombinedPatch(this->Image, sourceRegion, queryRegion, this->MaskImage);
-
-  this->SourcePatchItem =
-      this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourcePatch));
-
-  gfxSourcePatch->fitInView(this->SourcePatchItem);
-
-  slot_UpdateResult(sourceRegion, queryRegion);
-
-  this->SelectedIndex = selected;
+  DisplayPatchSelection(selected);
 }
 
 template <typename TImage>
@@ -182,6 +154,8 @@ Node TopPatchesDialog<TImage>::GetSelectedNode()
 template <typename TImage>
 void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
 {
+  std::cout << "TopPatchesDialog::showEvent()" << std::endl;
+
   this->ValidSelection = false;
   // We do this here because we will usually call SetQueryNode before the widget is constructed (i.e. before exec() is called).
   gfxQueryPatch->fitInView(this->MaskedQueryPatchItem);
@@ -191,7 +165,7 @@ void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
   this->listView->scrollTo(index);
 
   // Setup the proposed patch (if the best patch were to be selected)
-  slot_SingleClicked(index);
+  DisplayPatchSelection(index);
   gfxProposedPatch->fitInView(this->ProposedPatchItem);
 }
 
@@ -206,8 +180,10 @@ template <typename TImage>
 void TopPatchesDialog<TImage>::on_btnSelectManually_clicked()
 {
   itk::Index<2> queryIndex = ITKHelpers::CreateIndex(this->QueryNode);
+
   itk::ImageRegion<2> queryRegion =
       ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, this->PatchHalfWidth);
+
   ManualPatchSelectionDialog<TImage> manualPatchSelectionDialog(this->Image, this->MaskImage, queryRegion);
   manualPatchSelectionDialog.exec();
 
@@ -237,6 +213,7 @@ bool TopPatchesDialog<TImage>::IsSelectionValid() const
 template <typename TImage>
 void TopPatchesDialog<TImage>::on_btnSavePair_clicked()
 {
+#if 0
   // Save the query patch
   itk::Index<2> queryIndex = ITKHelpers::CreateIndex(QueryNode);
   itk::ImageRegion<2> queryRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, PatchHalfWidth);
@@ -248,6 +225,7 @@ void TopPatchesDialog<TImage>::on_btnSavePair_clicked()
   itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(Nodes[this->SelectedIndex.row()]);
   itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, PatchHalfWidth);
   ITKHelpers::WriteRegionAsRGBImage(this->Image, sourceRegion, "source.png");
+#endif
 }
 
 template <typename TImage>
@@ -261,10 +239,17 @@ void TopPatchesDialog<TImage>::PositionNextToParent()
 }
 
 template <typename TImage>
-void TopPatchesDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
-                                                 const itk::ImageRegion<2>& targetRegion)
+void TopPatchesDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sourceRegionIn,
+                                                 const itk::ImageRegion<2>& targetRegionIn)
 {
-//  std::cout << "TopPatchesDialog::slot_UpdateResult" << std::endl;
+#if 0
+  std::cout << "TopPatchesDialog::slot_UpdateResult" << std::endl;
+
+  // Crop the source region to look like the potentially cropped query region. We must do this before we crop the target region.
+  itk::ImageRegion<2> sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegionIn, this->MaskImage->GetLargestPossibleRegion(), targetRegionIn);
+  itk::ImageRegion<2> targetRegion = targetRegionIn;
+  targetRegion.Crop(this->MaskImage->GetLargestPossibleRegion());
+
   assert(sourceRegion.GetSize() == targetRegion.GetSize());
 
   QImage qimage(sourceRegion.GetSize()[0], sourceRegion.GetSize()[1], QImage::Format_RGB888);
@@ -273,12 +258,14 @@ void TopPatchesDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sour
   itk::ImageRegionIterator<TImage> targetIterator(this->Image, targetRegion);
   itk::ImageRegionIterator<Mask> maskIterator(this->MaskImage, targetRegion);
 
-  typename TImage::Pointer resultPatch = TImage::New();
-  resultPatch->SetNumberOfComponentsPerPixel(Image->GetNumberOfComponentsPerPixel());
-  itk::ImageRegion<2> resultPatchRegion;
-  resultPatchRegion.SetSize(sourceRegion.GetSize());
-  resultPatch->SetRegions(resultPatchRegion);
-  resultPatch->Allocate();
+  typename TImage::Pointer resultPatchImage = TImage::New();
+  resultPatchImage->SetNumberOfComponentsPerPixel(this->Image->GetNumberOfComponentsPerPixel());
+
+  itk::Index<2> corner = {{0,0}};
+  itk::ImageRegion<2> resultPatchRegion(corner, sourceRegion.GetSize());
+
+  resultPatchImage->SetRegions(resultPatchRegion);
+  resultPatchImage->Allocate();
 
   while(!maskIterator.IsAtEnd())
   {
@@ -297,19 +284,68 @@ void TopPatchesDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sour
     itk::Index<2> offsetIndex;
     offsetIndex[0] = offset[0];
     offsetIndex[1] = offset[1];
-    resultPatch->SetPixel(offsetIndex, pixel);
+    resultPatchImage->SetPixel(offsetIndex, pixel);
 
     ++sourceIterator;
     ++targetIterator;
     ++maskIterator;
   }
 
-  qimage = ITKQtHelpers::GetQImageColor(resultPatch.GetPointer(), resultPatch->GetLargestPossibleRegion());
+  qimage = ITKQtHelpers::GetQImageColor(resultPatchImage.GetPointer(), resultPatchImage->GetLargestPossibleRegion());
 
   this->ProposedPatchScene->clear();
   QGraphicsPixmapItem* item = this->ProposedPatchScene->addPixmap(QPixmap::fromImage(qimage));
   gfxProposedPatch->fitInView(item);
 
+  std::cout << "Leave TopPatchesDialog::slot_UpdateResult" << std::endl;
+#endif
+}
+
+template <typename TImage>
+void TopPatchesDialog<TImage>::DisplayPatchSelection(QModelIndex selected)
+{
+#if 0
+  std::cout << "Leave TopPatchesDialog::DisplayPatchSelection" << std::endl;
+  itk::Index<2> queryIndex = ITKHelpers::CreateIndex(this->QueryNode);
+
+  itk::ImageRegion<2> queryRegion =
+      ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, this->PatchHalfWidth);
+
+  itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(this->Nodes[selected.row()]);
+
+  itk::ImageRegion<2> sourceRegion =
+      ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, this->PatchHalfWidth);
+
+  // Crop the source region to look like the potentially cropped query region. We must do this before we crop the target region.
+  sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->MaskImage->GetLargestPossibleRegion(), queryRegion);
+
+  queryRegion.Crop(this->MaskImage->GetLargestPossibleRegion());
+
+  assert(sourceRegion.GetSize() == queryRegion.GetSize());
+
+  emit signal_SelectedRegion(sourceRegion);
+
+  // Double check that there are no hole pixels in the source patch
+//  {
+//  Mask::Pointer regionMask = Mask::New();
+//  ITKHelpers::ExtractRegion(this->MaskImage, sourceRegion,
+//                            regionMask.GetPointer());
+//  regionMask->CopyInformationFrom(this->MaskImage);
+//  std::cout << "There are " << regionMask->CountHolePixels() << " hole pixels in the source region." << std::endl;
+//  }
+
+  QImage sourcePatch =
+      PatchHelpers::GetQImageCombinedPatch(this->Image, sourceRegion, queryRegion, this->MaskImage);
+
+  this->SourcePatchItem =
+      this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourcePatch));
+
+  gfxSourcePatch->fitInView(this->SourcePatchItem);
+
+  slot_UpdateResult(sourceRegion, queryRegion);
+#endif
+  this->SelectedIndex = selected;
+  std::cout << "Leave TopPatchesDialog::DisplayPatchSelection" << std::endl;
 }
 
 #endif

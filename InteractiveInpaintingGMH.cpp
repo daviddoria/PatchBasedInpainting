@@ -27,16 +27,16 @@
 #include <QApplication>
 
 // Driver
-#include "Drivers/InpaintingGMH.hpp"
+#include "Drivers/InteractiveInpaintingGMH.hpp"
 #include "Drivers/TestDriver.hpp"
 
 // Run with: image.png image.mask 15 filled.png
 int main(int argc, char *argv[])
 {
   // Verify arguments
-  if(argc != 5)
+  if(argc != 6)
   {
-    std::cerr << "Required arguments: image.png image.mask patchHalfWidth output.png" << std::endl;
+    std::cerr << "Required arguments: image.png image.mask patchHalfWidth maxAllowedDifference output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
     {
@@ -54,12 +54,18 @@ int main(int argc, char *argv[])
   unsigned int patchHalfWidth = 0;
   ssPatchRadius >> patchHalfWidth;
 
-  std::string outputFilename = argv[4];
+  std::stringstream ssMaxAllowedDifference;
+  ssMaxAllowedDifference << argv[4];
+  float maxAllowedDifference = 0.0f;
+  ssMaxAllowedDifference >> maxAllowedDifference;
+
+  std::string outputFilename = argv[5];
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
   std::cout << "Patch half width: " << patchHalfWidth << std::endl;
+  std::cout << "Max Allowed Difference: " << maxAllowedDifference << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
   typedef itk::Image<itk::CovariantVector<float, 3>, 2> ImageType;
@@ -85,7 +91,7 @@ int main(int argc, char *argv[])
   // (after the first iteration that is not accepted automatically), the event loop quits.
   app.setQuitOnLastWindowClosed(false);
 
-  InpaintingGMH(image, mask, patchHalfWidth);
+  InteractiveInpaintingGMH(image, mask, patchHalfWidth, maxAllowedDifference);
 
   return app.exec();
 }

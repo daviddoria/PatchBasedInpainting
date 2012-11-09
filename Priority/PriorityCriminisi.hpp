@@ -68,9 +68,15 @@ void PriorityCriminisi<TImage>::Update(const TNode& sourceNode, const TNode& tar
   // Compute the isophotes we will need
   itk::Index<2> targetIndex = Helpers::ConvertFrom<itk::Index<2>, TNode>(targetNode);
   itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->PatchRadius);
+
+  // Expand the region to avoid boundary effects
   itk::ImageRegion<2> dilatedRegion = ITKHelpers::DilateRegion(region, this->PatchRadius);
+
+  // Make sure the region is inside the image
   dilatedRegion.Crop(this->IsophoteImage->GetLargestPossibleRegion());
-  Isophotes::ComputeColorIsophotesInRegion(this->Image.GetPointer(), this->MaskImage, dilatedRegion, this->IsophoteImage.GetPointer());
+
+  Isophotes::ComputeColorIsophotesInRegion(this->Image.GetPointer(), this->MaskImage,
+                                           dilatedRegion, this->IsophoteImage.GetPointer());
 
   // For debugging, we want to do this over the whole image
 //  Isophotes::ComputeColorIsophotesInRegion(this->Image, this->MaskImage,
@@ -79,12 +85,15 @@ void PriorityCriminisi<TImage>::Update(const TNode& sourceNode, const TNode& tar
   BoundaryNormals boundaryNormals(this->MaskImage);
   float maskBlurVariance = 2.0f;
   boundaryNormals.SetDebugImages(true);
-  boundaryNormals.ComputeBoundaryNormals(this->BoundaryNormalsImage.GetPointer(), maskBlurVariance, dilatedRegion);
+  boundaryNormals.ComputeBoundaryNormals(this->BoundaryNormalsImage.GetPointer(),
+                                         maskBlurVariance, dilatedRegion);
 
   if(this->GetDebugImages())
   {
-    ITKHelpers::WriteSequentialImage(this->BoundaryNormalsImage.GetPointer(), "BoundaryNormals", patchNumber, 3, "mha");
-    ITKHelpers::WriteSequentialImage(this->IsophoteImage.GetPointer(), "IsophoteImage", patchNumber, 3, "mha");
+    ITKHelpers::WriteSequentialImage(this->BoundaryNormalsImage.GetPointer(), "BoundaryNormals",
+                                     patchNumber, 3, "mha");
+    ITKHelpers::WriteSequentialImage(this->IsophoteImage.GetPointer(), "IsophoteImage",
+                                     patchNumber, 3, "mha");
 
     WriteDataImage(patchNumber);
     WriteBoundaryImage(patchNumber);

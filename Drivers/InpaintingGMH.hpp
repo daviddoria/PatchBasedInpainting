@@ -97,7 +97,8 @@
 
 template <typename TImage>
 void InpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
-                   Mask::Pointer mask, const unsigned int patchHalfWidth)
+                   Mask::Pointer mask, const unsigned int patchHalfWidth,
+                   const float maxAllowedDifference)
 {
   // Get the region so that we can reference it without referring to a particular image
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();

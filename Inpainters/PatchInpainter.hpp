@@ -45,10 +45,10 @@ class PatchInpainter : public PatchInpainterParent, public Debug
 
   // Debug only
   /** Count how many times this classes function has been performed. */
-  unsigned int Iteration;
+  unsigned int Iteration = 0;
 
   /** The name of the image as the programmer would refer to it. I.e. "TheMask" or similar. */
-  std::string ImageName;
+  std::string ImageName = "unnamed";
 
 public:
 
@@ -66,7 +66,7 @@ public:
 
   /** Inpaint a patch only in the masked pixels. */
   PatchInpainter(std::size_t patchHalfWidth, typename TImage::Pointer image, const Mask* const mask) :
-    Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth), Iteration(0), ImageName("Unnamed")
+    Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
   {
 //    std::cout << "PatchInpainter: size: " << this->Image->GetLargestPossibleRegion().GetSize() << std::endl;
   }
@@ -77,16 +77,21 @@ public:
 
 //    std::cout << "PatchInpainter: Mask size: " << this->MaskImage->GetLargestPossibleRegion().GetSize() << std::endl;
 
-    itk::ImageRegion<2> targetRegion =
+    itk::ImageRegion<2> fullTargetRegion =
         ITKHelpers::GetRegionInRadiusAroundPixel(targetCenter, this->PatchHalfWidth);
-    itk::ImageRegion<2> sourceRegion =
+    itk::ImageRegion<2> fullSourceRegion =
         ITKHelpers::GetRegionInRadiusAroundPixel(sourceCenter, this->PatchHalfWidth);
 
     // Ensure that the source patch will match the target patch after it is cropped (this must be done before cropping the target region)
-    sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->Image->GetLargestPossibleRegion(), targetRegion);
+    itk::ImageRegion<2> sourceRegion = ITKHelpers::CropRegionAtPosition(fullSourceRegion, this->Image->GetLargestPossibleRegion(), fullTargetRegion);
 
     // Ensure that the target patch is inside the image.
+    itk::ImageRegion<2> targetRegion = fullTargetRegion;
     targetRegion.Crop(this->Image->GetLargestPossibleRegion());
+
+    assert(this->Image->GetLargestPossibleRegion().IsInside(sourceRegion));
+    assert(this->Image->GetLargestPossibleRegion().IsInside(targetRegion));
+    assert(targetRegion.GetSize() == sourceRegion.GetSize());
 
     if(this->GetDebugImages())
     {

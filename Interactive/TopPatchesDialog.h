@@ -123,6 +123,8 @@ private:
   /** Gracefully quit if the user closes the dialog. */
   void closeEvent(QCloseEvent* event);
 
+  void DisplayPatchSelection(QModelIndex index);
+
 public:
   /** Constructor */
   TopPatchesDialog(TImage* const image, Mask* const mask,

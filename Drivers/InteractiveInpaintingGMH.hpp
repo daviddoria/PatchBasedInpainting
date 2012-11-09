@@ -104,7 +104,8 @@
 
 template <typename TImage>
 void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
-                              Mask::Pointer mask, const unsigned int patchHalfWidth)
+                              Mask::Pointer mask, const unsigned int patchHalfWidth,
+                              const float maxAllowedDifference)
 {
   // Get the region so that we can reference it without referring to a particular image
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
@@ -183,7 +184,7 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
 
   // Acceptance visitor. Use the slightly blurred image here, as this the gradients will be less noisy.
   unsigned int numberOfBinsPerChannel = 30;
-  float maxAllowedDifference = 2.0f;
+
   typedef GMHAcceptanceVisitor<VertexListGraphType, TImage> GMHAcceptanceVisitorType;
   std::shared_ptr<GMHAcceptanceVisitorType> gmhAcceptanceVisitor(
         new GMHAcceptanceVisitorType(slightlyBlurredImage.GetPointer(), mask, patchHalfWidth,
@@ -276,13 +277,13 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   basicViewer->ConnectWidget(manualSearchBest->GetTopPatchesDialog());
   basicViewer->show();
 
-  typedef PriorityViewerWidget<PriorityType, BoundaryNodeQueueType::BoundaryStatusMapType> PriorityViewerType;
-  PriorityViewerType* priorityViewer = new PriorityViewerType(priorityFunction.get(), fullRegion.GetSize(),
-                                                              boundaryNodeQueue->GetBoundaryStatusMap());
-  QObject::connect(displayVisitor.get(), SIGNAL(signal_RefreshImage()),
-                   priorityViewer, SLOT(slot_UpdateImage()),
-                   Qt::BlockingQueuedConnection);
-  priorityViewer->show();
+//  typedef PriorityViewerWidget<PriorityType, BoundaryNodeQueueType::BoundaryStatusMapType> PriorityViewerType;
+//  PriorityViewerType* priorityViewer = new PriorityViewerType(priorityFunction.get(), fullRegion.GetSize(),
+//                                                              boundaryNodeQueue->GetBoundaryStatusMap());
+//  QObject::connect(displayVisitor.get(), SIGNAL(signal_RefreshImage()),
+//                   priorityViewer, SLOT(slot_UpdateImage()),
+//                   Qt::BlockingQueuedConnection);
+//  priorityViewer->show();
 
   // Run the remaining inpainting with interaction
   std::cout << "Running inpainting..." << std::endl;

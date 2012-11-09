@@ -148,10 +148,8 @@ private:
   /** The renderer */
   vtkSmartPointer<vtkRenderer> Renderer;
 
-  QGraphicsScene* SourcePatchScene;
-  QGraphicsScene* TargetPatchScene;
-  QGraphicsScene* MaskedSourcePatchScene;
-  QGraphicsScene* MaskedTargetPatchScene;
+  QGraphicsScene* SourcePatchScene = nullptr;
+  QGraphicsScene* TargetPatchScene = nullptr;
 
   /** The color to use as the background of the QGraphicsScenes */
   QColor SceneBackground;
@@ -163,10 +161,10 @@ private:
   ITKVTKCamera* ItkVtkCamera;
 
   /** The object that indicates where the source patch is located. */
-  PatchHighlighter* SourceHighlighter;
+  PatchHighlighter* SourceHighlighter = nullptr;
 
   /** The object that indicates where the target patch is located. */
-  PatchHighlighter* TargetHighlighter;
+  PatchHighlighter* TargetHighlighter = nullptr;
 };
 
 /** BasicViewerWidgetWrapper is a class template and therefore cannot have slots directly.

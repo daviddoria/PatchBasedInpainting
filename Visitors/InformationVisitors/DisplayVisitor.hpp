@@ -155,14 +155,22 @@ public:
   /** Once a patch has been selected and approved, show the filled image. */
   void FinishVertex(VertexDescriptorType v, VertexDescriptorType sourceNode)
   {
+    std::cout << "DisplayVisitor::FinishVertex()" << std::endl;
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(v);
     itk::ImageRegion<2> targetRegion = ITKHelpers::GetRegionInRadiusAroundPixel(targetIndex, this->HalfWidth);
 
     itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(sourceNode);
     itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, this->HalfWidth);
 
+    // Crop the source region to look like the potentially cropped query region. We must do this before we crop the target region.
+    sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->MaskImage->GetLargestPossibleRegion(), targetRegion);
+
+    targetRegion.Crop(this->MaskImage->GetLargestPossibleRegion());
+
+    std::cout << "Before signals DisplayVisitor::FinishVertex()" << std::endl;
     emit signal_RefreshResult(sourceRegion, targetRegion);
     emit signal_RefreshImage();
+    std::cout << "After signals DisplayVisitor::FinishVertex()" << std::endl;
   }
 
   void InpaintingComplete() const

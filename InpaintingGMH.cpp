@@ -23,20 +23,16 @@
 #include <ITKHelpers/ITKHelpers.h>
 #include <Mask/Mask.h>
 
-// Qt
-#include <QApplication>
-
 // Driver
-#include "Drivers/InteractiveInpaintingGMH.hpp"
-#include "Drivers/TestDriver.hpp"
+#include "Drivers/InpaintingGMH.hpp"
 
 // Run with: image.png image.mask 15 filled.png
 int main(int argc, char *argv[])
 {
   // Verify arguments
-  if(argc != 5)
+  if(argc != 6)
   {
-    std::cerr << "Required arguments: image.png image.mask patchHalfWidth output.png" << std::endl;
+    std::cerr << "Required arguments: image.png image.mask patchHalfWidth maxAllowedDifference output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
     {
@@ -54,13 +50,19 @@ int main(int argc, char *argv[])
   unsigned int patchHalfWidth = 0;
   ssPatchRadius >> patchHalfWidth;
 
-  std::string outputFilename = argv[4];
+  std::stringstream ssMaxAllowedDifference;
+  ssMaxAllowedDifference << argv[4];
+  float maxAllowedDifference = 0.0f;
+  ssMaxAllowedDifference >> maxAllowedDifference;
+
+  std::string outputFileName = argv[5];
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
   std::cout << "Patch half width: " << patchHalfWidth << std::endl;
-  std::cout << "Output: " << outputFilename << std::endl;
+  std::cout << "Max Allowed Difference: " << maxAllowedDifference << std::endl;
+  std::cout << "Output: " << outputFileName << std::endl;
 
   typedef itk::Image<itk::CovariantVector<float, 3>, 2> ImageType;
 
@@ -79,14 +81,18 @@ int main(int argc, char *argv[])
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
 
-  // Setup the GUI system
-  QApplication app( argc, argv );
-  // Without this, after we close the first dialog
-  // (after the first iteration that is not accepted automatically), the event loop quits.
-  app.setQuitOnLastWindowClosed(false);
+  InpaintingGMH(image, mask, patchHalfWidth, maxAllowedDifference);
 
-  InteractiveInpaintingGMH(image, mask, patchHalfWidth);
-//  TestDriver(image, mask, patchHalfWidth);
+  // If the output filename is a png file, then use the RGBImage writer so that it is first
+  // casted to unsigned char. Otherwise, write the file directly.
+  if(Helpers::GetFileExtension(outputFileName) == "png")
+  {
+    ITKHelpers::WriteRGBImage(image.GetPointer(), outputFileName);
+  }
+  else
+  {
+    ITKHelpers::WriteImage(image.GetPointer(), outputFileName);
+  }
 
-  return app.exec();
+  return EXIT_SUCCESS;
 }

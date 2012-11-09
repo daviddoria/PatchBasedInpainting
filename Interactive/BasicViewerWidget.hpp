@@ -61,7 +61,7 @@
 template <typename TImage>
 //BasicViewerWidget<TImage>::BasicViewerWidget(TImage* const image, Mask* const mask) :
 BasicViewerWidget<TImage>::BasicViewerWidget(typename TImage::Pointer image, Mask::Pointer mask) :
-  Image(image), MaskImage(mask), SourceHighlighter(NULL), TargetHighlighter(NULL)
+  Image(image), MaskImage(mask)
 {
   qRegisterMetaType<itk::ImageRegion<2> >("itkImageRegion");
 
@@ -121,14 +121,6 @@ void BasicViewerWidget<TImage>::SetupScenes()
   this->SourcePatchScene = new QGraphicsScene();
   this->SourcePatchScene->setBackgroundBrush(brush);
   this->gfxSource->setScene(SourcePatchScene);
-
-  this->MaskedSourcePatchScene = new QGraphicsScene();
-  this->MaskedSourcePatchScene->setBackgroundBrush(brush);
-  this->gfxMaskedSource->setScene(MaskedSourcePatchScene);
-
-  this->MaskedTargetPatchScene = new QGraphicsScene();
-  this->MaskedTargetPatchScene->setBackgroundBrush(brush);
-  this->gfxMaskedTarget->setScene(MaskedTargetPatchScene);
 }
 
 template <typename TImage>
@@ -171,34 +163,8 @@ void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sou
   // This function needs the targetRegion because this is the region of the Mask that is used to mask the source patch.
 //  std::cout << "BasicViewerWidget::slot_UpdateSource " << sourceRegion << std::endl;
 
-  if(!this->SourceHighlighter)
-  {
-    this->SourceHighlighter = new PatchHighlighter(sourceRegion.GetSize()[0]/2, this->Renderer, Qt::green);
-  }
-  this->SourceHighlighter->SetRegion(sourceRegion);
-  
-  QImage sourceImage = ITKQtHelpers::GetQImageColor(this->Image.GetPointer(), sourceRegion);
-  QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
-  gfxSource->fitInView(item);
-
-//  typename TImage::Pointer tempImage = TImage::New();
-//  ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
-  typename TImage::PixelType zeroPixel(3);
-  zeroPixel = itk::NumericTraits<typename TImage::PixelType>::ZeroValue(zeroPixel);
-
-  this->MaskImage->ApplyRegionToImageRegion(sourceRegion, this->Image.GetPointer(), targetRegion, zeroPixel);
-  
-  QImage maskedSourceImage = ITKQtHelpers::GetQImageColor(this->Image.GetPointer(), sourceRegion);
-  QGraphicsPixmapItem* maskedItem = this->MaskedSourcePatchScene->addPixmap(QPixmap::fromImage(maskedSourceImage));
-  gfxMaskedSource->fitInView(maskedItem);
-
-  //unsigned char blue[3] = {0, 0, 255};
-  //ITKVTKHelpers::OutlineRegion(this->ImageLayer.ImageData, sourceRegion, blue);
-  //ITKVTKHelpers::BlankAndOutlineRegion(this->ImageLayer.ImageData, sourceRegion, blue);
-
-  this->qvtkWidget->GetRenderWindow()->Render();
+  slot_UpdateSource(sourceRegion);
 }
-
 
 template <typename TImage>
 void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sourceRegion)
@@ -211,6 +177,11 @@ void BasicViewerWidget<TImage>::slot_UpdateSource(const itk::ImageRegion<2>& sou
   }
   this->SourceHighlighter->SetRegion(sourceRegion);
 
+  QImage sourceImage = ITKQtHelpers::GetQImageColor(this->Image.GetPointer(), sourceRegion);
+  QGraphicsPixmapItem* item = this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourceImage));
+  gfxSource->fitInView(item);
+
+  // Make the renderer show the Highlighter in the new position
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 
@@ -225,27 +196,13 @@ void BasicViewerWidget<TImage>::slot_UpdateTarget(const itk::ImageRegion<2>& tar
   }
 
   this->TargetHighlighter->SetRegion(targetRegion);
-  
-  //unsigned char red[3] = {255, 0, 0};
-  //ITKVTKHelpers::OutlineRegion(this->ImageLayer.ImageData, targetRegion, red);
 
   // Target patch
   QImage targetImage = ITKQtHelpers::GetQImageColor(this->Image.GetPointer(), targetRegion);
   QGraphicsPixmapItem* item = this->TargetPatchScene->addPixmap(QPixmap::fromImage(targetImage));
   gfxTarget->fitInView(item);
 
-  // Masked target patch
-//  typename TImage::Pointer tempImage = TImage::New();
-//  ITKHelpers::ConvertTo3Channel(this->Image, tempImage.GetPointer());
-  typename TImage::PixelType zeroPixel(3);
-  zeroPixel = itk::NumericTraits<typename TImage::PixelType>::ZeroValue(zeroPixel);
-
-  this->MaskImage->ApplyToImage(this->Image.GetPointer(), zeroPixel);
-  QImage maskedTargetImage = ITKQtHelpers::GetQImageColor(this->Image.GetPointer(), targetRegion);
-
-  QGraphicsPixmapItem* maskedItem = this->MaskedTargetPatchScene->addPixmap(QPixmap::fromImage(maskedTargetImage));
-  gfxMaskedTarget->fitInView(maskedItem);
-
+  // Make the renderer show the Highlighter in the new position
   this->qvtkWidget->GetRenderWindow()->Render();
 }
 

@@ -200,11 +200,14 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateTarget(const itk::ImageRegio
 
   // Extract the relevant portion of the image
   typename TImage::Pointer targetRegionImage = TImage::New();
-  ITKHelpers::ExtractRegion(this->Image, this->TargetRegion, targetRegionImage.GetPointer());
+  itk::ImageRegion<2> insideRegion = this->TargetRegion;
+  insideRegion.Crop(this->MaskImage->GetLargestPossibleRegion());
+
+  ITKHelpers::ExtractRegion(this->Image, insideRegion, targetRegionImage.GetPointer());
 
   // Extract the relevant portion of the mask
   Mask::Pointer targetRegionMask = Mask::New();
-  ITKHelpers::ExtractRegion(this->MaskImage, this->TargetRegion, targetRegionMask.GetPointer());
+  ITKHelpers::ExtractRegion(this->MaskImage, insideRegion, targetRegionMask.GetPointer());
   targetRegionMask->CopyInformationFrom(this->MaskImage);
 
   // Mask the image of the target region with the target region mask
@@ -222,9 +225,16 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateTarget(const itk::ImageRegio
 }
 
 template <typename TImage>
-void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
-                                                           const itk::ImageRegion<2>& targetRegion)
+void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sourceRegionIn,
+                                                           const itk::ImageRegion<2>& targetRegionIn)
 {
+  itk::ImageRegion<2> sourceRegion = sourceRegionIn;
+  itk::ImageRegion<2> targetRegion = targetRegionIn;
+
+  // Crop the source region to look like the potentially cropped query region. We must do this before we crop the target region.
+  sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->MaskImage->GetLargestPossibleRegion(), targetRegion);
+  targetRegion.Crop(this->MaskImage->GetLargestPossibleRegion());
+
   assert(sourceRegion.GetSize() == targetRegion.GetSize());
 
   if(!this->Image->GetLargestPossibleRegion().IsInside(sourceRegion))
@@ -254,7 +264,7 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
 
     itk::ImageRegionIterator<TImage> sourceIterator(tempImage, sourceRegion);
     itk::ImageRegionIterator<TImage> targetIterator(tempImage, targetRegion);
-    itk::ImageRegionIterator<Mask> maskIterator(MaskImage, targetRegion);
+    itk::ImageRegionIterator<Mask> maskIterator(this->MaskImage, targetRegion);
 
     typename TImage::Pointer resultPatch = TImage::New();
     resultPatch->SetNumberOfComponentsPerPixel(Image->GetNumberOfComponentsPerPixel());

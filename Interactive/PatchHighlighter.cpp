@@ -19,12 +19,11 @@
 #include "QtHelpers/QtHelpers.h"
 #include "InteractorStyleImageWithDrag.h"
 
-PatchHighlighter::PatchHighlighter() : Radius(0), Renderer(NULL)
+PatchHighlighter::PatchHighlighter()
 {
 
 }
 
-//MovablePatch::MovablePatch(const unsigned int radius, vtkRenderer* const renderer,
 PatchHighlighter::PatchHighlighter(const unsigned int radius, vtkRenderer* const renderer,
                                    const QColor color) :
                                    Radius(radius), Color(color), Renderer(renderer)

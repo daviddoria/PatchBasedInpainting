@@ -59,10 +59,11 @@ void InpaintingAlgorithmWithVerification(std::shared_ptr<TVertexListGraph> graph
 
   while(!boundaryNodeQueue->empty())
   {
-//    std::cout << "Starting iteration..." << std::endl;
+    std::cout << "Starting iteration..." << std::endl;
     VertexDescriptorType targetNode = boundaryNodeQueue->top(); // This also pops the node
 
     // Notify the visitor that we have a hole target center.
+    std::cout << "Starting DiscoverVertex..." << std::endl;
     visitor->DiscoverVertex(targetNode);
 
     // Find the source node that matches best to the target node
@@ -75,24 +76,40 @@ void InpaintingAlgorithmWithVerification(std::shared_ptr<TVertexListGraph> graph
     std::vector<VertexDescriptorType> knnContainer(knnFinder->GetK());
 
     // Find the K nearest neighbors
+    std::cout << "Starting knnFinder" << std::endl;
     (*knnFinder)(graphBegin, graphEnd, targetNode, knnContainer.begin());
 
     // Find the best neighbor out of the top K (probably using a different criterion)
+    std::cout << "Starting bestNeighborFinder" << std::endl;
     VertexDescriptorType sourceNode = (*bestNeighborFinder)(knnContainer.begin(),
                                                             knnContainer.end(), targetNode);
 
+    if(sourceNode[0] < 0 || sourceNode[1] < 0)
+    {
+      std::cerr << "Invalid after bestNeighborFinder!" << std::endl;
+    }
+
     // Broadcast that we have found a potential match
+    std::cout << "Starting PotentialMatchMade" << std::endl;
     visitor->PotentialMatchMade(targetNode, sourceNode);
 
     // If the acceptance tests do not pass, ask the user for a better patch
+    std::cout << "Starting AcceptMatch" << std::endl;
     if(!visitor->AcceptMatch(targetNode, sourceNode))
     {
       numberOfManualVerifications++;
       std::cout << "So far there have been "
                 << numberOfManualVerifications << " manual verifications." << std::endl;
       std::cout << "Automatic match not accepted!" << std::endl;
+      std::cout << "Starting manualNeighborFinder" << std::endl;
       sourceNode = (*manualNeighborFinder)(knnContainer.begin(), knnContainer.end(), targetNode);
+
+      if(sourceNode[0] < 0 || sourceNode[1] < 0)
+      {
+        std::cerr << "Invalid after manual!" << std::endl;
+      }
     }
+
 
     // Do the in-painting of the target patch from the source patch.
     // the inpaint_patch functor should take care of calling
@@ -101,9 +118,11 @@ void InpaintingAlgorithmWithVerification(std::shared_ptr<TVertexListGraph> graph
     itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(sourceNode);
 
     // Inpaint the target patch
+    std::cout << "Starting PaintPatch" << std::endl;
     patchInpainter->PaintPatch(targetIndex, sourceIndex);
 
     // Broadcast that we are done with this iteration
+    std::cout << "Starting FinishVertex" << std::endl;
     visitor->FinishVertex(targetNode, sourceNode);
   }
 

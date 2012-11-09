@@ -61,11 +61,11 @@ public:
 private:
   Layer PatchLayer;
 
-  unsigned int Radius;
+  unsigned int Radius = 0;
 
   QColor Color;
 
-  vtkRenderer* Renderer;
+  vtkRenderer* Renderer = nullptr;
 
 };
 
