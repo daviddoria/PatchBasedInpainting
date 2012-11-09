@@ -109,7 +109,7 @@ void TopPatchesDialog<TImage>::SetQueryNode(const Node& queryNode)
   ITKHelpers::ExtractRegion(this->MaskImage, queryRegion,
                             regionMask.GetPointer());
   regionMask->CopyInformationFrom(this->MaskImage);
-  std::cout << "There are " << regionMask->CountHolePixels() << " hole pixels." << std::endl;
+//  std::cout << "There are " << regionMask->CountHolePixels() << " hole pixels." << std::endl;
 
   typename TImage::PixelType zeroPixel(3);
   zeroPixel = itk::NumericTraits<typename TImage::PixelType>::ZeroValue(zeroPixel);
@@ -134,8 +134,8 @@ void TopPatchesDialog<TImage>::slot_DoubleClicked(const QModelIndex& selected)
   this->SelectedNode = this->Nodes[selected.row()];
   this->ValidSelection = true;
   //std::cout << "Selected " << selected.row() << std::endl;
-  std::cout << "SelectedNode : " << this->SelectedNode[0] << " "
-            << this->SelectedNode[1] << std::endl;
+//  std::cout << "SelectedNode : " << this->SelectedNode[0] << " "
+//            << this->SelectedNode[1] << std::endl;
   accept();
 }
 
@@ -154,7 +154,7 @@ Node TopPatchesDialog<TImage>::GetSelectedNode() const
 template <typename TImage>
 void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
 {
-  std::cout << "TopPatchesDialog::showEvent()" << std::endl;
+//  std::cout << "TopPatchesDialog::showEvent()" << std::endl;
 
   this->ValidSelection = false;
   // We do this here because we will usually call SetQueryNode before the widget is constructed (i.e. before exec() is called).
@@ -193,11 +193,11 @@ void TopPatchesDialog<TImage>::on_btnSelectManually_clicked()
   }
   else if(manualPatchSelectionDialog.result() == QDialog::Accepted)
   {
-    std::cout << "Chose patch manually." << std::endl;
+//    std::cout << "Chose patch manually." << std::endl;
     this->SelectedNode = manualPatchSelectionDialog.GetSelectedNode();
     this->ValidSelection = true;
-    std::cout << "SelectedNode : " << this->SelectedNode[0] << " "
-              << this->SelectedNode[1] << std::endl;
+//    std::cout << "SelectedNode : " << this->SelectedNode[0] << " "
+//              << this->SelectedNode[1] << std::endl;
 
     // Close the dialog
     accept();
@@ -240,7 +240,7 @@ template <typename TImage>
 void TopPatchesDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sourceRegionIn,
                                                  const itk::ImageRegion<2>& targetRegionIn)
 {
-  std::cout << "TopPatchesDialog::slot_UpdateResult" << std::endl;
+//  std::cout << "TopPatchesDialog::slot_UpdateResult" << std::endl;
 
   // Crop the source region to look like the potentially cropped query region. We must do this before we crop the target region.
   itk::ImageRegion<2> sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegionIn, this->MaskImage->GetLargestPossibleRegion(), targetRegionIn);
@@ -294,13 +294,13 @@ void TopPatchesDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sour
   QGraphicsPixmapItem* item = this->ProposedPatchScene->addPixmap(QPixmap::fromImage(qimage));
   gfxProposedPatch->fitInView(item);
 
-  std::cout << "Leave TopPatchesDialog::slot_UpdateResult" << std::endl;
+//  std::cout << "Leave TopPatchesDialog::slot_UpdateResult" << std::endl;
 }
 
 template <typename TImage>
 void TopPatchesDialog<TImage>::DisplayPatchSelection(QModelIndex selected)
 {
-  std::cout << "Leave TopPatchesDialog::DisplayPatchSelection" << std::endl;
+//  std::cout << "Leave TopPatchesDialog::DisplayPatchSelection" << std::endl;
   itk::Index<2> queryIndex = ITKHelpers::CreateIndex(this->QueryNode);
 
   itk::ImageRegion<2> queryRegion =
@@ -340,7 +340,7 @@ void TopPatchesDialog<TImage>::DisplayPatchSelection(QModelIndex selected)
   slot_UpdateResult(sourceRegion, queryRegion);
 
   this->SelectedIndex = selected;
-  std::cout << "Leave TopPatchesDialog::DisplayPatchSelection" << std::endl;
+//  std::cout << "Leave TopPatchesDialog::DisplayPatchSelection" << std::endl;
 }
 
 #endif

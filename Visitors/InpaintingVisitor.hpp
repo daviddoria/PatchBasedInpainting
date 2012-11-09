@@ -203,7 +203,7 @@ public:
     // Mark this pixel and the area around it as filled, and mark the mask in this region as filled.
     // Determine the new boundary, and setup the nodes in the boundary queue.
 
-    std::cout << "InpaintingVisitor::FinishVertex()" << std::endl;
+//    std::cout << "InpaintingVisitor::FinishVertex()" << std::endl;
 
     // Construct the region around the vertex
     itk::Index<2> indexToFinish = ITKHelpers::CreateIndex(targetNode);
@@ -230,7 +230,7 @@ public:
                                                     regionToFinishFull);
 
     // Mark all pixels that were copied (in the hole region of the source patch) as having been used.
-    std::cout << "InpaintingVisitor::FinishVertex() mark pixels as used" << std::endl;
+//    std::cout << "InpaintingVisitor::FinishVertex() mark pixels as used" << std::endl;
     itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType> sourcePatchIterator(this->SourcePixelMapImage,
                                                                                         sourceRegion);
     itk::ImageRegionConstIteratorWithIndex<Mask> targetPatchIterator(this->MaskImage, regionToFinish);
@@ -264,7 +264,7 @@ public:
     }
 
     // Mark all the pixels in this region as filled in the mask.
-    std::cout << "InpaintingVisitor::FinishVertex() fill the mask" << std::endl;
+//    std::cout << "InpaintingVisitor::FinishVertex() fill the mask" << std::endl;
     ITKHelpers::SetRegionToConstant(this->MaskImage, regionToFinish,
                                     this->MaskImage->GetValidValue());
 
@@ -296,16 +296,16 @@ public:
     // Update the priority function. This must be done AFTER the mask is filled,
     // as some of the Priority functors only compute things on the hole boundary, or only
     // use data from the valid region of the image (indicated by valid pixels in the mask).
-    std::cout << "InpaintingVisitor::FinishVertex() update priority" << std::endl;
+//    std::cout << "InpaintingVisitor::FinishVertex() update priority" << std::endl;
     this->PriorityFunction->Update(sourceNode, targetNode, this->NumberOfFinishedPatches);
-    std::cout << "InpaintingVisitor::FinishVertex() finish update priority" << std::endl;
+//    std::cout << "InpaintingVisitor::FinishVertex() finish update priority" << std::endl;
     // Initialize (if requested) all vertices in the newly filled region because they may now be valid source nodes.
     // (You may not want to do this in some cases (i.e. if the descriptors needed cannot be
     // computed on newly filled regions))
 
     if(this->AllowNewPatches)
     {
-      std::cout << "Initializing new vertices..." << std::endl;
+//      std::cout << "Initializing new vertices..." << std::endl;
       itk::ImageRegionConstIteratorWithIndex<Mask> gridIterator(this->MaskImage, regionToFinish);
       while(!gridIterator.IsAtEnd())
       {
@@ -317,9 +317,9 @@ public:
     }
 
     // Add pixels that are on the new boundary to the queue, and mark other pixels as not in the queue.
-    std::cout << "InpaintingVisitor::FinishVertex() iterator" << std::endl;
+//    std::cout << "InpaintingVisitor::FinishVertex() iterator" << std::endl;
     itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(this->MaskImage, regionToFinish);
-    std::cout << "InpaintingVisitor::FinishVertex() finish iterator" << std::endl;
+//    std::cout << "InpaintingVisitor::FinishVertex() finish iterator" << std::endl;
 
     typedef typename TBoundaryNodeQueue::HandleType HandleType;
 
@@ -342,7 +342,7 @@ public:
 //    }
 
     // Parallelizable way - collect the pixels that need their priority computed
-    std::cout << "InpaintingVisitor::FinishVertex() Parallelizable way" << std::endl;
+//    std::cout << "InpaintingVisitor::FinishVertex() Parallelizable way" << std::endl;
     typedef std::vector<itk::Index<2> > IndexVectorType;
     IndexVectorType pixelsToCompute;
     while(!imageIterator.IsAtEnd())
@@ -362,7 +362,7 @@ public:
       ++imageIterator;
     }
 
-    std::cout << "InpaintingVisitor::FinishVertex() update queue" << std::endl;
+//    std::cout << "InpaintingVisitor::FinishVertex() update queue" << std::endl;
     #pragma omp parallel for
     for(IndexVectorType::const_iterator pixelIterator = pixelsToCompute.begin();
         pixelIterator < pixelsToCompute.end(); ++pixelIterator)
@@ -406,14 +406,14 @@ public:
      */
 
     // Expand the region
-    std::cout << "InpaintingVisitor::FinishVertex() expand" << std::endl;
+//    std::cout << "InpaintingVisitor::FinishVertex() expand" << std::endl;
     itk::ImageRegion<2> expandedRegion =
         ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, PatchHalfWidth + 1);
     // Make sure the region is entirely inside the image (to allow for target regions near the image boundary)
     expandedRegion.Crop(this->FullRegion);
     std::vector<itk::Index<2> > boundaryPixels =
         ITKHelpers::GetBoundaryPixels(expandedRegion);
-    std::cout << "InpaintingVisitor::FinishVertex() boundary pixels" << std::endl;
+//    std::cout << "InpaintingVisitor::FinishVertex() boundary pixels" << std::endl;
     for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
     {
       // the region (the entire image) can be omitted, as this function automatically checks if the pixels are inside the image
@@ -432,7 +432,7 @@ public:
 
     this->NumberOfFinishedPatches++;
 
-    std::cout << "Leave InpaintingVisitor::FinishVertex()" << std::endl;
+//    std::cout << "Leave InpaintingVisitor::FinishVertex()" << std::endl;
   } // end FinishVertex
 
   void InpaintingComplete() const

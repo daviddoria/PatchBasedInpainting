@@ -47,33 +47,33 @@ void Isophotes::ComputeColorIsophotesInRegion(const TVectorImageType* const imag
   assert(image->GetLargestPossibleRegion() == mask->GetLargestPossibleRegion());
   assert(image->GetLargestPossibleRegion().IsInside(region));
 
-  std::cout << "ComputeColorIsophotesInRegion()" << std::endl;
+//  std::cout << "ComputeColorIsophotesInRegion()" << std::endl;
   RGBImageType::Pointer rgbImage = RGBImageType::New();
-  std::cout << "VectorImageToRGBImageInRegion()" << std::endl;
+//  std::cout << "VectorImageToRGBImageInRegion()" << std::endl;
   ITKHelpers::VectorImageToRGBImageInRegion(image, rgbImage, region);
 
   assert(image->GetLargestPossibleRegion() == rgbImage->GetLargestPossibleRegion());
 
   //HelpersOutput::WriteImageConditional<RGBImageType>(rgbImage, "Debug/Initialize.rgb.mha", this->DebugImages);
-  std::cout << "LuminanceFilterType" << std::endl;
+//  std::cout << "LuminanceFilterType" << std::endl;
   typedef itk::RGBToLuminanceImageFilter< RGBImageType, FloatScalarImageType > LuminanceFilterType;
   LuminanceFilterType::Pointer luminanceFilter = LuminanceFilterType::New();
   luminanceFilter->SetInput(rgbImage);
   luminanceFilter->GetOutput()->SetRequestedRegion(region);
   luminanceFilter->Update();
 
-  std::cout << "Luminance image" << std::endl;
+//  std::cout << "Luminance image" << std::endl;
   FloatScalarImageType::Pointer luminanceImage = FloatScalarImageType::New();
   luminanceImage->SetRegions(fullRegion);
   luminanceImage->Allocate();
   ITKHelpers::DeepCopyInRegion(luminanceFilter->GetOutput(), region, luminanceImage.GetPointer());
 
-  std::cout << "blur " << region << std::endl;
+//  std::cout << "blur " << region << std::endl;
   FloatScalarImageType::Pointer blurredLuminance = FloatScalarImageType::New();
   // Blur with a Gaussian kernel. From TestIsophotes.cpp, it actually seems like not blurring,
   // but using a masked sobel operator produces the most reliable isophotes.
   unsigned int kernelRadius = 0;
-  std::cout << "Before MaskedBlurInRegion" << std::endl;
+//  std::cout << "Before MaskedBlurInRegion" << std::endl;
   MaskOperations::MaskedBlurInRegion(luminanceImage.GetPointer(), mask, region,
                              kernelRadius, blurredLuminance.GetPointer());
 
@@ -81,7 +81,7 @@ void Isophotes::ComputeColorIsophotesInRegion(const TVectorImageType* const imag
   //                                  "Debug/Initialize.blurredLuminance.mha", true);
 
   //ITKHelpers::InitializeImage(isophotes, image->GetLargestPossibleRegion());
-  std::cout << "ComputeMaskedIsophotesInRegion" << std::endl;
+//  std::cout << "ComputeMaskedIsophotesInRegion" << std::endl;
   Isophotes::ComputeMaskedIsophotesInRegion(blurredLuminance.GetPointer(), mask, region, isophotes);
 
 //   if(this->DebugImages)
@@ -100,7 +100,7 @@ void Isophotes::ComputeMaskedIsophotesInRegion(const TVectorImageType* const ima
 
   typename TIsophoteImageType::Pointer gradient = TIsophoteImageType::New();
   ITKHelpers::InitializeImage(gradient.GetPointer(), region);
-  std::cout << "ComputeMaskedIsophotesInRegion: MaskedGradientInRegion" << std::endl;
+//  std::cout << "ComputeMaskedIsophotesInRegion: MaskedGradientInRegion" << std::endl;
   Derivatives::MaskedGradientInRegion(image, mask, region, gradient.GetPointer());
 
   //Helpers::DebugWriteImageConditional<FloatVector2ImageType>(gradient,
@@ -121,9 +121,9 @@ void Isophotes::ComputeMaskedIsophotesInRegion(const TVectorImageType* const ima
   //                   "Debug/ComputeMaskedIsophotes.Isophotes.mha", this->DebugImages);
   //Helpers::Write2DVectorImage(rotateFilter->GetOutput(), "Debug/ComputeMaskedIsophotes.Isophotes.mha");
 
-  std::cout << "ComputeMaskedIsophotesInRegion: CopyRegion" << std::endl;
+//  std::cout << "ComputeMaskedIsophotesInRegion: CopyRegion" << std::endl;
   ITKHelpers::CopyRegion(rotateFilter->GetOutput(), outputIsophotes, region, region);
-  std::cout << "Finish ComputeMaskedIsophotesInRegion" << std::endl;
+//  std::cout << "Finish ComputeMaskedIsophotesInRegion" << std::endl;
 }
 
 #endif

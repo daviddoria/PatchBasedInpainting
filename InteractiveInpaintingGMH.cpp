@@ -34,9 +34,9 @@
 int main(int argc, char *argv[])
 {
   // Verify arguments
-  if(argc != 6)
+  if(argc != 7)
   {
-    std::cerr << "Required arguments: image.png image.mask patchHalfWidth maxAllowedDifference output.png" << std::endl;
+    std::cerr << "Required arguments: image.png image.mask patchHalfWidth knn maxAllowedDifference output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
     {
@@ -54,17 +54,23 @@ int main(int argc, char *argv[])
   unsigned int patchHalfWidth = 0;
   ssPatchRadius >> patchHalfWidth;
 
+  std::stringstream ssKNN;
+  ssKNN << argv[4];
+  float knn = 0.0f;
+  ssKNN >> knn;
+
   std::stringstream ssMaxAllowedDifference;
-  ssMaxAllowedDifference << argv[4];
+  ssMaxAllowedDifference << argv[5];
   float maxAllowedDifference = 0.0f;
   ssMaxAllowedDifference >> maxAllowedDifference;
 
-  std::string outputFilename = argv[5];
+  std::string outputFilename = argv[6];
 
   // Output arguments
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
   std::cout << "Patch half width: " << patchHalfWidth << std::endl;
+  std::cout << "KNN: " << knn << std::endl;
   std::cout << "Max Allowed Difference: " << maxAllowedDifference << std::endl;
   std::cout << "Output: " << outputFilename << std::endl;
 
@@ -91,7 +97,7 @@ int main(int argc, char *argv[])
   // (after the first iteration that is not accepted automatically), the event loop quits.
   app.setQuitOnLastWindowClosed(false);
 
-  InteractiveInpaintingGMH(image, mask, patchHalfWidth, maxAllowedDifference);
+  InteractiveInpaintingGMH(image, mask, patchHalfWidth, knn, maxAllowedDifference);
 
   return app.exec();
 }
