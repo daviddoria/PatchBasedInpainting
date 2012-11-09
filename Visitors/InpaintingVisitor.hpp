@@ -211,7 +211,8 @@ public:
     // Mark this node as having been used as a source node.
     this->UsedNodesSet.insert(indexToFinish);
 
-    itk::ImageRegion<2> regionToFinishFull = ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, this->PatchHalfWidth);
+    itk::ImageRegion<2> regionToFinishFull =
+        ITKHelpers::GetRegionInRadiusAroundPixel(indexToFinish, this->PatchHalfWidth);
 
     // Copy this region so that we can change (crop) the regionToFinish and still have a copy of the original region
     itk::ImageRegion<2> regionToFinish = regionToFinishFull;
@@ -222,13 +223,16 @@ public:
     regionToFinish.Crop(this->FullRegion);
 
     itk::Index<2> sourceRegionCenter = ITKHelpers::CreateIndex(sourceNode);
-    itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceRegionCenter, this->PatchHalfWidth);
+    itk::ImageRegion<2> sourceRegion =
+        ITKHelpers::GetRegionInRadiusAroundPixel(sourceRegionCenter, this->PatchHalfWidth);
 
-    sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->MaskImage->GetLargestPossibleRegion(), regionToFinishFull);
+    sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, this->MaskImage->GetLargestPossibleRegion(),
+                                                    regionToFinishFull);
 
     // Mark all pixels that were copied (in the hole region of the source patch) as having been used.
     std::cout << "InpaintingVisitor::FinishVertex() mark pixels as used" << std::endl;
-    itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType> sourcePatchIterator(this->SourcePixelMapImage, sourceRegion);
+    itk::ImageRegionConstIteratorWithIndex<SourcePixelMapImageType> sourcePatchIterator(this->SourcePixelMapImage,
+                                                                                        sourceRegion);
     itk::ImageRegionConstIteratorWithIndex<Mask> targetPatchIterator(this->MaskImage, regionToFinish);
     while(!sourcePatchIterator.IsAtEnd())
     {
@@ -261,7 +265,8 @@ public:
 
     // Mark all the pixels in this region as filled in the mask.
     std::cout << "InpaintingVisitor::FinishVertex() fill the mask" << std::endl;
-    ITKHelpers::SetRegionToConstant(this->MaskImage, regionToFinish, this->MaskImage->GetValidValue());
+    ITKHelpers::SetRegionToConstant(this->MaskImage, regionToFinish,
+                                    this->MaskImage->GetValidValue());
 
     // Write an image of where the source and target patch were in this iteration.
 //    if(this->DebugImages && this->Image)

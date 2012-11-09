@@ -53,8 +53,8 @@ public:
 template <typename TImage>
 class DialogHandler : public DialogHandlerParent
 {
-  TImage* Image;
-  Mask* MaskImage;
+  const TImage* Image;
+  const Mask* MaskImage;
   unsigned int PatchHalfWidth;
   std::vector<Node> SourceNodes;
   Node QueryNode;
@@ -62,7 +62,8 @@ class DialogHandler : public DialogHandlerParent
   TopPatchesDialog<TImage>* TopPatchesChooser;
 
 public:
-  DialogHandler(TImage* image, Mask* mask, const unsigned int patchHalfWidth, QWidget* parent = nullptr) :
+  DialogHandler(const TImage* image, const Mask* mask, const unsigned int patchHalfWidth,
+                QWidget* parent = nullptr) :
     DialogHandlerParent(),
     Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
   {

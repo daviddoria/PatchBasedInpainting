@@ -24,7 +24,7 @@
 #include "Utilities/PatchHelpers.h"
 
 template <typename TImage>
-TopPatchesDialog<TImage>::TopPatchesDialog(TImage* const image, Mask* const mask,
+TopPatchesDialog<TImage>::TopPatchesDialog(const TImage* const image, const Mask* const mask,
                                            const unsigned int patchHalfWidth, QWidget* parent) :
   TopPatchesDialogParent(parent), Image(image), MaskImage(mask),
   ValidSelection(false), PatchHalfWidth(patchHalfWidth)
@@ -146,7 +146,7 @@ void TopPatchesDialog<TImage>::slot_SingleClicked(const QModelIndex& selected)
 }
 
 template <typename TImage>
-Node TopPatchesDialog<TImage>::GetSelectedNode()
+Node TopPatchesDialog<TImage>::GetSelectedNode() const
 {
   return this->SelectedNode;
 }
@@ -213,7 +213,6 @@ bool TopPatchesDialog<TImage>::IsSelectionValid() const
 template <typename TImage>
 void TopPatchesDialog<TImage>::on_btnSavePair_clicked()
 {
-#if 0
   // Save the query patch
   itk::Index<2> queryIndex = ITKHelpers::CreateIndex(QueryNode);
   itk::ImageRegion<2> queryRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, PatchHalfWidth);
@@ -225,7 +224,6 @@ void TopPatchesDialog<TImage>::on_btnSavePair_clicked()
   itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(Nodes[this->SelectedIndex.row()]);
   itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, PatchHalfWidth);
   ITKHelpers::WriteRegionAsRGBImage(this->Image, sourceRegion, "source.png");
-#endif
 }
 
 template <typename TImage>
@@ -242,7 +240,6 @@ template <typename TImage>
 void TopPatchesDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sourceRegionIn,
                                                  const itk::ImageRegion<2>& targetRegionIn)
 {
-#if 0
   std::cout << "TopPatchesDialog::slot_UpdateResult" << std::endl;
 
   // Crop the source region to look like the potentially cropped query region. We must do this before we crop the target region.
@@ -254,9 +251,9 @@ void TopPatchesDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sour
 
   QImage qimage(sourceRegion.GetSize()[0], sourceRegion.GetSize()[1], QImage::Format_RGB888);
 
-  itk::ImageRegionIterator<TImage> sourceIterator(this->Image, sourceRegion);
-  itk::ImageRegionIterator<TImage> targetIterator(this->Image, targetRegion);
-  itk::ImageRegionIterator<Mask> maskIterator(this->MaskImage, targetRegion);
+  itk::ImageRegionConstIterator<TImage> sourceIterator(this->Image, sourceRegion);
+  itk::ImageRegionConstIterator<TImage> targetIterator(this->Image, targetRegion);
+  itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, targetRegion);
 
   typename TImage::Pointer resultPatchImage = TImage::New();
   resultPatchImage->SetNumberOfComponentsPerPixel(this->Image->GetNumberOfComponentsPerPixel());
@@ -298,13 +295,11 @@ void TopPatchesDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sour
   gfxProposedPatch->fitInView(item);
 
   std::cout << "Leave TopPatchesDialog::slot_UpdateResult" << std::endl;
-#endif
 }
 
 template <typename TImage>
 void TopPatchesDialog<TImage>::DisplayPatchSelection(QModelIndex selected)
 {
-#if 0
   std::cout << "Leave TopPatchesDialog::DisplayPatchSelection" << std::endl;
   itk::Index<2> queryIndex = ITKHelpers::CreateIndex(this->QueryNode);
 
@@ -343,7 +338,7 @@ void TopPatchesDialog<TImage>::DisplayPatchSelection(QModelIndex selected)
   gfxSourcePatch->fitInView(this->SourcePatchItem);
 
   slot_UpdateResult(sourceRegion, queryRegion);
-#endif
+
   this->SelectedIndex = selected;
   std::cout << "Leave TopPatchesDialog::DisplayPatchSelection" << std::endl;
 }

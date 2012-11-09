@@ -10,8 +10,9 @@
 #include "ITKHelpers/ITKHelpers.h"
 
 template <typename TImage>
-ListModelPatches<TImage>::ListModelPatches(TImage* const image, const unsigned int patchHalfWidth, QObject * const parent) :
-    QAbstractListModel(parent), Image(image), RowHeight(50), PatchHalfWidth(patchHalfWidth)
+ListModelPatches<TImage>::ListModelPatches(const TImage* const image, const unsigned int patchHalfWidth,
+                                           QObject * const parent) :
+    QAbstractListModel(parent), Image(image), PatchHalfWidth(patchHalfWidth)
 {
 }
 

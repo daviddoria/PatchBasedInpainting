@@ -76,10 +76,10 @@ class TopPatchesDialog : public TopPatchesDialogParent
 {
 private:
   /** The image that will be displayed, and the from which the patches will be extracted before being displayed. */
-  TImage* Image;
+  const TImage* Image;
 
   /** The mask to use. */
-  Mask* MaskImage;
+  const Mask* MaskImage;
 
   /** The query node. */
   Node QueryNode;
@@ -127,7 +127,7 @@ private:
 
 public:
   /** Constructor */
-  TopPatchesDialog(TImage* const image, Mask* const mask,
+  TopPatchesDialog(const TImage* const image, const Mask* const mask,
                    const unsigned int patchHalfWidth, QWidget* parent = nullptr);
 
 //  /** Destructor. */
@@ -160,7 +160,7 @@ public:
   void on_btnSelectManually_clicked();
 
   /** Get the node that user selected. */
-  Node GetSelectedNode();
+  Node GetSelectedNode() const;
 
   /** The list of nodes to display. */
   std::vector<Node> Nodes;

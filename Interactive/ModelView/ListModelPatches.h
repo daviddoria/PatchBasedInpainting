@@ -37,7 +37,8 @@ template <typename TImage>
 class ListModelPatches : public QAbstractListModel
 {
 public:
-  ListModelPatches(TImage* const image, const unsigned int patchHalfWidth, QObject * const parent = 0);
+  ListModelPatches(const TImage* const image, const unsigned int patchHalfWidth,
+                   QObject * const parent = 0);
 
   int rowCount(const QModelIndex& parent) const;
   QVariant data(const QModelIndex& index, int role) const;
@@ -55,10 +56,11 @@ public:
   void SetRowHeight(const unsigned int rowHeight);
 
   void SetNumberOfTopPatchesToDisplay(const unsigned int);
+
 private:
 
   /** This is the image that the displayed patches are created from. */
-  TImage* Image;
+  const TImage* Image;
 
   /** This is an ordered list of the nodes at which to display the corresponding patches. */
   // std::vector<itk::Index<2> > Nodes;
@@ -70,7 +72,7 @@ private:
   /** The number of patches to display in the view. Originally this is determined by the length of the Regions vector, but it can be modified. */
   mutable unsigned int NumberOfTopPatchesToDisplay;
 
-  unsigned int RowHeight;
+  unsigned int RowHeight = 50;
 
   unsigned int PatchHalfWidth;
 };

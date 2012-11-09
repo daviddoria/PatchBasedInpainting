@@ -43,8 +43,8 @@ template <typename TImage>
 class VisualSelectionBest : public QObject
 {
 private:
-  TImage* Image;
-  Mask* MaskImage;
+  const TImage* Image;
+  const Mask* MaskImage;
   unsigned int PatchHalfWidth;
 
   DialogHandler<TImage>* TopPatchesDialogHandler;
@@ -55,10 +55,11 @@ private:
 public:
 
   /** Contructor. */
-  VisualSelectionBest(TImage* const image, Mask* const mask,
+  VisualSelectionBest(const TImage* const image, const Mask* const mask,
                       const unsigned int patchHalfWidth, QWidget* parent = nullptr) :
   Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
   {
+    // Create a DialogHandler and move it to the main GUI thread.
     this->TopPatchesDialogHandler =
         new DialogHandler<TImage>(this->Image, this->MaskImage, this->PatchHalfWidth, parent);
     this->TopPatchesDialogHandler->moveToThread(QCoreApplication::instance()->thread());

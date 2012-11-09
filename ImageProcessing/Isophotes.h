@@ -28,7 +28,7 @@ class Isophotes
 public:
   /** This is a helper function that is called by ComputeColorIsophotesInRegion. */
 template <typename TVectorImageType, typename TIsophoteImageType>
-static void ComputeColorIsophotesInRegion(const TVectorImageType* image, const Mask* const mask,
+static void ComputeColorIsophotesInRegion(const TVectorImageType* const image, const Mask* const mask,
                                           const itk::ImageRegion<2>& region , TIsophoteImageType* const isophotes);
 
 private:

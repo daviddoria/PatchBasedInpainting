@@ -48,7 +48,8 @@ class ManualPatchSelectionDialog : public ManualPatchSelectionDialogParent
 
 public:
   /** Constructor */
-  ManualPatchSelectionDialog(TImage* const image, Mask* const mask, const itk::ImageRegion<2>& targetRegion);
+  ManualPatchSelectionDialog(const TImage* const image, const Mask* const mask,
+                             const itk::ImageRegion<2>& targetRegion);
 
   /** Destructor */
   ~ManualPatchSelectionDialog();
@@ -87,10 +88,10 @@ private:
   void closeEvent(QCloseEvent*);
 
   /** The image that will be displayed, and from which the patches will be extracted before being displayed. */
-  TImage* Image;
+  const TImage* Image;
 
   /** The mask that will be used to mask the patches that are displayed. */
-  Mask* MaskImage;
+  const Mask* MaskImage;
   
   /** Setup the QGraphicScene objects. */
   void SetupScenes();

@@ -59,7 +59,7 @@
 #include "InteractorStyleImageWithDrag.h"
 
 template <typename TImage>
-ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(TImage* const image, Mask* const mask,
+ManualPatchSelectionDialog<TImage>::ManualPatchSelectionDialog(const TImage* const image, const Mask* const mask,
                                                                const itk::ImageRegion<2>& targetRegion)
 : Image(image), MaskImage(mask), TargetRegion(targetRegion)
 {
@@ -262,9 +262,9 @@ void ManualPatchSelectionDialog<TImage>::slot_UpdateResult(const itk::ImageRegio
       ITKHelpers::ScaleAllChannelsTo255(tempImage.GetPointer());
     }
 
-    itk::ImageRegionIterator<TImage> sourceIterator(tempImage, sourceRegion);
-    itk::ImageRegionIterator<TImage> targetIterator(tempImage, targetRegion);
-    itk::ImageRegionIterator<Mask> maskIterator(this->MaskImage, targetRegion);
+    itk::ImageRegionConstIterator<TImage> sourceIterator(tempImage, sourceRegion);
+    itk::ImageRegionConstIterator<TImage> targetIterator(tempImage, targetRegion);
+    itk::ImageRegionConstIterator<Mask> maskIterator(this->MaskImage, targetRegion);
 
     typename TImage::Pointer resultPatch = TImage::New();
     resultPatch->SetNumberOfComponentsPerPixel(Image->GetNumberOfComponentsPerPixel());
