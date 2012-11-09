@@ -35,9 +35,6 @@
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
 #include "Visitors/DescriptorVisitors/CompositeDescriptorVisitor.hpp"
 
-// Nearest neighbors visitor
-#include "Visitors/NearestNeighborsDisplayVisitor.hpp"
-
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchBest/Property.hpp"
 
@@ -49,6 +46,7 @@
 
 // Information visitors
 #include "Visitors/InformationVisitors/DisplayVisitor.hpp"
+#include "Visitors/InformationVisitors/PatchIndicatorVisitor.hpp"
 
 // Inpainting visitors
 #include "Visitors/InpaintingVisitor.hpp"
@@ -169,10 +167,15 @@ void ClassicalImageInpaintingBasicViewer(typename itk::SmartPointer<TImage> orig
   std::shared_ptr<DisplayVisitorType> displayVisitor(
         new DisplayVisitorType(originalImage, mask, patchHalfWidth));
 
+  typedef PatchIndicatorVisitor<VertexListGraphType, TImage> PatchIndicatorVisitorType;
+  std::shared_ptr<PatchIndicatorVisitorType> patchIndicatorVisitor(
+        new PatchIndicatorVisitorType(originalImage, mask, patchHalfWidth));
+
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
   std::shared_ptr<CompositeInpaintingVisitorType> compositeInpaintingVisitor(new CompositeInpaintingVisitorType);
   compositeInpaintingVisitor->AddVisitor(inpaintingVisitor);
   compositeInpaintingVisitor->AddVisitor(displayVisitor);
+  compositeInpaintingVisitor->AddVisitor(patchIndicatorVisitor);
 
   InitializePriority(mask, boundaryNodeQueue.get(), priorityFunction.get());
 

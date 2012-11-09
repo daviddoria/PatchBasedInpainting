@@ -23,16 +23,19 @@
 
 // Custom
 #include "Visitors/InpaintingVisitorParent.h"
-#include "Mask/Mask.h"
-#include "ITKHelpers/ITKHelpers.h"
-#include "BoostHelpers/BoostHelpers.h"
+
+// Submodules
+#include <Mask/Mask.h>
+#include <Mask/MaskOperations.h>
+#include <ITKHelpers/ITKHelpers.h>
 
 // ITK
 #include "itkImage.h"
 #include "itkImageRegion.h"
 
 /**
-  * This visitor writes out information and images at each iteration.
+  * This visitor writes the inpainted image thus far and outlines the source and target
+  * patches to indicat their position at each iteration.
  */
 template <typename TGraph, typename TImage>
 struct PatchIndicatorVisitor : public InpaintingVisitorParent<TGraph>
@@ -55,12 +58,15 @@ struct PatchIndicatorVisitor : public InpaintingVisitorParent<TGraph>
 
   void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode) override
   {
-    itk::ImageRegion<2> fullRegion = this->Image->GetLargestPossibleRegion;
+    itk::Index<2> targetPixel = ITKHelpers::CreateIndex(targetNode);
+    itk::Index<2> sourcePixel = ITKHelpers::CreateIndex(sourceNode);
+
+    itk::ImageRegion<2> fullRegion = this->Image->GetLargestPossibleRegion();
 
     itk::ImageRegion<2> fullTargetRegion =
-        ITKHelpers::GetRegionInRadiusAroundPixel(targetNode, this->PatchHalfWidth);
+        ITKHelpers::GetRegionInRadiusAroundPixel(targetPixel, this->PatchHalfWidth);
     itk::ImageRegion<2> fullSourceRegion =
-        ITKHelpers::GetRegionInRadiusAroundPixel(sourceNode, this->PatchHalfWidth);
+        ITKHelpers::GetRegionInRadiusAroundPixel(sourcePixel, this->PatchHalfWidth);
 
     // Ensure that the source patch will match the target patch after it is cropped (this must be done before cropping the target region)
     itk::ImageRegion<2> sourceRegion = ITKHelpers::CropRegionAtPosition(fullSourceRegion,
@@ -75,7 +81,8 @@ struct PatchIndicatorVisitor : public InpaintingVisitorParent<TGraph>
     rgbImage->SetRegions(this->Image->GetLargestPossibleRegion());
     rgbImage->Allocate();
 
-    ITKHelpers::VectorImageToRGBImage(this->Image, rgbImage.GetPointer());
+//    ITKHelpers::VectorImageToRGBImage(this->Image, rgbImage.GetPointer());
+    ITKHelpers::ConvertTo3Channel(this->Image, rgbImage.GetPointer());
 
     RGBImageType::PixelType sourceColor; // green
     sourceColor[0] = 0;
@@ -95,7 +102,7 @@ struct PatchIndicatorVisitor : public InpaintingVisitorParent<TGraph>
     ITKHelpers::OutlineRegion(rgbImage.GetPointer(), sourceRegion, sourceColor);
     ITKHelpers::OutlineRegion(rgbImage.GetPointer(), targetRegion, targetColor);
 
-    MaskOperations::WriteMaskedRegionPNG(rgbImage.GetPointer, this->MaskImage, rgbImage->GetLargestPossibleRegion(),
+    MaskOperations::WriteMaskedRegionPNG(rgbImage.GetPointer(), this->MaskImage, rgbImage->GetLargestPossibleRegion(),
                                          Helpers::GetSequentialFileName("PatchIndicator",
                                                                         this->NumberOfFinishedVertices, "png"),
                                          holeColor);
