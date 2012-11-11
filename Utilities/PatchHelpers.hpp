@@ -360,8 +360,10 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
 
 
 template <typename TIterator, typename TImage, typename TPropertyMap>
-void WriteTopPatchesGrid(TImage* const image, TPropertyMap propertyMap, const TIterator first, const TIterator last,
-                         const std::string& prefix, const unsigned int iteration, unsigned int gridWidth, unsigned int gridHeight)
+void WriteTopPatchesGrid(const TImage* const image, TPropertyMap propertyMap,
+                         const TIterator first, const TIterator last,
+                         const std::string& prefix, const unsigned int iteration,
+                         unsigned int gridWidth, unsigned int gridHeight)
 {
   // 'iterations' is only used for the file name to write
   // Note that not all patches may be written (only the first ones that fit in the grid)

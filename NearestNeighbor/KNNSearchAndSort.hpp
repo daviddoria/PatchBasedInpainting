@@ -19,6 +19,12 @@
 #ifndef KNNSearchAndSort_HPP
 #define KNNSearchAndSort_HPP
 
+// Submodules
+#include <Utilities/Debug/Debug.h>
+
+// Custom
+#include <Utilities/PatchHelpers.h>
+
 // STL
 #include <memory>
 
@@ -29,16 +35,20 @@
   * \tparam PropertyMapType The type of the property map containing the values to compare.
   * \tparam DistanceFunctionType The functor type to compute the distance measure between two items in the PropertyMap.
   */
-template <typename SearchType, typename SortType>
-class KNNSearchAndSort
+template <typename SearchType, typename SortType, typename TImage>
+class KNNSearchAndSort : public Debug
 {
 private:
   std::shared_ptr<SearchType> Searcher;
   std::shared_ptr<SortType> Sorter;
 
+  const TImage* Image;
+
 public:
-  KNNSearchAndSort(std::shared_ptr<SearchType> searcher, std::shared_ptr<SortType> sorter) :
-    Searcher(searcher), Sorter(sorter)
+  KNNSearchAndSort(std::shared_ptr<SearchType> searcher,
+                   std::shared_ptr<SortType> sorter,
+                   const TImage* image = nullptr) :
+    Searcher(searcher), Sorter(sorter), Image(image)
   {
   }
 
@@ -63,8 +73,28 @@ public:
     // Perform the KNN search
     (*this->Searcher)(first, last, queryNode, knnContainer.begin());
 
+    if(this->DebugImages)
+    {
+      unsigned int gridSize = 10;
+      PatchHelpers::WriteTopPatchesGrid(this->Image, *(this->Searcher->GetPropertyMap()),
+                                        knnContainer.begin(), knnContainer.end(),
+                                        "BestPatches", this->DebugIteration, gridSize, gridSize);
+    }
+
     // Sort the KNNs
-    return (*this->Sorter)(knnContainer.begin(), knnContainer.end(), queryNode, outputFirst);
+    TOutputIterator bestPatch = (*this->Sorter)(knnContainer.begin(), knnContainer.end(), queryNode, outputFirst);
+
+    if(this->DebugImages)
+    {
+      unsigned int gridSize = 10;
+      PatchHelpers::WriteTopPatchesGrid(this->Image, *(this->Searcher->GetPropertyMap()),
+                                        knnContainer.begin(), knnContainer.end(),
+                                        "BestPatchSorted", this->DebugIteration, gridSize, gridSize);
+    }
+
+    this->IncrementDebugIteration();
+
+    return bestPatch;
   }
 
   /** Get the number of elements that will be returned. */

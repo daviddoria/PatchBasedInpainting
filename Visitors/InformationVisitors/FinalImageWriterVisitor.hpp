@@ -16,7 +16,7 @@
  *
  *=========================================================================*/
 
-#ifndef FinalImageWriterVisotor_HPP
+#ifndef FinalImageWriterVisitor_HPP
 #define FinalImageWriterVisitor_HPP
 
 #include <boost/graph/graph_traits.hpp>

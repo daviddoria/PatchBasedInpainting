@@ -21,6 +21,8 @@
 
 #include <Utilities/PatchHelpers.h>
 
+/** Write the N top patches (defined by the size of the grid passed to the WriteTopPatchesGrid function)
+  * and then return the best patch according to a distance function. */
 template <typename TPatchDescriptorPropertyMap, typename TImage, typename TDistanceFunction>
 class LinearSearchBestFirstAndWrite
 {
@@ -29,14 +31,15 @@ class LinearSearchBestFirstAndWrite
   Mask* MaskImage;
   TDistanceFunction DistanceFunction;
 
-  unsigned int Iteration;
+  unsigned int Iteration = 0;
 
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
   LinearSearchBestFirstAndWrite(TPatchDescriptorPropertyMap patchDescriptorPropertyMap,
                                 TImage* const image, Mask* const mask,
                                 TDistanceFunction distanceFunction = TDistanceFunction()) :
-    PatchDescriptorPropertyMap(patchDescriptorPropertyMap), Image(image), MaskImage(mask), DistanceFunction(distanceFunction), Iteration(0)
+    PatchDescriptorPropertyMap(patchDescriptorPropertyMap), Image(image),
+    MaskImage(mask), DistanceFunction(distanceFunction)
   {}
 
   /**
@@ -62,11 +65,13 @@ public:
 //    PatchHelpers::WriteTopPatches(this->Image, this->PatchDescriptorPropertyMap, first, last,
 //                                  "BestPatches", this->Iteration);
 
-    PatchHelpers::WriteTopPatchesGrid(this->Image, this->PatchDescriptorPropertyMap, first, last,
-                                  "BestPatches", this->Iteration, 10, 10);
+    PatchHelpers::WriteTopPatchesGrid(this->Image, this->PatchDescriptorPropertyMap,
+                                      first, last,
+                                     "BestPatches", this->Iteration, 10, 10);
 
     std::ofstream fout(Helpers::GetSequentialFileName("Scores", this->Iteration, "txt", 3).c_str());
 
+    // Find the best patch according to DistanceFunction
     for(TIterator current = first; current != last; ++current)
     {
       unsigned int patchId = current - first;
@@ -78,17 +83,17 @@ public:
 
 //      typename TIterator::value_type source = get(this->PropertyMap, *current);
 //      typename TIterator::value_type target = get(this->PropertyMap, query);
-      float d = DistanceFunction(source, target); // (source, target) (the query node is the target node)
+      float d = this->DistanceFunction(source, target); // (source, target) (the query node is the target node)
 
-//      float d = DistanceFunction(get(this->PropertyMap, *current), get(this->PropertyMap, query)); // (source, target) (the query node is the target node)
+//      float d = this->DistanceFunction(get(this->PropertyMap, *current), get(this->PropertyMap, query)); // (source, target) (the query node is the target node)
 
 
-      if(d < 0)
-      {
-        std::stringstream ss;
-        ss << "LinearSearchBestFirstAndWrite: DistanceFunction returned a negative value!";
-        throw std::runtime_error(ss.str());
-      }
+//      if(d < 0)
+//      {
+//        std::stringstream ss;
+//        ss << "LinearSearchBestFirstAndWrite: DistanceFunction returned a negative value!";
+//        throw std::runtime_error(ss.str());
+//      }
       fout << Helpers::ZeroPad(patchId, 3) << ": " << d << std::endl;
     }
 

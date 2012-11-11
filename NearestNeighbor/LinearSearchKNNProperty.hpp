@@ -54,6 +54,11 @@ public:
   {
   }
 
+  std::shared_ptr<PropertyMapType> GetPropertyMap() const
+  {
+    return this->PropertyMap;
+  }
+
   /** Set the number of nearest neighbors to return. */
   void SetK(const unsigned int k)
   {
@@ -141,30 +146,30 @@ public:
 //    std::cout << "There are " << outputQueue.size() << " items in the queue." << std::endl;
 
     // Check if any of the top K matches are infinity (indicating they were invalid for some reason)
-    {
-      auto hasInvalidValue = [] (PriorityQueueType q)
-      {
-        while(!q.empty())
-        {
-          if(q.top().first == std::numeric_limits<float>::infinity() ||
-             q.top().first == std::numeric_limits<float>::max())
-          {
-            return true;
-          }
-          q.pop();
-        }
+//    {
+//      auto hasInvalidValue = [] (PriorityQueueType q)
+//      {
+//        while(!q.empty())
+//        {
+//          if(q.top().first == std::numeric_limits<float>::infinity() ||
+//             q.top().first == std::numeric_limits<float>::max())
+//          {
+//            return true;
+//          }
+//          q.pop();
+//        }
 
-        return false;
-      };
+//        return false;
+//      };
 
-      assert(!hasInvalidValue(outputQueue));
-      if(hasInvalidValue(outputQueue))
-      {
-        std::stringstream ss;
-        ss << "LinearSearchKNNProperty::operator(): One of the matches had an invalid score!";
-        throw std::runtime_error(ss.str());
-      }
-    }
+//      assert(!hasInvalidValue(outputQueue));
+//      if(hasInvalidValue(outputQueue))
+//      {
+//        std::stringstream ss;
+//        ss << "LinearSearchKNNProperty::operator(): One of the matches had an invalid score!";
+//        throw std::runtime_error(ss.str());
+//      }
+//    }
 
     if(outputQueue.size() < this->K)
     {

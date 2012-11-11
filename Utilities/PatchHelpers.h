@@ -73,7 +73,7 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
 /** Write an image of the patches in the container described by the iterators. The patches are laid out in a grid -
   * left to right, top to bottom. */
 template <typename TIterator, typename TImage, typename TPropertyMap>
-void WriteTopPatchesGrid(TImage* const image, TPropertyMap propertyMap, const TIterator first,
+void WriteTopPatchesGrid(const TImage* const image, TPropertyMap propertyMap, const TIterator first,
                          const TIterator last, const std::string& prefix, const unsigned int iteration,
                          unsigned int gridWidth, unsigned int gridHeight);
 

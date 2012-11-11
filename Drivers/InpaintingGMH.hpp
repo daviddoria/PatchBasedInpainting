@@ -220,8 +220,9 @@ void InpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   std::shared_ptr<NeighborSortType> neighborSortType(
         new NeighborSortType(*imagePatchDescriptorMap, slightlyBlurredImage.GetPointer(), mask, numberOfBinsPerChannel));
 
-  typedef KNNSearchAndSort<KNNSearchType, NeighborSortType> SearchAndSortType;
-  std::shared_ptr<SearchAndSortType> searchAndSort(new SearchAndSortType(knnSearch, neighborSortType));
+  typedef KNNSearchAndSort<KNNSearchType, NeighborSortType, TImage> SearchAndSortType;
+  std::shared_ptr<SearchAndSortType> searchAndSort(
+        new SearchAndSortType(knnSearch, neighborSortType, originalImage));
 
   typedef KNNBestWrapper<SearchAndSortType, BestSearchType> KNNBestWrapperType;
   std::shared_ptr<KNNBestWrapperType> knnBestWrapper(new KNNBestWrapperType(searchAndSort, bestSearch));
