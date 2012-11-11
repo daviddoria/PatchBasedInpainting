@@ -58,6 +58,7 @@
 
 // Information visitors
 #include "Visitors/InformationVisitors/DisplayVisitor.hpp"
+#include "Visitors/InformationVisitors/FinalImageWriterVisitor.hpp"
 
 // Inpainting visitors
 #include "Visitors/InpaintingVisitor.hpp"
@@ -106,7 +107,7 @@ template <typename TImage>
 void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
                               Mask::Pointer mask, const unsigned int patchHalfWidth,
                               const unsigned int knn,
-                              const float maxAllowedDifference)
+                              const float maxAllowedDifference, const std::string& outputFileName)
 {
   // Get the region so that we can reference it without referring to a particular image
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
@@ -225,10 +226,16 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   std::shared_ptr<DisplayVisitorType> displayVisitor(
         new DisplayVisitorType(originalImage, mask, patchHalfWidth));
 
+  typedef FinalImageWriterVisitor<VertexListGraphType, TImage> FinalImageWriterVisitorType;
+  std::shared_ptr<FinalImageWriterVisitorType> finalImageWriterVisitor(
+        new FinalImageWriterVisitorType(originalImage, outputFileName));
+
+
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
   std::shared_ptr<CompositeInpaintingVisitorType> compositeInpaintingVisitor(new CompositeInpaintingVisitorType);
   compositeInpaintingVisitor->AddVisitor(inpaintingVisitor);
   compositeInpaintingVisitor->AddVisitor(displayVisitor);
+  compositeInpaintingVisitor->AddVisitor(finalImageWriterVisitor);
 
   InitializePriority(mask, boundaryNodeQueue.get(), priorityFunction.get());
 

@@ -50,10 +50,10 @@ int main(int argc, char *argv[])
   unsigned int patchHalfWidth = 0;
   ssPatchRadius >> patchHalfWidth;
 
-  std::stringstream ssMaxAllowedDifference;
-  ssMaxAllowedDifference << argv[4];
-  float maxAllowedDifference = 0.0f;
-  ssMaxAllowedDifference >> maxAllowedDifference;
+  std::stringstream ssKNN;
+  ssKNN << argv[4];
+  unsigned int knn = 0;
+  ssKNN >> knn;
 
   std::string outputFileName = argv[5];
 
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
   std::cout << "Reading image: " << imageFilename << std::endl;
   std::cout << "Reading mask: " << maskFilename << std::endl;
   std::cout << "Patch half width: " << patchHalfWidth << std::endl;
-  std::cout << "Max Allowed Difference: " << maxAllowedDifference << std::endl;
+  std::cout << "KNN: " << knn << std::endl;
   std::cout << "Output: " << outputFileName << std::endl;
 
   typedef itk::Image<itk::CovariantVector<float, 3>, 2> ImageType;
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
 
-  InpaintingGMH(image, mask, patchHalfWidth, maxAllowedDifference);
+  InpaintingGMH(image, mask, patchHalfWidth, knn);
 
   // If the output filename is a png file, then use the RGBImage writer so that it is first
   // casted to unsigned char. Otherwise, write the file directly.

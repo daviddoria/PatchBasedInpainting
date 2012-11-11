@@ -97,7 +97,11 @@ int main(int argc, char *argv[])
   // (after the first iteration that is not accepted automatically), the event loop quits.
   app.setQuitOnLastWindowClosed(false);
 
-  InteractiveInpaintingGMH(image, mask, patchHalfWidth, knn, maxAllowedDifference);
+  InteractiveInpaintingGMH(image, mask, patchHalfWidth, knn,
+                           maxAllowedDifference, outputFilename);
+
+  // Can't do anything here like write the output image because we get to app.exec() at the very beginning
+  // of the algorithm because it is running in a different thread.
 
   return app.exec();
 }

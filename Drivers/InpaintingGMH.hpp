@@ -98,7 +98,7 @@
 template <typename TImage>
 void InpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
                    Mask::Pointer mask, const unsigned int patchHalfWidth,
-                   const float maxAllowedDifference)
+                   const unsigned int knn)
 {
   // Get the region so that we can reference it without referring to a particular image
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
@@ -206,8 +206,8 @@ void InpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   // Create the nearest neighbor finders
   typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
                                   ImagePatchDifferenceType > KNNSearchType;
-  unsigned int numberOfKNN = 100;
-  std::shared_ptr<KNNSearchType> knnSearch(new KNNSearchType(imagePatchDescriptorMap, numberOfKNN));
+
+  std::shared_ptr<KNNSearchType> knnSearch(new KNNSearchType(imagePatchDescriptorMap, knn));
 
   // Since we are using a KNNSearchAndSort, we just have to return the top patch after the sort,
   // so we use this trival Best searcher.

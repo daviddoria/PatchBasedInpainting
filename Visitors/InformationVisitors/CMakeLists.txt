@@ -4,5 +4,7 @@ DisplayVisitor.hpp
 PatchIndicatorVisitor.hpp
 FillOrderLoggerVisitor.hpp
 IterationWriterVisitor.hpp
-LoggerVisitor.hpp)
+LoggerVisitor.hpp
+FinalImageWriterVisitor.hpp
+)
 
