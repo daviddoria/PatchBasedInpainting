@@ -16,14 +16,18 @@
  *
  *=========================================================================*/
 
-#ifndef ClassicalImageInpainting_HPP
-#define ClassicalImageInpainting_HPP
+#ifndef ClassicalImageInpaintingDebug_HPP
+#define ClassicalImageInpaintingDebug_HPP
 
 // Custom
 #include "Utilities/IndirectPriorityQueue.h"
 
 // STL
 #include <memory>
+
+// Information visitors
+#include "Visitors/InformationVisitors/PatchIndicatorVisitor.hpp"
+#include "Visitors/InformationVisitors/IterationWriterVisitor.hpp"
 
 // Submodules
 #include <Helpers/Helpers.h>
@@ -37,10 +41,13 @@
 // Inpainting visitors
 #include "Visitors/InpaintingVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
+#include "Visitors/CompositeInpaintingVisitor.hpp"
 
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchBest/Property.hpp"
 #include "NearestNeighbor/LinearSearchBest/FirstAndWrite.hpp"
+#include "NearestNeighbor/LinearSearchKNNProperty.hpp"
+#include "NearestNeighbor/KNNBestWrapper.hpp"
 
 // Initializers
 #include "Initializers/InitializeFromMaskImage.hpp"
@@ -52,6 +59,7 @@
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
 #include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
 
 // Utilities
@@ -70,8 +78,9 @@
 #include <boost/property_map/property_map.hpp>
 
 template <typename TImage>
-void ClassicalImageInpainting(typename itk::SmartPointer<TImage> originalImage, Mask* const mask,
-                              const unsigned int patchHalfWidth)
+void ClassicalImageInpaintingDebug(typename itk::SmartPointer<TImage> originalImage,
+                                   Mask* const mask,
+                                   const unsigned int patchHalfWidth)
 {
   itk::ImageRegion<2> fullRegion = originalImage->GetLargestPossibleRegion();
 
@@ -145,6 +154,20 @@ void ClassicalImageInpainting(typename itk::SmartPointer<TImage> originalImage, 
   inpaintingVisitor->SetAllowNewPatches(false);
 //  inpaintingVisitor.SetDebugImages(true); // Write PatchesCopied images that show the source and target patch at each iteration
 
+  typedef PatchIndicatorVisitor<VertexListGraphType, TImage> PatchIndicatorVisitorType;
+  PatchIndicatorVisitorType patchIndicatorVisitor(originalImage, mask, patchHalfWidth);
+
+  typedef IterationWriterVisitor <VertexListGraphType, TImage> IterationWriterVisitorType;
+  IterationWriterVisitorType iterationWriterVisitor(originalImage, mask);
+
+  // Create the composite inpainting visitor
+  typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
+  std::shared_ptr<CompositeInpaintingVisitorType> compositeInpaintingVisitor(
+        new CompositeInpaintingVisitorType);
+  compositeInpaintingVisitor->AddVisitor(inpaintingVisitor);
+  compositeInpaintingVisitor->AddVisitor(&patchIndicatorVisitor);
+  compositeInpaintingVisitor->AddVisitor(&iterationWriterVisitor);
+
   InitializePriority(mask, boundaryNodeQueue.get(), priorityFunction.get());
 
   // Initialize the boundary node queue from the user provided mask image.
@@ -154,24 +177,42 @@ void ClassicalImageInpainting(typename itk::SmartPointer<TImage> originalImage, 
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
       SumSquaredPixelDifference<typename TImage::PixelType> > PatchDifferenceType;
 
-  // Do not write top patches
+  // Do not write top patch grid at each iteration
 //  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
 //                                   PatchDifferenceType> BestSearchType;
 //  std::shared_ptr<BestSearchType> linearSearchBest(new BestSearchType(*imagePatchDescriptorMap));
+
+  // Write top patch grid at each iteration. To do this, we need a KNNSearcher
+  // to pass a list of valid patches to the FirstAndWrite class.
+  typedef LinearSearchKNNProperty<ImagePatchDescriptorMapType,
+                                  PatchDifferenceType > KNNSearchType;
+
+  unsigned int knn = 100;
+  std::shared_ptr<KNNSearchType> knnSearch(new KNNSearchType(imagePatchDescriptorMap, knn));
 
   typedef LinearSearchBestFirstAndWrite<ImagePatchDescriptorMapType, TImage,
                                    PatchDifferenceType> BestSearchType;
   std::shared_ptr<BestSearchType> linearSearchBest(
         new BestSearchType(*imagePatchDescriptorMap, originalImage, mask));
 
+  typedef KNNBestWrapper<KNNSearchType, BestSearchType> KNNWrapperType;
+  std::shared_ptr<KNNWrapperType> knnWrapper(new KNNWrapperType(knnSearch,
+                                                                linearSearchBest));
+
   // Perform the inpainting
 //  InpaintingAlgorithm(graph, inpaintingVisitor, boundaryNodeQueue,
 //                      linearSearchBest, inpainter);
 
-  InpaintingAlgorithm<VertexListGraphType, InpaintingVisitorType,
-                      BoundaryNodeQueueType, BestSearchType,
-                      CompositePatchInpainter>(graph, inpaintingVisitor, boundaryNodeQueue,
-                      linearSearchBest, inpainter);
+//  InpaintingAlgorithm<VertexListGraphType, InpaintingVisitorType,
+//                      BoundaryNodeQueueType, BestSearchType,
+//                      CompositePatchInpainter>(graph, inpaintingVisitor, boundaryNodeQueue,
+//                      linearSearchBest, inpainter);
+
+  InpaintingAlgorithm<VertexListGraphType, CompositeInpaintingVisitorType,
+                      BoundaryNodeQueueType, KNNWrapperType,
+                      CompositePatchInpainter>(graph, compositeInpaintingVisitor,
+                                               boundaryNodeQueue,
+                                               knnWrapper, inpainter);
 
 }
 

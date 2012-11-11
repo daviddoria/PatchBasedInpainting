@@ -54,8 +54,7 @@ struct LinearSearchBestProperty : public Debug
     *         the elements in the range with respect to the distance metric).
     */
   template <typename TIterator>
-  typename TIterator::value_type operator()(TIterator first, TIterator last,
-                                            typename TIterator::value_type query)
+  typename TIterator::value_type operator()(TIterator first, TIterator last, typename TIterator::value_type query)
   {
     // If the input element range is empty, there is nothing to do.
     if(first == last)
@@ -85,39 +84,19 @@ struct LinearSearchBestProperty : public Debug
           queryPatch.GetImage()->GetPixel(queryPatch.GetCorner() + currentOffset);
     }
 
-    // Extract the valid patches so this check does not have to be done inside the DistanceFunction call in the main loop below.
-    typedef std::vector<PatchType> PatchContainer;
-    typedef std::vector<typename TIterator::value_type> IteratorContainer;
-    IteratorContainer validSourceIterators;
-
-    PatchContainer validSourcePatches;
+    // Iterate through all of the input elements
+    #pragma omp parallel for
+//    for(TIterator current = first; current != last; ++current)
     for(TIterator current = first; current < last; ++current)
     {
-      PatchType currentPatch = get(this->PropertyMap, *current);
-      if(currentPatch.GetStatus() == PatchType::SOURCE_NODE)
-      {
-        validSourceIterators.push_back(*current);
-        validSourcePatches.push_back(currentPatch);
-      }
-    }
-
-    // Iterate through all of the input elements
-    std::cout << "Start search..." << std::endl;
-    typename TIterator::value_type result = *last; // initialize to prevent "possibly used uninitialized" warning
-
-    #pragma omp parallel for
-//    for(TIterator current = first; current != last; ++current) // OpenMP 3 doesn't allow != in a parallelized loop
-    for(typename PatchContainer::const_iterator current = validSourcePatches.begin();
-        current < validSourcePatches.end(); ++current)
-    {
       //DistanceValueType d = DistanceFunction(*first, query);
-      float d = this->PatchDistanceFunction(*current, queryPatch, targetPixels);
+      float d = this->DistanceFunction(get(this->PropertyMap, *current), queryPatch, targetPixels);
 
       #pragma omp critical // There are weird crashes without this guard
       if(d < d_best)
       {
         d_best = d;
-        result = validSourceIterators[current - validSourcePatches.begin()];
+        result = current;
       }
     }
 

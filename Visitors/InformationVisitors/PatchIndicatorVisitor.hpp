@@ -43,15 +43,18 @@ struct PatchIndicatorVisitor : public InpaintingVisitorParent<TGraph>
   const TImage* Image;
   const Mask* MaskImage;
 
+  std::string Prefix;
+
   const unsigned int PatchHalfWidth;
   unsigned int NumberOfFinishedVertices = 0;
 
   typedef typename boost::graph_traits<TGraph>::vertex_descriptor VertexDescriptorType;
   
-  PatchIndicatorVisitor(const TImage* const image, const Mask* const mask, const unsigned int patchHalfWidth,
+  PatchIndicatorVisitor(const TImage* const image, const Mask* const mask,
+                        const unsigned int patchHalfWidth, const std::string& prefix = "PatchIndicator",
                         const std::string& visitorName = "PatchIndicatorVisitor") :
   InpaintingVisitorParent<TGraph>(visitorName),
-  Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
+  Image(image), MaskImage(mask), Prefix(prefix), PatchHalfWidth(patchHalfWidth)
   {
 
   }
@@ -102,10 +105,14 @@ struct PatchIndicatorVisitor : public InpaintingVisitorParent<TGraph>
     ITKHelpers::OutlineRegion(rgbImage.GetPointer(), sourceRegion, sourceColor);
     ITKHelpers::OutlineRegion(rgbImage.GetPointer(), targetRegion, targetColor);
 
-    MaskOperations::WriteMaskedRegionPNG(rgbImage.GetPointer(), this->MaskImage, rgbImage->GetLargestPossibleRegion(),
-                                         Helpers::GetSequentialFileName("PatchIndicator",
-                                                                        this->NumberOfFinishedVertices, "png"),
-                                         holeColor);
+    ITKHelpers::WriteRGBImage(rgbImage.GetPointer(),
+                              Helpers::GetSequentialFileName(this->Prefix,
+                                                             this->NumberOfFinishedVertices, "png"));
+
+//    MaskOperations::WriteMaskedRegionPNG(rgbImage.GetPointer(), this->MaskImage, rgbImage->GetLargestPossibleRegion(),
+//                                         Helpers::GetSequentialFileName(this->Prefix,
+//                                                                        this->NumberOfFinishedVertices, "png"),
+//                                         holeColor);
 
 
     this->NumberOfFinishedVertices++;

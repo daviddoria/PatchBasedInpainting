@@ -21,9 +21,15 @@
 
 #include <Utilities/PatchHelpers.h>
 
-/** Write the N top patches (defined by the size of the grid passed to the WriteTopPatchesGrid function)
-  * and then return the best patch according to a distance function. */
-template <typename TPatchDescriptorPropertyMap, typename TImage, typename TDistanceFunction>
+/** Write the N top patches (defined by the size of the grid passed to the
+  * WriteTopPatchesGrid function)
+  * and then return the best patch according to a distance function.
+  * Note that this probably doesn't make sense if this is the only searcher used
+  * because the top patches in the entire list are usually invalid (as they are
+  * outside the image). Typically we would use this on the output of a KNNSearcher.
+  */
+template <typename TPatchDescriptorPropertyMap, typename TImage,
+          typename TDistanceFunction>
 class LinearSearchBestFirstAndWrite
 {
   TPatchDescriptorPropertyMap PatchDescriptorPropertyMap;
@@ -65,43 +71,19 @@ public:
 //    PatchHelpers::WriteTopPatches(this->Image, this->PatchDescriptorPropertyMap, first, last,
 //                                  "BestPatches", this->Iteration);
 
+    unsigned int gridSize = 10;
     PatchHelpers::WriteTopPatchesGrid(this->Image, this->PatchDescriptorPropertyMap,
                                       first, last,
-                                     "BestPatches", this->Iteration, 10, 10);
+                                     "BestPatches", this->Iteration, gridSize, gridSize);
 
-    std::ofstream fout(Helpers::GetSequentialFileName("Scores", this->Iteration, "txt", 3).c_str());
+    LinearSearchBestProperty<TPatchDescriptorPropertyMap, TDistanceFunction>
+        linearSearcher(this->PatchDescriptorPropertyMap);
 
-    // Find the best patch according to DistanceFunction
-    for(TIterator current = first; current != last; ++current)
-    {
-      unsigned int patchId = current - first;
-      typename TIterator::value_type sourceNode = *current;
-      typename TIterator::value_type targetNode = query;
-
-      typename TPatchDescriptorPropertyMap::value_type source = get(this->PatchDescriptorPropertyMap, sourceNode);
-      typename TPatchDescriptorPropertyMap::value_type target = get(this->PatchDescriptorPropertyMap, targetNode);
-
-//      typename TIterator::value_type source = get(this->PropertyMap, *current);
-//      typename TIterator::value_type target = get(this->PropertyMap, query);
-      float d = this->DistanceFunction(source, target); // (source, target) (the query node is the target node)
-
-//      float d = this->DistanceFunction(get(this->PropertyMap, *current), get(this->PropertyMap, query)); // (source, target) (the query node is the target node)
-
-
-//      if(d < 0)
-//      {
-//        std::stringstream ss;
-//        ss << "LinearSearchBestFirstAndWrite: DistanceFunction returned a negative value!";
-//        throw std::runtime_error(ss.str());
-//      }
-      fout << Helpers::ZeroPad(patchId, 3) << ": " << d << std::endl;
-    }
-
-    fout.close();
+    typename TIterator::value_type bestPatch = linearSearcher(first, last, query);
 
     this->Iteration++;
 
-    return *first;
+    return bestPatch;
   }
 
 }; // end class

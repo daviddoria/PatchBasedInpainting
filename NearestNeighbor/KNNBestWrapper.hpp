@@ -23,7 +23,8 @@
 #include <memory>
 
 /**
-  * This class uses a KNN finder followed by a Best finder on the output of the KNNFinder.
+  * This class uses a KNN finder followed by a Best finder on the output of
+  * the KNNFinder.
   * \tparam KNNFinderType A KNN searcher
   * \tparam BestFinderType A Best search
   */

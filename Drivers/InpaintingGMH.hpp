@@ -63,7 +63,6 @@
 #include "Visitors/InpaintingVisitor.hpp"
 #include "Visitors/ReplayVisitor.hpp"
 #include "Visitors/InformationVisitors/LoggerVisitor.hpp"
-#include "Visitors/CompositeInpaintingVisitor.hpp"
 #include "Visitors/InformationVisitors/DebugVisitor.hpp"
 
 // Nearest neighbors
@@ -223,6 +222,7 @@ void InpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   typedef KNNSearchAndSort<KNNSearchType, NeighborSortType, TImage> SearchAndSortType;
   std::shared_ptr<SearchAndSortType> searchAndSort(
         new SearchAndSortType(knnSearch, neighborSortType, originalImage));
+  searchAndSort->SetDebugImages(true); // Write top patch grids before and after sorting at every iteration
 
   typedef KNNBestWrapper<SearchAndSortType, BestSearchType> KNNBestWrapperType;
   std::shared_ptr<KNNBestWrapperType> knnBestWrapper(new KNNBestWrapperType(searchAndSort, bestSearch));

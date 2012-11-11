@@ -39,6 +39,9 @@
 template <typename TGraph, typename TImage>
 struct IterationWriterVisitor : public InpaintingVisitorParent<TGraph>
 {
+  typedef InpaintingVisitorParent<TGraph> Superclass;
+  typedef typename Superclass::VertexDescriptorType VertexDescriptorType;
+
   /** The image to write at every iteration. */
   const TImage* Image;
 
@@ -48,24 +51,35 @@ struct IterationWriterVisitor : public InpaintingVisitorParent<TGraph>
   /** A counter used to name output files. */
   unsigned int NumberOfFinishedVertices = 0;
 
+  std::string Prefix;
+
   IterationWriterVisitor(const TImage* const image, const Mask* const mask,
+                         const std::string& prefix = "FilledIteration",
                          const std::string& visitorName = "IterationWriterVisitor") :
     InpaintingVisitorParent<TGraph>(visitorName),
-    Image(image), MaskImage(mask)
+    Image(image), MaskImage(mask), Prefix(prefix)
   {
 
   }
 
-  void FinishVertex(TVertexDescriptor target, TVertexDescriptor sourceNode) override
+  void FinishVertex(VertexDescriptorType target, VertexDescriptorType sourceNode) override
   {
-    ITKHelpers::WriteImage(this->MaskImage,
-                           Helpers::GetSequentialFileName("mask",
-                                                          this->NumberOfFinishedVertices, "png"));
-//                                                        this->NumberOfFinishedVertices, "mha"));
-    ITKHelpers::WriteImage(this->Image,
-                           Helpers::GetSequentialFileName("output",
-                                                          this->NumberOfFinishedVertices, "png"));
-//                                                          this->NumberOfFinishedVertices, "mha"));
+    ITKHelpers::WriteRGBImage(this->MaskImage,
+                              Helpers::GetSequentialFileName(this->Prefix + "_mask",
+                                                             this->NumberOfFinishedVertices, "png"));
+    ITKHelpers::WriteRGBImage(this->Image,
+                              Helpers::GetSequentialFileName(this->Prefix,
+                                                             this->NumberOfFinishedVertices, "png"));
+
+  // MHA versions
+//    ITKHelpers::WriteImage(this->MaskImage,
+//                           Helpers::GetSequentialFileName(this->Prefix + "_mask",
+//                                                          this->NumberOfFinishedVertices, "png"));
+////                                                        this->NumberOfFinishedVertices, "mha"));
+//    ITKHelpers::WriteImage(this->Image,
+//                           Helpers::GetSequentialFileName(this->Prefix,
+//                                                          this->NumberOfFinishedVertices, "png"));
+////                                                          this->NumberOfFinishedVertices, "mha"));
 
     this->NumberOfFinishedVertices++;
   }
