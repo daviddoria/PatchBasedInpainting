@@ -43,11 +43,14 @@ struct GMHDifference
   typedef itk::ImageRegion<2> RegionType;
 
   /** 'image' can't be const because NthElementImageAdaptor won't allow it. */
-  GMHDifference(TImage* const image, Mask* const mask,
+  GMHDifference(TImage* const image, const Mask* const mask,
                 const unsigned int numberOfBinsPerChannel) :
     Image(image), MaskImage(mask), NumberOfBinsPerChannel(numberOfBinsPerChannel)
   {}
 
+  /** Compute the Gradient Magnitude Histogram difference between two regions.
+    * The regions are not passed as const because they are cropped if necessary
+    * to be inside the image. */
   float Difference(RegionType targetRegion, RegionType sourceRegion) const
   {
     // Crop the source region to look like the potentially cropped query region. We must do this before we crop the target region.
@@ -151,6 +154,11 @@ struct GMHDifference
 
     } // end loop over channels
 
+    // Normalize the full concatentated histogram (should be the same if we did not
+    // normalize the individual channel histograms independently, but that doesn't hurt)
+    sourceHistogram.Normalize();
+    targetHistogram.Normalize();
+
     // Compute the differences in the histograms
     float histogramDifference = HistogramDifferences::HistogramDifference(targetHistogram, sourceHistogram);
 
@@ -158,11 +166,11 @@ struct GMHDifference
   }
 
 private:
-  TImage* Image;
+  TImage* Image; // Can't make this const because NthElementImageAdaptor does not allow const images
 
-  Mask* MaskImage;
+  const Mask* MaskImage;
 
-  unsigned int NumberOfBinsPerChannel;
+  const unsigned int NumberOfBinsPerChannel;
 };
 
 #endif
