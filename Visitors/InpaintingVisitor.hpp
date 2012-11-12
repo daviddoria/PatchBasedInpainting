@@ -160,17 +160,17 @@ public:
     }
   }
 
-  void InitializeVertex(VertexDescriptorType v) const
+  void InitializeVertex(VertexDescriptorType v) const override
   {
     this->DescriptorVisitor->InitializeVertex(v);
   }
 
-  void DiscoverVertex(VertexDescriptorType v) const
+  void DiscoverVertex(VertexDescriptorType v) override
   {
     this->DescriptorVisitor->DiscoverVertex(v);
   }
 
-  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source)
+  void PotentialMatchMade(VertexDescriptorType target, VertexDescriptorType source) override
   {
 //    std::cout << "InpaintingVisitor::PotentialMatchMade: target " << target[0] << " " << target[1]
 //              << " source: " << source[0] << " " << source[1] << std::endl;
@@ -191,14 +191,14 @@ public:
     }
   }
 
-  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const
+  bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const override
   {
     float energy = 0.0f;
     return AcceptanceVisitor->AcceptMatch(target, source, energy);
   }
 
   /** The mask is inpainted with ValidValue in this function. */
-  void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode)
+  void FinishVertex(VertexDescriptorType targetNode, VertexDescriptorType sourceNode) override
   {
     // Mark this pixel and the area around it as filled, and mark the mask in this region as filled.
     // Determine the new boundary, and setup the nodes in the boundary queue.

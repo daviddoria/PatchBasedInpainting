@@ -59,7 +59,7 @@ public:
   typename TIterator::value_type operator()(const TIterator first, const TIterator last,
                                             typename TIterator::value_type query)
   {
-    std::cout << "LinearSearchBestFirstAndWrite iteration: " << this->Iteration << std::endl;
+//    std::cout << "LinearSearchBestFirstAndWrite iteration: " << this->Iteration << std::endl;
 
     // If the input element range is empty, there is nothing to do.
     if(first == last)

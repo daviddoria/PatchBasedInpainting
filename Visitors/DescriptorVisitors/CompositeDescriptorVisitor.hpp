@@ -42,7 +42,7 @@ struct CompositeDescriptorVisitor
     }
   }
 
-  void DiscoverVertex(VertexDescriptorType v) const
+  void DiscoverVertex(VertexDescriptorType v)
   { 
     for(unsigned int visitorId = 0; visitorId < Visitors.size(); ++visitorId)
     {

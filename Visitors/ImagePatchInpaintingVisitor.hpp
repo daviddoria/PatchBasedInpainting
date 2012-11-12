@@ -89,7 +89,7 @@ struct ImagePatchInpaintingVisitor : public InpaintingVisitorParent<TGraph>
 
   }
 
-  void DiscoverVertex(VertexDescriptorType v, TGraph& g) const override
+  void DiscoverVertex(VertexDescriptorType v, TGraph& g) override
   {
     itk::Index<2> index = {{v[0], v[1]}};
     itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(index, this->HalfWidth);

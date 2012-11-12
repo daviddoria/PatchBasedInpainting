@@ -164,15 +164,14 @@ void ClassicalImageInpaintingDebug(typename itk::SmartPointer<TImage> originalIm
   typedef TargetPatchWriterVisitor <VertexListGraphType, TImage> TargetPatchWriterVisitorType;
   TargetPatchWriterVisitorType targetPatchWriterVisitor(originalImage, "TargetPatch", patchHalfWidth);
 
-
   // Create the composite inpainting visitor
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
   std::shared_ptr<CompositeInpaintingVisitorType> compositeInpaintingVisitor(
         new CompositeInpaintingVisitorType);
   compositeInpaintingVisitor->AddVisitor(inpaintingVisitor);
-//  compositeInpaintingVisitor->AddVisitor(&patchIndicatorVisitor);
-//  compositeInpaintingVisitor->AddVisitor(&iterationWriterVisitor);
-//  compositeInpaintingVisitor->AddVisitor(&targetPatchWriterVisitor);
+  compositeInpaintingVisitor->AddVisitor(&patchIndicatorVisitor);
+  compositeInpaintingVisitor->AddVisitor(&iterationWriterVisitor);
+  compositeInpaintingVisitor->AddVisitor(&targetPatchWriterVisitor);
 
   InitializePriority(mask, boundaryNodeQueue.get(), priorityFunction.get());
 

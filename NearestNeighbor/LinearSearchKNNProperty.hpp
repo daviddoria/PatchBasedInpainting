@@ -178,7 +178,7 @@ public:
       throw std::runtime_error(ss.str());
     }
 
-    std::cout << "Best patch score is: " << outputQueue.top().first << std::endl;
+//    std::cout << "Best patch score is: " << outputQueue.top().first << std::endl;
 
     // Copy the best matches from the queue into the output
     TOutputIterator currentOutputIterator = outputFirst;
