@@ -58,6 +58,7 @@ InpaintingAlgorithm(std::shared_ptr<TVertexListGraph> graph,
 //             << " valid nodes in the queue." << std::endl;
 
   unsigned int iteration = 0;
+
   while(!boundaryNodeQueue->empty())
   {
     VertexDescriptorType targetNode = boundaryNodeQueue->top(); // This also pops the node
@@ -88,7 +89,8 @@ InpaintingAlgorithm(std::shared_ptr<TVertexListGraph> graph,
     iteration++;
   } // end main iteration loop
 
-  std::cout << "Inpainting complete." << std::endl;
+  std::cout << "Inpainting complete after " << iteration
+            << "iterations." << std::endl;
   visitor->InpaintingComplete();
 }
 

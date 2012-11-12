@@ -38,7 +38,7 @@ struct ImagePatchDifference
   ImagePatchDifference(PixelDifferenceFunctorType pixelDifferenceFunctor = PixelDifferenceFunctorType()) :
     PixelDifferenceFunctor(pixelDifferenceFunctor)
   {
-    pixelDifferenceFunctor.PrintName();
+//    pixelDifferenceFunctor.PrintName();
   }
 
   float operator()(const ImagePatchType& sourcePatch, const ImagePatchType& targetPatch) const

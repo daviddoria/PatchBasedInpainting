@@ -28,7 +28,7 @@
 template <typename TVisitor, typename TNode>
 inline void InitializeFromMaskImage(Mask* const maskImage, TVisitor* const visitor)
 {
-  std::cout << "InitializeFromMaskImage" << std::endl;
+//  std::cout << "InitializeFromMaskImage" << std::endl;
 
   // Intialize all nodes
   itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(maskImage,

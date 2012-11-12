@@ -102,7 +102,7 @@ struct LinearSearchBestProperty : public Debug
     }
 
     // Iterate through all of the input elements
-    std::cout << "Start search..." << std::endl;
+//    std::cout << "Start search..." << std::endl;
     typename TIterator::value_type result = *last; // initialize to prevent "possibly used uninitialized" warning
 
     #pragma omp parallel for
@@ -121,7 +121,7 @@ struct LinearSearchBestProperty : public Debug
       }
     }
 
-    std::cout << "Iteration " << this->DebugIteration << " search complete." << std::endl;
+//    std::cout << "Iteration " << this->DebugIteration << " search complete." << std::endl;
 
     this->DebugIteration++;
 

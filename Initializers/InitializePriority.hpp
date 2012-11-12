@@ -13,7 +13,7 @@ template <typename TBoundaryNodeQueue, typename TPriority>
 inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue* boundaryNodeQueue,
                                TPriority* const priorityFunction)
 {
-  std::cout << "InitializePriority" << std::endl;
+//  std::cout << "InitializePriority" << std::endl;
 
   typedef typename TBoundaryNodeQueue::HandleType HandleType;
 
@@ -49,8 +49,8 @@ inline void InitializePriority(Mask* const maskImage, TBoundaryNodeQueue* bounda
     ++boundaryImageIterator;
   }
 
-  std::cout << "InitializePriority: There are " << boundaryNodeQueue->CountValidNodes()
-            << " nodes in the boundaryNodeQueue" << std::endl;
+//  std::cout << "InitializePriority: There are " << boundaryNodeQueue->CountValidNodes()
+//            << " nodes in the boundaryNodeQueue" << std::endl;
 
 }
 

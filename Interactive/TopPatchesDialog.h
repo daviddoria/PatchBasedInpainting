@@ -123,12 +123,25 @@ private:
   /** Gracefully quit if the user closes the dialog. */
   void closeEvent(QCloseEvent* event);
 
+  /** Show the selected patch. */
   void DisplayPatchSelection(QModelIndex index);
+
+  /** This variable tracks how many times the top patch was selected from the list. */
+  unsigned int NumberOfVerifications = 0;
+
+  /** This variable tracks how many times a non-top patch was selected from the list. */
+  unsigned int NumberOfCorrections = 0;
+
+  /** This variable tracks how many times the patch was selected by manually positioning. */
+  unsigned int NumberOfManualSelections = 0;
 
 public:
   /** Constructor */
   TopPatchesDialog(const TImage* const image, const Mask* const mask,
                    const unsigned int patchHalfWidth, QWidget* parent = nullptr);
+
+  /** Output information about how many selections were used. */
+  void Report();
 
 //  /** Destructor. */
 //  ~TopPatchesDialog();

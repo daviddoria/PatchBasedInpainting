@@ -71,15 +71,15 @@ int main(int argc, char *argv[])
 {
   // Verify arguments
   if(argc != 5)
-    {
+  {
     std::cerr << "Required arguments: image.png imageMask.mask patchHalfWidth output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
-      {
+    {
       std::cerr << argv[i] << " ";
-      }
-    return EXIT_FAILURE;
     }
+    return EXIT_FAILURE;
+  }
 
   // Parse arguments
   std::string imageFilename = argv[1];
@@ -93,10 +93,10 @@ int main(int argc, char *argv[])
   std::string outputFileName = argv[4];
 
   // Output arguments
-  std::cout << "Reading image: " << imageFilename << std::endl;
-  std::cout << "Reading mask: " << maskFilename << std::endl;
-  std::cout << "Patch half width: " << patchHalfWidth << std::endl;
-  std::cout << "Output: " << outputFileName << std::endl;
+//  std::cout << "Reading image: " << imageFilename << std::endl;
+//  std::cout << "Reading mask: " << maskFilename << std::endl;
+//  std::cout << "Patch half width: " << patchHalfWidth << std::endl;
+//  std::cout << "Output: " << outputFileName << std::endl;
 
   typedef itk::Image<itk::CovariantVector<int, 3>, 2> OriginalImageType;
 

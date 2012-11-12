@@ -55,7 +55,7 @@ void InpaintingAlgorithmWithVerification(std::shared_ptr<TVertexListGraph> graph
 
   typedef typename boost::graph_traits<TVertexListGraph>::vertex_descriptor VertexDescriptorType;
 
-  unsigned int numberOfManualVerifications = 0;
+  unsigned int iteration = 0;
 
   while(!boundaryNodeQueue->empty())
   {
@@ -97,9 +97,8 @@ void InpaintingAlgorithmWithVerification(std::shared_ptr<TVertexListGraph> graph
 //    std::cout << "Starting AcceptMatch" << std::endl;
     if(!visitor->AcceptMatch(targetNode, sourceNode))
     {
-      numberOfManualVerifications++;
-      std::cout << "So far there have been "
-                << numberOfManualVerifications << " manual verifications." << std::endl;
+//      std::cout << "So far there have been "
+//                << numberOfManualVerifications << " manual verifications." << std::endl;
 //      std::cout << "Automatic match not accepted!" << std::endl;
 //      std::cout << "Starting manualNeighborFinder" << std::endl;
       sourceNode = (*manualNeighborFinder)(knnContainer.begin(), knnContainer.end(), targetNode);
@@ -124,11 +123,15 @@ void InpaintingAlgorithmWithVerification(std::shared_ptr<TVertexListGraph> graph
     // Broadcast that we are done with this iteration
 //    std::cout << "Starting FinishVertex" << std::endl;
     visitor->FinishVertex(targetNode, sourceNode);
+
+    iteration++;
   }
 
-  std::cout << "Inpainting complete. There were "
-            << numberOfManualVerifications << " manual verifications required." << std::endl;
+  std::cout << "Inpainting complete after " << iteration
+            << "iterations." << std::endl;
+
   visitor->InpaintingComplete();
+  manualNeighborFinder->Report();
 }
 
 #endif

@@ -74,6 +74,12 @@ public:
     delete this->TopPatchesDialogHandler;
   }
 
+  /** Display a report of the number of selections that were made. */
+  void Report()
+  {
+    this->TopPatchesDialogHandler->GetTopPatchesChooser()->Report();
+  }
+
   /** Get the dialog object. */
   TopPatchesDialog<TImage>* GetTopPatchesDialog()
   {
