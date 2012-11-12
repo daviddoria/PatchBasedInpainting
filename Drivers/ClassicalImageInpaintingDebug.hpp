@@ -28,6 +28,7 @@
 // Information visitors
 #include "Visitors/InformationVisitors/PatchIndicatorVisitor.hpp"
 #include "Visitors/InformationVisitors/IterationWriterVisitor.hpp"
+#include "Visitors/InformationVisitors/TargetPatchWriterVisitor.hpp"
 
 // Submodules
 #include <Helpers/Helpers.h>
@@ -160,13 +161,18 @@ void ClassicalImageInpaintingDebug(typename itk::SmartPointer<TImage> originalIm
   typedef IterationWriterVisitor <VertexListGraphType, TImage> IterationWriterVisitorType;
   IterationWriterVisitorType iterationWriterVisitor(originalImage, mask);
 
+  typedef TargetPatchWriterVisitor <VertexListGraphType, TImage> TargetPatchWriterVisitorType;
+  TargetPatchWriterVisitorType targetPatchWriterVisitor(originalImage, "TargetPatch", patchHalfWidth);
+
+
   // Create the composite inpainting visitor
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
   std::shared_ptr<CompositeInpaintingVisitorType> compositeInpaintingVisitor(
         new CompositeInpaintingVisitorType);
   compositeInpaintingVisitor->AddVisitor(inpaintingVisitor);
-  compositeInpaintingVisitor->AddVisitor(&patchIndicatorVisitor);
-  compositeInpaintingVisitor->AddVisitor(&iterationWriterVisitor);
+//  compositeInpaintingVisitor->AddVisitor(&patchIndicatorVisitor);
+//  compositeInpaintingVisitor->AddVisitor(&iterationWriterVisitor);
+//  compositeInpaintingVisitor->AddVisitor(&targetPatchWriterVisitor);
 
   InitializePriority(mask, boundaryNodeQueue.get(), priorityFunction.get());
 

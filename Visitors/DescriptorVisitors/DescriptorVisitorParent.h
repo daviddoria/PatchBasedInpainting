@@ -34,7 +34,9 @@ struct DescriptorVisitorParent
 
   virtual void InitializeVertex(VertexDescriptorType v) const = 0;
   
-  virtual void DiscoverVertex(VertexDescriptorType v) const = 0;
+  /** This is not const because we typically have to set some properties of the
+    * target patch when it is discovered. */
+  virtual void DiscoverVertex(VertexDescriptorType v) = 0;
 
 }; // DescriptorVisitorParent
 

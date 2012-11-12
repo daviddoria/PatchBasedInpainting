@@ -6,5 +6,6 @@ FillOrderLoggerVisitor.hpp
 IterationWriterVisitor.hpp
 LoggerVisitor.hpp
 FinalImageWriterVisitor.hpp
+TargetPatchWriterVisitor.hpp
 )
 

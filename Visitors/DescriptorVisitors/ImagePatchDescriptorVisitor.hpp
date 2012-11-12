@@ -83,7 +83,7 @@ struct ImagePatchDescriptorVisitor : public DescriptorVisitorParent<TGraph>
 //       }
   }
 
-  void DiscoverVertex(VertexDescriptorType v) const override
+  void DiscoverVertex(VertexDescriptorType v) override
   {
     itk::ImageRegion<2> region = get(*(this->DescriptorMap), v).GetRegion();
 

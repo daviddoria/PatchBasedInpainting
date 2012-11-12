@@ -101,7 +101,7 @@ public:
   }
 
   /** When a vertex has been selected from the queue to be searched for, display it as the target patch. */
-  void DiscoverVertex(VertexDescriptorType v) const override
+  void DiscoverVertex(VertexDescriptorType v) override
   {
     // std::cout << "DisplayVisitor::DiscoverVertex" << std::endl;
     emit signal_RefreshImage();

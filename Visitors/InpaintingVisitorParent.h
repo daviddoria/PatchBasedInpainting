@@ -55,7 +55,9 @@ struct InpaintingVisitorParent
   // Const functions
   virtual void InitializeVertex(VertexDescriptorType v) const{}
 
-  virtual void DiscoverVertex(VertexDescriptorType v) const{}
+  /** This is not const because we typically have to set some properties of the
+    * target patch when it is discovered. */
+  virtual void DiscoverVertex(VertexDescriptorType v) {}
 
   virtual bool AcceptMatch(VertexDescriptorType target, VertexDescriptorType source) const{return true;}
 
