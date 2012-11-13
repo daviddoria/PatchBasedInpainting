@@ -85,7 +85,7 @@ void ClassicalImageInpaintingDebug(typename itk::SmartPointer<TImage> originalIm
   typedef TImage BlurredImageType; // Usually the blurred image is the same type as the original image.
   typename BlurredImageType::Pointer blurredImage = BlurredImageType::New();
 //  float blurVariance = 2.0f;
-  float blurVariance = 1.0f;
+  float blurVariance = 1.2f;
   MaskOperations::MaskedBlur(originalImage.GetPointer(), mask, blurVariance, blurredImage.GetPointer());
 
   ITKHelpers::WriteRGBImage(blurredImage.GetPointer(), "BlurredImage.png");
@@ -142,7 +142,8 @@ void ClassicalImageInpaintingDebug(typename itk::SmartPointer<TImage> originalIm
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, TImage, ImagePatchDescriptorMapType>
       ImagePatchDescriptorVisitorType;
   std::shared_ptr<ImagePatchDescriptorVisitorType> imagePatchDescriptorVisitor(new
-      ImagePatchDescriptorVisitorType(originalImage.GetPointer(), mask,
+//      ImagePatchDescriptorVisitorType(originalImage.GetPointer(), mask,
+        ImagePatchDescriptorVisitorType(blurredImage.GetPointer(), mask,
                                       imagePatchDescriptorMap, patchHalfWidth));
 
   typedef DefaultAcceptanceVisitor<VertexListGraphType> AcceptanceVisitorType;

@@ -51,12 +51,9 @@
 
 // Pixel descriptors
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
-#include "PixelDescriptors/ImagePatchVectorized.h"
-#include "PixelDescriptors/ImagePatchVectorizedIndices.h"
 
 // Acceptance visitors
 #include "Visitors/AcceptanceVisitors/GMHAcceptanceVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/AlwaysAccept.hpp" // for speed testing
 
 // Information visitors
 #include "Visitors/InformationVisitors/DisplayVisitor.hpp"
@@ -122,7 +119,7 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   // Blur the image a little bit so that the SSD comparisons are less wild.
   typedef TImage BlurredImageType; // Usually the blurred image is the same type as the original image.
   typename BlurredImageType::Pointer slightlyBlurredImage = BlurredImageType::New();
-  float slightBlurVariance = 1.0f;
+  float slightBlurVariance = 1.2f;
   MaskOperations::MaskedBlur(originalImage.GetPointer(), mask, slightBlurVariance, slightlyBlurredImage.GetPointer());
 
   typedef ImagePatchPixelDescriptor<TImage> ImagePatchPixelDescriptorType;
@@ -186,16 +183,12 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
                                             imagePatchDescriptorMap, patchHalfWidth));
 
   // Acceptance visitor. Use the slightly blurred image here, as this the gradients will be less noisy.
-  unsigned int numberOfBinsPerChannel = 30;
+  unsigned int numberOfBinsPerChannel = 40;
 
   typedef GMHAcceptanceVisitor<VertexListGraphType, TImage> GMHAcceptanceVisitorType;
   std::shared_ptr<GMHAcceptanceVisitorType> gmhAcceptanceVisitor(
         new GMHAcceptanceVisitorType(slightlyBlurredImage.GetPointer(), mask, patchHalfWidth,
                                    maxAllowedDifference, numberOfBinsPerChannel));
-
-//  typedef AlwaysAccept<VertexListGraphType> GMHAcceptanceVisitorType;
-//  std::shared_ptr<GMHAcceptanceVisitorType> gmhAcceptanceVisitor(
-//        new GMHAcceptanceVisitorType);
 
   // Create the inpainting visitor
 //  typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,

@@ -25,23 +25,33 @@
      <property name="text">
       <string>Query patch</string>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
     </widget>
    </item>
    <item>
-    <widget class="QGraphicsView" name="gfxQueryPatch">
-     <property name="maximumSize">
-      <size>
-       <width>100</width>
-       <height>100</height>
-      </size>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
      </property>
-     <property name="verticalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
-     </property>
-     <property name="horizontalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
-     </property>
-    </widget>
+     <item>
+      <widget class="QGraphicsView" name="gfxQueryPatch">
+       <property name="maximumSize">
+        <size>
+         <width>100</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="verticalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QLabel" name="label_3">
@@ -54,23 +64,30 @@
      <property name="text">
       <string>Source patch</string>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
     </widget>
    </item>
    <item>
-    <widget class="QGraphicsView" name="gfxSourcePatch">
-     <property name="maximumSize">
-      <size>
-       <width>100</width>
-       <height>100</height>
-      </size>
-     </property>
-     <property name="verticalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
-     </property>
-     <property name="horizontalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QGraphicsView" name="gfxSourcePatch">
+       <property name="maximumSize">
+        <size>
+         <width>100</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="verticalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QLabel" name="label_4">
@@ -83,17 +100,24 @@
      <property name="text">
       <string>Proposed patch</string>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
     </widget>
    </item>
    <item>
-    <widget class="QGraphicsView" name="gfxProposedPatch">
-     <property name="maximumSize">
-      <size>
-       <width>100</width>
-       <height>100</height>
-      </size>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QGraphicsView" name="gfxProposedPatch">
+       <property name="maximumSize">
+        <size>
+         <width>100</width>
+         <height>100</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QPushButton" name="btnSelectManually">
