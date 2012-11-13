@@ -60,11 +60,7 @@
 
 // Difference functions
 #include "DifferenceFunctions/ImagePatchDifference.hpp"
-#include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
 #include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
-
-// Utilities
-#include "Utilities/PatchHelpers.h"
 
 // Inpainting
 #include "Algorithms/InpaintingAlgorithm.hpp"
@@ -88,7 +84,8 @@ void ClassicalImageInpaintingDebug(typename itk::SmartPointer<TImage> originalIm
   // Blur the image
   typedef TImage BlurredImageType; // Usually the blurred image is the same type as the original image.
   typename BlurredImageType::Pointer blurredImage = BlurredImageType::New();
-  float blurVariance = 2.0f;
+//  float blurVariance = 2.0f;
+  float blurVariance = 1.0f;
   MaskOperations::MaskedBlur(originalImage.GetPointer(), mask, blurVariance, blurredImage.GetPointer());
 
   ITKHelpers::WriteRGBImage(blurredImage.GetPointer(), "BlurredImage.png");
@@ -117,7 +114,7 @@ void ClassicalImageInpaintingDebug(typename itk::SmartPointer<TImage> originalIm
   typedef PatchInpainter<TImage> OriginalImageInpainterType;
   std::shared_ptr<OriginalImageInpainterType> originalImagePatchInpainter(new
       OriginalImageInpainterType(patchHalfWidth, originalImage, mask));
-  // Show the inpainted image at each iteration
+  // Write the inpainted image at each iteration
 //  originalImagePatchInpainter.SetDebugImages(true);
 //  originalImagePatchInpainter.SetImageName("RGB");
 
@@ -134,6 +131,12 @@ void ClassicalImageInpaintingDebug(typename itk::SmartPointer<TImage> originalIm
   // Create the priority function
   typedef PriorityCriminisi<BlurredImageType> PriorityType;
   std::shared_ptr<PriorityType> priorityFunction(new PriorityType(blurredImage, mask, patchHalfWidth));
+
+//  typedef PriorityConfidence PriorityType;
+//  std::shared_ptr<PriorityType> priorityFunction(new PriorityType(mask, patchHalfWidth));
+
+//  typedef PriorityRandom PriorityType;
+//  std::shared_ptr<PriorityType> priorityFunction(new PriorityType);
 
   // Create the descriptor visitor
   typedef ImagePatchDescriptorVisitor<VertexListGraphType, TImage, ImagePatchDescriptorMapType>
@@ -156,22 +159,25 @@ void ClassicalImageInpaintingDebug(typename itk::SmartPointer<TImage> originalIm
 //  inpaintingVisitor.SetDebugImages(true); // Write PatchesCopied images that show the source and target patch at each iteration
 
   typedef PatchIndicatorVisitor<VertexListGraphType, TImage> PatchIndicatorVisitorType;
-  PatchIndicatorVisitorType patchIndicatorVisitor(originalImage, mask, patchHalfWidth);
+  std::shared_ptr<PatchIndicatorVisitorType> patchIndicatorVisitor(
+        new PatchIndicatorVisitorType(originalImage, mask, patchHalfWidth));
 
-  typedef IterationWriterVisitor <VertexListGraphType, TImage> IterationWriterVisitorType;
-  IterationWriterVisitorType iterationWriterVisitor(originalImage, mask);
+  typedef IterationWriterVisitor<VertexListGraphType, TImage> IterationWriterVisitorType;
+  std::shared_ptr<IterationWriterVisitorType> iterationWriterVisitor(
+        new IterationWriterVisitorType(originalImage, mask));
 
-  typedef TargetPatchWriterVisitor <VertexListGraphType, TImage> TargetPatchWriterVisitorType;
-  TargetPatchWriterVisitorType targetPatchWriterVisitor(originalImage, "TargetPatch", patchHalfWidth);
+  typedef TargetPatchWriterVisitor<VertexListGraphType, TImage> TargetPatchWriterVisitorType;
+  std::shared_ptr<TargetPatchWriterVisitorType> targetPatchWriterVisitor(
+        new TargetPatchWriterVisitorType(originalImage, "TargetPatch", patchHalfWidth));
 
   // Create the composite inpainting visitor
   typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
   std::shared_ptr<CompositeInpaintingVisitorType> compositeInpaintingVisitor(
         new CompositeInpaintingVisitorType);
   compositeInpaintingVisitor->AddVisitor(inpaintingVisitor);
-  compositeInpaintingVisitor->AddVisitor(&patchIndicatorVisitor);
-  compositeInpaintingVisitor->AddVisitor(&iterationWriterVisitor);
-  compositeInpaintingVisitor->AddVisitor(&targetPatchWriterVisitor);
+  compositeInpaintingVisitor->AddVisitor(patchIndicatorVisitor);
+  compositeInpaintingVisitor->AddVisitor(iterationWriterVisitor);
+  compositeInpaintingVisitor->AddVisitor(targetPatchWriterVisitor);
 
   InitializePriority(mask, boundaryNodeQueue.get(), priorityFunction.get());
 

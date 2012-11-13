@@ -16,53 +16,8 @@
  *
  *=========================================================================*/
 
-// Custom
-#include "Utilities/IndirectPriorityQueue.h"
-
-// Submodules
-#include <Helpers/Helpers.h>
-
-// Pixel descriptors
-#include "PixelDescriptors/ImagePatchPixelDescriptor.h"
-
-// Descriptor visitors
-#include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
-
-// Inpainting visitors
-#include "Visitors/InpaintingVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
-
-// Nearest neighbors
-#include "NearestNeighbor/LinearSearchBest/Property.hpp"
-
-// Initializers
-#include "Initializers/InitializeFromMaskImage.hpp"
-#include "Initializers/InitializePriority.hpp"
-
-// Inpainters
-#include "Inpainters/CompositePatchInpainter.hpp"
-#include "Inpainters/PatchInpainter.hpp"
-
-// Difference functions
-#include "DifferenceFunctions/ImagePatchDifference.hpp"
-#include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
-#include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
-
-// Utilities
-#include "Utilities/PatchHelpers.h"
-
-// Inpainting
-#include "Algorithms/InpaintingAlgorithm.hpp"
-
-// Priority
-#include "Priority/PriorityCriminisi.h"
-
 // ITK
 #include "itkImageFileReader.h"
-
-// Boost
-#include <boost/graph/grid_graph.hpp>
-#include <boost/property_map/property_map.hpp>
 
 // Driver
 #include "Drivers/ClassicalImageInpaintingDebug.hpp"
@@ -72,15 +27,15 @@ int main(int argc, char *argv[])
 {
   // Verify arguments
   if(argc != 5)
-    {
+  {
     std::cerr << "Required arguments: image.png imageMask.mask patchHalfWidth output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
-      {
+    {
       std::cerr << argv[i] << " ";
-      }
-    return EXIT_FAILURE;
     }
+    return EXIT_FAILURE;
+  }
 
   // Parse arguments
   std::string imageFilename = argv[1];

@@ -81,7 +81,7 @@ void ClassicalImageInpainting(typename itk::SmartPointer<TImage> originalImage, 
   float blurVariance = 2.0f;
   MaskOperations::MaskedBlur(originalImage.GetPointer(), mask, blurVariance, blurredImage.GetPointer());
 
-  ITKHelpers::WriteRGBImage(blurredImage.GetPointer(), "BlurredImage.png");
+//  ITKHelpers::WriteRGBImage(blurredImage.GetPointer(), "BlurredImage.png");
 
   typedef ImagePatchPixelDescriptor<TImage> ImagePatchPixelDescriptorType;
 
@@ -154,25 +154,16 @@ void ClassicalImageInpainting(typename itk::SmartPointer<TImage> originalImage, 
   typedef ImagePatchDifference<ImagePatchPixelDescriptorType,
       SumSquaredPixelDifference<typename TImage::PixelType> > PatchDifferenceType;
 
-  // Do not write top patches
-//  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
-//                                   PatchDifferenceType> BestSearchType;
-//  std::shared_ptr<BestSearchType> linearSearchBest(new BestSearchType(*imagePatchDescriptorMap));
-
-  typedef LinearSearchBestFirstAndWrite<ImagePatchDescriptorMapType, TImage,
+  // Create the best patch searcher
+  typedef LinearSearchBestProperty<ImagePatchDescriptorMapType,
                                    PatchDifferenceType> BestSearchType;
-  std::shared_ptr<BestSearchType> linearSearchBest(
-        new BestSearchType(*imagePatchDescriptorMap, originalImage, mask));
+  std::shared_ptr<BestSearchType> linearSearchBest(new BestSearchType(*imagePatchDescriptorMap));
 
   // Perform the inpainting
-//  InpaintingAlgorithm(graph, inpaintingVisitor, boundaryNodeQueue,
-//                      linearSearchBest, inpainter);
-
   InpaintingAlgorithm<VertexListGraphType, InpaintingVisitorType,
                       BoundaryNodeQueueType, BestSearchType,
                       CompositePatchInpainter>(graph, inpaintingVisitor, boundaryNodeQueue,
                       linearSearchBest, inpainter);
-
 }
 
 #endif

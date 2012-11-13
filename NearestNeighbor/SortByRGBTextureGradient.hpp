@@ -301,7 +301,7 @@ public:
     ParallelSortType::IndexedVector sortedScores =
         ParallelSortType::ParallelSortAscending(scores);
 
-    std::cout << "Best patch has score " << sortedScores[0].value << std::endl;
+//    std::cout << "Best patch has score " << sortedScores[0].value << std::endl;
 
     // Output all top N patch scores
 //    for(unsigned int i = 0; i < sortedScores.size(); ++i)
