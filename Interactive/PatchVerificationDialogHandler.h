@@ -56,7 +56,7 @@ class PatchVerificationDialogHandler : public PatchVerificationDialogHandlerPare
   const TImage* Image;
   const Mask* MaskImage;
   unsigned int PatchHalfWidth;
-  std::vector<Node> SourceNodes;
+  Node SourceNode;
   Node QueryNode;
 
   PatchVerificationDialog<TImage>* TopPatchVerifier = nullptr;
@@ -73,7 +73,7 @@ public:
 
   PatchVerificationDialog<TImage>* GetTopPatchVerifier()
   {
-    return this->TopPatchesChooser;
+    return this->TopPatchVerifier;
   }
 
   ~PatchVerificationDialogHandler()
@@ -88,27 +88,21 @@ public:
   }
 
   /** Give the handler the source nodes that it will pass to the GUI object. */
-  void SetSourceNodes(std::vector<Node> sourceNodes)
+  void SetSourceNode(Node& sourceNode)
   {
-    this->SourceNodes = sourceNodes;
+    this->SourceNode = sourceNode;
   }
 
   /** This function should only be called from a QueuedConnection. As long as DialogHandler
    * is in the GUI thread and it is called in this way, Qt is happy. */
-  void slot_RunDialog(Node* selectedNode)
+  void slot_RunDialog(Node* selectedNode) override
   {
     this->TopPatchVerifier->SetQueryNode(this->QueryNode);
-    this->TopPatchVerifier->SetSourceNodes(this->SourceNodes);
+    this->TopPatchVerifier->SetSourceNode(this->SourceNode);
     this->TopPatchVerifier->PositionNextToParent();
     this->TopPatchVerifier->exec();
 
-    if(!this->TopPatchVerifier->IsSelectionValid())
-    {
-      throw std::runtime_error("An invalid selection was made (IsSelectionValid returned false)!");
-    }
-
     *selectedNode = this->TopPatchVerifier->GetSelectedNode();
-
   }
 };
 

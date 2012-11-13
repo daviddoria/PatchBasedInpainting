@@ -95,7 +95,7 @@ public:
 
   /** This function should only be called from a QueuedConnection. As long as DialogHandler
    * is in the GUI thread and it is called in this way, Qt is happy. */
-  void slot_RunDialog(Node* selectedNode)
+  void slot_RunDialog(Node* selectedNode) override
   {
     this->TopPatchesChooser->SetQueryNode(this->QueryNode);
     this->TopPatchesChooser->SetSourceNodes(this->SourceNodes);

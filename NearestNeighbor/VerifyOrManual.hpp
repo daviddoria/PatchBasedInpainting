@@ -59,9 +59,9 @@ public:
   Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
   {
     // Create a DialogHandler and move it to the main GUI thread.
-    this->TopPatchesDialogHandler =
-        new DialogHandler<TImage>(this->Image, this->MaskImage, this->PatchHalfWidth, parent);
-    this->TopPatchesDialogHandler->moveToThread(QCoreApplication::instance()->thread());
+    this->PatchVerificationDialogHandlerInstance =
+        new PatchVerificationDialogHandler<TImage>(this->Image, this->MaskImage, this->PatchHalfWidth, parent);
+    this->PatchVerificationDialogHandlerInstance->moveToThread(QCoreApplication::instance()->thread());
   }
 
   /** Destructor. */
@@ -70,45 +70,39 @@ public:
     std::cout << "VisualSelectionBest was used " << this->NumberOfUses
               << " times." << std::endl;
 
-    delete this->TopPatchesDialogHandler;
+    delete this->PatchVerificationDialogHandlerInstance;
   }
 
   /** Display a report of the number of selections that were made. */
   void Report()
   {
-    this->TopPatchesDialogHandler->GetTopPatchesChooser()->Report();
+    this->PatchVerificationDialogHandlerInstance->GetTopPatchVerifier()->Report();
   }
 
   /** Get the dialog object. */
-  TopPatchesDialog<TImage>* GetTopPatchesDialog()
+  PatchVerificationDialog<TImage>* GetTopPatchesDialog()
   {
-    return this->TopPatchesDialogHandler->GetTopPatchesChooser();
+    return this->PatchVerificationDialogHandlerInstance->GetTopPatchVerifier();
   }
 
   /** Return the best source node for a specified target node. */
   template <typename TVertexDescriptor, typename TForwardIterator>
-  TVertexDescriptor operator()(TForwardIterator possibleNodesBegin, TForwardIterator possibleNodesEnd,
+  TVertexDescriptor operator()(TForwardIterator possibleNodesBegin,
+                               TForwardIterator possibleNodesEnd,
                                const TVertexDescriptor& queryVertex)
   {
 //    std::cout << "VisualSelectionBest::operator()" << std::endl;
 //    std::cout << "There are " << possibleNodesEnd - possibleNodesBegin << " nodes." << std::endl;
 
-    std::vector<Node> sourceNodes;
-    for(TForwardIterator iter = possibleNodesBegin; iter != possibleNodesEnd; ++iter)
-    {
-      Node node(*iter);
-      // std::cout << "VisualSelectionBest::operator() node: " << node[0] << " " << node[1] << std::endl;
-      sourceNodes.push_back(node);
-    }
-
-    this->TopPatchesDialogHandler->SetSourceNodes(sourceNodes);
+    Node sourceNode = Helpers::ConvertFrom<Node, TVertexDescriptor>(*possibleNodesBegin);
+    this->PatchVerificationDialogHandlerInstance->SetSourceNode(sourceNode);
 
     Node queryNode(queryVertex);
-    this->TopPatchesDialogHandler->SetQueryNode(queryNode);
+    this->PatchVerificationDialogHandlerInstance->SetQueryNode(queryNode);
 
     // Signal the TopPatchesDialog and get the return value via this variable.
     Node selectedNode;
-    this->TopPatchesDialogHandler->EmitSignal(&selectedNode);
+    this->PatchVerificationDialogHandlerInstance->EmitSignal(&selectedNode);
 
     // Track how many times we used this class
     std::cout << "ManualPatchSelectionDialog has been used " << this->NumberOfUses << " times." << std::endl;

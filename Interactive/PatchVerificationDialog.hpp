@@ -67,40 +67,19 @@ PatchVerificationDialog<TImage>::PatchVerificationDialog(const TImage* const ima
   this->SourcePatchItem = new QGraphicsPixmapItem;
   this->SourcePatchScene = new QGraphicsScene();
   this->gfxSourcePatch->setScene(this->SourcePatchScene);
-
-  this->PatchesModel = new ListModelPatches<TImage>(image, patchHalfWidth);
-  // listView is a GUI object
-  this->listView->setModel(this->PatchesModel);
-
-  PixmapDelegate* pixmapDelegate = new PixmapDelegate;
-
-  this->listView->setItemDelegate(pixmapDelegate);
-
-  connect(this->listView, SIGNAL(clicked(const QModelIndex&)), this, SLOT(slot_SingleClicked(const QModelIndex&)));
-  
-  connect(this->listView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(slot_DoubleClicked(const QModelIndex&)));
 }
 
 template <typename TImage>
-void PatchVerificationDialog<TImage>::SetSourceNodes(const std::vector<Node>& nodes)
+void PatchVerificationDialog<TImage>::SetSourceNode(const Node& sourceNode)
 {
-  this->Nodes = nodes;
-
-  this->PatchesModel->SetNodes(nodes);
+  this->SourceNode = sourceNode;
 }
 
 template <typename TImage>
 template <typename TNode>
-void PatchVerificationDialog<TImage>::SetSourceNodes(const std::vector<TNode>& sourceNodes)
+void PatchVerificationDialog<TImage>::SetSourceNode(const TNode& sourceNode)
 {
-  std::vector<Node> nodes;
-  for(unsigned int i = 0; i < sourceNodes.size(); ++i)
-  {
-    Node node = Helpers::ConvertFrom<Node, TNode>(sourceNodes[i]);
-    nodes.push_back(node);
-  }
-
-  SetSourceNodes(nodes);
+  this->SourceNode = Helpers::ConvertFrom<Node, TNode>(sourceNode);
 }
 
 template <typename TImage>
@@ -149,20 +128,14 @@ Node PatchVerificationDialog<TImage>::GetSelectedNode() const
 }
 
 template <typename TImage>
-void PatchVerificationDialog<TImage>::showEvent(QShowEvent* event)
+void PatchVerificationDialog<TImage>::showEvent(QShowEvent*)
 {
 //  std::cout << "TopPatchesDialog::showEvent()" << std::endl;
 
-  this->ValidSelection = false;
   // We do this here because we will usually call SetQueryNode before the widget is constructed (i.e. before exec() is called).
   gfxQueryPatch->fitInView(this->MaskedQueryPatchItem);
 
-  // Make sure the list is scrolled to the top
-  QModelIndex index = this->PatchesModel->index(0,0);
-  this->listView->scrollTo(index);
-
-  // Setup the proposed patch (if the best patch were to be selected)
-  DisplayPatchSelection(index);
+  // Setup the proposed patch
   gfxProposedPatch->fitInView(this->ProposedPatchItem);
 }
 
@@ -202,7 +175,7 @@ void PatchVerificationDialog<TImage>::on_btnSelectManually_clicked()
     this->NumberOfManualSelections++;
 
     this->SelectedNode = manualPatchSelectionDialog.GetSelectedNode();
-    this->ValidSelection = true;
+
 //    std::cout << "SelectedNode : " << this->SelectedNode[0] << " "
 //              << this->SelectedNode[1] << std::endl;
 
@@ -291,7 +264,7 @@ void PatchVerificationDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2
 }
 
 template <typename TImage>
-void PatchVerificationDialog<TImage>::DisplayPatchSelection(QModelIndex selected)
+void PatchVerificationDialog<TImage>::DisplayPatchSelection()
 {
 //  std::cout << "Leave TopPatchesDialog::DisplayPatchSelection" << std::endl;
   itk::Index<2> queryIndex = ITKHelpers::CreateIndex(this->QueryNode);
@@ -299,7 +272,7 @@ void PatchVerificationDialog<TImage>::DisplayPatchSelection(QModelIndex selected
   itk::ImageRegion<2> queryRegion =
       ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, this->PatchHalfWidth);
 
-  itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(this->Nodes[selected.row()]);
+  itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(this->SourceNode);
 
   itk::ImageRegion<2> sourceRegion =
       ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, this->PatchHalfWidth);
@@ -332,7 +305,6 @@ void PatchVerificationDialog<TImage>::DisplayPatchSelection(QModelIndex selected
 
   slot_UpdateResult(sourceRegion, queryRegion);
 
-  this->SelectedIndex = selected;
 //  std::cout << "Leave TopPatchesDialog::DisplayPatchSelection" << std::endl;
 }
 

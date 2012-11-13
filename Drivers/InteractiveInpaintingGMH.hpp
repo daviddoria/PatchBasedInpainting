@@ -44,6 +44,7 @@
 #include "NearestNeighbor/LinearSearchBest/Property.hpp"
 #include "NearestNeighbor/LinearSearchBest/First.hpp"
 #include "NearestNeighbor/TopPatchListOrManual.hpp"
+#include "NearestNeighbor/VerifyOrManual.hpp"
 #include "NearestNeighbor/FirstValidDescriptor.hpp"
 #include "NearestNeighbor/SortByRGBTextureGradient.hpp"
 #include "NearestNeighbor/KNNSearchAndSort.hpp"
@@ -277,7 +278,11 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   basicViewer->ConnectVisitor(displayVisitor.get());
 
   // If the acceptance tests fail, prompt the user to select a patch. Pass the basicViewer as the parent so that we can position the top pathces dialog properly.
-  typedef TopPatchListOrManual<TImage> ManualSearchType;
+//  typedef TopPatchListOrManual<TImage> ManualSearchType;
+//  std::shared_ptr<ManualSearchType> manualSearchBest(new ManualSearchType(originalImage, mask,
+//                                                                          patchHalfWidth, basicViewer));
+
+  typedef VerifyOrManual<TImage> ManualSearchType;
   std::shared_ptr<ManualSearchType> manualSearchBest(new ManualSearchType(originalImage, mask,
                                                                           patchHalfWidth, basicViewer));
 

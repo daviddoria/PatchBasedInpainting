@@ -47,20 +47,13 @@ signals:
 public slots:
 
   /** Set the source nodes. Ideally this would be templated on the node type, but since it is a slot it cannot be templated. */
-  virtual void SetSourceNodes(const std::vector<Node>& sourceNodes) = 0;
+  virtual void SetSourceNode(const Node& sourceNode) = 0;
 
   /** Set the query node. */
   virtual void SetQueryNode(const Node& queryNode) = 0;
 
   /** The slot to handle when the btnAccept button is clicked. */
   virtual void on_btnAccept_clicked() = 0;
-
-  /** When the user clicks a patch in the list, how the proposed completed patch and emit
-    * a signal so viewers can update their views. */
-  virtual void slot_SingleClicked(const QModelIndex & index) = 0;
-
-  /** When the user double clicks a patch in the list, close the dialog and return that patch as the one to use. */
-  virtual void slot_DoubleClicked(const QModelIndex & index) = 0;
 
   /** Update the source and target region outlines and display the source and target patches.*/
   virtual void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
@@ -80,6 +73,9 @@ private:
 
   /** The mask to use. */
   const Mask* MaskImage;
+
+  /** The query node. */
+  Node SourceNode;
 
   /** The query node. */
   Node QueryNode;
@@ -121,7 +117,7 @@ private:
   void closeEvent(QCloseEvent* event);
 
   /** Show the selected patch. */
-  void DisplayPatchSelection(QModelIndex index);
+  void DisplayPatchSelection();
 
   /** This variable tracks how many times the top patch was selected from the list. */
   unsigned int NumberOfVerifications = 0;
@@ -138,38 +134,29 @@ public:
   void Report();
 
   /** Set the source nodes from which the user can choose. */
-  void SetSourceNodes(const std::vector<Node>& nodes);
+  void SetSourceNode(const Node& sourceNode) override;
 
   /** Set the source nodes to display. */
   template <typename TNode>
-  void SetSourceNodes(const std::vector<TNode>& sourceNodes);
+  void SetSourceNode(const TNode& sourceNode);
 
   /** Set the query node that the user will choose the best match to. */
-  void SetQueryNode(const Node& node);
+  void SetQueryNode(const Node& node) override;
 
   /** Update the source and target region outlines and display the source and target patches.*/
   void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
                          const itk::ImageRegion<2>& targetRegion);
 
   /** The slot to handle when the btnAccept button is clicked. */
-  void on_btnAccept_clicked();
+  void on_btnAccept_clicked() override;
 
   /** The slot to handle when the btnSelectManually button is clicked. */
-  void on_btnSelectManually_clicked();
+  void on_btnSelectManually_clicked() override;
 
   /** Get the node that user selected. */
   Node GetSelectedNode() const;
 
-  /** The list of nodes to display. */
-  std::vector<Node> Nodes;
-  //void on_btnRefresh_clicked();
-
-  /** Check if the selection is valid. */
-  bool IsSelectionValid() const;
-
-  /** After the listView has been clicked, this variable contains which item is selected. */
-  QModelIndex SelectedIndex;
-
+  /** Position this dialog to the right of its parent. */
   void PositionNextToParent();
 };
 
