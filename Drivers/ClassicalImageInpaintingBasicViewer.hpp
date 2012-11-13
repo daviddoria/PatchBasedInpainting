@@ -199,7 +199,7 @@ void ClassicalImageInpaintingBasicViewer(typename itk::SmartPointer<TImage> orig
 
   typedef BasicViewerWidget<TImage> BasicViewerWidgetType;
   BasicViewerWidgetType* basicViewer = new BasicViewerWidgetType(originalImage, mask);
-  std::cout << "basicViewer pointer: " << basicViewer << std::endl;
+//  std::cout << "basicViewer pointer: " << basicViewer << std::endl;
   basicViewer->ConnectVisitor(displayVisitor.get());
   basicViewer->show();
 

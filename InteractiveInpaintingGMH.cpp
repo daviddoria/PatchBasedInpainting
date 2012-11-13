@@ -30,13 +30,14 @@
 #include "Drivers/InteractiveInpaintingGMH.hpp"
 #include "Drivers/TestDriver.hpp"
 
-// Run with: image.png image.mask 15 filled.png
+// Run with: image.png image.mask 15 100 .1 filled.png
 int main(int argc, char *argv[])
 {
   // Verify arguments
   if(argc != 7)
   {
-    std::cerr << "Required arguments: image.png image.mask patchHalfWidth knn maxAllowedDifference output.png" << std::endl;
+    std::cerr << "Required arguments: image.png image.mask patchHalfWidth"
+              << " knn maxAllowedDifference output.png" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
     {

@@ -206,7 +206,7 @@ void ClassicalImageInpaintingBlurredBasicViewer(typename itk::SmartPointer<TImag
   typedef BasicViewerWidget<TImage> BasicViewerWidgetType;
 //  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(originalImage, mask)); // This shared_ptr will go out of scope when this function ends, so the window will immediately close
   BasicViewerWidgetType* basicViewer = new BasicViewerWidgetType(originalImage, mask);
-  std::cout << "basicViewer pointer: " << basicViewer << std::endl;
+//  std::cout << "basicViewer pointer: " << basicViewer << std::endl;
   basicViewer->ConnectVisitor(displayVisitor.get());
   basicViewer->show();
 

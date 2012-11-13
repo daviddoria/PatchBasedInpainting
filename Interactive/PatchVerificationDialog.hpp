@@ -137,6 +137,8 @@ void PatchVerificationDialog<TImage>::showEvent(QShowEvent*)
 
   // Setup the proposed patch
   gfxProposedPatch->fitInView(this->ProposedPatchItem);
+
+  DisplayPatchSelection();
 }
 
 template <typename TImage>
@@ -149,6 +151,8 @@ void PatchVerificationDialog<TImage>::closeEvent(QCloseEvent*)
 template <typename TImage>
 void PatchVerificationDialog<TImage>::on_btnAccept_clicked()
 {
+  this->SelectedNode = this->SourceNode;
+
   this->NumberOfVerifications++;
 
   accept();

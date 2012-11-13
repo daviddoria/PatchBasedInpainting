@@ -274,7 +274,7 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   typedef BasicViewerWidget<TImage> BasicViewerWidgetType;
 //  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(originalImage, mask)); // This shared_ptr will go out of scope when this function ends, so the window will immediately close
   BasicViewerWidgetType* basicViewer = new BasicViewerWidgetType(originalImage, mask);
-  std::cout << "basicViewer pointer: " << basicViewer << std::endl;
+//  std::cout << "basicViewer pointer: " << basicViewer << std::endl;
   basicViewer->ConnectVisitor(displayVisitor.get());
 
   // If the acceptance tests fail, prompt the user to select a patch. Pass the basicViewer as the parent so that we can position the top pathces dialog properly.
