@@ -77,14 +77,17 @@ struct GMHDifference
     typedef GradientImageType::PixelType::RealValueType ScalarType;
 
     typedef itk::NthElementImageAdaptor<TImage, ScalarType> ImageChannelAdaptorType;
-    typename ImageChannelAdaptorType::Pointer imageChannelAdaptor = ImageChannelAdaptorType::New();
+    typename ImageChannelAdaptorType::Pointer imageChannelAdaptor =
+        ImageChannelAdaptorType::New();
     imageChannelAdaptor->SetImage(this->Image);
 
-    // Initialize the final histograms. The channel histograms will be concatenated to form these final histograms.
+    // Initialize the final histograms. The channel histograms will be
+    // concatenated to form these final histograms.
     HistogramType targetHistogram;
     HistogramType sourceHistogram;
 
-    // These are reused in the loop to store the gradients of a single channel at a time
+    // These are reused in the loop to store the gradients of a single channel
+    // at a time.
     GradientImageType::Pointer channelGradients = GradientImageType::New();
 
     // Connect the gradients to their Norm adaptors. We use this filter to compute the magnitude of the gradient images
@@ -97,8 +100,16 @@ struct GMHDifference
     for(unsigned int channel = 0; channel < 3; ++channel) // 3 is the number of RGB channels
     {
       imageChannelAdaptor->SelectNthElement(channel);
+//      Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
+//                                          imageChannelAdaptor->GetLargestPossibleRegion(),
+//                                          channelGradients.GetPointer());
+
       Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
-                                          imageChannelAdaptor->GetLargestPossibleRegion(),
+                                          sourceRegion,
+                                          channelGradients.GetPointer());
+
+      Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
+                                          targetRegion,
                                           channelGradients.GetPointer());
 
       // This has to be set here after channelGradients has been set to the correct size in the gradient function.

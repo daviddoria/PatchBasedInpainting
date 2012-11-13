@@ -100,9 +100,9 @@ private:
   Mask::Pointer MaskImage;
 
   /** This variable is used to track whether or not the image size changed between this refresh and the last refresh.
-   * Typically it is simply used to determine if ResetCamera should be called before rendering. We typically do not
-   * want to call ResetCamera if only the image content has been changed, but we do want to call it if the image
-   * size has changed (typically this only when the image is changed, or setup for the first time). */
+    * Typically it is simply used to determine if ResetCamera should be called before rendering. We typically do not
+    * want to call ResetCamera if only the image content has been changed, but we do want to call it if the image
+    * size has changed (typically this only when the image is changed, or setup for the first time). */
   int ImageDimension[3];
 
   /** A wrapper that creates and holds the image, the mapper, and the actor. */

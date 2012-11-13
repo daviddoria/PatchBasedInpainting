@@ -128,14 +128,18 @@ void BasicViewerWidget<TImage>::slot_UpdateImage()
 {
 //  std::cout << "BasicViewerWidget::slot_UpdateImage()" << std::endl;
 
-  typename TImage::Pointer tempImage = TImage::New();
-  ITKHelpers::DeepCopy(this->Image.GetPointer(), tempImage.GetPointer());
+  // Show the masked image (should do this if the hole has not been blanked by the user)
+//  typename TImage::Pointer tempImage = TImage::New();
+//  ITKHelpers::DeepCopy(this->Image.GetPointer(), tempImage.GetPointer());
+//  typename TImage::PixelType zeroPixel(tempImage->GetNumberOfComponentsPerPixel());
+//  zeroPixel = itk::NumericTraits<typename TImage::PixelType>::ZeroValue(zeroPixel);
+//  this->MaskImage->ApplyToImage(tempImage.GetPointer(), zeroPixel);
+//  ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(tempImage.GetPointer(),
+//                                                       this->ImageLayer.ImageData);
 
-  typename TImage::PixelType zeroPixel(tempImage->GetNumberOfComponentsPerPixel());
-  zeroPixel = itk::NumericTraits<typename TImage::PixelType>::ZeroValue(zeroPixel);
-
-  this->MaskImage->ApplyToImage(tempImage.GetPointer(), zeroPixel);
-  ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(tempImage.GetPointer(), this->ImageLayer.ImageData);
+  // Show the image "as-is"
+  ITKVTKHelpers::ITKVectorImageToVTKImageFromDimension(this->Image.GetPointer(),
+                                                       this->ImageLayer.ImageData);
 
 //   if(chkScaleImage->isChecked())
 //   {
@@ -145,12 +149,14 @@ void BasicViewerWidget<TImage>::slot_UpdateImage()
   
   int dims[3];
   this->ImageLayer.ImageData->GetDimensions(dims);
-  if(dims[0] != ImageDimension[0] || dims[1] != ImageDimension[1] || dims[2] != ImageDimension[2])
+  if(dims[0] != this->ImageDimension[0] ||
+     dims[1] != this->ImageDimension[1] ||
+     dims[2] != this->ImageDimension[2])
   {
     this->Renderer->ResetCamera();
-    ImageDimension[0] = dims[0];
-    ImageDimension[1] = dims[1];
-    ImageDimension[2] = dims[2];
+    this->ImageDimension[0] = dims[0];
+    this->ImageDimension[1] = dims[1];
+    this->ImageDimension[2] = dims[2];
   }
 
   this->qvtkWidget->GetRenderWindow()->Render();

@@ -67,7 +67,7 @@ public:
   /** Destructor. */
   ~VerifyOrManual()
   {
-    std::cout << "VisualSelectionBest was used " << this->NumberOfUses
+    std::cout << "VerifyOrManual was used " << this->NumberOfUses
               << " times." << std::endl;
 
     delete this->PatchVerificationDialogHandlerInstance;

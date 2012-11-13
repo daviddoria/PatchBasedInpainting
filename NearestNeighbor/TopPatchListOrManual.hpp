@@ -67,7 +67,7 @@ public:
   /** Destructor. */
   ~TopPatchListOrManual()
   {
-    std::cout << "VisualSelectionBest was used " << this->NumberOfUses
+    std::cout << "TopPatchListOrManual was used " << this->NumberOfUses
               << " times." << std::endl;
 
     delete this->TopPatchesDialogHandlerInstance;

@@ -54,7 +54,7 @@ class SortByRGBTextureGradient : public Debug
   TImage* Image;
   Mask* MaskImage;
   unsigned int Iteration = 0;
-  unsigned int NumberOfBins;
+  unsigned int NumberOfBinsPerChannel;
 
   TImageToWrite* ImageToWrite = nullptr;
 
@@ -64,10 +64,10 @@ class SortByRGBTextureGradient : public Debug
 public:
   /** Constructor. This class requires the property map, an image, and a mask. */
   SortByRGBTextureGradient(PropertyMapType propertyMap, TImage* const image, Mask* const mask,
-                           unsigned int numberOfBins,
+                           unsigned int numberOfBinsPerChannel,
                            TImageToWrite* imageToWrite = nullptr, const Debug& debug = Debug()) :
     Debug(debug), PropertyMap(propertyMap), Image(image), MaskImage(mask),
-    NumberOfBins(numberOfBins), ImageToWrite(imageToWrite)
+    NumberOfBinsPerChannel(numberOfBinsPerChannel), ImageToWrite(imageToWrite)
   {
     // Compute the gradients in all source patches
     typedef itk::NthElementImageAdaptor<TImage, float> ImageChannelAdaptorType;
@@ -84,8 +84,11 @@ public:
       gradientImage->SetRegions(this->Image->GetLargestPossibleRegion());
       gradientImage->Allocate();
 
+      // Here we compute the gradient for the whole image. We only need
+      // to compute new gradients for target patches after they have been
+      // filled.
       Derivatives::MaskedGradient(imageChannelAdaptor.GetPointer(), this->MaskImage,
-                                    gradientImage.GetPointer());
+                                  gradientImage.GetPointer());
 
       this->ChannelGradients[channel] = gradientImage;
 
@@ -98,6 +101,7 @@ public:
     }
   }
 
+  /** A functor to sort regions by their index. */
   struct RegionSorter
   {
     itk::Functor::IndexLexicographicCompare<2> IndexCompareFunctor;
@@ -154,6 +158,9 @@ public:
     {
       imageChannelAdaptor->SelectNthElement(channel);
 
+      // Compute the gradient of the target region, as the gradient in this region
+      // might not have been computed in the constructor (if it is a target patch that was
+      // not originally filled).
       Derivatives::MaskedGradientInRegion(imageChannelAdaptor.GetPointer(), this->MaskImage,
                                           queryRegion, this->ChannelGradients[channel].GetPointer());
     }
@@ -186,8 +193,10 @@ public:
       bool allowOutside = false;
       HistogramType targetChannelHistogram =
         MaskedHistogramGeneratorType::ComputeMaskedScalarImageHistogram(
-            normImageAdaptor.GetPointer(), queryRegion, this->MaskImage, queryRegion, this->NumberOfBins,
-            minChannelGradientMagnitudes[channel], maxChannelGradientMagnitudes[channel],
+            normImageAdaptor.GetPointer(), queryRegion,
+            this->MaskImage, queryRegion, this->NumberOfBinsPerChannel,
+            minChannelGradientMagnitudes[channel],
+            maxChannelGradientMagnitudes[channel],
             allowOutside, this->MaskImage->GetValidValue());
 
       targetChannelHistogram.Normalize();
@@ -244,7 +253,7 @@ public:
           // We don't need a masked histogram since we are using the full source patch
           testChannelHistogram = HistogramGeneratorType::ComputeScalarImageHistogram(
                           normImageAdaptor.GetPointer(), currentRegion,
-                          this->NumberOfBins,
+                          this->NumberOfBinsPerChannel,
                           minChannelGradientMagnitudes[channel],
                           maxChannelGradientMagnitudes[channel], allowOutside);
 

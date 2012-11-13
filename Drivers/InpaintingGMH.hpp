@@ -58,7 +58,6 @@
 
 // Inpainting visitors
 #include "Visitors/InpaintingVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
 #include "Visitors/InpaintingVisitor.hpp"
 #include "Visitors/ReplayVisitor.hpp"
 #include "Visitors/InformationVisitors/LoggerVisitor.hpp"
@@ -174,7 +173,7 @@ void InpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
                                             imagePatchDescriptorMap, patchHalfWidth));
 
   // Acceptance visitor. Use the slightly blurred image here, as this the gradients will be less noisy.
-  unsigned int numberOfBinsPerChannel = 30;
+
   typedef AlwaysAccept<VertexListGraphType> AcceptanceVisitorType;
   std::shared_ptr<AcceptanceVisitorType> acceptanceVisitor(
         new AcceptanceVisitorType);
@@ -213,6 +212,7 @@ void InpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   std::shared_ptr<BestSearchType> bestSearch;
 
   // Use the slightlyBlurredImage here because we want the gradients to be less noisy
+  unsigned int numberOfBinsPerChannel = 30;
   typedef SortByRGBTextureGradient<ImagePatchDescriptorMapType,
                                    TImage > NeighborSortType;
   std::shared_ptr<NeighborSortType> neighborSortType(

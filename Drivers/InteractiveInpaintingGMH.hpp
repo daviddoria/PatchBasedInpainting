@@ -56,6 +56,7 @@
 
 // Acceptance visitors
 #include "Visitors/AcceptanceVisitors/GMHAcceptanceVisitor.hpp"
+#include "Visitors/AcceptanceVisitors/AlwaysAccept.hpp" // for speed testing
 
 // Information visitors
 #include "Visitors/InformationVisitors/DisplayVisitor.hpp"
@@ -63,7 +64,6 @@
 
 // Inpainting visitors
 #include "Visitors/InpaintingVisitor.hpp"
-#include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
 #include "Visitors/InpaintingVisitor.hpp"
 #include "Visitors/ReplayVisitor.hpp"
 #include "Visitors/InformationVisitors/LoggerVisitor.hpp"
@@ -193,14 +193,9 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
         new GMHAcceptanceVisitorType(slightlyBlurredImage.GetPointer(), mask, patchHalfWidth,
                                    maxAllowedDifference, numberOfBinsPerChannel));
 
-//  // If the hole is less than 15% of the patch, always accept the initial best match
-//  typedef HoleSizeAcceptanceVisitor<VertexListGraphType> HoleSizeAcceptanceVisitorType;
-//  std::shared_ptr<HoleSizeAcceptanceVisitorType> holeSizeAcceptanceVisitor(new HoleSizeAcceptanceVisitorType(mask, patchHalfWidth, .15));
-
-//  typedef CompositeAcceptanceVisitor<VertexListGraphType> CompositeAcceptanceVisitorType;
-//  std::shared_ptr<CompositeAcceptanceVisitorType> compositeAcceptanceVisitor(new CompositeAcceptanceVisitorType);
-//  compositeAcceptanceVisitor->AddRequiredPassVisitor(validRegionAverageAcceptance);
-//  compositeAcceptanceVisitor->AddOverrideVisitor(holeSizeAcceptanceVisitor);
+//  typedef AlwaysAccept<VertexListGraphType> GMHAcceptanceVisitorType;
+//  std::shared_ptr<GMHAcceptanceVisitorType> gmhAcceptanceVisitor(
+//        new GMHAcceptanceVisitorType);
 
   // Create the inpainting visitor
 //  typedef InpaintingVisitor<VertexListGraphType, BoundaryNodeQueueType,
@@ -268,12 +263,13 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
         new NeighborSortType(*imagePatchDescriptorMap, slightlyBlurredImage.GetPointer(), mask, numberOfBinsPerChannel));
 
   typedef KNNSearchAndSort<KNNSearchType, NeighborSortType, TImage> SearchAndSortType;
-  std::shared_ptr<SearchAndSortType> searchAndSort(new SearchAndSortType(knnSearch, neighborSortType, originalImage));
-
+  std::shared_ptr<SearchAndSortType> searchAndSort(
+        new SearchAndSortType(knnSearch, neighborSortType, originalImage));
 
   typedef BasicViewerWidget<TImage> BasicViewerWidgetType;
 //  std::shared_ptr<BasicViewerWidgetType> basicViewer(new BasicViewerWidgetType(originalImage, mask)); // This shared_ptr will go out of scope when this function ends, so the window will immediately close
-  BasicViewerWidgetType* basicViewer = new BasicViewerWidgetType(originalImage, mask);
+  BasicViewerWidgetType* basicViewer =
+      new BasicViewerWidgetType(originalImage, mask);
 //  std::cout << "basicViewer pointer: " << basicViewer << std::endl;
   basicViewer->ConnectVisitor(displayVisitor.get());
 
@@ -283,13 +279,14 @@ void InteractiveInpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
 //                                                                          patchHalfWidth, basicViewer));
 
   typedef VerifyOrManual<TImage> ManualSearchType;
-  std::shared_ptr<ManualSearchType> manualSearchBest(new ManualSearchType(originalImage, mask,
-                                                                          patchHalfWidth, basicViewer));
+  std::shared_ptr<ManualSearchType> manualSearchBest(
+        new ManualSearchType(originalImage, mask, patchHalfWidth, basicViewer));
 
   // Connect the viewer to the top patches selection widget
   basicViewer->ConnectWidget(manualSearchBest->GetTopPatchesDialog());
   basicViewer->show();
 
+  // View the priority of boundary pixels at each iteration
 //  typedef PriorityViewerWidget<PriorityType, BoundaryNodeQueueType::BoundaryStatusMapType> PriorityViewerType;
 //  PriorityViewerType* priorityViewer = new PriorityViewerType(priorityFunction.get(), fullRegion.GetSize(),
 //                                                              boundaryNodeQueue->GetBoundaryStatusMap());
