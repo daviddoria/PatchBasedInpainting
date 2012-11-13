@@ -361,7 +361,7 @@ if(inpainting_InteractiveInpaintingWithVerification)
     ADD_EXECUTABLE(InteractiveInpaintingWithVerification InteractiveInpaintingWithVerification.cpp
                    Drivers/InteractiveInpaintingWithVerification.hpp
                    Interactive/TopPatchesDialog.h
-                   NearestNeighbor/VisualSelectionBest.hpp
+                   NearestNeighbor/TopPatchListOrManual.hpp
                    Interactive/ManualPatchSelectionDialog.h
                    Interactive/ManualPatchSelectionDialogParent.h
                    Interactive/PriorityViewerWidget.h
@@ -379,16 +379,20 @@ if(inpainting_InteractiveInpaintingGMH)
                 Interactive/BasicViewerWidget.ui
                 Interactive/TopPatchesDialog.ui
                 Interactive/ManualPatchSelectionDialog.ui
+                Interactive/PatchVerificationDialog.ui
                 Interactive/PriorityViewerWidget.ui)
     ADD_EXECUTABLE(InteractiveInpaintingGMH InteractiveInpaintingGMH.cpp
                    Drivers/InteractiveInpaintingGMH.hpp
                    Interactive/TopPatchesDialog.h
-                   Interactive/DialogHandler.h
+                   Interactive/TopPatchesDialogHandler.h
                    Interactive/BasicViewerWidget.h
                    Interactive/ManualPatchSelectionDialogParent.h
                    Interactive/MovablePatch.h
                    Interactive/PriorityViewerWidget.h
-                   NearestNeighbor/VisualSelectionBest.hpp
+                   Interactive/PatchVerificationDialog.h
+                   Interactive/PatchVerificationDialogHandler.h
+                   NearestNeighbor/VerifyOrManual.hpp
+                   NearestNeighbor/TopPatchListOrManual.hpp
                    Visitors/InformationVisitors/DisplayVisitor.hpp
                    ${InteractiveInpaintingGMHUISrcs})
 

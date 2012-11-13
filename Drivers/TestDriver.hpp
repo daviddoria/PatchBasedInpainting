@@ -42,7 +42,7 @@
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/DefaultSearchBest.hpp"
 #include "NearestNeighbor/LinearSearchBest/Property.hpp"
-#include "NearestNeighbor/VisualSelectionBest.hpp"
+#include "NearestNeighbor/TopPatchListOrManual.hpp"
 #include "NearestNeighbor/FirstValidDescriptor.hpp"
 
 // Pixel descriptors

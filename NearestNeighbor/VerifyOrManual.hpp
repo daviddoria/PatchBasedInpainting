@@ -16,16 +16,15 @@
  *
  *=========================================================================*/
 
-#ifndef VisualSelectionBest_HPP
-#define VisualSelectionBest_HPP
+#ifndef VerifyOrManual_HPP
+#define VerifyOrManual_HPP
 
 // Submodules
 #include <Mask/Mask.h>
 
 // Custom
 #include "Node.h"
-#include "Interactive/TopPatchesDialog.h"
-#include "Interactive/DialogHandler.h"
+#include "Interactive/PatchVerificationDialogHandler.h"
 
 // STL
 #include <iostream>
@@ -40,14 +39,14 @@
   sends signals to the TopPatchesDialog that it puts in the GUI thread.
  */
 template <typename TImage>
-class VisualSelectionBest : public QObject
+class VerifyOrManual : public QObject
 {
 private:
   const TImage* Image;
   const Mask* MaskImage;
   unsigned int PatchHalfWidth;
 
-  DialogHandler<TImage>* TopPatchesDialogHandler;
+  PatchVerificationDialogHandler<TImage>* PatchVerificationDialogHandlerInstance;
 
   /** This variable tracks how many times the patch was selected by choosing it from the TopPatchesDialog. */
   unsigned int NumberOfUses = 0;
@@ -55,8 +54,8 @@ private:
 public:
 
   /** Contructor. */
-  VisualSelectionBest(const TImage* const image, const Mask* const mask,
-                      const unsigned int patchHalfWidth, QWidget* parent = nullptr) :
+  VerifyOrManual(const TImage* const image, const Mask* const mask,
+                 const unsigned int patchHalfWidth, QWidget* parent = nullptr) :
   Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
   {
     // Create a DialogHandler and move it to the main GUI thread.
@@ -66,7 +65,7 @@ public:
   }
 
   /** Destructor. */
-  ~VisualSelectionBest()
+  ~VerifyOrManual()
   {
     std::cout << "VisualSelectionBest was used " << this->NumberOfUses
               << " times." << std::endl;
@@ -125,6 +124,6 @@ public:
     return this->NumberOfUses;
   }
 
-}; // VisualSelectionBest
+}; // VerifyOrManual
 
 #endif

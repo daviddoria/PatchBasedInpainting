@@ -16,10 +16,10 @@
  *
  *=========================================================================*/
 
-#ifndef TopPatchesDialog_HPP
-#define TopPatchesDialog_HPP
+#ifndef PatchVerificationDialog_HPP
+#define PatchVerificationDialog_HPP
 
-#include "TopPatchesDialog.h" // Appease syntax parser
+#include "PatchVerificationDialog.h" // Appease syntax parser
 
 // ITK
 #include "itkCastImageFilter.h"
@@ -31,20 +31,22 @@
 // Qt
 #include <QGraphicsPixmapItem>
 
-// Custom
-#include "Helpers/Helpers.h"
-#include "ITKVTKHelpers/ITKVTKHelpers.h"
-#include "QtHelpers/QtHelpers.h"
-#include "InteractorStyleImageWithDrag.h"
-#include "Mask/Mask.h"
+// Submodules
 #include "Interactive/Delegates/PixmapDelegate.h"
 #include "Interactive/ManualPatchSelectionDialog.h"
 #include "Utilities/PatchHelpers.h"
+#include "InteractorStyleImageWithDrag.h"
+
+// Custom
+#include <Helpers/Helpers.h>
+#include <ITKVTKHelpers/ITKVTKHelpers.h>
+#include <QtHelpers/QtHelpers.h>
+#include <Mask/Mask.h>
 
 template <typename TImage>
-TopPatchesDialog<TImage>::TopPatchesDialog(const TImage* const image, const Mask* const mask,
+PatchVerificationDialog<TImage>::PatchVerificationDialog(const TImage* const image, const Mask* const mask,
                                            const unsigned int patchHalfWidth, QWidget* parent) :
-  TopPatchesDialogParent(parent), Image(image), MaskImage(mask),
+  PatchVerificationDialogParent(parent), Image(image), MaskImage(mask),
   PatchHalfWidth(patchHalfWidth)
 {
   this->setupUi(this);
@@ -79,14 +81,8 @@ TopPatchesDialog<TImage>::TopPatchesDialog(const TImage* const image, const Mask
   connect(this->listView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(slot_DoubleClicked(const QModelIndex&)));
 }
 
-//template <typename TImage>
-//TopPatchesDialog<TImage>::~TopPatchesDialog()
-//{
-//  std::cout << "TopPatchesDialog was used " << this->NumberOfUses << " times." << std::endl;
-//}
-
 template <typename TImage>
-void TopPatchesDialog<TImage>::SetSourceNodes(const std::vector<Node>& nodes)
+void PatchVerificationDialog<TImage>::SetSourceNodes(const std::vector<Node>& nodes)
 {
   this->Nodes = nodes;
 
@@ -95,7 +91,7 @@ void TopPatchesDialog<TImage>::SetSourceNodes(const std::vector<Node>& nodes)
 
 template <typename TImage>
 template <typename TNode>
-void TopPatchesDialog<TImage>::SetSourceNodes(const std::vector<TNode>& sourceNodes)
+void PatchVerificationDialog<TImage>::SetSourceNodes(const std::vector<TNode>& sourceNodes)
 {
   std::vector<Node> nodes;
   for(unsigned int i = 0; i < sourceNodes.size(); ++i)
@@ -108,7 +104,7 @@ void TopPatchesDialog<TImage>::SetSourceNodes(const std::vector<TNode>& sourceNo
 }
 
 template <typename TImage>
-void TopPatchesDialog<TImage>::SetQueryNode(const Node& queryNode)
+void PatchVerificationDialog<TImage>::SetQueryNode(const Node& queryNode)
 {
   this->QueryNode = queryNode;
 
@@ -147,39 +143,13 @@ void TopPatchesDialog<TImage>::SetQueryNode(const Node& queryNode)
 }
 
 template <typename TImage>
-void TopPatchesDialog<TImage>::slot_DoubleClicked(const QModelIndex& selected)
-{
-  if(selected.row() == 0)
-  {
-    this->NumberOfVerifications++;
-  }
-  else
-  {
-    this->NumberOfCorrections++;
-  }
-
-  this->SelectedNode = this->Nodes[selected.row()];
-  this->ValidSelection = true;
-  //std::cout << "Selected " << selected.row() << std::endl;
-//  std::cout << "SelectedNode : " << this->SelectedNode[0] << " "
-//            << this->SelectedNode[1] << std::endl;
-  accept();
-}
-
-template <typename TImage>
-void TopPatchesDialog<TImage>::slot_SingleClicked(const QModelIndex& selected)
-{
-  DisplayPatchSelection(selected);
-}
-
-template <typename TImage>
-Node TopPatchesDialog<TImage>::GetSelectedNode() const
+Node PatchVerificationDialog<TImage>::GetSelectedNode() const
 {
   return this->SelectedNode;
 }
 
 template <typename TImage>
-void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
+void PatchVerificationDialog<TImage>::showEvent(QShowEvent* event)
 {
 //  std::cout << "TopPatchesDialog::showEvent()" << std::endl;
 
@@ -197,14 +167,22 @@ void TopPatchesDialog<TImage>::showEvent(QShowEvent* event)
 }
 
 template <typename TImage>
-void TopPatchesDialog<TImage>::closeEvent(QCloseEvent*)
+void PatchVerificationDialog<TImage>::closeEvent(QCloseEvent*)
 {
   std::cout << "There is no recourse if you do not select a patch!" << std::endl;
   QApplication::quit();
 }
 
 template <typename TImage>
-void TopPatchesDialog<TImage>::on_btnSelectManually_clicked()
+void PatchVerificationDialog<TImage>::on_btnAccept_clicked()
+{
+  this->NumberOfVerifications++;
+
+  accept();
+}
+
+template <typename TImage>
+void PatchVerificationDialog<TImage>::on_btnSelectManually_clicked()
 {
   itk::Index<2> queryIndex = ITKHelpers::CreateIndex(this->QueryNode);
 
@@ -234,38 +212,15 @@ void TopPatchesDialog<TImage>::on_btnSelectManually_clicked()
 }
 
 template <typename TImage>
-void TopPatchesDialog<TImage>::Report()
+void PatchVerificationDialog<TImage>::Report()
 {
   std::cout << "Selection report:" << std::endl
             << "Verifications: " << this->NumberOfVerifications
-            << "Corrections: " << this->NumberOfCorrections
             << "Manual Selections: " << this->NumberOfManualSelections << std::endl;
 }
 
 template <typename TImage>
-bool TopPatchesDialog<TImage>::IsSelectionValid() const
-{
-  return this->ValidSelection;
-}
-
-template <typename TImage>
-void TopPatchesDialog<TImage>::on_btnSavePair_clicked()
-{
-  // Save the query patch
-  itk::Index<2> queryIndex = ITKHelpers::CreateIndex(QueryNode);
-  itk::ImageRegion<2> queryRegion = ITKHelpers::GetRegionInRadiusAroundPixel(queryIndex, PatchHalfWidth);
-  ITKHelpers::WriteRegionAsRGBImage(this->Image, queryRegion, "query.png");
-
-  // Save the source patch
-  // Can't do this - it is protected. Instead we have created a member variable 'SelectedIndex'.
-  //QModelIndex selectedIndex = this->listView->selectedIndexes().begin(); 
-  itk::Index<2> sourceIndex = ITKHelpers::CreateIndex(Nodes[this->SelectedIndex.row()]);
-  itk::ImageRegion<2> sourceRegion = ITKHelpers::GetRegionInRadiusAroundPixel(sourceIndex, PatchHalfWidth);
-  ITKHelpers::WriteRegionAsRGBImage(this->Image, sourceRegion, "source.png");
-}
-
-template <typename TImage>
-void TopPatchesDialog<TImage>::PositionNextToParent()
+void PatchVerificationDialog<TImage>::PositionNextToParent()
 {
   if(this->parentWidget())
   {
@@ -275,7 +230,7 @@ void TopPatchesDialog<TImage>::PositionNextToParent()
 }
 
 template <typename TImage>
-void TopPatchesDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sourceRegionIn,
+void PatchVerificationDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sourceRegionIn,
                                                  const itk::ImageRegion<2>& targetRegionIn)
 {
 //  std::cout << "TopPatchesDialog::slot_UpdateResult" << std::endl;
@@ -336,7 +291,7 @@ void TopPatchesDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sour
 }
 
 template <typename TImage>
-void TopPatchesDialog<TImage>::DisplayPatchSelection(QModelIndex selected)
+void PatchVerificationDialog<TImage>::DisplayPatchSelection(QModelIndex selected)
 {
 //  std::cout << "Leave TopPatchesDialog::DisplayPatchSelection" << std::endl;
   itk::Index<2> queryIndex = ITKHelpers::CreateIndex(this->QueryNode);

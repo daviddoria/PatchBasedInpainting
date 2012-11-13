@@ -27,7 +27,8 @@ StorageAndSearchFunctor.hpp
 ThreeStepNearestNeighbor.hpp
 topological_search.hpp
 TwoStepNearestNeighbor.hpp
-VisualSelectionBest.hpp
+TopPatchListOrManual.hpp
+VerifyOrManual.hpp
 weak_metric_space_concept.hpp
 DummyWriter.hpp)
 

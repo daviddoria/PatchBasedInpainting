@@ -16,12 +16,12 @@
  *
  *=========================================================================*/
 
-#ifndef DialogHandler_H
-#define DialogHandler_H
+#ifndef TopPatchesDialogHandler_H
+#define TopPatchesDialogHandler_H
 
 #include "TopPatchesDialog.h"
 
-class DialogHandlerParent : public QObject
+class TopPatchesDialogHandlerParent : public QObject
 {
 Q_OBJECT
 
@@ -33,7 +33,7 @@ public slots:
   virtual void slot_RunDialog(Node* selectedNode) = 0;
 
 public:
-  DialogHandlerParent()
+  TopPatchesDialogHandlerParent()
   {
     /** When this class' signal is emitted, it should call its own slot. */
     connect(this, SIGNAL( signal_RunDialog(Node*) ), this, SLOT( slot_RunDialog(Node*) ),
@@ -51,7 +51,7 @@ public:
 };
 
 template <typename TImage>
-class DialogHandler : public DialogHandlerParent
+class TopPatchesDialogHandler : public TopPatchesDialogHandlerParent
 {
   const TImage* Image;
   const Mask* MaskImage;
@@ -62,9 +62,9 @@ class DialogHandler : public DialogHandlerParent
   TopPatchesDialog<TImage>* TopPatchesChooser;
 
 public:
-  DialogHandler(const TImage* image, const Mask* mask, const unsigned int patchHalfWidth,
+  TopPatchesDialogHandler(const TImage* image, const Mask* mask, const unsigned int patchHalfWidth,
                 QWidget* parent = nullptr) :
-    DialogHandlerParent(),
+    TopPatchesDialogHandlerParent(),
     Image(image), MaskImage(mask), PatchHalfWidth(patchHalfWidth)
   {
     this->TopPatchesChooser =
@@ -76,7 +76,7 @@ public:
     return this->TopPatchesChooser;
   }
 
-  ~DialogHandler()
+  ~TopPatchesDialogHandler()
   {
     delete this->TopPatchesChooser;
   }
@@ -99,7 +99,7 @@ public:
   {
     this->TopPatchesChooser->SetQueryNode(this->QueryNode);
     this->TopPatchesChooser->SetSourceNodes(this->SourceNodes);
-    TopPatchesChooser->PositionNextToParent();
+    this->TopPatchesChooser->PositionNextToParent();
     this->TopPatchesChooser->exec();
 
     if(!this->TopPatchesChooser->IsSelectionValid())
@@ -113,4 +113,4 @@ public:
   }
 };
 
-#endif // DialogHandler_H
+#endif // TopPatchesDialogHandler_H

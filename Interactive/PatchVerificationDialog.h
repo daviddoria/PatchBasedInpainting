@@ -16,10 +16,10 @@
  *
  *=========================================================================*/
 
-#ifndef TopPatchesDialog_H
-#define TopPatchesDialog_H
+#ifndef PatchVerificationDialog_H
+#define PatchVerificationDialog_H
 
-#include "ui_TopPatchesDialog.h"
+#include "ui_PatchVerificationDialog.h"
 
 // Qt
 #include <QDialog>
@@ -33,16 +33,16 @@
 #include <Mask/Mask.h>
 
 /** This class is necessary because a class template cannot have the Q_OBJECT macro directly. */
-class TopPatchesDialogParent : public QDialog, public Ui::TopPatchesDialog
+class PatchVerificationDialogParent : public QDialog, public Ui::PatchVerificationDialog
 {
 Q_OBJECT
 
 public:
   /** Constructor. */
-  TopPatchesDialogParent(QWidget* parent = nullptr) : QDialog(parent) {}
+  PatchVerificationDialogParent(QWidget* parent = nullptr) : QDialog(parent) {}
 
 signals:
-  virtual void signal_SelectedRegion(const itk::ImageRegion<2>&) const;
+  void signal_SelectedRegion(const itk::ImageRegion<2>&) const; // We treat this as virtual, but Qt says "Signals cannot be declared virtual."
 
 public slots:
 
@@ -52,8 +52,8 @@ public slots:
   /** Set the query node. */
   virtual void SetQueryNode(const Node& queryNode) = 0;
 
-  /** The slot to handle when the btnSavePair button is clicked. */
-  virtual void on_btnSavePair_clicked() = 0;
+  /** The slot to handle when the btnAccept button is clicked. */
+  virtual void on_btnAccept_clicked() = 0;
 
   /** When the user clicks a patch in the list, how the proposed completed patch and emit
     * a signal so viewers can update their views. */
@@ -72,7 +72,7 @@ public slots:
 
 /** This class displays a set of patches in an ordered list. */
 template <typename TImage>
-class TopPatchesDialog : public TopPatchesDialogParent
+class PatchVerificationDialog : public PatchVerificationDialogParent
 {
 private:
   /** The image that will be displayed, and the from which the patches will be extracted before being displayed. */
@@ -86,9 +86,6 @@ private:
 
   /** Store the selected node. */
   Node SelectedNode;
-
-  /** Indicates if the selection was valid. */
-  bool ValidSelection = false;
 
   /** The half-width of the patch. */
   unsigned int PatchHalfWidth;
@@ -129,22 +126,16 @@ private:
   /** This variable tracks how many times the top patch was selected from the list. */
   unsigned int NumberOfVerifications = 0;
 
-  /** This variable tracks how many times a non-top patch was selected from the list. */
-  unsigned int NumberOfCorrections = 0;
-
   /** This variable tracks how many times the patch was selected by manually positioning. */
   unsigned int NumberOfManualSelections = 0;
 
 public:
   /** Constructor */
-  TopPatchesDialog(const TImage* const image, const Mask* const mask,
-                   const unsigned int patchHalfWidth, QWidget* parent = nullptr);
+  PatchVerificationDialog(const TImage* const image, const Mask* const mask,
+                          const unsigned int patchHalfWidth, QWidget* parent = nullptr);
 
   /** Output information about how many selections were used. */
   void Report();
-
-//  /** Destructor. */
-//  ~TopPatchesDialog();
 
   /** Set the source nodes from which the user can choose. */
   void SetSourceNodes(const std::vector<Node>& nodes);
@@ -156,18 +147,12 @@ public:
   /** Set the query node that the user will choose the best match to. */
   void SetQueryNode(const Node& node);
 
-  /** Catch the signal that the ListView emits when it is clicked. */
-  void slot_SingleClicked(const QModelIndex & index);
-
-  /** Catch the signal that the ListView emits when it is double clicked. */
-  void slot_DoubleClicked(const QModelIndex & index);
-
-  /** The slot to handle when the btnSavePair button is clicked. */
-  void on_btnSavePair_clicked();
-
   /** Update the source and target region outlines and display the source and target patches.*/
   void slot_UpdateResult(const itk::ImageRegion<2>& sourceRegion,
                          const itk::ImageRegion<2>& targetRegion);
+
+  /** The slot to handle when the btnAccept button is clicked. */
+  void on_btnAccept_clicked();
 
   /** The slot to handle when the btnSelectManually button is clicked. */
   void on_btnSelectManually_clicked();
@@ -188,6 +173,6 @@ public:
   void PositionNextToParent();
 };
 
-#include "TopPatchesDialog.hpp"
+#include "PatchVerificationDialog.hpp"
 
-#endif // TopPatchesDialog_H
+#endif // PatchVerificationDialog_H

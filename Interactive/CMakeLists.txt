@@ -38,14 +38,20 @@ NamedITKImageCollection.h
 NamedITKImage.h
 NamedVTKImage.h
 PatchHighlighter.h
+PatchVerificationDialog.h
+PatchVerificationDialog.hpp
 PriorityViewerWidget.h
 PriorityViewerWidget.hpp
 SourceTargetPair.h
 TopPatchesDialog.h
 TopPatchesDialog.hpp
+TopPatchesDialogHandler.h
 TopPatchesWidget.h
 TopPatchesWidget.hpp
 VectorLayer.h
+PatchVerificationDialog.h
+PatchVerificationDialog.hpp
+PatchVerificationDialogHandler.h
 )
 
 add_library(InpaintingGUI Layer.cpp InteractorStyleImageWithDrag.cpp
