@@ -109,7 +109,6 @@ void InpaintingAlgorithmWithVerification(std::shared_ptr<TVertexListGraph> graph
       }
     }
 
-
     // Do the in-painting of the target patch from the source patch.
     // the inpaint_patch functor should take care of calling
     // "vis.paint_vertex(target, source)" on the individual vertices in the patch.
@@ -128,7 +127,7 @@ void InpaintingAlgorithmWithVerification(std::shared_ptr<TVertexListGraph> graph
   }
 
   std::cout << "Inpainting complete after " << iteration
-            << "iterations." << std::endl;
+            << " iterations." << std::endl;
 
   visitor->InpaintingComplete();
   manualNeighborFinder->Report();

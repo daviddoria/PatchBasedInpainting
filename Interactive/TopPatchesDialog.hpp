@@ -237,8 +237,8 @@ template <typename TImage>
 void TopPatchesDialog<TImage>::Report()
 {
   std::cout << "Selection report:" << std::endl
-            << "Verifications: " << this->NumberOfVerifications
-            << "Corrections: " << this->NumberOfCorrections
+            << "Verifications: " << this->NumberOfVerifications << std::endl
+            << "Corrections: " << this->NumberOfCorrections << std::endl
             << "Manual Selections: " << this->NumberOfManualSelections << std::endl;
 }
 

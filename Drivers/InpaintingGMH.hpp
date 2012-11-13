@@ -43,7 +43,6 @@
 #include "NearestNeighbor/DefaultSearchBest.hpp"
 #include "NearestNeighbor/LinearSearchBest/Property.hpp"
 #include "NearestNeighbor/LinearSearchBest/First.hpp"
-#include "NearestNeighbor/VisualSelectionBest.hpp"
 #include "NearestNeighbor/FirstValidDescriptor.hpp"
 #include "NearestNeighbor/SortByRGBTextureGradient.hpp"
 #include "NearestNeighbor/KNNSearchAndSort.hpp"

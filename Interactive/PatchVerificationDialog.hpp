@@ -192,7 +192,7 @@ template <typename TImage>
 void PatchVerificationDialog<TImage>::Report()
 {
   std::cout << "Selection report:" << std::endl
-            << "Verifications: " << this->NumberOfVerifications
+            << "Verifications: " << this->NumberOfVerifications << std::endl
             << "Manual Selections: " << this->NumberOfManualSelections << std::endl;
 }
 

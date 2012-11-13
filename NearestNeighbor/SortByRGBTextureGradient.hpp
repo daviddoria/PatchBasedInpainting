@@ -130,7 +130,7 @@ public:
                              typename TIterator::value_type query,
                              TOutputIterator outputFirst)
   {
-    std::cout << "Start SortByRGBTextureGradient::operator()" << std::endl;
+//    std::cout << "Start SortByRGBTextureGradient::operator()" << std::endl;
     // If the input element range is empty, there is nothing to do.
     if(first == last)
     {
@@ -195,6 +195,8 @@ public:
       targetHistogram.Append(targetChannelHistogram);
     }
 
+    targetHistogram.Normalize();
+
     // Initialize
     float bestDistance = std::numeric_limits<float>::max();
     TIterator bestPatch = last;
@@ -258,8 +260,12 @@ public:
         testHistogram.Append(testChannelHistogram);
       }
 
+      testHistogram.Normalize();
+
       // Compute the differences in the histograms
-      float histogramDifference = HistogramDifferences::HistogramDifference(targetHistogram, testHistogram);
+      float histogramDifference =
+          HistogramDifferences::HistogramDifference(targetHistogram,
+                                                    testHistogram);
 
       scores[currentPatch - first] = histogramDifference;
 
@@ -283,7 +289,8 @@ public:
 
     typedef ParallelSort<float> ParallelSortType;
 
-    ParallelSortType::IndexedVector sortedScores = ParallelSortType::ParallelSortAscending(scores);
+    ParallelSortType::IndexedVector sortedScores =
+        ParallelSortType::ParallelSortAscending(scores);
 
     std::cout << "Best patch has score " << sortedScores[0].value << std::endl;
 
@@ -308,7 +315,7 @@ public:
 
     this->Iteration++;
 
-    std::cout << "End SortByRGBTextureGradient::operator()" << std::endl;
+//    std::cout << "End SortByRGBTextureGradient::operator()" << std::endl;
 
     return outputFirst;
   } // end operator()

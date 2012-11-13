@@ -90,7 +90,7 @@ InpaintingAlgorithm(std::shared_ptr<TVertexListGraph> graph,
   } // end main iteration loop
 
   std::cout << "Inpainting complete after " << iteration
-            << "iterations." << std::endl;
+            << " iterations." << std::endl;
   visitor->InpaintingComplete();
 }
 

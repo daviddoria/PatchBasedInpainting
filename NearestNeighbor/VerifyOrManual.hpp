@@ -108,7 +108,7 @@ public:
     std::cout << "ManualPatchSelectionDialog has been used " << this->NumberOfUses << " times." << std::endl;
     this->NumberOfUses++;
 
-    std::cout << "Returning selected node..." << std::endl;
+//    std::cout << "Returning selected node..." << std::endl;
     return Helpers::ConvertFrom<TVertexDescriptor, Node>(selectedNode);
   }
 
