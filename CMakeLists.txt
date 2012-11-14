@@ -15,13 +15,6 @@ SET(ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_AUTOMOC TRUE)
 set(CMAKE_AUTOMOC_MOC_OPTIONS "-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED") # Fixes Parse error at "BOOST_JOIN" error (https://bugreports.qt-project.org/browse/QTBUG-22829)
 
-# A function to get all user defined variables with a specified prefix
-function (getListOfVarsStartingWith _prefix _varResult)
-    get_cmake_property(_vars VARIABLES)
-    string (REGEX MATCHALL "(^|;)${_prefix}[A-Za-z0-9_]*" _matchedVars "${_vars}")
-    set (${_varResult} ${_matchedVars} PARENT_SCOPE)
-endfunction()
-
 # Where to copy executables when 'make install' is run
 SET(INSTALL_DIR ${CMAKE_INSTALL_PREFIX} )
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) #fix the dynamic linking error (RPATH) that would occur without this
@@ -122,7 +115,7 @@ add_subdirectory(SpeedTests)
 add_subdirectory(Utilities)
 add_subdirectory(Visitors)
 
-# Core source files
+# Create a library of the core source files
 add_library(PatchBasedInpainting
 ImageProcessing/Derivatives.cpp
 Utilities/itkCommandLineArgumentParser.cxx
@@ -135,12 +128,11 @@ Priority/PriorityRandom.cpp
 )
 
 # Add the library to the list of libraries that are required to use this as a submodule.
-set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} PatchBasedInpainting)
+set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries}
+      PatchBasedInpainting)
 
 # Allow this project to be detected and used as a submodule
-set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${CMAKE_CURRENT_SOURCE_DIR})
-set_property(GLOBAL PROPERTY PatchBasedInpaintingIncludeDirs ${PatchBasedInpainting_include_dirs})
-set_property(GLOBAL PROPERTY PatchBasedInpaintingLibs ${PatchBasedInpainting_libraries})
+CreateSubmodule(PatchBasedInpainting)
 
 ############ Executables ###########
 
@@ -360,33 +352,15 @@ if(inpainting_ClassicalImageInpaintingBasicViewer)
     INSTALL( TARGETS ClassicalImageInpaintingBasicViewer RUNTIME DESTINATION ${INSTALL_DIR} )
 endif()
 
-option(BuildInpaintingTests "Build inpainting tests.")
-if(BuildInpaintingTests)
-  ENABLE_TESTING()
-#  add_subdirectory(Testing)
+option(PatchBasedInpainting_BuildTests "Build PatchBasedInpainting tests?" OFF)
+if(PatchBasedInpainting_BuildTests)
+  add_subdirectory(Testing)
   add_subdirectory(Tests)
-  #add_subdirectory(Priority/Tests)
-  #add_subdirectory(ImageProcessing/Tests)
-  #add_subdirectory(NearestNeighbor/Tests)
-  #add_subdirectory(Helpers/Tests)
-  #add_subdirectory(Utilities/Tests)
-   add_subdirectory(Interactive/Tests)
 endif()
 
 ############################
-option(BuildInteractiveInpaintingTests "Build interactive tests.")
-if(BuildInteractiveInpaintingTests)
-  ENABLE_TESTING()
-  add_subdirectory(Interactive/Tests)
-ENDIF()
 
-option(BuildDifferenceFunctionsTests "Build difference functions tests.")
-if(BuildDifferenceFunctionsTests)
-  ENABLE_TESTING()
-  add_subdirectory(DifferenceFunctions/Tests)
-ENDIF()
-
-option(BuildInpaintingDemos "Build demos.")
+option(PatchBasedInpainting_BuildDemos "Build PatchBasedInpainting demos?")
 if(BuildInpaintingDemos)
   add_subdirectory(Demos)
 endif()

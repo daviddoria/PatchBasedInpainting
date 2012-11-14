@@ -20,3 +20,8 @@ WeightedImagePatchDifference.hpp
 WeightedSumAbsolutePixelDifference.hpp
 WeightedSumSquaredPixelDifference.hpp
 )
+
+option(PatchBasedInpainting_DifferenceFunctions_BuildTests "Build PatchBasedInpainting DifferenceFunctions tests.")
+if(PatchBasedInpainting_DifferenceFunctions_BuildTests)
+  add_subdirectory(DifferenceFunctions/Tests)
+ENDIF()

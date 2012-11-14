@@ -1,3 +1,5 @@
+ENABLE_TESTING()
+
 include_directories(../) # The Interactive directory
 include_directories(../../) # The main PatchBasedInpainting}directory
 include_directories(../../Testing)

@@ -102,7 +102,7 @@ target_link_libraries(InpaintingGUI ${PatchBasedInpainting_libraries})
 #   INSTALL( TARGETS PatchBasedInpaintingViewer RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif(BuildViewer)
 
-option(PatchBasedInpainting_BuildInteractiveTests "Build Interactive tests?" OFF)
+option(PatchBasedInpainting_BuildInteractiveTests "Build PatchBasedInpainting Interactive tests?" OFF)
 if(PatchBasedInpainting_BuildInteractiveTests)
  add_subdirectory(Tests)
 endif(PatchBasedInpainting_BuildInteractiveTests)
