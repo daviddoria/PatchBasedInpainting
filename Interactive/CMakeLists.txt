@@ -46,8 +46,6 @@ SourceTargetPair.h
 TopPatchesDialog.h
 TopPatchesDialog.hpp
 TopPatchesDialogHandler.h
-TopPatchesWidget.h
-TopPatchesWidget.hpp
 VectorLayer.h
 PatchVerificationDialog.h
 PatchVerificationDialog.hpp
