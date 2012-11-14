@@ -391,35 +391,8 @@ if(BuildInpaintingDemos)
   add_subdirectory(Demos)
 endif()
 
-# Add options to allow enabling/disabling of a set of targets
-option(TurnOnAllInpainting "Turn on all variables starting with inpainting_")
-option(TurnOffAllInpainting "Turn off all variables starting with inpainting_")
-
-if(TurnOnAllInpainting AND TurnOffAllInpainting)
-  message(FATAL_ERROR "You cannot turn targets on and off at the same time!")
-endif()
-
-if(TurnOnAllInpainting)
-    getListOfVarsStartingWith("inpainting_" matchedVars)
-    foreach (_var IN LISTS matchedVars)
-        get_property(currentHelpString CACHE "${_var}" PROPERTY HELPSTRING)
-        set(${_var} ON CACHE BOOL ${currentHelpString} FORCE)
-    endforeach()
-
-    get_property(turnOnHelpString CACHE "TurnOnAll" PROPERTY HELPSTRING)
-    set(TurnOnAllInpainting OFF CACHE BOOL ${turnOnHelpString} FORCE)  # Set itself back to off, as this is a one time thing.
-endif()
-
-if(TurnOffAllInpainting)
-    getListOfVarsStartingWith("inpainting_" matchedVars)
-    foreach (_var IN LISTS matchedVars)
-        get_property(currentHelpString CACHE "${_var}" PROPERTY HELPSTRING)
-        set(${_var} OFF CACHE BOOL ${currentHelpString} FORCE)
-    endforeach()
-
-    get_property(turnOffHelpString CACHE "TurnOnAll" PROPERTY HELPSTRING)
-    set(TurnOffAllInpainting OFF CACHE BOOL ${turnOffHelpString} FORCE)  # Set itself back to off, as this is a one time thing.
-endif()
+# Add options to allow enabling/disabling of the set of variables starting with Inpainting_
+ToggleGroup(Inpainting)
 
 # Display where this code was used from (if it is used as a submodule, there may be multiple instances of this submodule in the project, only the first of which is used)
 option(PatchBasedInpainting_ShowSubmoduleLocation "Show the path from which PatchBasedInpainting was used?" OFF)
