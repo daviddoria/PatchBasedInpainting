@@ -96,9 +96,8 @@
 #include "Inpainters/PatchInpainter.hpp"
 
 // Difference functions
-#include "DifferenceFunctions/ImagePatchDifference.hpp"
-#include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
-#include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
+#include "DifferenceFunctions/Patch/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/Pixel/SumSquaredPixelDifference.hpp"
 
 // Utilities
 #include "Utilities/PatchHelpers.h"

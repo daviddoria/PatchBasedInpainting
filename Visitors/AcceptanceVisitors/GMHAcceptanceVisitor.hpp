@@ -24,7 +24,7 @@
 // Parent class
 #include "Visitors/AcceptanceVisitors/AcceptanceVisitorParent.h"
 
-#include "DifferenceFunctions/GMHDifference.hpp"
+#include "DifferenceFunctions/Patch/GMHDifference.hpp"
 
 // Submodules
 #include <Mask/Mask.h>

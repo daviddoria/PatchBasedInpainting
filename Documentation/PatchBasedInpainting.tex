@@ -11,7 +11,7 @@ backref,
 colorlinks,linkcolor={blue},citecolor={blue},urlcolor={blue},
 ]{hyperref}
 
-\title{Criminisi Inpainting}
+\title{A Patch-Based Inpainting Framework}
 
 % 
 % NOTE: This is the last number of the "handle" URL that 
@@ -30,7 +30,6 @@ colorlinks,linkcolor={blue},citecolor={blue},urlcolor={blue},
 
 \author{David Doria}
 \authoraddress{Rensselaer Polytechnic Institute, Troy NY}
-
 
 \begin{document}
 
@@ -60,10 +59,12 @@ colorlinks,linkcolor={blue},citecolor={blue},urlcolor={blue},
 
 \begin{abstract}
 \noindent
-This document presents a system to fill a hole in an image by copying patches from elsewhere in the image. These patches should be a good continuation of the hole boundary into the hole. The patch copying is done in an order which attempts to preserve linear structures in the image. This implementation is based on the algorithm described in ``Object Removal by Exemplar-Based Inpainting'' (Criminisi et. al.).
+This document describes a system to fill a hole in an image by copying patches from elsewhere in the image. These patches should be a good continuation of the image outside the hole boundary into the hole. The implementation is very generic, allowing the develop to select or easily add new methods for the patch priority order, patch comparison function, and other parameters of the algorithm.
+
+The ``basic'' algorithm is called ClassicalImpageInpainting and is based on the algorithm described in ``Object Removal by Exemplar-Based Inpainting'' (Criminisi et. al.).
 
 The code is available here:
-https://github.com/daviddoria/Inpainting
+https://github.com/daviddoria/PatchBasedInpainting
 
 \end{abstract}
 
@@ -71,13 +72,51 @@ https://github.com/daviddoria/Inpainting
 
 \tableofcontents
 \section{Introduction}
-This document presents a system to fill a hole in an image by copying patches from elsewhere in the image. These patches should be a good continuation of the hole boundary into the hole. The patch copying is done in an order which attempts to preserve linear structures in the image. This implementation is entirely based on the algorithm described in \cite{criminisi}. There are many subtle details of the implementation which are explained throughout this paper.
+This document describes a system to fill a hole in an image by copying patches from elsewhere in the image. These patches should be a good continuation of the hole boundary into the hole. The patch copying is done in an order which attempts to preserve linear structures in the image.
+
+\section{Dependencies}
+This code makes heavy use of multiple libraries:
+
+\begin{itemize}
+ \item VTK >= 6.0
+ \item ITK >= 4.2
+ \item Boost >= 1.51
+ \item CMake >= 2.8.6
+ \item Qt >= 4.8
+\end{itemize}
+
+The code is also organized into git submodules. These are included if you clone with:
+\begin{verbatim}
+git clone --recursive https://github.com/daviddoria/PatchBasedInpainting.git 
+\end{verbatim}
+
+or 
+
+\begin{verbatim}
+git clone https://github.com/daviddoria/PatchBasedInpainting.git
+git submodule update --init --recursive
+\end{verbatim}
+
+The required submodules are:
+
+\begin{itemize}
+ \item Mask
+ \item ITKHelpers (via Mask)
+ \item Helpers (via Mask\\ITKHelpers)
+ \item BoostHelpers
+ \item CMakeHelpers
+ \item ITKQtHelpers
+ \item ITKVTKCamera
+ \item ITKVTKHelpers
+ \item QtHelpers
+ \item VTKHelpers
+\end{itemize}
 
 \section{Terminology}
 Throughout this document, the ``source region'' is the portion of the image which is known (is not part of the hole) at the beginning. The ``target region'' is the current hole to be filled.
 
-\section{Algorithm Overview}
-The inputs to the algorithm consist of an image and a binary mask the same size as the image. Non-zero pixels in the mask indicate the region of the image which is to be considered the hole to inpaint/complete. Throughout this paper, we have colored the region in the input image corresponding to the hole bright green. This color irrelevant - we have done this only to make it obvious to tell if any part of the hole remains after inpainting (it should not). In practice, the input image need not be modified.
+\section{Basic Algorithm Overview}
+The inputs to the algorithm consist of an image and a binary mask the same size as the image. We use a custom Mask class to describe the hole (https://github.com/daviddoria/Mask). Throughout this paper, we have colored the region in the input image corresponding to the hole bright green. This color irrelevant - we have done this only to make it obvious to tell if any part of the hole remains after inpainting (it should not), and for easier debugging to ensure these pixels are not used in any part of the computation. In practice, the input image need not be modified.
 
 \section{Algorithm Synthetic Demonstration}
 Figure \ref{fig:SyntheticDemonstration} shows a synthetic demonstration of the algorithm. The image consists of a black region (top) and a gray region (bottom).  This simple example is used for testing because we know the result to expect - the dividing line between the black region and gray region should be continued smoothly.
@@ -157,42 +196,28 @@ The two main parts of the algorithm are
  \item Find the best matching patch to the patch around the pixel with the highest priority.
 \end{enumerate}
 
+%%%%%%%%%%%%%%%%%%
+\section{Priority Functions}
+\label{sec:PriorityFunctions}
+\subsection{PriorityCriminisi}
+The priority function is used to determine which target patch to fill next. The priority term described in \cite{criminis} is is given by the product of a Confidence term $C(p)$ and a Data term $D(p)$. This priority function attempts to both continue linear structures sooner rather than later, and fill patches where a larger number of the pixels in the patch are already filled.
 
-\subsection{Priorities}
-\label{subsec:AlgorithmDetails:Priorities}
+\subsection{PriorityConfidence}
+This priority function is the confidence term from the Criminisi priority function. Using this function essentially makes the algorithm fill patches from the outside of the hole and work its way inward.
 
-The priority $P(p)$ of a pixel $p$ is given by the product of a Confidence term $C(p)$ and a Data term $D(p)$.
-\begin{equation}
-P(p) = C(p)D(p)
-\end{equation}
+\subsection{PriorityRandom}
+This priority function selects a random target node to fill next. It is probably best to only use this ordering for debugging.
 
-The original author describes the terms:
+%%%%%%%%%%%%%%%%
+\section{Patch Matching/Comparison/Difference}
+\label{sec:PatchMatching}
+We allow a ``patch'' to be a quite abstract concept. (In our research we have attempted to inpaint 3D data, so in this context a ``patch'' is no longer a simple grid of pixels). However, for a patch-based inpainting algorithm, there must always be the concept of ``comparing patches''. In the DifferenceFunctions folder, we provide many such comparisons.
 
-``C(p) may be thought of as a measure of the amount of reliable information surrounding the pixel 'p'. The intention is to fill first those patches which have more of their pixels already filled, with additional preference given to pixels that were filled early on (or that were never part of the target region).''
+\subsection{SumSquaredPixelDifference (SSD)}
+This function computes the normalized sum of squared differences between every pixel in the valid region of the target patch and its corresponding pixel in the source patch. This is the standard difference function used in patch-based inpainting (e.g. \cite{criminisi}). This function is generic for any pixel type that has an operator[], but is specialized for pixels of type itk::CovariantVector. We also provide an explicitly unrolled version of this function, as since it is at the heart of the algorithm and the computational bottleneck, we have tried to do everything possible to ensure it runs as fast as possible.
 
-``D(p) is a function of the strength of the isophotes hitting the front at each iteration. This term boosts the priority of a patch that an isophot ''flows`` into. This factor is of fundamental importance in our algorithm because it encourages linear structures to be synthesized first, and, therefore propagated securely into the target region.''
-
-\subsubsection{Confidence Term}
-The confidence term is computed as:
-\begin{equation}
- C(p) = \frac{\sum \mbox{Confidences of patch pixels in the source region}}{\mbox{Area of the patch}}
-\end{equation}
-
-To initialize, the confidence inside the hole is set to $0$ and the confidence outside the hole is set to $1$.
-
-\subsubsection{Data Term}
-The data term is computed as:
-\begin{equation}
- D(p) = \frac{\mbox{dot}(\mbox{isophote}, \mbox{boundary normal})}{\alpha}
-\end{equation}
-
-$\alpha$ is a normalization factor that should be set to $255$ for grayscale images, but that value also seems to work well for RGB images.
-
-No initialization is necessary because this term is not recursive - it can be computed from the data directly at each iteration.
-
-\subsection{Patch Matching}
-\label{subsec:AlgorithmDetails:PatchMatching}
-To compare two patches (a source patch and a target patch), we compute the normalized sum of squared differences between every pixel which is in the source region of target patches (all pixels of the SourcePatch are in the source region by definition).
+\subsection{HSVSSD}
+The standard SSD function is acceptable if the image is represented in a color space (like RGB) where each channel is ``non-wrapping''. That is, the values in the upper range of the channel (255) should be significantly different from the values in the lower range of the channel (0). This is not the case with the H channel of the HSV color space, so we must treat its cyclic nature specially. In this class, we treat the S and V channels as ``standard'' channels, and use a special difference functor for the H channel that takes into account that we are measuring an angular distance and that wrapping over the upper range (1) back into the lower range (0) does not indicate an enormous difference, but rather we handle it correctly.
 
 %%%%%%%%%%%%%%%
 \section{Implementation Details}

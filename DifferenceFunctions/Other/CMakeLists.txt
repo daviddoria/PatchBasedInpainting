@@ -1,0 +1,5 @@
+add_custom_target(DifferenceFunctionsOther SOURCES
+FeatureVectorAngleDifference.hpp
+FeatureVectorDifference.hpp
+WeightedFeatureVectorDifference.hpp
+)

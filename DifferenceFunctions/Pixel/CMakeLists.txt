@@ -1,0 +1,13 @@
+
+add_custom_target(DifferenceFunctionsPixel SOURCES
+HSVSSD.hpp
+NormPixelDifference.hpp
+RGBSSD.hpp
+SumAbsolutePixelDifference.hpp
+SumAbsolutePixelDifferenceN.hpp
+SumSquaredPixelDifference.hpp
+WeightedHSVSSD.hpp
+WeightedHSVSSDFull.hpp
+WeightedSumAbsolutePixelDifference.hpp
+WeightedSumSquaredPixelDifference.hpp
+)

@@ -1,25 +1,6 @@
-add_custom_target(DifferenceFunctions SOURCES
-FeatureVectorAngleDifference.hpp
-FeatureVectorDifference.hpp
-FullImagePatchDifference.hpp
-GMHDifference.hpp
-HSVSSD.hpp
-ImagePatchDifference.hpp
-ImagePatchVectorizedDifference.hpp
-ImagePatchVectorizedIndicesDifference.hpp
-NormPixelDifference.hpp
-PatchValidHistogramDifference.hpp
-RGBSSD.hpp
-SumAbsolutePixelDifference.hpp
-SumAbsolutePixelDifferenceN.hpp
-SumSquaredPixelDifference.hpp
-WeightedFeatureVectorDifference.hpp
-WeightedHSVSSD.hpp
-WeightedHSVSSDFull.hpp
-WeightedImagePatchDifference.hpp
-WeightedSumAbsolutePixelDifference.hpp
-WeightedSumSquaredPixelDifference.hpp
-)
+add_subdirectory(Patch)
+add_subdirectory(Pixel)
+add_subdirectory(Other)
 
 option(PatchBasedInpainting_DifferenceFunctions_BuildTests "Build PatchBasedInpainting DifferenceFunctions tests.")
 if(PatchBasedInpainting_DifferenceFunctions_BuildTests)

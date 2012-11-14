@@ -1,0 +1,12 @@
+add_custom_target(DifferenceFunctionsPatch SOURCES
+FullImagePatchDifference.hpp
+GMHDifference.hpp
+GMHDifferenceFast.hpp
+ImagePatchDifference.hpp
+ImagePatchDifferenceNoCheck.hpp
+ImagePatchVectorizedDifference.hpp
+ImagePatchVectorizedIndicesDifference.hpp
+PatchValidHistogramDifference.hpp
+WeightedImagePatchDifference.hpp
+)
+
