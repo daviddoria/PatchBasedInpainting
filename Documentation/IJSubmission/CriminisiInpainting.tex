@@ -2,7 +2,7 @@
 
 \usepackage[dvips]{graphicx}
 \usepackage{float}
-\usepackage{subfigure}
+\usepackage[hang]{subfigure}
 
 \usepackage[dvips,
 bookmarks,
@@ -11,7 +11,7 @@ backref,
 colorlinks,linkcolor={blue},citecolor={blue},urlcolor={blue},
 ]{hyperref}
 
-\title{Criminisi Inpainting for ITK}
+\title{Criminisi Inpainting}
 
 % 
 % NOTE: This is the last number of the "handle" URL that 
@@ -19,7 +19,7 @@ colorlinks,linkcolor={blue},citecolor={blue},urlcolor={blue},
 % submission process. Please replace the number "1338" with
 % the actual handle number that you get assigned.
 %
-\newcommand{\IJhandlerIDnumber}{3233}
+\newcommand{\IJhandlerIDnumber}{3250}
 
 % Increment the release number whenever significant changes are made.
 % The author and/or editor can define 'significant' however they like.
@@ -118,7 +118,7 @@ Figure \ref{fig:RealisticDemonstration} shows a real example of the algorithm. T
   \includegraphics[width=0.3\linewidth]{images/BungeeMask}
   \label{fig:RealisticDemonstration:ExampleInputMask}
   }
-\subfigure[The result of the inpainting.]
+\subfigure[The result of the inpainting. This took about 30 seconds on a P4 3GHz processor with a 206x308 image and a patch radius = 5.]
   {
   \includegraphics[width=0.3\linewidth]{images/BungeeResult}
   \label{fig:RealisticDemonstration:ExampleInputOutput}
@@ -139,7 +139,7 @@ An overview of the algorithm is:
 
   \item Main loop:
   \begin{itemize}
-    \item Compute the priotiry of every pixel on the hole boundary (see Section \ref{subsec:AlgorithmDetails:Priorities})
+    \item Compute the priority of every pixel on the hole boundary (see Section \ref{subsec:AlgorithmDetails:Priorities})
     \item Determine the boundary pixel with the highest priority. We will call this the target pixel. The region centered at the target pixel and the size of the patches is called the target patch.
     \item Find the SourcePatch which best matches the portion of the target patch in the source region.
     \item Copy the corresponding portion of the source patch into the target region of the target patch.
@@ -170,7 +170,7 @@ The original author describes the terms:
 
 ``C(p) may be thought of as a measure of the amount of reliable information surrounding the pixel 'p'. The intention is to fill first those patches which have more of their pixels already filled, with additional preference given to pixels that were filled early on (or that were never part of the target region).''
 
-``D(p) is a function of the strength of the isophotes hitting the front at each iteration. This term boosts the priority of a patch that an isophot ''flows`` into. This factor is of fundamental importance in our algorith because it encourages linear structures to be synthesized first, and, therefore propagated securely into the target region.''
+``D(p) is a function of the strength of the isophotes hitting the front at each iteration. This term boosts the priority of a patch that an isophot ''flows`` into. This factor is of fundamental importance in our algorithm because it encourages linear structures to be synthesized first, and, therefore propagated securely into the target region.''
 
 \subsubsection{Confidence Term}
 The confidence term is computed as:
@@ -213,11 +213,11 @@ This procedure produces the gradient magnitude map shown in Figure \ref{fig:Erro
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.3\linewidth]{images/ErroneousGradient}
-  \caption{Result of naievely computing the image gradient.}
+  \caption{Result of naively computing the image gradient.}
   \label{fig:ErroneousGradient}
 \end{figure}
 
-The high values of the gradient magnitude surrounding the target region are very troublesome. The resulting gradient magnitude image using this technique is sensitive to the choice of the pixel values in the target region, which we actually want to be a completely arebitrary choice (it should not affect anything). More importantly, the gradient plays a large part in the computation of the pixel priorities, and this computation is greatly disturbed by these erroneous values. Simply ignoring these boundary isophotes is not an option because the isophotes on the boundary are exactly the ones that are used in the computation of the Data term. To fix this problem, we immediately dilate the mask specified by the user. This allows us to compute the isophotes as described above, but now we have image information on both sides of the hole boundary, leading to a valid gradient everywhere we need it to be. Figure \ref{fig:ErrorneousGradientCorrection} shows the procedure for fixing this problem.
+The high values of the gradient magnitude surrounding the target region are very troublesome. The resulting gradient magnitude image using this technique is sensitive to the choice of the pixel values in the target region, which we actually want to be a completely arbitrary choice (it should not affect anything). More importantly, the gradient plays a large part in the computation of the pixel priorities, and this computation is greatly disturbed by these erroneous values. Simply ignoring these boundary isophotes is not an option because the isophotes on the boundary are exactly the ones that are used in the computation of the Data term. To fix this problem, we immediately dilate the mask specified by the user. This allows us to compute the isophotes as described above, but now we have image information on both sides of the hole boundary, leading to a valid gradient everywhere we need it to be. Figure \ref{fig:ErrorneousGradientCorrection} shows the procedure for fixing this problem.
 
 \begin{figure}[H]
 \centering
@@ -240,7 +240,7 @@ The high values of the gradient magnitude surrounding the target region are very
 \label{fig:ErrorneousGradientCorrection}
 \end{figure}
 
-As you can see, this gradient magnitude image is exacltly what we would expect.
+As you can see, this gradient magnitude image is exactly what we would expect.
 
 \subsection{Boundary Normals}
 There are two things to be careful with when computing the boundary normals: computing the normals only on the one pixel thick boundary, and using the correct side of the masked region as the boundary.
@@ -250,57 +250,43 @@ If we compute the normals directly on the binary mask, the set of resulting vect
 
 
 \subsubsection{Using the correct side of the masked region as the boundary}
-There are two potential boundaries that can be extracted from a masked region - the ``inner'' boundary and the ``outer'' boundary.
-
-must invert the mask before computing the boundary because you want the pixels on the INSIDE/OUTSIDE? of the boundary?
-
+There are two potential boundaries that can be extracted from a masked region - the ``inner'' boundary and the ``outer'' boundary. As shown in Figure \ref{fig:BoundarySide}, the inner boundary (red) is composed of pixels originally on the white (masked) side of the blob, and the outer boundary (green) is composed of pixels originally on the black (unmasked) side of the blob. It is important that we use the outer boundary, because we need the boundary to be defined at the same pixels that we have image information, which is only in the source (black/unmasked) region.
 
 \begin{figure}[H]
 \centering
 \subfigure[The inner boundary.]
   {
-  \includegraphics[width=0.3\linewidth]{images/InnerBoundary}
-  \label{fig:BoundarySide:InnerBoundary}
+  \includegraphics[width=0.3\linewidth]{images/BlackWhiteMask}
+  \label{fig:BoundarySide:Mask}
   }
-\subfigure[The outer boundary.]
+\subfigure[Outer boundary (green) and inner boundary (red).]
   {
-  \includegraphics[width=0.3\linewidth]{images/OuterBoundary}
-  \label{fig:BoundarySide:OuterBoundary}
+  \includegraphics[width=0.3\linewidth]{images/BothBoundaries}
+  \label{fig:BoundarySide:BothBoundaries}
   }
 \caption{Inner vs Outer Boundary of a Region}
 \label{fig:BoundarySide}
 \end{figure}
 
-%%%%%%%%%%%%%%%
-\section{Results}
-\subsection{Simple Example Image}
+\subsubsection{Code Snippet}
+The CriminisiInpainting class must be instantiated using the type of image to be inpainted. Then the patch radius must be set, the image and mask provided, and the Inpaint() function called.
+\begin{verbatim}
+  CriminisiInpainting<ImageType> Inpainting;
+  Inpainting.SetPatchRadius(5);
+  Inpainting.SetImage(imageReader->GetOutput());
+  Inpainting.SetInputMask(maskReader->GetOutput());
+  Inpainting.Inpaint();
 
-% \begin{center}
-% 	\begin{figure}[H]
-%   \centering
-% 		\includegraphics[width=0.6\linewidth]{images/HighLambda}
-% 		\caption{Result of grayscale segmentation of Sand image with $\lambda$ set too high.}
-% 		\label{fig:HighLambda}
-% 	\end{figure}
-% \end{center} 
+  ImageType::Pointer result = Inpainting.GetResult();
 
-Figure \ref{fig:Sand} 
+\end{verbatim}
 
-\subsection{Difficult Image}
-To show that this does not just work in trivial cases, we show the result of the segmentation of a difficult image in Figure \ref{fig:Soldier}.
+If you would like to see what happens at every step of the algorithm, you can use:
+\begin{verbatim}
+Inpainting.SetWriteIntermediateImages(true); 
+\end{verbatim}
+NOTE: Several images are output at each iteration - these files could be quite large!
 
-% \begin{center}
-% 	\begin{figure}[H]
-%   \centering
-% 		\includegraphics[width=0.6\linewidth]{images/Soldier}
-% 		\caption{Result of color segmentation of Soldier image.}
-% 		\label{fig:Soldier}
-% 	\end{figure}
-% \end{center} 
-
-%%%%%%%%%%%%%%%
-\section{Future Work}
-The patch matching is horribly slow. This function is very separate from the main inpainting algorithm and can easily be replaced if there is a better known way to match non-regular patches.
 
 %%%%%%%%%%%%%%%
 \begin{thebibliography}{9}
