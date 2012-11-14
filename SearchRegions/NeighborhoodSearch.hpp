@@ -28,7 +28,9 @@
 #include "itkImage.h"
 
 /**
-  * This class returns a region around a pixel of a specified radius.
+  * This class returns a region around a pixel of a specified radius. It is intended
+  * for use with InpaintingAlgorithmWithLocalSearch to reduce the search space for
+  * the source patch.
   */
 template <typename TVertexDescriptorType, typename TImagePatchDescriptorMap>
 struct NeighborhoodSearch
@@ -44,7 +46,8 @@ struct NeighborhoodSearch
   /**
     * 'fullRegion' is the region of the image that is being inpainted.
     */
-  NeighborhoodSearch(const itk::ImageRegion<2>& fullRegion, const unsigned int radius, TImagePatchDescriptorMap imagePatchDescriptorMap) :
+  NeighborhoodSearch(const itk::ImageRegion<2>& fullRegion, const unsigned int radius,
+                     TImagePatchDescriptorMap imagePatchDescriptorMap) :
     FullRegion(fullRegion), Radius(radius), ImagePatchDescriptorMap(imagePatchDescriptorMap)
   {
 
@@ -53,10 +56,12 @@ struct NeighborhoodSearch
   VectorType operator()(const TVertexDescriptorType& center)
   {
     // Convert to an ITK type
-    itk::Index<2> centerIndex = Helpers::ConvertFrom<itk::Index<2>, TVertexDescriptorType>(center);
+    itk::Index<2> centerIndex =
+        Helpers::ConvertFrom<itk::Index<2>, TVertexDescriptorType>(center);
     
     // Get the region around the center pixel
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(centerIndex, this->Radius);
+    itk::ImageRegion<2> region =
+        ITKHelpers::GetRegionInRadiusAroundPixel(centerIndex, this->Radius);
 
     // Ensure the region is entirely inside the image
     region.Crop(this->FullRegion);

@@ -27,8 +27,10 @@
 #include "itkImage.h"
 
 /**
-
- */
+  * This class returns all vertices in the image. . It is intended to degenerate
+  * InpaintingAlgorithmWithLocalSearch by searching the entire image for the source
+  * patch (the same behavior as InpaintingAlgorithm).
+  */
 template <typename TVertexDescriptorType>
 struct FullImageSearch
 {
@@ -43,16 +45,16 @@ struct FullImageSearch
     // We have to create a dummy image with the specified region in order to use the region iterator
     typedef itk::Image<int, 2> ImageType;
     ImageType::Pointer image = ImageType::New();
-    image->SetRegions(FullRegion);
+    image->SetRegions(this->FullRegion);
     image->Allocate();
 
-    Vertices.resize(FullRegion.GetNumberOfPixels());
+    this->Vertices.resize(this->FullRegion.GetNumberOfPixels());
     unsigned int counter = 0;
-    itk::ImageRegionConstIteratorWithIndex<ImageType> imageIterator(image, FullRegion);
+    itk::ImageRegionConstIteratorWithIndex<ImageType> imageIterator(image, this->FullRegion);
     while(!imageIterator.IsAtEnd())
     {
       TVertexDescriptorType vert = Helpers::ConvertFrom<TVertexDescriptorType, itk::Index<2> > (imageIterator.GetIndex());
-      Vertices[counter] = vert;
+      this->Vertices[counter] = vert;
       counter++;
       ++imageIterator;
     }
