@@ -25,3 +25,6 @@
 [submodule "ITKVTKCamera"]
 	path = ITKVTKCamera
 	url = https://github.com/daviddoria/ITKVTKCamera.git
+[submodule "CMakeHelpers"]
+	path = CMakeHelpers
+	url = https://github.com/daviddoria/CMakeHelpers.git

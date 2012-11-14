@@ -8,6 +8,8 @@ cmake_minimum_required(VERSION 2.8.6) # Required for AutoMOC (http://blogs.kde.o
 PROJECT(PatchBasedInpainting)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+add_subdirectory(CMakeHelpers)
+
 SET(ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(CMAKE_AUTOMOC TRUE)
@@ -71,71 +73,12 @@ endif(QT4_FOUND)
 #list(APPEND compileflags "USE_QT_PARALLEL")
 
 # Submodules
-# Mask
-get_property(FoundMask GLOBAL PROPERTY MaskIncludeDirs SET)
-if(NOT FoundMask)
-  add_subdirectory(Mask)
-endif()
-
-get_property(MaskIncludeDirs GLOBAL PROPERTY MaskIncludeDirs)
-set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${MaskIncludeDirs})
-get_property(MaskLibs GLOBAL PROPERTY MaskLibs)
-set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${MaskLibs})
-
-# VTKHelpers
-get_property(FoundVTKHelpers GLOBAL PROPERTY VTKHelpersIncludeDirs SET)
-if(NOT FoundVTKHelpers)
-  add_subdirectory(VTKHelpers)
-endif()
-
-get_property(VTKHelpersIncludeDirs GLOBAL PROPERTY VTKHelpersIncludeDirs)
-set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${VTKHelpersIncludeDirs})
-get_property(VTKHelpersLibs GLOBAL PROPERTY VTKHelpersLibs)
-set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${VTKHelpersLibs})
-
-# ITKVTKHelpers
-get_property(FoundITKVTKHelpers GLOBAL PROPERTY ITKVTKHelpersIncludeDirs SET)
-if(NOT FoundITKVTKHelpers)
-  add_subdirectory(ITKVTKHelpers)
-endif()
-
-get_property(ITKVTKHelpersIncludeDirs GLOBAL PROPERTY ITKVTKHelpersIncludeDirs)
-set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${ITKVTKHelpersIncludeDirs})
-get_property(ITKVTKHelpersLibs GLOBAL PROPERTY ITKVTKHelpersLibs)
-set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${ITKVTKHelpersLibs})
-
-# QtHelpers
-get_property(FoundQtHelpers GLOBAL PROPERTY QtHelpersIncludeDirs SET)
-if(NOT FoundQtHelpers)
-  add_subdirectory(QtHelpers)
-endif()
-
-get_property(QtHelpersIncludeDirs GLOBAL PROPERTY QtHelpersIncludeDirs)
-set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${QtHelpersIncludeDirs})
-get_property(QtHelpersLibs GLOBAL PROPERTY QtHelpersLibs)
-set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${QtHelpersLibs})
-
-# ITKQtHelpers
-get_property(FoundITKQtHelpers GLOBAL PROPERTY ITKQtHelpersIncludeDirs SET)
-if(NOT FoundITKQtHelpers)
-  add_subdirectory(ITKQtHelpers)
-  include_directories(${ITKVTKHelpers_includes})
-endif()
-get_property(ITKQtHelpersIncludeDirs GLOBAL PROPERTY ITKQtHelpersIncludeDirs)
-set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${ITKQtHelpersIncludeDirs})
-get_property(ITKQtHelpersLibs GLOBAL PROPERTY ITKQtHelpersLibs)
-set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${ITKQtHelpersLibs})
-
-# ITKVTKCamera
-get_property(FoundITKVTKCamera GLOBAL PROPERTY ITKVTKCameraIncludeDirs SET)
-if(NOT FoundITKVTKCamera)
-  add_subdirectory(ITKVTKCamera)
-  include_directories(${ITKVTKCamera_includes})
-endif()
-get_property(ITKVTKCameraIncludeDirs GLOBAL PROPERTY ITKVTKCameraIncludeDirs)
-set(PatchBasedInpainting_include_dirs ${PatchBasedInpainting_include_dirs} ${ITKVTKCameraIncludeDirs})
-get_property(ITKVTKCameraLibs GLOBAL PROPERTY ITKVTKCameraLibs)
-set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries} ${ITKVTKCameraLibs})
+UseSubmodule(Mask PatchBasedInpainting)
+UseSubmodule(VTKHelpers PatchBasedInpainting)
+UseSubmodule(ITKVTKHelpers PatchBasedInpainting)
+UseSubmodule(QtHelpers PatchBasedInpainting)
+UseSubmodule(ITKQtHelpers PatchBasedInpainting)
+UseSubmodule(ITKVTKCamera PatchBasedInpainting)
 
 # BoostHelpers
 if(NOT TARGET BoostHelpers)
