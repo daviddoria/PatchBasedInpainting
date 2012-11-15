@@ -21,17 +21,3 @@ INSTALL( TARGETS DummyPatchesInpainting RUNTIME DESTINATION ${INSTALL_DIR} )
 add_executable(TestImagePatchPixelDescriptor TestImagePatchPixelDescriptor.cpp)
 target_link_libraries(TestImagePatchPixelDescriptor ${PatchBasedInpainting_libraries})
 add_test(TestImagePatchPixelDescriptor TestImagePatchPixelDescriptor)
-
-add_executable(TestPixelDifferences TestPixelDifferences.cpp)
-target_link_libraries(TestPixelDifferences ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting)
-add_test(TestPixelDifferences TestPixelDifferences)
-
-# add_executable(TestPatchBasedInpainting TestPatchBasedInpainting.cpp ../PatchBasedInpainting.cpp
-# ../PatchPairDifferences.cpp
-# ../Priority/Priority.cpp ../Priority/PriorityCriminisi.cpp ../Priority/PriorityOnionPeel.cpp ../Priority/PriorityRandom.cpp ../Priority/PriorityManual.cpp ../Priority/PriorityDepth.cpp
-# ../Priority/PrioritySearchHighest.cpp ../PixelCollection.cpp
-# ../SourcePatchCollection.cpp ../ImagePatchItem.cpp ../PatchPair.cpp
-# ../ImageProcessing/Mask.cpp ../ImageProcessing/MaskOperations.cpp ../ImageProcessing/BoundaryNormals.cpp
-# ../ImageProcessing/Isophotes.cpp ../ImageProcessing/Derivatives.cpp)
-# target_link_libraries(TestPatchBasedInpainting ${VTK_LIBRARIES} ${ITK_LIBRARIES} libHelpers libTesting)
-# add_test(TestPatchBasedInpainting TestPatchBasedInpainting)

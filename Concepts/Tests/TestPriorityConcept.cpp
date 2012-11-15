@@ -19,19 +19,18 @@
 #include "../PriorityConcept.hpp"
 
 #include "Priority/PriorityRandom.h"
+#include "Priority/PriorityConfidence.h"
+#include "Priority/PriorityCriminisi.h"
 
-#include "itkIndex.h"
-
-template <typename TPriority>
-void Test(TPriority priority)
-{
-  BOOST_CONCEPT_ASSERT((PriorityConcept<TPriority>));
-}
+#include "itkImage.h"
 
 int main()
 {
-  PriorityRandom priority;
-  Test(priority);
+  BOOST_CONCEPT_ASSERT((PriorityConcept<PriorityRandom>));
+  BOOST_CONCEPT_ASSERT((PriorityConcept<PriorityConfidence>));
+
+  typedef itk::Image<unsigned char, 2> ImageType;
+  BOOST_CONCEPT_ASSERT((PriorityConcept<PriorityCriminisi<ImageType> >));
 
   return EXIT_SUCCESS;
 }

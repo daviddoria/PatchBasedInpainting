@@ -118,6 +118,9 @@ Priority/PriorityRandom.cpp
 PixelDescriptors/FeatureVectorPixelDescriptor.cpp
 )
 
+# Build the Testing library first so that subdirectories can use it if we have requested to build their tests.
+add_subdirectory(Testing)
+
 # Add the library to the list of libraries that are required to use this as a submodule.
 set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries}
       PatchBasedInpainting)
@@ -364,7 +367,6 @@ endif()
 
 option(PatchBasedInpainting_BuildTests "Build PatchBasedInpainting tests?" OFF)
 if(PatchBasedInpainting_BuildTests)
-  add_subdirectory(Testing)
   add_subdirectory(Tests)
 endif()
 

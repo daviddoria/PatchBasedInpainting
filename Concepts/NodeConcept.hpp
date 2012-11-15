@@ -31,7 +31,7 @@ struct NodeConcept
 {
   TNode node;
 
-  BOOST_CONCEPT_USAGE(NodeConcept ) 
+  BOOST_CONCEPT_USAGE(NodeConcept)
   {
     node[0];
   }

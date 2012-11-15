@@ -21,6 +21,8 @@
 
 #include <boost/concept_check.hpp>
 
+#include "itkIndex.h"
+
 /**
  * This concept-check class defines the functions that must be available for an object
  * to be interpreted as a Priority function.
@@ -32,8 +34,13 @@ struct PriorityConcept
 {
   TPriority priority;
 
+//  struct Node{};
+
   BOOST_CONCEPT_USAGE(PriorityConcept)
   {
+//    Node node;
+    itk::Index<2> node;
+
     // We must be able to compute the priority of a particular node
     priority.ComputePriority(node);
 
