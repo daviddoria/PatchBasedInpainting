@@ -19,7 +19,7 @@
 #ifndef InpaintingVisitor_HPP
 #define InpaintingVisitor_HPP
 
-#include "Visitors/InpaintingVisitorParent.h"
+#include "Visitors/InpaintingVisitors/InpaintingVisitorParent.h"
 
 // STL
 #include <memory>

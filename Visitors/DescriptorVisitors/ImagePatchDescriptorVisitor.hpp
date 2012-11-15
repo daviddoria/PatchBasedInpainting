@@ -21,7 +21,7 @@
 
 #include "PixelDescriptors/ImagePatchPixelDescriptor.h"
 
-#include "Visitors/InpaintingVisitorParent.h"
+#include "Visitors/InpaintingVisitors/InpaintingVisitorParent.h"
 
 #include "Concepts/DescriptorConcept.hpp"
 #include "Visitors/DescriptorVisitors/DescriptorVisitorParent.h"

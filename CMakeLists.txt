@@ -99,9 +99,6 @@ if( (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Mask/.git") OR
                            Please run git submodule update --init --recursive")
 endif()
 
-# Give the compiler all of the required include directories
-#include_directories(${PatchBasedInpainting_include_dirs})
-
 # We must do this AFTER including the submodules, as the Interactive directory
 if(QT4_FOUND)
   add_subdirectory(Interactive)

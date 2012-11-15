@@ -47,10 +47,10 @@
 #include "Visitors/InformationVisitors/DisplayVisitor.hpp"
 
 // Inpainting visitors
-#include "Visitors/InpaintingVisitor.hpp"
+#include "Visitors/InpaintingVisitors/InpaintingVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/AlwaysAccept.hpp"
-#include "Visitors/InpaintingVisitor.hpp"
-#include "Visitors/CompositeInpaintingVisitor.hpp"
+#include "Visitors/InpaintingVisitors/InpaintingVisitor.hpp"
+#include "Visitors/InpaintingVisitors/CompositeInpaintingVisitor.hpp"
 
 // Nearest neighbors
 #include "NearestNeighbor/FirstValidDescriptor.hpp"
@@ -63,7 +63,7 @@
 #include "Inpainters/PatchInpainter.hpp"
 
 // Difference functions
-#include "DifferenceFunctions/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/Patch/ImagePatchDifference.hpp"
 
 // Utilities
 #include "Utilities/PatchHelpers.h"
