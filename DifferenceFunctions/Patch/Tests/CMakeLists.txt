@@ -1,5 +1,3 @@
-ENABLE_TESTING()
-
 include_directories(../)
 
 # Allow Qt to find it's MOCed files

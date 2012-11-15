@@ -1,3 +1,5 @@
+messsage("Inside Interactive/Tests")
+
 include_directories(../) # The Interactive directory
 include_directories(../../) # The main PatchBasedInpainting}directory
 include_directories(../../Testing)
@@ -38,11 +40,7 @@ add_test(TestBasicViewer TestBasicViewer)
 # add_executable(TestDisplayStyle TestDisplayStyle.cpp)
 # target_link_libraries(TestDisplayStyle)
 # add_test(TestDisplayStyle TestDisplayStyle)
-# 
-# add_executable(TestImageCamera TestImageCamera.cpp)
-# target_link_libraries(TestImageCamera)
-# add_test(TestImageCamera TestImageCamera)
-# 
+
 # add_executable(TestImageInput TestImageInput.cpp)
 # target_link_libraries(TestImageInput)
 # add_test(TestImageInput TestImageInput)

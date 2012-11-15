@@ -1,6 +1,15 @@
-cmake_minimum_required(VERSION 2.8.6) # Required for AutoMOC (http://blogs.kde.org/2011/11/01/cool-new-stuff-cmake-286-automoc)
+ # CMake >= 2.8.6 is required for AutoMOC (http://blogs.kde.org/2011/11/01/cool-new-stuff-cmake-286-automoc)
+cmake_minimum_required(VERSION 2.8.6)
 
-# Suggested build flags are -fopenmp -msse3
+# This line lets us run 'ctest' from the root build directory. Without it, if we only build the
+# DifferenceFunctions tests, for example, running 'ctest' from the root build directory would
+# produce "no test configuration file found!", but running 'ctest' from build/DifferenceFunctions would work.
+# Additionally, with this here, we don't need it anywhere else in the project.
+ENABLE_TESTING()
+
+# Suggested build flags are
+# -fopenmp to enable parallelism (runs ~2x faster)
+# -msse3 to enable intrinsics (runs ~2x faster)
 
 # To use CMake's Automoc, headers (.h files, or .hpp if the class is declared directly in the .hpp)
 # must be added to the add_executable list.

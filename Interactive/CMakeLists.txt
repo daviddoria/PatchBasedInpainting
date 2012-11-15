@@ -21,7 +21,6 @@ DisplayState.h
 DisplayStyle.h
 FileSelector.h
 FullInspectionWidget.h
-ImageCamera.h
 ImageInput.h
 InpaintingComputationObject.h
 InpaintingDisplaySettings.h
@@ -53,7 +52,7 @@ PatchVerificationDialogHandler.h
 )
 
 add_library(InpaintingGUI Layer.cpp InteractorStyleImageWithDrag.cpp
-            ImageCamera.cpp PatchHighlighter.cpp
+            PatchHighlighter.cpp
             Delegates/PixmapDelegate.cpp)
 target_link_libraries(InpaintingGUI ${PatchBasedInpainting_libraries})
 
@@ -102,7 +101,8 @@ target_link_libraries(InpaintingGUI ${PatchBasedInpainting_libraries})
 #   INSTALL( TARGETS PatchBasedInpaintingViewer RUNTIME DESTINATION ${INSTALL_DIR} )
 # endif(BuildViewer)
 
-option(PatchBasedInpainting_BuildInteractiveTests "Build PatchBasedInpainting Interactive tests?" OFF)
-if(PatchBasedInpainting_BuildInteractiveTests)
- add_subdirectory(Tests)
-endif(PatchBasedInpainting_BuildInteractiveTests)
+option(PatchBasedInpainting_Interactive_BuildTests "Build PatchBasedInpainting Interactive tests?" OFF)
+if(PatchBasedInpainting_Interactive_BuildTests)
+  message("Building PatchBasedInpainting Interactive Tests.")
+  add_subdirectory(Tests)
+endif(PatchBasedInpainting_Interactive_BuildTests)

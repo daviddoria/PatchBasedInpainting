@@ -340,7 +340,8 @@ template <typename TImage>
 void ManualPatchSelectionDialog<TImage>::closeEvent(QCloseEvent*)
 {
   std::cout << "There is no recourse if you do not select a patch!" << std::endl;
-  QApplication::quit();
+//  QApplication::quit();
+  reject();
 }
 
 #endif

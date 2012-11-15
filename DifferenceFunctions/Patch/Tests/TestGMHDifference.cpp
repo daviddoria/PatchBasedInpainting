@@ -21,58 +21,105 @@
 
 //#include "Testing.h"
 
+// Submodules
+#include "ITKHelpers/ITKHelpers.h"
+
 // ITK
 #include "itkImage.h"
-#include "itkImageFileReader.h"
+#include "itkRandomImageSource.h"
 
-int main(int argc, char*argv[])
+static void Scalar();
+static void Vector();
+
+int main(int, char*[])
 {
-  // Verify arguments
-  if(argc != 3)
+//  Scalar();
+  Vector();
+
+  return EXIT_SUCCESS;
+}
+
+void Scalar()
+{
+  // TODO: Need some enable_if magic in GMHDifference to make it not need to extract components if the image is already scalar
+//  typedef itk::Image< unsigned char, 2 >  ImageType;
+
+//  itk::Size<2> imageSize = {{500,500}};
+
+//  itk::RandomImageSource<ImageType>::Pointer randomImageSource =
+//    itk::RandomImageSource<ImageType>::New();
+//  randomImageSource->SetNumberOfThreads(1); // to produce non-random results
+//  randomImageSource->SetSize(imageSize);
+//  randomImageSource->Update();
+
+//  itk::Size<2> patchSize = {{21,21}};
+
+//  // There is nothing magic about these particular patches
+//  itk::Index<2> targetCorner = {{319, 302}};
+//  itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
+
+//  itk::Index<2> sourceCorner = {{341, 300}};
+//  itk::ImageRegion<2> sourceRegion(sourceCorner, patchSize);
+
+//  Mask::Pointer mask = Mask::New();
+//  mask->SetRegions(randomImageSource->GetOutput()->GetLargestPossibleRegion());
+//  mask->Allocate();
+//  ITKHelpers::SetImageToConstant(mask.GetPointer(), mask->GetValidValue());
+
+//  const unsigned int numberOfBinsPerChannel = 30;
+//  GMHDifference<ImageType> gmhDifference(randomImageSource->GetOutput(), mask, numberOfBinsPerChannel);
+////  GMHDifferenceFast<ImageType> gmhDifference(imageReader->GetOutput(), mask, numberOfBinsPerChannel); // This produces 5.87 but it should produce 0.932
+
+//  float difference = gmhDifference.Difference(targetRegion, sourceRegion);
+
+//  std::cout << "GMHDifference: " << difference << std::endl;
+
+}
+
+void Vector()
+{
+  typedef itk::Image<unsigned char, 2 >  ChannelType;
+  const unsigned int NumberOfChannels = 3;
+  typedef itk::Image<itk::CovariantVector<unsigned char, NumberOfChannels>, 2 >  ImageType;
+
+  ImageType::Pointer image = ImageType::New();
+  itk::Index<2> corner = {{0,0}};
+  itk::Size<2> imageSize = {{500,500}};
+  itk::ImageRegion<2> fullRegion(corner, imageSize);
+  image->SetRegions(fullRegion);
+  image->Allocate();
+
+  for(unsigned int i = 0; i < NumberOfChannels; ++i)
   {
-    std::cerr << "Required arguments: image.png image.mask" << std::endl;
-    std::cerr << "Input arguments: ";
-    for(int i = 1; i < argc; ++i)
-    {
-      std::cerr << argv[i] << " ";
-    }
-    return EXIT_FAILURE;
+    itk::RandomImageSource<ChannelType>::Pointer randomImageSource =
+      itk::RandomImageSource<ChannelType>::New();
+    randomImageSource->SetNumberOfThreads(1); // to produce non-random results
+    randomImageSource->SetSize(imageSize);
+    randomImageSource->Update();
+
+    ITKHelpers::SetChannel(image.GetPointer(), i, randomImageSource->GetOutput());
   }
-
-  // Parse arguments
-  std::string imageFilename = argv[1];
-  std::string maskFilename = argv[2];
-
-  // Output arguments
-  std::cout << "Reading image: " << imageFilename << std::endl;
-  std::cout << "Reading mask: " << maskFilename << std::endl;
 
   itk::Size<2> patchSize = {{21,21}};
 
+  // There is nothing magic about these particular patches
   itk::Index<2> targetCorner = {{319, 302}};
   itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
 
   itk::Index<2> sourceCorner = {{341, 300}};
   itk::ImageRegion<2> sourceRegion(sourceCorner, patchSize);
 
-  typedef itk::Image<itk::CovariantVector<float, 3>, 2> ImageType;
-
-  typedef  itk::ImageFileReader<ImageType> ImageReaderType;
-  ImageReaderType::Pointer imageReader = ImageReaderType::New();
-  imageReader->SetFileName(imageFilename);
-  imageReader->Update();
-
   Mask::Pointer mask = Mask::New();
-  mask->Read(maskFilename);
+  mask->SetRegions(fullRegion);
+  mask->Allocate();
+  ITKHelpers::SetImageToConstant(mask.GetPointer(), mask->GetValidValue());
 
   const unsigned int numberOfBinsPerChannel = 30;
-  GMHDifference<ImageType> gmhDifference(imageReader->GetOutput(), mask, numberOfBinsPerChannel);
+  GMHDifference<ImageType> gmhDifference(image.GetPointer(), mask, numberOfBinsPerChannel);
 //  GMHDifferenceFast<ImageType> gmhDifference(imageReader->GetOutput(), mask, numberOfBinsPerChannel); // This produces 5.87 but it should produce 0.932
 
   float difference = gmhDifference.Difference(targetRegion, sourceRegion);
 
   std::cout << "GMHDifference: " << difference << std::endl;
 
-
-  return EXIT_SUCCESS;
 }

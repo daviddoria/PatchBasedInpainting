@@ -1,5 +1,3 @@
-ENABLE_TESTING()
-
 include_directories(../)
 
 add_executable(TestSumSquaredPixelDifference TestSumSquaredPixelDifference.cpp ../SumSquaredPixelDifference.hpp)
