@@ -89,18 +89,18 @@ if(NOT TARGET BoostHelpers)
 endif()
 
 if( (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Mask/.git") OR
-(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VTKHelpers/.git") OR
-(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKVTKCamera/.git") OR
-(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKVTKHelpers/.git") OR
-(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKQtHelpers/.git") OR
-(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/QtHelpers/.git") OR
-(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/BoostHelpers/.git") )
-  message( SEND_ERROR "At least one of the git submodules is not available.
-                       Please run git submodule update --init --recursive")
+    (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VTKHelpers/.git") OR
+    (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKVTKCamera/.git") OR
+    (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKVTKHelpers/.git") OR
+    (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ITKQtHelpers/.git") OR
+    (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/QtHelpers/.git") OR
+    (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/BoostHelpers/.git") )
+      message( SEND_ERROR "At least one of the git submodules is not available.
+                           Please run git submodule update --init --recursive")
 endif()
 
 # Give the compiler all of the required include directories
-include_directories(${PatchBasedInpainting_include_dirs})
+#include_directories(${PatchBasedInpainting_include_dirs})
 
 # We must do this AFTER including the submodules, as the Interactive directory
 if(QT4_FOUND)

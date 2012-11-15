@@ -78,11 +78,11 @@ This document describes a system to fill a hole in an image by copying patches f
 This code makes heavy use of multiple libraries:
 
 \begin{itemize}
- \item VTK >= 6.0
- \item ITK >= 4.2
- \item Boost >= 1.51
- \item CMake >= 2.8.6
- \item Qt >= 4.8
+ \item VTK $>=$ 6.0
+ \item ITK $>=$ 4.2
+ \item Boost $>=$ 1.51
+ \item CMake $>=$ 2.8.6
+ \item Qt $>=$ 4.8
 \end{itemize}
 
 The code is also organized into git submodules. These are included if you clone with:
@@ -100,16 +100,16 @@ git submodule update --init --recursive
 The required submodules are:
 
 \begin{itemize}
- \item Mask
- \item ITKHelpers (via Mask)
- \item Helpers (via Mask\\ITKHelpers)
- \item BoostHelpers
- \item CMakeHelpers
- \item ITKQtHelpers
- \item ITKVTKCamera
- \item ITKVTKHelpers
- \item QtHelpers
- \item VTKHelpers
+ \item Mask - This submodule contains a set of classes for indicating a hole (to inpaint) in an image. It has functions to do things such as count the number of hole/valid pixels in a region, computed the gradient of a region without considering the values at masked pixels, etc.
+ \item ITKHelpers (via Mask) - This submodule contains functions we commonly need to operate on ITK data structures. For example, it includes functions to extract the pixel values at specified pixel locations, extract channels of an image, etc.
+ \item Helpers (via Mask\\ITKHelpers) - This submodule contains helper functions for the c++ language. It includes functions to do things such as writing a vector to a stream, check if a vector contains a specified value, compute the maximum of each channel of a vector container, etc. It also includes a Statistics class to compute averages, variances, etc. of multicomponent containers.
+ \item BoostHelpers - This submodule allows us to do things such as inspect the values in a property map, output the values in a queue, etc.
+ \item CMakeHelpers - This submodule allows us to use the submodule hierarchy in a much more straightforward fashion.
+ \item ITKQtHelpers - This submodule allows us to convert back and forth between ITK and Qt data structures (images), which is needed to display patches from an itk::Image in a QGraphicsView.
+ \item ITKVTKCamera - This submodule allows us to easily compensate for the difference in coordinate system between ITK and VTK.
+ \item ITKVTKHelpers - This submodule allows us to convert back and forth between ITK and VTK data structures (images). For example, when we want to display an itk::Image in a vtkRenderer, we must first convert it to a vtkImageData.
+ \item QtHelpers - This submodule provides functions to simplify some tasks for QImage (setting an image to a constant value, etc) and working with colors in Qt.
+ \item VTKHelpers - This submodule contains many functions that we repeatedly need for VTK, including things like constructing a transparent image, outlining a region of an image, etc.
 \end{itemize}
 
 \section{Terminology}
@@ -228,6 +228,76 @@ This function computes a weighted sum of squared differences between ND pixels.
 \subsection{HSVSSD}
 The standard SSD function is acceptable if the image is represented in a color space (like RGB) where each channel is ``non-wrapping''. That is, the values in the upper range of the channel (255) should be significantly different from the values in the lower range of the channel (0). This is not the case with the H channel of the HSV color space, so we must treat its cyclic nature specially. In this class, we treat the S and V channels as ``standard'' channels, and use a special difference functor for the H channel that takes into account that we are measuring an angular distance and that wrapping over the upper range (1) back into the lower range (0) does not indicate an enormous difference, but rather we handle it correctly.
 
+%%%%%%%%%%%%%%%
+\section{Drivers}
+As you will have noticed, the code is very heavily templated. A substantial amount of code is required to setup the objects to pass to the algorithm. To prevent code duplication when wanting to use the same algorithm in two contexts (for example, we may want a version of ClassicalImpageInpainting that displays its progress as it goes along and another that does not), we have separated this setup functionality into what we call a \emph{driver}. This allows us to separate the data preparation from this algorithm setup. For example, We have root/ClassicalImageInpainting.cpp and root/ClassicalImageInpaintingBasicViewer.cpp both of which use the ClassicalImpageInpainting driver.
+
+%%%%%%%%%%%%%%%
+\section{Interactivity}
+We have drivers for each of our algorithms that are called by executables with matching names that are purely terminal programs. That is, they require no GUI context to be created (they do not display anything) and do not require any GUI input from the user (they do not ask questions using QDialog, etc). In these cases, the algorithm  (i.e. InpaintingAlgorithm) can be invoked as a normal function call.
+
+However, in the case that we want to either display the intermediate progress (using BasicViewer) or prompt the user to do something like select a patch (for example, TopPatchesDialog), we must run the algorithm in a different thread so that the GUI stays responsive during the algorithm. As an example, refer to ClassicalImageInpaintingBasicViewer. Here the last line calls InpaintingAlgorithm, but is wrapped in a QtConcurrent::run call (which also requires boost::bind since the InpaintingAlgorithm is a function template). This starts the algorithm in a separate thread, and returns from the driver function to hit the app.exec() at the end of main() which triggers the GUI thread loop to start. Because of this behavior, and objects allocated on the stack (locals) in the driver function will immediately go out of scope, and nothing will work (everything will crash because the objects are no longer valid).
+
+%%%%%%%%%%%%%%%
+\section{Visitors}
+In this code we heavily use the \emph{visitor pattern}. The idea is that the algorithm is specified as a very non-specific routine which can be filled in by the developer specifying the particular action that should be taken at each step in the algorithm. This really aligns code with the definition of ``algorithm'' that might be used outside of a programming context. As a simple example, consider the following algorithm:
+
+\begin{verbatim}
+ 
+void Algorithm(VisitorType visitor)
+{
+  while(not done)
+  {
+    currentObject = ...;
+    visitor.Initialize(currentObject);
+    visitor.Process(currentObject);
+    visitor.Finalize(currentObject);
+  }
+}
+\end{verbatim}
+
+Here, as long as your visitor knows how to initialize, process, and finalize an object, it can be used with this algorithm. For example,
+
+\begin{verbatim}
+ 
+struct MyVisitor
+{
+  void Initialize(Object currentObject)
+  {
+    cout << "init.";
+  }
+
+  void Process(Object currentObject)
+  {
+    cout << "process.";
+  }
+
+  void Finalize(Object currentObject)
+  {
+    cout << "finalize.";
+  }
+};
+
+...
+MyVisitor myVisitor;
+Algorithm(myVisitor);
+...
+
+\end{verbatim}
+
+Will run the algorithm with the above dummy visitor, which will simply write out the name of each function as it is called.
+
+\subsection{Acceptance Visitors}
+These visitors, used with InpaintingAlgorithmWithVerification, take a source and target patch and determine if they are acceptable, usually by comparing some difference function to a threshold. For example, GMHAcceptanceVisitor uses the GMHDifference functor and then compares that value to a specified threshold. If the distance is below the threshold, the acceptance visitor returns true (acceptable), and otherwise returns false (not acceptable).
+
+\subsection{Information Visitors}
+\subsection{Descriptor Visitors}
+
+%%%%%%%%%%%%%%%
+\section{Utilities}
+One of the main components of our inpainting algorithm is a priority queue that tracks which pixels are on the current hole boundary and maintains their priority. This problem is harder than it sounds. We have created an indirect priority queue that is a wrapper around boost::heap::binomial_heap. The trouble is that we often will have nodes in the queue that get invalidated (when the boundary changes, pixels currently in the queue are no longer valid boundary pixels), so we should not process those nodes when they get to the top of the queue. We also must provide a mechanism for changing the priority values associated with nodes that are already in the queue, which we do by storing those values in a property map and using a boost::indirect_cmp to sort the queue. The result is an easy to use queue that does what is expected of a boundary node queue for inpainting.
+
+This directory also contains other helper functions (PatchHelpers) we need for some inpainting algorithms.
 %%%%%%%%%%%%%%%
 \section{Implementation Details}
 \label{sec:ImplementationDetails}

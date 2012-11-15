@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef INDIRECTPRIORITYQUEUE_H
-#define INDIRECTPRIORITYQUEUE_H
+#ifndef IndirectPriorityQueue_H
+#define IndirectPriorityQueue_H
 
 // STL
 #include <iostream>
@@ -235,4 +235,4 @@ struct IndirectPriorityQueue
 
 };
 
-#endif // INDIRECTPRIORITYQUEUE_H
+#endif // IndirectPriorityQueue_H

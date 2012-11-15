@@ -28,10 +28,10 @@
 namespace PatchHelpers
 {
 
-////////////// Non template functions //////////////
+////////////// Functions //////////////
 bool CheckSurroundingRegionsOfAllHolePixels(const Mask* const mask, const unsigned int patchRadius);
 
-////////////// Template functions //////////////
+////////////// Function templates //////////////
 template <typename TImage>
 QImage GetQImageCombinedPatch(const TImage* const image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion, const Mask* const mask);
 
@@ -42,7 +42,6 @@ void CopyRegion(const TImage* const sourceImage, TImage* const targetImage, cons
 template <class TImage>
 void CopyPatchIntoImage(const TImage* const patch, TImage* const image, const Mask* const mask,
                         const itk::Index<2>& position);
-
 
 template <class TImage>
 void CopyPatchIntoImage(const TImage* patch, TImage* const image, const itk::Index<2>& centerPixel);

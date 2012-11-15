@@ -67,12 +67,11 @@ void Scalar()
 
   const unsigned int numberOfBinsPerChannel = 30;
   GMHDifference<ImageType> gmhDifference(randomImageSource->GetOutput(), mask, numberOfBinsPerChannel);
-//  GMHDifferenceFast<ImageType> gmhDifference(imageReader->GetOutput(), mask, numberOfBinsPerChannel); // This produces 5.87 but it should produce 0.932
+//  GMHDifferenceFast<ImageType> gmhDifference(imageReader->GetOutput(), mask, numberOfBinsPerChannel); // This does not produce the same value as GMHDifference!
 
   float difference = gmhDifference.Difference(targetRegion, sourceRegion);
 
   std::cout << "GMHDifference: " << difference << std::endl;
-
 }
 
 void Vector()

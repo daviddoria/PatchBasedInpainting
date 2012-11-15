@@ -1,19 +1,15 @@
 add_subdirectory(AcceptanceVisitors)
 add_subdirectory(DescriptorVisitors)
 add_subdirectory(InformationVisitors)
-add_subdirectory(SimpleVisitors)
+add_subdirectory(InpaintingVisitors)
 
-add_custom_target(VisitorsSources SOURCES CompositeInpaintingVisitor.hpp
+add_custom_target(VisitorsSources SOURCES
 FeatureVectorInpaintingVisitor.hpp
 ImagePatchCreatorVisitor.hpp
-ImagePatchInpaintingVisitor.hpp
-InpaintingVisitor.hpp
-InpaintingVisitorParent.h
 ManualSelectionDefaultVisitor.hpp
 MatchVerificationVisitor.hpp
 NearestNeighborsDefaultVisitor.hpp
 NearestNeighborsDisplayVisitor.hpp
-PaintPatchVisitor.hpp
 RandomDescriptorCreatorVisitor.hpp
 ReplayVisitor.hpp
 )
