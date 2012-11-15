@@ -16,8 +16,8 @@
  *
  *=========================================================================*/
 
-#ifndef ImagePatchDifference_hpp
-#define ImagePatchDifference_hpp
+#ifndef ImagePatchDifferenceNoCheck_hpp
+#define ImagePatchDifferenceNoCheck_hpp
 
 // STL
 #include <stdexcept>

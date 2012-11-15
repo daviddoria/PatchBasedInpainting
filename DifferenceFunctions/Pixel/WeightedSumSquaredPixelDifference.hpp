@@ -22,14 +22,15 @@
 // STL
 #include <stdexcept>
 
-// Custom
-#include <Helpers/Helpers.h>
-#include <Helpers/ContainerInterface.h>
-#include <ITKHelpers/ITKHelpers.h>
-#include <ITKHelpers/ITKContainerInterface.h>
+// Submodules
+#include "Helpers/Helpers.h"
+#include "Helpers/ContainerInterface.h"
+#include "ITKHelpers/ITKHelpers.h"
+#include "ITKHelpers/ITKContainerInterface.h"
 
 /**
- */
+  * This functor computes a weighted sum of squared differences between two pixels.
+  */
 template <typename PixelType>
 struct WeightedSumSquaredPixelDifference
 {

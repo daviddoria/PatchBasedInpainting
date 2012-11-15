@@ -35,8 +35,9 @@
 // ITK
 #include "itkNthElementImageAdaptor.h"
 
-/** Compute the difference in Gradient Magnitude Histograms of two patches.
- */
+/** Compute the difference in Gradient Magnitude Histograms of the valid region of the target patch
+  * and the full source patch.
+  */
 template <typename TImage>
 struct GMHDifference
 {

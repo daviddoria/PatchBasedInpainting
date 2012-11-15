@@ -22,17 +22,20 @@
 // STL
 #include <stdexcept>
 
-// Custom
-#include <Helpers/Helpers.h>
-#include <ITKHelpers/ITKHelpers.h>
+// Submodules
+#include "Helpers/Helpers.h"
+#include "ITKHelpers/ITKHelpers.h"
 
 /**
- */
+  * This functor computes a weighted sum of absolute differences of ND pixels.
+  */
 template <typename PixelType>
 struct WeightedSumAbsolutePixelDifference
 {
   std::vector<float> Weights;
   
+  WeightedSumAbsolutePixelDifference(const std::vector<float>& weights) : Weights(weights) {}
+
   float operator()(const PixelType& a, const PixelType& b) const
   {
     using Helpers::length;
@@ -42,7 +45,7 @@ struct WeightedSumAbsolutePixelDifference
     assert(length(a) == length(b));
 
     //assert(length(a) == Weights.size());
-    if(length(a) != Weights.size())
+    if(length(a) != this->Weights.size())
     {
       std::stringstream ss;
       ss << "length(a) != Weights.size(). a is " << length(a) << " and weights is " << Weights.size();
@@ -51,10 +54,10 @@ struct WeightedSumAbsolutePixelDifference
     
     float pixelDifference = 0.0f;
     for(unsigned int component = 0; component < length(a); ++component)
-      {
-      float componentDifference = Weights[component] * fabs(index(a,component) - index(b,component));
+    {
+      float componentDifference = this->Weights[component] * fabs(index(a,component) - index(b,component));
       pixelDifference += componentDifference;
-      }
+    }
     return pixelDifference;
   }
 };

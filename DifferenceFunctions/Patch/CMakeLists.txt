@@ -7,6 +7,5 @@ ImagePatchDifferenceNoCheck.hpp
 ImagePatchVectorizedDifference.hpp
 ImagePatchVectorizedIndicesDifference.hpp
 PatchValidHistogramDifference.hpp
-WeightedImagePatchDifference.hpp
 )
 

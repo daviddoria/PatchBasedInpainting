@@ -209,12 +209,27 @@ This priority function is the confidence term from the Criminisi priority functi
 This priority function selects a random target node to fill next. It is probably best to only use this ordering for debugging.
 
 %%%%%%%%%%%%%%%%
-\section{Patch Matching/Comparison/Difference}
+\section{Patch Difference Functions}
 \label{sec:PatchMatching}
-We allow a ``patch'' to be a quite abstract concept. (In our research we have attempted to inpaint 3D data, so in this context a ``patch'' is no longer a simple grid of pixels). However, for a patch-based inpainting algorithm, there must always be the concept of ``comparing patches''. In the DifferenceFunctions folder, we provide many such comparisons.
+Patch comparisons can be done between corresponding pixels or using non-pixel specific metrics. Several patch difference functions are provided.
+
+\subsection{ImagePatchDifference}
+This is the ``standard'' patch difference function that computes a sum of differences of corresponding pixels in two patches. It is templated on the comparison to be performed on each pair of corresponding pixels.
+
+\subsection{GMHDifference}
+This function computes the difference between the gradient magnitude histogram of the valid region of the target patch and the gradient magnitude histogram of the entire source patch. 
+
+%%%%%%%%%%%%%%%%
+\section{Pixel Difference Functions}
+\label{sec:PatchMatching}
+The ImagePatchDifference class described above requires a function to compute the difference between pixels. Several such distance functions are provided.
 
 \subsection{SumSquaredPixelDifference (SSD)}
-This function computes the normalized sum of squared differences between every pixel in the valid region of the target patch and its corresponding pixel in the source patch. This is the standard difference function used in patch-based inpainting (e.g. \cite{criminisi}). This function is generic for any pixel type that has an operator[], but is specialized for pixels of type itk::CovariantVector. We also provide an explicitly unrolled version of this function, as since it is at the heart of the algorithm and the computational bottleneck, we have tried to do everything possible to ensure it runs as fast as possible.
+This function computes the sum of squared differences between every pixel in the valid region of the target patch and its corresponding pixel in the source patch. This is the standard difference function used in patch-based inpainting (e.g. \cite{criminisi}). This function is generic for any pixel type that has an operator[], but is specialized for pixels of type itk::CovariantVector. We also provide an explicitly unrolled version of this function, as since it is at the heart of the algorithm and the computational bottleneck, we have tried to do everything possible to ensure it runs as fast as possible.
+
+\subsection{SumAbsolutePixelDifference (SAD)}
+This function computes the sum of absolute differences between every pixel in the valid region of the target patch and its corresponding pixel in the source patch. This function is generic for any pixel type that has an operator[], but is specialized for pixels of type itk::CovariantVector. We also provide an explicitly unrolled version of this function, as since it is at the heart of the algorithm and the computational bottleneck, we have tried to do everything possible to ensure it runs as fast as possible.
+
 
 \subsection{HSVSSD}
 The standard SSD function is acceptable if the image is represented in a color space (like RGB) where each channel is ``non-wrapping''. That is, the values in the upper range of the channel (255) should be significantly different from the values in the lower range of the channel (0). This is not the case with the H channel of the HSV color space, so we must treat its cyclic nature specially. In this class, we treat the S and V channels as ``standard'' channels, and use a special difference functor for the H channel that takes into account that we are measuring an angular distance and that wrapping over the upper range (1) back into the lower range (0) does not indicate an enormous difference, but rather we handle it correctly.

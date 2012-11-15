@@ -36,7 +36,9 @@
 #include "itkNthElementImageAdaptor.h"
 
 /** Compute the difference in Gradient Magnitude Histograms of two patches.
- */
+  * I believe that the result of this does not match the result of GMHDifference,
+  * so there is most likely a serious bug here.
+  */
 template <typename TImage>
 struct GMHDifferenceFast
 {

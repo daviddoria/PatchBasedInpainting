@@ -29,10 +29,14 @@
 #include <ITKHelpers/ITKContainerInterface.h>
 
 /**
-  * This class is designed to compute the difference between an HSV image.
+  * This class is designed to compute the difference between pixels of an HSV image.
   * The H channel is compared using a cyclic difference to handle the
   * wrapping nature of the values, while the S and V channels are compared
-  * in a standard fashion.
+  * in a standard fashion. A weight vector is specified to give different
+  * weights to each component of the pixel difference. This class is different from
+  * WeightedHSVSSDFull as it only computes the difference of the first channel (H)
+  * and the next two channels (S and V), where WeightedHSVSSDFull also considers any
+  * additional channels.
   */
 template <typename PixelType>
 struct WeightedHSVSSD

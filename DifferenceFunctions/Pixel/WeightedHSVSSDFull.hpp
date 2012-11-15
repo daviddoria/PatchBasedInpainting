@@ -32,7 +32,8 @@
   * This class is designed to compute the difference between an HSV* image. That is, the
   * first channel is H, and there can be as many additional channels that are all to be compared
   * in a standard SSD fashion. The H channel is compared using a cyclic difference to handle the
-  * wrapping nature of the values.
+  * wrapping nature of the values. This class is different from WeightedHSVSSD in that it considers
+  * any additional channels after H, S, and V as well.
   */
 template <typename PixelType>
 struct WeightedHSVSSDFull
