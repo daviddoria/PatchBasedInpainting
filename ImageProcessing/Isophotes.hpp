@@ -31,8 +31,11 @@
 #include "itkRGBToLuminanceImageFilter.h"
 
 template <typename TVectorImageType, typename TIsophoteImageType>
-void Isophotes::ComputeColorIsophotesInRegion(const TVectorImageType* const image, const Mask* const mask,
-                                   const itk::ImageRegion<2>& region , TIsophoteImageType* const isophotes)
+void
+Isophotes::ComputeColorIsophotesInRegion(const TVectorImageType* const image,
+                                         const Mask* const mask,
+                                         const itk::ImageRegion<2>& region,
+                                         TIsophoteImageType* const isophotes)
 {
   /*
    * 'isophotes' must already be initialized to the right size and allocated.
@@ -50,7 +53,12 @@ void Isophotes::ComputeColorIsophotesInRegion(const TVectorImageType* const imag
 //  std::cout << "ComputeColorIsophotesInRegion()" << std::endl;
   RGBImageType::Pointer rgbImage = RGBImageType::New();
 //  std::cout << "VectorImageToRGBImageInRegion()" << std::endl;
-  ITKHelpers::VectorImageToRGBImageInRegion(image, rgbImage, region);
+
+  typedef itk::Image<itk::CovariantVector<float, 3>, 2> Image3Type;
+  Image3Type::Pointer image3channel = Image3Type::New();
+  ITKHelpers::ConvertTo3Channel(image, image3channel.GetPointer());
+
+  ITKHelpers::VectorImageToRGBImageInRegion(image3channel.GetPointer(), rgbImage, region);
 
   assert(image->GetLargestPossibleRegion() == rgbImage->GetLargestPossibleRegion());
 
