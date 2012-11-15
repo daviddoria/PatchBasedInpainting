@@ -33,7 +33,7 @@ static void Vector();
 
 int main(int, char*[])
 {
-//  Scalar();
+  Scalar();
   Vector();
 
   return EXIT_SUCCESS;
@@ -41,38 +41,37 @@ int main(int, char*[])
 
 void Scalar()
 {
-  // TODO: Need some enable_if magic in GMHDifference to make it not need to extract components if the image is already scalar
-//  typedef itk::Image< unsigned char, 2 >  ImageType;
+  typedef itk::Image< unsigned char, 2 >  ImageType;
 
-//  itk::Size<2> imageSize = {{500,500}};
+  itk::Size<2> imageSize = {{500,500}};
 
-//  itk::RandomImageSource<ImageType>::Pointer randomImageSource =
-//    itk::RandomImageSource<ImageType>::New();
-//  randomImageSource->SetNumberOfThreads(1); // to produce non-random results
-//  randomImageSource->SetSize(imageSize);
-//  randomImageSource->Update();
+  itk::RandomImageSource<ImageType>::Pointer randomImageSource =
+    itk::RandomImageSource<ImageType>::New();
+  randomImageSource->SetNumberOfThreads(1); // to produce non-random results
+  randomImageSource->SetSize(imageSize);
+  randomImageSource->Update();
 
-//  itk::Size<2> patchSize = {{21,21}};
+  itk::Size<2> patchSize = {{21,21}};
 
-//  // There is nothing magic about these particular patches
-//  itk::Index<2> targetCorner = {{319, 302}};
-//  itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
+  // There is nothing magic about these particular patches
+  itk::Index<2> targetCorner = {{319, 302}};
+  itk::ImageRegion<2> targetRegion(targetCorner, patchSize);
 
-//  itk::Index<2> sourceCorner = {{341, 300}};
-//  itk::ImageRegion<2> sourceRegion(sourceCorner, patchSize);
+  itk::Index<2> sourceCorner = {{341, 300}};
+  itk::ImageRegion<2> sourceRegion(sourceCorner, patchSize);
 
-//  Mask::Pointer mask = Mask::New();
-//  mask->SetRegions(randomImageSource->GetOutput()->GetLargestPossibleRegion());
-//  mask->Allocate();
-//  ITKHelpers::SetImageToConstant(mask.GetPointer(), mask->GetValidValue());
+  Mask::Pointer mask = Mask::New();
+  mask->SetRegions(randomImageSource->GetOutput()->GetLargestPossibleRegion());
+  mask->Allocate();
+  ITKHelpers::SetImageToConstant(mask.GetPointer(), mask->GetValidValue());
 
-//  const unsigned int numberOfBinsPerChannel = 30;
-//  GMHDifference<ImageType> gmhDifference(randomImageSource->GetOutput(), mask, numberOfBinsPerChannel);
-////  GMHDifferenceFast<ImageType> gmhDifference(imageReader->GetOutput(), mask, numberOfBinsPerChannel); // This produces 5.87 but it should produce 0.932
+  const unsigned int numberOfBinsPerChannel = 30;
+  GMHDifference<ImageType> gmhDifference(randomImageSource->GetOutput(), mask, numberOfBinsPerChannel);
+//  GMHDifferenceFast<ImageType> gmhDifference(imageReader->GetOutput(), mask, numberOfBinsPerChannel); // This produces 5.87 but it should produce 0.932
 
-//  float difference = gmhDifference.Difference(targetRegion, sourceRegion);
+  float difference = gmhDifference.Difference(targetRegion, sourceRegion);
 
-//  std::cout << "GMHDifference: " << difference << std::endl;
+  std::cout << "GMHDifference: " << difference << std::endl;
 
 }
 

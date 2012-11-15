@@ -34,7 +34,7 @@ static void Vector();
 
 int main(int, char*[])
 {
-//  Scalar();
+  Scalar();
   Vector();
 
   return EXIT_SUCCESS;
