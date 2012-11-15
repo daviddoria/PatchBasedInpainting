@@ -1,0 +1,6 @@
+add_custom_target(InpaintingVisitorsSources SOURCES
+CompositeInpaintingVisitor.hpp
+ImagePatchInpaintingVisitor.hpp
+InpaintingVisitor.hpp
+InpaintingVisitorParent.h
+)

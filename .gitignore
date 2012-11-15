@@ -1,6 +1,8 @@
 .fuse_hidden*
 *.kate-swp
 *.user
+CMakeLists.txt.user.*
 *.2.6pre1
 *.orig
 *.autosave
+*.brf
