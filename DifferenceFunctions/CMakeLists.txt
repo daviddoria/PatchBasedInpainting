@@ -4,5 +4,7 @@ add_subdirectory(Other)
 
 option(PatchBasedInpainting_DifferenceFunctions_BuildTests "Build PatchBasedInpainting DifferenceFunctions tests.")
 if(PatchBasedInpainting_DifferenceFunctions_BuildTests)
-  add_subdirectory(DifferenceFunctions/Tests)
+  add_subdirectory(Other/Tests)
+  add_subdirectory(Pixel/Tests)
+  add_subdirectory(Patch/Tests)
 ENDIF()

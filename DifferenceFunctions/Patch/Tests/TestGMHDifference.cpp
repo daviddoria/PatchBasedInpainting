@@ -19,7 +19,7 @@
 #include "GMHDifference.hpp"
 #include "GMHDifferenceFast.hpp"
 
-#include "Testing.h"
+//#include "Testing.h"
 
 // ITK
 #include "itkImage.h"

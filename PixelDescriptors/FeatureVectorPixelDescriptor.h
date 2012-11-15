@@ -36,7 +36,7 @@ public:
   typedef std::vector<float> FeatureVectorType;
 
   /** Default constructor to allow objects to be stored in a container.*/
-  FeatureVectorPixelDescriptor(){};
+  FeatureVectorPixelDescriptor(){}
 
   /** Construct a descriptor.*/
   FeatureVectorPixelDescriptor(const unsigned int length);

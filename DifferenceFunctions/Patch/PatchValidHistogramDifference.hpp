@@ -42,7 +42,7 @@ struct PatchValidHistogramDifference
     Image(image), MaskImage(mask)
   {}
 
-  float Difference(const RegionType& targetPatch, const RegionType& sourcePatch) const
+  float Difference(const RegionType& queryRegion, const RegionType& sourceRegion) const
   {
     typedef int BinValueType;
 
@@ -55,7 +55,7 @@ struct PatchValidHistogramDifference
     HistogramType sourceHistogram =
 //          MaskedHistogram::ComputeMaskedImage1DHistogram(
         MaskedHistogram<BinValueType>::ComputeQuadrantMaskedImage1DHistogram(
-                    this->Image, currentRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
+                    this->Image, sourceRegion, this->MaskImage, queryRegion, this->NumberOfBinsPerDimension,
                     this->RangeMin, this->RangeMax);
 
     // float histogramDifference = Histogram<BinValueType>::HistogramDifference(targetHistogram, testHistogram);

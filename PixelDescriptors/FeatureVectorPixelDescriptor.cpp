@@ -21,15 +21,15 @@
 #include <algorithm>
 
 FeatureVectorPixelDescriptor::FeatureVectorPixelDescriptor(const FeatureVectorType& featureVector) :
-FeatureVector(featureVector)
+  FeatureVector(featureVector)
 {
 
 }
 
 FeatureVectorPixelDescriptor::FeatureVectorPixelDescriptor(const unsigned int length)
 {
-  FeatureVector.resize(length);
-  std::fill(FeatureVector.begin(), FeatureVector.end(), 0);
+  this->FeatureVector.resize(length);
+  std::fill(this->FeatureVector.begin(), this->FeatureVector.end(), 0);
 }
 
 const FeatureVectorPixelDescriptor::FeatureVectorType& FeatureVectorPixelDescriptor::GetFeatureVector() const
@@ -40,9 +40,9 @@ const FeatureVectorPixelDescriptor::FeatureVectorType& FeatureVectorPixelDescrip
 std::ostream& operator<<(std::ostream& output, const std::vector<float>& descriptor)
 {
   for(unsigned int i = 0; i < descriptor.size(); ++i)
-    {
+  {
     output << descriptor[i] << " ";
-    }
+  }
   //output << std::endl;
   
   return output;

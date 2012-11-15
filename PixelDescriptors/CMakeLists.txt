@@ -1,6 +1,5 @@
 add_custom_target(PixelDescriptors SOURCES
 FeatureVectorPixelDescriptor.h
-FeatureVectorPixelDescriptor.hpp
 ImagePatchPixelDescriptor.h
 ImagePatchPixelDescriptor.hxx
 ImagePatchVectorized.h

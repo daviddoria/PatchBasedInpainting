@@ -142,7 +142,7 @@ Figure \ref{fig:SyntheticDemonstration} shows a synthetic demonstration of the a
 \label{fig:SyntheticDemonstration}
 \end{figure}
 
-\section{Algorithm Realistic Demonstration}
+\section{Realistic Demonstration}
 Figure \ref{fig:RealisticDemonstration} shows a real example of the algorithm. This result shows the typical quality of inpainting that the algorithm produces. 
 
 \begin{figure}[H]
@@ -180,27 +180,19 @@ An overview of the algorithm is:
   \begin{itemize}
     \item Compute the priority of every pixel on the hole boundary (see Section \ref{subsec:AlgorithmDetails:Priorities})
     \item Determine the boundary pixel with the highest priority. We will call this the target pixel. The region centered at the target pixel and the size of the patches is called the target patch.
-    \item Find the SourcePatch which best matches the portion of the target patch in the source region.
+    \item Find the source Pptch which best matches the portion of the target patch in the source region.
     \item Copy the corresponding portion of the source patch into the target region of the target patch.
     \item Repeat until the target region consists of zero pixels.
   \end{itemize}
 \end{itemize}
 
-%%%%%%%%%%%%%%%
-\section{Algorithm Details}
-\label{sec:AlgorithmDetails}
-
-The two main parts of the algorithm are
-\begin{enumerate}
- \item Determine the priority of each boundary pixel. This determines the order with which the hole is filled.
- \item Find the best matching patch to the patch around the pixel with the highest priority.
-\end{enumerate}
-
 %%%%%%%%%%%%%%%%%%
 \section{Priority Functions}
 \label{sec:PriorityFunctions}
+The priority function is used to determine which target patch to fill next. We provide several such functions.
+
 \subsection{PriorityCriminisi}
-The priority function is used to determine which target patch to fill next. The priority term described in \cite{criminis} is is given by the product of a Confidence term $C(p)$ and a Data term $D(p)$. This priority function attempts to both continue linear structures sooner rather than later, and fill patches where a larger number of the pixels in the patch are already filled.
+The priority term described in \cite{criminisi} is is given by the product of a Confidence term $C(p)$ and a Data term $D(p)$. This priority function attempts to both continue linear structures sooner rather than later, and fill patches where a larger number of the pixels in the patch are already filled.
 
 \subsection{PriorityConfidence}
 This priority function is the confidence term from the Criminisi priority function. Using this function essentially makes the algorithm fill patches from the outside of the hole and work its way inward.
@@ -222,14 +214,16 @@ This function computes the difference between the gradient magnitude histogram o
 %%%%%%%%%%%%%%%%
 \section{Pixel Difference Functions}
 \label{sec:PatchMatching}
-The ImagePatchDifference class described above requires a function to compute the difference between pixels. Several such distance functions are provided.
+The ImagePatchDifference class described above requires a function to compute the difference between pixels. Several such distance functions are provided, and the most notable ones are described here.
 
 \subsection{SumSquaredPixelDifference (SSD)}
 This function computes the sum of squared differences between every pixel in the valid region of the target patch and its corresponding pixel in the source patch. This is the standard difference function used in patch-based inpainting (e.g. \cite{criminisi}). This function is generic for any pixel type that has an operator[], but is specialized for pixels of type itk::CovariantVector. We also provide an explicitly unrolled version of this function, as since it is at the heart of the algorithm and the computational bottleneck, we have tried to do everything possible to ensure it runs as fast as possible.
 
 \subsection{SumAbsolutePixelDifference (SAD)}
-This function computes the sum of absolute differences between every pixel in the valid region of the target patch and its corresponding pixel in the source patch. This function is generic for any pixel type that has an operator[], but is specialized for pixels of type itk::CovariantVector. We also provide an explicitly unrolled version of this function, as since it is at the heart of the algorithm and the computational bottleneck, we have tried to do everything possible to ensure it runs as fast as possible.
+This function computes the sum of absolute differences between ND pixels. This function is generic for any pixel type that has an operator[], but is specialized for pixels of type itk::CovariantVector. We also provide an explicitly unrolled version of this function, as since it is at the heart of the algorithm and the computational bottleneck, we have tried to do everything possible to ensure it runs as fast as possible.
 
+\subsection{WeightedSumSquaredPixelDifference}
+This function computes a weighted sum of squared differences between ND pixels.
 
 \subsection{HSVSSD}
 The standard SSD function is acceptable if the image is represented in a color space (like RGB) where each channel is ``non-wrapping''. That is, the values in the upper range of the channel (255) should be significantly different from the values in the lower range of the channel (0). This is not the case with the H channel of the HSV color space, so we must treat its cyclic nature specially. In this class, we treat the S and V channels as ``standard'' channels, and use a special difference functor for the H channel that takes into account that we are measuring an angular distance and that wrapping over the upper range (1) back into the lower range (0) does not indicate an enormous difference, but rather we handle it correctly.
@@ -307,25 +301,6 @@ There are two potential boundaries that can be extracted from a masked region - 
 \caption{Inner vs Outer Boundary of a Region}
 \label{fig:BoundarySide}
 \end{figure}
-
-\subsubsection{Code Snippet}
-The CriminisiInpainting class must be instantiated using the type of image to be inpainted. Then the patch radius must be set, the image and mask provided, and the Inpaint() function called.
-\begin{verbatim}
-  CriminisiInpainting<ImageType> Inpainting;
-  Inpainting.SetPatchRadius(5);
-  Inpainting.SetImage(imageReader->GetOutput());
-  Inpainting.SetInputMask(maskReader->GetOutput());
-  Inpainting.Inpaint();
-
-  ImageType::Pointer result = Inpainting.GetResult();
-
-\end{verbatim}
-
-If you would like to see what happens at every step of the algorithm, you can use:
-\begin{verbatim}
-Inpainting.SetWriteIntermediateImages(true); 
-\end{verbatim}
-NOTE: Several images are output at each iteration - these files could be quite large!
 
 
 %%%%%%%%%%%%%%%

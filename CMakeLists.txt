@@ -98,6 +98,24 @@ if(QT4_FOUND)
   add_subdirectory(Interactive)
 endif(QT4_FOUND)
 
+# Create a library of the core source files. We must do this BEFORE the add_subdirectory calls,
+# as some of the subdirectory tests need this library.
+add_library(PatchBasedInpainting
+ImageProcessing/Derivatives.cpp
+Utilities/itkCommandLineArgumentParser.cxx
+Utilities/PatchHelpers.cpp
+Priority/Priority.cpp
+Priority/PriorityDepth.cpp
+Priority/PriorityManual.cpp
+Priority/PriorityConfidence.cpp
+Priority/PriorityRandom.cpp
+PixelDescriptors/FeatureVectorPixelDescriptor.cpp
+)
+
+# Add the library to the list of libraries that are required to use this as a submodule.
+set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries}
+      PatchBasedInpainting)
+
 add_subdirectory(Algorithms)
 add_subdirectory(Concepts)
 add_subdirectory(DifferenceFunctions)
@@ -115,21 +133,7 @@ add_subdirectory(SpeedTests)
 add_subdirectory(Utilities)
 add_subdirectory(Visitors)
 
-# Create a library of the core source files
-add_library(PatchBasedInpainting
-ImageProcessing/Derivatives.cpp
-Utilities/itkCommandLineArgumentParser.cxx
-Utilities/PatchHelpers.cpp
-Priority/Priority.cpp
-Priority/PriorityDepth.cpp
-Priority/PriorityManual.cpp
-Priority/PriorityConfidence.cpp
-Priority/PriorityRandom.cpp
-)
 
-# Add the library to the list of libraries that are required to use this as a submodule.
-set(PatchBasedInpainting_libraries ${PatchBasedInpainting_libraries}
-      PatchBasedInpainting)
 
 # Allow this project to be detected and used as a submodule
 CreateSubmodule(PatchBasedInpainting)

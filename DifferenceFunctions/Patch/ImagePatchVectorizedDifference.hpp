@@ -40,21 +40,21 @@ struct ImagePatchVectorizedDifference
     DifferenceFunctorType differenceFunctor;
 
     if(!a.IsInsideImage() || !b.IsInsideImage())
-      {
+    {
       return std::numeric_limits<float>::infinity();
-      }
+    }
 
     // If we are comparing a patch to itself, return inf. Otherwise, the best match would always be the same patch!
     if(a.GetRegion() == b.GetRegion())
-      {
+    {
       return std::numeric_limits<float>::infinity();
-      }
+    }
 
     // If either patch is invalid, the comparison cannot be performed.
     if(a.GetStatus() == ImagePatchType::INVALID || b.GetStatus() == ImagePatchType::INVALID)
-      {
+    {
       return std::numeric_limits<float>::infinity();
-      }
+    }
 
     float totalDifference = 0.0f;
 
@@ -68,7 +68,7 @@ struct ImagePatchVectorizedDifference
         float pixelDifference = differenceFunctor(*iterA, *iterB);
 
         totalDifference += pixelDifference;
-        }
+      }
       totalDifference = totalDifference / static_cast<float>(a.GetRegion().GetNumberOfPixels());
     }
     // If one of the nodes is a target node, only compare in it's list of valid offset pixels.
@@ -77,19 +77,19 @@ struct ImagePatchVectorizedDifference
       typedef std::vector<unsigned int> OffsetVectorType;
       const OffsetVectorType* validOffsets;
       if(a.GetStatus() == ImagePatchType::TARGET_NODE)
-        {
+      {
         validOffsets = a.GetValidOffsetsAddress();
-        }
+      }
       if(b.GetStatus() == ImagePatchType::TARGET_NODE)
-        {
+      {
         validOffsets = b.GetValidOffsetsAddress();
-        }
+      }
 
       for(OffsetVectorType::const_iterator iter = validOffsets->begin(); iter < validOffsets->end(); ++iter)
-        {
+      {
         float difference = differenceFunctor(a.GetPixelVector()[*iter], b.GetPixelVector()[*iter]);
         totalDifference += difference;
-        }
+      }
       totalDifference = totalDifference / static_cast<float>(validOffsets->size());
     }
     else

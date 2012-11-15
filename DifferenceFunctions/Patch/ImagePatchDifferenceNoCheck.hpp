@@ -41,32 +41,20 @@ struct ImagePatchDifference
     pixelDifferenceFunctor.PrintName();
   }
 
+  /** This version of the function can be used if we have not pre-computed/pre-extracted anything from the target patch.*/
   float operator()(const ImagePatchType& sourcePatch, const ImagePatchType& targetPatch) const
   {
     // If the source patch is invalid, the comparison cannot be performed.
-//    if(sourcePatch.GetStatus() == ImagePatchType::INVALID)
-    if(sourcePatch.GetStatus() != ImagePatchType::SOURCE_NODE)
-    {
-//      return std::numeric_limits<float>::infinity();
-      return std::numeric_limits<float>::max();
-    }
+    assert(sourcePatch.GetStatus() == ImagePatchType::SOURCE_NODE);
 
     // Require the source patch to be inside the image. This should be taken care of because the list of
     // source patches should all be inside the image
     assert(sourcePatch.IsInsideImage());
-//    if(!sourcePatch.IsInsideImage())
-//    {
-//      return std::numeric_limits<float>::infinity();
-//    }
 
     // If we are comparing a patch to itself, return inf. Otherwise, the best match would always be the same patch!
     // This should never be the case, because we do not compare target patches to target patches, and we do not compare
     // source patches to anything.
     assert(sourcePatch.GetRegion() != targetPatch.GetRegion());
-//    if(sourcePatch.GetRegion() == targetPatch.GetRegion())
-//    {
-//      return std::numeric_limits<float>::infinity();
-//    }
 
     typename ImagePatchType::ImageType* image = sourcePatch.GetImage();
 
@@ -98,6 +86,8 @@ struct ImagePatchDifference
     return totalDifference;
   }
 
+  /** This version of the function can be used if the ordered values of the targetPixels have already
+    * been extracted from the image, and the targetPatch has its ValidOffsetsAddresses already computed.*/
   float operator()(const ImagePatchType& sourcePatch, const ImagePatchType& targetPatch,
                    const std::vector<typename ImagePatchType::ImageType::PixelType>& targetPixels) const
   {
