@@ -3,3 +3,11 @@ include_directories(../)
 add_executable(TestSumSquaredPixelDifference TestSumSquaredPixelDifference.cpp ../SumSquaredPixelDifference.hpp)
 target_link_libraries(TestSumSquaredPixelDifference ${PatchBasedInpainting_libraries})
 add_test(TestSumSquaredPixelDifference TestSumSquaredPixelDifference)
+
+add_executable(TestSumAbsolutePixelDifference TestSumAbsolutePixelDifference.cpp ../SumAbsolutePixelDifference.hpp)
+target_link_libraries(TestSumAbsolutePixelDifference ${PatchBasedInpainting_libraries})
+add_test(TestSumAbsolutePixelDifference TestSumAbsolutePixelDifference)
+
+add_executable(TestHSVSSD TestHSVSSD.cpp ../HSVSSD.hpp)
+target_link_libraries(TestHSVSSD ${PatchBasedInpainting_libraries})
+add_test(TestHSVSSD TestHSVSSD)

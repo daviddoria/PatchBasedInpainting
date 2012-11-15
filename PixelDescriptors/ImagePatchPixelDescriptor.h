@@ -114,6 +114,6 @@ private:
 
 };
 
-#include "ImagePatchPixelDescriptor.hxx"
+#include "ImagePatchPixelDescriptor.hpp"
 
 #endif

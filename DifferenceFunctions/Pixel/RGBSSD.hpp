@@ -29,7 +29,7 @@
 #include <ITKHelpers/ITKContainerInterface.h>
 
 /**
-  * This class is designed to compute the difference between RG Bimage pixels.
+  * This class is designed to compute the difference between RGB image pixels.
   */
 template <typename PixelType>
 struct RGBSSD
@@ -69,7 +69,8 @@ public:
   typedef itk::CovariantVector<T, N> PixelType;
 
 
-  // Using ITK function. This function uses casts to double internally, so it is not ideal for integer types
+  // This version uses a built-in ITK function. This function uses casts to double internally,
+  // so it is not ideal for integer types
   // with values that you know will not cause overflow (unnecessarily slow)
 //  float operator()(const PixelType& a, const PixelType& b) const
 //  {
