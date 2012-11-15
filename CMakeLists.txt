@@ -111,10 +111,7 @@ ImageProcessing/Derivatives.cpp
 Utilities/itkCommandLineArgumentParser.cxx
 Utilities/PatchHelpers.cpp
 Priority/Priority.cpp
-Priority/PriorityDepth.cpp
-Priority/PriorityManual.cpp
 Priority/PriorityConfidence.cpp
-Priority/PriorityRandom.cpp
 PixelDescriptors/FeatureVectorPixelDescriptor.cpp
 )
 

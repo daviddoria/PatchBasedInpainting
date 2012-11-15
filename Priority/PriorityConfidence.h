@@ -23,13 +23,14 @@
 
 // Submodules
 #include <Mask/Mask.h>
+#include <Utilities/Debug/Debug.h>
 
 /**
 \class PriorityConfidence
 \brief This class ranks the priority of a patch based on confidence values
        of the pixels it contains.
 */
-class PriorityConfidence : public Priority
+class PriorityConfidence : public Debug
 {
 public:
 
@@ -45,8 +46,8 @@ public:
 
   /** Update the priority function in the region around the target node.*/
   template <typename TNode>
-  void Update(const TNode& sourceNode, const TNode& targetNode, const unsigned int patchNumber = 0);
-
+  void Update(const TNode& sourceNode, const TNode& targetNode,
+              const unsigned int patchNumber = 0);
 
 protected:
 

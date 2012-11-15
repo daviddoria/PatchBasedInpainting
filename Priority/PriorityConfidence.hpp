@@ -38,8 +38,6 @@ void PriorityConfidence::Update(const TNode& sourceNode, const TNode& targetNode
 template <typename TNode>
 float PriorityConfidence::ComputePriority(const TNode& queryPixel) const
 {
-
-  this->ComputePriorityCallCount++;
   float priority = ComputeConfidenceTerm(queryPixel);
 
   return priority;

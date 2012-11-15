@@ -29,34 +29,34 @@
 \brief This class first returns values that have been specified by a user generated image
        that contains pixels that indicate "definitely fill first". Once there are no more of
        these pixels, the superclass's ComputePriority function is called.
-       This is a "template template" class because one of the template parameters (TPriority) depends on another (TImage).
 */
 // template< class TImage, template<class> class TPriority>
 // class PriorityManual : public TPriority<TImage>
-template< typename TNode, typename TImage, typename TPriority>
+template< typename TNode, typename TManualImage, typename TPriority>
 class PriorityManual
 {
 public:
   typedef TNode NodeType;
   
-  // Reimplemented
-  PriorityManual(const TImage* const manualPriorityImage, TPriority* const priorityFunction);
+  // Reimplemented functions
+  PriorityManual(const TManualImage* const manualPriorityImage,
+                 TPriority* const priorityFunction);
 
   float ComputePriority(const TNode& queryPixel) const;
 
   // New functions
-  void SetManualPriorityImage(const UnsignedCharScalarImageType* const);
+  void SetManualPriorityImage(const TManualImage* const);
 
   void Update(const TNode& filledPixel);
 
   //void SetPriorityFunction(Priority* const priorityFunction);
 
 protected:
-  UnsignedCharScalarImageType::Pointer ManualPriorityImage;
+  typename TManualImage::Pointer ManualPriorityImage;
 
   const TPriority* PriorityFunction;
 };
 
-#include "PriorityManual.hxx"
+#include "PriorityManual.hpp"
 
 #endif

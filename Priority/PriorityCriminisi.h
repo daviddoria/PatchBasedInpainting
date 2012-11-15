@@ -50,7 +50,8 @@ public:
   float ComputePriority(const TNode& queryPixel) const;
 
   template <typename TNode>
-  void Update(const TNode& sourceNode, const TNode& targetNode, const unsigned int patchNumber = 0);
+  void Update(const TNode& sourceNode, const TNode& targetNode,
+              const unsigned int patchNumber = 0);
 
   using PriorityConfidence::ComputeConfidenceTerm;
 
@@ -59,7 +60,7 @@ protected:
   typedef PriorityConfidence Superclass;
 
   /** Compute the Data at a pixel. */
-  float ComputeDataTerm(const itk::Index<2>& queryPixel) const;
+  virtual float ComputeDataTerm(const itk::Index<2>& queryPixel) const;
 
   typedef itk::CovariantVector<float, 2> Vector2Type;
   typedef itk::Image<Vector2Type, 2> Vector2ImageType;

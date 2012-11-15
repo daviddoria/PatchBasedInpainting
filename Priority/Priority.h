@@ -27,7 +27,8 @@
 
 /**
 \class Priority
-\brief This is an abstract class to serve as a parent so that subclasses can be stored as parent pointers in a container.
+\brief This is an abstract class to serve as a parent so that
+       subclasses can be stored as parent pointers in a container.
        E.g. std::vector<Priority*> priorityFunctions
 */
 class Priority : public Debug
@@ -49,7 +50,8 @@ public:
   }
 
   template <typename TNode>
-  void Update(const TNode& filledPixel)
+  void Update(const TNode& filledPixel, const TNode& targetNode,
+              const unsigned int patchNumber = 0)
   {
     throw std::runtime_error("Should not call Priority::Update()!");
   }

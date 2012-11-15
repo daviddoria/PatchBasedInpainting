@@ -133,9 +133,10 @@ void GetBlankImage(TImage* image, const unsigned int numberOfComponents)
   image->SetRegions(region);
   image->SetNumberOfComponentsPerPixel(numberOfComponents);
   image->Allocate();
-  itk::VariableLengthVector<typename TImage::InternalPixelType> v(numberOfComponents);
-  v.Fill(0);
-  //image->FillBuffer(itk::NumericTraits<typename TImage::PixelType>::Zero);
+
+  typename TImage::PixelType v(numberOfComponents);
+  v = itk::NumericTraits<typename TImage::InternalPixelType>::ZeroValue();
+
   image->FillBuffer(v);
 }
 
@@ -145,18 +146,18 @@ void GetHalfConstantImage(TImage* const image, const typename TImage::PixelType&
   GetBlankImage(image);
   itk::ImageRegionIterator<TImage> iterator(image, image->GetLargestPossibleRegion());
   while(!iterator.IsAtEnd())
-    {
+  {
     if(static_cast<unsigned int>(iterator.GetIndex()[0]) < TestImageSize/2)
-      {
+    {
       iterator.Set(leftSideConstant);
-      }
+    }
     else
-      {
+    {
       iterator.Set(rightSideConstant);
-      }
+    }
 
     ++iterator;
-    }
+  }
 }
 
 }// end namespace

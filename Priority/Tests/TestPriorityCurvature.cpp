@@ -17,7 +17,10 @@
  *=========================================================================*/
 
 #include "PriorityCurvature.h"
-#include "../ImageProcessing/Mask.h"
+
+// Submodules
+#include "Mask/Mask.h"
+
 #include "../Testing/Testing.h"
 
 // VTK
@@ -26,7 +29,9 @@
 
 int main()
 {
-  FloatVectorImageType::Pointer image = FloatVectorImageType::New();
+  typedef itk::Image<itk::CovariantVector<float, 3>, 2> ImageType;
+
+  ImageType::Pointer image = ImageType::New();
   Testing::GetBlankImage(image.GetPointer(), 4);
 
   Mask::Pointer mask = Mask::New();

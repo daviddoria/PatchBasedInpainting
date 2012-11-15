@@ -29,7 +29,7 @@ class vtkStructuredGrid;
 
 /**
 \class PriorityCurvature
-\brief This class returns a the curvature value as the priority.
+\brief This class returns a the curvature value (computed from a vtkStructuredGrid) as the priority.
 */
 template <typename TNode>
 class PriorityCurvature

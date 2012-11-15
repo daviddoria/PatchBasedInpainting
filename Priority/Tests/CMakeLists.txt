@@ -7,28 +7,26 @@ include_directories(../Testing ../Helpers)
 # target_link_libraries(TestPriorityFactory ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers libTesting)
 # add_test(TestPriorityFactory TestPriorityFactory)
 
-add_executable(TestPriorityDepth TestPriorityDepth.cpp ../PriorityDepth.cpp ../Priority.cpp ../../ImageProcessing/Mask.cpp ../../ImageProcessing/Derivatives.cpp ../../ImageProcessing/MaskOperations.cpp
-../../ImageProcessing/Isophotes.cpp)
-target_link_libraries(TestPriorityDepth ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers libTesting)
+add_executable(TestPriorityDepth TestPriorityDepth.cpp)
+target_link_libraries(TestPriorityDepth ${PatchBasedInpainting_libraries} Testing)
 add_test(TestPriorityDepth TestPriorityDepth)
 
-add_executable(TestPriorityManual TestPriorityManual.cpp ../PriorityManual.cpp ../Priority.cpp ../../ImageProcessing/Mask.cpp ../PriorityOnionPeel.cpp)
-target_link_libraries(TestPriorityManual ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers libTesting)
+add_executable(TestPriorityManual TestPriorityManual.cpp)
+target_link_libraries(TestPriorityManual ${PatchBasedInpainting_libraries} Testing)
 add_test(TestPriorityManual TestPriorityManual)
 
-add_executable(TestPriorityOnionPeel TestPriorityOnionPeel.cpp ../PriorityOnionPeel.cpp ../Priority.cpp ../../ImageProcessing/Mask.cpp)
-target_link_libraries(TestPriorityOnionPeel ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers libTesting)
-add_test(TestPriorityOnionPeel TestPriorityOnionPeel)
+add_executable(TestPriorityConfidence TestPriorityConfidence.cpp)
+target_link_libraries(TestPriorityConfidence ${PatchBasedInpainting_libraries} Testing)
+add_test(TestPriorityConfidence TestPriorityConfidence)
 
-add_executable(TestPriorityRandom TestPriorityRandom.cpp ../PriorityRandom.cpp ../Priority.cpp ../../ImageProcessing/Mask.cpp)
-target_link_libraries(TestPriorityRandom ${ITK_LIBRARIES} ${VTK_LIBRARIES} libTesting)
+add_executable(TestPriorityRandom TestPriorityRandom.cpp)
+target_link_libraries(TestPriorityRandom ${PatchBasedInpainting_libraries} Testing)
 add_test(TestPriorityRandom TestPriorityRandom)
 
-add_executable(TestPriorityCriminisi TestPriorityCriminisi.cpp ../PriorityCriminisi.cpp ../PriorityOnionPeel.cpp ../Priority.cpp
-../../ImageProcessing/Isophotes.cpp ../../ImageProcessing/Mask.cpp ../../ImageProcessing/Derivatives.cpp)
-target_link_libraries(TestPriorityCriminisi ${ITK_LIBRARIES} ${VTK_LIBRARIES} libHelpers libTesting)
+add_executable(TestPriorityCriminisi TestPriorityCriminisi.cpp)
+target_link_libraries(TestPriorityCriminisi ${PatchBasedInpainting_libraries} Testing)
 add_test(TestPriorityCriminisi TestPriorityCriminisi)
 
-add_executable(TestPriorityCurvature TestPriorityCurvature.cpp ../../ImageProcessing/Mask.cpp)
-target_link_libraries(TestPriorityCurvature ${ITK_LIBRARIES} ${VTK_LIBRARIES} libTesting libHelpers)
+add_executable(TestPriorityCurvature TestPriorityCurvature.cpp)
+target_link_libraries(TestPriorityCurvature ${PatchBasedInpainting_libraries} Testing)
 add_test(TestPriorityCurvature TestPriorityCurvature)

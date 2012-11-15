@@ -16,4 +16,32 @@
  *
  *=========================================================================*/
 
-#include "PriorityRandom.h"
+#include "PriorityConfidence.h"
+
+// Submodule
+#include "Mask/Mask.h"
+
+#include "../Testing/Testing.h"
+
+int main()
+{
+  //FloatVectorImageType::Pointer image = FloatVectorImageType::New();
+  typedef itk::Image<itk::CovariantVector<float, 3>, 2> ImageType;
+  ImageType::Pointer image = ImageType::New();
+  Testing::GetBlankImage(image.GetPointer());
+
+  Mask::Pointer mask = Mask::New();
+  Testing::GetFullyValidMask(mask.GetPointer());
+
+  unsigned int patchRadius = 5;
+  PriorityConfidence priority(mask, patchRadius);
+
+  itk::Index<2> sourceIndex = {{0,0}};
+  itk::Index<2> targetIndex = {{0,0}};
+  priority.Update(sourceIndex, targetIndex);
+
+  itk::Index<2> queryPixel = {{0,0}};
+  priority.ComputePriority(queryPixel);
+
+  return EXIT_SUCCESS;
+}

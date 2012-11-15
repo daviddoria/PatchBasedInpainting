@@ -17,23 +17,33 @@
  *=========================================================================*/
 
 #include "PriorityCriminisi.h"
-#include "../ImageProcessing/Mask.h"
+
+// Submodules
+#include "Mask/Mask.h"
+
 #include "../Testing/Testing.h"
 
 int main()
 {
-  FloatVectorImageType::Pointer image = FloatVectorImageType::New();
+  typedef itk::Image<itk::CovariantVector<float, 3>, 2> ImageType;
+//  typedef FloatVectorImageType ImageType;
+  ImageType::Pointer image = ImageType::New();
   Testing::GetBlankImage(image.GetPointer(), 4);
 
   Mask::Pointer mask = Mask::New();
   Testing::GetFullyValidMask(mask.GetPointer());
 
   unsigned int patchRadius = 5;
-  PriorityCriminisi<itk::Index<2>, FloatVectorImageType> priority(image.GetPointer(), mask.GetPointer(), patchRadius);
+  PriorityCriminisi<ImageType> priority(image.GetPointer(), mask.GetPointer(),
+                                                   patchRadius);
 
-  itk::Index<2> filledPixel;
-  filledPixel.Fill(0);
-  priority.Update(filledPixel);
+  itk::Index<2> sourcePixel;
+  sourcePixel.Fill(0);
+
+  itk::Index<2> targetPixel;
+  targetPixel.Fill(1);
+
+  priority.Update(sourcePixel, targetPixel);
 
   itk::Index<2> queryPixel = {{0,0}};
   priority.ComputePriority(queryPixel);

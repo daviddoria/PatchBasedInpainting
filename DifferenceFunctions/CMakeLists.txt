@@ -2,7 +2,7 @@ add_subdirectory(Patch)
 add_subdirectory(Pixel)
 add_subdirectory(Other)
 
-option(PatchBasedInpainting_DifferenceFunctions_BuildTests "Build PatchBasedInpainting DifferenceFunctions tests.")
+option(PatchBasedInpainting_DifferenceFunctions_BuildTests "Build PatchBasedInpainting DifferenceFunctions tests?")
 if(PatchBasedInpainting_DifferenceFunctions_BuildTests)
   message("Building PatchBasedInpainting DifferenceFunctions tests.")
   add_subdirectory(Other/Tests)

@@ -11,9 +11,9 @@ template <typename TNode, typename TImage>
 PriorityDepth<TNode, TImage>::PriorityDepth(const TImage* const image, const Mask* const maskImage, const unsigned int patchRadius) : MaskImage(maskImage), Image(image)
 {
   if(image->GetNumberOfComponentsPerPixel() < 4)
-    {
+  {
     throw std::runtime_error("Cannot instantiate PriorityDepth with an image with less than 4 channels!");
-    }
+  }
 
   this->DepthIsophoteImage = ITKHelpers::FloatVector2ImageType::New();
   ITKHelpers::InitializeImage<ITKHelpers::FloatVector2ImageType>(this->DepthIsophoteImage, image->GetLargestPossibleRegion());
@@ -42,7 +42,9 @@ PriorityDepth<TNode, TImage>::PriorityDepth(const TImage* const image, const Mas
 
   //HelpersOutput::WriteImage<FloatScalarImageType>(this->BlurredDepth, "Debug/BlurredDepth.mha");
 
-  Isophotes::ComputeMaskedIsophotesInRegion(this->DepthImage.GetPointer(), maskImage, image->GetLargestPossibleRegion(), this->DepthIsophoteImage.GetPointer());
+  Isophotes::ComputeColorIsophotesInRegion(this->DepthImage.GetPointer(), maskImage,
+                                           image->GetLargestPossibleRegion(),
+                                           this->DepthIsophoteImage.GetPointer());
   //HelpersOutput::Write2DVectorImage(this->DepthIsophoteImage, "Debug/BlurredDepthIsophoteImage.mha");
 
 }

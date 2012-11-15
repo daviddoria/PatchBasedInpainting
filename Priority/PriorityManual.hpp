@@ -20,11 +20,14 @@
 
 #include "ITKHelpers/ITKHelpers.h"
 
-template< typename TNode, typename TImage, typename TPriority>
-PriorityManual<TNode, TImage, TPriority>::PriorityManual(const TImage* const manualPriorityImage, TPriority* const priorityFunction) : PriorityFunction(priorityFunction)
+template< typename TNode, typename TManualImage, typename TPriority>
+PriorityManual<TNode, TManualImage, TPriority>::
+PriorityManual(const TManualImage* const manualPriorityImage,
+               TPriority* const priorityFunction) :
+  PriorityFunction(priorityFunction)
 {
   this->ManualPriorityImage = UnsignedCharScalarImageType::New();
-  ITKHelpers::DeepCopy(manualPriorityImage, this->ManualPriorityImage);
+  ITKHelpers::DeepCopy(manualPriorityImage, this->ManualPriorityImage.GetPointer());
 }
 
 // template< typename TImage, typename TPriority>
@@ -33,8 +36,8 @@ PriorityManual<TNode, TImage, TPriority>::PriorityManual(const TImage* const man
 //   this->PriorityFunction = priorityFunction;
 // }
 
-template< typename TNode, typename TImage, typename TPriority>
-float PriorityManual<TNode, TImage, TPriority>::ComputePriority(const TNode& queryPixel) const
+template< typename TNode, typename TManualImage, typename TPriority>
+float PriorityManual<TNode, TManualImage, TPriority>::ComputePriority(const TNode& queryPixel) const
 {
   //std::cout << static_cast<float>(this->ManualPriorityImage->GetPixel(queryPixel)) << std::endl;
 
@@ -45,13 +48,13 @@ float PriorityManual<TNode, TImage, TPriority>::ComputePriority(const TNode& que
   float offset = 1e4;
   float normalPriority = this->PriorityFunction->ComputePriority(queryPixel);
   if(manualPriority > 0)
-    {
+  {
     priority = offset + normalPriority;
-    }
+  }
   else
-    {
+  {
     priority = normalPriority;
-    }
+  }
 
   return priority;
 }
@@ -62,15 +65,16 @@ float PriorityManual<TNode, TImage, TPriority>::ComputePriority(const TNode& que
 //   return this->ManualPriorityImage;
 // }
 
-template< typename TNode, typename TImage, typename TPriority>
-void PriorityManual<TNode, TImage, TPriority>::Update(const TNode& filledPixel)
+template< typename TNode, typename TManualImage, typename TPriority>
+void PriorityManual<TNode, TManualImage, TPriority>::Update(const TNode& filledPixel)
 {
 
 }
 
-template< typename TNode, typename TImage, typename TPriority>
-void PriorityManual<TNode, TImage, TPriority>::SetManualPriorityImage(const UnsignedCharScalarImageType* const image)
+template< typename TNode, typename TManualImage, typename TPriority>
+void PriorityManual<TNode, TManualImage, TPriority>::
+SetManualPriorityImage(const TManualImage* const manualImage)
 {
   //this->ManualPriorityImage = image;
-  ITKHelpers::DeepCopy<UnsignedCharScalarImageType>(image, this->ManualPriorityImage);
+  ITKHelpers::DeepCopy(manualImage, this->ManualPriorityImage.GetPointer());
 }

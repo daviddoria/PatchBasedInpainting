@@ -23,15 +23,16 @@
 
 // Custom
 #include "Helpers/Helpers.h"
-#include "Helpers/ITKHelpers.h"
-#include "Helpers/ITKVTKHelpers.h"
+#include "ITKHelpers/ITKHelpers.h"
+#include "ITKVTKHelpers/ITKVTKHelpers.h"
 
 // VTK
 #include <vtkSmartPointer.h>
 #include <vtkStructuredGrid.h>
 
 template <typename TNode>
-PriorityCurvature<TNode>::PriorityCurvature(vtkStructuredGrid* const structuredGrid, const unsigned int patchRadius) : PatchRadius(patchRadius)
+PriorityCurvature<TNode>::PriorityCurvature(vtkStructuredGrid* const structuredGrid,
+                                            const unsigned int patchRadius) : PatchRadius(patchRadius)
 {
   ITKVTKHelpers::CreateScalarImageFromStructuredGridArray(structuredGrid, "Curvature", this->CurvatureImage.GetPointer());
 }

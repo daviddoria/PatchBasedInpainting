@@ -62,7 +62,9 @@ template <typename TNode>
 void PriorityCriminisi<TImage>::Update(const TNode& sourceNode, const TNode& targetNode,
                                        const unsigned int patchNumber)
 {
-  // This is called once per inpainting iteration.
+  // This function is called once per inpainting iteration.
+
+  // Update the priority functions up the Priority hierarchy.
   Superclass::Update(sourceNode, targetNode, patchNumber);
 
   // Compute the isophotes we will need

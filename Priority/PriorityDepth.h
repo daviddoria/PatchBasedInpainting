@@ -53,6 +53,6 @@ protected:
   const TImage* Image;
 };
 
-#include "PriorityDepth.hxx"
+#include "PriorityDepth.hpp"
 
 #endif

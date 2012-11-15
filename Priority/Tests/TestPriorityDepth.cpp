@@ -17,7 +17,10 @@
  *=========================================================================*/
 
 #include "PriorityDepth.h"
-#include "../ImageProcessing/Mask.h"
+
+// Submodules
+#include "Mask/Mask.h"
+
 #include "../Testing/Testing.h"
 
 int main()

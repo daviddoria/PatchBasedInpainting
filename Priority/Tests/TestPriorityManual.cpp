@@ -17,8 +17,11 @@
  *=========================================================================*/
 
 #include "PriorityManual.h"
-#include "PriorityOnionPeel.h"
-#include "../ImageProcessing/Mask.h"
+#include "PriorityConfidence.h"
+
+// Submodules
+#include "Mask/Mask.h"
+
 #include "../Testing/Testing.h"
 
 int main()
@@ -33,10 +36,11 @@ int main()
   Testing::GetBlankImage(manualPriorityImage.GetPointer());
 
   unsigned int patchRadius = 5;
-  typedef PriorityOnionPeel<itk::Index<2> > OnionPeelType;
-  OnionPeelType priorityOnionPeel(mask, patchRadius);
+  typedef PriorityConfidence ConfidencePriorityType;
+  ConfidencePriorityType priorityConfidence(mask, patchRadius);
   
-  PriorityManual<itk::Index<2>, UnsignedCharScalarImageType, OnionPeelType> priority(manualPriorityImage, &priorityOnionPeel);
+  PriorityManual<itk::Index<2>, UnsignedCharScalarImageType, ConfidencePriorityType>
+      priority(manualPriorityImage, &priorityConfidence);
 
   itk::Index<2> filledPixel = {{0,0}};
   priority.Update(filledPixel);
