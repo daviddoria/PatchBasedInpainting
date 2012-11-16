@@ -44,8 +44,9 @@
 #include <Mask/Mask.h>
 
 template <typename TImage>
-PatchVerificationDialog<TImage>::PatchVerificationDialog(const TImage* const image, const Mask* const mask,
-                                           const unsigned int patchHalfWidth, QWidget* parent) :
+PatchVerificationDialog<TImage>::
+PatchVerificationDialog(const TImage* const image, const Mask* const mask,
+                        const unsigned int patchHalfWidth, QWidget* parent) :
   PatchVerificationDialogParent(parent), Image(image), MaskImage(mask),
   PatchHalfWidth(patchHalfWidth)
 {
@@ -208,7 +209,7 @@ void PatchVerificationDialog<TImage>::PositionNextToParent()
 
 template <typename TImage>
 void PatchVerificationDialog<TImage>::slot_UpdateResult(const itk::ImageRegion<2>& sourceRegionIn,
-                                                 const itk::ImageRegion<2>& targetRegionIn)
+                                                        const itk::ImageRegion<2>& targetRegionIn)
 {
 //  std::cout << "TopPatchesDialog::slot_UpdateResult" << std::endl;
 
@@ -299,8 +300,8 @@ void PatchVerificationDialog<TImage>::DisplayPatchSelection()
 //  std::cout << "There are " << regionMask->CountHolePixels() << " hole pixels in the source region." << std::endl;
 //  }
 
-  QImage sourcePatch =
-      PatchHelpers::GetQImageCombinedPatch(this->Image, sourceRegion, queryRegion, this->MaskImage);
+  QImage sourcePatch = ITKQtHelpers::GetQImageColor(this->Image, sourceRegion);
+//      PatchHelpers::GetQImageCombinedPatch(this->Image, sourceRegion, queryRegion, this->MaskImage);
 
   this->SourcePatchItem =
       this->SourcePatchScene->addPixmap(QPixmap::fromImage(sourcePatch));

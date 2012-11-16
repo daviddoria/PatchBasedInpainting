@@ -12,6 +12,7 @@ itkRGBToLabColorSpacePixelAccessor.h
 PixelFilterFunctors.hpp
 )
 
-if(inpainting_BuildTests)
+option(PatchBasedInpainting_ImageProcessing_BuildTests "Build PatchBasedInpainting ImageProcessing tests?")
+if(PatchBasedInpainting_ImageProcessing_BuildTests)
   add_subdirectory(Tests)
 endif()

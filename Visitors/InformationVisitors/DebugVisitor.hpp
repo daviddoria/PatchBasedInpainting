@@ -22,7 +22,7 @@
 #include <boost/graph/graph_traits.hpp>
 
 // Custom
-#include "Visitors/InpaintingVisitorParent.h"
+#include "Visitors/InpaintingVisitors/InpaintingVisitorParent.h"
 #include "Mask/Mask.h"
 #include "ITKHelpers/ITKHelpers.h"
 #include "BoostHelpers/BoostHelpers.h"

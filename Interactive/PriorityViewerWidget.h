@@ -36,10 +36,9 @@
 #include <Mask/Mask.h>
 
 // Custom
-#include "ImageCamera.h"
 #include "Node.h"
 #include "Interactive/Layer.h"
-#include "Priority/Priority.h"
+//#include "Priority/Priority.h"
 
 class InteractorStyleImageWithDrag;
 

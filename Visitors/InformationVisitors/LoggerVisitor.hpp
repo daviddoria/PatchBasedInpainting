@@ -23,7 +23,7 @@
 #include <fstream>
 
 // Custom
-#include "Visitors/InpaintingVisitorParent.h"
+#include "Visitors/InpaintingVisitors/InpaintingVisitorParent.h"
 
 // Can't do this - ambiguous overload errors
 // template <typename T>

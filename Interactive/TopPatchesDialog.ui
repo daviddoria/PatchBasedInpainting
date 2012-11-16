@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>227</width>
+    <width>183</width>
     <height>808</height>
    </rect>
   </property>
@@ -23,7 +23,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Query patch</string>
+      <string>Target</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -62,7 +62,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Source patch</string>
+      <string>Source</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -98,7 +98,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Proposed patch</string>
+      <string>Proposed</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

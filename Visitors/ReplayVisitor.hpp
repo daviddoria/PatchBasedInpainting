@@ -19,7 +19,7 @@
 #ifndef ReplayVisitor_HPP
 #define ReplayVisitor_HPP
 
-#include "Visitors/InpaintingVisitorParent.h"
+#include "Visitors/InpaintingVisitors/InpaintingVisitorParent.h"
 
 // Concepts
 #include "Concepts/DescriptorVisitorConcept.hpp"

@@ -60,11 +60,10 @@
 #include "Visitors/InformationVisitors/FinalImageWriterVisitor.hpp"
 
 // Inpainting visitors
-#include "Visitors/InpaintingVisitor.hpp"
-#include "Visitors/InpaintingVisitor.hpp"
+#include "Visitors/InpaintingVisitors/InpaintingVisitor.hpp"
 #include "Visitors/ReplayVisitor.hpp"
 #include "Visitors/InformationVisitors/LoggerVisitor.hpp"
-#include "Visitors/CompositeInpaintingVisitor.hpp"
+#include "Visitors/InpaintingVisitors/CompositeInpaintingVisitor.hpp"
 #include "Visitors/InformationVisitors/DebugVisitor.hpp"
 
 // Nearest neighbors

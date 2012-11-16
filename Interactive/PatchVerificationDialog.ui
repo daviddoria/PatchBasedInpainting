@@ -23,7 +23,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Query patch</string>
+      <string>Query</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -62,7 +62,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Source patch</string>
+      <string>Source</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -98,7 +98,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Proposed patch</string>
+      <string>Proposed</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

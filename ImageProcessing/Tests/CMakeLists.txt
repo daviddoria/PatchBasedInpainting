@@ -20,11 +20,11 @@ include_directories(../) # so we can access the headers normally (e.g. #include 
 # add_test(TestMaskOperations TestMaskOperations)
 # 
  add_executable(TestBoundaryEnergy TestBoundaryEnergy.cpp ../BoundaryEnergy.cpp)
- target_link_libraries(TestBoundaryEnergy ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting Mask)
+ target_link_libraries(TestBoundaryEnergy ${PatchBasedInpainting_libraries} Testing)
  add_test(TestBoundaryEnergy TestBoundaryEnergy)
 # 
 add_executable(TestBoundaryNormals TestBoundaryNormals.cpp)
-target_link_libraries(TestBoundaryNormals ${VTK_LIBRARIES} ${ITK_LIBRARIES} libTesting Helpers)
+target_link_libraries(TestBoundaryNormals ${PatchBasedInpainting_libraries} Testing)
 add_test(TestBoundaryNormals TestBoundaryNormals)
 # 
 # add_executable(TestPixelFilterFunctors TestPixelFilterFunctors.cpp)
