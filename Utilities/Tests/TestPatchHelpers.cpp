@@ -32,6 +32,11 @@
 
 int main(int argc, char*argv[])
 {
+  if(argc < 2)
+  {
+    std::cerr << "Required arguments: fileName.png" << std::endl;
+    return EXIT_FAILURE;
+  }
 //  typedef itk::Image<itk::CovariantVector<int, 3>, 2> ImageType;
   typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> ImageType;
 

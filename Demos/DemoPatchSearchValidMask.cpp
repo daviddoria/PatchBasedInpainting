@@ -28,8 +28,8 @@
 #include "Initializers/InitializeFromMaskImage.hpp"
 
 // Difference functions
-#include "DifferenceFunctions/ImagePatchDifference.hpp"
-#include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
+#include "DifferenceFunctions/Patch/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/Pixel/SumSquaredPixelDifference.hpp"
 
 template <typename TPatchContainer, typename TPatch>
 TPatch Naive(const TPatchContainer& patches, const TPatch& queryPatch);

@@ -358,6 +358,75 @@ void WriteTopPatches(TImage* const image, TPropertyMap propertyMap, const TItera
   delete app; // c++ allows null pointers to be deleted
 }
 
+template <typename TPatchContainer>
+void WriteTopPatchesGrid(const TPatchContainer& patches,
+                         unsigned int gridWidth, unsigned int gridHeight,
+                         const std::string& outputFileName)
+{
+  // 'iterations' is only used for the file name to write
+  // Note that not all patches may be written (only the first ones that fit in the grid)
+
+  unsigned int numberOfTopPatches = patches.size();
+
+  if(numberOfTopPatches < gridWidth * gridHeight)
+  {
+    std::stringstream ss;
+    ss << "WriteTopPatchesGrid(): Not enough patches (" << numberOfTopPatches << ") to create a "
+       << gridWidth << " x " << gridHeight << " grid (need " << gridWidth * gridHeight << ").";
+    throw std::runtime_error(ss.str());
+  }
+  itk::Size<2> patchSize = patches[0]->GetLargestPossibleRegion().GetSize();
+
+  unsigned int patchSideLength = patchSize[0]; // Assumes square patches
+
+//  std::cout << "WriteTopPatches:numberOfTopPatches = " << numberOfTopPatches << std::endl;
+
+  itk::Index<2> topPatchesImageCorner = {{0,0}};
+
+  // Make space for all the patches and a colored line dividing them (and the -1 is so there is no dividing line at the bottom)
+  unsigned int padding = 4;
+
+  unsigned int topPatchesImageWidth = (patchSideLength + padding) * gridWidth - padding; // the (- padding) is because we don't want padding after the last column
+  unsigned int topPatchesImageHeight = (patchSideLength + padding) * gridHeight - padding; // the (- padding) is because we don't want padding after the last row
+  itk::Size<2> topPatchesImageSize = {{topPatchesImageWidth,
+                                       topPatchesImageHeight}};
+  itk::ImageRegion<2> topPatchesImageRegion(topPatchesImageCorner, topPatchesImageSize);
+
+//  std::cout << "topPatchesImageRegion: " << topPatchesImageRegion << std::endl;
+
+  typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> ImageType;
+
+  ImageType::PixelType white;
+  white.Fill(255);
+
+  ImageType::Pointer topPatchesImage = ImageType::New();
+  topPatchesImage->SetRegions(topPatchesImageRegion);
+  topPatchesImage->Allocate();
+  topPatchesImage->FillBuffer(white);
+
+  unsigned int currentPatchId = 0;
+  for(unsigned int gridRow = 0; gridRow < gridHeight; ++gridRow)
+  {
+    for(unsigned int gridColumn = 0; gridColumn < gridWidth; ++gridColumn)
+    {
+      // The extra + currentPatchId * padding is to skip the padding
+      int xPos = static_cast<itk::Index<2>::IndexValueType>((patchSideLength + padding) * gridColumn);
+      int yPos = static_cast<itk::Index<2>::IndexValueType>((patchSideLength + padding) * gridRow);
+      itk::Index<2> topPatchesImageCorner = {{xPos, yPos}};
+      itk::ImageRegion<2> currentTopPatchesImageRegion(topPatchesImageCorner, patchSize);
+
+      // The patches passed to this function aren't necessarily inside the image.
+      // If they are not, we cannot write them into the list of top patches,
+      // and we simply leave the patch blank.
+      ITKHelpers::CopyRegion(patches[currentPatchId].GetPointer(), topPatchesImage.GetPointer(),
+                             patches[currentPatchId]->GetLargestPossibleRegion(), currentTopPatchesImageRegion);
+
+      currentPatchId++;
+    }
+  }
+
+  ITKHelpers::WriteRGBImage(topPatchesImage.GetPointer(), outputFileName);
+}
 
 template <typename TIterator, typename TImage, typename TPropertyMap>
 void WriteTopPatchesGrid(const TImage* const image, TPropertyMap propertyMap,

@@ -76,6 +76,11 @@ void WriteTopPatchesGrid(const TImage* const image, TPropertyMap propertyMap, co
                          const TIterator last, const std::string& prefix, const unsigned int iteration,
                          unsigned int gridWidth, unsigned int gridHeight);
 
+template <typename TPatchContainer>
+void WriteTopPatchesGrid(const TPatchContainer& patches,
+                         unsigned int gridWidth, unsigned int gridHeight,
+                         const std::string& outputFileName);
+
 /** Read an image of top patches. */
 std::vector<itk::Image<itk::CovariantVector<unsigned char, 3>, 2>::Pointer>
 ReadTopPatchesGrid(const std::string& fileName, const unsigned int patchSize,

@@ -64,8 +64,8 @@ set_target_properties(DemoPatchSearchValidMask PROPERTIES COMPILE_FLAGS "-fverbo
 add_executable(DemoSelfPatchCompare DemoSelfPatchCompare.cpp)
 target_link_libraries(DemoSelfPatchCompare PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} Mask)
 
-add_executable(DemoFillOrder DemoFillOrder.cpp)
-target_link_libraries(DemoFillOrder PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} Mask)
+#add_executable(DemoFillOrder DemoFillOrder.cpp)
+#target_link_libraries(DemoFillOrder PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} Mask)
 
 ###################################
 # add_executable(DemoBadPatchComparison DemoBadPatchComparison.cpp)
@@ -86,3 +86,6 @@ target_link_libraries(DemoFillOrder PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_
 
 # add_executable(DemoMaskedLaplacianSynthetic DemoMaskedLaplacianSynthetic.cpp)
 # target_link_libraries(DemoMaskedLaplacianSynthetic PatchBasedInpainting ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} libHelpers)
+
+add_executable(DemoSortGMHDifference DemoSortGMHDifference.cpp)
+target_link_libraries(DemoSortGMHDifference PatchBasedInpainting ${PatchBasedInpainting_libraries})

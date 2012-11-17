@@ -21,7 +21,7 @@
 #include <iostream>
 #include <vector>
 
-#include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
+#include "DifferenceFunctions/Pixel/SumSquaredPixelDifference.hpp"
 
 int main(int, char *[])
 {
