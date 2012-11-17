@@ -88,7 +88,6 @@ public:
     {
       unsigned int gridSize = 10;
       PatchHelpers::WriteTopPatchesGrid(this->Image, *(this->Searcher->GetPropertyMap()),
-//                                        knnContainer.begin(), knnContainer.end(),
                                         outputFirst, outputFirst + this->Searcher->GetK(),
                                         "BestPatchSorted", this->DebugIteration, gridSize, gridSize);
     }

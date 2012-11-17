@@ -23,9 +23,7 @@ RotateVectors.h
 Utilities.hpp
 )
 
-if(inpainting_BuildTests)
-  #message("Building Utilities/Tests")
+option(PatchBasedInpainting_Utilities_BuildTests "Build PatchBasedInpainting Utilities tests?" OFF)
+if(PatchBasedInpainting_Utilities_BuildTests)
   add_subdirectory(Tests)
-else()
-  #message("Not building Utilities/Tests")
 endif()

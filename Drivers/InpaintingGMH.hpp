@@ -152,12 +152,12 @@ void InpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   compositeInpainter->AddInpainter(slightlyBlurredImageInpainter);
 
   // Create the priority function
-  typedef PriorityCriminisi<TImage> PriorityType;
-  std::shared_ptr<PriorityType> priorityFunction(
-        new PriorityType(blurredImage, mask, patchHalfWidth));
-//  typedef PriorityConfidence PriorityType;
+//  typedef PriorityCriminisi<TImage> PriorityType;
 //  std::shared_ptr<PriorityType> priorityFunction(
-//        new PriorityType(mask, patchHalfWidth));
+//        new PriorityType(blurredImage, mask, patchHalfWidth));
+  typedef PriorityConfidence PriorityType;
+  std::shared_ptr<PriorityType> priorityFunction(
+        new PriorityType(mask, patchHalfWidth));
 
 
   // Create the descriptor visitor
@@ -167,7 +167,8 @@ void InpaintingGMH(typename itk::SmartPointer<TImage> originalImage,
   // Use the slightly blurred image here, as this is where the patch objects get created, and later these patch objects
   // are passed to the SSD function.
   std::shared_ptr<ImagePatchDescriptorVisitorType> imagePatchDescriptorVisitor(
-        new ImagePatchDescriptorVisitorType(slightlyBlurredImage.GetPointer(), mask,
+//        new ImagePatchDescriptorVisitorType(slightlyBlurredImage.GetPointer(), mask,
+        new ImagePatchDescriptorVisitorType(originalImage.GetPointer(), mask,
                                             imagePatchDescriptorMap, patchHalfWidth));
 
   // Acceptance visitor. Use the slightly blurred image here, as this the gradients will be less noisy.

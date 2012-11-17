@@ -21,7 +21,11 @@
 
 #include "IntroducedEnergy.h"
 
+// Custom
 #include "ImageProcessing/Derivatives.h"
+
+// Submodules
+#include <Mask/MaskOperations.h>
 
 template <typename TImage>
 float IntroducedEnergy<TImage>::ComputeIntroducedEnergyPatchBoundary(const TImage* const inputImage, const Mask* const mask,

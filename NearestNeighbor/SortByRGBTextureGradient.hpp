@@ -304,10 +304,10 @@ public:
 //    std::cout << "Best patch has score " << sortedScores[0].value << std::endl;
 
     // Output all top N patch scores
-    for(unsigned int i = 0; i < sortedScores.size(); ++i)
-    {
-      std::cout << "Best patch " << i << " has score " << sortedScores[i].value << std::endl;
-    }
+//    for(unsigned int i = 0; i < sortedScores.size(); ++i)
+//    {
+//      std::cout << "Best patch " << i << " has score " << sortedScores[i].value << std::endl;
+//    }
 
     // Store all sorted patches in the output
     // c++ doesn't allow a second counter to be declared inside for()
