@@ -35,7 +35,7 @@
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
 
 // Inpainting visitors
-#include "Visitors/InpaintingVisitor.hpp"
+#include "Visitors/InpaintingVisitors/InpaintingVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
 
 // Nearest neighbors

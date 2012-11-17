@@ -197,6 +197,7 @@ struct GMHDifference
   /**
    * This function is for images with POD pixel types (scalar images).
    * Returns <TargetHistogram, SourceHistogram>.
+   * The 'channel' variable is unused, because we only have 1 channel.
    */
   template<typename THistogram, typename U = TImage>
   std::pair<THistogram, THistogram> HistogramOfChannel(RegionType targetRegion, RegionType sourceRegion, const unsigned int channel,

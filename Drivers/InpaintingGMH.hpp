@@ -57,8 +57,7 @@
 #include "Visitors/AcceptanceVisitors/AlwaysAccept.hpp"
 
 // Inpainting visitors
-#include "Visitors/InpaintingVisitor.hpp"
-#include "Visitors/InpaintingVisitor.hpp"
+#include "Visitors/InpaintingVisitors/InpaintingVisitor.hpp"
 #include "Visitors/ReplayVisitor.hpp"
 #include "Visitors/InformationVisitors/LoggerVisitor.hpp"
 #include "Visitors/InformationVisitors/DebugVisitor.hpp"
@@ -75,9 +74,8 @@
 #include "Inpainters/PatchInpainter.hpp"
 
 // Difference functions
-#include "DifferenceFunctions/ImagePatchDifference.hpp"
-#include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
-#include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
+#include "DifferenceFunctions/Patch/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/Pixel/SumSquaredPixelDifference.hpp"
 
 // Utilities
 #include "Utilities/PatchHelpers.h"

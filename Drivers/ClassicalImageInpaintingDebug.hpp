@@ -40,15 +40,16 @@
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
 
 // Inpainting visitors
-#include "Visitors/InpaintingVisitor.hpp"
+#include "Visitors/InpaintingVisitors/InpaintingVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
-#include "Visitors/CompositeInpaintingVisitor.hpp"
+#include "Visitors/InpaintingVisitors/CompositeInpaintingVisitor.hpp"
 
 // Nearest neighbors
 #include "NearestNeighbor/LinearSearchBest/Property.hpp"
 #include "NearestNeighbor/LinearSearchBest/FirstAndWrite.hpp"
 #include "NearestNeighbor/LinearSearchKNNProperty.hpp"
 #include "NearestNeighbor/KNNBestWrapper.hpp"
+#include "NearestNeighbor/SortByRGBTextureGradient.hpp"
 
 // Initializers
 #include "Initializers/InitializeFromMaskImage.hpp"
@@ -59,8 +60,8 @@
 #include "Inpainters/PatchInpainter.hpp"
 
 // Difference functions
-#include "DifferenceFunctions/ImagePatchDifference.hpp"
-#include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
+#include "DifferenceFunctions/Patch/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/Pixel/SumSquaredPixelDifference.hpp"
 
 // Inpainting
 #include "Algorithms/InpaintingAlgorithm.hpp"
@@ -131,6 +132,7 @@ void ClassicalImageInpaintingDebug(typename itk::SmartPointer<TImage> originalIm
   // Create the priority function
   typedef PriorityCriminisi<BlurredImageType> PriorityType;
   std::shared_ptr<PriorityType> priorityFunction(new PriorityType(blurredImage, mask, patchHalfWidth));
+//  std::shared_ptr<PriorityType> priorityFunction(new PriorityType(originalImage, mask, patchHalfWidth));
 
 //  typedef PriorityConfidence PriorityType;
 //  std::shared_ptr<PriorityType> priorityFunction(new PriorityType(mask, patchHalfWidth));

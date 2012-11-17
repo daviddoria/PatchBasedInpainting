@@ -23,7 +23,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Query</string>
+      <string>Target</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

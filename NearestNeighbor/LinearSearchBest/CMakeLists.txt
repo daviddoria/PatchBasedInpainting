@@ -26,3 +26,9 @@ QuadrantHistogramDifference.hpp
 StrategySelection.hpp
 Texture.hpp
 )
+
+option(PatchBasedInpainting_LinearSearchBest_BuildTests "Build PatchBasedInpainting LinearSearchBest tests?")
+if(PatchBasedInpainting_LinearSearchBest_BuildTests)
+  message("Building PatchBasedInpainting LinearSearchBest tests.")
+  add_subdirectory(Tests)
+ENDIF()
