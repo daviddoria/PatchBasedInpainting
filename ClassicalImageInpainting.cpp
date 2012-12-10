@@ -29,7 +29,7 @@
 #include "Visitors/DescriptorVisitors/ImagePatchDescriptorVisitor.hpp"
 
 // Inpainting visitors
-#include "Visitors/InpaintingVisitor.hpp"
+#include "Visitors/InpaintingVisitors/InpaintingVisitor.hpp"
 #include "Visitors/AcceptanceVisitors/DefaultAcceptanceVisitor.hpp"
 
 // Nearest neighbors
@@ -44,9 +44,8 @@
 #include "Inpainters/PatchInpainter.hpp"
 
 // Difference functions
-#include "DifferenceFunctions/ImagePatchDifference.hpp"
-#include "DifferenceFunctions/SumAbsolutePixelDifference.hpp"
-#include "DifferenceFunctions/SumSquaredPixelDifference.hpp"
+#include "DifferenceFunctions/Patch/ImagePatchDifference.hpp"
+#include "DifferenceFunctions/Pixel/SumSquaredPixelDifference.hpp"
 
 // Utilities
 #include "Utilities/PatchHelpers.h"
