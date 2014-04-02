@@ -21,10 +21,21 @@ None of the above seem to make much difference (< 5%).
 
 Dependencies
 -----------
-Boost
-VTK
-ITK
-Qt
+-----------
+This code is known to work with
+- Boost 1.51
+- VTK 6.0
+- Qt 4.7
+- ITK 4
+
+NOTE: If you get errors like: vxl/core/vnl/vnl_numeric_traits.h:366:29: error: ‘constexpr’ needed for in-class initialization of static data member ‘zero’ of non-integral type
+
+It means that you have not built ITK with c++11 eneabled. To do this, you must add -std=gnu++11 to CMAKE_CXX_FLAGS when you configure ITK:
+
+ccmake ~/src/ITK -DCMAKE_CXX_FLAGS=-std=gnu++11
+
+NOTE: you cannot configure (ccmake) and THEN set CMAKE_CXX_FLAGS - you MUST include the gnu++11 in the ccmake command the very first time it is run.
+
 
 Thanks
 ------
