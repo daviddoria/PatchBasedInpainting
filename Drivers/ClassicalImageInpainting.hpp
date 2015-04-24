@@ -59,6 +59,7 @@
 
 // Inpainting
 #include "Algorithms/InpaintingAlgorithm.hpp"
+#include "Algorithms/InpaintingAlgorithmWithLocalSearch.hpp"
 
 // Priority
 #include "Priority/PriorityCriminisi.h"
@@ -68,6 +69,8 @@
 // Boost
 #include <boost/graph/grid_graph.hpp>
 #include <boost/property_map/property_map.hpp>
+
+#include "SearchRegions/NeighborhoodSearch.hpp"
 
 template <typename TImage>
 void ClassicalImageInpainting(typename itk::SmartPointer<TImage> originalImage, Mask* const mask,
@@ -159,11 +162,25 @@ void ClassicalImageInpainting(typename itk::SmartPointer<TImage> originalImage, 
                                    PatchDifferenceType> BestSearchType;
   std::shared_ptr<BestSearchType> linearSearchBest(new BestSearchType(*imagePatchDescriptorMap));
 
+  // By specifying the radius as the image size/8, we are searching up to 1/4 of the image each time
+  typedef NeighborhoodSearch<VertexDescriptorType, ImagePatchDescriptorMapType> NeighborhoodSearchType;
+  NeighborhoodSearchType neighborhoodSearch(fullRegion, fullRegion.GetSize()[0]/8, *imagePatchDescriptorMap);
+
   // Perform the inpainting
-  InpaintingAlgorithm<VertexListGraphType, InpaintingVisitorType,
-                      BoundaryNodeQueueType, BestSearchType,
-                      CompositePatchInpainter>(graph, inpaintingVisitor, boundaryNodeQueue,
-                      linearSearchBest, inpainter);
+  InpaintingAlgorithmWithLocalSearch<VertexListGraphType, InpaintingVisitorType,
+                      BoundaryNodeQueueType, NeighborhoodSearchType,
+                      CompositePatchInpainter, BestSearchType>(graph, inpaintingVisitor, boundaryNodeQueue,
+                      linearSearchBest, inpainter, neighborhoodSearch);
+
+  /*template <typename TVertexListGraph, typename TInpaintingVisitor,
+            typename TPriorityQueue, typename TSearchRegion,
+            typename TPatchInpainter, typename TBestPatchFinder>
+   InpaintingAlgorithmWithLocalSearch(TVertexListGraph& graph,
+                                     TInpaintingVisitor visitor,
+                                     TPriorityQueue* boundaryNodeQueue,
+                                     TBestPatchFinder bestPatchFinder,
+                                     TPatchInpainter* patchInpainter,
+                                     TSearchRegion& searchRegion) */
 }
 
 #endif

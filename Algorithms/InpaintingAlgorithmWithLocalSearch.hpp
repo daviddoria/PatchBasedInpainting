@@ -42,10 +42,11 @@ template <typename TVertexListGraph, typename TInpaintingVisitor,
           typename TPriorityQueue, typename TSearchRegion,
           typename TPatchInpainter, typename TBestPatchFinder>
 inline void
-InpaintingAlgorithmWithLocalSearch(TVertexListGraph& graph, TInpaintingVisitor visitor,
-                                   TPriorityQueue* boundaryNodeQueue,
-                                   TBestPatchFinder bestPatchFinder,
-                                   TPatchInpainter* patchInpainter,
+InpaintingAlgorithmWithLocalSearch(std::shared_ptr<TVertexListGraph> graph,
+                                   std::shared_ptr<TInpaintingVisitor> visitor,
+                                   std::shared_ptr<TPriorityQueue> boundaryNodeQueue,
+                                   std::shared_ptr<TBestPatchFinder> bestPatchFinder,
+                                   std::shared_ptr<TPatchInpainter> patchInpainter,
                                    TSearchRegion& searchRegion)
 {
   BOOST_CONCEPT_ASSERT((InpaintingVisitorConcept<TInpaintingVisitor, TVertexListGraph>));
@@ -60,15 +61,15 @@ InpaintingAlgorithmWithLocalSearch(TVertexListGraph& graph, TInpaintingVisitor v
     VertexDescriptorType targetNode = boundaryNodeQueue->top();
 
     // Notify the visitor that we have a hole target center.
-    visitor.DiscoverVertex(targetNode);
+    visitor->DiscoverVertex(targetNode);
 
     // Create a list of the source patches to search
     std::vector<VertexDescriptorType> searchRegionNodes = searchRegion(targetNode);
 
-    VertexDescriptorType sourceNode = bestPatchFinder(searchRegionNodes.begin(),
+    VertexDescriptorType sourceNode = (*bestPatchFinder)(searchRegionNodes.begin(),
                                                       searchRegionNodes.end(), targetNode);
 
-    visitor.PotentialMatchMade(targetNode, sourceNode);
+    visitor->PotentialMatchMade(targetNode, sourceNode);
 
     // Inpaint the target patch from the source patch.
     itk::Index<2> targetIndex = ITKHelpers::CreateIndex(targetNode);
@@ -76,13 +77,13 @@ InpaintingAlgorithmWithLocalSearch(TVertexListGraph& graph, TInpaintingVisitor v
 
     patchInpainter->PaintPatch(targetIndex, sourceIndex);
 
-    visitor.FinishVertex(targetNode, sourceNode);
+    visitor->FinishVertex(targetNode, sourceNode);
 
     iteration++;
   }
 
   std::cout << "Inpainting complete." << std::endl;
-  vis.InpaintingComplete();
+  visitor->InpaintingComplete();
 }
 
 #endif

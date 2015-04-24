@@ -22,7 +22,7 @@
 // Custom
 #include <Helpers/Helpers.h>
 #include <ITKHelpers/ITKHelpers.h>
-
+#include <PixelDescriptors/PixelDescriptor.h>
 // ITK
 #include "itkImageRegionConstIteratorWithIndex.h"
 #include "itkImage.h"

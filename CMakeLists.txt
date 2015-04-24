@@ -102,6 +102,7 @@ endif()
 # We must do this AFTER including the submodules, as the Interactive directory
 if(QT4_FOUND)
   add_subdirectory(Interactive)
+  add_subdirectory(Interactive/Delegates)
 endif(QT4_FOUND)
 
 # Create a library of the core source files. We must do this BEFORE the add_subdirectory calls,
@@ -127,7 +128,6 @@ add_subdirectory(Concepts)
 add_subdirectory(DifferenceFunctions)
 add_subdirectory(Drivers)
 add_subdirectory(Inpainters)
-add_subdirectory(Interactive/Delegates)
 add_subdirectory(ImageProcessing)
 add_subdirectory(Initializers)
 add_subdirectory(NearestNeighbor)

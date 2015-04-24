@@ -52,6 +52,7 @@
 
 // Inpainting
 #include "Algorithms/InpaintingAlgorithm.hpp"
+#include "Algorithms/InpaintingAlgorithmWithLocalSearch.hpp"
 
 // Priority
 #include "Priority/PriorityCriminisi.h"
@@ -111,7 +112,7 @@ int main(int argc, char *argv[])
 
   Mask::Pointer mask = Mask::New();
   mask->Read(maskFilename);
-
+  std::cout << "Done reading mask." << std::endl;
   ClassicalImageInpainting(originalImage, mask, patchHalfWidth);
 
   // If the output filename is a png file, then use the RGBImage writer so that it is first
