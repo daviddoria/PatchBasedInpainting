@@ -106,9 +106,9 @@
 int main(int argc, char *argv[])
 {
   // Verify arguments
-  if(argc != 5)
+  if(argc != 6)
     {
-    std::cerr << "Required arguments: image.mha imageMask.mha patchHalfWidth output.mha" << std::endl;
+    std::cerr << "Required arguments: image.mha imageMask.mha patchHalfWidth neighborhoodRadius output.mha" << std::endl;
     std::cerr << "Input arguments: ";
     for(int i = 1; i < argc; ++i)
       {
@@ -118,34 +118,40 @@ int main(int argc, char *argv[])
     }
 
   // Parse arguments
-  std::string imageFilename = argv[1];
-  std::string maskFilename = argv[2];
+  std::string imageFileName = argv[1];
+  std::string maskFileName = argv[2];
 
   std::stringstream ssPatchRadius;
   ssPatchRadius << argv[3];
   unsigned int patchHalfWidth = 0;
   ssPatchRadius >> patchHalfWidth;
 
-  std::string outputFilename = argv[4];
+  std::stringstream ssNeighborhoodRadius;
+  ssNeighborhoodRadius << argv[4];
+  unsigned int neighborhoodRadius = 0;
+  ssNeighborhoodRadius >> neighborhoodRadius;
+
+  std::string outputFileName = argv[5];
 
   // Output arguments
-  std::cout << "Reading image: " << imageFilename << std::endl;
-  std::cout << "Reading mask: " << maskFilename << std::endl;
+  std::cout << "Reading image: " << imageFileName << std::endl;
+  std::cout << "Reading mask: " << maskFileName << std::endl;
   std::cout << "Patch half width: " << patchHalfWidth << std::endl;
-  std::cout << "Output: " << outputFilename << std::endl;
+  std::cout << "Neighborhood radius: " << neighborhoodRadius << std::endl;
+  std::cout << "Output: " << outputFileName << std::endl;
 
   typedef itk::Image<itk::CovariantVector<int, 3>, 2> ImageType;
 
   typedef  itk::ImageFileReader<ImageType> ImageReaderType;
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
-  imageReader->SetFileName(imageFilename);
+  imageReader->SetFileName(imageFileName);
   imageReader->Update();
 
   ImageType::Pointer image = ImageType::New();
   ITKHelpers::DeepCopy(imageReader->GetOutput(), image.GetPointer());
 
   Mask::Pointer mask = Mask::New();
-  mask->Read(maskFilename);
+  mask->Read(maskFileName);
 
   std::cout << "hole pixels: " << mask->CountHolePixels() << std::endl;
   std::cout << "valid pixels: " << mask->CountValidPixels() << std::endl;
@@ -277,20 +283,16 @@ int main(int argc, char *argv[])
                       ImageInpainterType, BestSearchType>(graph, inpaintingVisitor, boundaryNodeQueue,
                       linearSearchBest, imagePatchInpainter, neighborhoodSearch);
 
-//  template <typename TVertexListGraph, typename TInpaintingVisitor,
-//            typename TPriorityQueue, typename TSearchRegion,
-//            typename TPatchInpainter, typename TBestPatchFinder>
-//  inline void
-//  InpaintingAlgorithmWithLocalSearch(std::shared_ptr<TVertexListGraph> graph,
-//                                     std::shared_ptr<TInpaintingVisitor> visitor,
-//                                     std::shared_ptr<TPriorityQueue> boundaryNodeQueue,
-//                                     std::shared_ptr<TBestPatchFinder> bestPatchFinder,
-//                                     std::shared_ptr<TPatchInpainter> patchInpainter,
-//                                     TSearchRegion& searchRegion)
+  // If the output filename is a png file, then use the RGBImage writer so that it is first
+  // casted to unsigned char. Otherwise, write the file directly.
+  if(Helpers::GetFileExtension(outputFileName) == "png")
+  {
+    ITKHelpers::WriteRGBImage(image.GetPointer(), outputFileName);
+  }
+  else
+  {
+    ITKHelpers::WriteImage(image.GetPointer(), outputFileName);
+  }
 
-//  InpaintingAlgorithmWithLocalSearch<VertexListGraphType, InpaintingVisitorType,
-//                      BoundaryNodeQueueType, NeighborhoodSearchType,
-//                      CompositePatchInpainter, BestSearchType>(graph, inpaintingVisitor, boundaryNodeQueue,
-//                      linearSearchBest, inpainter, neighborhoodSearch);
   return EXIT_SUCCESS;
 }
