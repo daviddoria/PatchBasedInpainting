@@ -78,13 +78,10 @@
 #include "Initializers/InitializePriority.hpp"
 
 // Inpainters
-//#include "Inpainters/MaskedGridPatchInpainter.hpp"
 #include "Inpainters/PatchInpainter.hpp"
 
 // Difference functions
 #include "DifferenceFunctions/Patch/ImagePatchDifference.hpp"
-//#include "DifferenceFunctions/ImagePatchVectorizedDifference.hpp"
-//#include "DifferenceFunctions/ImagePatchVectorizedIndicesDifference.hpp"
 #include "DifferenceFunctions/Pixel/SumAbsolutePixelDifference.hpp"
 
 // Inpainting algorithm
@@ -126,10 +123,11 @@ int main(int argc, char *argv[])
   unsigned int patchHalfWidth = 0;
   ssPatchRadius >> patchHalfWidth;
 
-  std::stringstream ssNeighborhoodRadius;
-  ssNeighborhoodRadius << argv[4];
-  unsigned int neighborhoodRadius = 0;
-  ssNeighborhoodRadius >> neighborhoodRadius;
+  // The percent of the image size to use as the neighborhood (0 - 1)
+  std::stringstream ssNeighborhoodPercent;
+  ssNeighborhoodPercent << argv[4];
+  float neighborhoodPercent = 0;
+  ssNeighborhoodPercent >> neighborhoodPercent;
 
   std::string outputFileName = argv[5];
 
@@ -137,7 +135,7 @@ int main(int argc, char *argv[])
   std::cout << "Reading image: " << imageFileName << std::endl;
   std::cout << "Reading mask: " << maskFileName << std::endl;
   std::cout << "Patch half width: " << patchHalfWidth << std::endl;
-  std::cout << "Neighborhood radius: " << neighborhoodRadius << std::endl;
+  std::cout << "Neighborhood percent: " << neighborhoodPercent << std::endl;
   std::cout << "Output: " << outputFileName << std::endl;
 
   typedef itk::Image<itk::CovariantVector<int, 3>, 2> ImageType;
@@ -176,17 +174,10 @@ int main(int argc, char *argv[])
       ImageInpainterType(patchHalfWidth, image, mask));
 
   // Create the priority function
-//   typedef PriorityRandom PriorityType;
-//   PriorityType priorityFunction;
-//  typedef PriorityCriminisi PriorityType;
-//  PriorityType priorityFunction(true);
-  typedef PriorityCriminisi<ImageType> PriorityType;
-  std::shared_ptr<PriorityType> priorityFunction(new PriorityType(image, mask, patchHalfWidth));
-
-//  typedef boost::d_ary_heap_indirect<VertexDescriptorType, 4, IndexInHeapMap, PriorityMapType, PriorityCompareType>
-//                                    BoundaryNodeQueueType;
-//  BoundaryNodeQueueType boundaryNodeQueue(priorityMap, index_in_heap, lessThanFunctor);
-
+   typedef PriorityRandom PriorityType;
+   std::shared_ptr<PriorityType> priorityFunction(new PriorityType);
+//  typedef PriorityCriminisi<ImageType> PriorityType;
+//  std::shared_ptr<PriorityType> priorityFunction(new PriorityType(image, mask, patchHalfWidth));
 
   typedef IndirectPriorityQueue<VertexListGraphType> BoundaryNodeQueueType;
   std::shared_ptr<BoundaryNodeQueueType> boundaryNodeQueue(new BoundaryNodeQueueType(*graph));
@@ -258,14 +249,6 @@ int main(int argc, char *argv[])
 
   LoggerVisitor<VertexListGraphType> loggerVisitor("log.txt");
 
-//  typedef CompositeInpaintingVisitor<VertexListGraphType> CompositeInpaintingVisitorType;
-//  CompositeInpaintingVisitorType compositeInpaintingVisitor;
-//  compositeInpaintingVisitor.AddVisitor(&inpaintingVisitor);
-//  compositeInpaintingVisitor.AddVisitor(&displayVisitor);
-////  compositeInpaintingVisitor.AddVisitor(&debugVisitor);
-//  compositeInpaintingVisitor.AddVisitor(&loggerVisitor);
-
-//  InitializePriority(mask, boundaryNodeQueue, priorityMap, &priorityFunction, boundaryStatusMap);
   InitializePriority(mask, boundaryNodeQueue.get(), priorityFunction.get());
   // Initialize the boundary node queue from the user provided mask image.
   InitializeFromMaskImage<InpaintingVisitorType, VertexDescriptorType>(mask, inpaintingVisitor.get());
@@ -276,7 +259,7 @@ int main(int argc, char *argv[])
   std::shared_ptr<BestSearchType> linearSearchBest(new BestSearchType(*imagePatchDescriptorMap));
 
   typedef NeighborhoodSearch<VertexDescriptorType, ImagePatchDescriptorMapType> NeighborhoodSearchType;
-  NeighborhoodSearchType neighborhoodSearch(image->GetLargestPossibleRegion(), image->GetLargestPossibleRegion().GetSize()[0]/4, *imagePatchDescriptorMap);
+  NeighborhoodSearchType neighborhoodSearch(image->GetLargestPossibleRegion(), image->GetLargestPossibleRegion().GetSize()[0] * neighborhoodPercent, *imagePatchDescriptorMap);
   
   InpaintingAlgorithmWithLocalSearch<VertexListGraphType, InpaintingVisitorType,
                       BoundaryNodeQueueType, NeighborhoodSearchType,
