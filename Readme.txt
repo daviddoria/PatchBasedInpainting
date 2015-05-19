@@ -1,6 +1,9 @@
 This software allows the user to inpaint an image using a greedy patch based method.
 
-Once you have cloned this repository, you must
+You must clone this repository with:
+git clone --recursive
+
+or if you have already cloned this repository, you must
 git submodule update --init --recursive
 
 to checkout all of the dependencies (besides the major libraries (ITK, VTK, Qt, Boost) ).
